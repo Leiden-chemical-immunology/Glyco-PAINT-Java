@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.github.jjabakker</groupId>
+        <artifactId>paint-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>paint-shared-utils</artifactId>
+    <packaging>jar</packaging>
+
+    <!-- ✅ Required metadata for SciJava enforcer -->
+    <name>${project.artifactId}</name>
+    <description>Shared utilities for the Paint project</description>
+    <url>https://example.com/paint</url>
+    <inceptionYear>2025</inceptionYear>
+
+    <organization>
+        <name>JJ Abakker</name>
+        <url>https://example.com</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>BSD-2-Clause</name>
+            <url>https://opensource.org/licenses/BSD-2-Clause</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>jjabakker</id>
+            <name>Hans Bakker</name>
+        </developer>
+    </developers>
+
+    <contributors>
+        <contributor>
+            <name>None</name>
+        </contributor>
+    </contributors>
+
+    <mailingLists>
+        <mailingList>
+            <name>None</name>
+            <post>none@example.com</post>
+        </mailingList>
+    </mailingLists>
+
+    <scm>
+        <connection>scm:git:git://example.com/paint.git</connection>
+        <developerConnection>scm:git:ssh://example.com/paint.git</developerConnection>
+        <url>https://example.com/paint</url>
+    </scm>
+
+    <issueManagement>
+        <system>None</system>
+        <url>https://example.com/issues</url>
+    </issueManagement>
+
+    <ciManagement>
+        <system>None</system>
+        <url>https://example.com/ci</url>
+    </ciManagement>
+
+    <properties>
+        <license.licenseName>BSD-2-Clause</license.licenseName>
+        <license.copyrightOwners>Hans Bakker</license.copyrightOwners>
+    </properties>
+    <!-- ✅ End metadata -->
+
+    <dependencies>
+        <!-- Gson for JsonConfig -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.11.0</version>
+        </dependency>
+
+        <!-- TableSaw-->
+        <dependency>
+            <groupId>tech.tablesaw</groupId>
+            <artifactId>tablesaw-core</artifactId>
+            <version>0.43.1</version> <!-- or latest -->
+        </dependency>
+
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+    </repositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

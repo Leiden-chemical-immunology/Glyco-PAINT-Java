@@ -1,0 +1,207 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jjabakker</groupId>
+        <artifactId>paint-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>paint-fiji-plugin</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <!-- ✅ Required metadata (Enforcer plugin rules) -->
+    <name>Paint Fiji Plugin</name>
+    <description>Integration of Paint application with Fiji/TrackMate plugin</description>
+    <url>https://github.com/jjabakker/paint-fiji-plugin</url>
+    <inceptionYear>2025</inceptionYear>
+
+    <organization>
+        <name>JJABakker</name>
+        <url>https://github.com/jjabakker</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>BSD-2-Clause</name>
+            <url>https://opensource.org/licenses/BSD-2-Clause</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>hans</id>
+            <name>Hans Bakker</name>
+            <email>hans@example.com</email>
+        </developer>
+    </developers>
+
+    <contributors>
+        <contributor>
+            <name>Contributors welcome</name>
+        </contributor>
+    </contributors>
+
+    <mailingLists>
+        <mailingList>
+            <name>Paint Fiji Plugin Users</name>
+            <post>paint-fiji-plugin@example.com</post>
+        </mailingList>
+    </mailingLists>
+
+    <scm>
+        <connection>scm:git:git://github.com/jjabakker/paint-fiji-plugin.git</connection>
+        <developerConnection>scm:git:ssh://github.com:jjabakker/paint-fiji-plugin.git</developerConnection>
+        <url>https://github.com/jjabakker/paint-fiji-plugin</url>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/jjabakker/paint-fiji-plugin/issues</url>
+    </issueManagement>
+
+    <ciManagement>
+        <system>GitHub Actions</system>
+        <url>https://github.com/jjabakker/paint-fiji-plugin/actions</url>
+    </ciManagement>
+
+    <properties>
+        <license.licenseName>BSD-2-Clause</license.licenseName>
+        <license.copyrightOwners>Your Name</license.copyrightOwners>
+        <!-- Fiji installation directory -->
+        <fiji.dir>/Applications/Fiji.app</fiji.dir>
+    </properties>
+
+    <!-- ✅ Add distribution management -->
+    <distributionManagement>
+        <repository>
+            <id>dummy-release</id>
+            <url>https://example.com/maven/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>dummy-snapshot</id>
+            <url>https://example.com/maven/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+
+    <dependencies>
+        <!-- TrackMate provided by Fiji at runtime -->
+        <dependency>
+            <groupId>sc.fiji</groupId>
+            <artifactId>TrackMate</artifactId>
+            <version>7.14.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scijava</groupId>
+            <artifactId>scijava-common</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- OME common (for loci.common.DebugTools) -->
+        <dependency>
+            <groupId>org.openmicroscopy</groupId>
+            <artifactId>ome-common</artifactId>
+            <version>6.0.25</version>   <!-- or any 6.x; 6.x still exports loci.common.* -->
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jjabakker</groupId>
+            <artifactId>paint-shared-utils</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+
+    </dependencies>
+
+    <repositories>
+
+        <repository>
+            <id>scijava.public</id>
+            <url>https://maven.scijava.org/content/groups/public</url>
+        </repository>
+
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+
+    </repositories>
+
+    <build>
+        <plugins>
+            <!-- Ensure SciJava annotation processor runs -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.scijava</groupId>
+                            <artifactId>scijava-common</artifactId>
+                            <version>${scijava-common.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+            <!-- Copy plugin JAR and PaintUtilities JAR into Fiji -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-paint-shared-utils</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.jjabakker</groupId>
+                                    <artifactId>paint-shared-utils</artifactId>
+                                    <version>1.0.0-SNAPSHOT</version>
+                                    <outputDirectory>${fiji.dir}/plugins/</outputDirectory>
+                                    <overWrite>true</overWrite>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-plugin-to-fiji</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <copy file="${project.build.directory}/${project.build.finalName}.jar"
+                                      todir="${fiji.dir}/plugins/"
+                                      overwrite="true"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build></project>
