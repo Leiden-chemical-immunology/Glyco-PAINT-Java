@@ -2,8 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/paint-app" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/paint-fiji-plugin" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/paint-shared-utils" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
   </component>
 </project>

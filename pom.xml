@@ -5,6 +5,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
+
     <!-- Inherit SciJava build setup -->
     <parent>
         <groupId>org.scijava</groupId>
@@ -95,4 +96,16 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages (Releases)</name>
+            <url>https://maven.pkg.github.com/jjabakker/JavaPaintProjects</url>
+        </repository>
+        <snapshotRepository>
+            <id>github</id>
+            <name>GitHub Packages (Snapshots)</name>
+            <url>https://maven.pkg.github.com/jjabakker/JavaPaintProjects</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>
