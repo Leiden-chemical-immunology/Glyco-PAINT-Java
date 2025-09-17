@@ -5,8 +5,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-
-    <!-- Inherit SciJava build setup -->
+    <!-- ✅ Inherit SciJava build setup -->
     <parent>
         <groupId>org.scijava</groupId>
         <artifactId>pom-scijava</artifactId>
@@ -96,6 +95,33 @@
         </plugins>
     </build>
 
+    <!-- ✅ Add SciJava repo for ImageJ/Fiji artifacts -->
+    <repositories>
+        <repository>
+            <id>scijava.public</id>
+            <url>https://maven.scijava.org/content/groups/public</url>
+        </repository>
+    </repositories>
+
+    <!-- ✅ Dependency management: only overrides -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- Override vulnerable transitive dependencies -->
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.15.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>2.3</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- ✅ GitHub Packages deployment -->
     <distributionManagement>
         <repository>
             <id>github</id>
