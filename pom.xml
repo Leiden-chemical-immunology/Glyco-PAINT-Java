@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Inherit SciJava build setup -->
+    <parent>
+        <groupId>org.scijava</groupId>
+        <artifactId>pom-scijava</artifactId>
+        <version>34.1.0</version>
+    </parent>
+
+    <groupId>com.github.jjabakker</groupId>
+    <artifactId>paint-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <!-- ✅ Metadata (inherited by all modules) -->
+    <name>${project.artifactId}</name>
+    <description>Part of the Paint project</description>
+    <url>https://example.com/paint</url>
+    <inceptionYear>2025</inceptionYear>
+
+    <organization>
+        <name>JJAbakker</name>
+        <url>https://example.com</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>BSD-2-Clause</name>
+            <url>https://opensource.org/licenses/BSD-2-Clause</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>jjabakker</id>
+            <name>Hans Bakker</name>
+            <email>you@example.com</email>
+        </developer>
+    </developers>
+
+    <contributors>
+        <contributor>
+            <name>None</name>
+        </contributor>
+    </contributors>
+
+    <mailingLists>
+        <mailingList>
+            <name>None</name>
+            <post>none@example.com</post>
+        </mailingList>
+    </mailingLists>
+
+    <scm>
+        <connection>scm:git:git://example.com/paint.git</connection>
+        <developerConnection>scm:git:ssh://example.com/paint.git</developerConnection>
+        <url>https://example.com/paint</url>
+    </scm>
+
+    <issueManagement>
+        <system>None</system>
+        <url>https://example.com/issues</url>
+    </issueManagement>
+
+    <ciManagement>
+        <system>None</system>
+        <url>https://example.com/ci</url>
+    </ciManagement>
+
+    <properties>
+        <license.licenseName>BSD-2-Clause</license.licenseName>
+        <license.copyrightOwners>Hans Bakker</license.copyrightOwners>
+        <fiji.app.dir>/Users/hans/Fiji.app</fiji.app.dir>
+    </properties>
+    <!-- ✅ End metadata -->
+
+    <modules>
+        <module>paint-shared-utils</module>
+        <module>paint-app</module>
+        <module>paint-fiji-plugin</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
