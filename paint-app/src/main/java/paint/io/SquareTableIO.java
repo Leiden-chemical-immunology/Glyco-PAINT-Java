@@ -1,214 +1,131 @@
 package paint.io;
 
 import objects.Square;
-import tech.tablesaw.api.ColumnType;
-import tech.tablesaw.api.Table;
-import tech.tablesaw.columns.Column;
 import tech.tablesaw.api.*;
+import tech.tablesaw.api.ColumnType;
+import tech.tablesaw.columns.Column;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import static constants.PaintConstants.SQUARE_COLS;
+import static constants.PaintConstants.SQUARE_TYPES;
 
-public class SquareTableIO extends BaseTableIO<Square> {
+/**
+ * Table IO for Square entities.
+ */
+public class SquareTableIO extends BaseTableIO {
 
-    public SquareTableIO() { super(new SquareAdapter()); }
+    public Table emptyTable() {
+        return newEmptyTable("Squares", SQUARE_COLS, SQUARE_TYPES);
+    }
 
-    private static class SquareAdapter implements EntityTableAdapter<Square> {
-
-        public String tableName() {
-            return "squares";
+    public Table toTable(List<Square> squares) {
+        Table table = emptyTable();
+        for (Square sq : squares) {
+            Row row = table.appendRow();
+            row.setString("Unique Key", sq.getUniqueKey());
+            row.setString("Recording Name", sq.getRecordingName());
+            row.setInt("Square Number", sq.getSquareNumber());
+            row.setInt("Row Number", sq.getRowNumber());
+            row.setInt("Column Number", sq.getColNumber());
+            row.setInt("Label Number", sq.getLabelNumber());
+            row.setInt("Cell ID", sq.getCellId());
+            row.setBoolean("Selected", sq.isSelected());
+            row.setBoolean("Square Manually Excluded", sq.isSquareManuallyExcluded());
+            row.setBoolean("Image Excluded", sq.isImageExcluded());
+            row.setDouble("X0", sq.getX0());
+            row.setDouble("Y0", sq.getY0());
+            row.setDouble("X1", sq.getX1());
+            row.setDouble("Y1", sq.getY1());
+            row.setInt("Number of Tracks", sq.getNumberOfTracks());
+            row.setDouble("Variability", sq.getVariability());
+            row.setDouble("Density", sq.getDensity());
+            row.setDouble("Density Ratio", sq.getDensityRatio());
+            row.setDouble("Tau", sq.getTau());
+            row.setDouble("R Squared", sq.getRSquared());
+            row.setDouble("Median Diffusion Coefficient", sq.getMedianDiffusionCoefficient());
+            row.setDouble("Median Diffusion Coefficient Ext", sq.getMedianDiffusionCoefficientExt());
+            row.setDouble("Median Long Track Duration", sq.getMedianLongTrackDuration());
+            row.setDouble("Median Short Track Duration", sq.getMedianShortTrackDuration());
+            row.setDouble("Median Displacement", sq.getMedianDisplacement());
+            row.setDouble("Max Displacement", sq.getMaxDisplacement());
+            row.setDouble("Total Displacement", sq.getTotalDisplacement());
+            row.setDouble("Median Max Speed", sq.getMedianMaxSpeed());
+            row.setDouble("Max Max Speed", sq.getMaxMaxSpeed());
+            row.setDouble("Median Mean Speed", sq.getMedianMeanSpeed());
+            row.setDouble("Max Mean Speed", sq.getMaxMeanSpeed());
+            row.setDouble("Max Track Duration", sq.getMaxTrackDuration());
+            row.setDouble("Total Track Duration", sq.getTotalTrackDuration());
+            row.setDouble("Median Track Duration", sq.getMedianTrackDuration());
         }
+        return table;
+    }
 
-        public String[] columns() {
-            return SQUARE_COLS;
+    public List<Square> toEntities(Table table) {
+        List<Square> squares = new ArrayList<>();
+        for (Row row : table) {
+            Square sq = new Square();
+            sq.setUniqueKey(row.getString("Unique Key"));
+            sq.setRecordingName(row.getString("Recording Name"));
+            sq.setSquareNumber(row.getInt("Square Number"));
+            sq.setRowNumber(row.getInt("Row Number"));
+            sq.setColNumber(row.getInt("Column Number"));
+            sq.setLabelNumber(row.getInt("Label Number"));
+            sq.setCellId(row.getInt("Cell ID"));
+            sq.setSelected(row.getBoolean("Selected"));
+            sq.setSquareManuallyExcluded(row.getBoolean("Square Manually Excluded"));
+            sq.setImageExcluded(row.getBoolean("Image Excluded"));
+            sq.setX0(row.getDouble("X0"));
+            sq.setY0(row.getDouble("Y0"));
+            sq.setX1(row.getDouble("X1"));
+            sq.setY1(row.getDouble("Y1"));
+            sq.setNumberOfTracks(row.getInt("Number of Tracks"));
+            sq.setVariability(row.getDouble("Variability"));
+            sq.setDensity(row.getDouble("Density"));
+            sq.setDensityRatio(row.getDouble("Density Ratio"));
+            sq.setTau(row.getDouble("Tau"));
+            sq.setRSquared(row.getDouble("R Squared"));
+            sq.setMedianDiffusionCoefficient(row.getDouble("Median Diffusion Coefficient"));
+            sq.setMedianDiffusionCoefficientExt(row.getDouble("Median Diffusion Coefficient Ext"));
+            sq.setMedianLongTrackDuration(row.getDouble("Median Long Track Duration"));
+            sq.setMedianShortTrackDuration(row.getDouble("Median Short Track Duration"));
+            sq.setMedianDisplacement(row.getDouble("Median Displacement"));
+            sq.setMaxDisplacement(row.getDouble("Max Displacement"));
+            sq.setTotalDisplacement(row.getDouble("Total Displacement"));
+            sq.setMedianMaxSpeed(row.getDouble("Median Max Speed"));
+            sq.setMaxMaxSpeed(row.getDouble("Max Max Speed"));
+            sq.setMedianMeanSpeed(row.getDouble("Median Mean Speed"));
+            sq.setMaxMeanSpeed(row.getDouble("Max Mean Speed"));
+            sq.setMaxTrackDuration(row.getDouble("Max Track Duration"));
+            sq.setTotalTrackDuration(row.getDouble("Total Track Duration"));
+            sq.setMedianTrackDuration(row.getDouble("Median Track Duration"));
+            squares.add(sq);
         }
+        return squares;
+    }
 
-        public ColumnType[] columnTypes() {
-            return new ColumnType[] {
-                    ColumnType.STRING,  //  0 uniqueKey
-                    ColumnType.STRING,  //  1 recordingName
-                    ColumnType.INTEGER, //  2 squareNumber
-                    ColumnType.INTEGER, //  3 rowNumber
-                    ColumnType.INTEGER, //  4 colNumber
-                    ColumnType.INTEGER, //  5 labelNumber
-                    ColumnType.INTEGER, //  6 cellID
+    public Table readCsv(Path csvPath) throws IOException {
+        return readCsvWithSchema(csvPath, "Squares", SQUARE_COLS, SQUARE_TYPES, false);
+    }
 
-                    ColumnType.BOOLEAN, //  7 selected
-                    ColumnType.BOOLEAN, //  8 squareManuallyExcluded
-                    ColumnType.BOOLEAN, //  9 imageExcluded
-
-                    ColumnType.DOUBLE,  // 10 x0
-                    ColumnType.DOUBLE,  // 11 y0
-                    ColumnType.DOUBLE,  // 12 x1
-                    ColumnType.DOUBLE,  // 13 y1
-
-                    ColumnType.INTEGER, // 14 numberTracks
-                    ColumnType.DOUBLE,  // 15 variability
-                    ColumnType.DOUBLE,  // 16 density
-                    ColumnType.DOUBLE,  // 17 densityRatio
-                    ColumnType.DOUBLE,  // 18 tau
-                    ColumnType.DOUBLE,  // 19 rSquared
-
-                    ColumnType.DOUBLE,  // 20 medianDiffusionCoefficient
-                    ColumnType.DOUBLE,  // 21 medianDiffusionCoefficientExt
-                    ColumnType.DOUBLE,  // 22 medianLongTrackDuration
-                    ColumnType.DOUBLE,  // 23 medianShortTrackDuration
-
-                    ColumnType.DOUBLE,  // 24 medianDisplacement
-                    ColumnType.DOUBLE,  // 25 maxDisplacement
-                    ColumnType.DOUBLE,  // 26 totalDisplacement
-
-                    ColumnType.DOUBLE,  // 27 medianMaxSpeed
-                    ColumnType.DOUBLE,  // 28 maxMaxSpeed
-
-                    ColumnType.DOUBLE,  // 29 medianMeanSpeed
-                    ColumnType.DOUBLE,  // 30 maxMeanSpeed
-
-                    ColumnType.DOUBLE,  // 31 maxTrackDuration
-                    ColumnType.DOUBLE,  // 32 totalTrackDuration
-                    ColumnType.DOUBLE   // 33 medianTrackDuration
-            };
-        }
-
-        public List<Column<?>> newEmptyColumns() {
-            List<Column<?>> c = new ArrayList<Column<?>>(SQUARE_COLS.length);
-            c.add(StringColumn.create (SQUARE_COLS[0]));
-            c.add(StringColumn.create (SQUARE_COLS[1]));
-            c.add(IntColumn.create    (SQUARE_COLS[2]));
-            c.add(IntColumn.create    (SQUARE_COLS[3]));
-            c.add(IntColumn.create    (SQUARE_COLS[4]));
-            c.add(IntColumn.create    (SQUARE_COLS[5]));
-            c.add(IntColumn.create    (SQUARE_COLS[6]));
-
-            c.add(BooleanColumn.create(SQUARE_COLS[7]));
-            c.add(BooleanColumn.create(SQUARE_COLS[8]));
-            c.add(BooleanColumn.create(SQUARE_COLS[9]));
-
-            c.add(DoubleColumn.create (SQUARE_COLS[10]));
-            c.add(DoubleColumn.create (SQUARE_COLS[11]));
-            c.add(DoubleColumn.create (SQUARE_COLS[12]));
-            c.add(DoubleColumn.create (SQUARE_COLS[13]));
-
-            c.add(IntColumn.create    (SQUARE_COLS[14]));
-            c.add(DoubleColumn.create (SQUARE_COLS[15]));
-            c.add(DoubleColumn.create (SQUARE_COLS[16]));
-            c.add(DoubleColumn.create (SQUARE_COLS[17]));
-            c.add(DoubleColumn.create (SQUARE_COLS[18]));
-            c.add(DoubleColumn.create (SQUARE_COLS[19]));
-
-            c.add(DoubleColumn.create (SQUARE_COLS[20]));
-            c.add(DoubleColumn.create (SQUARE_COLS[21]));
-            c.add(DoubleColumn.create (SQUARE_COLS[22]));
-            c.add(DoubleColumn.create (SQUARE_COLS[23]));
-
-            c.add(DoubleColumn.create (SQUARE_COLS[24]));
-            c.add(DoubleColumn.create (SQUARE_COLS[25]));
-            c.add(DoubleColumn.create (SQUARE_COLS[26]));
-
-            c.add(DoubleColumn.create (SQUARE_COLS[27]));
-            c.add(DoubleColumn.create (SQUARE_COLS[28]));
-
-            c.add(DoubleColumn.create (SQUARE_COLS[29]));
-            c.add(DoubleColumn.create (SQUARE_COLS[30]));
-
-            c.add(DoubleColumn.create (SQUARE_COLS[31]));
-            c.add(DoubleColumn.create (SQUARE_COLS[32]));
-            c.add(DoubleColumn.create (SQUARE_COLS[33]));
-            return c;
-        }
-
-        public void appendEntity(Square s, List<Column<?>> c) {
-            ((StringColumn ) c.get(0)).append(s.getUniqueKey());
-            ((StringColumn ) c.get(1)).append(s.getRecordingName());
-            ((IntColumn    ) c.get(2)).append(s.getSquareNumber());
-            ((IntColumn    ) c.get(3)).append(s.getRowNumber());
-            ((IntColumn    ) c.get(4)).append(s.getColNumber());
-            ((IntColumn    ) c.get(5)).append(s.getLabelNumber());
-            ((IntColumn    ) c.get(6)).append(s.getCellId());
-
-            ((BooleanColumn) c.get(7)).append(s.isSelected());
-            ((BooleanColumn) c.get(8)).append(s.isSquareManuallyExcluded());
-            ((BooleanColumn) c.get(9)).append(s.isImageExcluded());
-
-            ((DoubleColumn ) c.get(10)).append(s.getX0());
-            ((DoubleColumn ) c.get(11)).append(s.getY0());
-            ((DoubleColumn ) c.get(12)).append(s.getX1());
-            ((DoubleColumn ) c.get(13)).append(s.getY1());
-
-            ((IntColumn    ) c.get(14)).append(s.getNumberOfTracks());
-            ((DoubleColumn ) c.get(15)).append(s.getVariability());
-            ((DoubleColumn ) c.get(16)).append(s.getDensity());
-            ((DoubleColumn ) c.get(17)).append(s.getDensityRatio());
-            ((DoubleColumn ) c.get(18)).append(s.getTau());
-            ((DoubleColumn ) c.get(19)).append(s.getRSquared());
-
-            ((DoubleColumn ) c.get(20)).append(s.getMedianDiffusionCoefficient());
-            ((DoubleColumn ) c.get(21)).append(s.getMedianDiffusionCoefficientExt());
-            ((DoubleColumn ) c.get(22)).append(s.getMedianLongTrackDuration());
-            ((DoubleColumn ) c.get(23)).append(s.getMedianShortTrackDuration());
-
-            ((DoubleColumn ) c.get(24)).append(s.getMedianDisplacement());
-            ((DoubleColumn ) c.get(25)).append(s.getMaxDisplacement());
-            ((DoubleColumn ) c.get(26)).append(s.getTotalDisplacement());
-
-            ((DoubleColumn ) c.get(27)).append(s.getMedianMaxSpeed());
-            ((DoubleColumn ) c.get(28)).append(s.getMaxMaxSpeed());
-
-            ((DoubleColumn ) c.get(29)).append(s.getMedianMeanSpeed());
-            ((DoubleColumn ) c.get(30)).append(s.getMaxMeanSpeed());
-
-            ((DoubleColumn ) c.get(31)).append(s.getMaxTrackDuration());
-            ((DoubleColumn ) c.get(32)).append(s.getTotalTrackDuration());
-            ((DoubleColumn ) c.get(33)).append(s.getMedianTrackDuration());
-        }
-
-        public Square readEntity(Table t, int r) {
-            Square s = new Square();
-            s.setUniqueKey(t.stringColumn(SQUARE_COLS[0]).get(r));
-            s.setRecordingName(t.stringColumn(SQUARE_COLS[1]).get(r));
-            s.setSquareNumber(t.intColumn(SQUARE_COLS[2]).getInt(r));
-            s.setRowNumber(t.intColumn(SQUARE_COLS[3]).getInt(r));
-            s.setColNumber(t.intColumn(SQUARE_COLS[4]).getInt(r));
-            s.setLabelNumber(t.intColumn(SQUARE_COLS[5]).getInt(r));
-            s.setCellId(t.intColumn(SQUARE_COLS[6]).getInt(r));
-
-            s.setSelected(t.booleanColumn(SQUARE_COLS[7]).get(r));
-            s.setSquareManuallyExcluded(t.booleanColumn(SQUARE_COLS[8]).get(r));
-            s.setImageExcluded(t.booleanColumn(SQUARE_COLS[9]).get(r));
-
-            s.setX0(t.doubleColumn(SQUARE_COLS[10]).getDouble(r));
-            s.setY0(t.doubleColumn(SQUARE_COLS[11]).getDouble(r));
-            s.setX1(t.doubleColumn(SQUARE_COLS[12]).getDouble(r));
-            s.setY1(t.doubleColumn(SQUARE_COLS[13]).getDouble(r));
-
-            s.setNumberOfTracks(t.intColumn(SQUARE_COLS[14]).getInt(r));
-            s.setVariability(t.doubleColumn(SQUARE_COLS[15]).getDouble(r));
-            s.setDensity(t.doubleColumn(SQUARE_COLS[16]).getDouble(r));
-            s.setDensityRatio(t.doubleColumn(SQUARE_COLS[17]).getDouble(r));
-            s.setTau(t.doubleColumn(SQUARE_COLS[18]).getDouble(r));
-            s.setRSquared(t.doubleColumn(SQUARE_COLS[19]).getDouble(r));
-
-            s.setMedianDiffusionCoefficient(t.doubleColumn(SQUARE_COLS[20]).getDouble(r));
-            s.setMedianDiffusionCoefficientExt(t.doubleColumn(SQUARE_COLS[21]).getDouble(r));
-            s.setMedianLongTrackDuration(t.doubleColumn(SQUARE_COLS[22]).getDouble(r));
-            s.setMedianShortTrackDuration(t.doubleColumn(SQUARE_COLS[23]).getDouble(r));
-
-            s.setMedianDisplacement(t.doubleColumn(SQUARE_COLS[24]).getDouble(r));
-            s.setMaxDisplacement(t.doubleColumn(SQUARE_COLS[25]).getDouble(r));
-            s.setTotalDisplacement(t.doubleColumn(SQUARE_COLS[26]).getDouble(r));
-
-            s.setMedianMaxSpeed(t.doubleColumn(SQUARE_COLS[27]).getDouble(r));
-            s.setMaxMaxSpeed(t.doubleColumn(SQUARE_COLS[28]).getDouble(r));
-
-            s.setMedianMeanSpeed(t.doubleColumn(SQUARE_COLS[29]).getDouble(r));
-            s.setMaxMeanSpeed(t.doubleColumn(SQUARE_COLS[30]).getDouble(r));
-
-            s.setMaxTrackDuration(t.doubleColumn(SQUARE_COLS[31]).getDouble(r));
-            s.setTotalTrackDuration(t.doubleColumn(SQUARE_COLS[32]).getDouble(r));
-            s.setMedianTrackDuration(t.doubleColumn(SQUARE_COLS[33]).getDouble(r));
-            return s;
+    public void appendInPlace(Table target, Table source) {
+        for (Row row : source) {
+            Row newRow = target.appendRow();
+            for (String col : SQUARE_COLS) {
+                Column<?> targetCol = target.column(col);
+                if (targetCol.type() == ColumnType.STRING) {
+                    newRow.setString(col, row.getString(col));
+                } else if (targetCol.type() == ColumnType.INTEGER) {
+                    newRow.setInt(col, row.getInt(col));
+                } else if (targetCol.type() == ColumnType.DOUBLE) {
+                    newRow.setDouble(col, row.getDouble(col));
+                } else if (targetCol.type() == ColumnType.BOOLEAN) {
+                    newRow.setBoolean(col, row.getBoolean(col));
+                }
+            }
         }
     }
 }

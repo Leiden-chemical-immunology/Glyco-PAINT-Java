@@ -134,7 +134,7 @@ public class Square {
 
     public double getY0() { return y0; }
     public void setY0(double y0) { this.y0 = y0; }
-  
+
     public double getX1() { return x1; }
     public void setX1(double x1) { this.x1 = x1; }
 
@@ -159,7 +159,7 @@ public class Square {
     public double getRSquared() { return rSquared; }
     public void setRSquared(double rSquared) { this.rSquared = rSquared; }
 
-    public double getMedianDiffusionCoefficient() { return medianDiffusionCoefficient; }   
+    public double getMedianDiffusionCoefficient() { return medianDiffusionCoefficient; }
     public void setMedianDiffusionCoefficient(double medianDiffusionCoefficient) { this.medianDiffusionCoefficient = medianDiffusionCoefficient; }
 
     public double getMedianDiffusionCoefficientExt() { return medianDiffusionCoefficientExt; }

@@ -1,27 +1,28 @@
 package objects;
 
 public class Track {
-    private String uniqueKey;                 // 0
-    private String recordingName;             // 1
-    private int    trackId;                   // 2
-    private String trackLabel;                // 3
-    private int    numberOfSpots;             // 4
-    private int    numberOfGaps;              // 5
-    private int    longestGap;                // 6
-    private double trackDuration;             // 7
-    private double trackXLocation;            // 8
-    private double trackYLocation;            // 9
-    private double trackDisplacement;         // 10
-    private double trackMaxSpeed;             // 11
-    private double trackMedianSpeed;          // 12
-    private double diffusionCoefficient;      // 13
-    private double diffusionCoefficientExt;   // 14
-    private double totalDistance;             // 15
-    private double confinementRatio;          // 16`
-    private int    squareNumber;              // 17
-    private int    labelNumber;               // 18
 
-    public Track() { }
+    private String uniqueKey;
+    private String recordingName;
+    private int trackId;
+    private String trackLabel;
+    private int numberOfSpots;
+    private int numberOfGaps;
+    private int longestGap;
+    private double trackDuration;
+    private double trackXLocation;
+    private double trackYLocation;
+    private double trackDisplacement;
+    private double trackMaxSpeed;
+    private double trackMedianSpeed;
+    private double diffusionCoefficient;
+    private double diffusionCoefficientExt;
+    private double totalDistance;
+    private double confinementRatio;
+    private int squareNumber;
+    private int labelNumber;
+
+    public Track() {}
 
     public Track(String uniqueKey,
                  String recordingName,
@@ -36,7 +37,6 @@ public class Track {
                  double trackDisplacement,
                  double trackMaxSpeed,
                  double trackMedianSpeed,
-                 double trackMaxSpeedCalc,
                  double diffusionCoefficient,
                  double diffusionCoefficientExt,
                  double totalDistance,
@@ -64,13 +64,12 @@ public class Track {
         this.labelNumber = labelNumber;
     }
 
-    // Getters and setters
-
+    // --- Getters and Setters ---
     public String getUniqueKey() { return uniqueKey; }
-    public void setUniqueKey(String uniqueKey) { this.uniqueKey = uniqueKey;}
+    public void setUniqueKey(String uniqueKey) { this.uniqueKey = uniqueKey; }
 
     public String getRecordingName() { return recordingName; }
-    public void setRecordingName(String recordingName) { this.recordingName = recordingName;}
+    public void setRecordingName(String recordingName) { this.recordingName = recordingName; }
 
     public int getTrackId() { return trackId; }
     public void setTrackId(int trackId) { this.trackId = trackId; }
@@ -79,10 +78,10 @@ public class Track {
     public void setTrackLabel(String trackLabel) { this.trackLabel = trackLabel; }
 
     public int getNumberOfSpots() { return numberOfSpots; }
-    public void setNumberOfSpots(int nrSpots) { this.numberOfSpots = nrSpots; }
+    public void setNumberOfSpots(int numberOfSpots) { this.numberOfSpots = numberOfSpots; }
 
     public int getNumberOfGaps() { return numberOfGaps; }
-    public void setNumberOfGaps(int nrGaps) { this.numberOfGaps = nrGaps; }
+    public void setNumberOfGaps(int numberOfGaps) { this.numberOfGaps = numberOfGaps; }
 
     public int getLongestGap() { return longestGap; }
     public void setLongestGap(int longestGap) { this.longestGap = longestGap; }
@@ -122,4 +121,13 @@ public class Track {
 
     public int getLabelNumber() { return labelNumber; }
     public void setLabelNumber(int labelNumber) { this.labelNumber = labelNumber; }
+
+    // --- Debug string ---
+    @Override
+    public String toString() {
+        return String.format(
+                "Track[id=%d, label=%s, recording=%s, spots=%d, duration=%.2f, displacement=%.2f, maxSpeed=%.2f, medianSpeed=%.2f]",
+                trackId, trackLabel, recordingName, numberOfSpots, trackDuration, trackDisplacement, trackMaxSpeed, trackMedianSpeed
+        );
+    }
 }

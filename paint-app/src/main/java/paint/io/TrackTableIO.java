@@ -2,128 +2,100 @@ package paint.io;
 
 import objects.Track;
 import tech.tablesaw.api.*;
+import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.columns.Column;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import static constants.PaintConstants.TRACK_COLS;
+import static constants.PaintConstants.TRACK_TYPES;
 
-public class TrackTableIO extends BaseTableIO<Track> {
+/**
+ * Table IO for Track entities.
+ */
+public class TrackTableIO extends BaseTableIO {
 
-    public TrackTableIO() {
-        super(new TrackAdapter());
+    public Table emptyTable() {
+        return newEmptyTable("Tracks", TRACK_COLS, TRACK_TYPES);
     }
 
-    /** All Track-specific mapping lives here. */
-    private static class TrackAdapter implements EntityTableAdapter<Track> {
-
-        public String tableName() {
-            return "tracks";
+    public Table toTable(List<Track> tracks) {
+        Table table = emptyTable();
+        for (Track tr : tracks) {
+            Row row = table.appendRow();
+            row.setString("Unique Key", tr.getUniqueKey());
+            row.setString("Recording Name", tr.getRecordingName());
+            row.setInt("Track Id", tr.getTrackId());
+            row.setString("Track Label", tr.getTrackLabel());
+            row.setInt("Number of Spots", tr.getNumberOfSpots());
+            row.setInt("Number of Gaps", tr.getNumberOfGaps());
+            row.setInt("Longest Gap", tr.getLongestGap());
+            row.setDouble("Track Duration", tr.getTrackDuration());
+            row.setDouble("Track X Location", tr.getTrackXLocation());
+            row.setDouble("Track Y Location", tr.getTrackYLocation());
+            row.setDouble("Track Displacement", tr.getTrackDisplacement());
+            row.setDouble("Track Max Speed", tr.getTrackMaxSpeed());
+            row.setDouble("Track Median Speed", tr.getTrackMedianSpeed());
+            row.setDouble("Diffusion Coefficient", tr.getDiffusionCoefficient());
+            row.setDouble("Diffusion Coefficient Ext", tr.getDiffusionCoefficientExt());
+            row.setDouble("Total Distance", tr.getTotalDistance());
+            row.setDouble("Confinement Ratio", tr.getConfinementRatio());
+            row.setInt("Square Number", tr.getSquareNumber());
+            row.setInt("Label Number", tr.getLabelNumber());
         }
+        return table;
+    }
 
-        public String[] columns() {
-            return TRACK_COLS;
+    public List<Track> toEntities(Table table) {
+        List<Track> tracks = new ArrayList<>();
+        for (Row row : table) {
+            Track tr = new Track();
+            tr.setUniqueKey(row.getString("Unique Key"));
+            tr.setRecordingName(row.getString("Recording Name"));
+            tr.setTrackId(row.getInt("Track Id"));
+            tr.setTrackLabel(row.getString("Track Label"));
+            tr.setNumberOfSpots(row.getInt("Number of Spots"));
+            tr.setNumberOfGaps(row.getInt("Number of Gaps"));
+            tr.setLongestGap(row.getInt("Longest Gap"));
+            tr.setTrackDuration(row.getDouble("Track Duration"));
+            tr.setTrackXLocation(row.getDouble("Track X Location"));
+            tr.setTrackYLocation(row.getDouble("Track Y Location"));
+            tr.setTrackDisplacement(row.getDouble("Track Displacement"));
+            tr.setTrackMaxSpeed(row.getDouble("Track Max Speed"));
+            tr.setTrackMedianSpeed(row.getDouble("Track Median Speed"));
+            tr.setDiffusionCoefficient(row.getDouble("Diffusion Coefficient"));
+            tr.setDiffusionCoefficientExt(row.getDouble("Diffusion Coefficient Ext"));
+            tr.setTotalDistance(row.getDouble("Total Distance"));
+            tr.setConfinementRatio(row.getDouble("Confinement Ratio"));
+            tr.setSquareNumber(row.getInt("Square Number"));
+            tr.setLabelNumber(row.getInt("Label Number"));
+            tracks.add(tr);
         }
+        return tracks;
+    }
 
-        public ColumnType[] columnTypes() {
-            // Map 1:1 to TRACK_COLS (adjust if your Track getters differ)
-            return new ColumnType[] {
-                    ColumnType.STRING,   // uniqueKey
-                    ColumnType.STRING,   // recordingName
-                    ColumnType.INTEGER,  // trackId
-                    ColumnType.STRING,   // trackLabel
-                    ColumnType.INTEGER,  // numberSpots
-                    ColumnType.INTEGER,  // numberGaps
-                    ColumnType.INTEGER,  // longestGap
-                    ColumnType.DOUBLE,   // trackDuration
-                    ColumnType.DOUBLE,   // trackXLocation
-                    ColumnType.DOUBLE,   // trackYLocation
-                    ColumnType.DOUBLE,   // trackDisplacement
-                    ColumnType.DOUBLE,   // trackMaxSpeed
-                    ColumnType.DOUBLE,   // trackMedianSpeed
-                    ColumnType.DOUBLE,   // diffusionCoefficient
-                    ColumnType.DOUBLE,   // diffusionCoefficientExt
-                    ColumnType.DOUBLE,   // totalDistance
-                    ColumnType.DOUBLE,   // confinementRatio
-                    ColumnType.INTEGER,  // squareNumber
-                    ColumnType.INTEGER   // labelNumber
-            };
-        }
+    public Table readCsv(Path csvPath) throws IOException {
+        return readCsvWithSchema(csvPath, "Tracks", TRACK_COLS, TRACK_TYPES, false);
+    }
 
-        public List<Column<?>> newEmptyColumns() {
-            List<Column<?>> cols = new ArrayList<Column<?>>(TRACK_COLS.length);
-            cols.add(StringColumn.create(TRACK_COLS[0]));
-            cols.add(StringColumn.create(TRACK_COLS[1]));
-            cols.add(IntColumn.create   (TRACK_COLS[2]));
-            cols.add(StringColumn.create(TRACK_COLS[3]));
-            cols.add(IntColumn.create   (TRACK_COLS[4]));
-            cols.add(IntColumn.create   (TRACK_COLS[5]));
-            cols.add(IntColumn.create   (TRACK_COLS[6]));
-            cols.add(DoubleColumn.create(TRACK_COLS[7]));
-            cols.add(DoubleColumn.create(TRACK_COLS[8]));
-            cols.add(DoubleColumn.create(TRACK_COLS[9]));
-            cols.add(DoubleColumn.create(TRACK_COLS[10]));
-            cols.add(DoubleColumn.create(TRACK_COLS[11]));
-            cols.add(DoubleColumn.create(TRACK_COLS[12]));
-            cols.add(DoubleColumn.create(TRACK_COLS[13]));
-            cols.add(DoubleColumn.create(TRACK_COLS[14]));
-            cols.add(DoubleColumn.create(TRACK_COLS[15]));
-            cols.add(DoubleColumn.create(TRACK_COLS[16]));
-            cols.add(DoubleColumn.create(TRACK_COLS[17]));
-            cols.add(DoubleColumn.create(TRACK_COLS[18]));
-            cols.add(DoubleColumn.create(TRACK_COLS[19]));
-            cols.add(DoubleColumn.create(TRACK_COLS[20]));
-            cols.add(IntColumn.create   (TRACK_COLS[21]));
-            cols.add(IntColumn.create   (TRACK_COLS[22]));
-            return cols;
-        }
-
-        public void appendEntity(Track t, List<Column<?>> cols) {
-            ((StringColumn) cols.get(0)).append(t.getUniqueKey());
-            ((StringColumn) cols.get(1)).append(t.getRecordingName());
-            ((IntColumn)    cols.get(2)).append(t.getTrackId());
-            ((StringColumn) cols.get(3)).append(t.getTrackLabel());
-            ((IntColumn)    cols.get(4)).append(t.getNumberOfSpots());
-            ((IntColumn)    cols.get(5)).append(t.getNumberOfGaps());
-            ((IntColumn)    cols.get(6)).append(t.getLongestGap());
-            ((DoubleColumn) cols.get(7)).append(t.getTrackDuration());
-            ((DoubleColumn) cols.get(8)).append(t.getTrackXLocation());
-            ((DoubleColumn) cols.get(9)).append(t.getTrackYLocation());
-            ((DoubleColumn) cols.get(10)).append(t.getTrackDisplacement());
-            ((DoubleColumn) cols.get(11)).append(t.getTrackMaxSpeed());
-            ((DoubleColumn) cols.get(12)).append(t.getTrackMedianSpeed());
-            ((DoubleColumn) cols.get(13)).append(t.getDiffusionCoefficient());
-            ((DoubleColumn) cols.get(14)).append(t.getDiffusionCoefficientExt());
-            ((DoubleColumn) cols.get(15)).append(t.getTotalDistance());
-            ((DoubleColumn) cols.get(16)).append(t.getConfinementRatio());
-            ((IntColumn)    cols.get(17)).append(t.getSquareNumber());
-            ((IntColumn)    cols.get(18)).append(t.getLabelNumber());
-        }
-
-        public Track readEntity(Table table, int r) {
-            Track t = new Track();
-            t.setUniqueKey(table.stringColumn(TRACK_COLS[0]).get(r));
-            t.setRecordingName(table.stringColumn(TRACK_COLS[1]).get(r));
-            t.setTrackId(table.intColumn(TRACK_COLS[2]).getInt(r));
-            t.setTrackLabel(table.stringColumn(TRACK_COLS[3]).get(r));
-            t.setNumberOfSpots(table.intColumn(TRACK_COLS[4]).getInt(r));
-            t.setNumberOfGaps(table.intColumn(TRACK_COLS[5]).getInt(r));
-            t.setLongestGap(table.intColumn(TRACK_COLS[6]).getInt(r));
-            t.setTrackDuration(table.doubleColumn(TRACK_COLS[7]).getDouble(r));
-            t.setTrackXLocation(table.doubleColumn(TRACK_COLS[8]).getDouble(r));
-            t.setTrackYLocation(table.doubleColumn(TRACK_COLS[9]).getDouble(r));
-            t.setTrackDisplacement(table.doubleColumn(TRACK_COLS[10]).getDouble(r));
-            t.setTrackMaxSpeed(table.doubleColumn(TRACK_COLS[11]).getDouble(r));
-            t.setTrackMedianSpeed(table.doubleColumn(TRACK_COLS[12]).getDouble(r));
-            t.setDiffusionCoefficient(table.doubleColumn(TRACK_COLS[13]).getDouble(r));
-            t.setDiffusionCoefficientExt(table.doubleColumn(TRACK_COLS[14]).getDouble(r));
-            t.setTotalDistance(table.doubleColumn(TRACK_COLS[15]).getDouble(r));
-            t.setConfinementRatio(table.doubleColumn(TRACK_COLS[16]).getDouble(r));
-            t.setSquareNumber(table.intColumn(TRACK_COLS[17]).getInt(r));
-            t.setLabelNumber(table.intColumn(TRACK_COLS[18]).getInt(r));
-            return t;
+    public void appendInPlace(Table target, Table source) {
+        for (Row row : source) {
+            Row newRow = target.appendRow();
+            for (String col : TRACK_COLS) {
+                Column<?> targetCol = target.column(col);
+                if (targetCol.type() == ColumnType.STRING) {
+                    newRow.setString(col, row.getString(col));
+                } else if (targetCol.type() == ColumnType.INTEGER) {
+                    newRow.setInt(col, row.getInt(col));
+                } else if (targetCol.type() == ColumnType.DOUBLE) {
+                    newRow.setDouble(col, row.getDouble(col));
+                } else if (targetCol.type() == ColumnType.BOOLEAN) {
+                    newRow.setBoolean(col, row.getBoolean(col));
+                }
+            }
         }
     }
 }

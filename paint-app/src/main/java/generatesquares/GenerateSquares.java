@@ -3,6 +3,7 @@ package generatesquares;
 import javax.swing.*;
 import java.nio.file.Path;
 
+import constants.PaintConstants;
 import objects.Experiment;
 import objects.Recording;
 import paint.io.SquareTableIO;
@@ -91,4 +92,5 @@ public class GenerateSquares {
             dialog.showDialog();
         });
     }
+
 }

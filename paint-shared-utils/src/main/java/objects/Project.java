@@ -53,13 +53,36 @@ public class Project {
         }
     }
 
+    public Project(Path projectPath,
+                   List<Experiment> experiments) {
+
+        this.status = false;
+        this.projectPath = projectPath;
+        this.imagePath = null;
+        this.projectName = projectPath.getFileName().toString();
+        this.experimentNames = experimentNames;
+        this.paintConfig = null;
+        this.generateSquaresConfig = null;
+        this.trackMateConfig = null;
+        if (experiments == null) {
+            this.experiments = new ArrayList<>();
+        }
+        else {
+            this.experiments = experiments;
+        }
+    }
+
     public Project() {
         this.experimentNames = new ArrayList<>();
     }
 
     public Project(Path projectPath) {
         this.projectPath = projectPath;
+        this.projectName = projectPath.getFileName().toString();
     }
+
+
+
 
     // Getters and setters
 

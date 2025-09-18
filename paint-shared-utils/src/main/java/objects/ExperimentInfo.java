@@ -2,14 +2,12 @@ package objects;
 
 import tech.tablesaw.api.Table;
 
-import java.time.LocalDateTime;
 import java.util.*;
-import objects.Recording;
 
 /**
  * Represents a Recording with metadata, squares, and tracks.
  */
-public class Recording {
+public class ExperimentInfo {
 
     // --- Core fields (columns in All Recordings/Experiment Info) ---
     private String recordingName;
@@ -22,16 +20,7 @@ public class Recording {
     private double concentration;
     private boolean processFlag;               // renamed from doProcess
     private double threshold;
-    private int numberOfSpots;
-    private int numberOfTracks;
-    private int numberOfSpotsInAllTracks;
-    private int numberOfFrames;
-    private double runTime;
-    private LocalDateTime timeStamp;
-    private boolean exclude;
-    private double tau;
-    private double rSquared;
-    private double density;
+;
 
     // --- Associated objects ---
     private List<Square> squares = new ArrayList<>();
@@ -39,18 +28,18 @@ public class Recording {
     private Table tracksTable;
 
     // --- Constructors ---
-    public Recording() {}
+    public ExperimentInfo() {}
 
-    public Recording(String recordingName,
-                     int conditionNumber,
-                     int replicateNumber,
-                     String probeName,
-                     String probeType,
-                     String cellType,
-                     String adjuvant,
-                     double concentration,
-                     boolean processFlag,
-                     double threshold) {
+    public ExperimentInfo(String recordingName,
+                          int conditionNumber,
+                          int replicateNumber,
+                          String probeName,
+                          String probeType,
+                          String cellType,
+                          String adjuvant,
+                          double concentration,
+                          boolean processFlag,
+                          double threshold) {
         this.recordingName = recordingName;
         this.conditionNumber = conditionNumber;
         this.replicateNumber = replicateNumber;
@@ -94,35 +83,6 @@ public class Recording {
     public double getThreshold() { return threshold; }
     public void setThreshold(double threshold) { this.threshold = threshold; }
 
-    public int getNumberOfSpots() { return numberOfSpots; }
-    public void setNumberOfSpots(int numberOfSpots) { this.numberOfSpots = numberOfSpots; }
-
-    public int getNumberOfTracks() { return numberOfTracks; }
-    public void setNumberOfTracks(int numberOfTracks) { this.numberOfTracks = numberOfTracks; }
-
-    public int getNumberOfSpotsInAllTracks() { return numberOfSpotsInAllTracks; }
-    public void setNumberOfSpotsInAllTracks(int numberOfSpotsInAllTracks) { this.numberOfSpotsInAllTracks = numberOfSpotsInAllTracks; }
-
-    public int getNumberOfFrames() { return numberOfFrames; }
-    public void setNumberOfFrames(int numberOfFrames) { this.numberOfFrames = numberOfFrames; }
-
-    public double getRunTime() { return runTime; }
-    public void setRunTime(double runTime) { this.runTime = runTime; }
-
-    public LocalDateTime getTimeStamp() { return timeStamp; }
-    public void setTimeStamp(LocalDateTime timeStamp) { this.timeStamp = timeStamp; }
-
-    public boolean isExclude() { return exclude; }
-    public void setExclude(boolean exclude) { this.exclude = exclude; }
-
-    public double getTau() { return tau; }
-    public void setTau(double tau) { this.tau = tau; }
-
-    public double getRSquared() { return rSquared; }
-    public void setRSquared(double rSquared) { this.rSquared = rSquared; }
-
-    public double getDensity() { return density; }
-    public void setDensity(double density) { this.density = density; }
 
     // --- Associated objects ---
     public List<Square> getSquares() { return squares; }
@@ -158,16 +118,6 @@ public class Recording {
         sb.append(String.format("\tAdjuvant                      : %s%n", adjuvant));
         sb.append(String.format("\tConcentration                 : %.2f%n", concentration));
         sb.append(String.format("\tThreshold                     : %.2f%n", threshold));
-        sb.append(String.format("\tExclude                       : %b%n", exclude));
-        sb.append(String.format("\tTime Stamp                    : %s%n", timeStamp));
-        sb.append(String.format("\tNumber of Spots               : %d%n", numberOfSpots));
-        sb.append(String.format("\tNumber of Tracks              : %d%n", numberOfTracks));
-        sb.append(String.format("\tNumber of Spots in All Tracks : %d%n", numberOfSpotsInAllTracks));
-        sb.append(String.format("\tRun Time                      : %.2f%n", runTime));
-        sb.append(String.format("\tNumber of Frames              : %d%n", numberOfFrames));
-        sb.append(String.format("\tTau                           : %.2f%n", tau));
-        sb.append(String.format("\tR Squared                     : %.2f%n", rSquared));
-        sb.append(String.format("\tDensity                       : %.2f%n", density));
 
         if (tracks != null) {
             sb.append(String.format("\tNumber of tracks              : %d%n", tracks.size()));
