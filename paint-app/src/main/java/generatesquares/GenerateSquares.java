@@ -10,7 +10,6 @@ import tech.tablesaw.api.Table;
 import utilities.AppLogger;
 import dialogs.ExperimentDialog;
 import dialogs.ProjectDialog;
-import objects.Project;
 
 import static constants.PaintConstants.SQUARES_CSV;
 import static generatesquares.calc.GenerateSquareCalcs.calculateSquaresForExperiment;
