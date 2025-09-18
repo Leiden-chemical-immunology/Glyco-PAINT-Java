@@ -13,16 +13,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
-import java.util.logging.Logger;
-import paint.localUtilities.AppLoggerOld;
-
 import static constants.PaintConstants.RECORDINGS_CSV;
 import static paint.localUtilities.Miscellaneous.deleteAssociatedFiles;
 import static utilities.Miscellaneous.formatDuration;
 
 public class TrackMateExperiment {
-
-    private static final Logger log = AppLoggerOld.getLogger();
 
     public TrackMateExperiment(Path experimentPath, Path omeroExperimentPath, boolean convert, String sweepCaseName) {
         go(experimentPath, omeroExperimentPath, convert, sweepCaseName);
@@ -31,15 +26,15 @@ public class TrackMateExperiment {
     void go(Path experimentPath, Path omeroExperimentPath, boolean convertFlag, String caseName) {
         Path experimentInfoFilePath = experimentPath.resolve("Experiment Info.csv");
 
-        log.info(String.format("Experiment path: %s", experimentPath));
-        log.info(String.format("Omero Experiment path: %s", omeroExperimentPath));
-        log.info(String.format("Experiment Info Path : %s", experimentInfoFilePath));
+        System.out.println(String.format("Experiment path: %s", experimentPath));
+        System.out.println(String.format("Omero Experiment path: %s", omeroExperimentPath));
+        System.out.println(String.format("Experiment Info Path : %s", experimentInfoFilePath));
         processExperimentInfoFile(experimentInfoFilePath, omeroExperimentPath, experimentPath);
     }
 
     private static boolean checkDirectory(Path path, String label, int rowIndex) {
         if (!Files.isDirectory(path)) {
-            log.warning(String.format("🚫 Row %2d: %s is not a valid directory: %s", rowIndex, label, path));
+            System.out.println(String.format("🚫 Row %2d: %s is not a valid directory: %s", rowIndex, label, path));
             return false;
         }
         return true;
@@ -50,14 +45,14 @@ public class TrackMateExperiment {
         boolean validated = true;
 
         if (recordings.isEmpty()) {
-            log.warning("⚠️ CSV file is empty — no records to validate.");
+            System.out.println("⚠️ CSV file is empty — no records to validate.");
             validated = false;
         } else {
             Set<String> availableColumns = recordings.get(0).keySet();
 
             for (String required : requiredColumns) {
                 if (!availableColumns.contains(required)) {
-                    log.severe(String.format("🚫 Missing required column: '%s'", required));
+                    System.out.println(String.format("🚫 Missing required column: '%s'", required));
                     validated = false;
                 }
             }
@@ -89,14 +84,14 @@ public class TrackMateExperiment {
                 recordings.add(new HashMap<>(recording)); // Defensive copy
             }
         } catch (IOException | CsvValidationException e) {
-            log.severe("🚫 Error reading CSV file: " + e.getMessage());
+            System.out.println("🚫 Error reading CSV file: " + e.getMessage());
             e.printStackTrace();
             System.exit(1);
         }
 
         // Verify that the expected headers are present
         if (!validateHeader(recordings, REQUIRED_EXPERIMENT_INFO_COLUMNS)) {
-            log.severe("🚫 Abort because of invalid 'Experiment Info' file format.");
+            System.out.println("🚫 Abort because of invalid 'Experiment Info' file format.");
             System.exit(1);
         }
 
@@ -109,14 +104,14 @@ public class TrackMateExperiment {
             nrRecordingsInBatchFile += 1;
         }
         if (nrRecordingsInBatchFile == 0) {
-            log.warning("⚠️ There are no recordings in the batch file.");
+            System.out.println("⚠️ There are no recordings in the batch file.");
         }
         else if (nrRecordingsToProcess == 0) {
-            log.info("✅ There are no recordings that require processing.");
+            System.out.println("✅ There are no recordings that require processing.");
         }
         else {
-            log.info(String.format("✅ Processing %d recordings out of %d.", nrRecordingsToProcess, nrRecordingsInBatchFile));
-            // log.info("");
+            System.out.println(String.format("✅ Processing %d recordings out of %d.", nrRecordingsToProcess, nrRecordingsInBatchFile));
+            // System.out.println("");
         }
 
         // Delete All Recordings.csv and All Tracks.csv if they exist
@@ -153,18 +148,18 @@ public class TrackMateExperiment {
                 writer.writeNext(values.toArray(new String[0]));
             }
 
-            // log.info("✅ All Recordings.csv written to: " + outputFile);
+            // System.out.println("✅ All Recordings.csv written to: " + outputFile);
 
         } catch (IOException e) {
-            log.severe("🚫 Failed to write All Recordings.csv: " + e.getMessage());
+            System.out.println("🚫 Failed to write All Recordings.csv: " + e.getMessage());
         }
         Instant end = Instant.now();
         Duration duration = Duration.between(start, end);
 
-        //log.info("");
-        log.info(String.format("✅ Number of recordings processed %d out of %d.", nrRecordingsProcessed, nrRecordingsToProcess));
-        log.info(String.format("✅ Time taken to process: %s.", formatDuration(duration)));
-        log.info("");
+        //System.out.println("");
+        System.out.println(String.format("✅ Number of recordings processed %d out of %d.", nrRecordingsProcessed, nrRecordingsToProcess));
+        System.out.println(String.format("✅ Time taken to process: %s.", formatDuration(duration)));
+        System.out.println("");
     }
 
     public static List<Map<String, String>> addOrderedColumns(List<Map<String, String>> records) {
