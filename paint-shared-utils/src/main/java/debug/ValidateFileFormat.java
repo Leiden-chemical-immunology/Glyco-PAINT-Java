@@ -323,11 +323,6 @@ public class ValidateFileFormat {
             report.add("I/O error: " + e.getMessage());
         }
 
-//        if (report.isEmpty()) {
-//            report.add("Headers are correct ✅");
-//            report.add("All column types match ✅");
-//        }
-
         return report;
     }
 }

@@ -212,9 +212,6 @@ public class Square {
         this.tracksTable = tracksTable;
     }
 
-//    public void setTracksTable(Track[] tracks) {
-//    }
-
     public void addTrack(Track track) {
         this.tracks.add(track);
     }
@@ -263,7 +260,6 @@ public class Square {
         return sb.toString();
     }
 
-
     private static double calcSquareAreaOriginal(int nrSquaresInRow)
     {
         double micrometer_per_pixel = 0.1602804;
@@ -284,7 +280,6 @@ public class Square {
     {
         return IMAGE_WIDTH * IMAGE_HEIGHT / nrSquaresInRecording;
     }
-
 
     public static void main(String[] args) {
         List<Square> squares = new ArrayList<>();

@@ -147,11 +147,6 @@ public class TrackCsvWriter {
         }
 
         return nrSpotsInAllTracks;
-        // final int nrSpotsVisible = model.getSpots().getNSpots(true);
-        // final int tracksAll = trackModel.nTracks(false);
-        // final int tracksFiltered = trackModel.nTracks(true);
-
-        // AppLogger.infof("Visible spots: %d | All tracks: %d | Filtered (visible) tracks: %d", nrSpotsVisible, tracksFiltered, tracksAll);
     }
 
     // --------- helpers ----------
