@@ -1,5 +1,7 @@
 package constants;
 
+import tech.tablesaw.api.ColumnType;
+
 public final class PaintConstants {
 
     private PaintConstants() {
@@ -32,6 +34,9 @@ public final class PaintConstants {
     public static final double TIME_INTERVAL = 0.05;
 
 
+    // =====================
+    // Track schema
+    // =====================
     public static final String[] TRACK_COLS = {
             "Unique Key",                  // 0    String
             "Recording Name",              // 1    String
@@ -54,6 +59,31 @@ public final class PaintConstants {
             "Label Number"                 // 18   int
     };
 
+    public static final ColumnType[] TRACK_TYPES = {
+            ColumnType.STRING,  // Unique Key
+            ColumnType.STRING,  // Recording Name
+            ColumnType.INTEGER, // Track Id
+            ColumnType.STRING,  // Track Label
+            ColumnType.INTEGER, // Number of Spots
+            ColumnType.INTEGER, // Number of Gaps
+            ColumnType.INTEGER, // Longest Gap
+            ColumnType.DOUBLE,  // Track Duration
+            ColumnType.DOUBLE,  // Track X Location
+            ColumnType.DOUBLE,  // Track Y Location
+            ColumnType.DOUBLE,  // Track Displacement
+            ColumnType.DOUBLE,  // Track Max Speed
+            ColumnType.DOUBLE,  // Track Median Speed
+            ColumnType.DOUBLE,  // Diffusion Coefficient
+            ColumnType.DOUBLE,  // Diffusion Coefficient Ext
+            ColumnType.DOUBLE,  // Total Distance
+            ColumnType.DOUBLE,  // Confinement Ratio
+            ColumnType.INTEGER, // Square Number
+            ColumnType.INTEGER  // Label Number
+    };
+
+    // =====================
+    // Square schema
+    // =====================
     public static final String[] SQUARE_COLS = {
             "Unique Key",                       // 0      String
             "Recording Name",                   // 1      String
@@ -91,7 +121,46 @@ public final class PaintConstants {
             "Median Track Duration"             // 33     double
     };
 
+    public static final ColumnType[] SQUARE_TYPES = {
+            ColumnType.STRING,   // Unique Key
+            ColumnType.STRING,   // Recording Name
+            ColumnType.INTEGER,  // Square Number
+            ColumnType.INTEGER,  // Row Number
+            ColumnType.INTEGER,  // Column Number
+            ColumnType.INTEGER,  // Label Number
+            ColumnType.INTEGER,  // Cell ID
+            ColumnType.BOOLEAN,  // Selected
+            ColumnType.BOOLEAN,  // Square Manually Excluded
+            ColumnType.BOOLEAN,  // Image Excluded
+            ColumnType.DOUBLE,   // X0
+            ColumnType.DOUBLE,   // Y0
+            ColumnType.DOUBLE,   // X1
+            ColumnType.DOUBLE,   // Y1
+            ColumnType.INTEGER,  // Number of Tracks
+            ColumnType.DOUBLE,   // Variability
+            ColumnType.DOUBLE,   // Density
+            ColumnType.DOUBLE,   // Density Ratio
+            ColumnType.DOUBLE,   // Tau
+            ColumnType.DOUBLE,   // R Squared
+            ColumnType.DOUBLE,   // Median Diffusion Coefficient
+            ColumnType.DOUBLE,   // Median Diffusion Coefficient Ext
+            ColumnType.DOUBLE,   // Median Long Track Duration
+            ColumnType.DOUBLE,   // Median Short Track Duration
+            ColumnType.DOUBLE,   // Median Displacement
+            ColumnType.DOUBLE,   // Max Displacement
+            ColumnType.DOUBLE,   // Total Displacement
+            ColumnType.DOUBLE,   // Median Max Speed
+            ColumnType.DOUBLE,   // Max Max Speed
+            ColumnType.DOUBLE,   // Median Mean Speed
+            ColumnType.DOUBLE,   // Max Mean Speed
+            ColumnType.DOUBLE,   // Max Track Duration
+            ColumnType.DOUBLE,   // Total Track Duration
+            ColumnType.DOUBLE    // Median Track Duration
+    };
 
+    // =====================
+    // Recording schema
+    // =====================
     public static final String[] RECORDING_COLS = {
             "Recording Name",                // 0     String
             "Condition Number",              // 1     int
@@ -115,6 +184,32 @@ public final class PaintConstants {
             "Density"                        // 19    double
     };
 
+    public static final ColumnType[] RECORDING_TYPES = {
+            ColumnType.STRING,            // Recording Name
+            ColumnType.INTEGER,           // Condition Number
+            ColumnType.INTEGER,           // Replicate Number
+            ColumnType.STRING,            // Probe Name
+            ColumnType.STRING,            // Probe Type
+            ColumnType.STRING,            // Cell Type
+            ColumnType.STRING,            // Adjuvant
+            ColumnType.DOUBLE,            // Concentration
+            ColumnType.BOOLEAN,           // Process Flag
+            ColumnType.DOUBLE,            // Threshold
+            ColumnType.INTEGER,           // Number of Spots
+            ColumnType.INTEGER,           // Number of Tracks
+            ColumnType.INTEGER,           // Number of Spots in All Tracks
+            ColumnType.INTEGER,           // Number of Frames
+            ColumnType.DOUBLE,            // Run Time
+            ColumnType.LOCAL_DATE_TIME,   // Time Stamp
+            ColumnType.BOOLEAN,           // Exclude
+            ColumnType.DOUBLE,            // Tau
+            ColumnType.DOUBLE,            // R Squared
+            ColumnType.DOUBLE             // Density
+    };
+
+    // =====================
+    // Experiment info schema
+    // =====================
     public static final String[] EXPERIMENT_INFO_COLS = {
             "Recording Name",                // 0     String
             "Condition Number",              // 1     int
@@ -125,7 +220,20 @@ public final class PaintConstants {
             "Adjuvant",                      // 6     String
             "Concentration",                 // 7     double
             "Process Flag",                  // 8     boolean
-            "Threshold",                     // 9     double
+            "Threshold"                      // 9     double
+    };
+
+    public static final ColumnType[] EXPERIMENT_INFO_TYPES = {
+            ColumnType.STRING,   // Recording Name
+            ColumnType.INTEGER,  // Condition Number
+            ColumnType.INTEGER,  // Replicate Number
+            ColumnType.STRING,   // Probe Name
+            ColumnType.STRING,   // Probe Type
+            ColumnType.STRING,   // Cell Type
+            ColumnType.STRING,   // Adjuvant
+            ColumnType.DOUBLE,   // Concentration
+            ColumnType.BOOLEAN,  // Process Flag
+            ColumnType.DOUBLE    // Threshold
     };
 
     public static final String[] EXPERIMENT_COLS = {
