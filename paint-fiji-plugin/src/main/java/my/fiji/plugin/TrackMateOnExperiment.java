@@ -1,7 +1,6 @@
 package my.fiji.plugin;
 
 import org.scijava.command.Command;
-import org.scijava.plugin.Plugin;
 
 import javax.swing.*;
 import java.nio.file.Path;

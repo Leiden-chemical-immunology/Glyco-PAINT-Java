@@ -156,8 +156,8 @@ public class TrackCsvWriter {
 
     // --------- helpers ----------
 
-    private static Double defaultIfNull(Double v, Double dflt) {
-        return v == null ? dflt : v;
+    private static Double defaultIfNull(Double v, Double defaultValue) {
+        return v == null ? defaultValue : v;
     }
 
     private static double roundTo(Double v, int places) {

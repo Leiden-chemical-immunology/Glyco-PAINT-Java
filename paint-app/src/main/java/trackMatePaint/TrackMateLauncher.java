@@ -166,16 +166,6 @@ public class TrackMateLauncher {
                 selectionModel = null;
             }
 
-            // Nullify other references
-            trackmate = null;
-            model = null;
-            trackModel = null;
-            importerOptions = null;
-            displaySettings = null;
-            settings = null;
-            spotFilter = null;
-            trackFilter = null;
-
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

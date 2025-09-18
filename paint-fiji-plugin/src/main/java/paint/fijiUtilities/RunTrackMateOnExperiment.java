@@ -64,27 +64,26 @@ public class RunTrackMateOnExperiment {
             }
 
             // Build the header for the 'All Recordings Java' file
-            StringBuilder header = new StringBuilder(headerLine);
-            header.append(",").append("Number of Spots");
-            header.append(",").append("Number of Tracks");
-            header.append(",").append("Number of Spots in All Tracks");
-            header.append(",").append("Number of Frames");
-            header.append(",").append("Run Time");
-            header.append(",").append("Time Stamp");
-            header.append(",").append("Exclude");
-            header.append(",").append("Tau");
-            header.append(",").append("R Squared");
-            header.append(",").append("Density");
+            String header = headerLine + "," + "Number of Spots" +
+                    "," + "Number of Tracks" +
+                    "," + "Number of Spots in All Tracks" +
+                    "," + "Number of Frames" +
+                    "," + "Run Time" +
+                    "," + "Time Stamp" +
+                    "," + "Exclude" +
+                    "," + "Tau" +
+                    "," + "R Squared" +
+                    "," + "Density";
 
             // Write the header to the 'All Recordings Java' file
-            writer.write(header.toString());
+            writer.write(header);
             writer.newLine();
 
             // Split the header by tab into field names
             String[] headers = headerLine.split(",");
 
             String line;
-            TrackMateResults trackMateResults = null;
+            TrackMateResults trackMateResults;
 
             int numberOfSpots;
             int numberOfTracks;
@@ -144,19 +143,18 @@ public class RunTrackMateOnExperiment {
 
                 // Build output row
 
-                StringBuilder out = new StringBuilder(line);
-                     out.append(",").append(String.format("%d", numberOfSpots))                  // Number of Spots
-                        .append(",").append(String.format("%d", numberOfTracks))                 // Number of Tracks
-                        .append(",").append(String.format("%d", numberOfSpotsInAllTracks))       // Numbe of spots in all tracks
-                        .append(",").append(String.format("%d", numberOfFrames))                 // Number of Frames
-                        .append(",").append(String.format("%d", runTime))                        // Run Time needs to be an int
-                        .append(",").append(String.format("%s", timeStamp))                      // Timestamp
-                        .append(",").append("False")                                                  // Exclude
-                        .append(",").append("")                                                  // Tau
-                        .append(",").append("")                                                  // R Squared
-                        .append(",").append("");                                                 // Density
+                String out = line + "," + String.format("%d", numberOfSpots) +                  // Number of Spots
+                        "," + String.format("%d", numberOfTracks) +                 // Number of Tracks
+                        "," + String.format("%d", numberOfSpotsInAllTracks) +       // Numbe of spots in all tracks
+                        "," + String.format("%d", numberOfFrames) +                 // Number of Frames
+                        "," + String.format("%d", runTime) +                        // Run Time needs to be an int
+                        "," + String.format("%s", timeStamp) +                      // Timestamp
+                        "," + "False" +                                             // Exclude
+                        "," + "" +                                                  // Tau
+                        "," + "" +                                                  // R Squared
+                        "," + "";                                                 // Density
 
-                writer.write(out.toString());
+                writer.write(out);
                 writer.newLine();
             }
         } catch (IOException e) {

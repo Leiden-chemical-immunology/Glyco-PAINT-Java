@@ -130,7 +130,7 @@ public class ExperimentInfoRecord {
 
     @Override
     public String toString() {
-        String sb = "Experiment Name:   " + experimentName + '\n' +
+        return "Experiment Name:   " + experimentName + '\n' +
                 "Recording Name:        " + recordingName + '\n' +
                 "Experiment Date:       " + experimentDate + '\n' +
                 "Condition Nr:          " + conditionNr + '\n' +
@@ -142,6 +142,5 @@ public class ExperimentInfoRecord {
                 "Concentration:         " + concentration + '\n' +
                 "Threshold:             " + threshold + '\n' +
                 "Process:               " + process + '\n';
-        return sb;
     }
 }

@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import objects.ExperimentInfo;
 
 import static constants.PaintConstants.EXPERIMENT_INFO_COLS;
 import static constants.PaintConstants.EXPERIMENT_INFO_TYPES;

@@ -6,7 +6,6 @@ import objects.Experiment;
 import objects.Project;
 import objects.Recording;
 import objects.Square;
-import objects.Track;
 import paint.io.RecordingTableIO;
 import paint.io.SquareTableIO;
 import paint.io.TrackTableIO;

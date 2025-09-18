@@ -11,11 +11,6 @@ public class TrackMateRecording {
 
     public TrackMateRecording(Path experimentPath, Path omeroExperimentPath, String recording) {
         log.info(String.format("Ready to start TrackMate on a recording: %s.", recording));
-        go(experimentPath, omeroExperimentPath, recording);
     }
 
-    public void go(Path experimentPath, Path omeroExperimentPath, String recording) {
-
-
-    }
 }

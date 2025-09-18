@@ -259,8 +259,8 @@ class CalculateTauExpDecayFitterNew {
         }
         double t;
         if (n >= 2) {
-            double denom = (n * sumXX - sumX * sumX);
-            double slope = (denom == 0.0) ? -1.0 : (n * sumXY - sumX * sumY) / denom;
+            double denominator = (n * sumXX - sumX * sumX);
+            double slope = (denominator == 0.0) ? -1.0 : (n * sumXY - sumX * sumY) / denominator;
             t = Math.max(1e-9, -slope); // slope ≈ -t
         } else {
             t = 1.0 / Math.max(1e-3, maxX); // fallback

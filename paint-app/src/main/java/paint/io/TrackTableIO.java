@@ -2,7 +2,6 @@ package paint.io;
 
 import objects.Track;
 import tech.tablesaw.api.*;
-import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.columns.Column;
 
 import java.io.IOException;

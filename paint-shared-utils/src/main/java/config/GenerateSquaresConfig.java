@@ -31,7 +31,7 @@ public class GenerateSquaresConfig {
     }
 
     // Getters are not really needed as attributes are public
-    // Setter methods are not needed either, as the attrites are final
+    // Setter methods are not needed either, as the attributes are final
 
     public int getNrSquaresInRow() { return nrSquaresInRow; }
     public int getNrSquaresInColumn() { return nrSquaresInColumn; }

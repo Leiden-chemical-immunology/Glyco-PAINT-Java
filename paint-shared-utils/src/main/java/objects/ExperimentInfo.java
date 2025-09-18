@@ -20,7 +20,7 @@ public class ExperimentInfo {
     private double concentration;
     private boolean processFlag;               // renamed from doProcess
     private double threshold;
-;
+
 
     // --- Associated objects ---
     private List<Square> squares = new ArrayList<>();

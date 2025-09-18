@@ -80,7 +80,7 @@
 
     <dependencies>
 
-        <!-- The Paint Utiloties -->
+        <!-- The Paint Utilities -->
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>

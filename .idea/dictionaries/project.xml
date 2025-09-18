@@ -2,7 +2,20 @@
   <dictionary name="project">
     <words>
       <w>bakker</w>
+      <w>brightfield</w>
+      <w>calcs</w>
+      <w>coeff</w>
+      <w>debugf</w>
+      <w>errorf</w>
+      <w>generatesquares</w>
       <w>glyco</w>
+      <w>infof</w>
+      <w>rsquared</w>
+      <w>segoe</w>
+        <w>tablesaw</w>
+      <w>trackmate</w>
+      <w>warningf</w>
+
     </words>
   </dictionary>
 </component>

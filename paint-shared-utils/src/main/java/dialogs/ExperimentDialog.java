@@ -105,7 +105,7 @@ public class ExperimentDialog {
             minDensityRatioField = createTightTextField(String.valueOf(minDensityRatio), new FloatDocumentFilter());
             maxVariabilityField = createTightTextField(String.valueOf(maxVariability), new FloatDocumentFilter());
 
-            formPanel.add(createLightLabel("Number of Squares in Row (and Columnn):"));
+            formPanel.add(createLightLabel("Number of Squares in Row (and Column):"));
             formPanel.add(nrSquaresField);
             formPanel.add(createLightLabel("Min Number of Tracks to Calculate :"));
             formPanel.add(minTracksField);
