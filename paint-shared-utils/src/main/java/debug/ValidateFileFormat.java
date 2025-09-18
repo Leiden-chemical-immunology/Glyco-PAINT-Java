@@ -1,297 +1,333 @@
 package debug;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import constants.PaintConstants;
+import tech.tablesaw.api.ColumnType;
+import tech.tablesaw.api.Table;
+import tech.tablesaw.io.csv.CsvReadOptions;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static constants.PaintConstants.*;
+
+/**
+ * Utility class for validating the format of Paint project CSV files.
+ *
+ * CLI usage examples:
+ *   java -cp "<deps...>" paint.validation.ValidateFileFormat --project /path/to/project --experiments 221012,221101 --squares
+ *   java -cp "<deps...>" paint.validation.ValidateFileFormat /path/to/project 221012 221101 --squares
+ *   java -cp "<deps...>" paint.validation.ValidateFileFormat --project /path/to/project   (auto-discovers experiments)
+ */
 public class ValidateFileFormat {
 
     public static void main(String[] args) {
-        ValidateFileFormat validator = new ValidateFileFormat();
+        CliArgs cli = parseArgs(args);
+        if (cli.showHelp) {
+            printHelp();
+            System.exit(0);
+        }
+        if (cli.projectRoot == null) {
+            System.err.println("ERROR: Project root is required.");
+            printHelp();
+            System.exit(2);
+        }
 
-        String root = "/Users/hans/Paint Test Project/221012/";
+        Path project = Paths.get(cli.projectRoot);
 
-        // Validate tracks
-        String tracksFile = root + "Experiment Info.csv";
-        List<String> trackReport = validator.validateCSV(
-                tracksFile,
-                PaintConstants.EXPERIMENT_INFO_COLS,
-                ValidateFileFormat.EXPERIMENT_INFO_TYPES
-        );
-        System.out.println(tracksFile);
-        trackReport.forEach(System.out::println);
-        System.out.println("\n\n");
+        List<String> experiments = new ArrayList<>(cli.experiments);
+        if (experiments.isEmpty()) {
+            try {
+                experiments = discoverExperiments(project);
+                if (experiments.isEmpty()) {
+                    System.err.println("No experiments discovered under: " + project);
+                    System.exit(3);
+                }
+                System.out.println("Discovered experiments: " + String.join(", ", experiments));
+            } catch (IOException e) {
+                System.err.println("Failed to discover experiments: " + e.getMessage());
+                System.exit(4);
+            }
+        }
 
-        // Validate tracks
-        String infoFile = root + "All Tracks Java.csv";
-        List<String> infoReport = validator.validateCSV(
-                infoFile,
-                PaintConstants.TRACK_COLS,
-                ValidateFileFormat.TRACK_TYPES
-        );
-        System.out.println(infoFile);
-        infoReport.forEach(System.out::println);
-        System.out.println("\n\n");
+        List<String> errors = validateProject(project, experiments, cli.checkSquares);
 
-        // Validate recordings\
-        String recordingsFile = root + "All Recordings Java.csv";
-        List<String> recordingReport = validator.validateCSV(
-                recordingsFile,
-                PaintConstants.RECORDING_COLS,
-                ValidateFileFormat.RECORDING_TYPES
-        );
-        System.out.println(recordingsFile);
-        recordingReport.forEach(System.out::println);
-        System.out.println("\n\n");
-
-        // Validate squares
-        String squaresFile = root + "All Squares Java.csv";
-        List<String> squareReport = validator.validateCSV(
-                squaresFile,
-                PaintConstants.SQUARE_COLS,
-                ValidateFileFormat.SQUARE_TYPES
-        );
-        System.out.println(squaresFile);
-        squareReport.forEach(System.out::println);
-        System.out.println("\n\n");
+        if (errors.isEmpty()) {
+            System.out.println("✔ Validation OK. Checked " + experiments.size() + " experiment(s).");
+            System.exit(0);
+        } else {
+            System.err.println("✖ Validation FAILED. Found " + errors.size() + " issue(s):");
+            for (String err : errors) {
+                System.err.println("  - " + err);
+            }
+            System.exit(1);
+        }
     }
 
-    private enum ColumnType {
-        STRING, INT, DOUBLE, BOOLEAN
+    private static void printHelp() {
+        System.out.println(
+                "ValidateFileFormat - validate Paint CSV schemas\n" +
+                        "\n" +
+                        "Usage:\n" +
+                        "  java paint.validation.ValidateFileFormat --project <path> [--experiments e1,e2,...] [--squares]\n" +
+                        "  java paint.validation.ValidateFileFormat <projectPath> [exp1 exp2 ...] [--squares]\n" +
+                        "\n" +
+                        "Options:\n" +
+                        "  --project <path>      Project root directory (required if not given as first arg)\n" +
+                        "  --experiments <list>  Comma-separated experiment folder names under the project root\n" +
+                        "  --squares             Also validate all_squares.csv in each experiment\n" +
+                        "  --no-squares          Do not validate all_squares.csv (default)\n" +
+                        "  --help                Show this help\n" +
+                        "\n" +
+                        "If no experiments are specified, subdirectories containing data.csv or experiment info.csv\n" +
+                        "are auto-discovered and validated."
+        );
     }
 
-    public static final ColumnType[] TRACK_TYPES = {
-            ColumnType.STRING,         // 0    Unique Key 
-            ColumnType.STRING,         // 1    Recording Name
-            ColumnType.INT,            // 2    Track Id
-            ColumnType.STRING,         // 3    Track Label
-            ColumnType.INT,            // 4    Number of Spots
-            ColumnType.INT,            // 5    Number of Gaps
-            ColumnType.INT,            // 6    Longest Gap
-            ColumnType.DOUBLE,         // 7    Track Duration
-            ColumnType.DOUBLE,         // 8    Track X Location
-            ColumnType.DOUBLE,         // 9    Track Y Location
-            ColumnType.DOUBLE,         // 10   Track Displacement
-            ColumnType.DOUBLE,         // 11   Track Max Speed
-            ColumnType.DOUBLE,         // 12   Track Median Speed
-            ColumnType.DOUBLE,         // 13   Diffusion Coefficient
-            ColumnType.DOUBLE,         // 14   Diffusion Coefficient Ext
-            ColumnType.DOUBLE,         // 15   Total Distance
-            ColumnType.DOUBLE,         // 16   Confinement Ratio
-            ColumnType.INT,            // 17   Square Number
-            ColumnType.INT             // 18   Label Number
-    };
+    private static class CliArgs {
+        String projectRoot;
+        List<String> experiments = new ArrayList<>();
+        boolean checkSquares = false;
+        boolean showHelp = false;
+    }
 
-    public static final ColumnType[] SQUARE_TYPES = {
-            ColumnType.STRING,        // 0      Unique Key 
-            ColumnType.STRING,        // 1      Recording Name
-            ColumnType.INT,           // 2      Square Number
-            ColumnType.INT,           // 3      Row Number
-            ColumnType.INT,           // 4      Column Number
-            ColumnType.INT,           // 5      Label Number
-            ColumnType.INT,           // 6      Cell ID
-            ColumnType.BOOLEAN,       // 7      Selected
-            ColumnType.BOOLEAN,       // 8      Square Manually Excluded
-            ColumnType.BOOLEAN,       // 9      Image Excluded
-            ColumnType.DOUBLE,        // 10     X0
-            ColumnType.DOUBLE,        // 11     Y0
-            ColumnType.DOUBLE,        // 12     X1
-            ColumnType.DOUBLE,        // 13     Y1
-            ColumnType.INT,           // 14     Number of Tracks
-            ColumnType.DOUBLE,        // 15     Variability
-            ColumnType.DOUBLE,        // 16     Density
-            ColumnType.DOUBLE,        // 17     Density Ratio
-            ColumnType.DOUBLE,        // 18     Tau
-            ColumnType.DOUBLE,        // 19     R Squared
-            ColumnType.DOUBLE,        // 20     Median Diffusion Coefficient
-            ColumnType.DOUBLE,        // 21     Median Diffusion Coefficient EXT
-            ColumnType.DOUBLE,        // 22     Median Long Track Duration
-            ColumnType.DOUBLE,        // 23     Median Short Track Duration
-            ColumnType.DOUBLE,        // 24     Median Displacement
-            ColumnType.DOUBLE,        // 25     Max Displacement
-            ColumnType.DOUBLE,        // 26     Total Displacement
-            ColumnType.DOUBLE,        // 27     Median Max Speed
-            ColumnType.DOUBLE,        // 28     Max Max Speed
-            ColumnType.DOUBLE,        // 29     Median Mean Speed
-            ColumnType.DOUBLE,        // 30     Max Mean Speed
-            ColumnType.DOUBLE,        // 31     Max Track Duration
-            ColumnType.DOUBLE,        // 32     Total Track Duration
-            ColumnType.DOUBLE,        // 33     Median Track Duration
-    };
+    private static CliArgs parseArgs(String[] args) {
+        CliArgs out = new CliArgs();
+        int i = 0;
 
-    public static final ColumnType[] RECORDING_TYPES = {
-            ColumnType.STRING,       // 0       Recording Name 
-            ColumnType.INT,          // 1       Condition Number
-            ColumnType.INT,          // 2       Replicate Number
-            ColumnType.STRING,       // 3       Probe Name
-            ColumnType.STRING,       // 4       Probe Type
-            ColumnType.STRING,       // 5       Cell Type
-            ColumnType.STRING,       // 6       Adjuvant
-            ColumnType.DOUBLE,       // 7       Concentration
-            ColumnType.BOOLEAN,      // 8       Process Flag
-            ColumnType.DOUBLE,       // 9       Threshold
-            ColumnType.INT,          // 10      Number of Spots
-            ColumnType.INT,          // 11      Number of Tracks
-            ColumnType.INT,          // 12      Number of Spots in All Tracks
-            ColumnType.INT,          // 13      Number of Frames
-            ColumnType.DOUBLE,       // 14      Run Time
-            ColumnType.STRING,       // 15      Time Stamp
-            ColumnType.BOOLEAN,      // 16      Exclude
-            ColumnType.DOUBLE,       // 17      Tau
-            ColumnType.DOUBLE,       // 18      R Squared
-            ColumnType.DOUBLE        // 19      Density
-    };
+        while (i < args.length) {
+            String a = args[i];
 
-    public static final ColumnType[] EXPERIMENT_INFO_TYPES = {
-            ColumnType.STRING,       // 0       Recording Name
-            ColumnType.INT,          // 1       Condition Number
-            ColumnType.INT,          // 2       Replicate Number
-            ColumnType.STRING,       // 3       Probe Name
-            ColumnType.STRING,       // 4       Probe Type
-            ColumnType.STRING,       // 5       Cell Type
-            ColumnType.STRING,       // 6       Adjuvant
-            ColumnType.DOUBLE,       // 7       Concentration
-            ColumnType.BOOLEAN,      // 8       Process Flag
-            ColumnType.DOUBLE,       // 9       Threshold
-    };
+            switch (a) {
+                case "--help":
+                case "-h":
+                    out.showHelp = true;
+                    i++;
+                    break;
 
+                case "--project":
+                    i++;
+                    if (i >= args.length) {
+                        System.err.println("Missing value for --project");
+                    } else {
+                        out.projectRoot = args[i++];
+                    }
+                    break;
+
+                case "--experiments":
+                    i++;
+                    if (i >= args.length) {
+                        System.err.println("Missing value for --experiments");
+                    } else {
+                        out.experiments.addAll(splitCommaList(args[i++]));
+                    }
+                    break;
+
+                case "--squares":
+                    out.checkSquares = true;
+                    i++;
+                    break;
+
+                case "--no-squares":
+                    out.checkSquares = false;
+                    i++;
+                    break;
+
+                default:
+                    // Positional parsing:
+                    if (out.projectRoot == null) {
+                        out.projectRoot = a;
+                    } else {
+                        out.experiments.add(a);
+                    }
+                    i++;
+            }
+        }
+
+        return out;
+    }
+
+    private static List<String> splitCommaList(String s) {
+        if (s == null || s.isEmpty()) return new ArrayList<>();
+        return Arrays.asList(s.split("\\s*,\\s*"));
+    }
 
     /**
-     * Validates the structure and contents of a CSV file against expected columns and types.
-     * <p>
-     * The method checks:
-     * <ul>
-     *   <li>That the header row contains all expected column names in the correct order.</li>
-     *   <li>That each data row has values matching the expected types (STRING, INT, DOUBLE, BOOLEAN).</li>
-     * </ul>
-     * A compact list of report messages is returned, summarizing issues found.
-     *
-     * @param filePath      the path to the CSV file to validate
-     * @param expectedCols  the expected header names in the correct order
-     * @param expectedTypes the expected type for each column
-     * @return a list of report lines indicating validation results; if the list contains only
-     *         success messages, the file passed validation
-     * @throws IOException if an I/O error occurs while reading the file
+     * Auto-discover experiment directories as immediate subfolders containing
+     * either data.csv or experiment_info.csv.
      */
-    public List<String> validateCSV(String filePath, String[] expectedCols, ColumnType[] expectedTypes) {
-        List<String> report = new ArrayList<>();
-        boolean[] badColumn = new boolean[expectedTypes.length];
+    private static List<String> discoverExperiments(Path projectRoot) throws IOException {
+        List<String> names = new ArrayList<>();
+        if (!Files.isDirectory(projectRoot)) return names;
 
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            String line = br.readLine();
-            if (line == null) {
-                report.add("File is empty.");
-                return report;
-            }
-
-            // validate header
-            String[] headers = line.split(",", -1);
-            validateHeaders(headers, expectedCols, report);
-
-            // validate rows: only track if a column has bad numbers
-            int rowNumber = 1;
-            while ((line = br.readLine()) != null) {
-                rowNumber++;
-                String[] values = line.split(",", -1);
-                int limit = Math.min(values.length, expectedTypes.length);
-                for (int i = 0; i < limit; i++) {
-                    if (!badColumn[i] && !validateValue(values[i], expectedTypes[i])) {
-                        badColumn[i] = true;
+        try (DirectoryStream<Path> ds = Files.newDirectoryStream(projectRoot)) {
+            for (Path p : ds) {
+                if (Files.isDirectory(p)) {
+                    boolean hasInfo = Files.exists(p.resolve(EXPERIMENT_INFO_CSV));
+                    if (hasInfo) {
+                        names.add(p.getFileName().toString());
                     }
                 }
             }
+        }
+        return names;
+    }
 
-            // add compact number format errors
-            for (int i = 0; i < badColumn.length; i++) {
-                if (badColumn[i]) {
-                    report.add("Invalid value format detected in column: " + expectedCols[i]);
+    /**
+     * Validate all CSV files of a given experiment folder.
+     *
+     * @param experimentDir The experiment root directory
+     * @param checkSquares  Whether to also check all_squares.csv
+     * @return list of error messages (empty if valid)
+     */
+    public static List<String> validateExperiment(Path experimentDir, boolean checkSquares) {
+        List<String> errors = new ArrayList<>();
+
+        try {
+            // All Recordings.csv
+            Path dataCsv = experimentDir.resolve(RECORDINGS_CSV);
+            if (Files.exists(dataCsv)) {
+                errors.addAll(validateCsv(
+                        dataCsv,
+                        PaintConstants.RECORDING_COLS,
+                        PaintConstants.RECORDING_TYPES
+                ));
+            } else {
+                errors.add("Missing required file: " + dataCsv);
+            }
+
+            // experiment_info.csv
+            Path expCsv = experimentDir.resolve(EXPERIMENT_INFO_CSV);
+            if (Files.exists(expCsv)) {
+                errors.addAll(validateCsv(
+                        expCsv,
+                        PaintConstants.EXPERIMENT_INFO_COLS,
+                        PaintConstants.EXPERIMENT_INFO_TYPES
+                ));
+            } else {
+                errors.add("Missing required file: " + expCsv);
+            }
+
+            // all_squares.csv (optional)
+            if (checkSquares) {
+                Path sqCsv = experimentDir.resolve(SQUARES_CSV);
+                if (Files.exists(sqCsv)) {
+                    errors.addAll(validateCsv(
+                            sqCsv,
+                            PaintConstants.SQUARE_COLS,
+                            PaintConstants.SQUARE_TYPES
+                    ));
+                } else {
+                    errors.add("Missing required file: " + sqCsv);
                 }
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
+            errors.add("Unexpected error while validating " + experimentDir + ": " + e.getMessage());
+        }
+
+        return errors;
+    }
+
+    /**
+     * Validate all experiments in a project root directory.
+     */
+    public static List<String> validateProject(Path projectRoot, List<String> experimentNames, boolean checkSquares) {
+        List<String> allErrors = new ArrayList<>();
+
+        for (String exp : experimentNames) {
+            Path expDir = projectRoot.resolve(exp);
+            if (Files.exists(expDir) && Files.isDirectory(expDir)) {
+                List<String> expErrors = validateExperiment(expDir, checkSquares);
+                for (String err : expErrors) {
+                    allErrors.add("[" + exp + "] " + err);
+                }
+            } else {
+                allErrors.add("Experiment folder not found: " + expDir);
+            }
+        }
+
+        return allErrors;
+    }
+
+    /**
+     * Validate a CSV file against expected column names and types.
+     */
+    private static List<String> validateCsv(Path filePath, String[] expectedCols, ColumnType[] expectedTypes) {
+        List<String> report = new ArrayList<>();
+        boolean[] badColumn = new boolean[expectedTypes.length];
+
+        try {
+            // Build options forcing schema
+            CsvReadOptions opts = CsvReadOptions.builder(filePath.toFile())
+                    .header(true)
+                    .columnTypes(expectedTypes)
+                    .build();
+
+            Table table = Table.read().usingOptions(opts);
+
+            // --- validate header names ---
+            String[] headers = table.columnNames().toArray(new String[0]);
+            if (headers.length != expectedCols.length) {
+                report.add("Header length mismatch: expected " + expectedCols.length +
+                        " but found " + headers.length);
+            }
+            for (int i = 0; i < Math.min(headers.length, expectedCols.length); i++) {
+                if (!headers[i].equals(expectedCols[i])) {
+                    report.add("Header mismatch at column " + i + ": expected '" +
+                            expectedCols[i] + "', found '" + headers[i] + "'");
+                }
+            }
+
+            // --- validate column types ---
+            for (int i = 0; i < Math.min(table.columnCount(), expectedTypes.length); i++) {
+                ColumnType expectedType = expectedTypes[i];
+                ColumnType actualType = table.column(i).type();
+
+                // 1. Allow empty column (skip hard error, but warn)
+                if (table.column(i).isEmpty()) {
+                    report.add("⚠️ Column '" + expectedCols[i] +
+                            "' is empty (expected " + expectedType.name() + ")");
+                    continue;
+                }
+
+                // 2. Allow DOUBLE to match INTEGER
+                if (expectedType == ColumnType.DOUBLE && actualType == ColumnType.INTEGER) {
+                    continue;
+                }
+
+                // 3. Allow STRING <-> LOCAL_DATE_TIME flexibility
+                if (expectedType == ColumnType.STRING && actualType == ColumnType.LOCAL_DATE_TIME) {
+                    continue;
+                }
+                if (expectedType == ColumnType.LOCAL_DATE_TIME && actualType == ColumnType.STRING) {
+                    report.add("⚠️ Column '" + expectedCols[i] +
+                            "' is STRING but should be LOCAL_DATE_TIME");
+                    continue;
+                }
+
+                // 4. Strict mismatch
+                if (!expectedType.equals(actualType)) {
+                    report.add("Type mismatch in column '" + expectedCols[i] +
+                            "': expected " + expectedType.name() +
+                            " but found " + actualType.name());
+                }
+            }
+
+        } catch (Exception e) {
             report.add("I/O error: " + e.getMessage());
         }
 
-        if (report.isEmpty()) {
-            report.add("Headers are correct ✅");
-            report.add("All numeric columns are well-formed ✅");
-        }
+//        if (report.isEmpty()) {
+//            report.add("Headers are correct ✅");
+//            report.add("All column types match ✅");
+//        }
 
         return report;
-    }
-
-    private void validateHeaders(String[] headers, String[] expectedCols, List<String> report) {
-        boolean headerOk = true;
-
-        // unexpected headers
-        Set<String> expectedSet = new HashSet<>();
-        for (String col : expectedCols) {
-            expectedSet.add(col);
-        }
-        for (String header : headers) {
-            if (!expectedSet.contains(header.trim())) {
-                report.add("Unexpected header: '" + header + "'");
-                headerOk = false;
-            }
-        }
-
-        // missing headers
-        Set<String> headerSet = new HashSet<>();
-        for (String header : headers) {
-            headerSet.add(header.trim());
-        }
-        for (String expected : expectedCols) {
-            if (!headerSet.contains(expected)) {
-                report.add("Missing expected header: '" + expected + "'");
-                headerOk = false;
-            }
-        }
-
-        // order mismatch check only if same length
-        if (headers.length == expectedCols.length) {
-            for (int i = 0; i < headers.length; i++) {
-                if (!expectedCols[i].equals(headers[i].trim())) {
-                    report.add("Header order mismatch at column " + i
-                            + ": expected '" + expectedCols[i]
-                            + "', found '" + headers[i] + "'");
-                    headerOk = false;
-                }
-            }
-        }
-
-        if (headerOk) {
-            report.add("Headers are correct ✅");
-        }
-    }
-
-    private boolean validateValue(String value, ColumnType type) {
-        switch (type) {
-            case STRING:
-                return true; // accept anything
-            case INT:
-                try {
-                    if (!value.isEmpty()) Integer.parseInt(value);
-                    return true;
-                } catch (NumberFormatException e) {
-                    return false;
-                }
-            case DOUBLE:
-                try {
-                    if (!value.isEmpty()) Double.parseDouble(value);
-                    return true;
-                } catch (NumberFormatException e) {
-                    return false;
-                }
-            case BOOLEAN:
-                String v = value.trim().toLowerCase();
-                return v.isEmpty() || v.equals("true") || v.equals("false");
-            default:
-                return false;
-        }
     }
 }
