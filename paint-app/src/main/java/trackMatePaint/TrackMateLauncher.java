@@ -142,7 +142,6 @@ public class TrackMateLauncher {
             return;
         }
 
-        trackModel = model.getTrackModel();
         selectionModel = new SelectionModel(model);
 
         hyperStackDisplayer = new HyperStackDisplayer(model, selectionModel, imp, displaySettings);
@@ -154,7 +153,6 @@ public class TrackMateLauncher {
         try {
             if (imp != null) {
                 imp.close();  // release native image memory
-                imp = null;
             }
             if (imps[0] != null) {
                 imps[0].close();
@@ -163,7 +161,6 @@ public class TrackMateLauncher {
 
             if (selectionModel != null) {
                 selectionModel.clearSelection();
-                selectionModel = null;
             }
 
         } catch (Exception e) {
