@@ -53,7 +53,7 @@
     <url>https://example.com/my-fiji-plugin</url>
   </scm>
   <organization>
-    <name>My Organization</name>
+    <name>jjabakker</name>
     <url>https://example.com</url>
   </organization>
   <build>
