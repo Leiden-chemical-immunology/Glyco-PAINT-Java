@@ -13,7 +13,7 @@ import paint.shared.dialogs.ExperimentDialog;
 import paint.shared.dialogs.ProjectDialog;
 
 import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
-import static paint.fiji.trackmate.RunTrackMateOnExperiment.cycleThroughRecordings;
+import static paint.fiji.trackmate.RunTrackMateOnExperiment.runTrackMateOnExperiment;
 
 @Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run TrackMate on Project")
 public class TrackMateOnProject implements Command {
@@ -84,7 +84,7 @@ public class TrackMateOnProject implements Command {
                     AppLogger.errorf("Experiment directory '%s' does not exist.", experimentPath);
                 } else {
                     try {
-                        cycleThroughRecordings(experimentPath, imagesPath.resolve(experimentName));
+                        runTrackMateOnExperiment(experimentPath, imagesPath.resolve(experimentName));
                     } catch (Throwable t) {
                         AppLogger.errorf("Error during TrackMate run for '%s': %s",
                                 experimentName, t.getMessage());

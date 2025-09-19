@@ -25,7 +25,7 @@ public class RunTrackMateOnExperiment {
 
     static boolean verbose = false;
 
-    public static void cycleThroughRecordings(Path experimentPath, Path imagesPath) {
+    public static void runTrackMateOnExperiment(Path experimentPath, Path imagesPath) {
 
         Duration totalDuration = Duration.ZERO;
         int numberRecordings = 0;
@@ -40,7 +40,6 @@ public class RunTrackMateOnExperiment {
             System.out.println(paintConfig);
             System.out.println(trackMateConfig);
         }
-
 
         // Read the Experiment info.csv file and process the indicated recordings
         Path experimentFilePath = experimentPath.resolve(EXPERIMENT_INFO_CSV);
