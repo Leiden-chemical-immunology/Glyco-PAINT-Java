@@ -27,7 +27,7 @@ import static paint.shared.constants.PaintConstants.*;
  *   java -cp "<deps...>" paint.validation.ValidateFileFormat --project /path/to/project   (auto-discovers experiments)
  * }</pre>
  */
-public class ValidateFileFormat {
+public class ValidateProjectWithColumType {
 
     public static void main(String[] args) {
         CliArgs cli = parseArgs(args);
