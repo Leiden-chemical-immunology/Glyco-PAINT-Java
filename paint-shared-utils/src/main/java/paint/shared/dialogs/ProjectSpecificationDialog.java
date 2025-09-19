@@ -17,22 +17,55 @@ import paint.shared.objects.Project;
 import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 
 /**
- * Dialog for configuring experiments (Generate Squares or TrackMate).
+ * Swing dialog for configuring experiments in a Paint project.
+ * <p>
+ * The dialog supports two modes of operation:
+ * <ul>
+ *   <li>{@link DialogMode#GENERATE_SQUARES} – configure parameters
+ *       for square generation.</li>
+ *   <li>{@link DialogMode#TRACKMATE} – configure paths for running TrackMate.</li>
+ * </ul>
+ * <p>
+ * Additionally, the dialog allows selecting which experiment subfolders
+ * to include, and optionally persists the configuration back into the
+ * {@code Paint Configuration.json} file.
+ * </p>
  */
-public class ExperimentDialog {
+public class ProjectSpecificationDialog {
 
+    /**
+     * Dialog modes:
+     * <ul>
+     *     <li>{@link #TRACKMATE} – configure TrackMate input paths.</li>
+     *     <li>{@link #GENERATE_SQUARES} – configure square generation parameters.</li>
+     * </ul>
+     */
     public enum DialogMode {
         TRACKMATE,
         GENERATE_SQUARES
     }
 
+    /**
+     * Functional callback interface invoked when the user
+     * presses OK and calculations should be executed.
+     */
     @FunctionalInterface
     public interface CalculationCallback {
+        /**
+         * Runs calculations on the specified project.
+         *
+         * @param project the project specification built from the dialog
+         */
         void run(Project project);
     }
 
     private CalculationCallback calculationCallback;
 
+    /**
+     * Sets the callback to execute after the user presses OK.
+     *
+     * @param callback the callback implementation
+     */
     public void setCalculationCallback(CalculationCallback callback) {
         this.calculationCallback = callback;
     }
@@ -43,56 +76,60 @@ public class ExperimentDialog {
     private final Project project;
     private final PaintConfig paintConfig;
 
-    // Fields for GENERATE_SQUARES
+    // Fields for GENERATE_SQUARES mode
     private final JTextField nrSquaresField;
     private final JTextField minTracksField;
     private final JTextField minRSquaredField;
     private final JTextField minDensityRatioField;
     private final JTextField maxVariabilityField;
 
-    // Field for TRACKMATE
+    // Field for TRACKMATE mode
     private final JTextField imageDirectoryField;
 
     private final JCheckBox saveExperimentsCheckBox;
-
     private final JPanel checkboxPanel = new JPanel();
     private final java.util.List<JCheckBox> checkBoxes = new ArrayList<>();
     private boolean okPressed = false;
 
     private final DialogMode mode;
 
-    // --- integrated constructor ---
-    public ExperimentDialog(Frame owner, Path projectPath, DialogMode mode) {
+    // --- Constructor ---
 
-        // Store key context
+    /**
+     * Creates a new project specification dialog.
+     *
+     * @param owner       the parent window that owns this dialog
+     * @param projectPath the path to the Paint project
+     * @param mode        the dialog mode (TrackMate or Generate Squares)
+     */
+    public ProjectSpecificationDialog(Frame owner, Path projectPath, DialogMode mode) {
         this.projectPath = projectPath;
         this.configPath = projectPath.resolve(PAINT_CONFIGURATION_JSON);
         this.paintConfig = PaintConfig.from(configPath);
         this.project = new Project(projectPath);
         this.mode = mode;
 
-        // --- global font override for this dialog ---
+        // Apply a consistent font for UI elements
         Font baseFont = new Font("Dialog", Font.PLAIN, 12);
         UIManager.put("Label.font", baseFont);
         UIManager.put("CheckBox.font", baseFont);
         UIManager.put("TextField.font", baseFont);
         UIManager.put("Button.font", baseFont);
 
-        // 🚨 non-modal (false) so it doesn’t disappear automatically
-        String dialogTitle;
-        if (mode == DialogMode.TRACKMATE) {
-            dialogTitle = "Run TrackMate on project";
-        }
-        else {
-            dialogTitle = "Generate Squares for Project";
-        }
+        // Set dialog title
+        String dialogTitle = (mode == DialogMode.TRACKMATE)
+                ? "Run TrackMate on project"
+                : "Generate Squares for Project";
+
         this.dialog = new JDialog(owner, dialogTitle, false);
         this.dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
+        // --- Build input panel ---
         JPanel formPanel = new JPanel(new GridLayout(0, 2, 5, 5));
         formPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         if (mode == DialogMode.GENERATE_SQUARES) {
+            // Pre-fill fields from config
             int nrSquares = paintConfig.getInt("Generate Squares", "Nr of Squares in Row", 5);
             int minTracks = paintConfig.getInt("Generate Squares", "Min Tracks to Calculate Tau", 11);
             double minRSquared = paintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
@@ -105,9 +142,10 @@ public class ExperimentDialog {
             minDensityRatioField = createTightTextField(String.valueOf(minDensityRatio), new FloatDocumentFilter());
             maxVariabilityField = createTightTextField(String.valueOf(maxVariability), new FloatDocumentFilter());
 
+            // Add labels and fields
             formPanel.add(createLightLabel("Number of Squares in Row (and Column):"));
             formPanel.add(nrSquaresField);
-            formPanel.add(createLightLabel("Min Number of Tracks to Calculate :"));
+            formPanel.add(createLightLabel("Min Number of Tracks to Calculate:"));
             formPanel.add(minTracksField);
             formPanel.add(createLightLabel("Min Required R²:"));
             formPanel.add(minRSquaredField);
@@ -118,13 +156,14 @@ public class ExperimentDialog {
 
             imageDirectoryField = null;
         } else {
+            // TrackMate: image directory input
             nrSquaresField = null;
             minTracksField = null;
             minRSquaredField = null;
             minDensityRatioField = null;
             maxVariabilityField = null;
 
-            JLabel dirLabel = new JLabel("Image Directory:");
+            JLabel dirLabel = new JLabel("Images Root:");
             String defaultDir = paintConfig.getString("Paths", "Image Directory", System.getProperty("user.home"));
             JTextField dirField = new JTextField(defaultDir, 30);
             JButton browseButton = new JButton("Browse...");
@@ -137,6 +176,7 @@ public class ExperimentDialog {
                 }
             });
 
+            // Layout with GridBag
             formPanel.setLayout(new GridBagLayout());
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(5, 5, 5, 5);
@@ -155,6 +195,7 @@ public class ExperimentDialog {
 
         dialog.add(formPanel, BorderLayout.NORTH);
 
+        // --- Experiment selection checkboxes ---
         checkboxPanel.setLayout(new BoxLayout(checkboxPanel, BoxLayout.Y_AXIS));
         populateCheckboxes(paintConfig);
 
@@ -177,9 +218,9 @@ public class ExperimentDialog {
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.add(checkboxControlPanel, BorderLayout.NORTH);
         centerPanel.add(scrollPane, BorderLayout.CENTER);
-
         dialog.add(centerPanel, BorderLayout.CENTER);
 
+        // --- Bottom buttons ---
         JPanel buttonPanel = new JPanel(new BorderLayout());
 
         saveExperimentsCheckBox = new JCheckBox("Save Experiments", false);
@@ -196,7 +237,7 @@ public class ExperimentDialog {
             okPressed = true;
             saveConfig();
 
-            if (calculationCallback != null && okPressed) {
+            if (calculationCallback != null) {
                 setInputsEnabled(false);
                 new Thread(() -> {
                     calculationCallback.run(getProject());
@@ -211,24 +252,29 @@ public class ExperimentDialog {
 
         cancelButton.addActionListener(e -> {
             okPressed = false;
-            dialog.dispose(); // close only on Cancel
+            dialog.dispose(); // Close on Cancel
         });
 
         rightPanel.add(okButton);
         rightPanel.add(cancelButton);
         buttonPanel.add(rightPanel, BorderLayout.EAST);
-
         dialog.add(buttonPanel, BorderLayout.SOUTH);
 
+        // Final dialog setup
         dialog.pack();
-        if (mode == DialogMode.GENERATE_SQUARES) {
-            dialog.setSize(800, 600);
-        } else {
-            dialog.setSize(800, 400);
-        }
+        dialog.setSize(mode == DialogMode.GENERATE_SQUARES ? 800 : 400, 600);
         dialog.setLocationRelativeTo(owner);
     }
 
+    /**
+     * Populates the experiment selection panel with checkboxes.
+     * <p>
+     * Each immediate subdirectory of the project directory is represented
+     * as a checkbox. The selection state of each is restored
+     * from the provided {@link PaintConfig}.
+     *
+     * @param config the configuration used to restore experiment selections
+     */
     private void populateCheckboxes(PaintConfig config) {
         checkboxPanel.removeAll();
         checkBoxes.clear();
@@ -252,6 +298,14 @@ public class ExperimentDialog {
         checkboxPanel.repaint();
     }
 
+    /**
+     * Saves the current dialog state into the {@link PaintConfig}.
+     * <ul>
+     *   <li>If in {@link DialogMode#GENERATE_SQUARES}, saves square generation parameters.</li>
+     *   <li>If in {@link DialogMode#TRACKMATE}, saves image and project directory paths.</li>
+     *   <li>If "Save Experiments" is selected, also saves experiment checkbox states.</li>
+     * </ul>
+     */
     private void saveConfig() {
         if (mode == DialogMode.GENERATE_SQUARES) {
             paintConfig.setInt("Generate Squares", "Nr of Squares in Row", Integer.parseInt(nrSquaresField.getText()));
@@ -259,10 +313,9 @@ public class ExperimentDialog {
             paintConfig.setDouble("Generate Squares", "Min Required R Squared", Double.parseDouble(minRSquaredField.getText()));
             paintConfig.setDouble("Generate Squares", "Min Required Density Ratio", Double.parseDouble(minDensityRatioField.getText()));
             paintConfig.setDouble("Generate Squares", "Max Allowable Variability", Double.parseDouble(maxVariabilityField.getText()));
-        }
-        else {
-            paintConfig.setString("Paths", "Image Directory", imageDirectoryField.getText());
-            paintConfig.setString("Paths", "Project Directory", this.projectPath.toString());
+        } else {
+            paintConfig.setString("Paths", "Images Root", imageDirectoryField.getText());
+            paintConfig.setString("Paths", "Project Root", this.projectPath.toString());
         }
 
         if (saveExperimentsCheckBox.isSelected()) {
@@ -273,6 +326,11 @@ public class ExperimentDialog {
         paintConfig.save();
     }
 
+    /**
+     * Builds a {@link Project} object from the current dialog state.
+     *
+     * @return a {@link Project} containing configuration and experiment selections
+     */
     private Project getProject() {
         TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
         GenerateSquaresConfig generateSquaresConfig = GenerateSquaresConfig.from(paintConfig);
@@ -293,29 +351,53 @@ public class ExperimentDialog {
                 null);
     }
 
-
-
+    /**
+     * Displays the dialog and blocks until it is closed.
+     *
+     * @return the resulting {@link Project} based on user selections
+     */
     public Project showDialog() {
         dialog.setVisible(true);
         return getProject();
     }
 
+    /**
+     * Enables or disables all inputs in the dialog.
+     *
+     * @param enabled {@code true} to enable, {@code false} to disable
+     */
     private void setInputsEnabled(boolean enabled) {
-        if (nrSquaresField != null) nrSquaresField.setEnabled(enabled);
-        if (minTracksField != null) minTracksField.setEnabled(enabled);
-        if (minRSquaredField != null) minRSquaredField.setEnabled(enabled);
-        if (minDensityRatioField != null) minDensityRatioField.setEnabled(enabled);
-        if (maxVariabilityField != null) maxVariabilityField.setEnabled(enabled);
-
-        if (imageDirectoryField != null) imageDirectoryField.setEnabled(enabled);
-
+        if (nrSquaresField != null) {
+            nrSquaresField.setEnabled(enabled);
+        }
+        if (minTracksField != null) {
+            minTracksField.setEnabled(enabled);
+        }
+        if (minRSquaredField != null) {
+            minRSquaredField.setEnabled(enabled);
+        }
+        if (minDensityRatioField != null) {
+            minDensityRatioField.setEnabled(enabled);
+        }
+        if (maxVariabilityField != null) {
+            maxVariabilityField.setEnabled(enabled);
+        }
+        if (imageDirectoryField != null) {
+            imageDirectoryField.setEnabled(enabled);
+        }
         for (JCheckBox cb : checkBoxes) {
             cb.setEnabled(enabled);
         }
-
         saveExperimentsCheckBox.setEnabled(enabled);
     }
 
+    /**
+     * Creates a compact text field with an optional document filter.
+     *
+     * @param value  initial value
+     * @param filter optional input filter
+     * @return configured text field
+     */
     private JTextField createTightTextField(String value, DocumentFilter filter) {
         JTextField field = new JTextField(value, 6);
         if (filter != null) {
@@ -325,12 +407,21 @@ public class ExperimentDialog {
         return field;
     }
 
+    /**
+     * Creates a label with a consistent lightweight font.
+     *
+     * @param text label text
+     * @return configured label
+     */
     private JLabel createLightLabel(String text) {
         JLabel lbl = new JLabel(text);
         lbl.setFont(lbl.getFont().deriveFont(Font.PLAIN, 12f));
         return lbl;
     }
 
+    /**
+     * Document filter that restricts input to integers.
+     */
     static class IntegerDocumentFilter extends DocumentFilter {
         @Override
         public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
@@ -346,6 +437,9 @@ public class ExperimentDialog {
         }
     }
 
+    /**
+     * Document filter that restricts input to floating-point numbers.
+     */
     static class FloatDocumentFilter extends DocumentFilter {
         @Override
         public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {

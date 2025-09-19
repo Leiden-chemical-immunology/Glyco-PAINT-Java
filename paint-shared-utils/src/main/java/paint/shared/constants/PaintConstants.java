@@ -2,63 +2,100 @@ package paint.shared.constants;
 
 import tech.tablesaw.api.ColumnType;
 
+/**
+ * Centralized constants for the Paint project.
+ * <p>
+ * This class defines file names, directory names, schema column definitions,
+ * and associated {@link ColumnType} arrays used for parsing and validating
+ * CSV files in the Paint application.
+ * </p>
+ * <p>
+ * The constants are grouped by domain:
+ * <ul>
+ *     <li>Filenames and directory names</li>
+ *     <li>General configuration values</li>
+ *     <li>Schema definitions for Tracks, Squares, Recordings, and Experiments</li>
+ * </ul>
+ * </p>
+ * <p><b>Note:</b> This class depends on Tablesaw's {@link ColumnType} for schema typing.</p>
+ */
 public final class PaintConstants {
 
     private PaintConstants() {
         // Prevent instantiation
     }
 
+    // =====================
     // Filenames
+    // =====================
+
+    /** CSV file name containing recording-level statistics. */
     public static final String RECORDINGS_CSV = "All Recordings Java.csv";
+
+    /** CSV file name containing track-level data. */
     public static final String TRACKS_CSV = "All Tracks Java.csv";
+
+    /** CSV file name containing square-level data. */
     public static final String SQUARES_CSV = "All Squares Java.csv";
+
+    /** CSV file name containing experiment-level metadata. */
     public static final String EXPERIMENT_INFO_CSV = "Experiment Info.csv";
+
+    /** JSON file name containing Paint project configuration. */
     public static final String PAINT_JSON = "Paint Configuration.json";
 
-    // Directories
-    public static final String DIR_TRACKMATE_IMAGES = "TrackMate Images";
-    public static final String DIR_BRIGHTFIELD_IMAGES = "Brightfield Images";
-
-    // Configuration
+    /** JSON configuration file used throughout Paint. */
     public static final String PAINT_CONFIGURATION_JSON = "Paint Configuration.json";
 
-    // Column names
-    // public static final String COL_EXT_RECORDING_NAME = "Ext Recording Name";
+    // =====================
+    // Directories
+    // =====================
+
+    /** Directory name for TrackMate-processed images. */
+    public static final String DIR_TRACKMATE_IMAGES = "TrackMate Images";
+
+    /** Directory name for brightfield images. */
+    public static final String DIR_BRIGHTFIELD_IMAGES = "Brightfield Images";
+
+    // =====================
+    // Column names (common)
+    // =====================
+
+    /** Shared column name for recording identifiers. */
     public static final String COL_RECORDING_NAME = "Recording Name";
 
-    // Squares
+    // =====================
+    // Geometry
+    // =====================
+
+    /** Default image width in microns. */
     public static final double IMAGE_WIDTH = 82.0864;
+
+    /** Default image height in microns. */
     public static final double IMAGE_HEIGHT = 82.0864;
 
-    // Time
-    public static final double TIME_INTERVAL = 0.05;
+    // =====================
+    // Timing
+    // =====================
 
+    /** Default time interval between frames (seconds). */
+    public static final double TIME_INTERVAL = 0.05;
 
     // =====================
     // Track schema
     // =====================
+
+    /** Column names for the Track-level CSV schema. */
     public static final String[] TRACK_COLS = {
-            "Unique Key",                  // 0    String
-            "Recording Name",              // 1    String
-            "Track Id",                    // 2    int
-            "Track Label",                 // 3    String
-            "Number of Spots",             // 4    int
-            "Number of Gaps",              // 5    int
-            "Longest Gap",                 // 6    int
-            "Track Duration",              // 7    double
-            "Track X Location",            // 8    double
-            "Track Y Location",            // 9    double
-            "Track Displacement",          // 10   double
-            "Track Max Speed",             // 11   double
-            "Track Median Speed",          // 12   double
-            "Diffusion Coefficient",       // 13   double
-            "Diffusion Coefficient Ext",   // 14   double
-            "Total Distance",              // 15   double
-            "Confinement Ratio",           // 16   double
-            "Square Number",               // 17   int
-            "Label Number"                 // 18   int
+            "Unique Key", "Recording Name", "Track Id", "Track Label",
+            "Number of Spots", "Number of Gaps", "Longest Gap",
+            "Track Duration", "Track X Location", "Track Y Location",
+            "Track Displacement", "Track Max Speed", "Track Median Speed",
+            "Diffusion Coefficient", "Diffusion Coefficient Ext",
+            "Total Distance", "Confinement Ratio", "Square Number", "Label Number"
     };
 
+    /** Column types for the Track-level CSV schema. */
     public static final ColumnType[] TRACK_TYPES = {
             ColumnType.STRING,  // Unique Key
             ColumnType.STRING,  // Recording Name
@@ -84,43 +121,46 @@ public final class PaintConstants {
     // =====================
     // Square schema
     // =====================
+
+    /** Column names for the Square-level CSV schema. */
     public static final String[] SQUARE_COLS = {
-            "Unique Key",                       // 0      String
-            "Recording Name",                   // 1      String
-            "Square Number",                    // 2      int
-            "Row Number",                       // 3      int
-            "Column Number",                    // 4      int
-            "Label Number",                     // 5      int
-            "Cell ID",                          // 6      int
-            "Selected",                         // 7      boolean
-            "Square Manually Excluded",         // 8      boolean
-            "Image Excluded",                   // 9      boolean
-            "X0",                               // 10     double
-            "Y0",                               // 11     double
-            "X1",                               // 12     double
-            "Y1",                               // 13     double
-            "Number of Tracks",                 // 14     int
-            "Variability",                      // 15     double
-            "Density",                          // 16     double
-            "Density Ratio",                    // 17     double
-            "Tau",                              // 18     double
-            "R Squared",                        // 19     double
-            "Median Diffusion Coefficient",     // 20     double
-            "Median Diffusion Coefficient Ext", // 21     double
-            "Median Long Track Duration",       // 22     double
-            "Median Short Track Duration",      // 23     double
-            "Median Displacement",              // 24     double
-            "Max Displacement",                 // 25     double
-            "Total Displacement",               // 26     double
-            "Median Max Speed",                 // 27     double
-            "Max Max Speed",                    // 28     double
-            "Median Mean Speed",                // 29     double
-            "Max Mean Speed",                   // 30     double
-            "Max Track Duration",               // 31     double
-            "Total Track Duration",             // 32     double
-            "Median Track Duration"             // 33     double
+            "Unique Key",
+            "Recording Name",
+            "Square Number",
+            "Row Number",
+            "Column Number",
+            "Label Number",
+            "Cell ID",
+            "Selected",
+            "Square Manually Excluded",
+            "Image Excluded",
+            "X0",
+            "Y0",
+            "X1",
+            "Y1",
+            "Number of Tracks",
+            "Variability",
+            "Density",
+            "Density Ratio",
+            "Tau",
+            "R Squared",
+            "Median Diffusion Coefficient",
+            "Median Diffusion Coefficient Ext",
+            "Median Long Track Duration",
+            "Median Short Track Duration",
+            "Median Displacement",
+            "Max Displacement",
+            "Total Displacement",
+            "Median Max Speed",
+            "Max Max Speed",
+            "Median Mean Speed",
+            "Max Mean Speed",
+            "Max Track Duration",
+            "Total Track Duration",
+            "Median Track Duration"
     };
 
+    /** Column types for the Square-level CSV schema. */
     public static final ColumnType[] SQUARE_TYPES = {
             ColumnType.STRING,   // Unique Key
             ColumnType.STRING,   // Recording Name
@@ -161,29 +201,32 @@ public final class PaintConstants {
     // =====================
     // Recording schema
     // =====================
+
+    /** Column names for the Recording-level CSV schema. */
     public static final String[] RECORDING_COLS = {
-            "Recording Name",                // 0     String
-            "Condition Number",              // 1     int
-            "Replicate Number",              // 2     int
-            "Probe Name",                    // 3     String
-            "Probe Type",                    // 4     String
-            "Cell Type",                     // 5     String
-            "Adjuvant",                      // 6     String
-            "Concentration",                 // 7     double
-            "Process Flag",                  // 8     boolean
-            "Threshold",                     // 9     double
-            "Number of Spots",               // 10    int
-            "Number of Tracks",              // 11    int
-            "Number of Spots in All Tracks", // 12    int
-            "Number of Frames",              // 13    int
-            "Run Time",                      // 14    double
-            "Time Stamp",                    // 15    String
-            "Exclude",                       // 16    boolean
-            "Tau",                           // 17    double
-            "R Squared",                     // 18    double
-            "Density"                        // 19    double
+            "Recording Name",
+            "Condition Number",
+            "Replicate Number",
+            "Probe Name",
+            "Probe Type",
+            "Cell Type",
+            "Adjuvant",
+            "Concentration",
+            "Process Flag",
+            "Threshold",
+            "Number of Spots",
+            "Number of Tracks",
+            "Number of Spots in All Tracks",
+            "Number of Frames",
+            "Run Time",
+            "Time Stamp",
+            "Exclude",
+            "Tau",
+            "R Squared",
+            "Density"
     };
 
+    /** Column types for the Recording-level CSV schema. */
     public static final ColumnType[] RECORDING_TYPES = {
             ColumnType.STRING,            // Recording Name
             ColumnType.INTEGER,           // Condition Number
@@ -210,19 +253,22 @@ public final class PaintConstants {
     // =====================
     // Experiment info schema
     // =====================
+
+    /** Column names for the Experiment info CSV schema. */
     public static final String[] EXPERIMENT_INFO_COLS = {
-            "Recording Name",                // 0     String
-            "Condition Number",              // 1     int
-            "Replicate Number",              // 2     int
-            "Probe Name",                    // 3     String
-            "Probe Type",                    // 4     String
-            "Cell Type",                     // 5     String
-            "Adjuvant",                      // 6     String
-            "Concentration",                 // 7     double
-            "Process Flag",                  // 8     boolean
-            "Threshold"                      // 9     double
+            "Recording Name",
+            "Condition Number",
+            "Replicate Number",
+            "Probe Name",
+            "Probe Type",
+            "Cell Type",
+            "Adjuvant",
+            "Concentration",
+            "Process Flag",
+            "Threshold"
     };
 
+    /** Column types for the Experiment info CSV schema. */
     public static final ColumnType[] EXPERIMENT_INFO_TYPES = {
             ColumnType.STRING,   // Recording Name
             ColumnType.INTEGER,  // Condition Number
@@ -236,8 +282,8 @@ public final class PaintConstants {
             ColumnType.DOUBLE    // Threshold
     };
 
+    /** Minimal experiment list schema (single column). */
     public static final String[] EXPERIMENT_COLS = {
             "experimentName"
     };
-
 }

@@ -14,25 +14,28 @@ import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 import static paint.shared.constants.PaintConstants.TIME_INTERVAL;
+import static paint.shared.constants.PaintConstants.TRACK_COLS;
 import static paint.fiji.tracks.TrackAttributeCalculations.calculateTrackAttributes;
 
-
 /**
-* TracksCsvWriter is called by RunTrackMate to write a CSV file with the tracks.
-*/
-
+ * Utility class for exporting TrackMate tracks into a CSV file.
+ * <p>
+ * Uses the schema defined in {@link paint.shared.constants.PaintConstants#TRACK_COLS}.
+ * This guarantees the CSV header is consistent across the project.
+ * </p>
+ */
 public class TrackCsvWriter {
 
     /**
-     * Writes the TrackMate track data to a CSV file.
+     * Writes TrackMate track data to a CSV file.
      *
-     * @param trackmate    the {@link TrackMate} instance containing the tracks and features
-     * @param recordingName the name of the recording, used in the output for identification
-     * @param csvFile      the target CSV file to write the track data into
-     * @param visibleOnly  if {@code true}, only visible (filtered) tracks are exported;
-     *                     if {@code false}, all tracks are exported
+     * @param trackmate     the {@link TrackMate} instance containing the model and features
+     * @param recordingName the name of the recording; used for unique keys in the output
+     * @param csvFile       the target CSV file to write into (overwritten if it exists)
+     * @param visibleOnly   if {@code true}, exports only visible (filtered) tracks;
+     *                      if {@code false}, exports all tracks
      * @return the total number of spots across all exported tracks
-     * @throws IOException if an I/O error occurs while writing the file
+     * @throws IOException if an I/O error occurs while writing
      */
     public static int writeTracksCsv(final TrackMate trackmate,
                                       final String recordingName,
@@ -70,13 +73,13 @@ public class TrackCsvWriter {
         try (PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(
                 new FileOutputStream(csvFile, false), StandardCharsets.UTF_8))) {
 
-            // Write header
-            writeCsvRow(printWriter, (Object[]) headers);
+            // Write header row from constants
+            writeCsvRow(printWriter, (Object[]) TRACK_COLS);
 
-            // Iterate tracks (visibleOnly == true mimics Python's trackIDs(True))
+            // Collect track IDs (filtered if visibleOnly == true)
             final Set<Integer> trackIDs = trackModel.trackIDs(visibleOnly);
-            final int squareNumber = -1;
-            final int labelNumber = -1;
+            final int squareNumber = -1; // placeholder (not computed here)
+            final int labelNumber = -1;  // placeholder (not computed here)
 
             for (Integer trackId : trackIDs) {
 
@@ -91,7 +94,7 @@ public class TrackCsvWriter {
                 Double longestGap   = featureModel.getTrackFeature(trackId, "LONGEST_GAP");
                 Double displacement = featureModel.getTrackFeature(trackId, "TRACK_DISPLACEMENT");
 
-                // Round/normalize like the Python code
+                // Normalize values (rounding and null defaults)
                 duration     = roundOr(duration, 3, -1);
                 nrSpots      = roundOr(nrSpots, 0, -1);
                 xLoc         = roundOr(xLoc, 2, -1);
@@ -102,18 +105,19 @@ public class TrackCsvWriter {
                 longestGap   = defaultIfNull(longestGap, -1.0);
                 displacement = roundOr(displacement, 2, -1);
 
-                // Calculations here
+                // ---- Custom calculated attributes ----
                 TrackAttributes ca = calculateTrackAttributes(trackModel, trackId, TIME_INTERVAL);
 
                 int numberOfSpotsInTrack = ca.numberOfSpotsInTracks;
-                double diffusionCoeff = ca.diffusionCoeff;
+                double diffusionCoeff    = ca.diffusionCoeff;
                 double diffusionCoeffExt = ca.diffusionCoeffExt;
-                double totalDistance = ca.totalDistance;
-                double confinementRatio = ca.confinementRatio;
-                double displacementCalc = ca.displacement;
+                double totalDistance     = ca.totalDistance;
+                double confinementRatio  = ca.confinementRatio;
+                // Note: ca.displacement not used here (we keep TrackMate’s displacement)
+
                 String uniqueKey = recordingName + "-" + trackId;
 
-                // Count spots in this track
+                // Update total spots count
                 nrSpotsInAllTracks += numberOfSpotsInTrack;
 
                 // Track label or fallback
@@ -122,34 +126,35 @@ public class TrackCsvWriter {
                     trackLabel = "Track-" + trackId;
                 }
 
-                // Write row
+                // Write one CSV row (aligned with TRACK_COLS)
                 writeCsvRow(printWriter,
-                            uniqueKey,                                              // 0
-                            recordingName,                                          // 1
-                            trackId,                                                // 2
-                            trackLabel,                                             // 3
-                            asInt(nrSpots),                                         // 4
-                            asInt(nrGaps),                                          // 5
-                            asInt(longestGap),                                      // 6
-                            duration,                                               // 7
-                            xLoc,                                                   // 8
-                            yLoc,                                                   // 9
-                            displacement,                                           // 10
-                            maxSpeed,                                               // 11
-                            medSpeed,                                               // 12
-                            diffusionCoeff,                                         // 13
-                            diffusionCoeffExt,                                      // 14
-                            totalDistance,                                          // 15
-                            confinementRatio,                                       // 16
-                            squareNumber,                                           // 17
-                            labelNumber);                                           // 18
+                        uniqueKey,              // 0
+                        recordingName,          // 1
+                        trackId,                // 2
+                        trackLabel,             // 3
+                        asInt(nrSpots),         // 4
+                        asInt(nrGaps),          // 5
+                        asInt(longestGap),      // 6
+                        duration,               // 7
+                        xLoc,                   // 8
+                        yLoc,                   // 9
+                        displacement,           // 10 (from TrackMate)
+                        maxSpeed,               // 11
+                        medSpeed,               // 12
+                        diffusionCoeff,         // 13 (calculated)
+                        diffusionCoeffExt,      // 14 (calculated)
+                        totalDistance,          // 15 (calculated)
+                        confinementRatio,       // 16 (calculated)
+                        squareNumber,           // 17
+                        labelNumber             // 18
+                );
             }
         }
 
         return nrSpotsInAllTracks;
     }
 
-    // --------- helpers ----------
+    // --------- helper methods ----------
 
     private static Double defaultIfNull(Double v, Double defaultValue) {
         return v == null ? defaultValue : v;
