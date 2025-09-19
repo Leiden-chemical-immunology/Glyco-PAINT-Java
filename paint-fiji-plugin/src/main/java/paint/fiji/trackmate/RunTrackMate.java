@@ -28,22 +28,39 @@ import paint.fiji.tracks.TrackCsvWriter;
 import paint.shared.utils.AppLogger;
 import paint.shared.config.TrackMateConfig;
 
+/**
+ * Utility class to run the TrackMate plugin programmatically within Fiji.
+ * <p>
+ * This class encapsulates a full TrackMate workflow: loading an image, applying
+ * pre-processing, configuring detector and tracker settings, executing
+ * detection and tracking, rendering results, saving overlay images, writing
+ * track CSV files, and collecting summary statistics in a {@link TrackMateResults}.
+ * </p>
+ */
 public class RunTrackMate {
 
+    /** Verbose output flag (prints configuration to stdout when enabled). */
     final boolean verbose = false;
+
+    /** Global debug flag (enables validation and detailed logging when true). */
     static final boolean debug = true;
 
     /**
+     * Executes the TrackMate pipeline on the specified recording and image data.
      *
-     * @param experimentPath
-     * @param imagesPath
-     * @param trackMateConfig
-     * @param threshold
-     * @param experimentInfoRecord
-     * @return
-     * @throws IOException
+     * @param experimentPath        base path of the experiment where results will be stored
+     * @param imagesPath            path containing the input ND2 image files
+     * @param trackMateConfig       configuration parameters controlling detection and tracking
+     * @param threshold             intensity threshold for spot detection
+     * @param experimentInfoRecord  metadata about the experiment (e.g. recording name)
+     * @return                      a {@link TrackMateResults} summarizing the outcome
+     * @throws IOException          if an I/O error occurs while creating directories or saving files
      */
-    public static TrackMateResults RunTrackMate(Path experimentPath, Path imagesPath, TrackMateConfig trackMateConfig, double threshold, ExperimentInfoRecord experimentInfoRecord) throws IOException {
+    public static TrackMateResults RunTrackMate(Path experimentPath,
+                                                Path imagesPath,
+                                                TrackMateConfig trackMateConfig,
+                                                double threshold,
+                                                ExperimentInfoRecord experimentInfoRecord) throws IOException {
 
         final boolean verbose = false;
         final boolean debug = false;
@@ -54,7 +71,7 @@ public class RunTrackMate {
         // Suppress Bio-Formats console output
         DebugTools.setRootLevel("OFF");
 
-        // Open the image and show it
+        // Open the ND2 image
         File nd2File = new File(imagesPath.toFile(), experimentInfoRecord.recordingName + ".nd2");
         ImagePlus imp = IJ.openImage(nd2File.getAbsolutePath());
         if (imp == null) {
@@ -63,16 +80,13 @@ public class RunTrackMate {
         }
         imp.show();
 
-        // Change the image color
+        // Enhance contrast and convert to grayscale
         IJ.run(imp, "Enhance Contrast", "saturated=0.35");
         IJ.run("Grays");
 
-
-        // Save the Brightfield image as a jpg if it does not already exist
-        Path jpgPath = experimentPath
-                .resolve("Brightfield Images")
+        // Save the Brightfield image as a JPEG if not already present
+        Path jpgPath = experimentPath.resolve("Brightfield Images")
                 .resolve(experimentInfoRecord.recordingName + ".jpg");
-        // Check if the Brightfield Images directory exists and create one if it does not exist
         if (Files.notExists(jpgPath.getParent())) {
             Files.createDirectories(jpgPath.getParent());
         }
@@ -80,13 +94,12 @@ public class RunTrackMate {
             IJ.saveAs(imp, "Jpeg", jpgPath.toString());
         }
 
+        // Initialize TrackMate model and suppress logging
         Model model = new Model();
-
-        // Suppress all TrackMate logging
         model.setLogger(Logger.IJ_LOGGER);
         model.setLogger(Logger.VOID_LOGGER);
 
-        // Prepare the Settings object
+        // Prepare settings
         Settings settings = new Settings(imp);
 
         if (verbose) {
@@ -119,20 +132,19 @@ public class RunTrackMate {
         // Configure spot filters - Do not filter out any nr_spots
         settings.addSpotFilter(new FeatureFilter("QUALITY", 0, true));
 
-        // Add ALL the feature analyzers known to TrackMate.
-        // They will yield numerical features for the results, such as speed, mean intensity, etc.
+        // Add all analyzers
         settings.addAllAnalyzers();
 
         // Configure track filters - Only consider tracks of 3 and longer.
         settings.addTrackFilter(new FeatureFilter("NUMBER_SPOTS", trackMateConfig.getMinNrSpotsInTrack(), true));
 
-        // Debug
+        // Debug settings
         if (debug) {
             TrackMateSettingsDebugger.logSettings(settings);
             TrackMateSettingsValidator.validate(settings);
         }
 
-        // Instantiate plugin
+        // Instantiate TrackMate
         TrackMate trackmate = new TrackMate(model, settings);
 
         if (!trackmate.checkInput()) {
@@ -158,27 +170,22 @@ public class RunTrackMate {
             return new TrackMateResults(false);
         }
 
-        // --- Models
+        // --- Visualization ---
         final SelectionModel selectionModel = new SelectionModel(model);
-
-        // --- Display settings (user defaults)
         final DisplaySettings ds = DisplaySettingsIO.readUserDefault();
         ds.setSpotVisible(false);
         ds.setTrackColorBy(DisplaySettings.TrackMateObject.TRACKS, trackMateConfig.getTrackColoring());
 
-        // --- Display
         final HyperStackDisplayer displayer = new HyperStackDisplayer(model, selectionModel, imp, ds);
         displayer.render();
         displayer.refresh();
 
-        // --- Capture overlay and save
+        // --- Capture overlay image ---
         final Logger tmLogger = new LogRecorder(Logger.VOID_LOGGER);
         final ImagePlus capture = CaptureOverlayAction.capture(imp, -1, 1, tmLogger);
         if (capture != null) {
-            Path imagePath = experimentPath
-                    .resolve("TrackMate Images")
+            Path imagePath = experimentPath.resolve("TrackMate Images")
                     .resolve(experimentInfoRecord.recordingName + ".jpg");
-            // Check if the TrackMate Images directory exists and create one if it does not exist
             if (Files.notExists(imagePath.getParent())) {
                 Files.createDirectories(imagePath.getParent());
             }
@@ -189,7 +196,7 @@ public class RunTrackMate {
             AppLogger.infof("Overlay capture returned null.");
         }
 
-        //  Write the recording tracks to a CSV file
+        // --- Write tracks to CSV ---
         Path tracksPath = experimentPath.resolve(experimentInfoRecord.recordingName + "-tracks.csv");
         int numberOfSpotsInALlTracks = TrackCsvWriter.writeTracksCsv(
                 trackmate,
@@ -197,27 +204,32 @@ public class RunTrackMate {
                 tracksPath.toFile(),
                 true);
 
-        // Get the results
-        int numberOfSpots = model.getSpots().getNSpots(true);  // Number of visible spots only
-        int numberOfTracks = model.getTrackModel().nTracks(false); // Number of all tracks
-        int numberOfFilteredTracks = model.getTrackModel().nTracks(true);      // Number of filtered tracks
+        // --- Results ---
+        int numberOfSpots = model.getSpots().getNSpots(true);
+        int numberOfTracks = model.getTrackModel().nTracks(false);
+        int numberOfFilteredTracks = model.getTrackModel().nTracks(true);
         int numberOfFrames = imp.getNFrames();
 
-        // Show the image for 2 seconds before closing it and moving on
+        // Show the image briefly then close
         try {
-            Thread.sleep(2000); // pause 2 seconds
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             AppLogger.errorf("Failed to sleep - %s", e.getMessage());
         }
         imp.close();
 
-        // Record the end time
-        LocalDateTime end = LocalDateTime.now();
-        Duration duration = Duration.between(start, end);
+        // Compute runtime
+        Duration duration = Duration.between(start, LocalDateTime.now());
 
-        return new TrackMateResults(true, numberOfSpots, numberOfTracks, numberOfFilteredTracks, numberOfFrames, duration, numberOfSpotsInALlTracks);
+        return new TrackMateResults(true, numberOfSpots, numberOfTracks, numberOfFilteredTracks,
+                numberOfFrames, duration, numberOfSpotsInALlTracks);
     }
 
+    /**
+     * Prints a debug message if the global {@link #debug} flag is set.
+     *
+     * @param message the debug message to print
+     */
     static void debugMessage(String message) {
         if (debug) {
             System.out.println(message);
