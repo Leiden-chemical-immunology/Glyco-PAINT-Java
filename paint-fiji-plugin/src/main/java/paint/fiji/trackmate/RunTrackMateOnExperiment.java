@@ -14,12 +14,13 @@ import java.util.Map;
 import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.utils.AppLogger;
-import paint.shared.utils.Miscellaneous;
+import paint.shared.objects.ExperimentInfo;
 
 import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.utils.CsvConcatenator.concatenateCsvFiles;
 import static paint.shared.utils.CsvUtils.countProcessed;
-import paint.shared.objects.ExperimentInfo;
+
+import static paint.shared.utils.Miscellaneous.formatDuration;
 
 public class RunTrackMateOnExperiment {
 
@@ -31,7 +32,7 @@ public class RunTrackMateOnExperiment {
         int numberRecordings = 0;
 
         // Read the JSON configuration file from the experiment directory
-        // If it does not exist, a new one will be created with default values.
+        // If it does not exist, create a new one with default values.
         Path configPath = experimentPath.getParent().resolve(PAINT_CONFIGURATION_JSON);
         PaintConfig paintConfig = PaintConfig.from(configPath);
         TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
@@ -41,7 +42,7 @@ public class RunTrackMateOnExperiment {
             System.out.println(trackMateConfig);
         }
 
-        // Read the Experiment info.csv file and process the indicated recordings
+        // Check if the Experiment info.csv file exists
         Path experimentFilePath = experimentPath.resolve(EXPERIMENT_INFO_CSV);
         Path allRecordingFilePath = experimentFilePath.getParent().resolve(RECORDINGS_CSV);
         if (!Files.exists(experimentFilePath)) {
@@ -49,6 +50,7 @@ public class RunTrackMateOnExperiment {
             return;
         }
 
+        // Determime how many recordings need to be processes on this experiment
         int numberRecordingsToProcess = countProcessed(experimentFilePath);
 
         String experimentName = experimentPath.getFileName().toString();
@@ -56,6 +58,8 @@ public class RunTrackMateOnExperiment {
 
         AppLogger.infof("");
         AppLogger.infof("Processing %d recordings in experiment '%s' in project '%s'.",  numberRecordingsToProcess, experimentName, projectName);
+
+        // Open the experiment info file for reading
         try (BufferedReader reader = Files.newBufferedReader(experimentFilePath);
              BufferedWriter writer = Files.newBufferedWriter(allRecordingFilePath)) {String headerLine = reader.readLine();
             if (headerLine == null) {
@@ -63,7 +67,7 @@ public class RunTrackMateOnExperiment {
                 return;
             }
 
-            // Build the header for the 'All Recordings Java' file
+            // Build the header for the 'All Recordings Java' file (by adding some new columns)
             String header = headerLine + "," + "Number of Spots" +
                     "," + "Number of Tracks" +
                     "," + "Number of Spots in All Tracks" +
@@ -92,13 +96,13 @@ public class RunTrackMateOnExperiment {
             int runTime;
             String timeStamp;
 
+            // Now process row by row, recorsing by recording
             while ((line = reader.readLine()) != null) {
                 // split row into values
                 String[] fields = line.split(",", -1);  // -1 keeps empty fields
 
                 // Convert to map if needed
                 Map<String, String> row = new LinkedHashMap<>();
-                // String[] headers = headerLine.split(",");
                 for (int i = 0; i < headers.length && i < fields.length; i++) {
                     row.put(headers[i], fields[i]);
                 }
@@ -110,17 +114,23 @@ public class RunTrackMateOnExperiment {
 
                     // Perform TrackMate processing
 
-                    trackMateResults = RunTrackMate.RunTrackMate(experimentPath, imagesPath, trackMateConfig, threshold, experimentInfoRecord);
+                    trackMateResults = RunTrackMateOnRecording.RunTrackMateOnRecording(experimentPath, imagesPath, trackMateConfig, threshold, experimentInfoRecord);
 
                     if (trackMateResults == null || !trackMateResults.isSuccess()) {
                         AppLogger.errorf("TrackMate processing failed for recording '%s'.", experimentInfoRecord.getRecordingName());
-                        return; //ToDo
+                        continue;  // Process the next recording
                     }
-                    AppLogger.infof("   Recording '%s' (%d of %d) processed in %s.",
+                    int durationInSeconds = (int) (trackMateResults.getDuration().toMillis() / 1000);
+//                    AppLogger.infof("   Recording '%s' (%d of %d) processed in %s.",
+//                            experimentInfoRecord.getRecordingName(),
+//                            numberRecordings + 1,
+//                            numberRecordingsToProcess,
+//                            formatDuration(durationInSeconds));
+                    AppLogger.infof("   Recording '%s' (%d of %d) processed in %d seconds.",
                             experimentInfoRecord.getRecordingName(),
                             numberRecordings + 1,
                             numberRecordingsToProcess,
-                            Miscellaneous.formatDuration(trackMateResults.getDuration()));
+                            durationInSeconds);
                     totalDuration = totalDuration.plus(trackMateResults.getDuration());
                     numberRecordings += 1;
 
@@ -141,9 +151,9 @@ public class RunTrackMateOnExperiment {
                     timeStamp = "";
                 }
 
-                // Build output row
+                // Build output row, even if no recording was processed
 
-                String out = line + "," + String.format("%d", numberOfSpots) +                  // Number of Spots
+                String out = line + "," + String.format("%d", numberOfSpots) +      // Number of Spots
                         "," + String.format("%d", numberOfTracks) +                 // Number of Tracks
                         "," + String.format("%d", numberOfSpotsInAllTracks) +       // Numbe of spots in all tracks
                         "," + String.format("%d", numberOfFrames) +                 // Number of Frames
@@ -152,7 +162,7 @@ public class RunTrackMateOnExperiment {
                         "," + "False" +                                             // Exclude
                         "," + "" +                                                  // Tau
                         "," + "" +                                                  // R Squared
-                        "," + "";                                                 // Density
+                        "," + "";                                                   // Density
 
                 writer.write(out);
                 writer.newLine();
@@ -171,7 +181,9 @@ public class RunTrackMateOnExperiment {
             e.printStackTrace();
         }
 
-        AppLogger.infof("Processed %d recordings in %s.", numberRecordings, Miscellaneous.formatDuration(totalDuration));
+        int durationInSeconds = (int) (totalDuration.toMillis() / 1000);
+        // AppLogger.infof("Processed %d recordings in %s.", numberRecordings, formatDuration(durationInSeconds));
+        AppLogger.infof("Processed %d recordings in %d seconds.", numberRecordings, durationInSeconds);
         AppLogger.infof("");
     }
 }

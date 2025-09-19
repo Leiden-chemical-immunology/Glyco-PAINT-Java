@@ -5,17 +5,19 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import debug.ImageRootValidator;
 import paint.shared.config.PaintConfig;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 
+import paint.shared.debug.ValidateProject;
 import paint.shared.utils.AppLogger;
-import paint.shared.dialogs.ExperimentDialog;
-import paint.shared.dialogs.ProjectDialog;
+import paint.shared.dialogs.ProjectSpecificationDialog;
+import paint.shared.dialogs.ProjectSelectionDialog;
 
 import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 import static paint.fiji.trackmate.RunTrackMateOnExperiment.runTrackMateOnExperiment;
-import static paint.shared.debug.ValidateFileFormat.validateProject;
+import static paint.shared.debug.ValidateProject.validateProject;
 
 /**
  * SciJava/Fiji command plugin that runs the TrackMate pipeline on
@@ -29,8 +31,8 @@ import static paint.shared.debug.ValidateFileFormat.validateProject;
  *
  * <h3>Workflow</h3>
  * <ol>
- *     <li>User selects a project directory using {@link ProjectDialog}.</li>
- *     <li>User selects experiments in {@link ExperimentDialog} (TRACKMATE mode).</li>
+ *     <li>User selects a project directory using {@link ProjectSelectionDialog}.</li>
+ *     <li>User selects experiments in {@link ProjectSpecificationDialog} (TRACKMATE mode).</li>
  *     <li>Configuration is read from <code>paint-config.json</code>.</li>
  *     <li>Checks are made for the presence of image root and project directories.</li>
  *     <li>TrackMate is executed for each experiment in the project.</li>
@@ -42,13 +44,13 @@ import static paint.shared.debug.ValidateFileFormat.validateProject;
  * </pre>
  */
 @Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run TrackMate on Project")
-public class TrackMateOnProject implements Command {
+public class RunTrackMateOnProject implements Command {
 
     /**
      * Entry point for the SciJava Command.
      * <p>
      * Sets up logging, asks the user to select a project,
-     * launches an {@link ExperimentDialog}, and triggers TrackMate processing
+     * launches an {@link ProjectSpecificationDialog}, and triggers TrackMate processing
      * on all selected experiments when the user confirms.
      * </p>
      */
@@ -60,7 +62,7 @@ public class TrackMateOnProject implements Command {
         AppLogger.debugf("TrackMate plugin started - v6.");
 
         // Display the project directory selection dialog
-        ProjectDialog projDlg = new ProjectDialog(null);
+        ProjectSelectionDialog projDlg = new ProjectSelectionDialog(null);
         Path projectPath = projDlg.showDialog();
 
         // If the user selected Cancel, then return.
@@ -70,7 +72,7 @@ public class TrackMateOnProject implements Command {
         }
 
         // Show ExperimentDialog in TRACKMATE mode
-        ExperimentDialog dialog = new ExperimentDialog(null, projectPath, ExperimentDialog.DialogMode.TRACKMATE);
+        ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(null, projectPath, ProjectSpecificationDialog.DialogMode.TRACKMATE);
 
         /**
          * Registers the TrackMate execution logic as a callback with the experiment dialog.
@@ -88,18 +90,29 @@ public class TrackMateOnProject implements Command {
          *     <li>Handles and logs any {@link Throwable} thrown during execution.</li>
          * </ol>
          *
-         * @param project the project configuration object from {@link ExperimentDialog},
+         * @param project the project configuration object from {@link ProjectSpecificationDialog},
          *                containing experiment names to process
          */
         dialog.setCalculationCallback(project -> {
 
             // There has to be an Image Root for TrackMate specified, otherwise nothing can work
             PaintConfig paintConfig = PaintConfig.from(projectPath.resolve(PAINT_CONFIGURATION_JSON));
-            String imagesRoot = paintConfig.getString("Paths", "Image Root", "Fatal");
+            String imagesRoot = paintConfig.getString("Paths", "Images Root", "Fatal");
             boolean error = false;
 
             if (imagesRoot.equals("Fatal")) {
                 AppLogger.errorf("No Image Path found - Fatal.");
+                error = true;
+            }
+
+            // The images root exists but is it the  correct place?
+            List<String> report = ImageRootValidator.validateImageRoot(
+                    projectPath,
+                    Paths.get(imagesRoot),
+                    project.experimentNames);
+            if (!report.isEmpty()) {
+                report.forEach(System.out::println);
+                AppLogger.errorf("Image Root Validation Failed - Fatal.");
                 error = true;
             }
 
@@ -129,6 +142,10 @@ public class TrackMateOnProject implements Command {
             AppLogger.debugf("Project root : %s", projectPath.toString());
             AppLogger.debugf("Images root  : %s", imagesPath.toString());
             AppLogger.debugf("Experiments  : %s", project.experimentNames.toString());
+
+            // Verify if the experiments appear valid
+            List<String> errors = validateProject(projectPath, project.experimentNames, false);
+            ValidateProject.printReport(errors);
 
             // Cycle through the experiments and run TrackMate on each one
             for (String experimentName : project.experimentNames) {

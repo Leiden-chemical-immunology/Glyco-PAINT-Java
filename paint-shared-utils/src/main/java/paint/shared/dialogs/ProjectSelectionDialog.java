@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.prefs.Preferences;
 
-public class ProjectDialog extends JDialog {
+public class ProjectSelectionDialog extends JDialog {
 
     private static final String PREF_NODE = "Glyco-PAINT.GenerateSquares";
     private static final String KEY_PROJECT = "projectDir";
@@ -15,7 +15,7 @@ public class ProjectDialog extends JDialog {
     private final JTextField directoryField;
     private boolean okPressed = false;
 
-    public ProjectDialog(Frame owner) {
+    public ProjectSelectionDialog(Frame owner) {
         super(owner, "Select Project Directory", true); // modal dialog
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 

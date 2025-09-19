@@ -8,8 +8,8 @@ import paint.shared.objects.Recording;
 import io.SquareTableIO;
 import tech.tablesaw.api.Table;
 import paint.shared.utils.AppLogger;
-import paint.shared.dialogs.ExperimentDialog;
-import paint.shared.dialogs.ProjectDialog;
+import paint.shared.dialogs.ProjectSpecificationDialog;
+import paint.shared.dialogs.ProjectSelectionDialog;
 
 import static paint.shared.constants.PaintConstants.SQUARES_CSV;
 import static generatesquares.calc.GenerateSquareCalcs.calculateSquaresForExperiment;
@@ -33,7 +33,7 @@ public class GenerateSquares {
         SwingUtilities.invokeLater(() -> {
 
             // Display the project directory selection dialog
-            ProjectDialog projDlg = new ProjectDialog(null);
+            ProjectSelectionDialog projDlg = new ProjectSelectionDialog(null);
             Path projectPath = projDlg.showDialog();
 
             // If the user selected Cancel, then return.
@@ -44,7 +44,7 @@ public class GenerateSquares {
 
             // Use the project directory to display the experiment selection dialog.
             AppLogger.debugf("User selected: " + projectPath);
-            ExperimentDialog dialog = new ExperimentDialog(null, projectPath, ExperimentDialog.DialogMode.GENERATE_SQUARES);
+            ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(null, projectPath, ProjectSpecificationDialog.DialogMode.GENERATE_SQUARES);
 
             // Wire the callback to perform calculations while keeping the dialog open
             dialog.setCalculationCallback(project -> {

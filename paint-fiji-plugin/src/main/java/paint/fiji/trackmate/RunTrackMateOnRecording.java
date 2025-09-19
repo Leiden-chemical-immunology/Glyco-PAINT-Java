@@ -37,7 +37,7 @@ import paint.shared.objects.ExperimentInfo;
  * track CSV files, and collecting summary statistics in a {@link TrackMateResults}.
  * </p>
  */
-public class RunTrackMate {
+public class RunTrackMateOnRecording {
 
     /** Verbose output flag (prints configuration to stdout when enabled). */
     final boolean verbose = false;
@@ -56,11 +56,11 @@ public class RunTrackMate {
      * @return                      a {@link TrackMateResults} summarizing the outcome
      * @throws IOException          if an I/O error occurs while creating directories or saving files
      */
-    public static TrackMateResults RunTrackMate(Path experimentPath,
-                                                Path imagesPath,
-                                                TrackMateConfig trackMateConfig,
-                                                double threshold,
-                                                ExperimentInfo experimentInfoRecord) throws IOException {
+    public static TrackMateResults RunTrackMateOnRecording(Path experimentPath,
+                                                           Path imagesPath,
+                                                           TrackMateConfig trackMateConfig,
+                                                           double threshold,
+                                                           ExperimentInfo experimentInfoRecord) throws IOException {
 
         final boolean verbose = false;
         final boolean debug = false;
