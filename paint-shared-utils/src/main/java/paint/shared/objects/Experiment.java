@@ -1,4 +1,4 @@
-package objects;
+package paint.shared.objects;
 
 import java.util.ArrayList;
 import java.util.List;

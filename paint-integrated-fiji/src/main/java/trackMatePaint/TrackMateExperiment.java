@@ -13,9 +13,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
-import static constants.PaintConstants.RECORDINGS_CSV;
-import static utils.Miscellaneous.deleteAssociatedFiles;
-import static utils.Miscellaneous.formatDuration;
+import static paint.shared.constants.PaintConstants.RECORDINGS_CSV;
+import static paint.shared.utils.Miscellaneous.deleteAssociatedFiles;
+import static paint.shared.utils.Miscellaneous.formatDuration;
 
 public class TrackMateExperiment {
 

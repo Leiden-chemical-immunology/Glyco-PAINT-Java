@@ -1,6 +1,6 @@
 package paint.io;
 
-import objects.Track;
+import paint.shared.objects.Track;
 import tech.tablesaw.api.*;
 import tech.tablesaw.columns.Column;
 
@@ -9,8 +9,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static constants.PaintConstants.TRACK_COLS;
-import static constants.PaintConstants.TRACK_TYPES;
+import static paint.shared.constants.PaintConstants.TRACK_COLS;
+import static paint.shared.constants.PaintConstants.TRACK_TYPES;
 
 /**
  * Table IO for Track entities.

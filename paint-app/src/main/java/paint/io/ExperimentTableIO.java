@@ -1,6 +1,6 @@
 package paint.io;
 
-import objects.ExperimentInfo;
+import paint.shared.objects.ExperimentInfo;
 import tech.tablesaw.api.*;
 import tech.tablesaw.columns.Column;
 
@@ -9,8 +9,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static constants.PaintConstants.EXPERIMENT_INFO_COLS;
-import static constants.PaintConstants.EXPERIMENT_INFO_TYPES;
+import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_COLS;
+import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_TYPES;
 
 /**
  * Provides table input/output utilities for {@code ExperimentInfo}

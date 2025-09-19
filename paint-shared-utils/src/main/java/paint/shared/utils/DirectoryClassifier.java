@@ -1,4 +1,4 @@
-package utils;
+package paint.shared.utils;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static constants.PaintConstants.*;
+import static paint.shared.constants.PaintConstants.*;
 
 public class DirectoryClassifier {
 

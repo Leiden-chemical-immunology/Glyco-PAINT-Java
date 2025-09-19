@@ -1,7 +1,7 @@
-package config;
+package paint.shared.config;
 
 import com.google.gson.*;
-import utils.AppLogger;
+import paint.shared.utils.AppLogger;
 
 import java.io.IOException;
 import java.io.Reader;

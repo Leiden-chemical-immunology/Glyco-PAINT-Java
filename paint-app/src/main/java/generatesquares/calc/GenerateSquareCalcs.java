@@ -1,12 +1,12 @@
 package generatesquares.calc;
 
-import config.GenerateSquaresConfig;
+import paint.shared.config.GenerateSquaresConfig;
 import paint.io.TrackTableIO;
-import objects.Project;
-import objects.Experiment;
-import objects.Recording;
-import objects.Square;
-import objects.Track;
+import paint.shared.objects.Project;
+import paint.shared.objects.Experiment;
+import paint.shared.objects.Recording;
+import paint.shared.objects.Square;
+import paint.shared.objects.Track;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.Table;
 
@@ -20,10 +20,10 @@ import static generatesquares.calc.CalculateTau.calcTau;
 import static generatesquares.calc.CalculateVariability.calcVariability;
 import static paint.loaders.ProjectDataLoader.*;
 
-import static constants.PaintConstants.IMAGE_HEIGHT;
-import static constants.PaintConstants.IMAGE_WIDTH;
+import static paint.shared.constants.PaintConstants.IMAGE_HEIGHT;
+import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
 
-import utils.AppLogger;
+import paint.shared.utils.AppLogger;
 
 public class GenerateSquareCalcs {
 

@@ -1,7 +1,7 @@
 package generatesquares.calc;
 
-import objects.Recording;
-import objects.Square;
+import paint.shared.objects.Recording;
+import paint.shared.objects.Square;
 
 import java.util.ArrayList;
 import java.util.Collections;

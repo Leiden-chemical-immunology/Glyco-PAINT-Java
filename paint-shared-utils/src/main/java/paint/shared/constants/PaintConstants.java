@@ -1,4 +1,4 @@
-package constants;
+package paint.shared.constants;
 
 import tech.tablesaw.api.ColumnType;
 

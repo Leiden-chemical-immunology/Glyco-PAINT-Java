@@ -1,8 +1,8 @@
-package objects;
+package paint.shared.objects;
 
-import config.GenerateSquaresConfig;
-import config.PaintConfig;
-import config.TrackMateConfig;
+import paint.shared.config.GenerateSquaresConfig;
+import paint.shared.config.PaintConfig;
+import paint.shared.config.TrackMateConfig;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
