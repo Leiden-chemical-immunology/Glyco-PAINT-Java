@@ -38,24 +38,30 @@ public class TrackMateOnProject implements Command {
         // Show ExperimentDialog in TRACKMATE mode
         ExperimentDialog dialog = new ExperimentDialog(null, projectPath, ExperimentDialog.DialogMode.TRACKMATE);
 
-        // ✅ Register calculation callback – runs only after OK is pressed
+        // Register calculation callback – runs only after OK is pressed
         dialog.setCalculationCallback(project -> {
+
+            // There has to be an Image Root for TrackMate specified, otherwise nothing can work
             PaintConfig paintConfig = PaintConfig.from(projectPath.resolve(PAINT_CONFIGURATION_JSON));
-            String imagesDir = paintConfig.getString("Paths", "Image Directory", "Fatal");
+            String imagesRoot = paintConfig.getString("Paths", "Image Root", "Fatal");
             boolean error = false;
-            if (imagesDir.equals("Fatal")) {
+            if (imagesRoot.equals("Fatal")) {
                 AppLogger.errorf("No Image Path found - Fatal.");
                 error = true;
             }
-            Path imagesPath = Paths.get(imagesDir);
+
+            // The image root and projet root need to exist
+            Path imagesPath = Paths.get(imagesRoot);
             if (!error && !imagesPath.toFile().exists()) {
-                AppLogger.errorf("Image Path %s does not exist - Fatal.", imagesPath);
+                AppLogger.errorf("Image Root %s does not exist - Fatal.", imagesPath);
                 error = true;
             }
             if (!error && !projectPath.toFile().exists()) {
-                AppLogger.errorf("Project Path %s does not exist - Fatal.", projectPath);
+                AppLogger.errorf("Project Root %s does not exist - Fatal.", projectPath);
                 error = true;
             }
+
+            // If there is an error, display a warning message for 5 seconds and then exit
             if (error) {
                 try {
                     Thread.sleep(5000); // pause 2 seconds
@@ -65,10 +71,11 @@ public class TrackMateOnProject implements Command {
                 System.exit(-1);
             }
 
+            // Basic conditions have been met
             AppLogger.debugf("TrackMate processing started.");
-            AppLogger.debugf("Project path: %s", projectPath.toString());
-            AppLogger.debugf("Images root : %s", imagesPath.toString());
-            AppLogger.debugf("Experiments : %s", project.experimentNames.toString());
+            AppLogger.debugf("Project root : %s", projectPath.toString());
+            AppLogger.debugf("Images root  : %s", imagesPath.toString());
+            AppLogger.debugf("Experiments  : %s", project.experimentNames.toString());
 
             // Cycle through the experiments and run TrackMate on each one
             for (String experimentName : project.experimentNames) {
@@ -81,7 +88,6 @@ public class TrackMateOnProject implements Command {
                     } catch (Throwable t) {
                         AppLogger.errorf("Error during TrackMate run for '%s': %s",
                                 experimentName, t.getMessage());
-                        // t.printStackTrace();
                     }
                 }
             }
