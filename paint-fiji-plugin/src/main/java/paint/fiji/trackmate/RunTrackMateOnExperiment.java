@@ -17,7 +17,7 @@ import paint.shared.utils.AppLogger;
 import paint.shared.utils.Miscellaneous;
 
 import static paint.shared.constants.PaintConstants.*;
-import static paint.fiji.util.CsvConcatenator.concatenateCsvFiles;
+import static paint.shared.utils.CsvConcatenator.concatenateCsvFiles;
 import static paint.shared.utils.CsvUtils.countProcessed;
 import paint.shared.objects.ExperimentInfo;
 

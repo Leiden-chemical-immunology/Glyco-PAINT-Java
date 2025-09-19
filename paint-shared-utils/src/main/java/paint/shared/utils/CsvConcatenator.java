@@ -1,4 +1,4 @@
-package paint.fiji.util;
+package paint.shared.utils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
