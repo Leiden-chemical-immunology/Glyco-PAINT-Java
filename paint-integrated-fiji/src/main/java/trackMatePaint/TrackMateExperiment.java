@@ -14,8 +14,8 @@ import java.time.Instant;
 import java.util.*;
 
 import static constants.PaintConstants.RECORDINGS_CSV;
-import static paint.localUtilities.Miscellaneous.deleteAssociatedFiles;
-import static utilities.Miscellaneous.formatDuration;
+import static utils.Miscellaneous.deleteAssociatedFiles;
+import static utils.Miscellaneous.formatDuration;
 
 public class TrackMateExperiment {
 
@@ -159,7 +159,7 @@ public class TrackMateExperiment {
         //System.out.println("");
         System.out.println(String.format("✅ Number of recordings processed %d out of %d.", nrRecordingsProcessed, nrRecordingsToProcess));
         System.out.println(String.format("✅ Time taken to process: %s.", formatDuration(duration)));
-        System.out.println("");
+        System.out.println();
     }
 
     public static List<Map<String, String>> addOrderedColumns(List<Map<String, String>> records) {
