@@ -1,4 +1,4 @@
-package paint.fijiUtilities;
+package paint.fiji.trackmate;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -13,11 +13,12 @@ import java.util.Map;
 
 import config.PaintConfig;
 import config.TrackMateConfig;
+import paint.fiji.util.ExperimentInfoRecord;
 import utilities.AppLogger;
 import utilities.Miscellaneous;
 
 import static constants.PaintConstants.*;
-import static paint.fijiUtilities.CsvConcatenator.concatenateCsvFiles;
+import static paint.fiji.util.CsvConcatenator.concatenateCsvFiles;
 import static utilities.CsvUtils.countProcessed;
 
 public class RunTrackMateOnExperiment {

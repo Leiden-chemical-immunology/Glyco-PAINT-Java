@@ -1,4 +1,4 @@
-package paint.fijiUtilities;
+package paint.fiji.tracks;
 
 public class TrackAttributes {
     public final int numberOfSpotsInTracks ;
@@ -8,7 +8,15 @@ public class TrackAttributes {
     public final double confinementRatio;
     public final double displacement;
 
-
+    /**
+     *
+     * @param numberOfSpotsInTracks
+     * @param totalDistance
+     * @param diffusionCoeff
+     * @param diffusionCoeffExt
+     * @param confinementRatio
+     * @param displacement
+     */
     public TrackAttributes(int numberOfSpotsInTracks,
                            double totalDistance,
                            double diffusionCoeff,

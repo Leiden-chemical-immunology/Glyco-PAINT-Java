@@ -1,4 +1,4 @@
-package my.fiji.plugin;
+package paint.fiji.run;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,7 +13,7 @@ import dialogs.ExperimentDialog;
 import dialogs.ProjectDialog;
 
 import static constants.PaintConstants.PAINT_CONFIGURATION_JSON;
-import static paint.fijiUtilities.RunTrackMateOnExperiment.cycleThroughRecordings;
+import static paint.fiji.trackmate.RunTrackMateOnExperiment.cycleThroughRecordings;
 
 @Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run TrackMate on Project")
 public class TrackMateOnProject implements Command {

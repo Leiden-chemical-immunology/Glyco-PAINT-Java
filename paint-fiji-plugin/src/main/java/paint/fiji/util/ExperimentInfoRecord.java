@@ -1,4 +1,4 @@
-package paint.fijiUtilities;
+package paint.fiji.util;
 
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-package paint.fijiUtilities;
+package paint.fiji.trackmate;
 
 import javax.swing.*;
 import java.awt.*;

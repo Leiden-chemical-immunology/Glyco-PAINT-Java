@@ -1,4 +1,4 @@
-package paint.fijiUtilities;
+package paint.fiji.tracks;
 
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.TrackMate;
@@ -14,12 +14,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 import static constants.PaintConstants.TIME_INTERVAL;
-import static paint.fijiUtilities.TrackAttributeCalculations.calculateTrackAttributes;
+import static paint.fiji.tracks.TrackAttributeCalculations.calculateTrackAttributes;
 
 
-//
-// TracksCsvWriter is called by RunTrackMate to write a CSV file with the tracks.
-//
+/**
+* TracksCsvWriter is called by RunTrackMate to write a CSV file with the tracks.
+*/
 
 public class TrackCsvWriter {
 

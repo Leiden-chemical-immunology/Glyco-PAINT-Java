@@ -1,7 +1,10 @@
-package paint.fijiUtilities;
+package paint.fiji.trackmate;
 
 import java.time.Duration;
 
+/**
+ *
+ */
 public class TrackMateResults {
     private final boolean success;
     private final int numberOfSpots;

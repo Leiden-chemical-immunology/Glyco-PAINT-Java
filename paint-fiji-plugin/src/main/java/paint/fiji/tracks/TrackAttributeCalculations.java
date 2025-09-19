@@ -1,4 +1,4 @@
-package paint.fijiUtilities;
+package paint.fiji.tracks;
 
 import fiji.plugin.trackmate.Spot;
 import fiji.plugin.trackmate.TrackModel;
@@ -14,8 +14,13 @@ import java.util.List;
 
 public final class TrackAttributeCalculations {
 
-    /*
-    Thew function returns a TrackCsvWriter.CustomAttrs object, filled with calculated track attributes
+
+    /**
+     *
+     * @param trackModel
+     * @param trackId
+     * @param dtSeconds
+     * @return
      */
     public static TrackAttributes calculateTrackAttributes(TrackModel trackModel, int trackId, double dtSeconds) {
 

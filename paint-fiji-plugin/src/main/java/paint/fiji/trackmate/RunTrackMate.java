@@ -1,4 +1,4 @@
-package paint.fijiUtilities;
+package paint.fiji.trackmate;
 
 import debug.TrackMateSettingsDebugger;
 import debug.TrackMateSettingsValidator;
@@ -23,6 +23,8 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+import paint.fiji.util.ExperimentInfoRecord;
+import paint.fiji.tracks.TrackCsvWriter;
 import utilities.AppLogger;
 import config.TrackMateConfig;
 
@@ -31,6 +33,16 @@ public class RunTrackMate {
     final boolean verbose = false;
     static final boolean debug = true;
 
+    /**
+     *
+     * @param experimentPath
+     * @param imagesPath
+     * @param trackMateConfig
+     * @param threshold
+     * @param experimentInfoRecord
+     * @return
+     * @throws IOException
+     */
     public static TrackMateResults RunTrackMate(Path experimentPath, Path imagesPath, TrackMateConfig trackMateConfig, double threshold, ExperimentInfoRecord experimentInfoRecord) throws IOException {
 
         final boolean verbose = false;

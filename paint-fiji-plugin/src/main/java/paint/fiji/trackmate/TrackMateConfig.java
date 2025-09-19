@@ -1,5 +1,8 @@
-package paint.fijiUtilities;
+package paint.fiji.trackmate;
 
+/**
+ *
+ */
 public class TrackMateConfig {
     public int maxFrameGap;
     public double linkingMaxDistance;

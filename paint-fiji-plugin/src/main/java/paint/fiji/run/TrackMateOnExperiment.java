@@ -1,4 +1,4 @@
-package my.fiji.plugin;
+package paint.fiji.run;
 
 import org.scijava.command.Command;
 
@@ -8,10 +8,10 @@ import java.nio.file.Paths;
 
 import config.PaintConfig;
 import dialogs.ExperimentDialog;
-import paint.fijiUtilities.RunTrackMateExperimentDialog;
+import paint.fiji.trackmate.RunTrackMateExperimentDialog;
 import utilities.AppLogger;
 
-import static paint.fijiUtilities.RunTrackMateOnExperiment.cycleThroughRecordings;
+import static paint.fiji.trackmate.RunTrackMateOnExperiment.cycleThroughRecordings;
 
 /**
  * SciJava Command that opens ExperimentDialog and launches TrackMate work
