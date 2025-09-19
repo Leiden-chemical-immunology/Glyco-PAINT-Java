@@ -19,10 +19,13 @@ import static constants.PaintConstants.*;
 /**
  * Utility class for validating the format of Paint project CSV files.
  *
- * CLI usage examples:
+ * <p>CLI usage examples:</p>
+ *
+ * <pre>{@code
  *   java -cp "<deps...>" paint.validation.ValidateFileFormat --project /path/to/project --experiments 221012,221101 --squares
  *   java -cp "<deps...>" paint.validation.ValidateFileFormat /path/to/project 221012 221101 --squares
  *   java -cp "<deps...>" paint.validation.ValidateFileFormat --project /path/to/project   (auto-discovers experiments)
+ * }</pre>
  */
 public class ValidateFileFormat {
 
@@ -234,8 +237,21 @@ public class ValidateFileFormat {
         return errors;
     }
 
+
     /**
-     * Validate all experiments in a project root directory.
+     * Validates a list of experiments located under a given project root directory.
+     * <p>
+     * For each experiment name provided, this method checks if the corresponding
+     * directory exists. If it does, the experiment is validated via
+     * {@code validateExperiment}, and any errors found are collected with the
+     * experiment name prepended for context. If the directory does not exist,
+     * an error entry is added.
+     * </p>
+     *
+     * @param projectRoot     the root directory of the project containing experiment folders
+     * @param experimentNames the list of experiment folder names to validate
+     * @param checkSquares    whether to perform additional validation of square data
+     * @return a list of error messages; empty if all experiments are valid
      */
     public static List<String> validateProject(Path projectRoot, List<String> experimentNames, boolean checkSquares) {
         List<String> allErrors = new ArrayList<>();
@@ -256,7 +272,29 @@ public class ValidateFileFormat {
     }
 
     /**
-     * Validate a CSV file against expected column names and types.
+     * Validates the structure and types of a CSV file against expected column names
+     * and column types.
+     * <p>
+     * The validation includes:
+     * <ul>
+     *   <li>Checking that the number of columns in the header matches the expected count.</li>
+     *   <li>Verifying that column names appear in the expected order.</li>
+     *   <li>Comparing actual column types to expected types, with some flexibility:
+     *       <ul>
+     *         <li>Empty columns produce a warning instead of an error.</li>
+     *         <li>{@code DOUBLE} is considered compatible with {@code INTEGER}.</li>
+     *         <li>{@code STRING} and {@code LOCAL_DATE_TIME} are treated as loosely compatible.</li>
+     *       </ul>
+     *   </li>
+     * </ul>
+     * If mismatches are found, descriptive error messages are added to the report.
+     * </p>
+     *
+     * @param filePath      path to the CSV file to validate
+     * @param expectedCols  the expected column names in order
+     * @param expectedTypes the expected column types aligned with {@code expectedCols}
+     * @return a list of validation messages, including errors and warnings;
+     *         the list is empty if the file matches expectations
      */
     private static List<String> validateCsv(Path filePath, String[] expectedCols, ColumnType[] expectedTypes) {
         List<String> report = new ArrayList<>();
