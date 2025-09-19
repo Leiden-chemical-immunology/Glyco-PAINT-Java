@@ -4,6 +4,11 @@ import tech.tablesaw.api.Table;
 
 import java.util.*;
 
+import static java.lang.Boolean.parseBoolean;
+import static java.lang.Double.parseDouble;
+import static java.lang.Integer.parseInt;
+import paint.shared.objects.ExperimentInfo;
+
 /**
  * Represents a Recording with metadata, squares, and tracks.
  */
@@ -52,6 +57,25 @@ public class ExperimentInfo {
         this.threshold = threshold;
     }
 
+    /**
+     * Constructs an ExperimentInfo from a row of string key-value pairs.
+     * Expects keys like "Recording Name", "Condition Number", etc.
+     *
+     * @param row the map of column names to values (all as strings)
+     */
+    public ExperimentInfo(Map<String, String> row) {
+        this.recordingName   = row.get("Recording Name");
+        this.conditionNumber = parseInt(row.get("Condition Number"));
+        this.replicateNumber = parseInt(row.get("Replicate Number"));
+        this.probeName       = row.get("Probe Name");
+        this.probeType       = row.get("Probe Type");
+        this.cellType        = row.get("Cell Type");
+        this.adjuvant        = row.get("Adjuvant");
+        this.concentration   = parseDouble(row.get("Concentration"));
+        this.processFlag     = parseBoolean(row.get("Process Flag"));
+        this.threshold       = parseDouble(row.get("Threshold"));
+    }
+
     // --- Getters and Setters ---
     public String getRecordingName() { return recordingName; }
     public void setRecordingName(String recordingName) { this.recordingName = recordingName; }
@@ -77,7 +101,7 @@ public class ExperimentInfo {
     public double getConcentration() { return concentration; }
     public void setConcentration(double concentration) { this.concentration = concentration; }
 
-    public boolean isProcessFlag() { return processFlag; }
+    public boolean getProcessFlag() { return processFlag; }
     public void setProcessFlag(boolean processFlag) { this.processFlag = processFlag; }
 
     public double getThreshold() { return threshold; }

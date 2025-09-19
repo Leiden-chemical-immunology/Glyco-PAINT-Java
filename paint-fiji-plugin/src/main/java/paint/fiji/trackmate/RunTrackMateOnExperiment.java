@@ -13,13 +13,13 @@ import java.util.Map;
 
 import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
-import paint.fiji.util.ExperimentInfoRecord;
 import paint.shared.utils.AppLogger;
 import paint.shared.utils.Miscellaneous;
 
 import static paint.shared.constants.PaintConstants.*;
 import static paint.fiji.util.CsvConcatenator.concatenateCsvFiles;
 import static paint.shared.utils.CsvUtils.countProcessed;
+import paint.shared.objects.ExperimentInfo;
 
 public class RunTrackMateOnExperiment {
 
@@ -103,21 +103,21 @@ public class RunTrackMateOnExperiment {
                     row.put(headers[i], fields[i]);
                 }
 
-                ExperimentInfoRecord experimentInfoRecord = ExperimentInfoRecord.fromRow(row);
+                ExperimentInfo experimentInfoRecord = new ExperimentInfo(row);
 
-                if (experimentInfoRecord.process) {
-                    double threshold = experimentInfoRecord.threshold;
+                if (experimentInfoRecord.getProcessFlag()) {
+                    double threshold = experimentInfoRecord.getThreshold();
 
                     // Perform TrackMate processing
 
                     trackMateResults = RunTrackMate.RunTrackMate(experimentPath, imagesPath, trackMateConfig, threshold, experimentInfoRecord);
 
                     if (trackMateResults == null || !trackMateResults.isSuccess()) {
-                        AppLogger.errorf("TrackMate processing failed for recording '%s'.", experimentInfoRecord.recordingName);
+                        AppLogger.errorf("TrackMate processing failed for recording '%s'.", experimentInfoRecord.getRecordingName());
                         return; //ToDo
                     }
                     AppLogger.infof("   Recording '%s' (%d of %d) processed in %s.",
-                            experimentInfoRecord.recordingName,
+                            experimentInfoRecord.getRecordingName(),
                             numberRecordings + 1,
                             numberRecordingsToProcess,
                             Miscellaneous.formatDuration(trackMateResults.getDuration()));
@@ -132,7 +132,7 @@ public class RunTrackMateOnExperiment {
                     timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                 }
                 else {
-                    AppLogger.infof("   Skipped processing of recording '%s'.", experimentInfoRecord.recordingName);
+                    AppLogger.infof("   Skipped processing of recording '%s'.", experimentInfoRecord.getRecordingName());
                     numberOfSpots = 0;
                     numberOfTracks = 0;
                     numberOfFrames = 0;

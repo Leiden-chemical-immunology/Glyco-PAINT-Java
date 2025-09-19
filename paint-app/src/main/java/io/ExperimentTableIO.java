@@ -88,7 +88,7 @@ public class ExperimentTableIO extends BaseTableIO {
             row.setString("Cell Type", info.getCellType());
             row.setString("Adjuvant", info.getAdjuvant());
             row.setDouble("Concentration", info.getConcentration());
-            row.setBoolean("Process Flag", info.isProcessFlag());
+            row.setBoolean("Process Flag", info.getProcessFlag());
             row.setDouble("Threshold", info.getThreshold());
         }
         return table;

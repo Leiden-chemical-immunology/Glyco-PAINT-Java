@@ -23,10 +23,10 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-import paint.fiji.util.ExperimentInfoRecord;
 import paint.fiji.tracks.TrackCsvWriter;
 import paint.shared.utils.AppLogger;
 import paint.shared.config.TrackMateConfig;
+import paint.shared.objects.ExperimentInfo;
 
 /**
  * Utility class to run the TrackMate plugin programmatically within Fiji.
@@ -60,7 +60,7 @@ public class RunTrackMate {
                                                 Path imagesPath,
                                                 TrackMateConfig trackMateConfig,
                                                 double threshold,
-                                                ExperimentInfoRecord experimentInfoRecord) throws IOException {
+                                                ExperimentInfo experimentInfoRecord) throws IOException {
 
         final boolean verbose = false;
         final boolean debug = false;
@@ -72,7 +72,7 @@ public class RunTrackMate {
         DebugTools.setRootLevel("OFF");
 
         // Open the ND2 image
-        File nd2File = new File(imagesPath.toFile(), experimentInfoRecord.recordingName + ".nd2");
+        File nd2File = new File(imagesPath.toFile(), experimentInfoRecord.getRecordingName() + ".nd2");
         ImagePlus imp = IJ.openImage(nd2File.getAbsolutePath());
         if (imp == null) {
             AppLogger.errorf("The image file %s could not be opened.", nd2File);
@@ -86,7 +86,7 @@ public class RunTrackMate {
 
         // Save the Brightfield image as a JPEG if not already present
         Path jpgPath = experimentPath.resolve("Brightfield Images")
-                .resolve(experimentInfoRecord.recordingName + ".jpg");
+                .resolve(experimentInfoRecord.getRecordingName() + ".jpg");
         if (Files.notExists(jpgPath.getParent())) {
             Files.createDirectories(jpgPath.getParent());
         }
@@ -185,7 +185,7 @@ public class RunTrackMate {
         final ImagePlus capture = CaptureOverlayAction.capture(imp, -1, 1, tmLogger);
         if (capture != null) {
             Path imagePath = experimentPath.resolve("TrackMate Images")
-                    .resolve(experimentInfoRecord.recordingName + ".jpg");
+                    .resolve(experimentInfoRecord.getRecordingName() + ".jpg");
             if (Files.notExists(imagePath.getParent())) {
                 Files.createDirectories(imagePath.getParent());
             }
@@ -197,10 +197,10 @@ public class RunTrackMate {
         }
 
         // --- Write tracks to CSV ---
-        Path tracksPath = experimentPath.resolve(experimentInfoRecord.recordingName + "-tracks.csv");
+        Path tracksPath = experimentPath.resolve(experimentInfoRecord.getRecordingName() + "-tracks.csv");
         int numberOfSpotsInALlTracks = TrackCsvWriter.writeTracksCsv(
                 trackmate,
-                experimentInfoRecord.recordingName,
+                experimentInfoRecord.getRecordingName(),
                 tracksPath.toFile(),
                 true);
 
