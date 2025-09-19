@@ -1,4 +1,4 @@
-package config;
+package paint.shared.config;
 
 /**
  * Holds the data retrieved from the TrackMate section of the Paint configuration file.

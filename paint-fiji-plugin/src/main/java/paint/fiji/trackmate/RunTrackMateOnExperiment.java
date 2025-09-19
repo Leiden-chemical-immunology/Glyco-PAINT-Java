@@ -11,15 +11,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import config.PaintConfig;
-import config.TrackMateConfig;
+import paint.shared.config.PaintConfig;
+import paint.shared.config.TrackMateConfig;
 import paint.fiji.util.ExperimentInfoRecord;
-import utilities.AppLogger;
-import utilities.Miscellaneous;
+import paint.shared.utils.AppLogger;
+import paint.shared.utils.Miscellaneous;
 
-import static constants.PaintConstants.*;
+import static paint.shared.constants.PaintConstants.*;
 import static paint.fiji.util.CsvConcatenator.concatenateCsvFiles;
-import static utilities.CsvUtils.countProcessed;
+import static paint.shared.utils.CsvUtils.countProcessed;
 
 public class RunTrackMateOnExperiment {
 
@@ -34,7 +34,7 @@ public class RunTrackMateOnExperiment {
         // If it does not exist, a new one will be created with default values.
         Path configPath = experimentPath.getParent().resolve(PAINT_CONFIGURATION_JSON);
         PaintConfig paintConfig = PaintConfig.from(configPath);
-        config.TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
+        TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
 
         if (verbose) {
             System.out.println(paintConfig);

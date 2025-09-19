@@ -1,4 +1,4 @@
-package dialogs;
+package paint.shared.dialogs;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -9,12 +9,12 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
 
-import config.GenerateSquaresConfig;
-import config.PaintConfig;
-import config.TrackMateConfig;
-import objects.Project;
+import paint.shared.config.GenerateSquaresConfig;
+import paint.shared.config.PaintConfig;
+import paint.shared.config.TrackMateConfig;
+import paint.shared.objects.Project;
 
-import static constants.PaintConstants.PAINT_CONFIGURATION_JSON;
+import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 
 /**
  * Dialog for configuring experiments (Generate Squares or TrackMate).

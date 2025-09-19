@@ -1,7 +1,7 @@
 package generatesquares.calc;
 
 import org.apache.commons.math3.util.FastMath;
-import objects.Track;
+import paint.shared.objects.Track;
 
 import java.util.Arrays;
 import java.util.List;

@@ -3,15 +3,15 @@ package generatesquares;
 import javax.swing.*;
 import java.nio.file.Path;
 
-import objects.Experiment;
-import objects.Recording;
+import paint.shared.objects.Experiment;
+import paint.shared.objects.Recording;
 import paint.io.SquareTableIO;
 import tech.tablesaw.api.Table;
-import utils.AppLogger;
-import dialogs.ExperimentDialog;
-import dialogs.ProjectDialog;
+import paint.shared.utils.AppLogger;
+import paint.shared.dialogs.ExperimentDialog;
+import paint.shared.dialogs.ProjectDialog;
 
-import static constants.PaintConstants.SQUARES_CSV;
+import static paint.shared.constants.PaintConstants.SQUARES_CSV;
 import static generatesquares.calc.GenerateSquareCalcs.calculateSquaresForExperiment;
 
 public class GenerateSquares {

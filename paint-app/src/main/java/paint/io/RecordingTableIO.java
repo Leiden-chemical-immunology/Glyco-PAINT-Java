@@ -1,6 +1,6 @@
 package paint.io;
 
-import objects.Recording;
+import paint.shared.objects.Recording;
 import tech.tablesaw.api.*;
 import tech.tablesaw.columns.Column;
 
@@ -9,8 +9,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static constants.PaintConstants.RECORDING_COLS;
-import static constants.PaintConstants.RECORDING_TYPES;
+import static paint.shared.constants.PaintConstants.RECORDING_COLS;
+import static paint.shared.constants.PaintConstants.RECORDING_TYPES;
 
 /**
  * Table IO for Recording entities.

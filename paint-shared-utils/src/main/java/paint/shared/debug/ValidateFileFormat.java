@@ -1,6 +1,6 @@
-package debug;
+package paint.shared.debug;
 
-import constants.PaintConstants;
+import paint.shared.constants.PaintConstants;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static constants.PaintConstants.*;
+import static paint.shared.constants.PaintConstants.*;
 
 /**
  * Utility class for validating the format of Paint project CSV files.

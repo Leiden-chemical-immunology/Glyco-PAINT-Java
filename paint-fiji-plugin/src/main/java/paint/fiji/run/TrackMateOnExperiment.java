@@ -6,10 +6,10 @@ import javax.swing.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import config.PaintConfig;
-import dialogs.ExperimentDialog;
+import paint.shared.config.PaintConfig;
+import paint.shared.dialogs.ExperimentDialog;
 import paint.fiji.trackmate.RunTrackMateExperimentDialog;
-import utilities.AppLogger;
+import paint.shared.utils.AppLogger;
 
 import static paint.fiji.trackmate.RunTrackMateOnExperiment.cycleThroughRecordings;
 

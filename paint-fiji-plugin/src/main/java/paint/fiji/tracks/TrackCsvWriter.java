@@ -13,7 +13,7 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
-import static constants.PaintConstants.TIME_INTERVAL;
+import static paint.shared.constants.PaintConstants.TIME_INTERVAL;
 import static paint.fiji.tracks.TrackAttributeCalculations.calculateTrackAttributes;
 
 

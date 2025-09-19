@@ -1,7 +1,7 @@
 package debug;
 
 import fiji.plugin.trackmate.Settings;
-import utilities.AppLogger;
+import paint.shared.utils.AppLogger;
 
 import java.util.Map;
 

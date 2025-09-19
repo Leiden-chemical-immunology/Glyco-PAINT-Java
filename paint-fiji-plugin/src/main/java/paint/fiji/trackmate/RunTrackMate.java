@@ -25,8 +25,8 @@ import java.time.LocalDateTime;
 
 import paint.fiji.util.ExperimentInfoRecord;
 import paint.fiji.tracks.TrackCsvWriter;
-import utilities.AppLogger;
-import config.TrackMateConfig;
+import paint.shared.utils.AppLogger;
+import paint.shared.config.TrackMateConfig;
 
 public class RunTrackMate {
 

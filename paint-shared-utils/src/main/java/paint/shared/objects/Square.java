@@ -1,12 +1,15 @@
-package objects;
+package paint.shared.objects;
 
 import tech.tablesaw.api.Table;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static constants.PaintConstants.*;
+import static paint.shared.constants.PaintConstants.*;
 
+/**
+ *
+ */
 public class Square {
 
     // Attributes

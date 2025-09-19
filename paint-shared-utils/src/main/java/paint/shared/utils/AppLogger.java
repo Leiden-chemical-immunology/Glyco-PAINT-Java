@@ -1,4 +1,4 @@
-package utils;
+package paint.shared.utils;
 
 import java.io.IOException;
 import java.nio.file.Files;

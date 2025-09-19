@@ -1,4 +1,4 @@
-package dialogs;
+package paint.shared.dialogs;
 
 import javax.swing.*;
 import java.awt.*;

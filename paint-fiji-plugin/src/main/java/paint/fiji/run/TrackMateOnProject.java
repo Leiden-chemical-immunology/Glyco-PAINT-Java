@@ -4,15 +4,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import config.PaintConfig;
+import paint.shared.config.PaintConfig;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 
-import utilities.AppLogger;
-import dialogs.ExperimentDialog;
-import dialogs.ProjectDialog;
+import paint.shared.utils.AppLogger;
+import paint.shared.dialogs.ExperimentDialog;
+import paint.shared.dialogs.ProjectDialog;
 
-import static constants.PaintConstants.PAINT_CONFIGURATION_JSON;
+import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 import static paint.fiji.trackmate.RunTrackMateOnExperiment.cycleThroughRecordings;
 
 @Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run TrackMate on Project")

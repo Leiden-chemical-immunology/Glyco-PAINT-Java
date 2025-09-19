@@ -1,18 +1,18 @@
 package paint.loaders;
 
-import config.GenerateSquaresConfig;
-import config.PaintConfig;
-import objects.Experiment;
-import objects.Project;
-import objects.Recording;
-import objects.Square;
+import paint.shared.config.GenerateSquaresConfig;
+import paint.shared.config.PaintConfig;
+import paint.shared.objects.Experiment;
+import paint.shared.objects.Project;
+import paint.shared.objects.Recording;
+import paint.shared.objects.Square;
 import paint.io.RecordingTableIO;
 import paint.io.SquareTableIO;
 import paint.io.TrackTableIO;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.selection.Selection;
-import utils.AppLogger;
+import paint.shared.utils.AppLogger;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -20,9 +20,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-import static constants.PaintConstants.*;
 import static generatesquares.calc.CalculateDensity.calculateAverageTrackCountOfBackground;
-import static paint.localUtilities.Miscellaneous.friendlyMessage;
+import static paint.shared.utils.Miscellaneous.friendlyMessage;
+import static paint.shared.constants.PaintConstants.*;
+
+
 
 public final class ProjectDataLoader {
 

@@ -1,4 +1,4 @@
-package objects;
+package paint.shared.objects;
 
 public class Track {
 

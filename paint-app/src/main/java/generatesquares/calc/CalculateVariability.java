@@ -4,7 +4,7 @@ package generatesquares.calc;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.api.DoubleColumn;
 
-import static constants.PaintConstants.IMAGE_WIDTH;
+import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
 
 public class CalculateVariability {
 
