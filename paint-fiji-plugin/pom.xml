@@ -101,7 +101,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jjabakker</groupId>
+            <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
             <version>1.0.0-SNAPSHOT</version>
             <scope>compile</scope>
@@ -144,31 +144,6 @@
             </plugin>
 
             <!-- Copy plugin JAR and PaintUtilities JAR into Fiji -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.6.1</version>
-                <executions>
-                    <execution>
-                        <id>copy-paint-shared-utils</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.jjabakker</groupId>
-                                    <artifactId>paint-shared-utils</artifactId>
-                                    <version>1.0.0-SNAPSHOT</version>
-                                    <outputDirectory>${fiji.dir}/plugins/</outputDirectory>
-                                    <overWrite>true</overWrite>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

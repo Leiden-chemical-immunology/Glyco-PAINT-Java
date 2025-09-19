@@ -73,6 +73,8 @@
     <properties>
         <license.licenseName>BSD-2-Clause</license.licenseName>
         <license.copyrightOwners>Hans Bakker</license.copyrightOwners>
+        <!-- Fiji installation directory -->
+        <fiji.dir>/Applications/Fiji.app</fiji.dir>
     </properties>
     <!-- ✅ End metadata -->
 
@@ -106,6 +108,30 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
             </plugin>
+
+            <!-- Copy plugin JAR and PaintUtilities JAR into Fiji -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-jar-to-fiji</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <copy file="${project.build.directory}/${project.build.finalName}.jar"
+                                      todir="${fiji.dir}/plugins"
+                                      overwrite="true"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
