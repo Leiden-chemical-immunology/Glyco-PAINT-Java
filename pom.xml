@@ -84,6 +84,7 @@
         <module>paint-shared-utils</module>
         <module>paint-app</module>
         <module>paint-fiji-plugin</module>
+        <module>paint-integrated-fiji</module>
     </modules>
 
     <build>
