@@ -158,7 +158,7 @@ public class TrackMateExperiment {
 
         //System.out.println("");
         System.out.println(String.format("✅ Number of recordings processed %d out of %d.", nrRecordingsProcessed, nrRecordingsToProcess));
-        System.out.println(String.format("✅ Time taken to process: %s.", formatDuration(duration)));
+        // System.out.println(String.format("✅ Time taken to process: %s.", formatDuration(duration)));
         System.out.println();
     }
 
