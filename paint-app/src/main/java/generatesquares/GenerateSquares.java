@@ -5,7 +5,7 @@ import java.nio.file.Path;
 
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Recording;
-import paint.io.SquareTableIO;
+import io.SquareTableIO;
 import tech.tablesaw.api.Table;
 import paint.shared.utils.AppLogger;
 import paint.shared.dialogs.ExperimentDialog;

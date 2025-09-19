@@ -1,4 +1,4 @@
-package paint.loaders;
+package io;
 
 import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.config.PaintConfig;
@@ -6,9 +6,6 @@ import paint.shared.objects.Experiment;
 import paint.shared.objects.Project;
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
-import paint.io.RecordingTableIO;
-import paint.io.SquareTableIO;
-import paint.io.TrackTableIO;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.selection.Selection;
@@ -36,7 +33,7 @@ public final class ProjectDataLoader {
 
         try {
             if (args == null || args.length == 0) {
-                System.out.println("Usage: java -cp <jar> paint.loaders.ProjectDataLoader <project-root-path> [experiments...] [--mature]");
+                System.out.println("Usage: java -cp <jar> io.ProjectDataLoader <project-root-path> [experiments...] [--mature]");
                 return;
             }
 

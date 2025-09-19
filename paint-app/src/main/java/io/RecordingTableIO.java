@@ -1,4 +1,4 @@
-package paint.io;
+package io;
 
 import paint.shared.objects.Recording;
 import tech.tablesaw.api.*;

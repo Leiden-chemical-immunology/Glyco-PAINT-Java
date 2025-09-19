@@ -1,4 +1,4 @@
-package paint.io;
+package io;
 
 import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;

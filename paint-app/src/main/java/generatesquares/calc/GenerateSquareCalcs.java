@@ -1,7 +1,7 @@
 package generatesquares.calc;
 
 import paint.shared.config.GenerateSquaresConfig;
-import paint.io.TrackTableIO;
+import io.TrackTableIO;
 import paint.shared.objects.Project;
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Recording;
@@ -18,7 +18,7 @@ import static generatesquares.calc.CalculateDensity.calculateAverageTrackCountOf
 import static generatesquares.calc.CalculateDensity.calculateDensity;
 import static generatesquares.calc.CalculateTau.calcTau;
 import static generatesquares.calc.CalculateVariability.calcVariability;
-import static paint.loaders.ProjectDataLoader.*;
+import static io.ProjectDataLoader.*;
 
 import static paint.shared.constants.PaintConstants.IMAGE_HEIGHT;
 import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
