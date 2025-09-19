@@ -38,35 +38,12 @@ public class TrackCsvWriter {
      * @throws IOException if an I/O error occurs while writing
      */
     public static int writeTracksCsv(final TrackMate trackmate,
-                                      final String recordingName,
-                                      final File csvFile,
-                                      final boolean visibleOnly) throws IOException {
+                                     final String recordingName,
+                                     final File csvFile,
+                                     final boolean visibleOnly) throws IOException {
         final Model model = trackmate.getModel();
         final TrackModel trackModel = model.getTrackModel();
         final FeatureModel featureModel = model.getFeatureModel();
-
-        // Header
-        final String[] headers = {
-                "Unique Key",                      // 0
-                "Recording Name",                  // 1
-                "Track Id",                        // 2
-                "Track Label",                     // 3
-                "Number of Spots",                 // 4
-                "Number of Gaps",                  // 5
-                "Longest Gap",                     // 6
-                "Track Duration",                  // 7
-                "Track X Location",                // 8
-                "Track Y Location",                // 9
-                "Track Displacement",              // 10
-                "Track Max Speed",                 // 11
-                "Track Median Speed",              // 12
-                "Diffusion Coefficient",           // 13
-                "Diffusion Coefficient Ext",       // 14
-                "Total Distance",                  // 15
-                "Confinement Ratio",               // 16
-                "Square Number",                   // 17
-                "Label Number"                     // 18
-        };
 
         int nrSpotsInAllTracks = 0;
 
