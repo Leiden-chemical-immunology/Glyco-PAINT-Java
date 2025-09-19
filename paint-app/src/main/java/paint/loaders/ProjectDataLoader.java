@@ -12,7 +12,7 @@ import paint.io.TrackTableIO;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.selection.Selection;
-import utilities.AppLogger;
+import utils.AppLogger;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;

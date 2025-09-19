@@ -7,7 +7,7 @@ import objects.Experiment;
 import objects.Recording;
 import paint.io.SquareTableIO;
 import tech.tablesaw.api.Table;
-import utilities.AppLogger;
+import utils.AppLogger;
 import dialogs.ExperimentDialog;
 import dialogs.ProjectDialog;
 

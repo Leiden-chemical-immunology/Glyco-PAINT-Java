@@ -1,7 +1,7 @@
 package config;
 
 import com.google.gson.*;
-import utilities.AppLogger;
+import utils.AppLogger;
 
 import java.io.IOException;
 import java.io.Reader;

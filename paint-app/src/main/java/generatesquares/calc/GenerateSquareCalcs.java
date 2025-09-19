@@ -23,7 +23,7 @@ import static paint.loaders.ProjectDataLoader.*;
 import static constants.PaintConstants.IMAGE_HEIGHT;
 import static constants.PaintConstants.IMAGE_WIDTH;
 
-import utilities.AppLogger;
+import utils.AppLogger;
 
 public class GenerateSquareCalcs {
 
