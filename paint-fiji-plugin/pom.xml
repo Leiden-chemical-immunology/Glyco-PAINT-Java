@@ -107,6 +107,12 @@
             <scope>compile</scope>
         </dependency>
 
+        <dependency>
+            <groupId>tech.tablesaw</groupId>
+            <artifactId>tablesaw-core</artifactId>
+            <version>0.43.1</version>
+        </dependency>
+
     </dependencies>
 
     <repositories>
@@ -125,6 +131,26 @@
 
     <build>
         <plugins>
+            <!-- Copy runtime dependencies into target/dependency -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/dependency</outputDirectory>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- Ensure SciJava annotation processor runs -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -143,19 +169,17 @@
                 </configuration>
             </plugin>
 
-            <!-- Copy plugin JAR and PaintUtilities JAR into Fiji -->
-
+            <!-- Copy plugin and selective dependencies into Fiji -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
+                    <!-- Copy plugin itself -->
                     <execution>
                         <id>copy-plugin-to-fiji</id>
                         <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
+                        <goals><goal>run</goal></goals>
                         <configuration>
                             <target>
                                 <copy file="${project.build.directory}/${project.build.finalName}.jar"
@@ -164,7 +188,27 @@
                             </target>
                         </configuration>
                     </execution>
+
+                    <!-- Copy only required dependencies -->
+                    <execution>
+                        <id>copy-tablesaw-deps-to-fiji</id>
+                        <phase>package</phase>
+                        <goals><goal>run</goal></goals>
+                        <configuration>
+                            <target>
+                                <copy todir="${fiji.dir}/jars/" overwrite="true">
+                                    <fileset dir="${project.build.directory}/dependency">
+                                        <include name="tablesaw-core-*.jar"/>
+                                        <include name="tablesaw-jsplot-*.jar"/>
+                                        <include name="tablesaw-excel-*.jar"/>
+                                        <!-- Add more tablesaw-* if you use them -->
+                                    </fileset>
+                                </copy>
+                            </target>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
-    </build></project>
+    </build>
+</project>
