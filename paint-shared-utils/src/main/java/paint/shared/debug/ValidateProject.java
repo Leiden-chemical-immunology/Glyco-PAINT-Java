@@ -4,32 +4,92 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * Utility class for validating the format of Paint project CSV files.
+ * Utility for validating the structure of Paint project experiment folders and CSV files.
  *
- * <p>This version is self-contained: it defines its own schema arrays
- * (columns + types) instead of depending on PaintConstants and Tablesaw.
- * </p>
+ * <p>Validation modes control which files and directories are required:
+ * <ul>
+ *   <li>{@link Mode#VALIDATE_TRACKMATE} – requires only {@code Experiment Info.csv}.</li>
+ *   <li>{@link Mode#VALIDATE_GENERATE_SQUARES} – requires experiment info, recordings,
+ *       tracks, and the image directories.</li>
+ *   <li>{@link Mode#VALIDATE_VIEWER} – full validation, including the squares CSV.</li>
+ * </ul></p>
+ *
+ * <p>Validation can be invoked in two ways:
+ * <ul>
+ *   <li>From code, via {@link #validateProject(Path, List, Mode)} or
+ *       {@link #validateProject(Path, Mode)}.</li>
+ *   <li>From the command line, via {@link #main(String[])}.</li>
+ * </ul>
+ * Both return a {@link ValidateResult} describing overall success and errors.</p>
  */
 public class ValidateProject {
 
-    // ---------------------------------------------------
-    // Local enum for schema typing (avoids Tablesaw)
-    // ---------------------------------------------------
+    /** Supported CSV type categories (used only for schema definition). */
     private enum CsvType { STRING, INTEGER, DOUBLE, BOOLEAN, LOCAL_DATE_TIME }
 
-    // Filenames (duplicated from PaintConstants)
+    /**
+     * Validation mode – defines which files and directories must exist.
+     */
+    public enum Mode {
+        /** Check only {@code Experiment Info.csv}. */
+        VALIDATE_TRACKMATE,
+
+        /** Check experiment info, recordings, tracks, and image directories. */
+        VALIDATE_GENERATE_SQUARES,
+
+        /** Full validation: includes squares CSV in addition to all other checks. */
+        VALIDATE_VIEWER
+    }
+
+    /**
+     * Result object containing outcome and error list.
+     */
+    public static class ValidateResult {
+        private final boolean ok;
+        private final List<String> errors;
+
+        /**
+         * Create a new validation result.
+         *
+         * @param ok     true if validation passed with no errors
+         * @param errors list of errors (possibly empty if {@code ok} is true)
+         */
+        public ValidateResult(boolean ok, List<String> errors) {
+            this.ok = ok;
+            this.errors = errors;
+        }
+
+        /**
+         * @return true if no validation errors
+         */
+        public boolean isOk() {
+            return ok;
+        }
+
+        /**
+         * @return list of validation errors (empty if none)
+         */
+        public List<String> getErrors() {
+            return errors;
+        }
+    }
+
+    // --- Filenames and directories ---
     private static final String RECORDINGS_CSV = "All Recordings Java.csv";
     private static final String TRACKS_CSV     = "All Tracks Java.csv";
     private static final String SQUARES_CSV    = "All Squares Java.csv";
     private static final String EXPERIMENT_INFO_CSV = "Experiment Info.csv";
 
-    // ---------------------------------------------------
-    // Experiment info schema
-    // ---------------------------------------------------
+    private static final String DIR_BRIGHTFIELD = "Brightfield Images";
+    private static final String DIR_TRACKMATE   = "TrackMate Images";
+
+    // --- Schemas ---
     private static final String[] EXPERIMENT_INFO_COLS = {
             "Recording Name", "Condition Number", "Replicate Number",
             "Probe Name", "Probe Type", "Cell Type", "Adjuvant",
@@ -41,9 +101,6 @@ public class ValidateProject {
             CsvType.STRING, CsvType.DOUBLE, CsvType.BOOLEAN, CsvType.DOUBLE
     };
 
-    // ---------------------------------------------------
-    // Recording schema
-    // ---------------------------------------------------
     private static final String[] RECORDING_COLS = {
             "Recording Name", "Condition Number", "Replicate Number",
             "Probe Name", "Probe Type", "Cell Type", "Adjuvant",
@@ -61,9 +118,6 @@ public class ValidateProject {
             CsvType.DOUBLE, CsvType.DOUBLE, CsvType.DOUBLE
     };
 
-    // ---------------------------------------------------
-    // Square schema
-    // ---------------------------------------------------
     private static final String[] SQUARE_COLS = {
             "Unique Key", "Recording Name", "Square Number", "Row Number",
             "Column Number", "Label Number", "Cell ID", "Selected",
@@ -90,9 +144,6 @@ public class ValidateProject {
             CsvType.DOUBLE, CsvType.DOUBLE, CsvType.DOUBLE
     };
 
-    // ---------------------------------------------------
-    // Track schema
-    // ---------------------------------------------------
     private static final String[] TRACK_COLS = {
             "Unique Key", "Recording Name", "Track Id", "Track Label",
             "Number of Spots", "Number of Gaps", "Longest Gap",
@@ -110,13 +161,13 @@ public class ValidateProject {
             CsvType.DOUBLE, CsvType.INTEGER, CsvType.INTEGER
     };
 
-    // ---------------------------------------------------
-    // Public methods
-    // ---------------------------------------------------
-
     /**
-     * Auto-discover experiment directories as immediate subfolders containing
-     * experiment info CSVs.
+     * Discover experiment directories as immediate subfolders containing
+     * {@code Experiment Info.csv}.
+     *
+     * @param projectRoot root of the Paint project
+     * @return list of experiment folder names
+     * @throws IOException if traversal fails
      */
     public static List<String> discoverExperiments(Path projectRoot) throws IOException {
         List<String> names = new ArrayList<>();
@@ -133,19 +184,17 @@ public class ValidateProject {
     }
 
     /**
-     * Validate all CSV files of a given experiment folder.
+     * Validate a single experiment folder by checking required files and directories.
+     * Requirements depend on the selected {@link Mode}.
+     *
+     * @param experimentDir experiment directory
+     * @param mode          validation mode
+     * @return list of validation errors (empty if none)
      */
-    public static List<String> validateExperiment(Path experimentDir, boolean checkSquares) {
+    public static List<String> validateExperiment(Path experimentDir, Mode mode) {
         List<String> errors = new ArrayList<>();
 
         try {
-            Path dataCsv = experimentDir.resolve(RECORDINGS_CSV);
-            if (Files.exists(dataCsv)) {
-                errors.addAll(validateCsv(dataCsv, RECORDING_COLS, RECORDING_TYPES));
-            } else {
-                errors.add("Missing required file: " + dataCsv);
-            }
-
             Path expCsv = experimentDir.resolve(EXPERIMENT_INFO_CSV);
             if (Files.exists(expCsv)) {
                 errors.addAll(validateCsv(expCsv, EXPERIMENT_INFO_COLS, EXPERIMENT_INFO_TYPES));
@@ -153,18 +202,36 @@ public class ValidateProject {
                 errors.add("Missing required file: " + expCsv);
             }
 
-            if (checkSquares) {
+            if (mode == Mode.VALIDATE_GENERATE_SQUARES || mode == Mode.VALIDATE_VIEWER) {
+                Path recCsv = experimentDir.resolve(RECORDINGS_CSV);
+                if (Files.exists(recCsv)) {
+                    errors.addAll(validateCsv(recCsv, RECORDING_COLS, RECORDING_TYPES));
+                } else {
+                    errors.add("Missing required file: " + recCsv);
+                }
+
+                Path trkCsv = experimentDir.resolve(TRACKS_CSV);
+                if (Files.exists(trkCsv)) {
+                    errors.addAll(validateCsv(trkCsv, TRACK_COLS, TRACK_TYPES));
+                } else {
+                    errors.add("Missing required file: " + trkCsv);
+                }
+
+                if (!Files.isDirectory(experimentDir.resolve(DIR_BRIGHTFIELD))) {
+                    errors.add("Missing directory: " + DIR_BRIGHTFIELD);
+                }
+                if (!Files.isDirectory(experimentDir.resolve(DIR_TRACKMATE))) {
+                    errors.add("Missing directory: " + DIR_TRACKMATE);
+                }
+            }
+
+            if (mode == Mode.VALIDATE_VIEWER) {
                 Path sqCsv = experimentDir.resolve(SQUARES_CSV);
                 if (Files.exists(sqCsv)) {
                     errors.addAll(validateCsv(sqCsv, SQUARE_COLS, SQUARE_TYPES));
                 } else {
                     errors.add("Missing required file: " + sqCsv);
                 }
-            }
-
-            Path trackCsv = experimentDir.resolve(TRACKS_CSV);
-            if (Files.exists(trackCsv)) {
-                errors.addAll(validateCsv(trackCsv, TRACK_COLS, TRACK_TYPES));
             }
 
         } catch (Exception e) {
@@ -175,15 +242,21 @@ public class ValidateProject {
     }
 
     /**
-     * Validate multiple experiments under a project root.
+     * Validate multiple experiments. This overload requires a list of experiment names
+     * and does not perform auto-discovery.
+     *
+     * @param projectRoot     project root directory
+     * @param experimentNames list of experiment folder names
+     * @param mode            validation mode
+     * @return {@link ValidateResult} with status and aggregated errors
      */
-    public static List<String> validateProject(Path projectRoot, List<String> experimentNames, boolean checkSquares) {
+    public static ValidateResult validateProject(Path projectRoot, List<String> experimentNames, Mode mode) {
         List<String> allErrors = new ArrayList<>();
 
         for (String exp : experimentNames) {
             Path expDir = projectRoot.resolve(exp);
             if (Files.exists(expDir) && Files.isDirectory(expDir)) {
-                List<String> expErrors = validateExperiment(expDir, checkSquares);
+                List<String> expErrors = validateExperiment(expDir, mode);
                 for (String err : expErrors) {
                     allErrors.add("[" + exp + "] " + err);
                 }
@@ -192,16 +265,36 @@ public class ValidateProject {
             }
         }
 
-        if (allErrors.isEmpty()) {
-            allErrors.add("✔ Validation OK. Checked " + experimentNames.size() + " experiment(s).");
-        }
-
-        return allErrors;
+        return new ValidateResult(allErrors.isEmpty(), allErrors);
     }
 
-    // ---------------------------------------------------
-    // Minimal CSV validator (only header check)
-    // ---------------------------------------------------
+    /**
+     * High-level validation entry point that performs auto-discovery of experiment folders.
+     * Equivalent to calling {@link #validateProject(Path, List, Mode)} with a discovered list.
+     *
+     * @param projectRoot root directory of the Paint project
+     * @param mode        validation mode
+     * @return {@link ValidateResult} with status and error list
+     * @throws IOException if directory traversal fails
+     */
+    public static ValidateResult validateProject(Path projectRoot, Mode mode) throws IOException {
+        List<String> experimentNames  = discoverExperiments(projectRoot);
+        if (experimentNames.isEmpty()) {
+            List<String> errs = new ArrayList<>();
+            errs.add("No experiments found under " + projectRoot);
+            return new ValidateResult(false, errs);
+        }
+        return validateProject(projectRoot, experimentNames, mode);
+    }
+
+    /**
+     * Validate a CSV file header against the expected schema.
+     *
+     * @param filePath      CSV file path
+     * @param expectedCols  expected header names
+     * @param expectedTypes expected column types (unused, for reference)
+     * @return list of issues found (empty if valid)
+     */
     private static List<String> validateCsv(Path filePath, String[] expectedCols, CsvType[] expectedTypes) {
         List<String> report = new ArrayList<>();
         try {
@@ -230,18 +323,78 @@ public class ValidateProject {
         return report;
     }
 
-    // ---------------------------------------------------
-    // Pretty-print report
-    // ---------------------------------------------------
-    public static void printReport(List<String> errors) {
+    /**
+     * Format validation errors into a report string.
+     *
+     * @param errors list of errors
+     * @return formatted report string, or empty string if none
+     */
+    public static String formatReport(List<String> errors) {
         if (errors == null || errors.isEmpty()) {
-            System.out.println("✔ Validation OK.");
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("Validation FAILED. Found ").append(errors.size()).append(" issue(s):\n");
+        for (String err : errors) {
+            sb.append("  - ").append(err).append("\n");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * CLI entry point. Validates based on command-line arguments.
+     * Exits with code 0 on success, 1 on validation failure, 2 on errors.
+     *
+     * <p>Usage:</p>
+     * <pre>
+     *   java paint.shared.debug.ValidateProject &lt;projectRoot&gt; &lt;mode&gt; [experiment1 experiment2 ...]
+     * </pre>
+     *
+     * <p>Modes: VALIDATE_TRACKMATE | VALIDATE_GENERATE_SQUARES | VALIDATE_VIEWER</p>
+     *
+     * @param args command-line arguments
+     */
+    public static void main(String[] args) {
+        if (args.length < 2) {
+            System.err.println("Usage: java paint.shared.debug.ValidateProject <projectRoot> <mode> [<experiment1> <experiment2> ...]");
+            System.err.println("Modes: VALIDATE_TRACKMATE | VALIDATE_GENERATE_SQUARES | VALIDATE_VIEWER");
+            System.exit(1);
+        }
+
+        Path projectRoot = Paths.get(args[0]);
+        Mode mode;
+        try {
+            mode = Mode.valueOf(args[1].toUpperCase());
+        } catch (IllegalArgumentException e) {
+            System.err.println("Invalid mode: " + args[1]);
+            System.err.println("Valid modes: VALIDATE_TRACKMATE | VALIDATE_GENERATE_SQUARES | VALIDATE_VIEWER");
+            System.exit(2);
             return;
         }
 
-        System.out.println("✖ Validation FAILED. Found " + errors.size() + " issue(s):");
-        for (String err : errors) {
-            System.out.println("  - " + err);
+        List<String> experimentNames = null;
+        if (args.length > 2) {
+            experimentNames = Arrays.asList(Arrays.copyOfRange(args, 2, args.length));
+        }
+
+        try {
+            ValidateResult validateResult;
+            if (experimentNames == null || experimentNames.isEmpty()) {
+                validateResult = validateProject(projectRoot, mode);
+            } else {
+                validateResult = validateProject(projectRoot, experimentNames, mode);
+            }
+
+            if (validateResult.isOk()) {
+                System.out.println("Validation passed with no errors.");
+                System.exit(0);
+            } else {
+                System.out.println(formatReport(validateResult.getErrors()));
+                System.exit(1);
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to run validation: " + e.getMessage());
+            System.exit(2);
         }
     }
 }

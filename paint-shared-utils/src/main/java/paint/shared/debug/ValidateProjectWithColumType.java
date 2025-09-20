@@ -58,7 +58,7 @@ public class ValidateProjectWithColumType {
             }
         }
 
-        List<String> errors = validateProject(project, experiments, cli.checkSquares);
+        List<String> errors = validateProject_CT(project, experiments, cli.checkSquares);
 
         if (errors.isEmpty()) {
             System.out.println("✔ Validation OK. Checked " + experiments.size() + " experiment(s).");
@@ -253,7 +253,7 @@ public class ValidateProjectWithColumType {
      * @param checkSquares    whether to perform additional validation of square data
      * @return a list of error messages; empty if all experiments are valid
      */
-    public static List<String> validateProject(Path projectRoot, List<String> experimentNames, boolean checkSquares) {
+    public static List<String> validateProject_CT(Path projectRoot, List<String> experimentNames, boolean checkSquares) {
         List<String> allErrors = new ArrayList<>();
 
         for (String exp : experimentNames) {
