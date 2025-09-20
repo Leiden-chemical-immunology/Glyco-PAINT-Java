@@ -13,8 +13,10 @@ import java.util.Set;
 
 /**
  * PaintConfig manages JSON configuration files for the Paint application.
+ * <p>
  * It provides type-safe getters/setters and CRUD-like operations on sections and keys.
- * CRUD: Create, Read, Update, Delete
+ * CRUD: Create, Read, Update, Delete.
+ * </p>
  */
 public class PaintConfig {
 
@@ -22,6 +24,12 @@ public class PaintConfig {
     private final Gson gson;
     private JsonObject configData;
 
+    /**
+     * Creates a PaintConfig instance backed by the given path.
+     * If the file does not exist, a default configuration is created and saved.
+     *
+     * @param path the JSON configuration file path
+     */
     public PaintConfig(Path path) {
         this.path = path;
         this.gson = new GsonBuilder().setPrettyPrinting().create();
@@ -51,14 +59,16 @@ public class PaintConfig {
                 this.configData = new JsonObject();
             }
         } else {
-            // Create a default Data/config.json if it doesn't exist yet
             this.configData = new JsonObject();
             loadDefaults();
-            save(); // And save it, so that next time it does exist
-
+            save(); // Always save defaults immediately
         }
     }
 
+    /**
+     * Loads default configuration values into memory.
+     * This method is called when no configuration file exists yet.
+     */
     private void loadDefaults() {
         // === Generate Squares ===
         JsonObject generateSquares = new JsonObject();
@@ -111,7 +121,9 @@ public class PaintConfig {
         configData.add("TrackMate", trackMate);
     }
 
-    // --- Save configuration file ---
+    /**
+     * Saves the current configuration state to the JSON file.
+     */
     public void save() {
         try (Writer writer = Files.newBufferedWriter(path)) {
             gson.toJson(configData, writer);
@@ -120,7 +132,273 @@ public class PaintConfig {
         }
     }
 
-    // --- Internal: get or create section ---
+    // --- Getters ---
+
+    /**
+     * Gets a string value from the configuration, or a default if missing.
+     *
+     * @param section      the section name
+     * @param key          the key name
+     * @param defaultValue the default value to use if not found
+     * @return the string value
+     */
+    public String getString(String section, String key, String defaultValue) {
+        JsonObject sec = getSection(section);
+        if (sec != null && sec.has(key) && sec.get(key).isJsonPrimitive()) {
+            return sec.getAsJsonPrimitive(key).getAsString();
+        }
+        setString(section, key, defaultValue);
+        return defaultValue;
+    }
+
+    /**
+     * Gets an int value from the configuration, or a default if missing.
+     *
+     * @param section      the section name
+     * @param key          the key name
+     * @param defaultValue the default value to use if not found
+     * @return the int value
+     */
+    public int getInt(String section, String key, int defaultValue) {
+        JsonObject sec = getSection(section);
+        if (sec != null && sec.has(key) && sec.get(key).isJsonPrimitive()) {
+            try {
+                return sec.getAsJsonPrimitive(key).getAsInt();
+            } catch (NumberFormatException e) {
+                setInt(section, key, defaultValue);
+                return defaultValue;
+            }
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Gets a double value from the configuration, or a default if missing.
+     *
+     * @param section      the section name
+     * @param key          the key name
+     * @param defaultValue the default value to use if not found
+     * @return the double value
+     */
+    public double getDouble(String section, String key, double defaultValue) {
+        JsonObject sec = getSection(section);
+        if (sec != null && sec.has(key) && sec.get(key).isJsonPrimitive()) {
+            try {
+                return sec.getAsJsonPrimitive(key).getAsDouble();
+            } catch (NumberFormatException e) {
+                setDouble(section, key, defaultValue);
+                return defaultValue;
+            }
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Gets a boolean value from the configuration, or a default if missing.
+     *
+     * @param section      the section name
+     * @param key          the key name
+     * @param defaultValue the default value to use if not found
+     * @return the boolean value
+     */
+    public boolean getBoolean(String section, String key, boolean defaultValue) {
+        JsonObject sec = getSection(section);
+        if (sec != null && sec.has(key) && sec.get(key).isJsonPrimitive()) {
+            try {
+                return sec.getAsJsonPrimitive(key).getAsBoolean();
+            } catch (Exception e) {
+                setBoolean(section, key, defaultValue);
+                return defaultValue;
+            }
+        }
+        return defaultValue;
+    }
+
+    // --- Setters with optional autoSave ---
+
+    /**
+     * Sets a string value in the configuration.
+     *
+     * @param section the section name
+     * @param key     the key name
+     * @param value   the string value
+     */
+    public void setString(String section, String key, String value) {
+        setString(section, key, value, false);
+    }
+
+    /**
+     * Sets a string value in the configuration.
+     *
+     * @param section  the section name
+     * @param key      the key name
+     * @param value    the string value
+     * @param autoSave if true, immediately saves to disk
+     */
+    public void setString(String section, String key, String value, boolean autoSave) {
+        getOrCreateSection(section).addProperty(key, value);
+        if (autoSave) save();
+    }
+
+    /**
+     * Sets an int value in the configuration.
+     *
+     * @param section the section name
+     * @param key     the key name
+     * @param value   the int value
+     */
+    public void setInt(String section, String key, int value) {
+        setInt(section, key, value, false);
+    }
+
+    /**
+     * Sets an int value in the configuration.
+     *
+     * @param section  the section name
+     * @param key      the key name
+     * @param value    the int value
+     * @param autoSave if true, immediately saves to disk
+     */
+    public void setInt(String section, String key, int value, boolean autoSave) {
+        getOrCreateSection(section).addProperty(key, value);
+        if (autoSave) save();
+    }
+
+    /**
+     * Sets a double value in the configuration.
+     *
+     * @param section the section name
+     * @param key     the key name
+     * @param value   the double value
+     */
+    public void setDouble(String section, String key, double value) {
+        setDouble(section, key, value, false);
+    }
+
+    /**
+     * Sets a double value in the configuration.
+     *
+     * @param section  the section name
+     * @param key      the key name
+     * @param value    the double value
+     * @param autoSave if true, immediately saves to disk
+     */
+    public void setDouble(String section, String key, double value, boolean autoSave) {
+        getOrCreateSection(section).addProperty(key, value);
+        if (autoSave) save();
+    }
+
+    /**
+     * Sets a boolean value in the configuration.
+     *
+     * @param section the section name
+     * @param key     the key name
+     * @param value   the boolean value
+     */
+    public void setBoolean(String section, String key, boolean value) {
+        setBoolean(section, key, value, false);
+    }
+
+    /**
+     * Sets a boolean value in the configuration.
+     *
+     * @param section  the section name
+     * @param key      the key name
+     * @param value    the boolean value
+     * @param autoSave if true, immediately saves to disk
+     */
+    public void setBoolean(String section, String key, boolean value, boolean autoSave) {
+        getOrCreateSection(section).addProperty(key, value);
+        if (autoSave) save();
+    }
+
+    // --- Remove a key ---
+
+    /**
+     * Removes a key from a section (in-memory only).
+     *
+     * @param section the section name
+     * @param key     the key name
+     */
+    public void remove(String section, String key) {
+        remove(section, key, false);
+    }
+
+    /**
+     * Removes a key from a section.
+     *
+     * @param section  the section name
+     * @param key      the key name
+     * @param autoSave if true, immediately saves to disk
+     */
+    public void remove(String section, String key, boolean autoSave) {
+        JsonObject sec = getSection(section);
+        if (sec != null) {
+            sec.remove(key);
+            if (autoSave) save();
+        }
+    }
+
+    // --- Remove an entire section ---
+
+    /**
+     * Removes an entire section (in-memory only).
+     *
+     * @param section the section name
+     */
+    public void removeSection(String section) {
+        removeSection(section, false);
+    }
+
+    /**
+     * Removes an entire section.
+     *
+     * @param section  the section name
+     * @param autoSave if true, immediately saves to disk
+     */
+    public void removeSection(String section, boolean autoSave) {
+        configData.remove(section);
+        if (autoSave) save();
+    }
+
+    /**
+     * Lists all keys in a section.
+     *
+     * @param section the section name
+     * @return a set of key names, empty if section not found
+     */
+    public Set<String> keys(String section) {
+        JsonObject sec = getSection(section);
+        if (sec != null) {
+            return sec.keySet();
+        }
+        return Collections.emptySet();
+    }
+
+    /**
+     * Lists all section names in the configuration.
+     *
+     * @return a set of section names
+     */
+    public Set<String> sections() {
+        return configData.keySet();
+    }
+
+    /**
+     * Gets the underlying {@link JsonObject} for advanced use.
+     *
+     * @return the raw JSON object
+     */
+    public JsonObject getJson() {
+        return configData;
+    }
+
+    @Override
+    public String toString() {
+        return gson.toJson(configData);
+    }
+
+    // --- Internal helpers ---
     private JsonObject getOrCreateSection(String section) {
         if (!configData.has(section) || !configData.get(section).isJsonObject()) {
             JsonObject newSection = new JsonObject();
@@ -135,108 +413,5 @@ public class PaintConfig {
             return configData.getAsJsonObject(section);
         }
         return null;
-    }
-
-    // --- Getters ---
-    public String getString(String section, String key, String defaultValue) {
-        JsonObject sec = getSection(section);
-        if (sec != null && sec.has(key) && sec.get(key).isJsonPrimitive()) {
-            return sec.getAsJsonPrimitive(key).getAsString();
-        }
-        setString(section, key, defaultValue);
-        return defaultValue;
-    }
-
-    public int getInt(String section, String key, int defaultValue) {
-        JsonObject sec = getSection(section);
-        if (sec != null && sec.has(key) && sec.get(key).isJsonPrimitive()) {
-            try {
-                return sec.getAsJsonPrimitive(key).getAsInt();
-            } catch (NumberFormatException e) {
-                setInt(section, key, defaultValue);
-                return defaultValue;
-            }
-        }
-        return defaultValue;
-    }
-
-    public double getDouble(String section, String key, double defaultValue) {
-        JsonObject sec = getSection(section);
-        if (sec != null && sec.has(key) && sec.get(key).isJsonPrimitive()) {
-            try {
-                return sec.getAsJsonPrimitive(key).getAsDouble();
-            } catch (NumberFormatException e) {
-                setDouble(section, key, defaultValue);
-                return defaultValue;
-            }
-        }
-        return defaultValue;
-    }
-
-    public boolean getBoolean(String section, String key, boolean defaultValue) {
-        JsonObject sec = getSection(section);
-        if (sec != null && sec.has(key) && sec.get(key).isJsonPrimitive()) {
-            try {
-                return sec.getAsJsonPrimitive(key).getAsBoolean();
-            } catch (Exception e) {
-                setBoolean(section, key, defaultValue);
-                return defaultValue;
-            }
-        }
-        return defaultValue;
-    }
-
-    // --- Setters ---
-    public void setString(String section, String key, String value) {
-        getOrCreateSection(section).addProperty(key, value);
-    }
-
-    public void setInt(String section, String key, int value) {
-        getOrCreateSection(section).addProperty(key, value);
-    }
-
-    public void setDouble(String section, String key, double value) {
-        getOrCreateSection(section).addProperty(key, value);
-    }
-
-    public void setBoolean(String section, String key, boolean value) {
-        getOrCreateSection(section).addProperty(key, value);
-    }
-
-    // --- Remove a key ---
-    public void remove(String section, String key) {
-        JsonObject sec = getSection(section);
-        if (sec != null) {
-            sec.remove(key);
-        }
-    }
-
-    // --- Remove an entire section ---
-    public void removeSection(String section) {
-        configData.remove(section);
-    }
-
-    // --- List keys in a section ---
-    public Set<String> keys(String section) {
-        JsonObject sec = getSection(section);
-        if (sec != null) {
-            return sec.keySet();
-        }
-        return Collections.emptySet();
-    }
-
-    // --- List all section names ---
-    public Set<String> sections() {
-        return configData.keySet();
-    }
-
-    // --- For direct access (advanced use) ---
-    public JsonObject getJson() {
-        return configData;
-    }
-
-    @Override
-    public String toString() {
-        return gson.toJson(configData);
     }
 }
