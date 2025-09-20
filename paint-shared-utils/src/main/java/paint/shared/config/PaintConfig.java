@@ -143,6 +143,7 @@ public class PaintConfig {
         if (sec != null && sec.has(key) && sec.get(key).isJsonPrimitive()) {
             return sec.getAsJsonPrimitive(key).getAsString();
         }
+        setString(section, key, defaultValue);
         return defaultValue;
     }
 
@@ -152,6 +153,7 @@ public class PaintConfig {
             try {
                 return sec.getAsJsonPrimitive(key).getAsInt();
             } catch (NumberFormatException e) {
+                setInt(section, key, defaultValue);
                 return defaultValue;
             }
         }
@@ -164,6 +166,7 @@ public class PaintConfig {
             try {
                 return sec.getAsJsonPrimitive(key).getAsDouble();
             } catch (NumberFormatException e) {
+                setDouble(section, key, defaultValue);
                 return defaultValue;
             }
         }
@@ -176,6 +179,7 @@ public class PaintConfig {
             try {
                 return sec.getAsJsonPrimitive(key).getAsBoolean();
             } catch (Exception e) {
+                setBoolean(section, key, defaultValue);
                 return defaultValue;
             }
         }
