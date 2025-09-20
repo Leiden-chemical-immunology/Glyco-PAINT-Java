@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.scijava.app.App;
 import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.utils.AppLogger;
@@ -96,7 +97,7 @@ public class RunTrackMateOnExperiment {
             int runTime;
             String timeStamp;
 
-            // Now process row by row, recorsing by recording
+            // Now process row by row, recording by recording
             while ((line = reader.readLine()) != null) {
                 // split row into values
                 String[] fields = line.split(",", -1);  // -1 keeps empty fields
@@ -112,9 +113,21 @@ public class RunTrackMateOnExperiment {
                 if (experimentInfoRecord.getProcessFlag()) {
                     double threshold = experimentInfoRecord.getThreshold();
 
+                    // Check if Brightfield Images and TrackMate Images exist and create if necessary
+                    Path brightfieldImagesPath = experimentPath.resolve(DIR_BRIGHTFIELD_IMAGES);
+                    Path trackmateImagesPath = experimentPath.resolve(DIR_TRACKMATE_IMAGES);
+                    if (!Files.exists(brightfieldImagesPath)) {
+                        Files.createDirectories(brightfieldImagesPath);
+                        AppLogger.debugf("Created missing directory: %s", brightfieldImagesPath);
+                    }
+                    if (!Files.exists(trackmateImagesPath)) {
+                        Files.createDirectories(trackmateImagesPath);
+                        AppLogger.debugf("Created missing directory: %s", trackmateImagesPath);
+                    }
                     // Perform TrackMate processing
-
+                    AppLogger.debugf("Running 'RunTrackMateOnRecording' for experiment '%s'",  experimentInfoRecord.getRecordingName());
                     trackMateResults = RunTrackMateOnRecording.RunTrackMateOnRecording(experimentPath, imagesPath, trackMateConfig, threshold, experimentInfoRecord);
+                    AppLogger.debugf("Returned from 'RunTrackMateOnRecording' for experiment '%s'",  experimentInfoRecord.getRecordingName());
 
                     if (trackMateResults == null || !trackMateResults.isSuccess()) {
                         AppLogger.errorf("TrackMate processing failed for recording '%s'.", experimentInfoRecord.getRecordingName());
