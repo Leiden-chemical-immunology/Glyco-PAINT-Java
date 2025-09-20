@@ -82,9 +82,10 @@
 
     <modules>
         <module>paint-shared-utils</module>
-        <module>paint-app</module>
+        <module>paint-generate-squares</module>
         <module>paint-fiji-plugin</module>
         <module>paint-integrated-fiji</module>
+        <module>paint-viewer</module>
     </modules>
 
     <build>

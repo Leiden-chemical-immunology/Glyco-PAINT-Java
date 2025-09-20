@@ -16,7 +16,7 @@
     <packaging>jar</packaging>
 
     <!-- ✅ Required metadata for SciJava enforcer -->
-    <name>${project.artifactId}</name>
+    <name>Paint Shared Utils</name>
     <description>Shared utilities for the Paint project</description>
     <url>https://example.com/paint</url>
     <inceptionYear>2025</inceptionYear>

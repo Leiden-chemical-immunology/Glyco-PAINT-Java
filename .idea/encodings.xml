@@ -5,12 +5,14 @@
     <file url="file://$PROJECT_DIR$/Fiji/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/PaintApp/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/PaintApp/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/paint-app/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/paint-app/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/paint-fiji-plugin/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/paint-fiji-plugin/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/paint-generate-squares/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/paint-generate-squares/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/paint-shared-utils/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/paint-shared-utils/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/paint-viewer/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/paint-viewer/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
   </component>

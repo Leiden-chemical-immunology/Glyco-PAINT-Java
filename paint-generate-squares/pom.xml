@@ -12,10 +12,10 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>paint-app</artifactId>
+    <artifactId>paint-generate-squares</artifactId>
     <packaging>jar</packaging>
 
-    <name>Paint Application</name>
+    <name>Paint Generate Squares</name>
     <description>Paint desktop application</description>
     <url>http://example.com/paint-app</url>
     <inceptionYear>2025</inceptionYear>
