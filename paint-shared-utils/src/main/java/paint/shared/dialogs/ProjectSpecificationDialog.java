@@ -164,7 +164,7 @@ public class ProjectSpecificationDialog {
             maxVariabilityField = null;
 
             JLabel dirLabel = new JLabel("Images Root:");
-            String defaultDir = paintConfig.getString("Paths", "Image Directory", System.getProperty("user.home"));
+            String defaultDir = paintConfig.getString("Paths", "Images Root", System.getProperty("user.home"));
             JTextField dirField = new JTextField(defaultDir, 30);
             JButton browseButton = new JButton("Browse...");
 
