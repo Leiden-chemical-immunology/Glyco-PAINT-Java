@@ -17,7 +17,9 @@ import paint.shared.dialogs.ProjectSelectionDialog;
 
 import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 import static paint.fiji.trackmate.RunTrackMateOnExperiment.runTrackMateOnExperiment;
+import static paint.shared.debug.ValidateProject.formatReport;
 import static paint.shared.debug.ValidateProject.validateProject;
+import static paint.shared.debug.ValidateProject.ValidateResult;
 
 /**
  * SciJava/Fiji command plugin that runs the TrackMate pipeline on
@@ -101,36 +103,42 @@ public class RunTrackMateOnProject implements Command {
             boolean error = false;
 
             if (imagesRoot.equals("Fatal")) {
-                AppLogger.errorf("No Image Path found - Fatal.");
+                AppLogger.errorf("No Image Path retrieved from configuration file- Fatal.");
                 error = true;
             }
+            AppLogger.debugf("The Image Path is specified as '%s'.", imagesRoot);
 
-            // The images root exists but is it the  correct place?
+            // The image root and project root need to exist
+            Path imagesPath = Paths.get(imagesRoot);
+            if (!error && !imagesPath.toFile().exists()) {
+                AppLogger.errorf("The Image Root '%s' does not exist - Fatal.", imagesPath);
+                error = true;
+            }
+            AppLogger.debugf("The Image Path '%s' exists.", imagesRoot);
+
+            // The images root exists but is it a valid?
             List<String> report = ImageRootValidator.validateImageRoot(
                     projectPath,
                     Paths.get(imagesRoot),
                     project.experimentNames);
             if (!report.isEmpty()) {
-                report.forEach(System.out::println);
-                AppLogger.errorf("Image Root Validation Failed - Fatal.");
+                report.forEach(msg -> AppLogger.errorf("%s", msg));
+                AppLogger.errorf("The Image Root Validation Failed - Fatal.");
                 error = true;
             }
+            AppLogger.debugf("The Image Path '%s' passed the validation test.", imagesRoot);
 
-            // The image root and project root need to exist
-            Path imagesPath = Paths.get(imagesRoot);
-            if (!error && !imagesPath.toFile().exists()) {
-                AppLogger.errorf("Image Root %s does not exist - Fatal.", imagesPath);
-                error = true;
-            }
             if (!error && !projectPath.toFile().exists()) {
-                AppLogger.errorf("Project Root %s does not exist - Fatal.", projectPath);
+                AppLogger.errorf("Project Root '%s' does not exist - Fatal.", projectPath);
                 error = true;
             }
+            AppLogger.debugf("The project root '%s' exists.", projectPath);
 
             // If there is an error, display a warning message for 5 seconds and then exit
             if (error) {
                 try {
-                    Thread.sleep(5000);
+                    AppLogger.errorf("About to exit with error, refer to log file.", projectPath);
+                    Thread.sleep(10000);
                 } catch (InterruptedException e) {
                     AppLogger.errorf("Failed to sleep - %s", e.getMessage());
                 }
@@ -139,13 +147,14 @@ public class RunTrackMateOnProject implements Command {
 
             // Basic conditions have been met
             AppLogger.debugf("TrackMate processing started.");
-            AppLogger.debugf("Project root : %s", projectPath.toString());
-            AppLogger.debugf("Images root  : %s", imagesPath.toString());
-            AppLogger.debugf("Experiments  : %s", project.experimentNames.toString());
+            AppLogger.debugf("Experiments %s", project.experimentNames.toString());
 
             // Verify if the experiments appear valid
-            List<String> errors = validateProject(projectPath, project.experimentNames, false);
-            ValidateProject.printReport(errors);
+            ValidateResult validateResult = validateProject(projectPath, project.experimentNames, ValidateProject.Mode.VALIDATE_TRACKMATE );
+            if (validateResult.isOk()) {
+                formatReport(validateResult.getErrors());
+            }
+            AppLogger.debugf("Experiments appear valid.");
 
             // Cycle through the experiments and run TrackMate on each one
             for (String experimentName : project.experimentNames) {

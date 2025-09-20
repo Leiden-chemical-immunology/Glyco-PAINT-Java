@@ -9,7 +9,6 @@ import fiji.plugin.trackmate.features.FeatureFilter;
 import fiji.plugin.trackmate.gui.displaysettings.DisplaySettings;
 import fiji.plugin.trackmate.gui.displaysettings.DisplaySettingsIO;
 import fiji.plugin.trackmate.tracking.jaqaman.SparseLAPTrackerFactory;
-import fiji.plugin.trackmate.util.LogRecorder;
 import fiji.plugin.trackmate.visualization.hyperstack.HyperStackDisplayer;
 import ij.IJ;
 import ij.ImagePlus;
@@ -148,7 +147,7 @@ public class RunTrackMateOnRecording {
         TrackMate trackmate = new TrackMate(model, settings);
 
         if (!trackmate.checkInput()) {
-            AppLogger.errorf("TrackMate - input check failed: %s", trackmate.getErrorMessage());
+            AppLogger.errorf("   TrackMate - input check failed: %s", trackmate.getErrorMessage());
             return new TrackMateResults(false);
         }
 
@@ -157,18 +156,21 @@ public class RunTrackMateOnRecording {
             AppLogger.errorf("TrackMate - execDetection failed:", trackmate.getErrorMessage());
             return new TrackMateResults(false);
         }
+        AppLogger.debugf("   TrackMate - execDetection succeeded");
 
         int nrSpots = model.getSpots().getNSpots(false);
         if (nrSpots > trackMateConfig.getMaxNrSpotsInImage()) {
-            AppLogger.errorf("Too many spots detected (%d). Limit is {%d}.", nrSpots, trackMateConfig.getMaxNrSpotsInImage());
+            AppLogger.errorf("   Too many spots detected (%d). Limit is {%d}.", nrSpots, trackMateConfig.getMaxNrSpotsInImage());
             return new TrackMateResults(false);
         }
+        AppLogger.debugf("   TrackMate - number of spots detected: %d",  nrSpots);
 
         // Continue with full TrackMate processing - nr_spots is within limits
         if (!trackmate.process()) {
-            AppLogger.errorf("TrackMate process failed: %s", trackmate.getErrorMessage());
+            AppLogger.errorf("   TrackMate process failed: %s", trackmate.getErrorMessage());
             return new TrackMateResults(false);
         }
+        AppLogger.debugf("   TrackMate - full processing successful");
 
         // --- Visualization ---
         final SelectionModel selectionModel = new SelectionModel(model);
@@ -179,31 +181,39 @@ public class RunTrackMateOnRecording {
         final HyperStackDisplayer displayer = new HyperStackDisplayer(model, selectionModel, imp, ds);
         displayer.render();
         displayer.refresh();
+        AppLogger.debugf("   TrackMate - visualisation successful");
 
         // --- Capture overlay image ---
-        final Logger tmLogger = new LogRecorder(Logger.VOID_LOGGER);
-        final ImagePlus capture = CaptureOverlayAction.capture(imp, -1, 1, tmLogger);
+        final ImagePlus capture = CaptureOverlayAction.capture(imp, -1, 1, null);
+        Path imagePath = experimentPath.resolve("TrackMate Images")
+                .resolve(experimentInfoRecord.getRecordingName() + ".jpg");
         if (capture != null) {
-            Path imagePath = experimentPath.resolve("TrackMate Images")
-                    .resolve(experimentInfoRecord.getRecordingName() + ".jpg");
-            if (Files.notExists(imagePath.getParent())) {
-                Files.createDirectories(imagePath.getParent());
-            }
+            AppLogger.debugf("   TrackMate - capture image: %s", imagePath.toString());
             if (!new FileSaver(capture).saveAsTiff(String.valueOf(imagePath))) {
                 AppLogger.errorf("Failed to save TIFF to: %s", imagePath);
             }
+
         } else {
             AppLogger.infof("Overlay capture returned null.");
         }
+        AppLogger.debugf("   TrackMate - wrote trackmate image '%s'", imagePath.toString());
 
         // --- Write tracks to CSV ---
-        Path tracksPath = experimentPath.resolve(experimentInfoRecord.getRecordingName() + "-tracks.csv");
-        int numberOfSpotsInALlTracks = TrackCsvWriter.writeTracksCsv(
-                trackmate,
-                experimentInfoRecord.getRecordingName(),
-                tracksPath.toFile(),
-                true);
+        String tracksName = experimentInfoRecord.getRecordingName() + "-tracks.csv";
+        Path tracksPath = experimentPath.resolve(tracksName);
+        AppLogger.debugf("   Trackmate - wrote tracks file '%s'", tracksPath);
 
+        int numberOfSpotsInALlTracks = 0;
+        try {
+            numberOfSpotsInALlTracks = TrackCsvWriter.writeTracksCsv(
+                    trackmate,
+                    experimentInfoRecord.getRecordingName(),
+                    tracksPath.toFile(),
+                    true);
+        }
+        catch (IOException e) {
+            AppLogger.errorf("Failed to write tracks to 's%'", tracksPath);
+        }
         // --- Results ---
         int numberOfSpots = model.getSpots().getNSpots(true);
         int numberOfTracks = model.getTrackModel().nTracks(false);
