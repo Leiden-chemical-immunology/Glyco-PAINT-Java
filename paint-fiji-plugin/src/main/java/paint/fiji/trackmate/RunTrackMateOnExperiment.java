@@ -11,7 +11,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.scijava.app.App;
 import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.utils.AppLogger;
@@ -124,10 +123,10 @@ public class RunTrackMateOnExperiment {
                         Files.createDirectories(trackmateImagesPath);
                         AppLogger.debugf("Created missing directory: %s", trackmateImagesPath);
                     }
+                    AppLogger.infof("   Recording '%s' started Trackmate processing.", experimentInfoRecord.getRecordingName());
+
                     // Perform TrackMate processing
-                    AppLogger.debugf("Running 'RunTrackMateOnRecording' for experiment '%s'",  experimentInfoRecord.getRecordingName());
                     trackMateResults = RunTrackMateOnRecording.RunTrackMateOnRecording(experimentPath, imagesPath, trackMateConfig, threshold, experimentInfoRecord);
-                    AppLogger.debugf("Returned from 'RunTrackMateOnRecording' for experiment '%s'",  experimentInfoRecord.getRecordingName());
 
                     if (trackMateResults == null || !trackMateResults.isSuccess()) {
                         AppLogger.errorf("TrackMate processing failed for recording '%s'.", experimentInfoRecord.getRecordingName());
@@ -144,6 +143,7 @@ public class RunTrackMateOnExperiment {
                             numberRecordings + 1,
                             numberRecordingsToProcess,
                             durationInSeconds);
+                    AppLogger.infof("");
                     totalDuration = totalDuration.plus(trackMateResults.getDuration());
                     numberRecordings += 1;
 

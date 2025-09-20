@@ -156,21 +156,21 @@ public class RunTrackMateOnRecording {
             AppLogger.errorf("TrackMate - execDetection failed:", trackmate.getErrorMessage());
             return new TrackMateResults(false);
         }
-        AppLogger.debugf("   TrackMate - execDetection succeeded");
+        AppLogger.debugf("      TrackMate - execDetection succeeded");
 
         int nrSpots = model.getSpots().getNSpots(false);
         if (nrSpots > trackMateConfig.getMaxNrSpotsInImage()) {
             AppLogger.errorf("   Too many spots detected (%d). Limit is {%d}.", nrSpots, trackMateConfig.getMaxNrSpotsInImage());
             return new TrackMateResults(false);
         }
-        AppLogger.debugf("   TrackMate - number of spots detected: %d",  nrSpots);
+        AppLogger.debugf("      TrackMate - number of spots detected: %d",  nrSpots);
 
         // Continue with full TrackMate processing - nr_spots is within limits
         if (!trackmate.process()) {
             AppLogger.errorf("   TrackMate process failed: %s", trackmate.getErrorMessage());
             return new TrackMateResults(false);
         }
-        AppLogger.debugf("   TrackMate - full processing successful");
+        AppLogger.debugf("      TrackMate - full processing successful");
 
         // --- Visualization ---
         final SelectionModel selectionModel = new SelectionModel(model);
@@ -181,14 +181,14 @@ public class RunTrackMateOnRecording {
         final HyperStackDisplayer displayer = new HyperStackDisplayer(model, selectionModel, imp, ds);
         displayer.render();
         displayer.refresh();
-        AppLogger.debugf("   TrackMate - visualisation successful");
+        AppLogger.debugf("      TrackMate - visualisation successful");
 
         // --- Capture overlay image ---
         final ImagePlus capture = CaptureOverlayAction.capture(imp, -1, 1, null);
         Path imagePath = experimentPath.resolve("TrackMate Images")
                 .resolve(experimentInfoRecord.getRecordingName() + ".jpg");
         if (capture != null) {
-            AppLogger.debugf("   TrackMate - capture image: %s", imagePath.toString());
+            AppLogger.debugf("      TrackMate - capture image: %s", imagePath.toString());
             if (!new FileSaver(capture).saveAsTiff(String.valueOf(imagePath))) {
                 AppLogger.errorf("Failed to save TIFF to: %s", imagePath);
             }
@@ -196,12 +196,12 @@ public class RunTrackMateOnRecording {
         } else {
             AppLogger.infof("Overlay capture returned null.");
         }
-        AppLogger.debugf("   TrackMate - wrote trackmate image '%s'", imagePath.toString());
+        AppLogger.debugf("      TrackMate - wrote trackmate image '%s'", imagePath.toString());
 
         // --- Write tracks to CSV ---
         String tracksName = experimentInfoRecord.getRecordingName() + "-tracks.csv";
         Path tracksPath = experimentPath.resolve(tracksName);
-        AppLogger.debugf("   Trackmate - wrote tracks file '%s'", tracksPath);
+        AppLogger.debugf("      Trackmate - wrote tracks file '%s'", tracksPath);
 
         int numberOfSpotsInALlTracks = 0;
         try {
