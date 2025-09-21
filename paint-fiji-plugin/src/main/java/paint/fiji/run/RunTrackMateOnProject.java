@@ -63,6 +63,7 @@ public class RunTrackMateOnProject implements Command {
         AppLogger.init("Fiji");
         AppLogger.debugf("TrackMate plugin started - v6.");
 
+
         // Display the project directory selection dialog
         ProjectSelectionDialog projDlg = new ProjectSelectionDialog(null);
         Path projectPath = projDlg.showDialog();
@@ -73,7 +74,10 @@ public class RunTrackMateOnProject implements Command {
             return;
         }
 
+        // Setup the json config
+        PaintConfig.initialise(projectPath.resolve(PAINT_CONFIGURATION_JSON));
         PaintConfig paintConfig = PaintConfig.instance();
+
         // Show ExperimentDialog in TRACKMATE mode
         ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(null, projectPath, ProjectSpecificationDialog.DialogMode.TRACKMATE);
 
@@ -99,7 +103,7 @@ public class RunTrackMateOnProject implements Command {
         dialog.setCalculationCallback(project -> {
 
             // There has to be an Image Root for TrackMate specified, otherwise nothing can work
-            PaintConfig paintConfig = PaintConfig.from(projectPath.resolve(PAINT_CONFIGURATION_JSON));
+
             String imagesRoot = paintConfig.getString("Paths", "Images Root", "Fatal");
             boolean error = false;
 
