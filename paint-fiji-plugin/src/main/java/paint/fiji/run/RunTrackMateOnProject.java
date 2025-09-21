@@ -73,6 +73,7 @@ public class RunTrackMateOnProject implements Command {
             return;
         }
 
+        PaintConfig paintConfig = PaintConfig.instance();
         // Show ExperimentDialog in TRACKMATE mode
         ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(null, projectPath, ProjectSpecificationDialog.DialogMode.TRACKMATE);
 

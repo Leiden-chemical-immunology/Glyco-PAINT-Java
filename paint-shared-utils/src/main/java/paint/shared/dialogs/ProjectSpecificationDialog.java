@@ -105,7 +105,7 @@ public class ProjectSpecificationDialog {
     public ProjectSpecificationDialog(Frame owner, Path projectPath, DialogMode mode) {
         this.projectPath = projectPath;
         this.configPath = projectPath.resolve(PAINT_CONFIGURATION_JSON);
-        this.paintConfig = PaintConfig.from(configPath);
+        this.paintConfig = PaintConfig.instance();
         this.project = new Project(projectPath);
         this.mode = mode;
 

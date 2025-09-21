@@ -34,7 +34,7 @@ public class RunTrackMateOnExperiment {
         // Read the JSON configuration file from the experiment directory
         // If it does not exist, create a new one with default values.
         Path configPath = experimentPath.getParent().resolve(PAINT_CONFIGURATION_JSON);
-        PaintConfig paintConfig = PaintConfig.from(configPath);
+        PaintConfig paintConfig = PaintConfig.instance();
         TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
 
         if (verbose) {

@@ -112,7 +112,7 @@ public final class ProjectDataLoader {
             if (experimentSeemsValid(experimentPath, matureProject)) {
                 AppLogger.infof("Loading experiment: %s", experimentName);
                 try {
-                    PaintConfig paintConfig = PaintConfig.from(projectPath.resolve(PAINT_JSON));
+                    PaintConfig paintConfig = PaintConfig.instance();
                     GenerateSquaresConfig generateSquaresConfig = GenerateSquaresConfig.from(paintConfig);
                     Experiment experiment = loadExperiment(projectPath, experimentName, generateSquaresConfig, matureProject);
                     if (experiment != null) {
