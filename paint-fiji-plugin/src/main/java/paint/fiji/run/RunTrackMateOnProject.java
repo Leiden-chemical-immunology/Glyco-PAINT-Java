@@ -15,6 +15,7 @@ import paint.shared.utils.AppLogger;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.ProjectSelectionDialog;
 
+import static paint.shared.config.PaintConfig.getBoolean;
 import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 import static paint.fiji.trackmate.RunTrackMateOnExperiment.runTrackMateOnExperiment;
 import static paint.shared.debug.ValidateProject.formatReport;
@@ -61,8 +62,7 @@ public class RunTrackMateOnProject implements Command {
 
         // Set up logging
         AppLogger.init("TrackMateOnProject");
-        AppLogger.debugf("TrackMate plugin started - v6.");
-
+        AppLogger.debugf("TrackMate plugin started");
 
         // Display the project directory selection dialog
         ProjectSelectionDialog projDlg = new ProjectSelectionDialog(null);
@@ -104,6 +104,8 @@ public class RunTrackMateOnProject implements Command {
 
             // There has to be an Image Root for TrackMate specified, otherwise nothing can work
 
+            boolean debug = getBoolean("Debug", "RunTrackMateOnProject", false);
+
             String imagesRoot = paintConfig.getString("Paths", "Images Root", "Fatal");
             boolean error = false;
 
@@ -111,7 +113,7 @@ public class RunTrackMateOnProject implements Command {
                 AppLogger.errorf("No Image Path retrieved from configuration file- Fatal.");
                 error = true;
             }
-            AppLogger.debugf("The Image Path is specified as '%s'.", imagesRoot);
+            if (debug) AppLogger.debugf("The Image Path is specified as '%s'.", imagesRoot);
 
             // The image root and project root need to exist
             Path imagesPath = Paths.get(imagesRoot);
@@ -119,7 +121,7 @@ public class RunTrackMateOnProject implements Command {
                 AppLogger.errorf("The Image Root '%s' does not exist - Fatal.", imagesPath);
                 error = true;
             }
-            AppLogger.debugf("The Image Path '%s' exists.", imagesRoot);
+            if (debug) AppLogger.debugf("The Image Path '%s' exists.", imagesRoot);
 
             // The images root exists but is it a valid?
             List<String> report = ImageRootValidator.validateImageRoot(
@@ -131,13 +133,13 @@ public class RunTrackMateOnProject implements Command {
                 AppLogger.errorf("The Image Root Validation Failed - Fatal.");
                 error = true;
             }
-            AppLogger.debugf("The Image Path '%s' passed the validation test.", imagesRoot);
+            if (debug) AppLogger.debugf("The Image Path '%s' passed the validation test.", imagesRoot);
 
             if (!error && !projectPath.toFile().exists()) {
                 AppLogger.errorf("Project Root '%s' does not exist - Fatal.", projectPath);
                 error = true;
             }
-            AppLogger.debugf("The project root '%s' exists.", projectPath);
+            if (debug) AppLogger.debugf("The project root '%s' exists.", projectPath);
 
             // If there is an error, display a warning message for 5 seconds and then exit
             if (error) {
@@ -151,15 +153,15 @@ public class RunTrackMateOnProject implements Command {
             }
 
             // Basic conditions have been met
-            AppLogger.debugf("TrackMate processing started.");
-            AppLogger.debugf("Experiments %s", project.experimentNames.toString());
+            if (debug) AppLogger.debugf("TrackMate processing started.");
+            if (debug) AppLogger.debugf("Experiments %s", project.experimentNames.toString());
 
             // Verify if the experiments appear valid
             ValidateResult validateResult = validateProject(projectPath, project.experimentNames, ValidateProject.Mode.VALIDATE_TRACKMATE );
             if (validateResult.isOk()) {
                 formatReport(validateResult.getErrors());
             }
-            AppLogger.debugf("Experiments appear valid.");
+            if (debug) AppLogger.debugf("Experiments appear valid.");
 
             // Cycle through the experiments and run TrackMate on each one
             for (String experimentName : project.experimentNames) {
