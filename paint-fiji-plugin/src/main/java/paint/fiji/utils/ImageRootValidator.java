@@ -1,9 +1,8 @@
-package debug;
+package paint.fiji.utils;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Utility for validating that experiment image directories and

@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import debug.ImageRootValidator;
+import paint.fiji.utils.ImageRootValidator;
 import paint.shared.config.PaintConfig;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
