@@ -74,8 +74,25 @@ public class RunTrackMateOnRecording {
         DebugTools.setRootLevel("OFF");
 
         // Open the ND2 image
+        ImagePlus imp = null;
         File nd2File = new File(imagesPath.toFile(), experimentInfoRecord.getRecordingName() + ".nd2");
-        ImagePlus imp = IJ.openImage(nd2File.getAbsolutePath());
+        if (nd2File.exists()) {
+            AppLogger.errorf("Could not open image file: %s", nd2File.getAbsolutePath());
+        }
+        try {
+//            ImporterOptions options = new ImporterOptions();
+//            options.setId(nd2File.getAbsolutePath());
+//            options.setQuiet(true); // suppress Bio-Formats dialogs
+//
+//            ImagePlus[] imps = BF.openImagePlus(options);
+//            if (imps != null && imps.length > 0) {
+//                imp = imps[0];  // first series
+//            }
+            imp = IJ.openImage(nd2File.getAbsolutePath());
+        }
+        catch (Exception e) {
+            AppLogger.errorf("Could not load image file: %s", nd2File.getAbsolutePath());
+        }
         if (imp == null) {
             AppLogger.errorf("The image file %s could not be opened.", nd2File);
             return new TrackMateResults(false);
