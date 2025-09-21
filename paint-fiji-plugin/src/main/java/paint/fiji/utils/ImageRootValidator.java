@@ -44,7 +44,7 @@ public class ImageRootValidator {
             // --- 1. Image directory must exist
             if (!Files.isDirectory(imageDir)) {
                 report.add("[Experiment " + experiment + "] Missing image directory: " + imageDir);
-                continue; // skip to next experiment
+                continue; // skip to next test
             }
 
             // --- 2. Experiment Info file must exist
@@ -54,6 +54,7 @@ public class ImageRootValidator {
                 continue;
             }
 
+            // ---3. Read the recordings to determine which image file should be there
             try {
                 List<String> lines = Files.readAllLines(expInfoFile);
                 if (lines.size() <= 1) {
@@ -93,9 +94,6 @@ public class ImageRootValidator {
             }
         }
 
-        if (report.isEmpty()) {
-            // report.add("✔ All image directories and recording files are present.");
-        }
         return report;
     }
 

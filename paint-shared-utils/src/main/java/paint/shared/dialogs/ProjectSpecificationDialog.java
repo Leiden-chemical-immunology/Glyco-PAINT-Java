@@ -118,7 +118,7 @@ public class ProjectSpecificationDialog {
 
         // Set dialog title
         String dialogTitle = (mode == DialogMode.TRACKMATE)
-                ? "Run TrackMate on project"
+                ? "Run TrackMate on Project"
                 : "Generate Squares for Project";
 
         this.dialog = new JDialog(owner, dialogTitle, false);
