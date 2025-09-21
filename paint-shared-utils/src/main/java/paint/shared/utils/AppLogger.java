@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.*;
 import java.util.prefs.Preferences;
 
@@ -116,7 +118,8 @@ public class AppLogger {
             } else {
                 level = "[" + record.getLevel().getName() + "]";
             }
-            return level + " " + record.getMessage() + System.lineSeparator();
+            String timeLabel = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+            return String.format("%s [%s] %s%s", timeLabel, level, record.getMessage(), System.lineSeparator());
         }
     }
 
