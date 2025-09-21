@@ -56,7 +56,7 @@ public class ProjectSpecificationDialog {
          *
          * @param project the project specification built from the dialog
          */
-        void run(Project project);
+        boolean run(Project project);
     }
 
     private CalculationCallback calculationCallback;
@@ -240,11 +240,13 @@ public class ProjectSpecificationDialog {
             if (calculationCallback != null) {
                 setInputsEnabled(false);
                 new Thread(() -> {
-                    calculationCallback.run(getProject());
+                    boolean success = calculationCallback.run(getProject());
                     SwingUtilities.invokeLater(() -> {
                         setInputsEnabled(true);
                         JOptionPane.showMessageDialog(dialog,
-                                "Calculations finished! You can now close this dialog.");
+                                success
+                                        ? "Calculations finished successfully! You can select new experiments or close this dialog."
+                                        : "Calculations finished with errors. Please check the log.");
                     });
                 }).start();
             }

@@ -26,10 +26,11 @@ public class RunTrackMateOnExperiment {
 
     static boolean verbose = false;
 
-    public static void runTrackMateOnExperiment(Path experimentPath, Path imagesPath) {
+    public static boolean runTrackMateOnExperiment(Path experimentPath, Path imagesPath) {
 
         Duration totalDuration = Duration.ZERO;
         int numberRecordings = 0;
+        boolean status = true;
 
         // Read the JSON configuration file from the experiment directory
         // If it does not exist, create a new one with default values.
@@ -47,7 +48,7 @@ public class RunTrackMateOnExperiment {
         Path allRecordingFilePath = experimentFilePath.getParent().resolve(RECORDINGS_CSV);
         if (!Files.exists(experimentFilePath)) {
             AppLogger.errorf("Experiment info file does not exist in %s.", experimentFilePath);
-            return;
+            return false;
         }
 
         // Determime how many recordings need to be processes on this experiment
@@ -64,7 +65,7 @@ public class RunTrackMateOnExperiment {
              BufferedWriter writer = Files.newBufferedWriter(allRecordingFilePath)) {String headerLine = reader.readLine();
             if (headerLine == null) {
                 AppLogger.errorf("Experiment info file in %s is empty.", experimentFilePath);
-                return;
+                return false;
             }
 
             // Build the header for the 'All Recordings Java' file (by adding some new columns)
@@ -133,6 +134,7 @@ public class RunTrackMateOnExperiment {
 
                     if (trackMateResults == null || !trackMateResults.isSuccess()) {
                         AppLogger.errorf("TrackMate processing failed for recording '%s'.", experimentInfoRecord.getRecordingName());
+                        status = false;
                         continue;  // Process the next recording
                     }
                     int durationInSeconds = (int) (trackMateResults.getDuration().toMillis() / 1000);
@@ -181,6 +183,7 @@ public class RunTrackMateOnExperiment {
         } catch (IOException e) {
             AppLogger.errorf("Error reading Experiment Info file '%s': %s", experimentFilePath, e.getMessage());
             e.printStackTrace();
+            status = false;
         }
 
         // Concatenate the 'All Tracks Java' file
@@ -190,11 +193,13 @@ public class RunTrackMateOnExperiment {
         } catch (IOException e) {
             AppLogger.errorf("Error concatenating tracks file file %s: %s", experimentFilePath, e.getMessage());
             e.printStackTrace();
+            status = false;
         }
 
         int durationInSeconds = (int) (totalDuration.toMillis() / 1000);
         AppLogger.infof("Processed %d recordings in %s.", numberRecordings, formatDuration(durationInSeconds));
         // AppLogger.infof("Processed %d recordings in %d seconds.", numberRecordings, durationInSeconds);
         AppLogger.infof("");
+        return status;
     }
 }

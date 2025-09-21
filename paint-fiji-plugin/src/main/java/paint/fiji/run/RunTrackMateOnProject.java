@@ -104,6 +104,7 @@ public class RunTrackMateOnProject implements Command {
 
             // There has to be an Image Root for TrackMate specified, otherwise nothing can work
 
+            boolean status = true;
             boolean debug = getBoolean("Debug", "RunTrackMateOnProject", false);
 
             String imagesRoot = getString("Paths", "Images Root", "Fatal");
@@ -170,7 +171,7 @@ public class RunTrackMateOnProject implements Command {
                     AppLogger.errorf("Experiment directory '%s' does not exist.", experimentPath);
                 } else {
                     try {
-                        runTrackMateOnExperiment(experimentPath, imagesPath.resolve(experimentName));
+                        status = runTrackMateOnExperiment(experimentPath, imagesPath.resolve(experimentName));
                     } catch (Exception e) {
                         AppLogger.errorf("Error during TrackMate run for '%s': %s", experimentName, e.getMessage());
                         e.printStackTrace();
@@ -180,9 +181,11 @@ public class RunTrackMateOnProject implements Command {
                     }
                 }
             }
+            return status;
         });
 
         // Non-blocking dialog – user must press OK to trigger processing
         dialog.showDialog();
+
     }
 }
