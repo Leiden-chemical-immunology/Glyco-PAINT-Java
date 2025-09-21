@@ -16,6 +16,7 @@ import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.ProjectSelectionDialog;
 
 import static paint.shared.config.PaintConfig.getBoolean;
+import static paint.shared.config.PaintConfig.getString;
 import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 import static paint.fiji.trackmate.RunTrackMateOnExperiment.runTrackMateOnExperiment;
 import static paint.shared.debug.ValidateProject.formatReport;
@@ -74,14 +75,13 @@ public class RunTrackMateOnProject implements Command {
             return;
         }
 
-        // Setup the json config
+        // Set up the json config
         PaintConfig.initialise(projectPath.resolve(PAINT_CONFIGURATION_JSON));
-        PaintConfig paintConfig = PaintConfig.instance();
 
         // Show ExperimentDialog in TRACKMATE mode
         ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(null, projectPath, ProjectSpecificationDialog.DialogMode.TRACKMATE);
 
-        /**
+        /*
          * Registers the TrackMate execution logic as a callback with the experiment dialog.
          * <p>
          * This callback is invoked only after the user presses <b>OK</b> in the dialog.
@@ -106,7 +106,7 @@ public class RunTrackMateOnProject implements Command {
 
             boolean debug = getBoolean("Debug", "RunTrackMateOnProject", false);
 
-            String imagesRoot = paintConfig.getString("Paths", "Images Root", "Fatal");
+            String imagesRoot = getString("Paths", "Images Root", "Fatal");
             boolean error = false;
 
             if (imagesRoot.equals("Fatal")) {
@@ -126,7 +126,7 @@ public class RunTrackMateOnProject implements Command {
             // The images root exists but is it a valid?
             List<String> report = ImageRootValidator.validateImageRoot(
                     projectPath,
-                    Paths.get(imagesRoot),
+                    imagesPath,
                     project.experimentNames);
             if (!report.isEmpty()) {
                 report.forEach(msg -> AppLogger.errorf("%s", msg));
@@ -171,9 +171,12 @@ public class RunTrackMateOnProject implements Command {
                 } else {
                     try {
                         runTrackMateOnExperiment(experimentPath, imagesPath.resolve(experimentName));
+                    } catch (Exception e) {
+                        AppLogger.errorf("Error during TrackMate run for '%s': %s", experimentName, e.getMessage());
+                        e.printStackTrace();
                     } catch (Throwable t) {
-                        AppLogger.errorf("Error during TrackMate run for '%s': %s",
-                                experimentName, t.getMessage());
+                        AppLogger.errorf("Severe error during TrackMate run for '%s': %s", experimentName, t.getMessage());
+                        t.printStackTrace();
                     }
                 }
             }
