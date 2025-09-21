@@ -119,7 +119,7 @@ public class AppLogger {
                 level = "[" + record.getLevel().getName() + "]";
             }
             String timeLabel = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
-            return String.format("%s [%s] %s%s", timeLabel, level, record.getMessage(), System.lineSeparator());
+            return String.format("%s %s %s%s", timeLabel, level, record.getMessage(), System.lineSeparator());
         }
     }
 
