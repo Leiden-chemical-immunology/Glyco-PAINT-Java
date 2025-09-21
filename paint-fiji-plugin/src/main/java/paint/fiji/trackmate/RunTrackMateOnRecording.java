@@ -28,6 +28,8 @@ import paint.shared.utils.AppLogger;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.objects.ExperimentInfo;
 
+import static paint.shared.config.PaintConfig.getBoolean;
+
 /**
  * Utility class to run the TrackMate plugin programmatically within Fiji.
  * <p>
@@ -63,7 +65,7 @@ public class RunTrackMateOnRecording {
                                                            ExperimentInfo experimentInfoRecord) throws IOException {
 
         final boolean verbose = false;
-        final boolean debug = false;
+        final boolean debug = getBoolean("Debug", "RunTrackMateOnRecording", false);
 
         // Record the start time
         LocalDateTime start = LocalDateTime.now();
@@ -103,7 +105,7 @@ public class RunTrackMateOnRecording {
         // Prepare settings
         Settings settings = new Settings(imp);
 
-        if (verbose) {
+        if (debug && verbose) {
             System.out.println("TrackMateConfig: " + trackMateConfig);
             System.out.println("Threshold: " + threshold);
         }
@@ -140,7 +142,7 @@ public class RunTrackMateOnRecording {
         settings.addTrackFilter(new FeatureFilter("NUMBER_SPOTS", trackMateConfig.getMinNrSpotsInTrack(), true));
 
         // Debug settings
-        if (debug) {
+        if (debug && verbose) {
             TrackMateSettingsDebugger.logSettings(settings);
             TrackMateSettingsValidator.validate(settings);
         }
