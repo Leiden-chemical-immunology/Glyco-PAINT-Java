@@ -193,8 +193,8 @@ public class RunTrackMateOnExperiment {
         }
 
         int durationInSeconds = (int) (totalDuration.toMillis() / 1000);
-        // AppLogger.infof("Processed %d recordings in %s.", numberRecordings, formatDuration(durationInSeconds));
-        AppLogger.infof("Processed %d recordings in %d seconds.", numberRecordings, durationInSeconds);
+        AppLogger.infof("Processed %d recordings in %s.", numberRecordings, formatDuration(durationInSeconds));
+        // AppLogger.infof("Processed %d recordings in %d seconds.", numberRecordings, durationInSeconds);
         AppLogger.infof("");
     }
 }
