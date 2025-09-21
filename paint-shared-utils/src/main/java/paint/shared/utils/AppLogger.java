@@ -59,16 +59,15 @@ public class AppLogger {
         logger.addHandler(consoleHandler);
 
         try {
-            // Create log directory under ~/Paint/Logger
+            // Create log directory under ~/Paint/Logger if it does not exist
             Path logDirPath = Paths.get(System.getProperty("user.home"))
                     .resolve("Paint").resolve("Logger");
             Files.createDirectories(logDirPath);
 
-            // Choose next available log file name
-            String logFileName = nextLogFileName(baseName);
+            String logFileName = nextLogFileName(logDirPath, baseName);
             Path logFilePath = logDirPath.resolve(logFileName);
 
-            FileHandler fileHandler = new FileHandler(logFilePath.toString(), false); // overwrite
+            FileHandler fileHandler = new FileHandler(logFilePath.toString(), false); // overwrite new file
             fileHandler.setFormatter(new MessageOnlyFormatter());
             fileHandler.setLevel(Level.ALL);
             logger.addHandler(fileHandler);
@@ -87,12 +86,13 @@ public class AppLogger {
      * @param baseName base name (prefix) for the log file
      * @return unique log file name with ".log" extension
      */
-    private static String nextLogFileName(String baseName) {
+    private static String nextLogFileName(Path logDir, String baseName) {
         int counter = 0;
         while (true) {
             String name = baseName + "-" + counter + ".log";
-            if (!Files.exists(Paths.get(name))) {
-                return name; // first unused filename
+            Path candidate = logDir.resolve(name);
+            if (!Files.exists(candidate)) {
+                return name;
             }
             counter++;
         }
