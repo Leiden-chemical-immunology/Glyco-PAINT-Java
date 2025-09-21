@@ -12,6 +12,7 @@ import fiji.plugin.trackmate.tracking.jaqaman.SparseLAPTrackerFactory;
 import fiji.plugin.trackmate.visualization.hyperstack.HyperStackDisplayer;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.gui.ImageWindow;
 import ij.io.FileSaver;
 import loci.common.DebugTools;
 
@@ -78,6 +79,7 @@ public class RunTrackMateOnRecording {
             return new TrackMateResults(false);
         }
         imp.show();
+        IJ.wait(100); // tiny pause to let UI fully build the window/canvas
 
         // Enhance contrast and convert to grayscale
         IJ.run(imp, "Enhance Contrast", "saturated=0.35");
@@ -226,6 +228,9 @@ public class RunTrackMateOnRecording {
         } catch (InterruptedException e) {
             AppLogger.errorf("Failed to sleep - %s", e.getMessage());
         }
+
+        // Do this to avoid an occasional crash
+        ImageWindow win = imp.getWindow();
         imp.close();
 
         // Compute runtime
