@@ -153,7 +153,7 @@ public class RunTrackMateOnExperiment {
                     timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                 }
                 else {
-                    AppLogger.infof("   Skipped processing of recording '%s'.", experimentInfoRecord.getRecordingName());
+                    AppLogger.infof("   Recording '%s' was deselected.", experimentInfoRecord.getRecordingName());
                     numberOfSpots = 0;
                     numberOfTracks = 0;
                     numberOfFrames = 0;
