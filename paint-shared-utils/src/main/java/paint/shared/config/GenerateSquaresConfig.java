@@ -1,5 +1,9 @@
 package paint.shared.config;
 
+import static paint.shared.config.PaintConfig.getInt;
+import static paint.shared.config.PaintConfig.getString;
+import static paint.shared.config.PaintConfig.getDouble;
+
 /**
  * Holds the data retrieved from the GenerateSquares section of the Paint configuration file.
  */
@@ -17,13 +21,13 @@ public class GenerateSquaresConfig {
      * Full constructor with all values specified
      */
     private GenerateSquaresConfig(PaintConfig paintConfig) {
-        this.nrSquaresInRow = paintConfig.getInt("Generate Squares", "Nr of Squares in Row", 5);
-        this.nrSquaresInColumn = paintConfig.getInt("Generate Squares", "Nr of Squares in Column", 5);
-        this.minTracksToCalculateTau = paintConfig.getInt("Generate Squares", "Min Tracks to Calculate Tau", 20);
-        this.minRequiredRSquared = paintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
-        this.minRequiredDensityRatio = paintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 0.1);
-        this.maxAllowableVariability = paintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
-        this.neighbourMode = paintConfig.getString("Generate Squares", "Neighbour Mode", "Free");
+        this.nrSquaresInRow = getInt("Generate Squares", "Nr of Squares in Row", 5);
+        this.nrSquaresInColumn = getInt("Generate Squares", "Nr of Squares in Column", 5);
+        this.minTracksToCalculateTau = getInt("Generate Squares", "Min Tracks to Calculate Tau", 20);
+        this.minRequiredRSquared = getDouble("Generate Squares", "Min Required R Squared", 0.1);
+        this.minRequiredDensityRatio = getDouble("Generate Squares", "Min Required Density Ratio", 0.1);
+        this.maxAllowableVariability = getDouble("Generate Squares", "Max Allowable Variability", 10.0);
+        this.neighbourMode = getString("Generate Squares", "Neighbour Mode", "Free");
     }
 
     public static GenerateSquaresConfig from(PaintConfig paintConfig) {
