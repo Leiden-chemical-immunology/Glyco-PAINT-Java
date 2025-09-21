@@ -60,7 +60,7 @@ public class RunTrackMateOnProject implements Command {
     public void run() {
 
         // Set up logging
-        AppLogger.init("Fiji");
+        AppLogger.init("TrackMateOnProject");
         AppLogger.debugf("TrackMate plugin started - v6.");
 
 
