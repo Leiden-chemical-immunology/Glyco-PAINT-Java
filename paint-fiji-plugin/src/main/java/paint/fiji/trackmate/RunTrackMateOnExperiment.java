@@ -123,7 +123,10 @@ public class RunTrackMateOnExperiment {
                         Files.createDirectories(trackmateImagesPath);
                         AppLogger.debugf("Created missing directory: %s", trackmateImagesPath);
                     }
-                    AppLogger.infof("   Recording '%s' started Trackmate processing.", experimentInfoRecord.getRecordingName());
+                    AppLogger.infof("   Recording '%s' (%d of %d) started Trackmate processing.",
+                            experimentInfoRecord.getRecordingName(),
+                            numberRecordings + 1,
+                            numberRecordingsToProcess);
 
                     // Perform TrackMate processing
                     trackMateResults = RunTrackMateOnRecording.RunTrackMateOnRecording(experimentPath, imagesPath, trackMateConfig, threshold, experimentInfoRecord);
@@ -133,16 +136,11 @@ public class RunTrackMateOnExperiment {
                         continue;  // Process the next recording
                     }
                     int durationInSeconds = (int) (trackMateResults.getDuration().toMillis() / 1000);
-//                    AppLogger.infof("   Recording '%s' (%d of %d) processed in %s.",
-//                            experimentInfoRecord.getRecordingName(),
-//                            numberRecordings + 1,
-//                            numberRecordingsToProcess,
-//                            formatDuration(durationInSeconds));
-                    AppLogger.infof("   Recording '%s' (%d of %d) processed in %d seconds.",
+                    AppLogger.infof("   Recording '%s' (%d of %d) processed in %s.",
                             experimentInfoRecord.getRecordingName(),
                             numberRecordings + 1,
                             numberRecordingsToProcess,
-                            durationInSeconds);
+                            formatDuration(durationInSeconds));
                     AppLogger.infof("");
                     totalDuration = totalDuration.plus(trackMateResults.getDuration());
                     numberRecordings += 1;
