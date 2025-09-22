@@ -1,6 +1,11 @@
 package paint.shared.validate;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+
 import java.io.IOException;
+import java.io.Reader;
 import java.nio.file.*;
 import java.util.*;
 
@@ -44,7 +49,7 @@ public class ImageRootValidator {
             // --- 1. Image directory must exist
             if (!Files.isDirectory(imageDir)) {
                 report.add("[Experiment " + experiment + "] Missing image directory: " + imageDir);
-                continue; // skip to next test
+                continue;
             }
 
             // --- 2. Experiment Info file must exist
@@ -54,92 +59,49 @@ public class ImageRootValidator {
                 continue;
             }
 
-            // ---3. Read the recordings to determine which image file should be there
-            try {
-                List<String> lines = Files.readAllLines(expInfoFile);
-                if (lines.size() <= 1) {
-                    continue; // no recordings
-                }
-
-                // Header line
-                String[] headers = lines.get(0).split(",");
-                int recordingIdx = findColumnIndex(headers, "Recording Name");
-                int flagIdx = findColumnIndex(headers, "Process Flag");
-
-                if (recordingIdx < 0 || flagIdx < 0) {
-                    report.add("[Experiment " + experiment + "] Missing required columns in Experiment Info");
-                    continue;
-                }
-
-                // Process rows
-
-                // Group rows by Condition Number and check attribute consistency
-                Map<String, Integer> headerMap = new HashMap<>();
-                for (int i = 0; i < headers.length; i++) {
-                    headerMap.put(headers[i].trim(), i);
-                }
-
-                String[] required = { "Condition Number", "Probe Name", "Probe Type", "Cell Type", "Adjuvant", "Concentration" };
-                for (String key : required) {
-                    if (!headerMap.containsKey(key)) {
-                        report.add("[Experiment " + experiment + "] Missing required column: " + key);
-                        return report;
-                    }
-                }
+            // --- 3. Read the CSV file using Apache Commons CSV
+            try (Reader reader = Files.newBufferedReader(expInfoFile);
+                 CSVParser parser = CSVFormat.Builder.create(CSVFormat.DEFAULT)
+                         .setHeader()
+                         .setSkipHeaderRecord(true)
+                         .build()
+                         .parse(reader)) {
 
                 Map<String, Map<String, String>> conditionGroups = new HashMap<>();
 
-                for (int i = 1; i < lines.size(); i++) {
-                    String[] cols = lines.get(i).split(",");
-                    if (cols.length <= Collections.max(headerMap.values())) continue;
-
-                    String condition = cols[headerMap.get("Condition Number")];
-                    String probeName = cols[headerMap.get("Probe Name")];
-                    String probeType = cols[headerMap.get("Probe Type")];
-                    String cellType  = cols[headerMap.get("Cell Type")];
-                    String adjuvant  = cols[headerMap.get("Adjuvant")];
-                    String conc      = cols[headerMap.get("Concentration")];
-
-                    Map<String, String> attributes = conditionGroups.get(condition);
-                    if (attributes == null) {
-                        attributes = new HashMap<>();
-                        attributes.put("Probe Name", probeName);
-                        attributes.put("Probe Type", probeType);
-                        attributes.put("Cell Type", cellType);
-                        attributes.put("Adjuvant", adjuvant);
-                        attributes.put("Concentration", conc);
-                        conditionGroups.put(condition, attributes);
-                    } else {
-                        if (!attributes.get("Probe Name").equals(probeName) ||
-                                !attributes.get("Probe Type").equals(probeType) ||
-                                !attributes.get("Cell Type").equals(cellType) ||
-                                !attributes.get("Adjuvant").equals(adjuvant) ||
-                                !attributes.get("Concentration").equals(conc)) {
-
-                            report.add("[Experiment " + experiment + "] Inconsistent attributes for Condition Number: " + condition +
-                                    "\n → Expected: " + attributes +
-                                    "\n → Found:    [Probe Name=" + probeName +
-                                    ", Probe Type=" + probeType +
-                                    ", Cell Type=" + cellType +
-                                    ", Adjuvant=" + adjuvant +
-                                    ", Concentration=" + conc + "]");
-                        }
-                    }
-                }
-
-                for (int i = 1; i < lines.size(); i++) {
-                    String[] cols = lines.get(i).split(",");
-                    if (cols.length <= Math.max(recordingIdx, flagIdx)) {
-                        continue; // malformed row
-                    }
-
-                    String recordingName = cols[recordingIdx].trim();
-                    String processFlag = cols[flagIdx].trim().toLowerCase();
+                for (CSVRecord record : parser) {
+                    String recordingName = record.get("Recording Name");
+                    String processFlag = record.get("Process Flag").trim().toLowerCase();
 
                     if (processFlag.equals("true")) {
                         Path recordingFile = imageDir.resolve(recordingName + ".nd2");
                         if (!Files.exists(recordingFile)) {
                             report.add("[Experiment " + experiment + "] Missing recording file: " + recordingFile);
+                        }
+                    }
+
+                    String condition = record.get("Condition Number");
+                    String probeName = record.get("Probe Name");
+                    String probeType = record.get("Probe Type");
+                    String cellType  = record.get("Cell Type");
+                    String adjuvant  = record.get("Adjuvant");
+                    String conc      = record.get("Concentration");
+
+                    Map<String, String> currentAttributes = new LinkedHashMap<>();
+                    currentAttributes.put("Probe Name", probeName);
+                    currentAttributes.put("Probe Type", probeType);
+                    currentAttributes.put("Cell Type", cellType);
+                    currentAttributes.put("Adjuvant", adjuvant);
+                    currentAttributes.put("Concentration", conc);
+
+                    if (!conditionGroups.containsKey(condition)) {
+                        conditionGroups.put(condition, currentAttributes);
+                    } else {
+                        Map<String, String> expectedAttributes = conditionGroups.get(condition);
+                        if (!expectedAttributes.equals(currentAttributes)) {
+                            report.add("[Experiment " + experiment + "] Inconsistent attributes for Condition Number: " + condition +
+                                    "\n → Expected: " + expectedAttributes +
+                                    "\n → Found:    " + currentAttributes);
                         }
                     }
                 }
@@ -150,14 +112,5 @@ public class ImageRootValidator {
         }
 
         return report;
-    }
-
-    private static int findColumnIndex(String[] headers, String columnName) {
-        for (int i = 0; i < headers.length; i++) {
-            if (headers[i].trim().equalsIgnoreCase(columnName)) {
-                return i;
-            }
-        }
-        return -1;
     }
 }

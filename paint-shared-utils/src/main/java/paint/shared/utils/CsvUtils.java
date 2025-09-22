@@ -1,47 +1,49 @@
 package paint.shared.utils;
 
-import java.io.*;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class CsvUtils {
 
-    public static int countProcessed(Path filePath)  {
+    public static int countProcessed(Path filePath) {
         int count = 0;
 
-        try (BufferedReader br = new BufferedReader(new FileReader(String.valueOf(filePath)))) {
-            String headerLine = br.readLine();
-            if (headerLine == null) {
-                return 0; // empty file
-            }
+        try {
+            try (CSVParser parser = CSVParser.parse(filePath.toFile(), java.nio.charset.StandardCharsets.UTF_8,
+                    CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
 
-            String[] headers = headerLine.split(",");
-            int processIdx = -1;
-            for (int i = 0; i < headers.length; i++) {
-                if (headers[i].trim().equalsIgnoreCase("Process Flag")) {
-                    processIdx = i;
-                    break;
+                String processFlagKey = null;
+                for (String header : parser.getHeaderMap().keySet()) {
+                    if (header.trim().equalsIgnoreCase("Process Flag")) {
+                        processFlagKey = header;
+                        break;
+                    }
                 }
-            }
-            if (processIdx == -1) {
-                //throw new IllegalArgumentException("No 'Process Flag' column found in " + filePath);
-            }
 
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] fields = line.split(",", -1);
-                if (processIdx < fields.length) {
-                    String val = fields[processIdx].trim().toLowerCase();
+                if (processFlagKey == null) {
+                    return 0;
+                }
+
+                for (CSVRecord record : parser) {
+                    String val = record.get(processFlagKey).trim().toLowerCase();
                     if (val.equals("true") || val.equals("yes") || val.equals("y") || val.equals("1")) {
                         count++;
                     }
                 }
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw.toString());
+            AppLogger.errorf("An exception occurred:\n" + sw);
         }
+
         return count;
     }
 }

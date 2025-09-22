@@ -1,30 +1,27 @@
 package paint.fiji.trackmate;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
+import paint.shared.config.PaintConfig;
+import paint.shared.config.TrackMateConfig;
+import paint.shared.objects.ExperimentInfo;
+import paint.shared.utils.AppLogger;
 
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.scijava.app.App;
-import paint.shared.config.PaintConfig;
-import paint.shared.config.TrackMateConfig;
-import paint.shared.utils.AppLogger;
-import paint.shared.objects.ExperimentInfo;
+import java.util.*;
 
 import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.utils.CsvConcatenator.concatenateCsvFiles;
 import static paint.shared.utils.CsvUtils.countProcessed;
-
 import static paint.shared.utils.Miscellaneous.formatDuration;
+
 
 public class RunTrackMateOnExperiment {
 
@@ -36,8 +33,6 @@ public class RunTrackMateOnExperiment {
         int numberRecordings = 0;
         boolean status = true;
 
-        // Read the JSON configuration file from the experiment directory
-        // If it does not exist, create a new one with default values.
         Path configPath = experimentPath.getParent().resolve(PAINT_CONFIGURATION_JSON);
         PaintConfig paintConfig = PaintConfig.instance();
         TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
@@ -47,7 +42,6 @@ public class RunTrackMateOnExperiment {
             System.out.println(trackMateConfig);
         }
 
-        // Check if the Experiment info.csv file exists
         Path experimentFilePath = experimentPath.resolve(EXPERIMENT_INFO_CSV);
         Path allRecordingFilePath = experimentFilePath.getParent().resolve(RECORDINGS_CSV);
         if (!Files.exists(experimentFilePath)) {
@@ -55,164 +49,109 @@ public class RunTrackMateOnExperiment {
             return false;
         }
 
-        // Determime how many recordings need to be processes on this experiment
         int numberRecordingsToProcess = countProcessed(experimentFilePath);
-
         String experimentName = experimentPath.getFileName().toString();
         String projectName = experimentPath.getParent().getFileName().toString();
 
         AppLogger.infof("");
-        AppLogger.infof("Processing %d recordings in experiment '%s' in project '%s'.",  numberRecordingsToProcess, experimentName, projectName);
+        AppLogger.infof("Processing %d recordings in experiment '%s' in project '%s'.", numberRecordingsToProcess, experimentName, projectName);
 
-        // Open the experiment info file for reading
-        try (BufferedReader reader = Files.newBufferedReader(experimentFilePath);
-             BufferedWriter writer = Files.newBufferedWriter(allRecordingFilePath)) {String headerLine = reader.readLine();
-            if (headerLine == null) {
-                AppLogger.errorf("Experiment info file in %s is empty.", experimentFilePath);
-                return false;
-            }
+        try (
+                Reader reader = Files.newBufferedReader(experimentFilePath);
+                CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
+                BufferedWriter writer = Files.newBufferedWriter(allRecordingFilePath);
+                CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT)
+        ) {
+            List<String> header = new ArrayList<>(parser.getHeaderMap().keySet());
+            header.addAll(Arrays.asList(
+                    "Number of Spots", "Number of Tracks", "Number of Spots in All Tracks",
+                    "Number of Frames", "Run Time", "Time Stamp", "Exclude", "Tau", "R Squared", "Density"
+            ));
+            printer.printRecord(header);
 
-            // Build the header for the 'All Recordings Java' file (by adding some new columns)
-            String header = headerLine + "," + "Number of Spots" +
-                    "," + "Number of Tracks" +
-                    "," + "Number of Spots in All Tracks" +
-                    "," + "Number of Frames" +
-                    "," + "Run Time" +
-                    "," + "Time Stamp" +
-                    "," + "Exclude" +
-                    "," + "Tau" +
-                    "," + "R Squared" +
-                    "," + "Density";
-
-            // Write the header to the 'All Recordings Java' file
-            writer.write(header);
-            writer.newLine();
-
-            // Split the header by tab into field names
-            String[] headers = headerLine.split(",");
-
-            String line;
-            TrackMateResults trackMateResults;
-
-            int numberOfSpots;
-            int numberOfTracks;
-            int numberOfSpotsInAllTracks;
-            int numberOfFrames;
-            int runTime;
-            String timeStamp;
-            String recordingName = null;
-
-            // Now process row by row, recording by recording
-            while ((line = reader.readLine()) != null) {
-
-                // Put a try catch on the record processing to catch an error and continue
+            for (CSVRecord record : parser) {
                 try {
-                    // split row into values
-                    String[] fields = line.split(",", -1);  // -1 keeps empty fields
-
-                    // Convert to map if needed
                     Map<String, String> row = new LinkedHashMap<>();
-                    for (int i = 0; i < headers.length && i < fields.length; i++) {
-                        row.put(headers[i], fields[i]);
+                    for (String key : parser.getHeaderMap().keySet()) {
+                        row.put(key, record.get(key));
                     }
 
-                    ExperimentInfo experimentInfoRecord = new ExperimentInfo(row);
+                    ExperimentInfo experimentInfo = new ExperimentInfo(row);
+                    String recordingName = experimentInfo.getRecordingName();
+                    int numberOfSpots = 0, numberOfTracks = 0, numberOfSpotsInAllTracks = 0, numberOfFrames = 0, runTime = 0;
+                    String timeStamp = "";
 
-                    recordingName = row.get("Recording Name");
-                    if (experimentInfoRecord.getProcessFlag()) {
-                        double threshold = experimentInfoRecord.getThreshold();
+                    if (experimentInfo.getProcessFlag()) {
+                        double threshold = experimentInfo.getThreshold();
 
-                        // Check if Brightfield Images and TrackMate Images exist and create if necessary
                         Path brightfieldImagesPath = experimentPath.resolve(DIR_BRIGHTFIELD_IMAGES);
                         Path trackmateImagesPath = experimentPath.resolve(DIR_TRACKMATE_IMAGES);
-                        if (!Files.exists(brightfieldImagesPath)) {
-                            Files.createDirectories(brightfieldImagesPath);
-                            AppLogger.debugf("Created missing directory: %s", brightfieldImagesPath);
-                        }
-                        if (!Files.exists(trackmateImagesPath)) {
-                            Files.createDirectories(trackmateImagesPath);
-                            AppLogger.debugf("Created missing directory: %s", trackmateImagesPath);
-                        }
-                        AppLogger.infof("   Recording '%s' (%d of %d) started TrackMate processing.",
-                                experimentInfoRecord.getRecordingName(),
-                                numberRecordings + 1,
-                                numberRecordingsToProcess);
+                        if (!Files.exists(brightfieldImagesPath)) Files.createDirectories(brightfieldImagesPath);
+                        if (!Files.exists(trackmateImagesPath)) Files.createDirectories(trackmateImagesPath);
 
-                        // Perform TrackMate processing
-                        trackMateResults = RunTrackMateOnRecording.RunTrackMateOnRecording(experimentPath, imagesPath, trackMateConfig, threshold, experimentInfoRecord);
+                        AppLogger.infof("   Recording '%s' (%d of %d) started TrackMate processing.", recordingName, numberRecordings + 1, numberRecordingsToProcess);
 
+                        TrackMateResults trackMateResults = RunTrackMateOnRecording.RunTrackMateOnRecording(experimentPath, imagesPath, trackMateConfig, threshold, experimentInfo);
                         if (trackMateResults == null || !trackMateResults.isSuccess()) {
-                            AppLogger.errorf("TrackMate processing failed for recording '%s'.", experimentInfoRecord.getRecordingName());
-                            AppLogger.errorf("");
+                            AppLogger.errorf("TrackMate processing failed for recording '%s'.", recordingName);
                             status = false;
-                            continue;  // Process the next recording
+                            continue;
                         }
+
                         int durationInSeconds = (int) (trackMateResults.getDuration().toMillis() / 1000);
-                        AppLogger.infof("   Recording '%s' (%d of %d) processed in %s.",
-                                experimentInfoRecord.getRecordingName(),
-                                numberRecordings + 1,
-                                numberRecordingsToProcess,
-                                formatDuration(durationInSeconds));
-                        AppLogger.infof("");
+                        AppLogger.infof("   Recording '%s' (%d of %d) processed in %s.", recordingName, numberRecordings + 1, numberRecordingsToProcess, formatDuration(durationInSeconds));
+
                         totalDuration = totalDuration.plus(trackMateResults.getDuration());
-                        numberRecordings += 1;
+                        numberRecordings++;
 
                         numberOfSpots = trackMateResults.getNumberOfSpots();
                         numberOfTracks = trackMateResults.getNumberOfTracks();
                         numberOfFrames = trackMateResults.getNumberOfFrames();
                         numberOfSpotsInAllTracks = trackMateResults.getNumberOfSpotsInALlTracks();
-                        runTime = (int) trackMateResults.getDuration().toMillis() / 1000;
+                        runTime = durationInSeconds;
                         timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                     } else {
-                        AppLogger.infof("   Recording '%s' was deselected.", experimentInfoRecord.getRecordingName());
-                        numberOfSpots = 0;
-                        numberOfTracks = 0;
-                        numberOfFrames = 0;
-                        numberOfSpotsInAllTracks = 0;
-                        runTime = 0;
-                        timeStamp = "";
+                        AppLogger.infof("   Recording '%s' was deselected.", recordingName);
                     }
 
-                    // Build output row, even if no recording was processed
+                    List<String> output = new ArrayList<>();
+                    for (String key : parser.getHeaderMap().keySet()) {
+                        output.add(row.getOrDefault(key, ""));
+                    }
+                    output.addAll(Arrays.asList(
+                            String.valueOf(numberOfSpots),
+                            String.valueOf(numberOfTracks),
+                            String.valueOf(numberOfSpotsInAllTracks),
+                            String.valueOf(numberOfFrames),
+                            String.valueOf(runTime),
+                            timeStamp,
+                            "False", "", "", ""
+                    ));
+                    printer.printRecord(output);
 
-                    String out = line + "," + String.format("%d", numberOfSpots) +      // Number of Spots
-                            "," + String.format("%d", numberOfTracks) +                 // Number of Tracks
-                            "," + String.format("%d", numberOfSpotsInAllTracks) +       // Numbe of spots in all tracks
-                            "," + String.format("%d", numberOfFrames) +                 // Number of Frames
-                            "," + String.format("%d", runTime) +                        // Run Time needs to be an int
-                            "," + String.format("%s", timeStamp) +                      // Timestamp
-                            "," + "False" +                                             // Exclude
-                            "," + "" +                                                  // Tau
-                            "," + "" +                                                  // R Squared
-                            "," + "";                                                   // Density
-
-                    writer.write(out);
-                    writer.newLine();
-                }
-                catch (Exception e) {
-                    AppLogger.errorf("Error processing recording %s: %s", recordingName, e.getMessage());
+                } catch (Exception e) {
+                    AppLogger.errorf("Error processing recording: %s", e.getMessage());
                     StringWriter sw = new StringWriter();
                     e.printStackTrace(new PrintWriter(sw));
-                    AppLogger.errorf("An exception occurred:\n" + sw.toString());
+                    AppLogger.errorf("An exception occurred:\n" + sw);
                 }
             }
         } catch (IOException e) {
             AppLogger.errorf("Error processing Experiment Info file '%s': %s", experimentFilePath, e.getMessage());
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw.toString());
+            AppLogger.errorf("An exception occurred:\n" + sw);
             status = false;
         }
 
-        // Concatenate the 'All Tracks Java' file
         Path tracksFilePath = experimentPath.resolve(TRACKS_CSV);
         try {
             concatenateCsvFiles(experimentPath, tracksFilePath);
         } catch (IOException e) {
-            AppLogger.errorf("Error concatenating tracks file file %s: %s", experimentFilePath, e.getMessage());
+            AppLogger.errorf("Error concatenating tracks file %s: %s", experimentFilePath, e.getMessage());
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw.toString());
+            AppLogger.errorf("An exception occurred:\n" + sw);
             status = false;
         }
 

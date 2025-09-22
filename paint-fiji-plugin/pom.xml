@@ -14,7 +14,6 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <!-- ✅ Required metadata (Enforcer plugin rules) -->
     <name>Paint Fiji Plugin</name>
     <description>Integration of Paint application with Fiji/TrackMate plugin</description>
     <url>https://github.com/jjabakker/paint-fiji-plugin</url>
@@ -72,13 +71,10 @@
     <properties>
         <license.licenseName>BSD-2-Clause</license.licenseName>
         <license.copyrightOwners>Your Name</license.copyrightOwners>
-        <!-- Fiji installation directory -->
         <fiji.dir>/Applications/Fiji.app</fiji.dir>
     </properties>
 
-
     <dependencies>
-        <!-- TrackMate provided by Fiji at runtime -->
         <dependency>
             <groupId>sc.fiji</groupId>
             <artifactId>TrackMate</artifactId>
@@ -92,11 +88,10 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- OME common (for loci.common.DebugTools) -->
         <dependency>
             <groupId>org.openmicroscopy</groupId>
             <artifactId>ome-common</artifactId>
-            <version>6.0.25</version>   <!-- or any 6.x; 6.x still exports loci.common.* -->
+            <version>6.0.25</version>
             <scope>provided</scope>
         </dependency>
 
@@ -113,10 +108,14 @@
             <version>0.43.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.10.0</version>
+        </dependency>
     </dependencies>
 
     <repositories>
-
         <repository>
             <id>scijava.public</id>
             <url>https://maven.scijava.org/content/groups/public</url>
@@ -126,7 +125,6 @@
             <id>central</id>
             <url>https://repo.maven.apache.org/maven2</url>
         </repository>
-
     </repositories>
 
     <build>
@@ -169,7 +167,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Copy plugin and selective dependencies into Fiji -->
+            <!-- Copy plugin and selected dependencies into Fiji -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -189,9 +187,9 @@
                         </configuration>
                     </execution>
 
-                    <!-- Copy only required dependencies -->
+                    <!-- ✅ Copy only required dependencies into Fiji -->
                     <execution>
-                        <id>copy-tablesaw-deps-to-fiji</id>
+                        <id>copy-deps-to-fiji</id>
                         <phase>package</phase>
                         <goals><goal>run</goal></goals>
                         <configuration>
@@ -201,7 +199,7 @@
                                         <include name="tablesaw-core-*.jar"/>
                                         <include name="tablesaw-jsplot-*.jar"/>
                                         <include name="tablesaw-excel-*.jar"/>
-                                        <!-- Add more tablesaw-* if you use them -->
+                                        <include name="commons-csv-*.jar"/>
                                     </fileset>
                                 </copy>
                             </target>

@@ -1,6 +1,11 @@
 package paint.shared.utils;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+
 import java.io.IOException;
+import java.io.Reader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,7 +39,6 @@ public class DirectoryClassifier {
         }
     }
 
-
     public static class CheckResult {
         public final boolean valid;
         public final String reason;
@@ -45,7 +49,6 @@ public class DirectoryClassifier {
         }
     }
 
-    // --- File/Dir constants ---
     private static final Set<String> EXPERIMENT_FILES = Collections.unmodifiableSet(
             new HashSet<>(Arrays.asList("Experiment Info.csv", "All Recordings.csv")));
 
@@ -89,7 +92,6 @@ public class DirectoryClassifier {
         Path outputDir = directory.resolve("Output");
         List<String> feedback = new ArrayList<>();
 
-        // --- EXPERIMENT CHECK ---
         if (isExperiment(directory)) {
             if (!Files.exists(outputDir) || Files.isDirectory(outputDir)) {
                 Maturity maturity = Files.isRegularFile(directory.resolve(OPTIONAL_FILE))
@@ -102,7 +104,6 @@ public class DirectoryClassifier {
             feedback.addAll(experimentMissingItems(directory, contents));
         }
 
-        // --- PROJECT CHECK ---
         List<Path> experimentDirs = findExperimentSubDirs(contents);
         boolean hasProjectFiles = hasAllFiles(directory, PROJECT_FILES);
 
@@ -163,8 +164,6 @@ public class DirectoryClassifier {
     }
 
     public static CheckResult isProjectDirectory(Path dir) {
-
-
         int numberOfNonExperimentDirectories = 0;
         int numberOfExperimentDirectories = 0;
 
@@ -180,11 +179,10 @@ public class DirectoryClassifier {
                         CheckResult expCheck = isExperimentDirectory(sub);
                         if (expCheck.valid) {
                             foundExperiment = true;
-                            numberOfExperimentDirectories += 1;
-                        }
-                        else {
-                            numberOfNonExperimentDirectories += 1;
-                            System.out.println("Not a experiment: " + sub);
+                            numberOfExperimentDirectories++;
+                        } else {
+                            numberOfNonExperimentDirectories++;
+                            System.out.println("Not an experiment: " + sub);
                         }
                     }
                 }
@@ -192,8 +190,7 @@ public class DirectoryClassifier {
 
             if (!foundExperiment) {
                 return new CheckResult(false, "No valid Experiment directories found in " + dir);
-            }
-            else {
+            } else {
                 System.out.printf("Number Of Experiment Directories is %d and Non Experiment Directories is %d \n", numberOfExperimentDirectories, numberOfNonExperimentDirectories);
                 return new CheckResult(true, "Found Experiment directory found in " + dir);
             }
@@ -202,7 +199,6 @@ public class DirectoryClassifier {
             return new CheckResult(false, "Error reading directory: " + e.getMessage());
         }
     }
-    // -------------------- Helper Methods --------------------
 
     private static boolean isExperiment(Path directory) {
         return hasAllFiles(directory, EXPERIMENT_FILES) &&

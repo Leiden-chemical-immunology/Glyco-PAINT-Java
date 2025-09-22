@@ -1,9 +1,13 @@
 package paint.shared.validate;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import paint.shared.constants.PaintConstants;
 import tech.tablesaw.api.ColumnType;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,69 +18,36 @@ import java.util.List;
 
 /**
  * Validates the structure and contents of a Paint project directory.
- *
- * <p>This class performs schema and file checks for Paint project experiments.
- * Validation depends on the mode:
- * <ul>
- *   <li>{@code VALIDATE_TRACKMATE} – checks Experiment Info only</li>
- *   <li>{@code VALIDATE_GENERATE_SQUARES} – checks Experiment Info, Recordings, Tracks, and required directories</li>
- *   <li>{@code VALIDATE_VIEWER} – checks everything including Squares</li>
- * </ul>
- *
- * <p>Schema definitions are based on {@link PaintConstants}.</p>
  */
 public class ProjectValidator {
 
-    /**
-     * Validation modes to control which checks are performed.
-     */
+    // Modes of validation for different application contexts
     public enum Mode {
-        /** Only validate Experiment Info files. */
         VALIDATE_TRACKMATE,
-
-        /** Validate experiment-level files and directories for square generation. */
         VALIDATE_GENERATE_SQUARES,
-
-        /** Full validation including square-level data for viewer use. */
         VALIDATE_VIEWER
     }
 
-    /**
-     * Result container for project validation.
-     */
+    // Container to hold validation result and error list
     public static class ValidateResult {
         private final boolean ok;
         private final List<String> errors;
 
-        /**
-         * Constructs a validation result.
-         *
-         * @param ok     true if validation passed
-         * @param errors list of validation error messages
-         */
         public ValidateResult(boolean ok, List<String> errors) {
             this.ok = ok;
             this.errors = errors;
         }
 
-        /** @return true if validation passed */
         public boolean isOk() {
             return ok;
         }
 
-        /** @return list of validation errors */
         public List<String> getErrors() {
             return errors;
         }
     }
 
-    /**
-     * Scans the project root directory for valid experiments (containing an Experiment Info CSV).
-     *
-     * @param projectRoot path to the project root
-     * @return list of discovered experiment names
-     * @throws IOException if directory traversal fails
-     */
+    // Discover all experiment directories that contain Experiment Info CSV
     public static List<String> discoverExperiments(Path projectRoot) throws IOException {
         List<String> names = new ArrayList<>();
         if (!Files.isDirectory(projectRoot)) return names;
@@ -91,18 +62,12 @@ public class ProjectValidator {
         return names;
     }
 
-    /**
-     * Validates a single experiment directory for required files and schema consistency.
-     *
-     * @param experimentDir the path to the experiment folder
-     * @param mode          validation mode
-     * @return list of errors found
-     */
+    // Validate a single experiment directory
     public static List<String> validateExperiment(Path experimentDir, Mode mode) {
         List<String> errors = new ArrayList<>();
 
         try {
-            // Experiment Info
+            // Validate Experiment Info CSV
             Path expCsv = experimentDir.resolve(PaintConstants.EXPERIMENT_INFO_CSV);
             if (Files.exists(expCsv)) {
                 errors.addAll(validateCsv(expCsv,
@@ -112,8 +77,8 @@ public class ProjectValidator {
                 errors.add("Missing required file: " + expCsv);
             }
 
+            // Additional validations for recording and track files
             if (mode == Mode.VALIDATE_GENERATE_SQUARES || mode == Mode.VALIDATE_VIEWER) {
-                // Recordings
                 Path recCsv = experimentDir.resolve(PaintConstants.RECORDINGS_CSV);
                 if (Files.exists(recCsv)) {
                     errors.addAll(validateCsv(recCsv,
@@ -123,7 +88,6 @@ public class ProjectValidator {
                     errors.add("Missing required file: " + recCsv);
                 }
 
-                // Tracks
                 Path trkCsv = experimentDir.resolve(PaintConstants.TRACKS_CSV);
                 if (Files.exists(trkCsv)) {
                     errors.addAll(validateCsv(trkCsv,
@@ -133,7 +97,7 @@ public class ProjectValidator {
                     errors.add("Missing required file: " + trkCsv);
                 }
 
-                // Required directories
+                // Required image directories check
                 if (!Files.isDirectory(experimentDir.resolve(PaintConstants.DIR_BRIGHTFIELD_IMAGES))) {
                     errors.add("Missing directory: " + PaintConstants.DIR_BRIGHTFIELD_IMAGES);
                 }
@@ -142,8 +106,8 @@ public class ProjectValidator {
                 }
             }
 
+            // Full validation mode includes Squares CSV check
             if (mode == Mode.VALIDATE_VIEWER) {
-                // Squares
                 Path sqCsv = experimentDir.resolve(PaintConstants.SQUARES_CSV);
                 if (Files.exists(sqCsv)) {
                     errors.addAll(validateCsv(sqCsv,
@@ -161,14 +125,7 @@ public class ProjectValidator {
         return errors;
     }
 
-    /**
-     * Validates the given list of experiments.
-     *
-     * @param projectRoot     the root directory containing all experiments
-     * @param experimentNames the names of experiments to validate
-     * @param mode            validation mode
-     * @return validation result with outcome and any issues
-     */
+    // Validate a list of experiments by name
     public static ValidateResult validateProject(Path projectRoot, List<String> experimentNames, Mode mode) {
         List<String> allErrors = new ArrayList<>();
 
@@ -187,14 +144,7 @@ public class ProjectValidator {
         return new ValidateResult(allErrors.isEmpty(), allErrors);
     }
 
-    /**
-     * Validates all experiments discovered in the project directory.
-     *
-     * @param projectRoot the root directory
-     * @param mode        validation mode
-     * @return result of validation
-     * @throws IOException if discovery fails
-     */
+    // Discover and validate all experiments in a project
     public static ValidateResult validateProject(Path projectRoot, Mode mode) throws IOException {
         List<String> experimentNames = discoverExperiments(projectRoot);
         if (experimentNames.isEmpty()) {
@@ -205,33 +155,26 @@ public class ProjectValidator {
         return validateProject(projectRoot, experimentNames, mode);
     }
 
-    /**
-     * Validates that the given CSV file has the correct headers and types.
-     *
-     * @param filePath      CSV file to validate
-     * @param expectedCols  expected column names in order
-     * @param expectedTypes expected column types (ignored here, for future use)
-     * @return list of errors
-     */
+    // Validates CSV file headers using Apache Commons CSV
     private static List<String> validateCsv(Path filePath, String[] expectedCols, ColumnType[] expectedTypes) {
         List<String> report = new ArrayList<>();
-        try {
-            List<String> lines = Files.readAllLines(filePath);
-            if (lines.isEmpty()) {
-                report.add("Empty file: " + filePath);
-                return report;
-            }
+        try (Reader reader = Files.newBufferedReader(filePath);
+             CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.builder().setHeader().build())) {
 
-            String[] headers = lines.get(0).split(",");
-            if (headers.length != expectedCols.length) {
+            // Extract actual headers from CSV
+            List<String> actualHeaders = new ArrayList<>(parser.getHeaderMap().keySet());
+
+            // Check header count matches expected
+            if (actualHeaders.size() != expectedCols.length) {
                 report.add("Header length mismatch in " + filePath.getFileName() +
-                        ": expected " + expectedCols.length + " but found " + headers.length);
+                        ": expected " + expectedCols.length + " but found " + actualHeaders.size());
             } else {
-                for (int i = 0; i < headers.length; i++) {
-                    if (!headers[i].trim().equals(expectedCols[i])) {
+                // Check each header name matches expected
+                for (int i = 0; i < expectedCols.length; i++) {
+                    if (!actualHeaders.get(i).trim().equals(expectedCols[i])) {
                         report.add("Header mismatch in " + filePath.getFileName() +
                                 " at column " + i + ": expected '" + expectedCols[i] +
-                                "' but found '" + headers[i] + "'");
+                                "' but found '" + actualHeaders.get(i) + "'");
                     }
                 }
             }
@@ -241,12 +184,7 @@ public class ProjectValidator {
         return report;
     }
 
-    /**
-     * Formats a list of error messages into a human-readable validation report.
-     *
-     * @param errors list of error messages
-     * @return formatted report string
-     */
+    // Format validation errors into a readable string
     public static String formatReport(List<String> errors) {
         if (errors == null || errors.isEmpty()) {
             return "";
@@ -259,19 +197,7 @@ public class ProjectValidator {
         return sb.toString();
     }
 
-    /**
-     * Command-line interface to validate a Paint project.
-     * <pre>
-     * Usage:
-     *   java paint.shared.validate.ProjectValidator &lt;projectRoot&gt; &lt;mode&gt; [&lt;experiment1&gt; ...]
-     * Modes:
-     *   TRACKMATE
-     *   GENERATE_SQUARES
-     *   VIEWER
-     * </pre>
-     *
-     * @param args command-line arguments
-     */
+    // Command-line interface for project validation
     public static void main(String[] args) {
         if (args.length < 2) {
             System.err.println("Usage: java paint.shared.validate.ProjectValidator <projectRoot> <mode> [<experiment1> <experiment2> ...]");
@@ -281,6 +207,8 @@ public class ProjectValidator {
 
         Path projectRoot = Paths.get(args[0]);
         Mode mode;
+
+        // Parse mode from argument
         String modeArg = args[1].toUpperCase();
         switch (modeArg) {
             case "TRACKMATE": mode = Mode.VALIDATE_TRACKMATE; break;

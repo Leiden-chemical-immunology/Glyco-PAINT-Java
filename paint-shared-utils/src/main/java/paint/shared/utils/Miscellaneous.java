@@ -1,15 +1,17 @@
 package paint.shared.utils;
 
-import tech.tablesaw.api.ColumnType;
-import tech.tablesaw.api.Table;
-import tech.tablesaw.io.csv.CsvReadOptions;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
-import java.util.Arrays;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Miscellaneous {
 
@@ -40,27 +42,24 @@ public class Miscellaneous {
         return sb.toString().trim();
     }
 
-    public static Table readTableAsStrings(Path csvPath) throws Exception {
-        String headerLine;
-        try (BufferedReader br = Files.newBufferedReader(csvPath)) {
-            headerLine = br.readLine();
+    public static List<String[]> readTableAsStrings(Path csvPath) throws IOException {
+        List<String[]> rows = new ArrayList<>();
+        try (Reader reader = Files.newBufferedReader(csvPath);
+             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
+
+            // Add header row
+            List<String> header = new ArrayList<>(csvParser.getHeaderMap().keySet());
+            rows.add(header.toArray(new String[0]));
+
+            for (CSVRecord record : csvParser) {
+                String[] row = new String[record.size()];
+                for (int i = 0; i < record.size(); i++) {
+                    row[i] = record.get(i);
+                }
+                rows.add(row);
+            }
         }
-        if (headerLine == null) {
-            return Table.create(csvPath.getFileName().toString());
-        }
-
-        // simple split on comma; switch to a CSV parser if headers may contain commas in quotes
-        int columnCount = headerLine.split(",", -1).length;
-
-        ColumnType[] types = new ColumnType[columnCount];
-        Arrays.fill(types, ColumnType.STRING);
-
-        CsvReadOptions options = CsvReadOptions.builder(csvPath.toFile())
-                .header(true)
-                .columnTypes(types)
-                .build();
-
-        return Table.read().usingOptions(options);
+        return rows;
     }
 
     public static String friendlyMessage(Throwable t) {
@@ -71,7 +70,6 @@ public class Miscellaneous {
         return (colon != -1) ? m.substring(colon + 1).trim() : m;
     }
 
-    // Same idea, but from the root cause
     public static String rootCauseFriendlyMessage(Throwable t) {
         if (t == null) return "";
         Throwable cur = t;
@@ -106,5 +104,4 @@ public class Miscellaneous {
             System.err.println("❌ Failed to delete " + path + ": " + e.getMessage());
         }
     }
-
 }
