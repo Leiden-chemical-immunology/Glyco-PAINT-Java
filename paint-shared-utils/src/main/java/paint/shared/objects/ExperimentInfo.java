@@ -1,7 +1,10 @@
 package paint.shared.objects;
 
+import paint.shared.utils.AppLogger;
 import tech.tablesaw.api.Table;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 
 import static java.lang.Boolean.parseBoolean;
@@ -64,16 +67,25 @@ public class ExperimentInfo {
      * @param row the map of column names to values (all as strings)
      */
     public ExperimentInfo(Map<String, String> row) {
-        this.recordingName   = row.get("Recording Name");
-        this.conditionNumber = parseInt(row.get("Condition Number"));
-        this.replicateNumber = parseInt(row.get("Replicate Number"));
-        this.probeName       = row.get("Probe Name");
-        this.probeType       = row.get("Probe Type");
-        this.cellType        = row.get("Cell Type");
-        this.adjuvant        = row.get("Adjuvant");
-        this.concentration   = parseDouble(row.get("Concentration"));
-        this.processFlag     = parseBoolean(row.get("Process Flag"));
-        this.threshold       = parseDouble(row.get("Threshold"));
+        try {
+            this.recordingName   = row.get("Recording Name");
+            this.conditionNumber = parseInt(row.get("Condition Number"));
+            this.replicateNumber = parseInt(row.get("Replicate Number"));
+            this.probeName       = row.get("Probe Name");
+            this.probeType       = row.get("Probe Type");
+            this.cellType        = row.get("Cell Type");
+            this.adjuvant        = row.get("Adjuvant");
+            this.concentration   = parseDouble(row.get("Concentration"));
+            this.processFlag     = parseBoolean(row.get("Process Flag"));
+            this.threshold       = parseDouble(row.get("Threshold"));
+        }
+        catch (Exception e) {
+            AppLogger.errorf("Problem in Experiment Info");
+            AppLogger.errorf(row.toString());
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            AppLogger.errorf("An exception occurred:\n" + sw.toString());
+        }
     }
 
     // --- Getters and Setters ---
