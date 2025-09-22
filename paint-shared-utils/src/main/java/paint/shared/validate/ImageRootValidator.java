@@ -1,4 +1,4 @@
-package paint.fiji.utils;
+package paint.shared.validate;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -33,8 +33,8 @@ public class ImageRootValidator {
      * @return list of report lines (missing dirs/files)
      */
     public static List<String> validateImageRoot(Path projectRoot,
-                                        Path imagesRoot,
-                                        List<String> experimentNames) {
+                                                 Path imagesRoot,
+                                                 List<String> experimentNames) {
         List<String> report = new ArrayList<>();
 
         for (String experiment : experimentNames) {
@@ -72,6 +72,61 @@ public class ImageRootValidator {
                 }
 
                 // Process rows
+
+                // Group rows by Condition Number and check attribute consistency
+                Map<String, Integer> headerMap = new HashMap<>();
+                for (int i = 0; i < headers.length; i++) {
+                    headerMap.put(headers[i].trim(), i);
+                }
+
+                String[] required = { "Condition Number", "Probe Name", "Probe Type", "Cell Type", "Adjuvant", "Concentration" };
+                for (String key : required) {
+                    if (!headerMap.containsKey(key)) {
+                        report.add("[Experiment " + experiment + "] Missing required column: " + key);
+                        return report;
+                    }
+                }
+
+                Map<String, Map<String, String>> conditionGroups = new HashMap<>();
+
+                for (int i = 1; i < lines.size(); i++) {
+                    String[] cols = lines.get(i).split(",");
+                    if (cols.length <= Collections.max(headerMap.values())) continue;
+
+                    String condition = cols[headerMap.get("Condition Number")];
+                    String probeName = cols[headerMap.get("Probe Name")];
+                    String probeType = cols[headerMap.get("Probe Type")];
+                    String cellType  = cols[headerMap.get("Cell Type")];
+                    String adjuvant  = cols[headerMap.get("Adjuvant")];
+                    String conc      = cols[headerMap.get("Concentration")];
+
+                    Map<String, String> attributes = conditionGroups.get(condition);
+                    if (attributes == null) {
+                        attributes = new HashMap<>();
+                        attributes.put("Probe Name", probeName);
+                        attributes.put("Probe Type", probeType);
+                        attributes.put("Cell Type", cellType);
+                        attributes.put("Adjuvant", adjuvant);
+                        attributes.put("Concentration", conc);
+                        conditionGroups.put(condition, attributes);
+                    } else {
+                        if (!attributes.get("Probe Name").equals(probeName) ||
+                                !attributes.get("Probe Type").equals(probeType) ||
+                                !attributes.get("Cell Type").equals(cellType) ||
+                                !attributes.get("Adjuvant").equals(adjuvant) ||
+                                !attributes.get("Concentration").equals(conc)) {
+
+                            report.add("[Experiment " + experiment + "] Inconsistent attributes for Condition Number: " + condition +
+                                    "\n → Expected: " + attributes +
+                                    "\n → Found:    [Probe Name=" + probeName +
+                                    ", Probe Type=" + probeType +
+                                    ", Cell Type=" + cellType +
+                                    ", Adjuvant=" + adjuvant +
+                                    ", Concentration=" + conc + "]");
+                        }
+                    }
+                }
+
                 for (int i = 1; i < lines.size(); i++) {
                     String[] cols = lines.get(i).split(",");
                     if (cols.length <= Math.max(recordingIdx, flagIdx)) {
