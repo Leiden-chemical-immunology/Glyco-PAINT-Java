@@ -184,7 +184,7 @@ public class RunTrackMateOnRecording {
             AppLogger.errorf("   Too many spots detected (%d). Limit is {%d}.", nrSpots, trackMateConfig.getMaxNrSpotsInImage());
             return new TrackMateResults(false);
         }
-        if (debug) AppLogger.debugf("      TrackMate - number of spots detected: %d",  nrSpots);
+        AppLogger.infof("      TrackMate - number of spots detected: %d",  nrSpots);
 
         // Continue with full TrackMate processing - nr_spots is within limits
         if (!trackmate.process()) {
