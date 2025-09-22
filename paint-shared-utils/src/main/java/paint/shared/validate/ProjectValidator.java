@@ -13,45 +13,70 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Final version of the project validation utility.
- * <p>
- * This class unifies the functionality of {@link ValidateProjectOld} and
- * {@link ValidateProjectWithColumType}, using the schema definitions
- * provided in {@link PaintConstants}.
- * </p>
+ * Validates the structure and contents of a Paint project directory.
+ *
+ * <p>This class performs schema and file checks for Paint project experiments.
+ * Validation depends on the mode:
+ * <ul>
+ *   <li>{@code VALIDATE_TRACKMATE} – checks Experiment Info only</li>
+ *   <li>{@code VALIDATE_GENERATE_SQUARES} – checks Experiment Info, Recordings, Tracks, and required directories</li>
+ *   <li>{@code VALIDATE_VIEWER} – checks everything including Squares</li>
+ * </ul>
+ *
+ * <p>Schema definitions are based on {@link PaintConstants}.</p>
  */
 public class ProjectValidator {
 
     /**
-     * Validation mode.
+     * Validation modes to control which checks are performed.
      */
     public enum Mode {
+        /** Only validate Experiment Info files. */
         VALIDATE_TRACKMATE,
+
+        /** Validate experiment-level files and directories for square generation. */
         VALIDATE_GENERATE_SQUARES,
+
+        /** Full validation including square-level data for viewer use. */
         VALIDATE_VIEWER
     }
 
     /**
-     * Result object containing outcome and error list.
+     * Result container for project validation.
      */
     public static class ValidateResult {
         private final boolean ok;
         private final List<String> errors;
 
+        /**
+         * Constructs a validation result.
+         *
+         * @param ok     true if validation passed
+         * @param errors list of validation error messages
+         */
         public ValidateResult(boolean ok, List<String> errors) {
             this.ok = ok;
             this.errors = errors;
         }
 
+        /** @return true if validation passed */
         public boolean isOk() {
             return ok;
         }
 
+        /** @return list of validation errors */
         public List<String> getErrors() {
             return errors;
         }
     }
 
+    /**
+     * Scans the project root directory for valid experiments (containing an Experiment Info CSV).
+     *
+     * @param projectRoot path to the project root
+     * @return list of discovered experiment names
+     * @throws IOException if directory traversal fails
+     */
     public static List<String> discoverExperiments(Path projectRoot) throws IOException {
         List<String> names = new ArrayList<>();
         if (!Files.isDirectory(projectRoot)) return names;
@@ -66,6 +91,13 @@ public class ProjectValidator {
         return names;
     }
 
+    /**
+     * Validates a single experiment directory for required files and schema consistency.
+     *
+     * @param experimentDir the path to the experiment folder
+     * @param mode          validation mode
+     * @return list of errors found
+     */
     public static List<String> validateExperiment(Path experimentDir, Mode mode) {
         List<String> errors = new ArrayList<>();
 
@@ -129,6 +161,14 @@ public class ProjectValidator {
         return errors;
     }
 
+    /**
+     * Validates the given list of experiments.
+     *
+     * @param projectRoot     the root directory containing all experiments
+     * @param experimentNames the names of experiments to validate
+     * @param mode            validation mode
+     * @return validation result with outcome and any issues
+     */
     public static ValidateResult validateProject(Path projectRoot, List<String> experimentNames, Mode mode) {
         List<String> allErrors = new ArrayList<>();
 
@@ -147,6 +187,14 @@ public class ProjectValidator {
         return new ValidateResult(allErrors.isEmpty(), allErrors);
     }
 
+    /**
+     * Validates all experiments discovered in the project directory.
+     *
+     * @param projectRoot the root directory
+     * @param mode        validation mode
+     * @return result of validation
+     * @throws IOException if discovery fails
+     */
     public static ValidateResult validateProject(Path projectRoot, Mode mode) throws IOException {
         List<String> experimentNames = discoverExperiments(projectRoot);
         if (experimentNames.isEmpty()) {
@@ -157,6 +205,14 @@ public class ProjectValidator {
         return validateProject(projectRoot, experimentNames, mode);
     }
 
+    /**
+     * Validates that the given CSV file has the correct headers and types.
+     *
+     * @param filePath      CSV file to validate
+     * @param expectedCols  expected column names in order
+     * @param expectedTypes expected column types (ignored here, for future use)
+     * @return list of errors
+     */
     private static List<String> validateCsv(Path filePath, String[] expectedCols, ColumnType[] expectedTypes) {
         List<String> report = new ArrayList<>();
         try {
@@ -185,6 +241,12 @@ public class ProjectValidator {
         return report;
     }
 
+    /**
+     * Formats a list of error messages into a human-readable validation report.
+     *
+     * @param errors list of error messages
+     * @return formatted report string
+     */
     public static String formatReport(List<String> errors) {
         if (errors == null || errors.isEmpty()) {
             return "";
@@ -197,9 +259,22 @@ public class ProjectValidator {
         return sb.toString();
     }
 
+    /**
+     * Command-line interface to validate a Paint project.
+     * <pre>
+     * Usage:
+     *   java paint.shared.validate.ProjectValidator &lt;projectRoot&gt; &lt;mode&gt; [&lt;experiment1&gt; ...]
+     * Modes:
+     *   TRACKMATE
+     *   GENERATE_SQUARES
+     *   VIEWER
+     * </pre>
+     *
+     * @param args command-line arguments
+     */
     public static void main(String[] args) {
         if (args.length < 2) {
-            System.err.println("Usage: java paint.shared.debug.ValidateProjectFinal <projectRoot> <mode> [<experiment1> <experiment2> ...]");
+            System.err.println("Usage: java paint.shared.validate.ProjectValidator <projectRoot> <mode> [<experiment1> <experiment2> ...]");
             System.err.println("Modes: TRACKMATE | GENERATE_SQUARES | VIEWER");
             System.exit(1);
         }
