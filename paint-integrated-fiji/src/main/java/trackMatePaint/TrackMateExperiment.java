@@ -3,10 +3,14 @@ package trackMatePaint;
 import com.opencsv.CSVReaderHeaderAware;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
+import paint.shared.utils.AppLogger;
 
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -85,7 +89,9 @@ public class TrackMateExperiment {
             }
         } catch (IOException | CsvValidationException e) {
             System.out.println("🚫 Error reading CSV file: " + e.getMessage());
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            AppLogger.errorf("An exception occurred:\n" + sw.toString());
             System.exit(1);
         }
 

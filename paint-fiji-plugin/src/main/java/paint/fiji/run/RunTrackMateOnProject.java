@@ -1,5 +1,7 @@
 package paint.fiji.run;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -174,10 +176,14 @@ public class RunTrackMateOnProject implements Command {
                         status = runTrackMateOnExperiment(experimentPath, imagesPath.resolve(experimentName));
                     } catch (Exception e) {
                         AppLogger.errorf("Error during TrackMate run for '%s': %s", experimentName, e.getMessage());
-                        e.printStackTrace();
+                        StringWriter sw = new StringWriter();
+                        e.printStackTrace(new PrintWriter(sw));
+                        AppLogger.errorf("An exception occurred:\n" + sw.toString());
                     } catch (Throwable t) {
                         AppLogger.errorf("Severe error during TrackMate run for '%s': %s", experimentName, t.getMessage());
-                        t.printStackTrace();
+                        StringWriter sw = new StringWriter();
+                        t.printStackTrace(new PrintWriter(sw));
+                        AppLogger.errorf("An exception occurred:\n" + sw.toString());
                     }
                 }
             }

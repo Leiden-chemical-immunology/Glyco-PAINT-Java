@@ -1,6 +1,8 @@
 package generatesquares;
 
 import javax.swing.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Path;
 
 import paint.shared.objects.Experiment;
@@ -27,7 +29,9 @@ public class GenerateSquares {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            AppLogger.errorf("An exception occurred:\n" + sw.toString());
         }
 
         SwingUtilities.invokeLater(() -> {
@@ -85,6 +89,7 @@ public class GenerateSquares {
                 } catch (Exception e) {
                     AppLogger.errorf(e.getMessage());
                 }
+            return true;   //ToDo
             });
 
             // Show dialog (calculations will run after pressing OK)

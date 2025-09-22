@@ -1,5 +1,7 @@
 package trackMatePaint;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
@@ -18,6 +20,7 @@ import fiji.plugin.trackmate.tracking.jaqaman.SparseLAPTrackerFactory;
 import fiji.plugin.trackmate.detection.LogDetectorFactory;
 import fiji.plugin.trackmate.visualization.hyperstack.HyperStackDisplayer;
 import fiji.plugin.trackmate.gui.displaysettings.DisplaySettings;
+import paint.shared.utils.AppLogger;
 
 
 public class TrackMateLauncher {
@@ -164,7 +167,9 @@ public class TrackMateLauncher {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            AppLogger.errorf("An exception occurred:\n" + sw.toString());
         } finally {
             System.gc();
         }

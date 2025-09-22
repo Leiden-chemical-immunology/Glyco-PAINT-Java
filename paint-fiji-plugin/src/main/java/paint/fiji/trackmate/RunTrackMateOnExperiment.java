@@ -3,6 +3,9 @@ package paint.fiji.trackmate;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -11,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.scijava.app.App;
 import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.utils.AppLogger;
@@ -96,93 +100,107 @@ public class RunTrackMateOnExperiment {
             int numberOfFrames;
             int runTime;
             String timeStamp;
+            String recordingName = null;
 
             // Now process row by row, recording by recording
             while ((line = reader.readLine()) != null) {
-                // split row into values
-                String[] fields = line.split(",", -1);  // -1 keeps empty fields
 
-                // Convert to map if needed
-                Map<String, String> row = new LinkedHashMap<>();
-                for (int i = 0; i < headers.length && i < fields.length; i++) {
-                    row.put(headers[i], fields[i]);
-                }
+                // Put a try vatch on the record processing to catch an error and continue
+                try {
+                    // split row into values
+                    String[] fields = line.split(",", -1);  // -1 keeps empty fields
 
-                ExperimentInfo experimentInfoRecord = new ExperimentInfo(row);
-
-                if (experimentInfoRecord.getProcessFlag()) {
-                    double threshold = experimentInfoRecord.getThreshold();
-
-                    // Check if Brightfield Images and TrackMate Images exist and create if necessary
-                    Path brightfieldImagesPath = experimentPath.resolve(DIR_BRIGHTFIELD_IMAGES);
-                    Path trackmateImagesPath = experimentPath.resolve(DIR_TRACKMATE_IMAGES);
-                    if (!Files.exists(brightfieldImagesPath)) {
-                        Files.createDirectories(brightfieldImagesPath);
-                        AppLogger.debugf("Created missing directory: %s", brightfieldImagesPath);
+                    // Convert to map if needed
+                    Map<String, String> row = new LinkedHashMap<>();
+                    for (int i = 0; i < headers.length && i < fields.length; i++) {
+                        row.put(headers[i], fields[i]);
                     }
-                    if (!Files.exists(trackmateImagesPath)) {
-                        Files.createDirectories(trackmateImagesPath);
-                        AppLogger.debugf("Created missing directory: %s", trackmateImagesPath);
+
+                    ExperimentInfo experimentInfoRecord = new ExperimentInfo(row);
+
+                    recordingName = row.get("Recording Name");
+                    if (experimentInfoRecord.getProcessFlag()) {
+                        double threshold = experimentInfoRecord.getThreshold();
+
+                        // Check if Brightfield Images and TrackMate Images exist and create if necessary
+                        Path brightfieldImagesPath = experimentPath.resolve(DIR_BRIGHTFIELD_IMAGES);
+                        Path trackmateImagesPath = experimentPath.resolve(DIR_TRACKMATE_IMAGES);
+                        if (!Files.exists(brightfieldImagesPath)) {
+                            Files.createDirectories(brightfieldImagesPath);
+                            AppLogger.debugf("Created missing directory: %s", brightfieldImagesPath);
+                        }
+                        if (!Files.exists(trackmateImagesPath)) {
+                            Files.createDirectories(trackmateImagesPath);
+                            AppLogger.debugf("Created missing directory: %s", trackmateImagesPath);
+                        }
+                        AppLogger.infof("   Recording '%s' (%d of %d) started TrackMate processing.",
+                                experimentInfoRecord.getRecordingName(),
+                                numberRecordings + 1,
+                                numberRecordingsToProcess);
+
+                        // Perform TrackMate processing
+                        trackMateResults = RunTrackMateOnRecording.RunTrackMateOnRecording(experimentPath, imagesPath, trackMateConfig, threshold, experimentInfoRecord);
+
+                        if (trackMateResults == null || !trackMateResults.isSuccess()) {
+                            AppLogger.errorf("TrackMate processing failed for recording '%s'.", experimentInfoRecord.getRecordingName());
+                            AppLogger.errorf("");
+                            status = false;
+                            continue;  // Process the next recording
+                        }
+                        int durationInSeconds = (int) (trackMateResults.getDuration().toMillis() / 1000);
+                        AppLogger.infof("   Recording '%s' (%d of %d) processed in %s.",
+                                experimentInfoRecord.getRecordingName(),
+                                numberRecordings + 1,
+                                numberRecordingsToProcess,
+                                formatDuration(durationInSeconds));
+                        AppLogger.infof("");
+                        totalDuration = totalDuration.plus(trackMateResults.getDuration());
+                        numberRecordings += 1;
+
+                        numberOfSpots = trackMateResults.getNumberOfSpots();
+                        numberOfTracks = trackMateResults.getNumberOfTracks();
+                        numberOfFrames = trackMateResults.getNumberOfFrames();
+                        numberOfSpotsInAllTracks = trackMateResults.getNumberOfSpotsInALlTracks();
+                        runTime = (int) trackMateResults.getDuration().toMillis() / 1000;
+                        timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                    } else {
+                        AppLogger.infof("   Recording '%s' was deselected.", experimentInfoRecord.getRecordingName());
+                        numberOfSpots = 0;
+                        numberOfTracks = 0;
+                        numberOfFrames = 0;
+                        numberOfSpotsInAllTracks = 0;
+                        runTime = 0;
+                        timeStamp = "";
                     }
-                    AppLogger.infof("   Recording '%s' (%d of %d) started Trackmate processing.",
-                            experimentInfoRecord.getRecordingName(),
-                            numberRecordings + 1,
-                            numberRecordingsToProcess);
 
-                    // Perform TrackMate processing
-                    trackMateResults = RunTrackMateOnRecording.RunTrackMateOnRecording(experimentPath, imagesPath, trackMateConfig, threshold, experimentInfoRecord);
+                    // Build output row, even if no recording was processed
 
-                    if (trackMateResults == null || !trackMateResults.isSuccess()) {
-                        AppLogger.errorf("TrackMate processing failed for recording '%s'.", experimentInfoRecord.getRecordingName());
-                        status = false;
-                        continue;  // Process the next recording
-                    }
-                    int durationInSeconds = (int) (trackMateResults.getDuration().toMillis() / 1000);
-                    AppLogger.infof("   Recording '%s' (%d of %d) processed in %s.",
-                            experimentInfoRecord.getRecordingName(),
-                            numberRecordings + 1,
-                            numberRecordingsToProcess,
-                            formatDuration(durationInSeconds));
-                    AppLogger.infof("");
-                    totalDuration = totalDuration.plus(trackMateResults.getDuration());
-                    numberRecordings += 1;
+                    String out = line + "," + String.format("%d", numberOfSpots) +      // Number of Spots
+                            "," + String.format("%d", numberOfTracks) +                 // Number of Tracks
+                            "," + String.format("%d", numberOfSpotsInAllTracks) +       // Numbe of spots in all tracks
+                            "," + String.format("%d", numberOfFrames) +                 // Number of Frames
+                            "," + String.format("%d", runTime) +                        // Run Time needs to be an int
+                            "," + String.format("%s", timeStamp) +                      // Timestamp
+                            "," + "False" +                                             // Exclude
+                            "," + "" +                                                  // Tau
+                            "," + "" +                                                  // R Squared
+                            "," + "";                                                   // Density
 
-                    numberOfSpots = trackMateResults.getNumberOfSpots();
-                    numberOfTracks = trackMateResults.getNumberOfTracks();
-                    numberOfFrames = trackMateResults.getNumberOfFrames();
-                    numberOfSpotsInAllTracks = trackMateResults.getNumberOfSpotsInALlTracks();
-                    runTime = (int) trackMateResults.getDuration().toMillis() / 1000;
-                    timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                    writer.write(out);
+                    writer.newLine();
                 }
-                else {
-                    AppLogger.infof("   Recording '%s' was deselected.", experimentInfoRecord.getRecordingName());
-                    numberOfSpots = 0;
-                    numberOfTracks = 0;
-                    numberOfFrames = 0;
-                    numberOfSpotsInAllTracks = 0;
-                    runTime = 0;
-                    timeStamp = "";
+                catch (Exception e) {
+                    AppLogger.errorf("Error processing recording %s: %s", recordingName, e.getMessage());
+                    StringWriter sw = new StringWriter();
+                    e.printStackTrace(new PrintWriter(sw));
+                    AppLogger.errorf("An exception occurred:\n" + sw.toString());
                 }
-
-                // Build output row, even if no recording was processed
-
-                String out = line + "," + String.format("%d", numberOfSpots) +      // Number of Spots
-                        "," + String.format("%d", numberOfTracks) +                 // Number of Tracks
-                        "," + String.format("%d", numberOfSpotsInAllTracks) +       // Numbe of spots in all tracks
-                        "," + String.format("%d", numberOfFrames) +                 // Number of Frames
-                        "," + String.format("%d", runTime) +                        // Run Time needs to be an int
-                        "," + String.format("%s", timeStamp) +                      // Timestamp
-                        "," + "False" +                                             // Exclude
-                        "," + "" +                                                  // Tau
-                        "," + "" +                                                  // R Squared
-                        "," + "";                                                   // Density
-
-                writer.write(out);
-                writer.newLine();
             }
         } catch (IOException e) {
-            AppLogger.errorf("Error reading Experiment Info file '%s': %s", experimentFilePath, e.getMessage());
-            e.printStackTrace();
+            AppLogger.errorf("Error processing Experiment Info file '%s': %s", experimentFilePath, e.getMessage());
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            AppLogger.errorf("An exception occurred:\n" + sw.toString());
             status = false;
         }
 
@@ -192,13 +210,14 @@ public class RunTrackMateOnExperiment {
             concatenateCsvFiles(experimentPath, tracksFilePath);
         } catch (IOException e) {
             AppLogger.errorf("Error concatenating tracks file file %s: %s", experimentFilePath, e.getMessage());
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            AppLogger.errorf("An exception occurred:\n" + sw.toString());
             status = false;
         }
 
         int durationInSeconds = (int) (totalDuration.toMillis() / 1000);
         AppLogger.infof("Processed %d recordings in %s.", numberRecordings, formatDuration(durationInSeconds));
-        // AppLogger.infof("Processed %d recordings in %d seconds.", numberRecordings, durationInSeconds);
         AppLogger.infof("");
         return status;
     }

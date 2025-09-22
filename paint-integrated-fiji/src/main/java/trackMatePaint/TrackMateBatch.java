@@ -5,6 +5,9 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,6 +20,7 @@ import java.time.Instant;
 
 import com.opencsv.CSVReaderHeaderAware;
 import com.opencsv.exceptions.CsvValidationException;
+import paint.shared.utils.AppLogger;
 
 // import paint.utilities.DurationFormatter.formatDuration;
 
@@ -73,7 +77,9 @@ public class TrackMateBatch {
                 }
             });
         } catch (InterruptedException | InvocationTargetException e) {
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            AppLogger.errorf("An exception occurred:\n" + sw.toString());
             JOptionPane.showMessageDialog(null,
                     "🚫 Error showing file chooser:\n" + e.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
@@ -102,7 +108,9 @@ public class TrackMateBatch {
             }
         } catch (IOException | CsvValidationException e) {
             log.severe("🚫 Error reading TrackMate batch file: " + e.getMessage());
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            AppLogger.errorf("An exception occurred:\n" + sw.toString());
             System.exit(1);
         }
 
