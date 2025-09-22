@@ -139,7 +139,7 @@ public class TrackMateExperiment {
             }
         }
 
-        // Now write thw All Recordings.csv file
+        // Now write the All Recordings.csv file
         Path outputFile = experimentInfoFile.getParent().resolve(RECORDINGS_CSV);
         try (CSVWriter writer = new CSVWriter(new FileWriter(outputFile.toFile()))) {
             // Use headers from the first row (original plus new)
