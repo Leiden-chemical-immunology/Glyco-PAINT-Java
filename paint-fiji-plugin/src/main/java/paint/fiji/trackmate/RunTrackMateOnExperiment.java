@@ -110,7 +110,7 @@ public class RunTrackMateOnExperiment {
                         numberOfFrames = trackMateResults.getNumberOfFrames();
                         numberOfSpotsInAllTracks = trackMateResults.getNumberOfSpotsInALlTracks();
                         runTime = durationInSeconds;
-                        timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                        timeStamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                     } else {
                         AppLogger.infof("   Recording '%s' was deselected.", recordingName);
                     }
