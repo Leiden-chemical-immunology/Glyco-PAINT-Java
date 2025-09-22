@@ -40,6 +40,8 @@ public class AppLogger {
      */
     public static void init(String logFileName, String debugLevelString) {
         setupLogger(logFileName);
+        AppLogger.infof("Logging into file %s.", logFileName);
+        System.out.println("Logging into file " + logFileName);
         setLevel(debugLevelString);
     }
 
@@ -247,7 +249,7 @@ public class AppLogger {
             prefs.put(LOGGING_LEVEL, loggingLevel);  // store default in plist
         }
         setLevel(loggingLevel);
-        System.out.println("Logging level set to " + loggingLevel);
+        // System.out.println("Logging level set to " + loggingLevel);
         AppLogger.infof("Logging level set to %s", loggingLevel);
     }
 }
