@@ -1,8 +1,6 @@
 package paint.shared.utils;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 
 public class CsvUtils {
@@ -40,7 +38,9 @@ public class CsvUtils {
             }
         }
         catch (IOException e) {
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            AppLogger.errorf("An exception occurred:\n" + sw.toString());
         }
         return count;
     }
