@@ -105,7 +105,7 @@ public class RunTrackMateOnExperiment {
             // Now process row by row, recording by recording
             while ((line = reader.readLine()) != null) {
 
-                // Put a try vatch on the record processing to catch an error and continue
+                // Put a try catch on the record processing to catch an error and continue
                 try {
                     // split row into values
                     String[] fields = line.split(",", -1);  // -1 keeps empty fields
