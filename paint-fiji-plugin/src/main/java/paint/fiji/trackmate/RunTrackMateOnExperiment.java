@@ -100,6 +100,7 @@ public class RunTrackMateOnExperiment {
 
                         int durationInSeconds = (int) (trackMateResults.getDuration().toMillis() / 1000);
                         AppLogger.infof("   Recording '%s' (%d of %d) processed in %s.", recordingName, numberRecordings + 1, numberRecordingsToProcess, formatDuration(durationInSeconds));
+                        AppLogger.infof("");
 
                         totalDuration = totalDuration.plus(trackMateResults.getDuration());
                         numberRecordings++;

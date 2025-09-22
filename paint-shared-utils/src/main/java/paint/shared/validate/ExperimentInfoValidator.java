@@ -59,17 +59,25 @@ public class ExperimentInfoValidator {
                             !Objects.equals(attributes.get("Adjuvant"), adjuvant) ||
                             !Objects.equals(attributes.get("Concentration"), conc)) {
 
+                        String expected = String.format(".......... → Expected: [%-12s=%s, %-10s=%s, %-10s=%s, %-10s=%s, %-14s=%s]",
+                                "Probe Name", attributes.get("Probe Name"),
+                                "Probe Type", attributes.get("Probe Type"),
+                                "Cell Type", attributes.get("Cell Type"),
+                                "Adjuvant", attributes.get("Adjuvant"),
+                                "Concentration", attributes.get("Concentration"));
+
+                        String found = String.format(".......... → Found:    [%-12s=%s, %-10s=%s, %-10s=%s, %-10s=%s, %-14s=%s]",
+                                "Probe Name", probeName,
+                                "Probe Type", probeType,
+                                "Cell Type", cellType,
+                                "Adjuvant", adjuvant,
+                                "Concentration", conc);
+                        System.out.println(found);
+                        System.out.println(expected);
+
                         report.add("[Experiment " + experimentName + "] Inconsistent attributes for Condition Number: " + condition +
-                                "\n→ Expected: [Probe Name=" + attributes.get("Probe Name") +
-                                ", Probe Type=" + attributes.get("Probe Type") +
-                                ", Cell Type=" + attributes.get("Cell Type") +
-                                ", Adjuvant=" + attributes.get("Adjuvant") +
-                                ", Concentration=" + attributes.get("Concentration") + "]" +
-                                "\n→ Found:    [Probe Name=" + probeName +
-                                ", Probe Type=" + probeType +
-                                ", Cell Type=" + cellType +
-                                ", Adjuvant=" + adjuvant +
-                                ", Concentration=" + conc + "]");
+                                "\n" + expected +
+                                "\n" + found);
                     }
                 }
             }
