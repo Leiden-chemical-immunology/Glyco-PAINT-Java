@@ -76,7 +76,7 @@ public class RunTrackMateOnRecording {
         // Open the ND2 image
         ImagePlus imp = null;
         File nd2File = new File(imagesPath.toFile(), experimentInfoRecord.getRecordingName() + ".nd2");
-        if (nd2File.exists()) {
+        if (!nd2File.exists()) {
             AppLogger.errorf("Could not open image file: %s", nd2File.getAbsolutePath());
         }
         try {
@@ -181,7 +181,9 @@ public class RunTrackMateOnRecording {
 
         int nrSpots = model.getSpots().getNSpots(false);
         if (nrSpots > trackMateConfig.getMaxNrSpotsInImage()) {
-            AppLogger.errorf("   Too many spots detected (%d). Limit is {%d}.", nrSpots, trackMateConfig.getMaxNrSpotsInImage());
+            AppLogger.errorf("   Too many spots detected (%d). Limit is %d.", nrSpots, trackMateConfig.getMaxNrSpotsInImage());
+            ImageWindow win = imp.getWindow();
+            imp.close();
             return new TrackMateResults(false);
         }
         AppLogger.infof("      TrackMate - number of spots detected: %d",  nrSpots);
@@ -222,7 +224,7 @@ public class RunTrackMateOnRecording {
         // --- Write tracks to CSV ---
         String tracksName = experimentInfoRecord.getRecordingName() + "-tracks.csv";
         Path tracksPath = experimentPath.resolve(tracksName);
-        if (debug) AppLogger.debugf("      Trackmate - wrote tracks file '%s'", tracksPath);
+        if (debug) AppLogger.debugf("      TrackMate - wrote tracks file '%s'", tracksPath);
 
         int numberOfSpotsInALlTracks = 0;
         try {
