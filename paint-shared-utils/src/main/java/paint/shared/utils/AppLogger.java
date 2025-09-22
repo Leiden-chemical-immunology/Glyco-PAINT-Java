@@ -29,6 +29,7 @@ public class AppLogger {
      */
     public static void init(String logFileName) {
         setupLogger(logFileName);
+        AppLogger.infof("Log file is: %s", logFileName);
         setDefaultLoggingLevel();
     }
 
