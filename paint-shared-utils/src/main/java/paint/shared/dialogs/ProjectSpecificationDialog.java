@@ -264,7 +264,7 @@ public class ProjectSpecificationDialog {
 
         // Final dialog setup
         dialog.pack();
-        dialog.setSize(mode == DialogMode.GENERATE_SQUARES ? 800 : 400, 600);
+        dialog.setSize(mode == DialogMode.GENERATE_SQUARES ? 600 : 300, 600);
         dialog.setLocationRelativeTo(owner);
     }
 
