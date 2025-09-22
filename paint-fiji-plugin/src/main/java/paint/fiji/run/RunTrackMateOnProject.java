@@ -5,12 +5,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import paint.fiji.utils.ImageRootValidator;
+import paint.shared.validate.ImageRootValidator;
 import paint.shared.config.PaintConfig;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 
-import paint.shared.debug.ValidateProject;
+import paint.shared.validate.ProjectValidator;
 import paint.shared.utils.AppLogger;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.ProjectSelectionDialog;
@@ -19,9 +19,9 @@ import static paint.shared.config.PaintConfig.getBoolean;
 import static paint.shared.config.PaintConfig.getString;
 import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 import static paint.fiji.trackmate.RunTrackMateOnExperiment.runTrackMateOnExperiment;
-import static paint.shared.debug.ValidateProject.formatReport;
-import static paint.shared.debug.ValidateProject.validateProject;
-import static paint.shared.debug.ValidateProject.ValidateResult;
+import static paint.shared.validate.ProjectValidator.formatReport;
+import static paint.shared.validate.ProjectValidator.validateProject;
+import static paint.shared.validate.ProjectValidator.ValidateResult;
 
 /**
  * SciJava/Fiji command plugin that runs the TrackMate pipeline on
@@ -158,7 +158,7 @@ public class RunTrackMateOnProject implements Command {
             if (debug) AppLogger.debugf("Experiments %s", project.experimentNames.toString());
 
             // Verify if the experiments appear valid
-            ValidateResult validateResult = validateProject(projectPath, project.experimentNames, ValidateProject.Mode.VALIDATE_TRACKMATE );
+            ValidateResult validateResult = validateProject(projectPath, project.experimentNames, ProjectValidator.Mode.VALIDATE_TRACKMATE );
             if (validateResult.isOk()) {
                 formatReport(validateResult.getErrors());
             }

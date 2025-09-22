@@ -1,4 +1,4 @@
-package paint.shared.debug;
+package paint.shared.validate;
 
 import paint.shared.constants.PaintConstants;
 import tech.tablesaw.api.ColumnType;
@@ -20,7 +20,7 @@ import java.util.List;
  * provided in {@link PaintConstants}.
  * </p>
  */
-public class ValidateProject {
+public class ProjectValidator {
 
     /**
      * Validation mode.

@@ -1,4 +1,4 @@
-package paint.shared.debug;
+package paint.shared.validate;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -347,7 +347,7 @@ public class ValidateProjectOld {
      *
      * <p>Usage:</p>
      * <pre>
-     *   java paint.shared.debug.ValidateProject &lt;projectRoot&gt; &lt;mode&gt; [experiment1 experiment2 ...]
+     *   java paint.shared.validate.ValidateProject &lt;projectRoot&gt; &lt;mode&gt; [experiment1 experiment2 ...]
      * </pre>
      *
      * <p>Modes: VALIDATE_TRACKMATE | VALIDATE_GENERATE_SQUARES | VALIDATE_VIEWER</p>
@@ -356,7 +356,7 @@ public class ValidateProjectOld {
      */
     public static void main(String[] args) {
         if (args.length < 2) {
-            System.err.println("Usage: java paint.shared.debug.ValidateProject <projectRoot> <mode> [<experiment1> <experiment2> ...]");
+            System.err.println("Usage: java paint.shared.validate.ValidateProject <projectRoot> <mode> [<experiment1> <experiment2> ...]");
             System.err.println("Modes: VALIDATE_TRACKMATE | VALIDATE_GENERATE_SQUARES | VALIDATE_VIEWER");
             System.exit(1);
         }
