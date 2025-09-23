@@ -14,6 +14,7 @@ import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.objects.Project;
 
+import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
 import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 
 /**
@@ -287,6 +288,11 @@ public class ProjectSpecificationDialog {
                 Arrays.sort(subs, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
                 for (File sub : subs) {
                     if (sub.isDirectory()) {
+                        // Check if the directory contains an experiment info file
+                        File file = new File(sub, EXPERIMENT_INFO_CSV);
+                        if (!file.isFile()) {
+                            continue;
+                        }
                         JCheckBox cb = new JCheckBox(sub.getName());
                         boolean savedState = config.getBoolean("Experiments", sub.getName(), false);
                         cb.setSelected(savedState);
