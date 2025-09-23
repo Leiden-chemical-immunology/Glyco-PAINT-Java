@@ -18,7 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static paint.shared.constants.PaintConstants.*;
-import static paint.shared.utils.CsvConcatenator.concatenateCsvFiles;
+import static paint.shared.utils.CsvConcatenator.concatenateTracksFilesInDirectory;
 import static paint.shared.utils.CsvUtils.countProcessed;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 
@@ -147,7 +147,7 @@ public class RunTrackMateOnExperiment {
 
         Path tracksFilePath = experimentPath.resolve(TRACKS_CSV);
         try {
-            concatenateCsvFiles(experimentPath, tracksFilePath);
+            concatenateTracksFilesInDirectory(experimentPath, tracksFilePath);
         } catch (IOException e) {
             AppLogger.errorf("Error concatenating tracks file %s: %s", experimentFilePath, e.getMessage());
             StringWriter sw = new StringWriter();
