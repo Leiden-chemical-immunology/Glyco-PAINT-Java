@@ -93,7 +93,8 @@ public class RunTrackMateOnExperiment {
 
                         TrackMateResults trackMateResults = RunTrackMateOnRecording.RunTrackMateOnRecording(experimentPath, imagesPath, trackMateConfig, threshold, experimentInfo);
                         if (trackMateResults == null || !trackMateResults.isSuccess()) {
-                            AppLogger.errorf("TrackMate processing failed for recording '%s'.", recordingName);
+                            AppLogger.errorf("   TrackMate processing failed for recording '%s'.", recordingName);
+                            AppLogger.errorf("");
                             status = false;
                             continue;
                         }
