@@ -172,19 +172,53 @@ public class RunTrackMateOnRecording {
         }
         if (debug) AppLogger.debugf("      TrackMate - spot detection succeeded");
 
-        int nrSpots = model.getSpots().getNSpots(false);
-        if (nrSpots > trackMateConfig.getMaxNrSpotsInImage()) {
-            AppLogger.errorf("   Too many spots detected (%d). Limit is %d.", nrSpots, trackMateConfig.getMaxNrSpotsInImage());
+        int numberSpots = model.getSpots().getNSpots(false);
+        if (numberSpots > trackMateConfig.getMaxNrSpotsInImage()) {
+            AppLogger.errorf("   Too many spots detected (%d). Limit is %d.", numberSpots, trackMateConfig.getMaxNrSpotsInImage());
             ImageWindow win = imp.getWindow();
             imp.close();
             return new TrackMateResults(false);
         }
-        AppLogger.infof("      TrackMate - number of spots detected: %d",  nrSpots);
+        AppLogger.infof("      TrackMate - number of spots detected: %d",  numberSpots);
+
+
+        // Start the dot-printing watchdog
+        Boolean dotPrint = numberSpots > 500000;
+        Thread dotPrinter = null;
+        final int[] dotCount = {0};
+
+        if (dotPrint) {
+            dotPrinter = new Thread(() -> {
+                while (!Thread.currentThread().isInterrupted()) {
+                    System.out.print(".");
+                    System.out.flush(); // Force immediate output
+                    dotCount[0] += 1;
+                    if (dotCount[0] > 80) {
+                        System.out.print("\n");
+                        System.out.flush(); // Force immediate output
+                        dotCount[0] = 0;
+                    }
+
+                    try {
+                        Thread.sleep(numberSpots / 500); // Print dot every so often
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                }
+            });
+            dotPrinter.start();
+        }
 
         // Continue with full TrackMate processing - nr_spots is within limits
         if (!trackmate.process()) {
             AppLogger.errorf("   TrackMate process failed: %s", trackmate.getErrorMessage());
             return new TrackMateResults(false);
+        }
+
+        // Stop the dot printer
+        if (dotPrint) {
+            dotPrinter.interrupt();
+            System.out.println(); // Finish the line cleanly
         }
 
         // --- Visualization ---
