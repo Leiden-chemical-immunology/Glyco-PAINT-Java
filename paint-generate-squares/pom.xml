@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Maven project descriptor for Paint Generate Squares application -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- Inherit groupId, version, and common settings from parent project -->
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
@@ -12,9 +14,11 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <!-- Unique artifactId for this module -->
     <artifactId>paint-generate-squares</artifactId>
-    <packaging>jar</packaging>
+    <packaging>jar</packaging> <!-- This module produces a standalone JAR -->
 
+    <!-- Basic project metadata -->
     <name>Paint Generate Squares</name>
     <description>Paint desktop application</description>
     <url>http://example.com/paint-app</url>
@@ -25,6 +29,7 @@
         <url>http://example.com</url>
     </organization>
 
+    <!-- Licensing information -->
     <licenses>
         <license>
             <name>MIT License</name>
@@ -33,6 +38,7 @@
         </license>
     </licenses>
 
+    <!-- Developer information -->
     <developers>
         <developer>
             <id>hans</id>
@@ -41,36 +47,42 @@
         </developer>
     </developers>
 
+    <!-- Optional contributor info -->
     <contributors>
         <contributor>
             <name>Contributor Name</name>
         </contributor>
     </contributors>
 
+    <!-- SCM metadata (GitHub) -->
     <scm>
         <connection>scm:git:https://github.com/jjabakker/paint-app.git</connection>
         <developerConnection>scm:git:https://github.com/jjabakker/paint-app.git</developerConnection>
         <url>https://github.com/jjabakker/paint-app</url>
     </scm>
 
+    <!-- Issue tracking system -->
     <issueManagement>
         <system>GitHub Issues</system>
         <url>https://github.com/jjabakker/paint-app/issues</url>
     </issueManagement>
 
+    <!-- CI system -->
     <ciManagement>
         <system>GitHub Actions</system>
         <url>https://github.com/jjabakker/paint-app/actions</url>
     </ciManagement>
 
     <properties>
+        <!-- Used by license reporting and JAR manifest -->
         <license.licenseName>MIT</license.licenseName>
         <license.copyrightOwners>Hans Bakker</license.copyrightOwners>
 
-        <!-- Safe format: no seconds, no timezone -->
+        <!-- 🕒 Output timestamp used in reproducible builds and manifest -->
         <project.build.outputTimestamp>2025-09-23T08:55:00Z</project.build.outputTimestamp>
     </properties>
 
+    <!-- Optional mailing list -->
     <mailingLists>
         <mailingList>
             <name>Users</name>
@@ -81,57 +93,75 @@
         </mailingList>
     </mailingLists>
 
+    <!-- Project dependencies -->
     <dependencies>
+
+        <!-- Internal shared module -->
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
+
+        <!-- ImageJ and Fiji/TrackMate stack -->
         <dependency>
             <groupId>net.imagej</groupId>
             <artifactId>ij</artifactId>
             <version>1.54h</version>
         </dependency>
+
         <dependency>
             <groupId>sc.fiji</groupId>
             <artifactId>TrackMate</artifactId>
             <version>7.14.0</version>
         </dependency>
+
         <dependency>
             <groupId>sc.fiji</groupId>
             <artifactId>fiji-lib</artifactId>
             <version>2.1.3</version>
         </dependency>
+
         <dependency>
             <groupId>net.imglib2</groupId>
             <artifactId>imglib2</artifactId>
             <version>7.1.5</version>
         </dependency>
+
+        <!-- Bio-Formats stack -->
         <dependency>
             <groupId>ome</groupId>
             <artifactId>bio-formats_plugins</artifactId>
             <version>6.13.0</version>
         </dependency>
+
         <dependency>
             <groupId>ome</groupId>
             <artifactId>formats-gpl</artifactId>
             <version>6.13.0</version>
         </dependency>
+
         <dependency>
             <groupId>ome</groupId>
             <artifactId>formats-api</artifactId>
             <version>6.13.0</version>
         </dependency>
+
+        <!-- Tabular data handling -->
         <dependency>
             <groupId>tech.tablesaw</groupId>
             <artifactId>tablesaw-core</artifactId>
             <version>0.43.1</version>
         </dependency>
+
+        <!-- CSV parsing -->
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>5.9</version>
         </dependency>
+
+        <!-- JSON parsing -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -141,20 +171,26 @@
 
     <build>
         <plugins>
+            <!-- 🧩 Build a fat JAR (with dependencies) using maven-assembly-plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.6.0</version>
                 <configuration>
+                    <!-- Use built-in "jar-with-dependencies" descriptor -->
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                     <archive>
                         <manifest>
+                            <!-- Set the entry point of the application -->
                             <mainClass>generatesquares.GenerateSquares</mainClass>
+
+                            <!-- Add automatic implementation/specification entries -->
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
+                        <!-- ✨ Custom metadata for use at runtime (e.g., JarInfoLogger) -->
                         <manifestEntries>
                             <Implementation-Title>${project.name}</Implementation-Title>
                             <Implementation-Version>${project.version}</Implementation-Version>
@@ -167,6 +203,7 @@
                     </archive>
                 </configuration>
                 <executions>
+                    <!-- Bind the fat JAR build to the package phase -->
                     <execution>
                         <id>make-assembly</id>
                         <phase>package</phase>
@@ -179,6 +216,7 @@
         </plugins>
     </build>
 
+    <!-- Maven repositories for Fiji/ImageJ/Bio-Formats dependencies -->
     <repositories>
         <repository>
             <id>scijava.public</id>

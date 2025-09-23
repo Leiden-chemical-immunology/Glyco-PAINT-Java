@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- ✅ Maven Project Object Model for the shared Paint utilities module -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- Inherits version, groupId, and common plugin config from paint-parent -->
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
@@ -12,10 +14,11 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <!-- Artifact for shared Java utility classes used in Paint modules -->
     <artifactId>paint-shared-utils</artifactId>
     <packaging>jar</packaging>
 
-    <!-- ✅ Required metadata for SciJava enforcer -->
+    <!-- ✅ Required project metadata for Maven Central + SciJava Enforcer -->
     <name>Paint Shared Utils</name>
     <description>Shared utilities for the Paint project</description>
     <url>https://example.com/paint</url>
@@ -26,6 +29,7 @@
         <url>https://example.com</url>
     </organization>
 
+    <!-- Open source license metadata -->
     <licenses>
         <license>
             <name>BSD-2-Clause</name>
@@ -34,6 +38,7 @@
         </license>
     </licenses>
 
+    <!-- Developer info -->
     <developers>
         <developer>
             <id>jjabakker</id>
@@ -41,12 +46,14 @@
         </developer>
     </developers>
 
+    <!-- Optional contributor info -->
     <contributors>
         <contributor>
             <name>None</name>
         </contributor>
     </contributors>
 
+    <!-- Optional mailing list metadata -->
     <mailingLists>
         <mailingList>
             <name>None</name>
@@ -54,54 +61,60 @@
         </mailingList>
     </mailingLists>
 
+    <!-- SCM metadata (placeholder) -->
     <scm>
         <connection>scm:git:git://example.com/paint.git</connection>
         <developerConnection>scm:git:ssh://example.com/paint.git</developerConnection>
         <url>https://example.com/paint</url>
     </scm>
 
+    <!-- Issue tracking metadata (placeholder) -->
     <issueManagement>
         <system>None</system>
         <url>https://example.com/issues</url>
     </issueManagement>
 
+    <!-- CI/CD system (optional placeholder) -->
     <ciManagement>
         <system>None</system>
         <url>https://example.com/ci</url>
     </ciManagement>
 
     <properties>
+        <!-- Required by license plugin, if used -->
         <license.licenseName>BSD-2-Clause</license.licenseName>
         <license.copyrightOwners>Hans Bakker</license.copyrightOwners>
-        <!-- Fiji installation directory -->
+
+        <!-- Fiji installation directory (used for deployment) -->
         <fiji.dir>/Applications/Fiji.app</fiji.dir>
     </properties>
     <!-- ✅ End metadata -->
 
     <dependencies>
-        <!-- Gson for JsonConfig -->
+        <!-- ✅ JSON parser used by JsonConfig and other utilities -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.11.0</version>
         </dependency>
 
-        <!-- TableSaw-->
+        <!-- ✅ Tablesaw for tabular data operations -->
         <dependency>
             <groupId>tech.tablesaw</groupId>
             <artifactId>tablesaw-core</artifactId>
-            <version>0.43.1</version> <!-- or latest -->
+            <version>0.43.1</version>
         </dependency>
 
+        <!-- ✅ Apache Commons CSV for flexible CSV file parsing -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
             <version>1.10.0</version>
         </dependency>
-
     </dependencies>
 
     <repositories>
+        <!-- Central Maven repository -->
         <repository>
             <id>central</id>
             <url>https://repo.maven.apache.org/maven2</url>
@@ -110,12 +123,13 @@
 
     <build>
         <plugins>
+            <!-- [OPTIONAL] This plugin block is a placeholder and can be removed -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
             </plugin>
 
-            <!-- Copy plugin JAR and PaintUtilities JAR into Fiji -->
+            <!-- ✅ Automatically copy the built JAR into the Fiji plugin directory -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -129,6 +143,7 @@
                         </goals>
                         <configuration>
                             <target>
+                                <!-- 🔧 Copy JAR to Fiji plugins folder on build -->
                                 <copy file="${project.build.directory}/${project.build.finalName}.jar"
                                       todir="${fiji.dir}/plugins"
                                       overwrite="true"/>

@@ -5,29 +5,32 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- ✅ Inherit SciJava build setup -->
+    <!-- ✅ Inherit build conventions, plugin management, etc., from the SciJava parent -->
     <parent>
         <groupId>org.scijava</groupId>
         <artifactId>pom-scijava</artifactId>
         <version>34.1.0</version>
     </parent>
 
+    <!-- Coordinates for this multi-module project -->
     <groupId>com.github.jjabakker</groupId>
     <artifactId>paint-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
+    <packaging>pom</packaging> <!-- This is an aggregator POM -->
 
-    <!-- ✅ Metadata (inherited by all modules) -->
+    <!-- ✅ Shared metadata for all modules -->
     <name>${project.artifactId}</name>
     <description>Part of the Paint project</description>
     <url>https://example.com/paint</url>
     <inceptionYear>2025</inceptionYear>
 
+    <!-- Project organization -->
     <organization>
         <name>jjabakker</name>
         <url>https://example.com</url>
     </organization>
 
+    <!-- License information -->
     <licenses>
         <license>
             <name>BSD-2-Clause</name>
@@ -36,6 +39,7 @@
         </license>
     </licenses>
 
+    <!-- Developer contact -->
     <developers>
         <developer>
             <id>jjabakker</id>
@@ -44,12 +48,14 @@
         </developer>
     </developers>
 
+    <!-- Optional contributors -->
     <contributors>
         <contributor>
             <name>None</name>
         </contributor>
     </contributors>
 
+    <!-- Optional mailing list metadata -->
     <mailingLists>
         <mailingList>
             <name>None</name>
@@ -57,29 +63,36 @@
         </mailingList>
     </mailingLists>
 
+    <!-- Source control management configuration -->
     <scm>
         <connection>scm:git:git://example.com/paint.git</connection>
         <developerConnection>scm:git:ssh://example.com/paint.git</developerConnection>
         <url>https://example.com/paint</url>
     </scm>
 
+    <!-- Issue tracker information -->
     <issueManagement>
         <system>None</system>
         <url>https://example.com/issues</url>
     </issueManagement>
 
+    <!-- CI/CD system (if any) -->
     <ciManagement>
         <system>None</system>
         <url>https://example.com/ci</url>
     </ciManagement>
 
     <properties>
+        <!-- Used by license plugin or custom build logic -->
         <license.licenseName>BSD-2-Clause</license.licenseName>
         <license.copyrightOwners>Hans Bakker</license.copyrightOwners>
+
+        <!-- Fiji installation path for plugin deployment -->
         <fiji.app.dir>/Users/hans/Fiji.app</fiji.app.dir>
     </properties>
-    <!-- ✅ End metadata -->
+    <!-- ✅ End of shared metadata -->
 
+    <!-- Sub-modules of the Paint project -->
     <modules>
         <module>paint-shared-utils</module>
         <module>paint-generate-squares</module>
@@ -90,6 +103,7 @@
 
     <build>
         <plugins>
+            <!-- Optional Ant support (used in some modules for file copying) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -98,22 +112,22 @@
 
         <pluginManagement>
             <plugins>
+                <!-- Global configuration for Javadoc generation -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>3.6.3</version>
                     <configuration>
-                        <!-- Disable strict Javadoc linting globally -->
+                        <!-- Disable strict doclint (e.g. missing @param) -->
                         <doclint>none</doclint>
                         <failOnError>false</failOnError>
                     </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
-
     </build>
 
-    <!-- ✅ Add SciJava repo for ImageJ/Fiji artifacts -->
+    <!-- ✅ Add SciJava repository for ImageJ, Fiji, etc. -->
     <repositories>
         <repository>
             <id>scijava.public</id>
@@ -121,16 +135,17 @@
         </repository>
     </repositories>
 
-    <!-- ✅ Dependency management: only overrides -->
+    <!-- ✅ Override vulnerable or outdated transitive dependencies -->
     <dependencyManagement>
         <dependencies>
-            <!-- Override vulnerable transitive dependencies -->
+            <!-- Newer version of commons-io -->
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>2.15.1</version>
             </dependency>
 
+            <!-- Safe version of SnakeYAML -->
             <dependency>
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
@@ -139,7 +154,7 @@
         </dependencies>
     </dependencyManagement>
 
-    <!-- ✅ GitHub Packages deployment -->
+    <!-- ✅ Configure deployment to GitHub Packages -->
     <distributionManagement>
         <repository>
             <id>github</id>
