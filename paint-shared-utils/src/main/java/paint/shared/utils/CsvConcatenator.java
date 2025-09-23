@@ -1,84 +1,114 @@
 package paint.shared.utils;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
+
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
 
 public class CsvConcatenator {
 
     /**
-     * Concatenates all CSV files in a directory into one output file.
-     * <p>
-     * The header row is kept only once (from the first file encountered).
-     * After each file is processed, the original is deleted.
-     *
-     * @param inputDir   the directory containing the CSV files to concatenate
-     * @param outputFile the path of the output CSV file that will be written
-     * @throws IOException if an error occurs while reading or writing files
+     * Core method: concatenate a list of CSV files into one output file.
+     * Header is included only once. Optionally deletes the input files after successful concatenation.
      */
-    public static void concatenateCsvFiles(Path inputDir, Path outputFile) throws IOException {
-        try (BufferedWriter writer = Files.newBufferedWriter(outputFile)) {
-            boolean headerWritten = false;
+    public static void concatenateCsvFiles(List<Path> inputFiles, Path outputFile, boolean deleteInputs) throws IOException {
+        boolean headerWritten = false;
+        CSVPrinter printer = null;
+        List<Path> successfullyProcessed = new ArrayList<>();
 
-            // Collect files with regex: 6 digits + "-Exp-" + anything + "-tracks.csv"
-            // Exclude if the name contains "threshold" (remnant of the first Glyco-PAINT version)
-            List<Path> files = new ArrayList<>();
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(inputDir)) {
-                for (Path p : stream) {
-                    String name = p.getFileName().toString();
-                    if (name.matches("\\d{6}-Exp-.*-tracks\\.csv")
-                            && !name.toLowerCase().contains("threshold")) {
-                        files.add(p);
+        try (BufferedWriter writer = Files.newBufferedWriter(outputFile)) {
+            for (Path inputFile : inputFiles) {
+                if (!Files.exists(inputFile)) {
+                    throw new IOException("Missing input file: " + inputFile);
+                }
+
+                try (
+                        Reader reader = Files.newBufferedReader(inputFile);
+                        CSVParser parser = CSVFormat.DEFAULT.builder()
+                                .setHeader()
+                                .setSkipHeaderRecord(true)
+                                .build()
+                                .parse(reader)
+                ) {
+                    if (!headerWritten) {
+                        printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(
+                                parser.getHeaderMap().keySet().toArray(new String[0])
+                        ));
+                        headerWritten = true;
                     }
+
+                    for (CSVRecord record : parser) {
+                        printer.printRecord(record);
+                    }
+
+                    successfullyProcessed.add(inputFile);
+
+                } catch (IOException e) {
+                    throw new IOException("Error reading file: " + inputFile, e);
                 }
             }
 
-            // Sort alphabetically for reproducibility
-            Collections.sort(files);
+            if (printer != null) {
+                printer.flush();
+            }
+        }
 
-            for (Path csvFile : files) {
-                try (BufferedReader reader = Files.newBufferedReader(csvFile)) {
-                    String line;
-                    boolean isFirstLine = true;
-
-                    while ((line = reader.readLine()) != null) {
-                        if (isFirstLine) {
-                            isFirstLine = false;
-                            if (headerWritten) {
-                                continue; // skip header if already written
-                            } else {
-                                headerWritten = true;
-                            }
-                        }
-                        writer.write(line);
-                        writer.newLine();
-                    }
-                }
-
-                // ✅ Delete original after processing
+        // Delete files only if all succeeded
+        if (deleteInputs) {
+            for (Path file : successfullyProcessed) {
                 try {
-                    Files.delete(csvFile);
+                    Files.delete(file);
                 } catch (IOException e) {
-                    System.err.println("Warning: Could not delete " + csvFile + ": " + e.getMessage());
+                    System.err.println("Warning: Could not delete " + file + ": " + e.getMessage());
                 }
             }
         }
     }
 
+    public static void concatenateCsvFilesInDirectory(Path inputDir, Path outputFile, String regex, boolean deleteInputs) throws IOException {
+        List<Path> files = new ArrayList<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(inputDir)) {
+            for (Path p : stream) {
+                String name = p.getFileName().toString();
+                if (name.matches(regex)) {
+                    files.add(p);
+                }
+            }
+        }
+        Collections.sort(files);
+        concatenateCsvFiles(files, outputFile, deleteInputs);
+    }
 
-    // Example usage
+    public static void concatenateTracksFilesInDirectory(Path inputDir, Path outputFile) throws IOException {
+        String defaultRegex = "\\d{6}-Exp-.*-tracks\\.csv";
+        concatenateCsvFilesInDirectory(inputDir, outputFile, defaultRegex, true);
+    }
+
+    public static void concatenateExperimentCsvFiles(Path projectPath, String fileName, List<String> experimentNames) throws IOException {
+        List<Path> inputFiles = new ArrayList<>();
+        for (String experiment : experimentNames) {
+            inputFiles.add(projectPath.resolve(experiment).resolve(fileName));
+        }
+        Path outputFile = projectPath.resolve(fileName);
+        concatenateCsvFiles(inputFiles, outputFile, false);
+    }
+
     public static void main(String[] args) throws IOException {
+        // Example 1: from directory with regex
         Path inputDir = Paths.get("/Users/hans/Paint Test Project/221012");
-        Path outputFile = Paths.get("/Users/hans/Paint Test Project/221012/All Tracks Java.csv");
+        Path outputFile = inputDir.resolve("All Tracks Java.csv");
+        concatenateTracksFilesInDirectory(inputDir, outputFile);
+        System.out.println("✔ Concatenated directory files to: " + outputFile);
 
-        concatenateCsvFiles(inputDir, outputFile);
-        System.out.println("Merged CSV written to " + outputFile);
+        // Example 2: from experiment subfolders
+        Path projectPath = Paths.get("/Users/hans/Paint Test Project");
+        List<String> experimentNames = Arrays.asList("230417", "230418", "230419");
+        String fileName = "All Tracks Java.csv";
+        concatenateExperimentCsvFiles(projectPath, fileName, experimentNames);
+        System.out.println("✔ Concatenated experiment files to: " + projectPath.resolve(fileName));
     }
 }
