@@ -33,9 +33,10 @@ public class GenerateSquares {
 
         JarInfo info = getJarInfo(GenerateSquares.class);
         if (info != null) {
-            AppLogger.infof(info.toString());
+            AppLogger.infof("Compilation date: %s",info.implementationDate);
+            AppLogger.infof("Version: %s",info.implementationVersion);
         } else {
-            System.out.println("No manifest information found.");
+            AppLogger.errorf("No manifest information found.");
         }
 
         try {
