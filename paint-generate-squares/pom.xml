@@ -66,6 +66,9 @@
     <properties>
         <license.licenseName>MIT</license.licenseName>
         <license.copyrightOwners>Hans Bakker</license.copyrightOwners>
+
+        <!-- Safe format: no seconds, no timezone -->
+        <project.build.outputTimestamp>2025-09-23T08:55:00Z</project.build.outputTimestamp>
     </properties>
 
     <mailingLists>
@@ -79,83 +82,61 @@
     </mailingLists>
 
     <dependencies>
-
-        <!-- The Paint Utilities -->
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
-
-        <!-- ImageJ1 core (provides "ij.*") -->
         <dependency>
             <groupId>net.imagej</groupId>
             <artifactId>ij</artifactId>
             <version>1.54h</version>
         </dependency>
-
-        <!-- Fiji TrackMate -->
         <dependency>
             <groupId>sc.fiji</groupId>
             <artifactId>TrackMate</artifactId>
             <version>7.14.0</version>
         </dependency>
-
-        <!-- Fiji lib (support classes) -->
         <dependency>
             <groupId>sc.fiji</groupId>
             <artifactId>fiji-lib</artifactId>
             <version>2.1.3</version>
         </dependency>
-
-        <!-- ImgLib2 core (TrackMate depends on this) -->
         <dependency>
             <groupId>net.imglib2</groupId>
             <artifactId>imglib2</artifactId>
             <version>7.1.5</version>
         </dependency>
-
-        <!-- Bio-Formats Plugins (provides loci.plugins.BF) -->
         <dependency>
             <groupId>ome</groupId>
             <artifactId>bio-formats_plugins</artifactId>
             <version>6.13.0</version>
         </dependency>
-
-        <!-- Bio-Formats core API -->
         <dependency>
             <groupId>ome</groupId>
             <artifactId>formats-gpl</artifactId>
             <version>6.13.0</version>
         </dependency>
-
         <dependency>
             <groupId>ome</groupId>
             <artifactId>formats-api</artifactId>
             <version>6.13.0</version>
         </dependency>
-
-        <!-- Tablesaw handling -->
         <dependency>
             <groupId>tech.tablesaw</groupId>
             <artifactId>tablesaw-core</artifactId>
             <version>0.43.1</version>
         </dependency>
-
-        <!-- CSV handling -->
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>5.9</version>
         </dependency>
-
-        <!-- JSON handling -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.11.0</version>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -171,7 +152,18 @@
                     <archive>
                         <manifest>
                             <mainClass>generatesquares.GenerateSquares</mainClass>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
+                        <manifestEntries>
+                            <Implementation-Title>${project.name}</Implementation-Title>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                            <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
+                            <Implementation-Date>${maven.build.timestamp}</Implementation-Date>
+                            <Specification-Title>${project.name}</Specification-Title>
+                            <Specification-Version>${project.version}</Specification-Version>
+                            <Specification-Vendor>${project.organization.name}</Specification-Vendor>
+                        </manifestEntries>
                     </archive>
                 </configuration>
                 <executions>
@@ -188,20 +180,14 @@
     </build>
 
     <repositories>
-
-        <!-- JFiji/ImgLib2 artifacts aren’t in Maven Central. They live in the SciJava Maven repository -->
         <repository>
             <id>scijava.public</id>
             <url>https://maven.scijava.org/content/groups/public</url>
         </repository>
-
-        <!-- OME Bio-Formats artifacts -->
         <repository>
             <id>ome.releases</id>
             <url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
         </repository>
-
     </repositories>
-
 
 </project>

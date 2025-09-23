@@ -8,6 +8,8 @@ import java.nio.file.Path;
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Recording;
 import io.SquareTableIO;
+import paint.shared.utils.JarInfo;
+import paint.shared.utils.JarInfoLogger;
 import tech.tablesaw.api.Table;
 import paint.shared.utils.AppLogger;
 import paint.shared.dialogs.ProjectSpecificationDialog;
@@ -17,6 +19,7 @@ import static paint.shared.constants.PaintConstants.SQUARES_CSV;
 
 import static generatesquares.calc.GenerateSquareCalcs.calculateSquaresForExperiment;
 import static paint.shared.utils.CsvConcatenator.concatenateExperimentCsvFiles;
+import static paint.shared.utils.JarInfoLogger.getJarInfo;
 
 public class GenerateSquares {
 
@@ -27,6 +30,13 @@ public class GenerateSquares {
         AppLogger.setLevel("Info");
 
         AppLogger.debugf("Starting Generate Squares...");
+
+        JarInfo info = getJarInfo(GenerateSquares.class);
+        if (info != null) {
+            AppLogger.infof(info.toString());
+        } else {
+            System.out.println("No manifest information found.");
+        }
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
