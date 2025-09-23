@@ -65,10 +65,11 @@ public class RunTrackMateOnProject implements Command {
     @Override
     public void run() {
 
-        // Set up logging
+        // Initialize logging for the session
         AppLogger.init("TrackMateOnProject");
         AppLogger.debugf("TrackMate plugin started");
 
+        // Log the JAR's manifest metadata if available
         JarInfo info = getJarInfo(RunTrackMateOnProject.class);
         if (info != null) {
             AppLogger.infof(info.toString());
@@ -76,66 +77,54 @@ public class RunTrackMateOnProject implements Command {
             System.out.println("No manifest information found.");
         }
 
-        // Display the project directory selection dialog
+        // Ask user to select a project directory
         ProjectSelectionDialog projDlg = new ProjectSelectionDialog(null);
         Path projectPath = projDlg.showDialog();
 
-        // If the user selected Cancel, then return.
+        // Handle cancellation
         if (projectPath == null) {
             AppLogger.infof("User cancelled project selection.");
             return;
         }
 
-        // Set up the json config
+        // Load paint-config.json from the selected project
         PaintConfig.initialise(projectPath.resolve(PAINT_CONFIGURATION_JSON));
 
-        // Show ExperimentDialog in TRACKMATE mode
+        // Display experiment selection dialog in TRACKMATE mode
         ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(null, projectPath, ProjectSpecificationDialog.DialogMode.TRACKMATE);
 
         /*
-         * Registers the TrackMate execution logic as a callback with the experiment dialog.
-         * <p>
-         * This callback is invoked only after the user presses <b>OK</b> in the dialog.
-         * It performs the following steps:
-         * <ol>
-         *     <li>Loads {@link PaintConfig} from the project root.</li>
-         *     <li>Validates that both the <em>Image Root</em> and <em>Project Root</em> directories exist.</li>
-         *     <li>Aborts with an error (after 5s pause) if required paths are missing.</li>
-         *     <li>Logs debug information about the selected project and experiments.</li>
-         *     <li>Iterates over all selected experiments and invokes
-         *         {@link paint.fiji.trackmate.RunTrackMateOnExperiment#runTrackMateOnExperiment(Path, Path)}
-         *         for each one.</li>
-         *     <li>Handles and logs any {@link Throwable} thrown during execution.</li>
-         * </ol>
-         *
-         * @param project the project configuration object from {@link ProjectSpecificationDialog},
-         *                containing experiment names to process
+         * Register a callback that runs after the user clicks OK.
+         * Validates paths and runs TrackMate for all selected experiments.
          */
         dialog.setCalculationCallback(project -> {
-
-            // There has to be an Image Root for TrackMate specified, otherwise nothing can work
 
             boolean status = true;
             boolean debug = getBoolean("Debug", "RunTrackMateOnProject", false);
 
+            // Load the Images Root path from configuration
             String imagesRoot = getString("Paths", "Images Root", "Fatal");
             boolean error = false;
 
+            // Check if image root was found
             if (imagesRoot.equals("Fatal")) {
-                AppLogger.errorf("No Image Path retrieved from configuration file- Fatal.");
+                AppLogger.errorf("No Image Path retrieved from configuration file - Fatal.");
                 error = true;
             }
+
             if (debug) AppLogger.debugf("The Image Path is specified as '%s'.", imagesRoot);
 
-            // The image root and project root need to exist
             Path imagesPath = Paths.get(imagesRoot);
+
+            // Verify existence of Images Root directory
             if (!error && !imagesPath.toFile().exists()) {
                 AppLogger.errorf("The Image Root '%s' does not exist - Fatal.", imagesPath);
                 error = true;
             }
+
             if (debug) AppLogger.debugf("The Image Path '%s' exists.", imagesRoot);
 
-            // The images root exists but is it a valid?
+            // Validate that the image root contains data for the selected experiments
             List<String> report = ImageRootValidator.validateImageRoot(
                     projectPath,
                     imagesPath,
@@ -145,37 +134,41 @@ public class RunTrackMateOnProject implements Command {
                 AppLogger.errorf("The Image Root Validation Failed - Fatal.");
                 error = true;
             }
+
             if (debug) AppLogger.debugf("The Image Path '%s' passed the validation test.", imagesRoot);
 
+            // Check that the project path also exists
             if (!error && !projectPath.toFile().exists()) {
                 AppLogger.errorf("Project Root '%s' does not exist - Fatal.", projectPath);
                 error = true;
             }
+
             if (debug) AppLogger.debugf("The project root '%s' exists.", projectPath);
 
-            // If there is an error, display a warning message for 5 seconds and then exit
+            // Abort execution if any critical path is missing
             if (error) {
                 try {
                     AppLogger.errorf("About to exit with error, refer to log file.", projectPath);
-                    Thread.sleep(10000);
+                    Thread.sleep(10000); // pause to let user read error
                 } catch (InterruptedException e) {
                     AppLogger.errorf("Failed to sleep - %s", e.getMessage());
                 }
                 System.exit(-1);
             }
 
-            // Basic conditions have been met
+            // Validation passed, begin processing
             if (debug) AppLogger.debugf("TrackMate processing started.");
             if (debug) AppLogger.debugf("Experiments %s", project.experimentNames.toString());
 
-            // Verify if the experiments appear valid
+            // Validate experiment directories
             ValidateResult validateResult = validateProject(projectPath, project.experimentNames, ProjectValidator.Mode.VALIDATE_TRACKMATE );
             if (validateResult.isOk()) {
                 formatReport(validateResult.getErrors());
             }
+
             if (debug) AppLogger.debugf("Experiments appear valid.");
 
-            // Cycle through the experiments and run TrackMate on each one
+            // Run TrackMate on each selected experiment
             for (String experimentName : project.experimentNames) {
                 Path experimentPath = projectPath.resolve(experimentName);
                 if (!Files.isDirectory(experimentPath)) {
@@ -196,11 +189,11 @@ public class RunTrackMateOnProject implements Command {
                     }
                 }
             }
+
             return status;
         });
 
-        // Non-blocking dialog – user must press OK to trigger processing
+        // Show the experiment selection dialog (non-blocking)
         dialog.showDialog();
-
     }
 }
