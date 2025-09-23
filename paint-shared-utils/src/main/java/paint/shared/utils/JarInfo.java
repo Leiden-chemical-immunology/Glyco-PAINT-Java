@@ -28,7 +28,7 @@ public class JarInfo {
                 "Implementation Title  : %s%n" +
                         "Implementation Version: %s%n" +
                         "Implementation Vendor : %s%n" +
-                        "Implementation Date   : %s%n" +
+                        "Implementation Date   : %s%n",
                 implementationTitle, implementationVersion, implementationVendor, implementationDate
         );
     }
