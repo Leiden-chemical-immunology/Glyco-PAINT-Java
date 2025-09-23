@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import paint.shared.utils.JarInfo;
 import paint.shared.validate.ImageRootValidator;
 import paint.shared.config.PaintConfig;
 import org.scijava.command.Command;
@@ -21,6 +22,7 @@ import static paint.shared.config.PaintConfig.getBoolean;
 import static paint.shared.config.PaintConfig.getString;
 import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 import static paint.fiji.trackmate.RunTrackMateOnExperiment.runTrackMateOnExperiment;
+import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.validate.ProjectValidator.formatReport;
 import static paint.shared.validate.ProjectValidator.validateProject;
 import static paint.shared.validate.ProjectValidator.ValidateResult;
@@ -66,6 +68,13 @@ public class RunTrackMateOnProject implements Command {
         // Set up logging
         AppLogger.init("TrackMateOnProject");
         AppLogger.debugf("TrackMate plugin started");
+
+        JarInfo info = getJarInfo(RunTrackMateOnProject.class);
+        if (info != null) {
+            AppLogger.infof(info.toString());
+        } else {
+            System.out.println("No manifest information found.");
+        }
 
         // Display the project directory selection dialog
         ProjectSelectionDialog projDlg = new ProjectSelectionDialog(null);
