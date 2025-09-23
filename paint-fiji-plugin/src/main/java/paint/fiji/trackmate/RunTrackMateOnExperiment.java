@@ -126,6 +126,10 @@ public class RunTrackMateOnExperiment {
                             status = false;
                             continue;
                         }
+                        if (!trackMateResults.isCalculationPerformed()) {
+                            numberRecordings++;
+                            continue;
+                        }
 
                         int durationInSeconds = (int) (trackMateResults.getDuration().toMillis() / 1000);
                         AppLogger.infof("   Recording '%s' (%d of %d) processed in %s.",

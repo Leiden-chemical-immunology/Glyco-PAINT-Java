@@ -15,6 +15,9 @@ public class TrackMateResults {
     /** Whether the TrackMate analysis finished successfully. */
     private final boolean success;
 
+    /** Whether the TrackMate analysis was peroformed */
+    private final boolean calculationPerformed;
+
     /** Number of detected spots in the analysis. */
     private final int numberOfSpots;
 
@@ -41,8 +44,20 @@ public class TrackMateResults {
      *
      * @param success whether the analysis succeeded (typically {@code false})
      */
+    public TrackMateResults(boolean success, boolean calculationPerformed) {
+        this.success = success;
+        this.calculationPerformed = false;
+        this.numberOfSpots = 0;
+        this.numberOfTracks = 0;
+        this.numberOfFilteredTracks = 0;
+        this.numberOFrames = 0;
+        this.duration = null;
+        this.numberOfSpotsInALlTracks = 0;
+    }
+
     public TrackMateResults(boolean success) {
         this.success = success;
+        this.calculationPerformed = false;
         this.numberOfSpots = 0;
         this.numberOfTracks = 0;
         this.numberOfFilteredTracks = 0;
@@ -63,6 +78,7 @@ public class TrackMateResults {
      * @param numberOfSpotsInALlTracks total number of spots in all tracks
      */
     public TrackMateResults(boolean success,
+                            boolean calculationPerformed,
                             int numberOfSpots,
                             int numberOfTracks,
                             int numberOfFilteredTracks,
@@ -70,6 +86,7 @@ public class TrackMateResults {
                             Duration duration,
                             int numberOfSpotsInALlTracks) {
         this.success = success;
+        this.calculationPerformed = calculationPerformed;
         this.numberOfSpots = numberOfSpots;
         this.numberOfTracks = numberOfTracks;
         this.numberOfFilteredTracks = numberOfFilteredTracks;
@@ -98,6 +115,10 @@ public class TrackMateResults {
 
     /** @return {@code true} if the analysis succeeded, otherwise {@code false} */
     public boolean isSuccess() { return success; }
+
+    public boolean isCalculationPerformed() {
+        return calculationPerformed;
+    }
 
     /**
      * Returns a formatted string summarizing the results.

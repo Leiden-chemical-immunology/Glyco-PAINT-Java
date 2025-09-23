@@ -174,10 +174,11 @@ public class RunTrackMateOnRecording {
 
         int numberSpots = model.getSpots().getNSpots(false);
         if (numberSpots > trackMateConfig.getMaxNrSpotsInImage()) {
-            AppLogger.errorf("   Too many spots detected (%d). Limit is %d.", numberSpots, trackMateConfig.getMaxNrSpotsInImage());
+            AppLogger.warningf("   Too many spots detected (%d). Limit is %d.", numberSpots, trackMateConfig.getMaxNrSpotsInImage());
+            AppLogger.warningf("");
             ImageWindow win = imp.getWindow();
             imp.close();
-            return new TrackMateResults(false);
+            return new TrackMateResults(true, false);
         }
         AppLogger.infof("      TrackMate - number of spots detected: %d",  numberSpots);
 
@@ -282,7 +283,7 @@ public class RunTrackMateOnRecording {
 
         Duration duration = Duration.between(start, LocalDateTime.now());
 
-        return new TrackMateResults(true, numberOfSpots, numberOfTracks, numberOfFilteredTracks,
+        return new TrackMateResults(true, true, numberOfSpots, numberOfTracks, numberOfFilteredTracks,
                 numberOfFrames, duration, numberOfSpotsInALlTracks);
     }
 
