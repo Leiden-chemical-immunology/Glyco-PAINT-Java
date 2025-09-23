@@ -14,12 +14,14 @@ import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.ProjectSelectionDialog;
 
 import static paint.shared.constants.PaintConstants.SQUARES_CSV;
+
 import static generatesquares.calc.GenerateSquareCalcs.calculateSquaresForExperiment;
+import static paint.shared.utils.CsvConcatenator.concatenateExperimentCsvFiles;
 
 public class GenerateSquares {
 
     public static void main(String[] args) {
-        AppLogger.init("GenerateSquares.log");
+        AppLogger.init("Generate Squares.log");
 
         // Overrule the default, takes this out at some point
         AppLogger.setLevel("Info");
@@ -31,7 +33,7 @@ public class GenerateSquares {
         } catch (Exception e) {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw.toString());
+            AppLogger.errorf("An exception occurred:\n" + sw);
         }
 
         SwingUtilities.invokeLater(() -> {
@@ -59,7 +61,7 @@ public class GenerateSquares {
 
                 // Create the squares table
                 SquareTableIO squaresTableIO = new SquareTableIO();
-                Table allSquaresProjectTable = squaresTableIO.emptyTable();
+                // Table allSquaresProjectTable = squaresTableIO.emptyTable();
 
                 for (Experiment experiment: project.experiments) {
 
@@ -68,7 +70,7 @@ public class GenerateSquares {
                     for (Recording recording: experiment.getRecordings()) {
                         Table table = squaresTableIO.toTable(recording.getSquares());
 
-                        squaresTableIO.appendInPlace(allSquaresProjectTable, table);
+                        // squaresTableIO.appendInPlace(allSquaresProjectTable, table);
                         squaresTableIO.appendInPlace(allSquaresExperimentTable, table);
                         AppLogger.debugf("Processing squares for experiment '%s'  - recording '%s'", experiment.getExperimentName(), recording.getRecordingName());
                     }
@@ -83,13 +85,13 @@ public class GenerateSquares {
                 }
 
                 // Write the projects squares file
-                Path squaresProjectFilePath = projectPath.resolve(SQUARES_CSV);
                 try {
-                    squaresTableIO.writeCsv(allSquaresProjectTable, squaresProjectFilePath);
-                } catch (Exception e) {
-                    AppLogger.errorf(e.getMessage());
+                    concatenateExperimentCsvFiles(projectPath, SQUARES_CSV, project.experimentNames);
+                    AppLogger.infof("Generated squares info for the selected experiments and for the project,");
+                }  catch (Exception e) {
+                    AppLogger.errorf("Could not concatenate squares file - %s", e.getMessage());
                 }
-            return true;   //ToDo
+                return true;   //ToDo
             });
 
             // Show dialog (calculations will run after pressing OK)
