@@ -7,10 +7,12 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+import paint.shared.config.PaintConfig;
 import paint.shared.utils.AppLogger;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.ProjectSelectionDialog;
 
+import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 import static paint.shared.constants.PaintConstants.SQUARES_CSV;
 
 import paint.shared.utils.JarInfo;
@@ -63,6 +65,9 @@ public class GenerateSquares {
             // Use the project directory to display the experiment selection dialog.
             AppLogger.debugf("User selected: " + projectPath);
             ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(null, projectPath, ProjectSpecificationDialog.DialogMode.GENERATE_SQUARES);
+
+            // Initialise the config file
+            // PaintConfig.initialise(projectPath.resolve(PAINT_CONFIGURATION_JSON));
 
             // Wire the callback to perform calculations while keeping the dialog open
             dialog.setCalculationCallback(project -> {
