@@ -79,6 +79,7 @@ public class RunTrackMateOnProject implements Command {
             AppLogger.infof("Version: %s",info.implementationVersion);
         } else {
             AppLogger.errorf("No manifest information found.");
+            AppLogger.infof();
         }
 
         // Ask user to select a project directory
