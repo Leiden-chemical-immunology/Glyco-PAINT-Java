@@ -3,6 +3,7 @@ package paint.shared.dialogs;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.prefs.Preferences;
@@ -51,6 +52,34 @@ public class ProjectSelectionDialog extends JDialog {
 
         // === OK button ===
         okButton.addActionListener(e -> {
+
+            String projectDirectory = directoryField.getText().trim();
+            if (projectDirectory.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "A directory needs to be specified",
+                            "Specify a directory",
+                                 JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Check if directory exists
+            Path path = Paths.get(projectDirectory);
+            if (Files.isRegularFile(path)) {
+                JOptionPane.showMessageDialog(this,
+                        "Please specify a directory, not a file",
+                            "Specify a directory",
+                                 JOptionPane.ERROR_MESSAGE);
+
+                return;
+            }
+            if (!Files.isDirectory(path)) {
+                JOptionPane.showMessageDialog(this,
+                        "The directory does no longer exist",
+                            "Specify a directory",
+                                 JOptionPane.ERROR_MESSAGE);
+
+                return;
+            }
             okPressed = true;
             prefs.put(KEY_PROJECT, directoryField.getText());
             dispose();
