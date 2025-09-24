@@ -3,6 +3,7 @@ package paint.shared.debug;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -130,15 +131,15 @@ public class CleanupUtility {
     public static void runCleanup(Path rootDir, String mode, boolean dryRun, boolean old, boolean all) throws IOException {
         final List<String> recordingsTargets = all
                 ? Arrays.asList(RECORDINGS_CSV, RECORDINGS_OLD)
-                : Arrays.asList(old ? RECORDINGS_OLD : RECORDINGS_CSV);
+                : Collections.singletonList(old ? RECORDINGS_OLD : RECORDINGS_CSV);
 
         final List<String> tracksTargets = all
                 ? Arrays.asList(TRACKS_CSV, TRACKS_OLD)
-                : Arrays.asList(old ? TRACKS_OLD : TRACKS_CSV);
+                : Collections.singletonList(old ? TRACKS_OLD : TRACKS_CSV);
 
         final List<String> squaresTargets = all
                 ? Arrays.asList(SQUARES_CSV, SQUARES_OLD)
-                : Arrays.asList(old ? SQUARES_OLD : SQUARES_CSV);
+                : Collections.singletonList(old ? SQUARES_OLD : SQUARES_CSV);
 
         final AtomicInteger deleteCount = new AtomicInteger(0);
 

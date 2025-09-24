@@ -29,15 +29,15 @@ public class TrackMateExperiment {
     void go(Path experimentPath, Path omeroExperimentPath, boolean convertFlag, String caseName) {
         Path experimentInfoFilePath = experimentPath.resolve("Experiment Info.csv");
 
-        System.out.println(String.format("Experiment path: %s", experimentPath));
-        System.out.println(String.format("Omero Experiment path: %s", omeroExperimentPath));
-        System.out.println(String.format("Experiment Info Path : %s", experimentInfoFilePath));
+        System.out.printf("Experiment path: %s%n", experimentPath);
+        System.out.printf("Omero Experiment path: %s%n", omeroExperimentPath);
+        System.out.printf("Experiment Info Path : %s%n", experimentInfoFilePath);
         processExperimentInfoFile(experimentInfoFilePath, omeroExperimentPath, experimentPath);
     }
 
     private static boolean checkDirectory(Path path, String label, int rowIndex) {
         if (!Files.isDirectory(path)) {
-            System.out.println(String.format("🚫 Row %2d: %s is not a valid directory: %s", rowIndex, label, path));
+            System.out.printf("\uD83D\uDEAB Row %2d: %s is not a valid directory: %s%n", rowIndex, label, path);
             return false;
         }
         return true;
@@ -55,7 +55,7 @@ public class TrackMateExperiment {
 
             for (String required : requiredColumns) {
                 if (!availableColumns.contains(required)) {
-                    System.out.println(String.format("🚫 Missing required column: '%s'", required));
+                    System.out.printf("\uD83D\uDEAB Missing required column: '%s'%n", required);
                     validated = false;
                 }
             }
@@ -115,7 +115,7 @@ public class TrackMateExperiment {
             System.out.println("✅ There are no recordings that require processing.");
         }
         else {
-            System.out.println(String.format("✅ Processing %d recordings out of %d.", nrRecordingsToProcess, nrRecordingsInBatchFile));
+            System.out.printf("✅ Processing %d recordings out of %d.%n", nrRecordingsToProcess, nrRecordingsInBatchFile);
             // System.out.println("");
         }
 
@@ -162,7 +162,7 @@ public class TrackMateExperiment {
         Duration duration = Duration.between(start, end);
 
         //System.out.println("");
-        System.out.println(String.format("✅ Number of recordings processed %d out of %d.", nrRecordingsProcessed, nrRecordingsToProcess));
+        System.out.printf("✅ Number of recordings processed %d out of %d.%n", nrRecordingsProcessed, nrRecordingsToProcess);
         // System.out.println(String.format("✅ Time taken to process: %s.", formatDuration(duration)));
         System.out.println();
     }

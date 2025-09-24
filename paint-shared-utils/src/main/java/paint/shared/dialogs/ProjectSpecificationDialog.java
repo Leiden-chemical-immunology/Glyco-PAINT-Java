@@ -131,11 +131,11 @@ public class ProjectSpecificationDialog {
 
         if (mode == DialogMode.GENERATE_SQUARES) {
             // Pre-fill fields from config
-            int nrSquares = paintConfig.getInt("Generate Squares", "Nr of Squares in Row", 5);
-            int minTracks = paintConfig.getInt("Generate Squares", "Min Tracks to Calculate Tau", 11);
-            double minRSquared = paintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
-            double minDensityRatio = paintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
-            double maxVariability = paintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
+            int nrSquares = PaintConfig.getInt("Generate Squares", "Nr of Squares in Row", 5);
+            int minTracks = PaintConfig.getInt("Generate Squares", "Min Tracks to Calculate Tau", 11);
+            double minRSquared = PaintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
+            double minDensityRatio = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
+            double maxVariability = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
 
             nrSquaresField = createTightTextField(String.valueOf(nrSquares), new IntegerDocumentFilter());
             minTracksField = createTightTextField(String.valueOf(minTracks), new IntegerDocumentFilter());
@@ -165,7 +165,7 @@ public class ProjectSpecificationDialog {
             maxVariabilityField = null;
 
             JLabel dirLabel = new JLabel("Images Root:");
-            String defaultDir = paintConfig.getString("Paths", "Images Root", System.getProperty("user.home"));
+            String defaultDir = PaintConfig.getString("Paths", "Images Root", System.getProperty("user.home"));
             JTextField dirField = new JTextField(defaultDir, 30);
             JButton browseButton = new JButton("Browse...");
 
@@ -265,7 +265,7 @@ public class ProjectSpecificationDialog {
 
         // Final dialog setup
         dialog.pack();
-        dialog.setSize(mode == DialogMode.GENERATE_SQUARES ? 600 : 300, 600);
+        dialog.setSize(mode == DialogMode.GENERATE_SQUARES ? 600 : 500, 600);
         dialog.setLocationRelativeTo(owner);
     }
 
@@ -294,7 +294,7 @@ public class ProjectSpecificationDialog {
                             continue;
                         }
                         JCheckBox cb = new JCheckBox(sub.getName());
-                        boolean savedState = config.getBoolean("Experiments", sub.getName(), false);
+                        boolean savedState = PaintConfig.getBoolean("Experiments", sub.getName(), false);
                         cb.setSelected(savedState);
                         checkboxPanel.add(cb);
                         checkBoxes.add(cb);
@@ -316,19 +316,19 @@ public class ProjectSpecificationDialog {
      */
     private void saveConfig() {
         if (mode == DialogMode.GENERATE_SQUARES) {
-            paintConfig.setInt("Generate Squares", "Nr of Squares in Row", Integer.parseInt(nrSquaresField.getText()));
-            paintConfig.setInt("Generate Squares", "Min Tracks to Calculate Tau", Integer.parseInt(minTracksField.getText()));
-            paintConfig.setDouble("Generate Squares", "Min Required R Squared", Double.parseDouble(minRSquaredField.getText()));
-            paintConfig.setDouble("Generate Squares", "Min Required Density Ratio", Double.parseDouble(minDensityRatioField.getText()));
-            paintConfig.setDouble("Generate Squares", "Max Allowable Variability", Double.parseDouble(maxVariabilityField.getText()));
+            PaintConfig.setInt("Generate Squares", "Nr of Squares in Row", Integer.parseInt(nrSquaresField.getText()));
+            PaintConfig.setInt("Generate Squares", "Min Tracks to Calculate Tau", Integer.parseInt(minTracksField.getText()));
+            PaintConfig.setDouble("Generate Squares", "Min Required R Squared", Double.parseDouble(minRSquaredField.getText()));
+            PaintConfig.setDouble("Generate Squares", "Min Required Density Ratio", Double.parseDouble(minDensityRatioField.getText()));
+            PaintConfig.setDouble("Generate Squares", "Max Allowable Variability", Double.parseDouble(maxVariabilityField.getText()));
         } else {
-            paintConfig.setString("Paths", "Images Root", imageDirectoryField.getText());
-            paintConfig.setString("Paths", "Project Root", this.projectPath.toString());
+            PaintConfig.setString("Paths", "Images Root", imageDirectoryField.getText());
+            PaintConfig.setString("Paths", "Project Root", this.projectPath.toString());
         }
 
         if (saveExperimentsCheckBox.isSelected()) {
             for (JCheckBox cb : checkBoxes) {
-                paintConfig.setBoolean("Experiments", cb.getText(), cb.isSelected());
+                PaintConfig.setBoolean("Experiments", cb.getText(), cb.isSelected());
             }
         }
         paintConfig.save();
