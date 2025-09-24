@@ -133,7 +133,7 @@ public class PaintConfig {
         JsonObject generateSquares = new JsonObject();
         generateSquares.addProperty("Plot to File", false);
         generateSquares.addProperty("Min Tracks to Calculate Tau", 20);
-        generateSquares.addProperty("Max Track Duration", 1000000);
+        generateSquares.addProperty("Max Track Duration", 2000000);
         generateSquares.addProperty("Min Required R Squared", 0.1);
         generateSquares.addProperty("Min Track Duration", 0);
         generateSquares.addProperty("Fraction of Squares to Determine Background", 0.1);
