@@ -64,9 +64,6 @@ public class GenerateSquares {
             PaintLogger.debugf("User selected: " + projectPath);
             ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(null, projectPath, ProjectSpecificationDialog.DialogMode.GENERATE_SQUARES);
 
-            // Initialise the config file
-            // PaintConfig.initialise(projectPath.resolve(PAINT_CONFIGURATION_JSON));
-
             // Wire the callback to perform calculations while keeping the dialog open
             dialog.setCalculationCallback(project -> {
 

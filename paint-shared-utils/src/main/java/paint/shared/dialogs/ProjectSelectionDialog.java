@@ -1,5 +1,7 @@
 package paint.shared.dialogs;
 
+import paint.shared.config.PaintConfig;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
@@ -7,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.prefs.Preferences;
+
+import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 
 public class ProjectSelectionDialog extends JDialog {
 
@@ -81,7 +85,11 @@ public class ProjectSelectionDialog extends JDialog {
                 return;
             }
             okPressed = true;
-            prefs.put(KEY_PROJECT, directoryField.getText());
+            prefs.put(KEY_PROJECT, projectDirectory);
+
+            // The moment we know the project directory initialise the config file
+            PaintConfig.initialise(Paths.get(projectDirectory).resolve(PAINT_CONFIGURATION_JSON));
+
             dispose();
         });
 
