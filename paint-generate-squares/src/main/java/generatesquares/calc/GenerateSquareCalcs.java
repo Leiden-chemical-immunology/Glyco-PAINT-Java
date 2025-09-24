@@ -1,5 +1,6 @@
 package generatesquares.calc;
 
+import io.SquareTableIO;
 import paint.shared.config.GenerateSquaresConfig;
 import io.TrackTableIO;
 import paint.shared.objects.Project;
@@ -10,6 +11,9 @@ import paint.shared.objects.Track;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.Table;
 
+import java.nio.file.Path;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -22,18 +26,22 @@ import static io.ProjectDataLoader.*;
 
 import static paint.shared.constants.PaintConstants.IMAGE_HEIGHT;
 import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
+import static paint.shared.constants.PaintConstants.SQUARES_CSV;
+
+import static paint.shared.utils.Miscellaneous.formatDuration;
 
 import paint.shared.utils.AppLogger;
 
 public class GenerateSquareCalcs {
 
-    public static boolean calculateSquaresForExperiment(Project project, String experimentName) {
+    public static boolean generateSquaresForExperiment(Project project, String experimentName) {
 
         GenerateSquaresConfig generateSquaresConfig = project.generateSquaresConfig;
 
+        LocalDateTime start = LocalDateTime.now();
+        AppLogger.infof("Loading Experiment '%s'", experimentName);
         Experiment experiment = loadExperimentForSquaresCalc(project.projectPath, experimentName);
         if (experiment != null) {
-            AppLogger.infof("Processing Experiment: %s", experimentName);
             for (Recording recording : experiment.getRecordings()) {
                 AppLogger.infof("   Processing: %s", recording.getRecordingName());
                 AppLogger.debugf(recording.toString());
@@ -51,7 +59,9 @@ public class GenerateSquareCalcs {
                 // Calculate squares attributes
                 calculateSquareAttributes(recording, generateSquaresConfig);
             }
-            AppLogger.infof("Finished processing Experiment: %s", experimentName);
+
+            Duration duration = Duration.between(start, LocalDateTime.now());
+            AppLogger.infof("Finished processing experiment '%s' in %s", experimentName, formatDuration(duration));
             AppLogger.infof();
             project.addExperiment(experiment);
             return true;

@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Recording;
@@ -16,9 +18,10 @@ import paint.shared.dialogs.ProjectSelectionDialog;
 
 import static paint.shared.constants.PaintConstants.SQUARES_CSV;
 
-import static generatesquares.calc.GenerateSquareCalcs.calculateSquaresForExperiment;
+import static generatesquares.calc.GenerateSquareCalcs.generateSquaresForExperiment;
 import static paint.shared.utils.CsvConcatenator.concatenateExperimentCsvFiles;
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
+import static paint.shared.utils.Miscellaneous.formatDuration;
 
 public class GenerateSquares {
 
@@ -36,6 +39,7 @@ public class GenerateSquares {
             AppLogger.infof("Version: %s",info.implementationVersion);
         } else {
             AppLogger.errorf("No manifest information found.");
+            AppLogger.infof();
         }
 
         try {
@@ -64,40 +68,18 @@ public class GenerateSquares {
 
             // Wire the callback to perform calculations while keeping the dialog open
             dialog.setCalculationCallback(project -> {
+
+                LocalDateTime start = LocalDateTime.now();
                 for (String experimentName : project.experimentNames) {
-                    calculateSquaresForExperiment(project, experimentName);
+                    generateSquaresForExperiment(project, experimentName);
                 }
                 AppLogger.debugf("\n\nFinished calculating");
-
-                // Create the squares table
-                SquareTableIO squaresTableIO = new SquareTableIO();
-                // Table allSquaresProjectTable = squaresTableIO.emptyTable();
-
-                for (Experiment experiment: project.experiments) {
-
-                    Table allSquaresExperimentTable = squaresTableIO.emptyTable();
-
-                    for (Recording recording: experiment.getRecordings()) {
-                        Table table = squaresTableIO.toTable(recording.getSquares());
-
-                        // squaresTableIO.appendInPlace(allSquaresProjectTable, table);
-                        squaresTableIO.appendInPlace(allSquaresExperimentTable, table);
-                        AppLogger.debugf("Processing squares for experiment '%s'  - recording '%s'", experiment.getExperimentName(), recording.getRecordingName());
-                    }
-
-                    // Write the experiment squares file
-                    Path squaresExperimentFilePath = projectPath.resolve(experiment.getExperimentName()).resolve(SQUARES_CSV);
-                    try {
-                        squaresTableIO.writeCsv(allSquaresExperimentTable, squaresExperimentFilePath);
-                    } catch (Exception e) {
-                        AppLogger.errorf(e.getMessage());
-                    }
-                }
 
                 // Write the projects squares file
                 try {
                     concatenateExperimentCsvFiles(projectPath, SQUARES_CSV, project.experimentNames);
-                    AppLogger.infof("Generated squares info for the selected experiments and for the project,");
+                    Duration duration = Duration.between(start, LocalDateTime.now());
+                    AppLogger.infof("Generated squares info for the selected experiments and for the project in %s", formatDuration(duration));
                 }  catch (Exception e) {
                     AppLogger.errorf("Could not concatenate squares file - %s", e.getMessage());
                 }
