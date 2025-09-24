@@ -149,7 +149,7 @@ public class RunTrackMateOnExperiment {
                         timeStamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
                     } else {
-                        AppLogger.infof("   Recording '%s' was deselected.", recordingName);
+                        AppLogger.infof("   Recording '%s' was not selected for processing.", recordingName);
                     }
 
                     // Build output CSV row
