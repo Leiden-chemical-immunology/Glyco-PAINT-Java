@@ -47,8 +47,7 @@ public class Project {
         this.trackMateConfig = trackMateConfig;
         if (experiments == null) {
             this.experiments = new ArrayList<>();
-        }
-        else {
+        } else {
             this.experiments = experiments;
         }
     }
@@ -66,8 +65,7 @@ public class Project {
         this.trackMateConfig = null;
         if (experiments == null) {
             this.experiments = new ArrayList<>();
-        }
-        else {
+        } else {
             this.experiments = experiments;
         }
     }
@@ -80,8 +78,6 @@ public class Project {
         this.projectPath = projectPath;
         this.projectName = projectPath.getFileName().toString();
     }
-
-
 
 
     // Getters and setters
@@ -130,7 +126,7 @@ public class Project {
         sb.append("\n");
 
         sb.append("\n");
-        sb.append(String.format("%nExperiment %s has %d experiment%n",  projectName,  experiments.size()));
+        sb.append(String.format("%nExperiment %s has %d experiment%n", projectName, experiments.size()));
         for (Experiment experiment : experiments) {
             sb.append(String.format("\t%s%n", experiment.getExperimentName()));
         }
@@ -138,7 +134,7 @@ public class Project {
         for (Experiment experiment : experiments) {
             sb.append("\n");
             sb.append(experiment);
-            List <Recording> recordings = experiment.getRecordings();
+            List<Recording> recordings = experiment.getRecordings();
             for (Recording rec : recordings) {
                 sb.append("\n");
                 sb.append(rec);

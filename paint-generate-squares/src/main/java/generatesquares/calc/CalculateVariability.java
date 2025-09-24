@@ -1,8 +1,8 @@
 package generatesquares.calc;
 
 
-import tech.tablesaw.api.Table;
 import tech.tablesaw.api.DoubleColumn;
+import tech.tablesaw.api.Table;
 
 import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
 

@@ -1,13 +1,10 @@
 package generatesquares.calc;
 
 import io.SquareTableIO;
-import paint.shared.config.GenerateSquaresConfig;
 import io.TrackTableIO;
-import paint.shared.objects.Project;
-import paint.shared.objects.Experiment;
-import paint.shared.objects.Recording;
-import paint.shared.objects.Square;
-import paint.shared.objects.Track;
+import paint.shared.config.GenerateSquaresConfig;
+import paint.shared.objects.*;
+import paint.shared.utils.AppLogger;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.Table;
 
@@ -22,15 +19,10 @@ import static generatesquares.calc.CalculateDensity.calculateAverageTrackCountOf
 import static generatesquares.calc.CalculateDensity.calculateDensity;
 import static generatesquares.calc.CalculateTau.calcTau;
 import static generatesquares.calc.CalculateVariability.calcVariability;
-import static io.ProjectDataLoader.*;
-
-import static paint.shared.constants.PaintConstants.IMAGE_HEIGHT;
-import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
-import static paint.shared.constants.PaintConstants.SQUARES_CSV;
-
+import static io.ProjectDataLoader.filterTracksInSquare;
+import static io.ProjectDataLoader.loadExperimentForSquaresCalc;
+import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.utils.Miscellaneous.formatDuration;
-
-import paint.shared.utils.AppLogger;
 
 public class GenerateSquareCalcs {
 
@@ -67,8 +59,7 @@ public class GenerateSquareCalcs {
             writeSquares(project.projectPath, experiment);
 
             return true;
-        }
-        else {
+        } else {
             AppLogger.errorf("Failed to load experiment: %s", experimentName);
             return false;
         }
@@ -80,7 +71,7 @@ public class GenerateSquareCalcs {
         int n = generateSquaresConfig.getNrSquaresInRow();
 
         List<Square> squares = new ArrayList<>();
-        double squareWidth  = IMAGE_WIDTH / n;
+        double squareWidth = IMAGE_WIDTH / n;
         double squareHeight = IMAGE_HEIGHT / n;
 
         int squareNumber = 0;
@@ -129,12 +120,11 @@ public class GenerateSquareCalcs {
 
         double minRequiredRSquared = generateSquaresConfig.getMinRequiredRSquared();
         int minTracksForTau = generateSquaresConfig.getMinTracksToCalculateTau();
-        CalculateTau.CalculateTauResult results = calcTau(recording.getTracks(), minTracksForTau,  minRequiredRSquared);
+        CalculateTau.CalculateTauResult results = calcTau(recording.getTracks(), minTracksForTau, minRequiredRSquared);
         if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
             recording.setTau(results.getTau());
             recording.setRSquared(results.getRSquared());
-        }
-        else {
+        } else {
             recording.setTau(Double.NaN);
             recording.setRSquared(Double.NaN);
         }
@@ -147,7 +137,7 @@ public class GenerateSquareCalcs {
         double minRequiredRSquared = generateSquaresConfig.getMinRequiredRSquared();
         int minTracksForTau = generateSquaresConfig.getMinTracksToCalculateTau();
         int numberOfSquaresInRow = generateSquaresConfig.getNrSquaresInRow();
-        double area = imageWidth * imageWidth/ (generateSquaresConfig.getNrSquaresInRow() * generateSquaresConfig.getNrSquaresInRow());
+        double area = imageWidth * imageWidth / (generateSquaresConfig.getNrSquaresInRow() * generateSquaresConfig.getNrSquaresInRow());
         double concentration = recording.getConcentration();
         double time = 100;
         int nrOfAverageCountSquares = 10;
@@ -164,12 +154,11 @@ public class GenerateSquareCalcs {
             }
 
             // Calculate Tau
-            CalculateTau.CalculateTauResult results = calcTau(tracksInSquare, minTracksForTau,  minRequiredRSquared);
+            CalculateTau.CalculateTauResult results = calcTau(tracksInSquare, minTracksForTau, minRequiredRSquared);
             if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
                 square.setTau(results.getTau());
                 square.setRSquared(results.getRSquared());
-            }
-            else {
+            } else {
                 square.setTau(Double.NaN);
                 square.setRSquared(Double.NaN);
             }
@@ -194,7 +183,7 @@ public class GenerateSquareCalcs {
             double variability = calcVariability(tracksInSquareTable, squareNumber, numberOfSquaresInRow, 10);
             square.setVariability(variability);
 
-            double density  = calculateDensity(tracksInSquare.size(), area, time, concentration);
+            double density = calculateDensity(tracksInSquare.size(), area, time, concentration);
             square.setDensity(density);
 
             double densityRatio = tracksInSquare.size() / averageTracks;

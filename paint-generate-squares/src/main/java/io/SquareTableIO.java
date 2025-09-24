@@ -1,7 +1,9 @@
 package io;
 
 import paint.shared.objects.Square;
-import tech.tablesaw.api.*;
+import tech.tablesaw.api.ColumnType;
+import tech.tablesaw.api.Row;
+import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
 
 import java.io.IOException;

@@ -6,26 +6,27 @@ import paint.shared.objects.Experiment;
 import paint.shared.objects.Project;
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
+import paint.shared.utils.AppLogger;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.selection.Selection;
-import paint.shared.utils.AppLogger;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static generatesquares.calc.CalculateDensity.calculateAverageTrackCountOfBackground;
-import static paint.shared.utils.Miscellaneous.friendlyMessage;
 import static paint.shared.constants.PaintConstants.*;
-
+import static paint.shared.utils.Miscellaneous.friendlyMessage;
 
 
 public final class ProjectDataLoader {
 
-    private ProjectDataLoader() {}
+    private ProjectDataLoader() {
+    }
 
     public static void main(String[] args) {
         Project project = null;

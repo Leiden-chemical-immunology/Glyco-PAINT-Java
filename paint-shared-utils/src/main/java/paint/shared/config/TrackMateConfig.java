@@ -1,52 +1,49 @@
 package paint.shared.config;
 
 
-import static paint.shared.config.PaintConfig.getInt;
-import static paint.shared.config.PaintConfig.getDouble;
-import static paint.shared.config.PaintConfig.getBoolean;
-import static paint.shared.config.PaintConfig.getString;
+import static paint.shared.config.PaintConfig.*;
 
 /**
  * Holds the data retrieved from the TrackMate section of the Paint configuration file.
  */
 public class TrackMateConfig {
 
-    private final int     maxFrameGap;
-    private final double  alternativeLinkingCostFactor;
+    private final int maxFrameGap;
+    private final double alternativeLinkingCostFactor;
     private final boolean doSubpixelLocalization;
-    private final int     minNrSpotsInTrack;
-    private final double  linkingMaxDistance;
-    private final int     maxNrSpotsInImage;
-    private final double  gapClosingMaxDistance;
-    private final int     targetChannel;
-    private final double  splittingMaxDistance;
-    private final String  trackColouring;
-    private final double  radius;
+    private final int minNrSpotsInTrack;
+    private final double linkingMaxDistance;
+    private final int maxNrSpotsInImage;
+    private final double gapClosingMaxDistance;
+    private final int targetChannel;
+    private final double splittingMaxDistance;
+    private final String trackColouring;
+    private final double radius;
     private final boolean allowGapClosing;
     private final boolean medianFiltering;
     private final boolean allowTrackSplitting;
     private final boolean allowTrackMerging;
-    private final double  mergingMaxDistance;
+    private final double mergingMaxDistance;
 
     // Full constructor with all values specified
 
     private TrackMateConfig(
-             int     maxFrameGap,
-             double  alternativeLinkingCostFactor,
-             boolean doSubpixelLocalization,
-             int     minNrSpotsInTrack,
-             double  linkingMaxDistance,
-             int     maxNrSpotsInImage,
-             double  gapClosingMaxDistance,
-             int     targetChannel,
-             double  splittingMaxDistance,
-             String  trackColouring,
-             double  radius,
-             boolean allowGapClosing,
-             boolean doMedianFiltering,
-             boolean allowTrackSplitting,
-             boolean allowTrackMerging,
-             double  mergingMaxDistance) {
+            int maxFrameGap,
+            double alternativeLinkingCostFactor,
+            boolean doSubpixelLocalization,
+            int minNrSpotsInTrack,
+            double linkingMaxDistance,
+            int maxNrSpotsInImage,
+            double gapClosingMaxDistance,
+            int targetChannel,
+            double splittingMaxDistance,
+            String trackColouring,
+            double radius,
+            boolean allowGapClosing,
+            boolean doMedianFiltering,
+            boolean allowTrackSplitting,
+            boolean allowTrackMerging,
+            double mergingMaxDistance) {
         this.maxFrameGap = maxFrameGap;
         this.alternativeLinkingCostFactor = alternativeLinkingCostFactor;
         this.doSubpixelLocalization = doSubpixelLocalization;
@@ -90,22 +87,69 @@ public class TrackMateConfig {
 
     // Getters only, Setter methods are not needed either, as the attributes are final
 
-    public int getMaxFrameGap() { return maxFrameGap; }
-    public double getAlternativeLinkingCostFactor() { return alternativeLinkingCostFactor; }
-    public boolean isDoSubpixelLocalization() { return doSubpixelLocalization; }
-    public int getMinNrSpotsInTrack() { return minNrSpotsInTrack; }
-    public double getLinkingMaxDistance() { return linkingMaxDistance; }
-    public int getMaxNrSpotsInImage() { return maxNrSpotsInImage; }
-    public double getGapClosingMaxDistance() { return gapClosingMaxDistance; }
-    public int getTargetChannel() { return targetChannel; }
-    public double getSplittingMaxDistance() { return splittingMaxDistance; }
-    public String getTrackColoring() { return trackColouring; }
-    public double getRadius() { return radius; }
-    public boolean isAllowGapClosing() { return allowGapClosing; }
-    public boolean isMedianFiltering() { return medianFiltering; }
-    public boolean isAllowTrackSplitting() { return allowTrackSplitting; }
-    public boolean isAllowTrackMerging() { return allowTrackMerging; }
-    public double getMergingMaxDistance() { return mergingMaxDistance; }    
+    public int getMaxFrameGap() {
+        return maxFrameGap;
+    }
+
+    public double getAlternativeLinkingCostFactor() {
+        return alternativeLinkingCostFactor;
+    }
+
+    public boolean isDoSubpixelLocalization() {
+        return doSubpixelLocalization;
+    }
+
+    public int getMinNrSpotsInTrack() {
+        return minNrSpotsInTrack;
+    }
+
+    public double getLinkingMaxDistance() {
+        return linkingMaxDistance;
+    }
+
+    public int getMaxNrSpotsInImage() {
+        return maxNrSpotsInImage;
+    }
+
+    public double getGapClosingMaxDistance() {
+        return gapClosingMaxDistance;
+    }
+
+    public int getTargetChannel() {
+        return targetChannel;
+    }
+
+    public double getSplittingMaxDistance() {
+        return splittingMaxDistance;
+    }
+
+    public String getTrackColoring() {
+        return trackColouring;
+    }
+
+    public double getRadius() {
+        return radius;
+    }
+
+    public boolean isAllowGapClosing() {
+        return allowGapClosing;
+    }
+
+    public boolean isMedianFiltering() {
+        return medianFiltering;
+    }
+
+    public boolean isAllowTrackSplitting() {
+        return allowTrackSplitting;
+    }
+
+    public boolean isAllowTrackMerging() {
+        return allowTrackMerging;
+    }
+
+    public double getMergingMaxDistance() {
+        return mergingMaxDistance;
+    }
 
     @Override
     public String toString() {
@@ -125,6 +169,6 @@ public class TrackMateConfig {
                 "   doMedianFiltering=" + medianFiltering + "\n" +
                 "   allowTrackSplitting=" + allowTrackSplitting + "\n" +
                 "   allowTrackMerging=" + allowTrackMerging + "\n" +
-                "   mergingMaxDistance=" + mergingMaxDistance + "\n" ;
+                "   mergingMaxDistance=" + mergingMaxDistance + "\n";
     }
 }

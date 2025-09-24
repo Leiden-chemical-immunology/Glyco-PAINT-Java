@@ -12,9 +12,9 @@ public class CalculateDensity {
     /**
      * Calculate the density of tracks in a square.
      *
-     * @param nrTracks     number of tracks
-     * @param area         area of the square (in µm²)
-     * @param time         time in seconds (normally 100 sec = 2000 frames)
+     * @param nrTracks      number of tracks
+     * @param area          area of the square (in µm²)
+     * @param time          time in seconds (normally 100 sec = 2000 frames)
      * @param concentration concentration factor for normalization
      * @return density value
      */

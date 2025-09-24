@@ -1,6 +1,9 @@
 package paint.shared.config;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import paint.shared.utils.AppLogger;
 
 import java.io.IOException;
@@ -33,7 +36,7 @@ import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
  *   <li>If you do not call {@code initialise}, the config file defaults to
  *       {@code <working-directory>/paint_config.json}.</li>
  * </ul>
- *
+ * <p>
  * Typical usage (static API):
  * <pre>{@code
  * // Initialise with project directory
@@ -43,7 +46,7 @@ import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
  * int lw = getInt("Paint", "Line Width", 2);
  * setInt("Paint", "Line Width", 4);
  * }</pre>
- *
+ * <p>
  * Typical usage (instance API):
  * <pre>{@code
  * PaintConfig.initialise(projectDir.resolve(PAINT_CONFIGURATION_JSON));
@@ -71,7 +74,7 @@ public class PaintConfig {
                 }
             }
         } else {
-            AppLogger.warningf("PaintConfig already initialised at %s",INSTANCE.path);
+            AppLogger.warningf("PaintConfig already initialised at %s", INSTANCE.path);
         }
     }
 
@@ -196,22 +199,30 @@ public class PaintConfig {
     // Instance Getters (Value-suffixed)
     // ================================================================
 
-    /** Gets a string value, or returns and stores the default if missing. */
+    /**
+     * Gets a string value, or returns and stores the default if missing.
+     */
     public String getStringValue(String section, String key, String defaultValue) {
         return getStringInternal(section, key, defaultValue);
     }
 
-    /** Gets an int value, or returns and stores the default if missing. */
+    /**
+     * Gets an int value, or returns and stores the default if missing.
+     */
     public int getIntValue(String section, String key, int defaultValue) {
         return getIntInternal(section, key, defaultValue);
     }
 
-    /** Gets a double value, or returns and stores the default if missing. */
+    /**
+     * Gets a double value, or returns and stores the default if missing.
+     */
     public double getDoubleValue(String section, String key, double defaultValue) {
         return getDoubleInternal(section, key, defaultValue);
     }
 
-    /** Gets a boolean value, or returns and stores the default if missing. */
+    /**
+     * Gets a boolean value, or returns and stores the default if missing.
+     */
     public boolean getBooleanValue(String section, String key, boolean defaultValue) {
         return getBooleanInternal(section, key, defaultValue);
     }
@@ -220,48 +231,64 @@ public class PaintConfig {
     // Instance Setters (Value-suffixed, with autoSave overloads)
     // ================================================================
 
-    /** Sets a string value (in-memory only). */
+    /**
+     * Sets a string value (in-memory only).
+     */
     public void setStringValue(String section, String key, String value) {
         setStringValue(section, key, value, false);
     }
 
-    /** Sets a string value, with optional autoSave. */
+    /**
+     * Sets a string value, with optional autoSave.
+     */
     public void setStringValue(String section, String key, String value, boolean autoSave) {
         ensureLoaded();
         getOrCreateSection(section).addProperty(key, value);
         if (autoSave) save();
     }
 
-    /** Sets an int value (in-memory only). */
+    /**
+     * Sets an int value (in-memory only).
+     */
     public void setIntValue(String section, String key, int value) {
         setIntValue(section, key, value, false);
     }
 
-    /** Sets an int value, with optional autoSave. */
+    /**
+     * Sets an int value, with optional autoSave.
+     */
     public void setIntValue(String section, String key, int value, boolean autoSave) {
         ensureLoaded();
         getOrCreateSection(section).addProperty(key, value);
         if (autoSave) save();
     }
 
-    /** Sets a double value (in-memory only). */
+    /**
+     * Sets a double value (in-memory only).
+     */
     public void setDoubleValue(String section, String key, double value) {
         setDoubleValue(section, key, value, false);
     }
 
-    /** Sets a double value, with optional autoSave. */
+    /**
+     * Sets a double value, with optional autoSave.
+     */
     public void setDoubleValue(String section, String key, double value, boolean autoSave) {
         ensureLoaded();
         getOrCreateSection(section).addProperty(key, value);
         if (autoSave) save();
     }
 
-    /** Sets a boolean value (in-memory only). */
+    /**
+     * Sets a boolean value (in-memory only).
+     */
     public void setBooleanValue(String section, String key, boolean value) {
         setBooleanValue(section, key, value, false);
     }
 
-    /** Sets a boolean value, with optional autoSave. */
+    /**
+     * Sets a boolean value, with optional autoSave.
+     */
     public void setBooleanValue(String section, String key, boolean value, boolean autoSave) {
         ensureLoaded();
         getOrCreateSection(section).addProperty(key, value);
@@ -272,52 +299,72 @@ public class PaintConfig {
     // Static API (shortcuts, always save)
     // ================================================================
 
-    /** Static getter for strings. */
+    /**
+     * Static getter for strings.
+     */
     public static String getString(String section, String key, String defaultValue) {
         return instance().getStringInternal(section, key, defaultValue);
     }
 
-    /** Static getter for ints. */
+    /**
+     * Static getter for ints.
+     */
     public static int getInt(String section, String key, int defaultValue) {
         return instance().getIntInternal(section, key, defaultValue);
     }
 
-    /** Static getter for doubles. */
+    /**
+     * Static getter for doubles.
+     */
     public static double getDouble(String section, String key, double defaultValue) {
         return instance().getDoubleInternal(section, key, defaultValue);
     }
 
-    /** Static getter for booleans. */
+    /**
+     * Static getter for booleans.
+     */
     public static boolean getBoolean(String section, String key, boolean defaultValue) {
         return instance().getBooleanInternal(section, key, defaultValue);
     }
 
-    /** Static setter for strings (always saves). */
+    /**
+     * Static setter for strings (always saves).
+     */
     public static void setString(String section, String key, String value) {
         instance().setStringValue(section, key, value, true);
     }
 
-    /** Static setter for ints (always saves). */
+    /**
+     * Static setter for ints (always saves).
+     */
     public static void setInt(String section, String key, int value) {
         instance().setIntValue(section, key, value, true);
     }
 
-    /** Static setter for doubles (always saves). */
+    /**
+     * Static setter for doubles (always saves).
+     */
     public static void setDouble(String section, String key, double value) {
         instance().setDoubleValue(section, key, value, true);
     }
 
-    /** Static setter for booleans (always saves). */
+    /**
+     * Static setter for booleans (always saves).
+     */
     public static void setBoolean(String section, String key, boolean value) {
         instance().setBooleanValue(section, key, value, true);
     }
 
-    /** Static removal of a key (always saves). */
+    /**
+     * Static removal of a key (always saves).
+     */
     public static void remove(String section, String key) {
         instance().removeValue(section, key, true);
     }
 
-    /** Static removal of a section (always saves). */
+    /**
+     * Static removal of a section (always saves).
+     */
     public static void removeSection(String section) {
         instance().removeSectionValue(section, true);
     }
@@ -326,12 +373,16 @@ public class PaintConfig {
     // Remove (instance, Value-suffixed)
     // ================================================================
 
-    /** Removes a key (in-memory only). */
+    /**
+     * Removes a key (in-memory only).
+     */
     public void removeValue(String section, String key) {
         removeValue(section, key, false);
     }
 
-    /** Removes a key, with optional autoSave. */
+    /**
+     * Removes a key, with optional autoSave.
+     */
     public void removeValue(String section, String key, boolean autoSave) {
         ensureLoaded();
         JsonObject sec = getSection(section);
@@ -341,12 +392,16 @@ public class PaintConfig {
         }
     }
 
-    /** Removes a section (in-memory only). */
+    /**
+     * Removes a section (in-memory only).
+     */
     public void removeSectionValue(String section) {
         removeSectionValue(section, false);
     }
 
-    /** Removes a section, with optional autoSave. */
+    /**
+     * Removes a section, with optional autoSave.
+     */
     public void removeSectionValue(String section, boolean autoSave) {
         ensureLoaded();
         configData.remove(section);
@@ -357,7 +412,9 @@ public class PaintConfig {
     // Listing / Access
     // ================================================================
 
-    /** Lists all keys in a section. */
+    /**
+     * Lists all keys in a section.
+     */
     public Set<String> keys(String section) {
         JsonObject sec = getSection(section);
         if (sec != null) {
@@ -366,13 +423,17 @@ public class PaintConfig {
         return Collections.emptySet();
     }
 
-    /** Lists all section names. */
+    /**
+     * Lists all section names.
+     */
     public Set<String> sections() {
         ensureLoaded();
         return configData.keySet();
     }
 
-    /** Returns the raw JSON object for advanced use. */
+    /**
+     * Returns the raw JSON object for advanced use.
+     */
     public JsonObject getJson() {
         ensureLoaded();
         return configData;

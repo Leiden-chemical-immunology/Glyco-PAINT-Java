@@ -1,7 +1,9 @@
 package io;
 
 import paint.shared.objects.ExperimentInfo;
-import tech.tablesaw.api.*;
+import tech.tablesaw.api.ColumnType;
+import tech.tablesaw.api.Row;
+import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
 
 import java.io.IOException;
@@ -45,7 +47,7 @@ public class ExperimentTableIO extends BaseTableIO {
      * contains zero rows.</p>
      *
      * @return a new empty {@code Table} ready to receive rows with the
-     *         Experiment Info schema
+     * Experiment Info schema
      */
     public Table emptyTable() {
         return newEmptyTable("Experiment Info", EXPERIMENT_INFO_COLS, EXPERIMENT_INFO_TYPES);
@@ -194,21 +196,17 @@ public class ExperimentTableIO extends BaseTableIO {
                 // Java 8 style: use if/else instead of switch on enum
                 if (expected.equals(ColumnType.STRING)) {
                     dst.setString(col, source.stringColumn(col).get(r));
-                }
-                else if (expected.equals(ColumnType.INTEGER)) {
+                } else if (expected.equals(ColumnType.INTEGER)) {
                     dst.setInt(col, source.intColumn(col).getInt(r));
-                }
-                else if (expected.equals(ColumnType.DOUBLE)) {
+                } else if (expected.equals(ColumnType.DOUBLE)) {
                     if (sCol.type().equals(ColumnType.INTEGER)) {
                         dst.setDouble(col, source.intColumn(col).getInt(r));
                     } else {
                         dst.setDouble(col, source.doubleColumn(col).getDouble(r));
                     }
-                }
-                else if (expected.equals(ColumnType.BOOLEAN)) {
+                } else if (expected.equals(ColumnType.BOOLEAN)) {
                     dst.setBoolean(col, source.booleanColumn(col).get(r));
-                }
-                else {
+                } else {
                     throw new IllegalArgumentException("Unsupported type: " + expected);
                 }
             }

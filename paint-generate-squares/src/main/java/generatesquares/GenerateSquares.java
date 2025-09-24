@@ -10,8 +10,11 @@ import java.time.LocalDateTime;
 import paint.shared.utils.AppLogger;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.ProjectSelectionDialog;
+
 import static paint.shared.constants.PaintConstants.SQUARES_CSV;
+
 import paint.shared.utils.JarInfo;
+
 import static paint.shared.utils.CsvConcatenator.concatenateExperimentCsvFiles;
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.Miscellaneous.formatDuration;
@@ -30,8 +33,8 @@ public class GenerateSquares {
 
         JarInfo info = getJarInfo(GenerateSquares.class);
         if (info != null) {
-            AppLogger.infof("Compilation date: %s",info.implementationDate);
-            AppLogger.infof("Version: %s",info.implementationVersion);
+            AppLogger.infof("Compilation date: %s", info.implementationDate);
+            AppLogger.infof("Version: %s", info.implementationVersion);
         } else {
             AppLogger.errorf("No manifest information found.");
             AppLogger.infof();
@@ -75,7 +78,7 @@ public class GenerateSquares {
                     concatenateExperimentCsvFiles(projectPath, SQUARES_CSV, project.experimentNames);
                     Duration duration = Duration.between(start, LocalDateTime.now());
                     AppLogger.infof("Generated squares info for the selected experiments and for the project in %s", formatDuration(duration));
-                }  catch (Exception e) {
+                } catch (Exception e) {
                     AppLogger.errorf("Could not concatenate squares file - %s", e.getMessage());
                 }
                 return true;   //ToDo

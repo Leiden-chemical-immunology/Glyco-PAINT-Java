@@ -182,13 +182,19 @@ public class ProjectSpecificationDialog {
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(5, 5, 5, 5);
 
-            gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.WEST;
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.anchor = GridBagConstraints.WEST;
             formPanel.add(dirLabel, gbc);
 
-            gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
+            gbc.gridx = 1;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1.0;
             formPanel.add(dirField, gbc);
 
-            gbc.gridx = 2; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0;
+            gbc.gridx = 2;
+            gbc.fill = GridBagConstraints.NONE;
+            gbc.weightx = 0;
             formPanel.add(browseButton, gbc);
 
             this.imageDirectoryField = dirField;
@@ -437,6 +443,7 @@ public class ProjectSpecificationDialog {
                 super.insertString(fb, offset, string, attr);
             }
         }
+
         @Override
         public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
             if (text != null && text.matches("\\d*")) {
@@ -455,6 +462,7 @@ public class ProjectSpecificationDialog {
                 super.insertString(fb, offset, string, attr);
             }
         }
+
         @Override
         public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
             if (text != null && text.matches("\\d*(\\.\\d*)?")) {

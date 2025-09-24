@@ -37,13 +37,33 @@ public class GenerateSquaresConfig {
     // Getters are not really needed as attributes are public
     // Setter methods are not needed either, as the attributes are final
 
-    public int getNrSquaresInRow() { return nrSquaresInRow; }
-    public int getNrSquaresInColumn() { return nrSquaresInColumn; }
-    public int getMinTracksToCalculateTau() { return minTracksToCalculateTau; }
-    public double getMinRequiredRSquared() { return minRequiredRSquared; }
-    public double getMinRequiredDensityRatio() { return minRequiredDensityRatio; }
-    public double getMaxAllowableVariability() { return maxAllowableVariability; }
-    public String getNeighbourMode() { return neighbourMode; }
+    public int getNrSquaresInRow() {
+        return nrSquaresInRow;
+    }
+
+    public int getNrSquaresInColumn() {
+        return nrSquaresInColumn;
+    }
+
+    public int getMinTracksToCalculateTau() {
+        return minTracksToCalculateTau;
+    }
+
+    public double getMinRequiredRSquared() {
+        return minRequiredRSquared;
+    }
+
+    public double getMinRequiredDensityRatio() {
+        return minRequiredDensityRatio;
+    }
+
+    public double getMaxAllowableVariability() {
+        return maxAllowableVariability;
+    }
+
+    public String getNeighbourMode() {
+        return neighbourMode;
+    }
 
     @Override
     public String toString() {

@@ -1,5 +1,7 @@
 package generatesquares.calc;
 
+import org.apache.commons.math3.fitting.leastsquares.*;
+import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.util.FastMath;
 import paint.shared.objects.Track;
 
@@ -7,17 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
-import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math3.fitting.leastsquares.MultivariateJacobianFunction;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.DiagonalMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
 
 //import static generatesquares.calc.CalculateTauResult.Status.*;
 
@@ -44,8 +35,8 @@ public class CalculateTau {
      * @throws IllegalArgumentException if {@code tracks} is {@code null}
      */
     public static CalculateTauResult calcTau(List<Track> tracks,
-                                                  int minTracksForTau,
-                                                  double minRequiredRSquared) {
+                                             int minTracksForTau,
+                                             double minRequiredRSquared) {
         if (tracks == null || tracks.size() < minTracksForTau) {
             return new CalculateTauResult(0.0, 0.0, CalculateTauResult.Status.TAU_INSUFFICIENT_POINTS);
         }
@@ -111,12 +102,22 @@ public class CalculateTau {
             TAU_NO_FIT
         }
 
-        public double getTau() { return tau; }
-        public double getRSquared() { return rsquared; }
-        public Status getStatus() { return status; }
+        public double getTau() {
+            return tau;
+        }
+
+        public double getRSquared() {
+            return rsquared;
+        }
+
+        public Status getStatus() {
+            return status;
+        }
     }
 
-    /** Build frequency distribution: key = duration, value = count. */
+    /**
+     * Build frequency distribution: key = duration, value = count.
+     */
     private static Map<Double, Integer> createFrequencyDistribution(double[] trackDurations) {
         Map<Double, Integer> frequencyDistribution = new TreeMap<>();
         if (trackDurations == null) return frequencyDistribution;
@@ -130,20 +131,22 @@ public class CalculateTau {
 }
 
 
-
-
 /**
  * Fits y = m * exp(-t * x) + b to (x, y) and returns tau (ms) and R^2.
  * Unified single-class version: no AbstractCurveFitter subclassing needed.
  */
 class CalculateTauExpDecayFitterNew {
 
-    private CalculateTauExpDecayFitterNew() {}
+    private CalculateTauExpDecayFitterNew() {
+    }
 
-    /** Immutable result. */
+    /**
+     * Immutable result.
+     */
     public static final class FitResult {
         public final double tauMs;
         public final double rSquared;
+
         public FitResult(double tauMs, double rSquared) {
             this.tauMs = tauMs;
             this.rSquared = rSquared;
@@ -152,6 +155,7 @@ class CalculateTauExpDecayFitterNew {
 
     /**
      * Main entrypoint.
+     *
      * @param x domain values
      * @param y range values (e.g., counts)
      */
@@ -224,7 +228,9 @@ class CalculateTauExpDecayFitterNew {
         return new FitResult(tauMs, r2);
     }
 
-    /** Heuristic initial guess for [m, t, b]. */
+    /**
+     * Heuristic initial guess for [m, t, b].
+     */
     private static double[] initialGuess(double[] x, double[] y) {
         double minY = Double.POSITIVE_INFINITY;
         double maxY = Double.NEGATIVE_INFINITY;
@@ -271,7 +277,7 @@ class CalculateTauExpDecayFitterNew {
         t = clamp(t, 1e-9, 1e3);
         b = clamp(b, 0.0, Math.max(1.0, maxY));
 
-        return new double[] { m, t, b };
+        return new double[]{m, t, b};
     }
 
     private static double computeRSquared(double[] x, double[] y, double m, double t, double b) {

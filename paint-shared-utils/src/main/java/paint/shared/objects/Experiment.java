@@ -52,7 +52,7 @@ public class Experiment {
         sb.append("Experiment: ").append(experimentName).append("\n");
         sb.append("----------------------------------------------------------------------\n");
         sb.append("\n");
-        sb.append(String.format("%nExperiment %s has %d recordings%n",  experimentName,  recordings.size()));
+        sb.append(String.format("%nExperiment %s has %d recordings%n", experimentName, recordings.size()));
         for (Recording recording : recordings) {
             sb.append(String.format("\t%s%n", recording.getRecordingName()));
         }

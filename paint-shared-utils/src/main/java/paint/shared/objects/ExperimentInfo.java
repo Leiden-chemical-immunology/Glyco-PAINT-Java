@@ -35,7 +35,8 @@ public class ExperimentInfo {
     private Table tracksTable;
 
     // --- Constructors ---
-    public ExperimentInfo() {}
+    public ExperimentInfo() {
+    }
 
     public ExperimentInfo(String recordingName,
                           int conditionNumber,
@@ -67,18 +68,17 @@ public class ExperimentInfo {
      */
     public ExperimentInfo(Map<String, String> row) {
         try {
-            this.recordingName   = row.get("Recording Name");
+            this.recordingName = row.get("Recording Name");
             this.conditionNumber = parseInt(row.get("Condition Number"));
             this.replicateNumber = parseInt(row.get("Replicate Number"));
-            this.probeName       = row.get("Probe Name");
-            this.probeType       = row.get("Probe Type");
-            this.cellType        = row.get("Cell Type");
-            this.adjuvant        = row.get("Adjuvant");
-            this.concentration   = parseDouble(row.get("Concentration"));
-            this.processFlag     = parseBoolean(row.get("Process Flag"));
-            this.threshold       = parseDouble(row.get("Threshold"));
-        }
-        catch (Exception e) {
+            this.probeName = row.get("Probe Name");
+            this.probeType = row.get("Probe Type");
+            this.cellType = row.get("Cell Type");
+            this.adjuvant = row.get("Adjuvant");
+            this.concentration = parseDouble(row.get("Concentration"));
+            this.processFlag = parseBoolean(row.get("Process Flag"));
+            this.threshold = parseDouble(row.get("Threshold"));
+        } catch (Exception e) {
             AppLogger.errorf("Problem in Experiment Info");
             AppLogger.errorf(row.toString());
             StringWriter sw = new StringWriter();
@@ -88,51 +88,124 @@ public class ExperimentInfo {
     }
 
     // --- Getters and Setters ---
-    public String getRecordingName() { return recordingName; }
-    public void setRecordingName(String recordingName) { this.recordingName = recordingName; }
+    public String getRecordingName() {
+        return recordingName;
+    }
 
-    public int getConditionNumber() { return conditionNumber; }
-    public void setConditionNumber(int conditionNumber) { this.conditionNumber = conditionNumber; }
+    public void setRecordingName(String recordingName) {
+        this.recordingName = recordingName;
+    }
 
-    public int getReplicateNumber() { return replicateNumber; }
-    public void setReplicateNumber(int replicateNumber) { this.replicateNumber = replicateNumber; }
+    public int getConditionNumber() {
+        return conditionNumber;
+    }
 
-    public String getProbeName() { return probeName; }
-    public void setProbeName(String probeName) { this.probeName = probeName; }
+    public void setConditionNumber(int conditionNumber) {
+        this.conditionNumber = conditionNumber;
+    }
 
-    public String getProbeType() { return probeType; }
-    public void setProbeType(String probeType) { this.probeType = probeType; }
+    public int getReplicateNumber() {
+        return replicateNumber;
+    }
 
-    public String getCellType() { return cellType; }
-    public void setCellType(String cellType) { this.cellType = cellType; }
+    public void setReplicateNumber(int replicateNumber) {
+        this.replicateNumber = replicateNumber;
+    }
 
-    public String getAdjuvant() { return adjuvant; }
-    public void setAdjuvant(String adjuvant) { this.adjuvant = adjuvant; }
+    public String getProbeName() {
+        return probeName;
+    }
 
-    public double getConcentration() { return concentration; }
-    public void setConcentration(double concentration) { this.concentration = concentration; }
+    public void setProbeName(String probeName) {
+        this.probeName = probeName;
+    }
 
-    public boolean getProcessFlag() { return processFlag; }
-    public void setProcessFlag(boolean processFlag) { this.processFlag = processFlag; }
+    public String getProbeType() {
+        return probeType;
+    }
 
-    public double getThreshold() { return threshold; }
-    public void setThreshold(double threshold) { this.threshold = threshold; }
+    public void setProbeType(String probeType) {
+        this.probeType = probeType;
+    }
+
+    public String getCellType() {
+        return cellType;
+    }
+
+    public void setCellType(String cellType) {
+        this.cellType = cellType;
+    }
+
+    public String getAdjuvant() {
+        return adjuvant;
+    }
+
+    public void setAdjuvant(String adjuvant) {
+        this.adjuvant = adjuvant;
+    }
+
+    public double getConcentration() {
+        return concentration;
+    }
+
+    public void setConcentration(double concentration) {
+        this.concentration = concentration;
+    }
+
+    public boolean getProcessFlag() {
+        return processFlag;
+    }
+
+    public void setProcessFlag(boolean processFlag) {
+        this.processFlag = processFlag;
+    }
+
+    public double getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(double threshold) {
+        this.threshold = threshold;
+    }
 
 
     // --- Associated objects ---
-    public List<Square> getSquares() { return squares; }
-    public void setSquares(List<Square> squares) { this.squares = squares; }
+    public List<Square> getSquares() {
+        return squares;
+    }
 
-    public List<Track> getTracks() { return tracks; }
-    public void setTracks(List<Track> tracks) { this.tracks = tracks; }
+    public void setSquares(List<Square> squares) {
+        this.squares = squares;
+    }
 
-    public Table getTracksTable() { return tracksTable; }
-    public void setTracksTable(Table tracksTable) { this.tracksTable = tracksTable; }
+    public List<Track> getTracks() {
+        return tracks;
+    }
+
+    public void setTracks(List<Track> tracks) {
+        this.tracks = tracks;
+    }
+
+    public Table getTracksTable() {
+        return tracksTable;
+    }
+
+    public void setTracksTable(Table tracksTable) {
+        this.tracksTable = tracksTable;
+    }
 
     // --- Convenience methods ---
-    public void addSquare(Square square) { this.squares.add(square); }
-    public void addSquares(List<Square> squares) { this.squares.addAll(squares); }
-    public void addTrack(Track track) { this.tracks.add(track); }
+    public void addSquare(Square square) {
+        this.squares.add(square);
+    }
+
+    public void addSquares(List<Square> squares) {
+        this.squares.addAll(squares);
+    }
+
+    public void addTrack(Track track) {
+        this.tracks.add(track);
+    }
 
     // --- Debug helpers ---
     private static Boolean checkBooleanValue(String string) {
