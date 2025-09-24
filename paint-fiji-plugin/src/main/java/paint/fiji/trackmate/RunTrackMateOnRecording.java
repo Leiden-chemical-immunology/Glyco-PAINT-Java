@@ -24,7 +24,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 import paint.fiji.tracks.TrackCsvWriter;
-import paint.shared.utils.AppLogger;
+import paint.shared.utils.PaintLogger;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.objects.ExperimentInfo;
 
@@ -72,7 +72,7 @@ public class RunTrackMateOnRecording {
         ImagePlus imp = null;
         File nd2File = new File(imagesPath.toFile(), experimentInfoRecord.getRecordingName() + ".nd2");
         if (!nd2File.exists()) {
-            AppLogger.errorf("Could not open image file: %s", nd2File.getAbsolutePath());
+            PaintLogger.errorf("Could not open image file: %s", nd2File.getAbsolutePath());
         }
         try {
 //            ImporterOptions options = new ImporterOptions();
@@ -86,10 +86,10 @@ public class RunTrackMateOnRecording {
             imp = IJ.openImage(nd2File.getAbsolutePath());
         }
         catch (Exception e) {
-            AppLogger.errorf("Could not load image file: %s", nd2File.getAbsolutePath());
+            PaintLogger.errorf("Could not load image file: %s", nd2File.getAbsolutePath());
         }
         if (imp == null) {
-            AppLogger.errorf("The image file %s could not be opened.", nd2File);
+            PaintLogger.errorf("The image file %s could not be opened.", nd2File);
             return new TrackMateResults(false);
         }
 
@@ -161,21 +161,21 @@ public class RunTrackMateOnRecording {
         TrackMate trackmate = new TrackMate(model, settings);
 
         if (!trackmate.checkInput()) {
-            AppLogger.errorf("   TrackMate - input check failed: %s", trackmate.getErrorMessage());
+            PaintLogger.errorf("   TrackMate - input check failed: %s", trackmate.getErrorMessage());
             return new TrackMateResults(false);
         }
 
         // Run the spot detection step first
         if (!trackmate.execDetection()) {
-            AppLogger.errorf("TrackMate - execDetection failed:", trackmate.getErrorMessage());
+            PaintLogger.errorf("TrackMate - execDetection failed:", trackmate.getErrorMessage());
             return new TrackMateResults(false);
         }
-        if (debug) AppLogger.debugf("      TrackMate - spot detection succeeded");
+        if (debug) PaintLogger.debugf("      TrackMate - spot detection succeeded");
 
         int numberSpots = model.getSpots().getNSpots(false);
         if (numberSpots > trackMateConfig.getMaxNrSpotsInImage()) {
-            AppLogger.warningf("   Too many spots detected (%d). Limit is %d.", numberSpots, trackMateConfig.getMaxNrSpotsInImage());
-            AppLogger.warningf("");
+            PaintLogger.warningf("   Too many spots detected (%d). Limit is %d.", numberSpots, trackMateConfig.getMaxNrSpotsInImage());
+            PaintLogger.warningf("");
             try {
                 ImageWindow win = imp.getWindow();
                 if (win != null) {
@@ -183,11 +183,11 @@ public class RunTrackMateOnRecording {
                 }
             }
             catch (Exception e) {
-                AppLogger.warningf("Error while closing image: %s", e.getMessage());
+                PaintLogger.warningf("Error while closing image: %s", e.getMessage());
             }
             return new TrackMateResults(true, false);
         }
-        AppLogger.infof("      TrackMate - number of spots detected: %d",  numberSpots);
+        PaintLogger.infof("      TrackMate - number of spots detected: %d",  numberSpots);
 
 
         // Start the dot-printing watchdog
@@ -219,7 +219,7 @@ public class RunTrackMateOnRecording {
 
         // Continue with full TrackMate processing - nr_spots is within limits
         if (!trackmate.process()) {
-            AppLogger.errorf("   TrackMate process failed: %s", trackmate.getErrorMessage());
+            PaintLogger.errorf("   TrackMate process failed: %s", trackmate.getErrorMessage());
             return new TrackMateResults(false);
         }
 
@@ -238,7 +238,7 @@ public class RunTrackMateOnRecording {
         final HyperStackDisplayer displayer = new HyperStackDisplayer(model, selectionModel, imp, ds);
         displayer.render();
         displayer.refresh();
-        if (debug) AppLogger.debugf("      TrackMate - visualisation successful");
+        if (debug) PaintLogger.debugf("      TrackMate - visualisation successful");
 
         // --- Capture overlay image ---
         final ImagePlus capture = CaptureOverlayAction.capture(imp, -1, 1, null);
@@ -246,18 +246,18 @@ public class RunTrackMateOnRecording {
                 .resolve(experimentInfoRecord.getRecordingName() + ".jpg");
         if (capture != null) {
             if (!new FileSaver(capture).saveAsTiff(String.valueOf(imagePath))) {
-                AppLogger.errorf("Failed to save TIFF to: %s", imagePath);
+                PaintLogger.errorf("Failed to save TIFF to: %s", imagePath);
             }
 
         } else {
-            AppLogger.infof("Overlay capture returned null.");
+            PaintLogger.infof("Overlay capture returned null.");
         }
-        if (debug) AppLogger.debugf("      TrackMate - wrote trackmate image '%s'", imagePath.toString());
+        if (debug) PaintLogger.debugf("      TrackMate - wrote trackmate image '%s'", imagePath.toString());
 
         // --- Write tracks to CSV ---
         String tracksName = experimentInfoRecord.getRecordingName() + "-tracks.csv";
         Path tracksPath = experimentPath.resolve(tracksName);
-        if (debug) AppLogger.debugf("      TrackMate - wrote tracks file '%s'", tracksPath);
+        if (debug) PaintLogger.debugf("      TrackMate - wrote tracks file '%s'", tracksPath);
 
         int numberOfSpotsInALlTracks = 0;
         try {
@@ -268,7 +268,7 @@ public class RunTrackMateOnRecording {
                     true);
         }
         catch (IOException e) {
-            AppLogger.errorf("Failed to write tracks to 's%'", tracksPath);
+            PaintLogger.errorf("Failed to write tracks to 's%'", tracksPath);
         }
 
         // --- Summarize results ---
@@ -281,7 +281,7 @@ public class RunTrackMateOnRecording {
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
-            AppLogger.errorf("Failed to sleep - %s", e.getMessage());
+            PaintLogger.errorf("Failed to sleep - %s", e.getMessage());
         }
 
         // Safely close the image window
@@ -293,7 +293,7 @@ public class RunTrackMateOnRecording {
             }
         }
         catch (Exception e) {
-            AppLogger.warningf("Error while closing image: %s", e.getMessage());
+            PaintLogger.warningf("Error while closing image: %s", e.getMessage());
         }
 
         Duration duration = Duration.between(start, LocalDateTime.now());

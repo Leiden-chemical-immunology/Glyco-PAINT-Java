@@ -7,7 +7,7 @@ import org.apache.commons.csv.CSVRecord;
 import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.objects.ExperimentInfo;
-import paint.shared.utils.AppLogger;
+import paint.shared.utils.PaintLogger;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -62,7 +62,7 @@ public class RunTrackMateOnExperiment {
         Path allRecordingFilePath = experimentPath.resolve(RECORDINGS_CSV);
 
         if (!Files.exists(experimentFilePath)) {
-            AppLogger.errorf("Experiment info file does not exist in %s.", experimentFilePath);
+            PaintLogger.errorf("Experiment info file does not exist in %s.", experimentFilePath);
             return false;
         }
 
@@ -70,8 +70,8 @@ public class RunTrackMateOnExperiment {
         String experimentName = experimentPath.getFileName().toString();
         String projectName = experimentPath.getParent().getFileName().toString();
 
-        AppLogger.infof();
-        AppLogger.infof("Processing %d %s in experiment '%s' in project '%s'.",
+        PaintLogger.infof();
+        PaintLogger.infof("Processing %d %s in experiment '%s' in project '%s'.",
                 numberRecordingsToProcess,
                 numberRecordingsToProcess == 1 ? "recording" : "recordings",
                 experimentName,
@@ -125,7 +125,7 @@ public class RunTrackMateOnExperiment {
                         if (!Files.exists(brightfieldImagesPath)) Files.createDirectories(brightfieldImagesPath);
                         if (!Files.exists(trackmateImagesPath)) Files.createDirectories(trackmateImagesPath);
 
-                        AppLogger.infof("   Recording '%s' (%d of %d) started TrackMate processing.",
+                        PaintLogger.infof("   Recording '%s' (%d of %d) started TrackMate processing.",
                                 recordingName, numberRecordings + 1, numberRecordingsToProcess);
 
                         // Run TrackMate on a single recording
@@ -133,8 +133,8 @@ public class RunTrackMateOnExperiment {
                                 experimentPath, imagesPath, trackMateConfig, threshold, experimentInfo);
 
                         if (trackMateResults == null || !trackMateResults.isSuccess()) {
-                            AppLogger.errorf("   TrackMate processing failed for recording '%s'.", recordingName);
-                            AppLogger.errorf("");
+                            PaintLogger.errorf("   TrackMate processing failed for recording '%s'.", recordingName);
+                            PaintLogger.errorf("");
                             status = false;
                             continue;
                         }
@@ -144,10 +144,10 @@ public class RunTrackMateOnExperiment {
                         }
 
                         int durationInSeconds = (int) (trackMateResults.getDuration().toMillis() / 1000);
-                        AppLogger.infof("   Recording '%s' (%d of %d) processed in %s.",
+                        PaintLogger.infof("   Recording '%s' (%d of %d) processed in %s.",
                                 recordingName, numberRecordings + 1, numberRecordingsToProcess,
                                 formatDuration(durationInSeconds));
-                        AppLogger.infof();
+                        PaintLogger.infof();
 
                         // Update counters and values
                         totalDuration = totalDuration.plus(trackMateResults.getDuration());
@@ -161,8 +161,8 @@ public class RunTrackMateOnExperiment {
                         timeStamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
                     } else {
-                        AppLogger.infof();
-                        AppLogger.infof("   Recording '%s' was not selected for processing.", recordingName);
+                        PaintLogger.infof();
+                        PaintLogger.infof("   Recording '%s' was not selected for processing.", recordingName);
                     }
 
                     // Build output CSV row
@@ -182,18 +182,18 @@ public class RunTrackMateOnExperiment {
                     printer.printRecord(output);
 
                 } catch (Exception e) {
-                    AppLogger.errorf("Error processing recording: %s", e.getMessage());
+                    PaintLogger.errorf("Error processing recording: %s", e.getMessage());
                     StringWriter sw = new StringWriter();
                     e.printStackTrace(new PrintWriter(sw));
-                    AppLogger.errorf("An exception occurred:\n" + sw);
+                    PaintLogger.errorf("An exception occurred:\n" + sw);
                 }
             }
 
         } catch (IOException e) {
-            AppLogger.errorf("Error processing Experiment Info file '%s': %s", experimentFilePath, e.getMessage());
+            PaintLogger.errorf("Error processing Experiment Info file '%s': %s", experimentFilePath, e.getMessage());
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw);
+            PaintLogger.errorf("An exception occurred:\n" + sw);
             status = false;
         }
 
@@ -202,17 +202,17 @@ public class RunTrackMateOnExperiment {
         try {
             concatenateTracksFilesInDirectory(experimentPath, tracksFilePath);
         } catch (IOException e) {
-            AppLogger.errorf("Error concatenating tracks file %s: %s", experimentFilePath, e.getMessage());
+            PaintLogger.errorf("Error concatenating tracks file %s: %s", experimentFilePath, e.getMessage());
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw);
+            PaintLogger.errorf("An exception occurred:\n" + sw);
             status = false;
         }
 
         // Log overall runtime
         int durationInSeconds = (int) (totalDuration.toMillis() / 1000);
-        AppLogger.infof("Processed %d recordings in %s.", numberRecordings, formatDuration(durationInSeconds));
-        AppLogger.infof();
+        PaintLogger.infof("Processed %d recordings in %s.", numberRecordings, formatDuration(durationInSeconds));
+        PaintLogger.infof();
         return status;
     }
 }

@@ -1,26 +1,26 @@
 package debug;
 
 import fiji.plugin.trackmate.Settings;
-import paint.shared.utils.AppLogger;
+import paint.shared.utils.PaintLogger;
 
 import java.util.Map;
 
 public class TrackMateSettingsValidator {
 
     public static void validate(Settings settings) {
-        AppLogger.infof("Validating TrackMate settings...");
+        PaintLogger.infof("Validating TrackMate settings...");
 
         // Detector
         String detectorKey = settings.detectorFactory.getKey();
-        AppLogger.infof("Detector: %s", detectorKey);
+        PaintLogger.infof("Detector: %s", detectorKey);
         validateDetectorSettings(settings.detectorSettings);
 
         // Tracker
         String trackerKey = settings.trackerFactory.getKey();
-        AppLogger.infof("Tracker: %s", trackerKey);
+        PaintLogger.infof("Tracker: %s", trackerKey);
         validateTrackerSettings(settings.trackerSettings);
 
-        AppLogger.infof("Validation passed.");
+        PaintLogger.infof("Validation passed.");
     }
 
     private static void validateDetectorSettings(Map<String, Object> detectorSettings) {
@@ -54,6 +54,6 @@ public class TrackMateSettingsValidator {
                             key, expectedType.getSimpleName(), value.getClass().getSimpleName(), value)
             );
         }
-        AppLogger.debugf("  %s = %s (type=%s)", key, value, value.getClass().getSimpleName());
+        PaintLogger.debugf("  %s = %s (type=%s)", key, value, value.getClass().getSimpleName());
     }
 }

@@ -20,7 +20,7 @@ import java.time.Instant;
 
 import com.opencsv.CSVReaderHeaderAware;
 import com.opencsv.exceptions.CsvValidationException;
-import paint.shared.utils.AppLogger;
+import paint.shared.utils.PaintLogger;
 
 // import paint.utilities.DurationFormatter.formatDuration;
 
@@ -79,7 +79,7 @@ public class TrackMateBatch {
         } catch (InterruptedException | InvocationTargetException e) {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw);
+            PaintLogger.errorf("An exception occurred:\n" + sw);
             JOptionPane.showMessageDialog(null,
                     "🚫 Error showing file chooser:\n" + e.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
@@ -110,7 +110,7 @@ public class TrackMateBatch {
             log.severe("🚫 Error reading TrackMate batch file: " + e.getMessage());
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw);
+            PaintLogger.errorf("An exception occurred:\n" + sw);
             System.exit(1);
         }
 

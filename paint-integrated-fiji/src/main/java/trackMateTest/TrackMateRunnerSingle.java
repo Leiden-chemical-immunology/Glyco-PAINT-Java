@@ -1,7 +1,7 @@
 package trackMateTest;
 
 
-import paint.shared.utils.AppLogger;
+import paint.shared.utils.PaintLogger;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -23,7 +23,7 @@ public class TrackMateRunnerSingle {
             System.err.println("Failed to run TrackMate: " + e.getMessage());
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw);
+            PaintLogger.errorf("An exception occurred:\n" + sw);
             System.exit(1);
         }
     }

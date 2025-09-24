@@ -3,7 +3,7 @@ package trackMatePaint;
 import com.opencsv.CSVReaderHeaderAware;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
-import paint.shared.utils.AppLogger;
+import paint.shared.utils.PaintLogger;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -90,7 +90,7 @@ public class TrackMateExperiment {
             System.out.println("🚫 Error reading CSV file: " + e.getMessage());
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw);
+            PaintLogger.errorf("An exception occurred:\n" + sw);
             System.exit(1);
         }
 

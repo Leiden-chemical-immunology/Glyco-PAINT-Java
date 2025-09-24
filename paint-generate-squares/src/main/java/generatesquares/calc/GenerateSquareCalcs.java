@@ -4,7 +4,7 @@ import io.SquareTableIO;
 import io.TrackTableIO;
 import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.objects.*;
-import paint.shared.utils.AppLogger;
+import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.Table;
 
@@ -31,12 +31,12 @@ public class GenerateSquareCalcs {
         GenerateSquaresConfig generateSquaresConfig = project.generateSquaresConfig;
 
         LocalDateTime start = LocalDateTime.now();
-        AppLogger.infof("Loading Experiment '%s'", experimentName);
+        PaintLogger.infof("Loading Experiment '%s'", experimentName);
         Experiment experiment = loadExperimentForSquaresCalc(project.projectPath, experimentName);
         if (experiment != null) {
             for (Recording recording : experiment.getRecordings()) {
-                AppLogger.infof("   Processing: %s", recording.getRecordingName());
-                AppLogger.debugf(recording.toString());
+                PaintLogger.infof("   Processing: %s", recording.getRecordingName());
+                PaintLogger.debugf(recording.toString());
 
                 // Create the squares with basic geometric information
                 List<Square> squares = generateSquaresForRecording(generateSquaresConfig, recording);
@@ -53,14 +53,14 @@ public class GenerateSquareCalcs {
             }
 
             Duration duration = Duration.between(start, LocalDateTime.now());
-            AppLogger.infof("Finished processing experiment '%s' in %s", experimentName, formatDuration(duration));
-            AppLogger.infof();
+            PaintLogger.infof("Finished processing experiment '%s' in %s", experimentName, formatDuration(duration));
+            PaintLogger.infof();
 
             writeSquares(project.projectPath, experiment);
 
             return true;
         } else {
-            AppLogger.errorf("Failed to load experiment: %s", experimentName);
+            PaintLogger.errorf("Failed to load experiment: %s", experimentName);
             return false;
         }
     }
@@ -249,7 +249,7 @@ public class GenerateSquareCalcs {
 
             // squaresTableIO.appendInPlace(allSquaresProjectTable, table);
             squaresTableIO.appendInPlace(allSquaresExperimentTable, table);
-            AppLogger.debugf("Processing squares for experiment '%s'  - recording '%s'", experiment.getExperimentName(), recording.getRecordingName());
+            PaintLogger.debugf("Processing squares for experiment '%s'  - recording '%s'", experiment.getExperimentName(), recording.getRecordingName());
         }
 
         // Write the experiment squares file
@@ -258,7 +258,7 @@ public class GenerateSquareCalcs {
             squaresTableIO.writeCsv(allSquaresExperimentTable, squaresExperimentFilePath);
             return true;
         } catch (Exception e) {
-            AppLogger.errorf(e.getMessage());
+            PaintLogger.errorf(e.getMessage());
             return false;
         }
 

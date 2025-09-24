@@ -1,6 +1,6 @@
 package paint.shared.objects;
 
-import paint.shared.utils.AppLogger;
+import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.Table;
 
 import java.io.PrintWriter;
@@ -79,11 +79,11 @@ public class ExperimentInfo {
             this.processFlag = parseBoolean(row.get("Process Flag"));
             this.threshold = parseDouble(row.get("Threshold"));
         } catch (Exception e) {
-            AppLogger.errorf("Problem in Experiment Info");
-            AppLogger.errorf(row.toString());
+            PaintLogger.errorf("Problem in Experiment Info");
+            PaintLogger.errorf(row.toString());
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw);
+            PaintLogger.errorf("An exception occurred:\n" + sw);
         }
     }
 

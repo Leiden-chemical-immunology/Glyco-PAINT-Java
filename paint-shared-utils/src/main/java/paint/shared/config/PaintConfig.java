@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import paint.shared.utils.AppLogger;
+import paint.shared.utils.PaintLogger;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -74,7 +74,7 @@ public class PaintConfig {
                 }
             }
         } else {
-            AppLogger.warningf("PaintConfig already initialised at %s", INSTANCE.path);
+            PaintLogger.warningf("PaintConfig already initialised at %s", INSTANCE.path);
         }
     }
 
@@ -117,7 +117,7 @@ public class PaintConfig {
                     this.configData = new JsonObject();
                 }
             } catch (IOException | JsonParseException e) {
-                AppLogger.errorf("Failed to load config file: %s", e.getMessage());
+                PaintLogger.errorf("Failed to load config file: %s", e.getMessage());
                 this.configData = new JsonObject();
             }
         } else {
@@ -191,7 +191,7 @@ public class PaintConfig {
         try (Writer writer = Files.newBufferedWriter(path)) {
             gson.toJson(configData, writer);
         } catch (IOException e) {
-            AppLogger.errorf("Failed to save config file: %s", e.getMessage());
+            PaintLogger.errorf("Failed to save config file: %s", e.getMessage());
         }
     }
 

@@ -7,12 +7,10 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-import paint.shared.config.PaintConfig;
-import paint.shared.utils.AppLogger;
+import paint.shared.utils.PaintLogger;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.ProjectSelectionDialog;
 
-import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 import static paint.shared.constants.PaintConstants.SQUARES_CSV;
 
 import paint.shared.utils.JarInfo;
@@ -26,20 +24,20 @@ import static generatesquares.calc.GenerateSquareCalcs.generateSquaresForExperim
 public class GenerateSquares {
 
     public static void main(String[] args) {
-        AppLogger.init("Generate Squares.log");
+        PaintLogger.init("Generate Squares.log");
 
         // Overrule the default, takes this out at some point
-        AppLogger.setLevel("Info");
+        PaintLogger.setLevel("Info");
 
-        AppLogger.debugf("Starting Generate Squares...");
+        PaintLogger.debugf("Starting Generate Squares...");
 
         JarInfo info = getJarInfo(GenerateSquares.class);
         if (info != null) {
-            AppLogger.infof("Compilation date: %s", info.implementationDate);
-            AppLogger.infof("Version: %s", info.implementationVersion);
+            PaintLogger.infof("Compilation date: %s", info.implementationDate);
+            PaintLogger.infof("Version: %s", info.implementationVersion);
         } else {
-            AppLogger.errorf("No manifest information found.");
-            AppLogger.infof();
+            PaintLogger.errorf("No manifest information found.");
+            PaintLogger.infof();
         }
 
         try {
@@ -47,7 +45,7 @@ public class GenerateSquares {
         } catch (Exception e) {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw);
+            PaintLogger.errorf("An exception occurred:\n" + sw);
         }
 
         SwingUtilities.invokeLater(() -> {
@@ -58,12 +56,12 @@ public class GenerateSquares {
 
             // If the user selected Cancel, then return.
             if (projectPath == null) {
-                AppLogger.infof("User cancelled project selection.");
+                PaintLogger.infof("User cancelled project selection.");
                 return;
             }
 
             // Use the project directory to display the experiment selection dialog.
-            AppLogger.debugf("User selected: " + projectPath);
+            PaintLogger.debugf("User selected: " + projectPath);
             ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(null, projectPath, ProjectSpecificationDialog.DialogMode.GENERATE_SQUARES);
 
             // Initialise the config file
@@ -76,15 +74,15 @@ public class GenerateSquares {
                 for (String experimentName : project.experimentNames) {
                     generateSquaresForExperiment(project, experimentName);
                 }
-                AppLogger.debugf("\n\nFinished calculating");
+                PaintLogger.debugf("\n\nFinished calculating");
 
                 // Write the projects squares file
                 try {
                     concatenateExperimentCsvFiles(projectPath, SQUARES_CSV, project.experimentNames);
                     Duration duration = Duration.between(start, LocalDateTime.now());
-                    AppLogger.infof("Generated squares info for the selected experiments and for the project in %s", formatDuration(duration));
+                    PaintLogger.infof("Generated squares info for the selected experiments and for the project in %s", formatDuration(duration));
                 } catch (Exception e) {
-                    AppLogger.errorf("Could not concatenate squares file - %s", e.getMessage());
+                    PaintLogger.errorf("Could not concatenate squares file - %s", e.getMessage());
                 }
                 return true;   //ToDo
             });

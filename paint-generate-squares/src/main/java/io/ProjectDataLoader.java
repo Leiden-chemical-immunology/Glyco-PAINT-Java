@@ -6,7 +6,7 @@ import paint.shared.objects.Experiment;
 import paint.shared.objects.Project;
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
-import paint.shared.utils.AppLogger;
+import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.selection.Selection;
@@ -30,7 +30,7 @@ public final class ProjectDataLoader {
 
     public static void main(String[] args) {
         Project project = null;
-        AppLogger.init("Load Project");
+        PaintLogger.init("Load Project");
 
         try {
             if (args == null || args.length == 0) {
@@ -111,7 +111,7 @@ public final class ProjectDataLoader {
         for (String experimentName : experimentNames) {
             Path experimentPath = projectPath.resolve(experimentName);
             if (experimentSeemsValid(experimentPath, matureProject)) {
-                AppLogger.infof("Loading experiment: %s", experimentName);
+                PaintLogger.infof("Loading experiment: %s", experimentName);
                 try {
                     PaintConfig paintConfig = PaintConfig.instance();
                     GenerateSquaresConfig generateSquaresConfig = GenerateSquaresConfig.from(paintConfig);
@@ -123,8 +123,8 @@ public final class ProjectDataLoader {
                     throw new RuntimeException("Failed to load experiment " + experimentName, e);
                 }
             } else {
-                AppLogger.errorf("Experiment '%s' is invalid.", experimentName);
-                AppLogger.errorf(reasonForExperimentProblem(experimentPath, matureProject));
+                PaintLogger.errorf("Experiment '%s' is invalid.", experimentName);
+                PaintLogger.errorf(reasonForExperimentProblem(experimentPath, matureProject));
             }
         }
 
@@ -149,7 +149,7 @@ public final class ProjectDataLoader {
             recordings = recIO.toEntities(recTable);
             recordings.forEach(experiment::addRecording);
         } catch (Exception e) {
-            AppLogger.errorf("Failed to read %s in %s: %s", RECORDINGS_CSV, experimentName, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s in %s: %s", RECORDINGS_CSV, experimentName, friendlyMessage(e));
             return null;
         }
 
@@ -165,7 +165,7 @@ public final class ProjectDataLoader {
                     false
             );
         } catch (Exception e) {
-            AppLogger.errorf("Failed to read %s in %s: %s", TRACKS_CSV, experimentName, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s in %s: %s", TRACKS_CSV, experimentName, friendlyMessage(e));
             return null;
         }
 
@@ -178,7 +178,7 @@ public final class ProjectDataLoader {
                 rec.setTracksTable(recTracks);
             }
         } catch (Exception e) {
-            AppLogger.errorf("Failed to split Tracks Table of %s: %s", experimentName, friendlyMessage(e));
+            PaintLogger.errorf("Failed to split Tracks Table of %s: %s", experimentName, friendlyMessage(e));
             return null;
         }
 
@@ -205,7 +205,7 @@ public final class ProjectDataLoader {
             recordings = recIO.toEntities(recTable);
             recordings.forEach(experiment::addRecording);
         } catch (Exception e) {
-            AppLogger.errorf("Failed to read %s in %s: %s", RECORDINGS_CSV, experimentName, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s in %s: %s", RECORDINGS_CSV, experimentName, friendlyMessage(e));
             return null;
         }
 
@@ -221,7 +221,7 @@ public final class ProjectDataLoader {
                     false
             );
         } catch (Exception e) {
-            AppLogger.errorf("Failed to read %s in %s: %s", TRACKS_CSV, experimentName, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s in %s: %s", TRACKS_CSV, experimentName, friendlyMessage(e));
             return null;
         }
 
@@ -238,7 +238,7 @@ public final class ProjectDataLoader {
             );
         } catch (Exception e) {
             if (matureProject) {
-                AppLogger.errorf("Failed to read %s in %s: %s", SQUARES_CSV, experimentName, friendlyMessage(e));
+                PaintLogger.errorf("Failed to read %s in %s: %s", SQUARES_CSV, experimentName, friendlyMessage(e));
                 return null;
             } else {
                 squaresTable = squareIO.emptyTable();

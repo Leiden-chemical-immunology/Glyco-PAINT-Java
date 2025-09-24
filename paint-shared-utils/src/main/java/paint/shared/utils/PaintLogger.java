@@ -17,7 +17,7 @@ import java.util.prefs.Preferences;
  * preferences and runtime configuration.
  * </p>
  */
-public class AppLogger {
+public class PaintLogger {
 
     private static Logger logger;
 
@@ -29,7 +29,7 @@ public class AppLogger {
      */
     public static void init(String logFileName) {
         setupLogger(logFileName);
-        AppLogger.infof("Log file is: %s", logFileName);
+        PaintLogger.infof("Log file is: %s", logFileName);
         setDefaultLoggingLevel();
     }
 
@@ -41,7 +41,7 @@ public class AppLogger {
      */
     public static void init(String logFileName, String debugLevelString) {
         setupLogger(logFileName);
-        AppLogger.infof("Logging into file %s.", logFileName);
+        PaintLogger.infof("Logging into file %s.", logFileName);
         System.out.println("Logging into file " + logFileName);
         setLevel(debugLevelString);
     }
@@ -259,6 +259,6 @@ public class AppLogger {
         }
         setLevel(loggingLevel);
         // System.out.println("Logging level set to " + loggingLevel);
-        AppLogger.infof("Logging level set to %s", loggingLevel);
+        PaintLogger.infof("Logging level set to %s", loggingLevel);
     }
 }

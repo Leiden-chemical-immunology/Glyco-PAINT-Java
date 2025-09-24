@@ -16,7 +16,7 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 
 import paint.shared.validate.ProjectValidator;
-import paint.shared.utils.AppLogger;
+import paint.shared.utils.PaintLogger;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.ProjectSelectionDialog;
 
@@ -69,17 +69,17 @@ public class RunTrackMateOnProject implements Command {
     public void run() {
 
         // Initialize logging for the session
-        AppLogger.init("TrackMateOnProject");
-        AppLogger.debugf("TrackMate plugin started");
+        PaintLogger.init("TrackMateOnProject");
+        PaintLogger.debugf("TrackMate plugin started");
 
         // Log the JAR's manifest metadata if available
         JarInfo info = getJarInfo(RunTrackMateOnProject.class);
         if (info != null) {
-            AppLogger.infof("Compilation date: %s",info.implementationDate);
-            AppLogger.infof("Version: %s",info.implementationVersion);
+            PaintLogger.infof("Compilation date: %s",info.implementationDate);
+            PaintLogger.infof("Version: %s",info.implementationVersion);
         } else {
-            AppLogger.errorf("No manifest information found.");
-            AppLogger.infof();
+            PaintLogger.errorf("No manifest information found.");
+            PaintLogger.infof();
         }
 
         // Ask user to select a project directory
@@ -88,7 +88,7 @@ public class RunTrackMateOnProject implements Command {
 
         // Handle cancellation
         if (projectPath == null) {
-            AppLogger.infof("User cancelled project selection.");
+            PaintLogger.infof("User cancelled project selection.");
             return;
         }
 
@@ -116,21 +116,21 @@ public class RunTrackMateOnProject implements Command {
 
             // Check if image root was found
             if (imagesRoot.equals("Fatal")) {
-                AppLogger.errorf("No Image Path retrieved from configuration file - Fatal.");
+                PaintLogger.errorf("No Image Path retrieved from configuration file - Fatal.");
                 error = true;
             }
 
-            if (debug) AppLogger.debugf("The Image Path is specified as '%s'.", imagesRoot);
+            if (debug) PaintLogger.debugf("The Image Path is specified as '%s'.", imagesRoot);
 
             Path imagesPath = Paths.get(imagesRoot);
 
             // Verify existence of Images Root directory
             if (!error && !imagesPath.toFile().exists()) {
-                AppLogger.errorf("The Image Root '%s' does not exist - Fatal.", imagesPath);
+                PaintLogger.errorf("The Image Root '%s' does not exist - Fatal.", imagesPath);
                 error = true;
             }
 
-            if (debug) AppLogger.debugf("The Image Path '%s' exists.", imagesRoot);
+            if (debug) PaintLogger.debugf("The Image Path '%s' exists.", imagesRoot);
 
             // Validate that the image root contains data for the selected experiments
             List<String> report = ImageRootValidator.validateImageRoot(
@@ -138,35 +138,35 @@ public class RunTrackMateOnProject implements Command {
                     imagesPath,
                     project.experimentNames);
             if (!report.isEmpty()) {
-                report.forEach(msg -> AppLogger.errorf("%s", msg));
-                AppLogger.errorf("The Image Root Validation Failed - Fatal.");
+                report.forEach(msg -> PaintLogger.errorf("%s", msg));
+                PaintLogger.errorf("The Image Root Validation Failed - Fatal.");
                 error = true;
             }
 
-            if (debug) AppLogger.debugf("The Image Path '%s' passed the validation test.", imagesRoot);
+            if (debug) PaintLogger.debugf("The Image Path '%s' passed the validation test.", imagesRoot);
 
             // Check that the project path also exists
             if (!error && !projectPath.toFile().exists()) {
-                AppLogger.errorf("Project Root '%s' does not exist - Fatal.", projectPath);
+                PaintLogger.errorf("Project Root '%s' does not exist - Fatal.", projectPath);
                 error = true;
             }
 
-            if (debug) AppLogger.debugf("The project root '%s' exists.", projectPath);
+            if (debug) PaintLogger.debugf("The project root '%s' exists.", projectPath);
 
             // Abort execution if any critical path is missing
             if (error) {
                 try {
-                    AppLogger.errorf("About to exit with error, refer to log file.", projectPath);
+                    PaintLogger.errorf("About to exit with error, refer to log file.", projectPath);
                     Thread.sleep(10000); // pause to let user read error
                 } catch (InterruptedException e) {
-                    AppLogger.errorf("Failed to sleep - %s", e.getMessage());
+                    PaintLogger.errorf("Failed to sleep - %s", e.getMessage());
                 }
                 System.exit(-1);
             }
 
             // Validation passed, begin processing
-            if (debug) AppLogger.debugf("TrackMate processing started.");
-            if (debug) AppLogger.debugf("Experiments %s", project.experimentNames.toString());
+            if (debug) PaintLogger.debugf("TrackMate processing started.");
+            if (debug) PaintLogger.debugf("Experiments %s", project.experimentNames.toString());
 
             // Validate experiment directories
             ValidateResult validateResult = validateProject(projectPath, project.experimentNames, ProjectValidator.Mode.VALIDATE_TRACKMATE );
@@ -174,33 +174,33 @@ public class RunTrackMateOnProject implements Command {
                 formatReport(validateResult.getErrors());
             }
 
-            if (debug) AppLogger.debugf("Experiments appear valid.");
+            if (debug) PaintLogger.debugf("Experiments appear valid.");
 
             // Run TrackMate on each selected experiment
             for (String experimentName : project.experimentNames) {
                 Path experimentPath = projectPath.resolve(experimentName);
                 if (!Files.isDirectory(experimentPath)) {
-                    AppLogger.errorf("Experiment directory '%s' does not exist.", experimentPath);
+                    PaintLogger.errorf("Experiment directory '%s' does not exist.", experimentPath);
                 } else {
                     try {
                         status = runTrackMateOnExperiment(experimentPath, imagesPath.resolve(experimentName));
                     } catch (Exception e) {
-                        AppLogger.errorf("Error during TrackMate run for '%s': %s", experimentName, e.getMessage());
+                        PaintLogger.errorf("Error during TrackMate run for '%s': %s", experimentName, e.getMessage());
                         StringWriter sw = new StringWriter();
                         e.printStackTrace(new PrintWriter(sw));
-                        AppLogger.errorf("An exception occurred:\n" + sw);
+                        PaintLogger.errorf("An exception occurred:\n" + sw);
                     } catch (Throwable t) {
-                        AppLogger.errorf("Severe error during TrackMate run for '%s': %s", experimentName, t.getMessage());
+                        PaintLogger.errorf("Severe error during TrackMate run for '%s': %s", experimentName, t.getMessage());
                         StringWriter sw = new StringWriter();
                         t.printStackTrace(new PrintWriter(sw));
-                        AppLogger.errorf("An exception occurred:\n" + sw);
+                        PaintLogger.errorf("An exception occurred:\n" + sw);
                     }
                 }
             }
             Duration totalDuration = Duration.between(start, LocalDateTime.now());
             int durationInSeconds = (int) (totalDuration.toMillis() / 1000);
-            AppLogger.infof();
-            AppLogger.infof("Processed %d experiments in %s.", project.experimentNames.size(), formatDuration(durationInSeconds));
+            PaintLogger.infof();
+            PaintLogger.infof("Processed %d experiments in %s.", project.experimentNames.size(), formatDuration(durationInSeconds));
             return status;
         });
 

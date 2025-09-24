@@ -20,7 +20,7 @@ import fiji.plugin.trackmate.tracking.jaqaman.SparseLAPTrackerFactory;
 import fiji.plugin.trackmate.detection.LogDetectorFactory;
 import fiji.plugin.trackmate.visualization.hyperstack.HyperStackDisplayer;
 import fiji.plugin.trackmate.gui.displaysettings.DisplaySettings;
-import paint.shared.utils.AppLogger;
+import paint.shared.utils.PaintLogger;
 
 
 public class TrackMateLauncher {
@@ -169,7 +169,7 @@ public class TrackMateLauncher {
         } catch (Exception e) {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw);
+            PaintLogger.errorf("An exception occurred:\n" + sw);
         } finally {
             System.gc();
         }
