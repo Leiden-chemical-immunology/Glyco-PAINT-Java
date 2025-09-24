@@ -176,8 +176,15 @@ public class RunTrackMateOnRecording {
         if (numberSpots > trackMateConfig.getMaxNrSpotsInImage()) {
             AppLogger.warningf("   Too many spots detected (%d). Limit is %d.", numberSpots, trackMateConfig.getMaxNrSpotsInImage());
             AppLogger.warningf("");
-            ImageWindow win = imp.getWindow();
-            imp.close();
+            try {
+                ImageWindow win = imp.getWindow();
+                if (win != null) {
+                    imp.close();
+                }
+            }
+            catch (Exception e) {
+                AppLogger.warningf("Error while closing image: %s", e.getMessage());
+            }
             return new TrackMateResults(true, false);
         }
         AppLogger.infof("      TrackMate - number of spots detected: %d",  numberSpots);
@@ -194,7 +201,7 @@ public class RunTrackMateOnRecording {
                     System.out.print(".");
                     System.out.flush(); // Force immediate output
                     dotCount[0] += 1;
-                    if (dotCount[0] > 80) {
+                    if (dotCount[0] >= 110) {
                         System.out.print("\n");
                         System.out.flush(); // Force immediate output
                         dotCount[0] = 0;
@@ -278,8 +285,16 @@ public class RunTrackMateOnRecording {
         }
 
         // Safely close the image window
-        ImageWindow win = imp.getWindow();
-        imp.close();
+
+        try {
+            ImageWindow win = imp.getWindow();
+            if (win != null) {
+                imp.close();
+            }
+        }
+        catch (Exception e) {
+            AppLogger.warningf("Error while closing image: %s", e.getMessage());
+        }
 
         Duration duration = Duration.between(start, LocalDateTime.now());
 
