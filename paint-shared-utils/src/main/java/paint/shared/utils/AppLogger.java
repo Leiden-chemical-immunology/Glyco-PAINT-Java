@@ -201,6 +201,10 @@ public class AppLogger {
         logger.info(String.format(format, args));
     }
 
+    public static void infof() {
+        logger.info(String.format(""));
+    }
+
     /**
      * Log a WARNING level message with printf-style formatting.
      *
@@ -229,6 +233,10 @@ public class AppLogger {
      */
     public static void debugf(String format, Object... args) {
         logger.fine(String.format(format, args));
+    }
+
+    public static void debugf() {
+        logger.fine(String.format(""));
     }
 
     /**

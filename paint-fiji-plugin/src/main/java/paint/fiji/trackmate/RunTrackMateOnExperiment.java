@@ -135,7 +135,7 @@ public class RunTrackMateOnExperiment {
                         AppLogger.infof("   Recording '%s' (%d of %d) processed in %s.",
                                 recordingName, numberRecordings + 1, numberRecordingsToProcess,
                                 formatDuration(durationInSeconds));
-                        AppLogger.infof("");
+                        AppLogger.infof();
 
                         // Update counters and values
                         totalDuration = totalDuration.plus(trackMateResults.getDuration());
@@ -199,7 +199,7 @@ public class RunTrackMateOnExperiment {
         // Log overall runtime
         int durationInSeconds = (int) (totalDuration.toMillis() / 1000);
         AppLogger.infof("Processed %d recordings in %s.", numberRecordings, formatDuration(durationInSeconds));
-        AppLogger.infof("");
+        AppLogger.infof();
         return status;
     }
 }

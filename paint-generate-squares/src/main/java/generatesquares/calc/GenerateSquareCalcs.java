@@ -52,7 +52,7 @@ public class GenerateSquareCalcs {
                 calculateSquareAttributes(recording, generateSquaresConfig);
             }
             AppLogger.infof("Finished processing Experiment: %s", experimentName);
-            AppLogger.infof("");
+            AppLogger.infof();
             project.addExperiment(experiment);
             return true;
         }
