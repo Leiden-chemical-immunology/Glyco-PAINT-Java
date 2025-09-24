@@ -63,7 +63,9 @@ public class GenerateSquareCalcs {
             Duration duration = Duration.between(start, LocalDateTime.now());
             AppLogger.infof("Finished processing experiment '%s' in %s", experimentName, formatDuration(duration));
             AppLogger.infof();
-            project.addExperiment(experiment);
+
+            writeSquares(project.projectPath, experiment);
+
             return true;
         }
         else {
@@ -246,6 +248,31 @@ public class GenerateSquareCalcs {
         } else {
             return (values.get(size / 2 - 1) + values.get(size / 2)) / 2.0;
         }
+    }
+
+    private static boolean writeSquares(Path projectPath, Experiment experiment) {
+
+        SquareTableIO squaresTableIO = new SquareTableIO();
+        Table allSquaresExperimentTable = squaresTableIO.emptyTable();
+
+        for (Recording recording : experiment.getRecordings()) {
+            Table table = squaresTableIO.toTable(recording.getSquares());
+
+            // squaresTableIO.appendInPlace(allSquaresProjectTable, table);
+            squaresTableIO.appendInPlace(allSquaresExperimentTable, table);
+            AppLogger.debugf("Processing squares for experiment '%s'  - recording '%s'", experiment.getExperimentName(), recording.getRecordingName());
+        }
+
+        // Write the experiment squares file
+        Path squaresExperimentFilePath = projectPath.resolve(experiment.getExperimentName()).resolve(SQUARES_CSV);
+        try {
+            squaresTableIO.writeCsv(allSquaresExperimentTable, squaresExperimentFilePath);
+            return true;
+        } catch (Exception e) {
+            AppLogger.errorf(e.getMessage());
+            return false;
+        }
+
     }
 
 
