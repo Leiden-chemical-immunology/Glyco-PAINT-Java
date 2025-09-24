@@ -9,7 +9,6 @@ import paint.shared.objects.Experiment;
 import paint.shared.objects.Recording;
 import io.SquareTableIO;
 import paint.shared.utils.JarInfo;
-import paint.shared.utils.JarInfoLogger;
 import tech.tablesaw.api.Table;
 import paint.shared.utils.AppLogger;
 import paint.shared.dialogs.ProjectSpecificationDialog;
