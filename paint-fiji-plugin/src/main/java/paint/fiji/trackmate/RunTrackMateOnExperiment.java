@@ -70,9 +70,12 @@ public class RunTrackMateOnExperiment {
         String experimentName = experimentPath.getFileName().toString();
         String projectName = experimentPath.getParent().getFileName().toString();
 
-        AppLogger.infof("");
-        AppLogger.infof("Processing %d recordings in experiment '%s' in project '%s'.",
-                numberRecordingsToProcess, experimentName, projectName);
+        AppLogger.infof();
+        AppLogger.infof("Processing %d %s in experiment '%s' in project '%s'.",
+                numberRecordingsToProcess,
+                numberRecordingsToProcess == 1 ? "recording" : "recordings",
+                experimentName,
+                projectName);
 
         // Try-with-resources for reading experiment_info.csv and writing recordings.csv
         try (
@@ -149,6 +152,7 @@ public class RunTrackMateOnExperiment {
                         timeStamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
                     } else {
+                        AppLogger.infof();
                         AppLogger.infof("   Recording '%s' was not selected for processing.", recordingName);
                     }
 
