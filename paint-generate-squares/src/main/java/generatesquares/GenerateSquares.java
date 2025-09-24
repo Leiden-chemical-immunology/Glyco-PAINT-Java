@@ -7,21 +7,16 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-import paint.shared.objects.Experiment;
-import paint.shared.objects.Recording;
-import io.SquareTableIO;
-import paint.shared.utils.JarInfo;
-import tech.tablesaw.api.Table;
 import paint.shared.utils.AppLogger;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.ProjectSelectionDialog;
-
 import static paint.shared.constants.PaintConstants.SQUARES_CSV;
-
-import static generatesquares.calc.GenerateSquareCalcs.generateSquaresForExperiment;
+import paint.shared.utils.JarInfo;
 import static paint.shared.utils.CsvConcatenator.concatenateExperimentCsvFiles;
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.Miscellaneous.formatDuration;
+
+import static generatesquares.calc.GenerateSquareCalcs.generateSquaresForExperiment;
 
 public class GenerateSquares {
 
