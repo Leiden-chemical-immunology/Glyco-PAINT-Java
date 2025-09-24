@@ -6,7 +6,9 @@ import org.apache.commons.csv.CSVRecord;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -32,8 +34,8 @@ public class ImageRootValidator {
     /**
      * Validate image root consistency.
      *
-     * @param projectRoot path to the project root
-     * @param imagesRoot  path to the images root
+     * @param projectRoot     path to the project root
+     * @param imagesRoot      path to the images root
      * @param experimentNames list of experiment names to check
      * @return list of report lines (missing dirs/files)
      */
@@ -83,9 +85,9 @@ public class ImageRootValidator {
                     String condition = record.get("Condition Number");
                     String probeName = record.get("Probe Name");
                     String probeType = record.get("Probe Type");
-                    String cellType  = record.get("Cell Type");
-                    String adjuvant  = record.get("Adjuvant");
-                    String conc      = record.get("Concentration");
+                    String cellType = record.get("Cell Type");
+                    String adjuvant = record.get("Adjuvant");
+                    String conc = record.get("Concentration");
 
                     Map<String, String> currentAttributes = new LinkedHashMap<>();
                     currentAttributes.put("Probe Name", probeName);

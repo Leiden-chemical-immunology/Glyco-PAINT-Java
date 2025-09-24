@@ -36,8 +36,8 @@ public class AppLogger {
     /**
      * Initialize the logger with a given log file name and an explicit log level.
      *
-     * @param logFileName       base name of the log file (without extension)
-     * @param debugLevelString  log level name (e.g. "INFO", "DEBUG", "WARN")
+     * @param logFileName      base name of the log file (without extension)
+     * @param debugLevelString log level name (e.g. "INFO", "DEBUG", "WARN")
      */
     public static void init(String logFileName, String debugLevelString) {
         setupLogger(logFileName);

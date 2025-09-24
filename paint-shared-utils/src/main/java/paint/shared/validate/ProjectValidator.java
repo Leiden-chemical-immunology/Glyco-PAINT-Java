@@ -210,9 +210,15 @@ public class ProjectValidator {
         // Parse mode from argument
         String modeArg = args[1].toUpperCase();
         switch (modeArg) {
-            case "TRACKMATE": mode = Mode.VALIDATE_TRACKMATE; break;
-            case "GENERATE_SQUARES": mode = Mode.VALIDATE_GENERATE_SQUARES; break;
-            case "VIEWER": mode = Mode.VALIDATE_VIEWER; break;
+            case "TRACKMATE":
+                mode = Mode.VALIDATE_TRACKMATE;
+                break;
+            case "GENERATE_SQUARES":
+                mode = Mode.VALIDATE_GENERATE_SQUARES;
+                break;
+            case "VIEWER":
+                mode = Mode.VALIDATE_VIEWER;
+                break;
             default:
                 System.err.println("Invalid mode: " + args[1]);
                 System.err.println("Valid modes: TRACKMATE | GENERATE_SQUARES | VIEWER");

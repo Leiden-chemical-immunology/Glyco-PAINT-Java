@@ -39,9 +39,9 @@ public class ExperimentInfoValidator {
                 String condition = record.get("Condition Number");
                 String probeName = record.get("Probe Name");
                 String probeType = record.get("Probe Type");
-                String cellType  = record.get("Cell Type");
-                String adjuvant  = record.get("Adjuvant");
-                String conc      = record.get("Concentration");
+                String cellType = record.get("Cell Type");
+                String adjuvant = record.get("Adjuvant");
+                String conc = record.get("Concentration");
 
                 Map<String, String> attributes = conditionGroups.get(condition);
                 if (attributes == null) {
