@@ -91,7 +91,7 @@ public class PaintConfig {
      */
     public static PaintConfig instance() {
         if (INSTANCE == null) {
-            Path defaultPath = Paths.get(System.getProperty("user.dir"), PAINT_CONFIGURATION_JSON);
+            Path defaultPath = Paths.get(System.getProperty("user.home"), PAINT_CONFIGURATION_JSON);
             initialise(defaultPath);
         }
         return INSTANCE;
