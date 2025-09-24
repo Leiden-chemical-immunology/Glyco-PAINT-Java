@@ -4,7 +4,7 @@
 
 A Paint project contains Experiments; Experiments contain Recordings.
 
-Recordings are made under specific experimental parameters such as cell type, probe, concentration. A unique combination of such paranmeters define a Condition. For every Condition typically multiple Replicates are made. 
+Recordings are made under specific experimental parameters such as cell type, probe, concentration. A unique combination of such parameters define a Condition. For every Condition typically multiple Replicates are made. 
 
 On the computer a Project Root is a directory and Experiments are subdirectories.  In a Project Root, a configuration file called 'Paint Config.json' needs to be present. It is generated automatically if it not already exists. The experiment directories as a minimum contain an 'Experiment Info.csv' file, in which the recordings are listed together with relevant metadata.
 
@@ -13,7 +13,7 @@ In addition to a Project Root, an Images Root needs to be present. In the Images
 For each Experiment the following information is supplied in the 'Experiment Info.csv' file:
 
 - Recording Name, a simple string without spaces.
-- Condition Number, a sequance
+- Condition Number, a sequence
 - Replicate Number
 - Probed Name
 - Probe Type
@@ -44,7 +44,7 @@ After having selected a Project Root, the user specifies the Experiments for whi
 
 If all conditions are met, processing can start, otherwise the plugin exits. Default parameters are read from the 'Paint Configuration.json' file, where the user can select meaningful values. If the 'Paint Configuration.json' file is not present, a default version is created. 
 
-For every recording, the threshold value is specified by the user in the 'Experiment Info.csv' file. Only recordings for which the Proces Flag is set to True are processed. 
+For every recording, the threshold value is specified by the user in the 'Experiment Info.csv' file. Only recordings for which the Process Flag is set to True are processed. 
 
 
 

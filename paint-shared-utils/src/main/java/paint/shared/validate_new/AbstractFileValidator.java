@@ -17,11 +17,12 @@ public abstract class AbstractFileValidator {
     public ValidationResult validate(File file) {
         ValidationResult result = new ValidationResult();
 
-        CSVFormat format = CSVFormat.DEFAULT
-                .withDelimiter(',')  // Use '\t' for TSV
-                .withHeader()
-                .withSkipHeaderRecord(false)
-                .withIgnoreSurroundingSpaces();
+        CSVFormat format = CSVFormat.DEFAULT.builder()
+                .setDelimiter(',')              // Use '\t' for TSV
+                .setHeader()                    // expect header from the input
+                .setSkipHeaderRecord(false)
+                .setIgnoreSurroundingSpaces(true)
+                .build();
 
         try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
              CSVParser parser = format.parse(reader)) {

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- ✅ Maven Project Object Model for the shared Paint utilities module -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
+<project xmlns="https://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -123,11 +123,6 @@
 
     <build>
         <plugins>
-            <!-- [OPTIONAL] This plugin block is a placeholder and can be removed -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-            </plugin>
 
             <!-- ✅ Automatically copy the built JAR into the Fiji plugin directory -->
             <plugin>

@@ -66,8 +66,14 @@ public class Miscellaneous {
 
     public static List<String[]> readTableAsStrings(Path csvPath) throws IOException {
         List<String[]> rows = new ArrayList<>();
+
+        CSVFormat format = CSVFormat.DEFAULT.builder()
+                .setHeader()                 // use first row as header
+                .setSkipHeaderRecord(true)   // don’t return the header as a record
+                .build();
+
         try (Reader reader = Files.newBufferedReader(csvPath);
-             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
+             CSVParser csvParser = new CSVParser(reader, format)) {
 
             // Add header row
             List<String> header = new ArrayList<>(csvParser.getHeaderMap().keySet());
@@ -110,8 +116,6 @@ public class Miscellaneous {
         Path allTracks = parentDir.resolve("All Tracks.csv");
         Path allRecordings = parentDir.resolve("All Recordings.csv");
 
-        //deleteIfExists(allTracks);
-        //deleteIfExists(allRecordings);
     }
 
     private static void deleteIfExists(Path path) {

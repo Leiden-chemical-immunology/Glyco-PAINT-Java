@@ -7,7 +7,6 @@ import org.apache.commons.csv.CSVRecord;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class CsvUtils {
@@ -16,8 +15,13 @@ public class CsvUtils {
         int count = 0;
 
         try {
-            try (CSVParser parser = CSVParser.parse(filePath.toFile(), java.nio.charset.StandardCharsets.UTF_8,
-                    CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
+            CSVFormat format = CSVFormat.DEFAULT.builder()
+                    .setHeader()                 // first record is the header
+                    .setSkipHeaderRecord(true)   // don't treat header as a row
+                    .build();
+
+            try (CSVParser parser = CSVParser.parse(filePath.toFile(),
+                    java.nio.charset.StandardCharsets.UTF_8, format)) {
 
                 String processFlagKey = null;
                 for (String header : parser.getHeaderMap().keySet()) {

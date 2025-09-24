@@ -2,7 +2,6 @@ package paint.shared.validate;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import paint.shared.constants.PaintConstants;
 import tech.tablesaw.api.ColumnType;
 

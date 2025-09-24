@@ -202,7 +202,7 @@ public class AppLogger {
     }
 
     public static void infof() {
-        logger.info(String.format(""));
+        logger.info("");
     }
 
     /**
@@ -236,7 +236,7 @@ public class AppLogger {
     }
 
     public static void debugf() {
-        logger.fine(String.format(""));
+        logger.fine("");
     }
 
     /**

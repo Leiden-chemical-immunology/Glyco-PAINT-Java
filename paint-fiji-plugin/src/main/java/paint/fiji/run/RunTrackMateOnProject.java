@@ -188,12 +188,12 @@ public class RunTrackMateOnProject implements Command {
                         AppLogger.errorf("Error during TrackMate run for '%s': %s", experimentName, e.getMessage());
                         StringWriter sw = new StringWriter();
                         e.printStackTrace(new PrintWriter(sw));
-                        AppLogger.errorf("An exception occurred:\n" + sw.toString());
+                        AppLogger.errorf("An exception occurred:\n" + sw);
                     } catch (Throwable t) {
                         AppLogger.errorf("Severe error during TrackMate run for '%s': %s", experimentName, t.getMessage());
                         StringWriter sw = new StringWriter();
                         t.printStackTrace(new PrintWriter(sw));
-                        AppLogger.errorf("An exception occurred:\n" + sw.toString());
+                        AppLogger.errorf("An exception occurred:\n" + sw);
                     }
                 }
             }

@@ -35,9 +35,11 @@ public class CsvConcatenator {
                                 .parse(reader)
                 ) {
                     if (!headerWritten) {
-                        printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(
-                                parser.getHeaderMap().keySet().toArray(new String[0])
-                        ));
+                        printer = new CSVPrinter(writer,
+                                CSVFormat.DEFAULT.builder()
+                                        .setHeader(parser.getHeaderMap().keySet().toArray(new String[0]))
+                                        .build()
+                        );
                         headerWritten = true;
                     }
 

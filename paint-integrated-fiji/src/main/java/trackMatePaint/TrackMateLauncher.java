@@ -169,7 +169,7 @@ public class TrackMateLauncher {
         } catch (Exception e) {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw.toString());
+            AppLogger.errorf("An exception occurred:\n" + sw);
         } finally {
             System.gc();
         }

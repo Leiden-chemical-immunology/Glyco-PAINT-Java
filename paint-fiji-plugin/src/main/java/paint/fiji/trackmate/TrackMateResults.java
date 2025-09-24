@@ -15,7 +15,7 @@ public class TrackMateResults {
     /** Whether the TrackMate analysis finished successfully. */
     private final boolean success;
 
-    /** Whether the TrackMate analysis was peroformed */
+    /** Whether the TrackMate analysis was performed */
     private final boolean calculationPerformed;
 
     /** Number of detected spots in the analysis. */

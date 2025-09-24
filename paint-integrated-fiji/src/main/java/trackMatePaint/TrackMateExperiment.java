@@ -19,7 +19,6 @@ import java.util.*;
 
 import static paint.shared.constants.PaintConstants.RECORDINGS_CSV;
 import static paint.shared.utils.Miscellaneous.deleteAssociatedFiles;
-import static paint.shared.utils.Miscellaneous.formatDuration;
 
 public class TrackMateExperiment {
 
@@ -91,7 +90,7 @@ public class TrackMateExperiment {
             System.out.println("🚫 Error reading CSV file: " + e.getMessage());
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw.toString());
+            AppLogger.errorf("An exception occurred:\n" + sw);
             System.exit(1);
         }
 

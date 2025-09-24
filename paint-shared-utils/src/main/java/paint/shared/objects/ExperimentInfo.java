@@ -10,7 +10,6 @@ import java.util.*;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
-import paint.shared.objects.ExperimentInfo;
 
 /**
  * Represents a Recording with metadata, squares, and tracks.
@@ -84,7 +83,7 @@ public class ExperimentInfo {
             AppLogger.errorf(row.toString());
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw.toString());
+            AppLogger.errorf("An exception occurred:\n" + sw);
         }
     }
 

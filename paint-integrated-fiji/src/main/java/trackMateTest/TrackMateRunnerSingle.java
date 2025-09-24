@@ -23,7 +23,7 @@ public class TrackMateRunnerSingle {
             System.err.println("Failed to run TrackMate: " + e.getMessage());
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            AppLogger.errorf("An exception occurred:\n" + sw.toString());
+            AppLogger.errorf("An exception occurred:\n" + sw);
             System.exit(1);
         }
     }

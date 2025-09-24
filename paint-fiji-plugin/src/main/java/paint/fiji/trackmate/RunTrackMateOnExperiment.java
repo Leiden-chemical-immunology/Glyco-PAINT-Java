@@ -80,9 +80,18 @@ public class RunTrackMateOnExperiment {
         // Try-with-resources for reading experiment_info.csv and writing recordings.csv
         try (
                 Reader reader = Files.newBufferedReader(experimentFilePath);
-                CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
+                CSVParser parser = new CSVParser(reader,
+                        CSVFormat.DEFAULT.builder()
+                                .setHeader()                 // first record is header
+                                .setSkipHeaderRecord(true)   // don’t return header as data
+                                .build());
                 BufferedWriter writer = Files.newBufferedWriter(allRecordingFilePath);
-                CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT)
+                CSVPrinter printer = new CSVPrinter(writer,
+                        CSVFormat.DEFAULT.builder()
+                                .setHeader(parser.getHeaderMap()
+                                        .keySet()
+                                        .toArray(new String[0])) // preserve header names
+                                .build())
         ) {
             // Construct output header for recordings.csv
             List<String> header = new ArrayList<>(parser.getHeaderMap().keySet());
