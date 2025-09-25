@@ -68,8 +68,19 @@ public class RunTrackMateOnProject implements Command {
     @Override
     public void run() {
 
-        // Initialize logging for the session
-        PaintLogger.init("TrackMateOnProject");
+        // Ask user to select a project directory
+        ProjectSelectionDialog projDlg = new ProjectSelectionDialog(null);
+        Path projectPath = projDlg.showDialog();
+
+        // Handle cancellation
+        if (projectPath == null) {
+            PaintLogger.infof("User cancelled project selection.");
+            return;
+        }
+
+        // The user did OK and we have a valid projectPath
+        PaintConfig.initialise(projectPath);
+        PaintLogger.initialise(projectPath, "TrackMateOnProject");
         PaintLogger.debugf("TrackMate plugin started");
 
         // Log the JAR's manifest metadata if available
@@ -81,19 +92,6 @@ public class RunTrackMateOnProject implements Command {
             PaintLogger.errorf("No manifest information found.");
             PaintLogger.infof();
         }
-
-        // Ask user to select a project directory
-        ProjectSelectionDialog projDlg = new ProjectSelectionDialog(null);
-        Path projectPath = projDlg.showDialog();
-
-        // Handle cancellation
-        if (projectPath == null) {
-            PaintLogger.infof("User cancelled project selection.");
-            return;
-        }
-
-        // Load paint-config.json from the selected project
-        PaintConfig.initialise(projectPath.resolve(PAINT_CONFIGURATION_JSON));
 
         // Display experiment selection dialog in TRACKMATE mode
         ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(null, projectPath, ProjectSpecificationDialog.DialogMode.TRACKMATE);

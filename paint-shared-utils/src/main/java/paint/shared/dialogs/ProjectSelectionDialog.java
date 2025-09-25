@@ -87,9 +87,6 @@ public class ProjectSelectionDialog extends JDialog {
             okPressed = true;
             prefs.put(KEY_PROJECT, projectDirectory);
 
-            // The moment we know the project directory initialise the config file
-            PaintConfig.initialise(Paths.get(projectDirectory).resolve(PAINT_CONFIGURATION_JSON));
-
             dispose();
         });
 

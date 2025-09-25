@@ -64,17 +64,18 @@ public class PaintConfig {
      * Initialises the global PaintConfig with a custom config file location.
      * If called more than once, the first call "wins".
      *
-     * @param path path to the JSON config file
+     * @param projectPath path to the prject directory
      */
-    public static void initialise(Path path) {
+    public static void initialise(Path projectPath) {
+        Path configPath = projectPath.resolve(PAINT_CONFIGURATION_JSON);
         if (INSTANCE == null) {
             synchronized (PaintConfig.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new PaintConfig(path);
+                    INSTANCE = new PaintConfig(configPath);
                 }
             }
         } else {
-            PaintLogger.warningf("PaintConfig already initialised at %s", INSTANCE.path);
+            PaintLogger.warningf("PaintConfig already initialised at %s\n", INSTANCE.path);
         }
     }
 

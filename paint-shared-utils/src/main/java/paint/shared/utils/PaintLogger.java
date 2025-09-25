@@ -3,7 +3,6 @@ package paint.shared.utils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.*;
@@ -27,23 +26,22 @@ public class PaintLogger {
      *
      * @param logFileName base name of the log file (without extension)
      */
-    public static void init(String logFileName) {
-        setupLogger(logFileName);
-        PaintLogger.infof("Log file is: %s", logFileName);
-        setDefaultLoggingLevel();
+    public static void initialise(Path projectPath, String logFileName) {
+        String loggingLeveL = getDefaultLoggingLevel();
+        initialise(projectPath, logFileName, loggingLeveL);
     }
+
 
     /**
      * Initialize the logger with a given log file name and an explicit log level.
      *
-     * @param logFileName      base name of the log file (without extension)
-     * @param debugLevelString log level name (e.g. "INFO", "DEBUG", "WARN")
+     * @param logFileName  base name of the log file (without extension)
+     * @param loggingLevel log level name (e.g. "INFO", "DEBUG", "WARN")
      */
-    public static void init(String logFileName, String debugLevelString) {
-        setupLogger(logFileName);
+    public static void initialise(Path projectPath, String logFileName, String loggingLevel) {
+        setupLogger(projectPath, logFileName);
         PaintLogger.infof("Logging into file %s.", logFileName);
-        System.out.println("Logging into file " + logFileName);
-        setLevel(debugLevelString);
+        setLevel(loggingLevel);
     }
 
     /**
@@ -51,7 +49,7 @@ public class PaintLogger {
      *
      * @param baseName base name for the log file
      */
-    private static void setupLogger(String baseName) {
+    private static void setupLogger(Path projectPath, String baseName) {
         logger = Logger.getLogger("Paint");
         logger.setUseParentHandlers(false);
 
@@ -63,8 +61,7 @@ public class PaintLogger {
 
         try {
             // Create log directory under ~/Paint/Logger if it does not exist
-            Path logDirPath = Paths.get(System.getProperty("user.home"))
-                    .resolve("Paint").resolve("Logger");
+            Path logDirPath = projectPath.resolve("Logs");
             Files.createDirectories(logDirPath);
 
             String logFileName = nextLogFileName(logDirPath, baseName);
@@ -198,11 +195,16 @@ public class PaintLogger {
      * @param args   arguments
      */
     public static void infof(String format, Object... args) {
-        logger.info(String.format(format, args));
+        try {
+            logger.info(String.format(format, args));
+        } catch (Exception e) {
+            System.err.printf("infof called before initialising\n");
+            System.err.printf(format, args);
+        }
     }
 
     public static void infof() {
-        logger.info("");
+        infof("");
     }
 
     /**
@@ -212,7 +214,12 @@ public class PaintLogger {
      * @param args   arguments
      */
     public static void warningf(String format, Object... args) {
-        logger.warning(String.format(format, args));
+        try {
+            logger.warning(String.format(format, args));
+        } catch (Exception e) {
+            System.err.printf("warningf called before initialising\n");
+            System.err.printf(format, args);
+        }
     }
 
     /**
@@ -222,7 +229,12 @@ public class PaintLogger {
      * @param args   arguments
      */
     public static void errorf(String format, Object... args) {
-        logger.severe(String.format(format, args));
+        try {
+            logger.severe(String.format(format, args));
+        } catch (Exception e) {
+            System.err.printf("errof called before initialising\n");
+            System.err.printf(format, args);
+        }
     }
 
     /**
@@ -232,11 +244,16 @@ public class PaintLogger {
      * @param args   arguments
      */
     public static void debugf(String format, Object... args) {
-        logger.fine(String.format(format, args));
+        try {
+            logger.fine(String.format(format, args));
+        } catch (Exception e) {
+            System.err.printf("Infof called before initialising\n");
+            System.err.printf(format, args);
+        }
     }
 
     public static void debugf() {
-        logger.fine("");
+        debugf("");
     }
 
     /**
@@ -247,7 +264,7 @@ public class PaintLogger {
      * </p>
      * This allows persistent configuration of logging verbosity across runs.
      */
-    public static void setDefaultLoggingLevel() {
+    public static String getDefaultLoggingLevel() {
         String PREF_NODE = "Glyco-PAINT";
         String LOGGING_LEVEL = "loggingLevel";
 
@@ -257,8 +274,6 @@ public class PaintLogger {
             loggingLevel = "Info";
             prefs.put(LOGGING_LEVEL, loggingLevel);  // store default in plist
         }
-        setLevel(loggingLevel);
-        // System.out.println("Logging level set to " + loggingLevel);
-        PaintLogger.infof("Logging level set to %s", loggingLevel);
+        return loggingLevel;
     }
 }

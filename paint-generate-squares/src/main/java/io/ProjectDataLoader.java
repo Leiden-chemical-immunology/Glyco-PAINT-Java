@@ -11,10 +11,12 @@ import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.selection.Selection;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +32,8 @@ public final class ProjectDataLoader {
 
     public static void main(String[] args) {
         Project project = null;
-        PaintLogger.init("Load Project");
+        Path loggerPath = Paths.get(System.getProperty("user.home"), "Paint").resolve("Logger");
+        PaintLogger.initialise(loggerPath, "Load Project");
 
         try {
             if (args == null || args.length == 0) {
