@@ -54,7 +54,7 @@ public abstract class AbstractFileValidator {
                     continue;
                 }
 
-                rowMatchesTypes(row, types, i + 2, result);
+                rowMatchesTypes(row, types, header, i + 2, result);
             }
 
         } catch (IOException e) {
@@ -97,14 +97,21 @@ public abstract class AbstractFileValidator {
         return false;
     }
 
-    protected boolean rowMatchesTypes(String[] row, ColumnType[] types, int rowIndex, ValidationResult result) {
+    protected boolean rowMatchesTypes(String[] row,
+                                      ColumnType[] types,
+                                      List<String> header,
+                                      int rowIndex,
+                                      ValidationResult result) {
         for (int i = 0; i < types.length; i++) {
             String value = row[i];
             ColumnType type = types[i];
+            String columnName = (i < header.size()) ? header.get(i) : ("Column " + (i + 1));
+
             if (!canParse(value, type)) {
-                String key = "Column " + (i + 1) + " type " + type.name();
+                String key = columnName + " type " + type.name();
                 if (!reportedTypeErrors.contains(key)) {
-                    result.addError("Some values in column " + (i + 1) + " are invalid for type " + type.name() + ".");
+                    result.addError("Some values in column '" + columnName
+                            + "' are invalid for type " + type.name() + ".");
                     reportedTypeErrors.add(key);
                 }
             }

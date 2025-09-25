@@ -7,13 +7,28 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
+
+/**
+ * Validator for recordings.csv.
+ * <p>
+ * Performs:
+ * <ul>
+ *   <li>Header validation against {@link PaintConstants#RECORDING_COLS}</li>
+ *   <li>Row type validation against {@link PaintConstants#RECORDING_TYPES}</li>
+ *   <li>Consistency check: all rows with the same "Condition Number"
+ *       must have identical Probe/Cell/Adjuvant/Concentration values
+ *       (shared with ExperimentInfoValidator).</li>
+ * </ul>
+ */
 public class RecordingsValidator extends AbstractFileValidator {
 
     @Override
     protected void validateHeader(List<String> actualHeader, ValidationResult result) {
         List<String> expectedHeader = Arrays.asList(PaintConstants.RECORDING_COLS);
-        if (!headersMatch(expectedHeader, actualHeader)) {
-            result.addError("Header mismatch.\nExpected: " + expectedHeader + "\nActual:   " + actualHeader);
+        if (!expectedHeader.equals(actualHeader)) {
+            result.addError("Header mismatch."
+                    + "\nExpected: " + expectedHeader
+                    + "\nActual:   " + actualHeader);
         }
     }
 
@@ -22,35 +37,18 @@ public class RecordingsValidator extends AbstractFileValidator {
         return PaintConstants.RECORDING_TYPES;
     }
 
-    public static void main(String[] args) {
-//        if (args.length != 1) {
-//            System.err.println("Usage: java paint.shared.validate_new.RecordingsValidator <path-to-recordings-file>");
-//            System.exit(1);
-//        }
-
-        File file;
-        RecordingsValidator validator;
-        ValidationResult result;
-
-        file = new File("/Users/hans/Paint Test Project/230417/All Recordings Java.csv");
-        validator = new RecordingsValidator();
-        result = validator.validate(file);
-
+    /**
+     * Run full validation: header + type checks + consistency check.
+     *
+     * @param file           recordings.csv file
+     * @param experimentName experiment name (for error messages)
+     * @return ValidationResult with errors if validation fails
+     */
+    public ValidationResult validateWithConsistency(File file, String experimentName) {
+        ValidationResult result = validate(file);
         if (result.isValid()) {
-            System.out.println("Recordings file is valid.");
-        } else {
-            System.out.println(result);
+            result.merge(ConditionConsistencyChecker.check(file, experimentName));
         }
-
-//        file = new File("/Users/hans/Paint Test Project/230417/All Recordings Java.csv");
-//        validator = new RecordingsValidator();
-//        result = validator.validate(file);
-//
-//        if (result.isValid()) {
-//            System.out.println("Recordings file is valid.");
-//        } else {
-//            System.out.println(result);
-//        }
-
+        return result;
     }
 }
