@@ -7,6 +7,10 @@ import tech.tablesaw.api.ColumnType;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,12 +20,28 @@ public abstract class AbstractFileValidator {
 
     private final Set<String> reportedTypeErrors = new HashSet<>();
 
+    // ISO timestamp parser: supports yyyy-MM-dd and optional fractional seconds
+    private static final DateTimeFormatter FLEXIBLE_DATE_TIME = new DateTimeFormatterBuilder()
+            .appendPattern("yyyy-MM-dd'T'HH:mm:ss")
+            .optionalStart()
+            .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true)
+            .optionalEnd()
+            .toFormatter();
+
+    // Slash timestamp parser: supports dd/MM/yyyy and optional fractional seconds
+    private static final DateTimeFormatter SLASH_DATE_TIME = new DateTimeFormatterBuilder()
+            .appendPattern("dd/MM/yyyy'T'HH:mm:ss")
+            .optionalStart()
+            .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true)
+            .optionalEnd()
+            .toFormatter();
+
     public ValidationResult validate(File file) {
         ValidationResult result = new ValidationResult();
 
         CSVFormat format = CSVFormat.DEFAULT.builder()
-                .setDelimiter(',')              // Use '\t' for TSV
-                .setHeader()                    // expect header from the input
+                .setDelimiter(',')
+                .setHeader()
                 .setSkipHeaderRecord(false)
                 .setIgnoreSurroundingSpaces(true)
                 .build();
@@ -48,7 +68,9 @@ public abstract class AbstractFileValidator {
 
                 if (row.length != types.length) {
                     if (!reportedMismatch) {
-                        result.addError("Row " + (i + 2) + " has " + row.length + " values; expected " + types.length + ". This may indicate a formatting error (e.g. extra or missing commas).");
+                        result.addError("Row " + (i + 2) + " has " + row.length
+                                + " values; expected " + types.length
+                                + ". This may indicate a formatting error (e.g. extra or missing commas).");
                         reportedMismatch = true;
                     }
                     continue;
@@ -97,21 +119,15 @@ public abstract class AbstractFileValidator {
         return false;
     }
 
-    protected boolean rowMatchesTypes(String[] row,
-                                      ColumnType[] types,
-                                      List<String> header,
-                                      int rowIndex,
-                                      ValidationResult result) {
+    protected boolean rowMatchesTypes(String[] row, ColumnType[] types, List<String> headers, int rowIndex, ValidationResult result) {
         for (int i = 0; i < types.length; i++) {
             String value = row[i];
             ColumnType type = types[i];
-            String columnName = (i < header.size()) ? header.get(i) : ("Column " + (i + 1));
-
             if (!canParse(value, type)) {
-                String key = columnName + " type " + type.name();
+                String colName = headers.size() > i ? headers.get(i) : ("Column " + (i + 1));
+                String key = colName + " type " + type.name();
                 if (!reportedTypeErrors.contains(key)) {
-                    result.addError("Some values in column '" + columnName
-                            + "' are invalid for type " + type.name() + ".");
+                    result.addError("Some values in column '" + colName + "' are invalid for type " + type.name() + ".");
                     reportedTypeErrors.add(key);
                 }
             }
@@ -135,7 +151,11 @@ public abstract class AbstractFileValidator {
                         throw new IllegalArgumentException();
                     break;
                 case "LOCAL_DATE_TIME":
-                    java.time.LocalDateTime.parse(value);
+                    try {
+                        LocalDateTime.parse(value, FLEXIBLE_DATE_TIME);
+                    } catch (Exception e1) {
+                        LocalDateTime.parse(value, SLASH_DATE_TIME);
+                    }
                     break;
                 case "STRING":
                     break; // Always valid

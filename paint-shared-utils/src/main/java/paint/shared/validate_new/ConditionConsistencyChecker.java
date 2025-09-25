@@ -39,7 +39,7 @@ public class ConditionConsistencyChecker {
                 String probeType = record.get("Probe Type");
                 String cellType = record.get("Cell Type");
                 String adjuvant = record.get("Adjuvant");
-                String conc = record.get("Concentration");
+                String concentration = record.get("Concentration");
 
                 Map<String, String> attributes = conditionGroups.get(condition);
                 if (attributes == null) {
@@ -48,14 +48,14 @@ public class ConditionConsistencyChecker {
                     attributes.put("Probe Type", probeType);
                     attributes.put("Cell Type", cellType);
                     attributes.put("Adjuvant", adjuvant);
-                    attributes.put("Concentration", conc);
+                    attributes.put("Concentration", concentration);
                     conditionGroups.put(condition, attributes);
                 } else {
                     if (!Objects.equals(attributes.get("Probe Name"), probeName) ||
                             !Objects.equals(attributes.get("Probe Type"), probeType) ||
                             !Objects.equals(attributes.get("Cell Type"), cellType) ||
                             !Objects.equals(attributes.get("Adjuvant"), adjuvant) ||
-                            !Objects.equals(attributes.get("Concentration"), conc)) {
+                            !Objects.equals(attributes.get("Concentration"), concentration)) {
 
                         String expected = String.format(
                                 "[%s] Condition %s expected: [Probe Name=%s, Probe Type=%s, Cell Type=%s, Adjuvant=%s, Concentration=%s]",
@@ -69,7 +69,7 @@ public class ConditionConsistencyChecker {
                         String found = String.format(
                                 "[%s] Condition %s found: [Probe Name=%s, Probe Type=%s, Cell Type=%s, Adjuvant=%s, Concentration=%s]",
                                 experimentName, condition,
-                                probeName, probeType, cellType, adjuvant, conc);
+                                probeName, probeType, cellType, adjuvant, concentration);
 
                         result.addError("Inconsistent attributes for Condition Number " + condition
                                 + "\n" + expected
