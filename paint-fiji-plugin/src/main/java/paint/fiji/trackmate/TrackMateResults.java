@@ -12,28 +12,44 @@ import java.time.Duration;
  */
 public class TrackMateResults {
 
-    /** Whether the TrackMate analysis finished successfully. */
+    /**
+     * Whether the TrackMate analysis finished successfully.
+     */
     private final boolean success;
 
-    /** Whether the TrackMate analysis was performed */
+    /**
+     * Whether the TrackMate analysis was performed
+     */
     private final boolean calculationPerformed;
 
-    /** Number of detected spots in the analysis. */
+    /**
+     * Number of detected spots in the analysis.
+     */
     private final int numberOfSpots;
 
-    /** Number of tracks generated from detected spots. */
+    /**
+     * Number of tracks generated from detected spots.
+     */
     private final int numberOfTracks;
 
-    /** Number of tracks remaining after filtering. */
+    /**
+     * Number of tracks remaining after filtering.
+     */
     private final int numberOfFilteredTracks;
 
-    /** Number of frames analyzed. */
+    /**
+     * Number of frames analyzed.
+     */
     private final int numberOFrames;
 
-    /** Total runtime of the analysis. */
+    /**
+     * Total runtime of the analysis.
+     */
     private final Duration duration;
 
-    /** Total number of spots contained in all tracks. */
+    /**
+     * Total number of spots contained in all tracks.
+     */
     private final int numberOfSpotsInALlTracks;
 
     /**
@@ -69,12 +85,12 @@ public class TrackMateResults {
     /**
      * Constructs a {@code TrackMateResults} instance with full result details.
      *
-     * @param success whether the analysis succeeded
-     * @param numberOfSpots number of detected spots
-     * @param numberOfTracks number of generated tracks
-     * @param numberOfFilteredTracks number of tracks after filtering
-     * @param numberOfFrames number of frames analyzed
-     * @param duration runtime duration of the analysis
+     * @param success                  whether the analysis succeeded
+     * @param numberOfSpots            number of detected spots
+     * @param numberOfTracks           number of generated tracks
+     * @param numberOfFilteredTracks   number of tracks after filtering
+     * @param numberOfFrames           number of frames analyzed
+     * @param duration                 runtime duration of the analysis
      * @param numberOfSpotsInALlTracks total number of spots in all tracks
      */
     public TrackMateResults(boolean success,
@@ -95,26 +111,54 @@ public class TrackMateResults {
         this.numberOfSpotsInALlTracks = numberOfSpotsInALlTracks;
     }
 
-    /** @return the number of detected spots */
-    public int getNumberOfSpots() { return numberOfSpots; }
+    /**
+     * @return the number of detected spots
+     */
+    public int getNumberOfSpots() {
+        return numberOfSpots;
+    }
 
-    /** @return the number of generated tracks */
-    public int getNumberOfTracks() { return numberOfTracks; }
+    /**
+     * @return the number of generated tracks
+     */
+    public int getNumberOfTracks() {
+        return numberOfTracks;
+    }
 
-    /** @return the number of tracks after filtering */
-    public int getNumberOfFilteredTracks() { return numberOfFilteredTracks; }
+    /**
+     * @return the number of tracks after filtering
+     */
+    public int getNumberOfFilteredTracks() {
+        return numberOfFilteredTracks;
+    }
 
-    /** @return the number of frames analyzed */
-    public int getNumberOfFrames() { return numberOFrames; }
+    /**
+     * @return the number of frames analyzed
+     */
+    public int getNumberOfFrames() {
+        return numberOFrames;
+    }
 
-    /** @return the total runtime duration */
-    public Duration getDuration() { return duration; }
+    /**
+     * @return the total runtime duration
+     */
+    public Duration getDuration() {
+        return duration;
+    }
 
-    /** @return the number of spots contained in all tracks */
-    public int getNumberOfSpotsInALlTracks() { return numberOfSpotsInALlTracks; }
+    /**
+     * @return the number of spots contained in all tracks
+     */
+    public int getNumberOfSpotsInALlTracks() {
+        return numberOfSpotsInALlTracks;
+    }
 
-    /** @return {@code true} if the analysis succeeded, otherwise {@code false} */
-    public boolean isSuccess() { return success; }
+    /**
+     * @return {@code true} if the analysis succeeded, otherwise {@code false}
+     */
+    public boolean isSuccess() {
+        return success;
+    }
 
     public boolean isCalculationPerformed() {
         return calculationPerformed;

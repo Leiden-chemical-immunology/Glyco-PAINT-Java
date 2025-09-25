@@ -1,21 +1,17 @@
 package paint.fiji.tracks;
 
+import fiji.plugin.trackmate.FeatureModel;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.TrackMate;
 import fiji.plugin.trackmate.TrackModel;
-import fiji.plugin.trackmate.FeatureModel;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
+import static paint.fiji.tracks.TrackAttributeCalculations.calculateTrackAttributes;
 import static paint.shared.constants.PaintConstants.TIME_INTERVAL;
 import static paint.shared.constants.PaintConstants.TRACK_COLS;
-import static paint.fiji.tracks.TrackAttributeCalculations.calculateTrackAttributes;
 
 /**
  * Utility class for exporting TrackMate tracks into a CSV file.
@@ -61,35 +57,35 @@ public class TrackCsvWriter {
             for (Integer trackId : trackIDs) {
 
                 // ---- Built-in TrackMate features ----
-                Double duration     = featureModel.getTrackFeature(trackId, "TRACK_DURATION");
-                Double nrSpots      = featureModel.getTrackFeature(trackId, "NUMBER_SPOTS");
-                Double xLoc         = featureModel.getTrackFeature(trackId, "TRACK_X_LOCATION");
-                Double yLoc         = featureModel.getTrackFeature(trackId, "TRACK_Y_LOCATION");
-                Double maxSpeed     = featureModel.getTrackFeature(trackId, "TRACK_MAX_SPEED");
-                Double medSpeed     = featureModel.getTrackFeature(trackId, "TRACK_MEDIAN_SPEED");
-                Double nrGaps       = featureModel.getTrackFeature(trackId, "NUMBER_GAPS");
-                Double longestGap   = featureModel.getTrackFeature(trackId, "LONGEST_GAP");
+                Double duration = featureModel.getTrackFeature(trackId, "TRACK_DURATION");
+                Double nrSpots = featureModel.getTrackFeature(trackId, "NUMBER_SPOTS");
+                Double xLoc = featureModel.getTrackFeature(trackId, "TRACK_X_LOCATION");
+                Double yLoc = featureModel.getTrackFeature(trackId, "TRACK_Y_LOCATION");
+                Double maxSpeed = featureModel.getTrackFeature(trackId, "TRACK_MAX_SPEED");
+                Double medSpeed = featureModel.getTrackFeature(trackId, "TRACK_MEDIAN_SPEED");
+                Double nrGaps = featureModel.getTrackFeature(trackId, "NUMBER_GAPS");
+                Double longestGap = featureModel.getTrackFeature(trackId, "LONGEST_GAP");
                 Double displacement = featureModel.getTrackFeature(trackId, "TRACK_DISPLACEMENT");
 
                 // Normalize values (rounding and null defaults)
-                duration     = roundOr(duration, 3, -1);
-                nrSpots      = roundOr(nrSpots, 0, -1);
-                xLoc         = roundOr(xLoc, 2, -1);
-                yLoc         = roundOr(yLoc, 2, -1);
-                maxSpeed     = roundOr(maxSpeed, 2, -1);
-                medSpeed     = roundOr(medSpeed, 2, -1);
-                nrGaps       = defaultIfNull(nrGaps, -1.0);
-                longestGap   = defaultIfNull(longestGap, -1.0);
+                duration = roundOr(duration, 3, -1);
+                nrSpots = roundOr(nrSpots, 0, -1);
+                xLoc = roundOr(xLoc, 2, -1);
+                yLoc = roundOr(yLoc, 2, -1);
+                maxSpeed = roundOr(maxSpeed, 2, -1);
+                medSpeed = roundOr(medSpeed, 2, -1);
+                nrGaps = defaultIfNull(nrGaps, -1.0);
+                longestGap = defaultIfNull(longestGap, -1.0);
                 displacement = roundOr(displacement, 2, -1);
 
                 // ---- Custom calculated attributes ----
                 TrackAttributes ca = calculateTrackAttributes(trackModel, trackId, TIME_INTERVAL);
 
                 int numberOfSpotsInTrack = ca.numberOfSpotsInTracks;
-                double diffusionCoeff    = ca.diffusionCoeff;
+                double diffusionCoeff = ca.diffusionCoeff;
                 double diffusionCoeffExt = ca.diffusionCoeffExt;
-                double totalDistance     = ca.totalDistance;
-                double confinementRatio  = ca.confinementRatio;
+                double totalDistance = ca.totalDistance;
+                double confinementRatio = ca.confinementRatio;
                 // Note: ca.displacement not used here (we keep TrackMate’s displacement)
 
                 String uniqueKey = recordingName + "-" + trackId;

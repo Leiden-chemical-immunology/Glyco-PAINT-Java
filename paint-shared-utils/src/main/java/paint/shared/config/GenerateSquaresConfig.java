@@ -1,8 +1,6 @@
 package paint.shared.config;
 
-import static paint.shared.config.PaintConfig.getInt;
-import static paint.shared.config.PaintConfig.getString;
-import static paint.shared.config.PaintConfig.getDouble;
+import static paint.shared.config.PaintConfig.*;
 
 /**
  * Holds the data retrieved from the GenerateSquares section of the Paint configuration file.

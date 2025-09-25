@@ -1,5 +1,10 @@
 package generatesquares;
 
+import paint.shared.dialogs.ProjectSelectionDialog;
+import paint.shared.dialogs.ProjectSpecificationDialog;
+import paint.shared.utils.JarInfo;
+import paint.shared.utils.PaintLogger;
+
 import javax.swing.*;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -7,19 +12,11 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-import paint.shared.utils.PaintLogger;
-import paint.shared.dialogs.ProjectSpecificationDialog;
-import paint.shared.dialogs.ProjectSelectionDialog;
-
+import static generatesquares.calc.GenerateSquareCalcs.generateSquaresForExperiment;
 import static paint.shared.constants.PaintConstants.SQUARES_CSV;
-
-import paint.shared.utils.JarInfo;
-
 import static paint.shared.utils.CsvConcatenator.concatenateExperimentCsvFiles;
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.Miscellaneous.formatDuration;
-
-import static generatesquares.calc.GenerateSquareCalcs.generateSquaresForExperiment;
 
 public class GenerateSquares {
 
