@@ -29,7 +29,7 @@ public final class TrackAttributeCalculations {
      * @param trackId    the ID of the track to compute attributes for
      * @param dtSeconds  the time interval between frames (in seconds)
      * @return a {@link TrackAttributes} object containing the computed attributes,
-     *         or a default instance if the track has fewer than 2 spots
+     * or a default instance if the track has fewer than 2 spots
      */
     public static TrackAttributes calculateTrackAttributes(TrackModel trackModel, int trackId, double dtSeconds) {
 

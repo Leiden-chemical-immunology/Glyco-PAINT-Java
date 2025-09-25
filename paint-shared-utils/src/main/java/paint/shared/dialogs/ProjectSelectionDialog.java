@@ -61,8 +61,8 @@ public class ProjectSelectionDialog extends JDialog {
             if (projectDirectory.isEmpty()) {
                 JOptionPane.showMessageDialog(this,
                         "A directory needs to be specified",
-                            "Specify a directory",
-                                 JOptionPane.ERROR_MESSAGE);
+                        "Specify a directory",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -71,16 +71,16 @@ public class ProjectSelectionDialog extends JDialog {
             if (Files.isRegularFile(path)) {
                 JOptionPane.showMessageDialog(this,
                         "Please specify a directory, not a file",
-                            "Specify a directory",
-                                 JOptionPane.ERROR_MESSAGE);
+                        "Specify a directory",
+                        JOptionPane.ERROR_MESSAGE);
 
                 return;
             }
             if (!Files.isDirectory(path)) {
                 JOptionPane.showMessageDialog(this,
                         "The directory does no longer exist",
-                            "Specify a directory",
-                                 JOptionPane.ERROR_MESSAGE);
+                        "Specify a directory",
+                        JOptionPane.ERROR_MESSAGE);
 
                 return;
             }

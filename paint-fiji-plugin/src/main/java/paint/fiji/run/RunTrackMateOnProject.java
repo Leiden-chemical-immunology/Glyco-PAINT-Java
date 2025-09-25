@@ -1,5 +1,15 @@
 package paint.fiji.run;
 
+import org.scijava.command.Command;
+import org.scijava.plugin.Plugin;
+import paint.shared.config.PaintConfig;
+import paint.shared.dialogs.ProjectSelectionDialog;
+import paint.shared.dialogs.ProjectSpecificationDialog;
+import paint.shared.utils.JarInfo;
+import paint.shared.utils.PaintLogger;
+import paint.shared.validate.ImageRootValidator;
+import paint.shared.validate.ProjectValidator;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
@@ -9,26 +19,13 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import paint.shared.utils.JarInfo;
-import paint.shared.validate.ImageRootValidator;
-import paint.shared.config.PaintConfig;
-import org.scijava.command.Command;
-import org.scijava.plugin.Plugin;
-
-import paint.shared.validate.ProjectValidator;
-import paint.shared.utils.PaintLogger;
-import paint.shared.dialogs.ProjectSpecificationDialog;
-import paint.shared.dialogs.ProjectSelectionDialog;
-
+import static paint.fiji.trackmate.RunTrackMateOnExperiment.runTrackMateOnExperiment;
 import static paint.shared.config.PaintConfig.getBoolean;
 import static paint.shared.config.PaintConfig.getString;
 import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
-import static paint.fiji.trackmate.RunTrackMateOnExperiment.runTrackMateOnExperiment;
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.Miscellaneous.formatDuration;
-import static paint.shared.validate.ProjectValidator.formatReport;
-import static paint.shared.validate.ProjectValidator.validateProject;
-import static paint.shared.validate.ProjectValidator.ValidateResult;
+import static paint.shared.validate.ProjectValidator.*;
 
 /**
  * SciJava/Fiji command plugin that runs the TrackMate pipeline on
@@ -48,7 +45,7 @@ import static paint.shared.validate.ProjectValidator.ValidateResult;
  *     <li>Checks are made for the presence of image root and project directories.</li>
  *     <li>TrackMate is executed for each experiment in the project.</li>
  * </ol>
- *
+ * <p>
  * Registered in Fiji under the menu path:
  * <pre>
  * Plugins &gt; Glyco-PAINT &gt; Run TrackMate on Project
@@ -86,8 +83,8 @@ public class RunTrackMateOnProject implements Command {
         // Log the JAR's manifest metadata if available
         JarInfo info = getJarInfo(RunTrackMateOnProject.class);
         if (info != null) {
-            PaintLogger.infof("Compilation date: %s",info.implementationDate);
-            PaintLogger.infof("Version: %s",info.implementationVersion);
+            PaintLogger.infof("Compilation date: %s", info.implementationDate);
+            PaintLogger.infof("Version: %s", info.implementationVersion);
         } else {
             PaintLogger.errorf("No manifest information found.");
             PaintLogger.infof();
@@ -167,7 +164,7 @@ public class RunTrackMateOnProject implements Command {
             if (debug) PaintLogger.debugf("Experiments %s", project.experimentNames.toString());
 
             // Validate experiment directories
-            ValidateResult validateResult = validateProject(projectPath, project.experimentNames, ProjectValidator.Mode.VALIDATE_TRACKMATE );
+            ValidateResult validateResult = validateProject(projectPath, project.experimentNames, ProjectValidator.Mode.VALIDATE_TRACKMATE);
             if (validateResult.isOk()) {
                 formatReport(validateResult.getErrors());
             }

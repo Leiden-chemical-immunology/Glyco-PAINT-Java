@@ -31,7 +31,9 @@ import static paint.shared.utils.Miscellaneous.formatDuration;
  */
 public class RunTrackMateOnExperiment {
 
-    /** Enables verbose logging to stdout (in addition to AppLogger). */
+    /**
+     * Enables verbose logging to stdout (in addition to AppLogger).
+     */
     static boolean verbose = false;
 
     /**

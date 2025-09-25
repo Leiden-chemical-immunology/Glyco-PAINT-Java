@@ -11,33 +11,45 @@ package paint.fiji.tracks;
  */
 public class TrackAttributes {
 
-    /** Number of spots (detections) in the track. */
+    /**
+     * Number of spots (detections) in the track.
+     */
     public final int numberOfSpotsInTracks;
 
-    /** Total path length traveled by the track (in spatial units of the dataset). */
+    /**
+     * Total path length traveled by the track (in spatial units of the dataset).
+     */
     public final double totalDistance;
 
-    /** Diffusion coefficient (based on mean squared displacement relative to first spot). */
+    /**
+     * Diffusion coefficient (based on mean squared displacement relative to first spot).
+     */
     public final double diffusionCoeff;
 
-    /** Extended diffusion coefficient (based on step-wise mean squared displacement). */
+    /**
+     * Extended diffusion coefficient (based on step-wise mean squared displacement).
+     */
     public final double diffusionCoeffExt;
 
-    /** Confinement ratio = net displacement / total distance traveled. */
+    /**
+     * Confinement ratio = net displacement / total distance traveled.
+     */
     public final double confinementRatio;
 
-    /** Net displacement between the first and last spot in the track. */
+    /**
+     * Net displacement between the first and last spot in the track.
+     */
     public final double displacement;
 
     /**
      * Creates a populated {@code TrackAttributes} object with the specified values.
      *
      * @param numberOfSpotsInTracks number of spots (detections) in the track
-     * @param totalDistance total distance traveled along the track
-     * @param diffusionCoeff diffusion coefficient from MSD relative to the first spot
-     * @param diffusionCoeffExt extended diffusion coefficient from step-wise MSD
-     * @param confinementRatio ratio of displacement to total distance
-     * @param displacement net displacement between first and last spot
+     * @param totalDistance         total distance traveled along the track
+     * @param diffusionCoeff        diffusion coefficient from MSD relative to the first spot
+     * @param diffusionCoeffExt     extended diffusion coefficient from step-wise MSD
+     * @param confinementRatio      ratio of displacement to total distance
+     * @param displacement          net displacement between first and last spot
      */
     public TrackAttributes(int numberOfSpotsInTracks,
                            double totalDistance,

@@ -10,52 +10,84 @@ package paint.fiji.trackmate;
  */
 public class TrackMateConfig {
 
-    /** Maximum number of frames allowed for closing a gap between spots. */
+    /**
+     * Maximum number of frames allowed for closing a gap between spots.
+     */
     public int maxFrameGap;
 
-    /** Maximum distance allowed for linking spots between consecutive frames. */
+    /**
+     * Maximum distance allowed for linking spots between consecutive frames.
+     */
     public double linkingMaxDistance;
 
-    /** Maximum distance allowed for closing a gap between non-consecutive frames. */
+    /**
+     * Maximum distance allowed for closing a gap between non-consecutive frames.
+     */
     public double gapClosingMaxDistance;
 
-    /** Cost factor used for alternative linking heuristics. */
+    /**
+     * Cost factor used for alternative linking heuristics.
+     */
     public double alternativeLinkingCostFactor;
 
-    /** Maximum distance allowed for splitting a track into branches. */
+    /**
+     * Maximum distance allowed for splitting a track into branches.
+     */
     public double splittingMaxDistance;
 
-    /** Whether to allow closing of gaps in tracks. */
+    /**
+     * Whether to allow closing of gaps in tracks.
+     */
     public boolean allowGapClosing;
 
-    /** Whether to allow merging of tracks. */
+    /**
+     * Whether to allow merging of tracks.
+     */
     public boolean allowTrackMerging;
 
-    /** Whether to allow splitting of tracks. */
+    /**
+     * Whether to allow splitting of tracks.
+     */
     public boolean allowTrackSplitting;
 
-    /** Maximum distance allowed for merging two tracks. */
+    /**
+     * Maximum distance allowed for merging two tracks.
+     */
     public double mergingMaxDistance;
 
-    /** Whether to enable subpixel localization during spot detection. */
+    /**
+     * Whether to enable subpixel localization during spot detection.
+     */
     public boolean doSubpixelLocalization;
 
-    /** Detection radius for spot finding (in pixels). */
+    /**
+     * Detection radius for spot finding (in pixels).
+     */
     public double radius;
 
-    /** Target channel in the image for analysis (1-based index). */
+    /**
+     * Target channel in the image for analysis (1-based index).
+     */
     public int targetChannel;
 
-    /** Whether to apply median filtering to the image before detection. */
+    /**
+     * Whether to apply median filtering to the image before detection.
+     */
     public boolean doMedianFiltering;
 
-    /** Minimum number of spots required in a track. */
+    /**
+     * Minimum number of spots required in a track.
+     */
     public int minNumberOfSpots;
 
-    /** Maximum number of spots allowed in a single image. */
+    /**
+     * Maximum number of spots allowed in a single image.
+     */
     public int maxNrOfSpotsInImage;
 
-    /** Method used for coloring tracks (e.g., by displacement, speed). */
+    /**
+     * Method used for coloring tracks (e.g., by displacement, speed).
+     */
     public String trackColouring;
 
     /**

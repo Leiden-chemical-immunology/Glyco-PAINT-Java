@@ -1,18 +1,23 @@
 package paint.shared.dialogs;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.text.*;
-import java.awt.*;
-import java.io.File;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.List;
-
 import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.objects.Project;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import java.awt.*;
+import java.io.File;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
 import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;

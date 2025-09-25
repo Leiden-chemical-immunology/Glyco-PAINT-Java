@@ -15,6 +15,10 @@ import ij.ImagePlus;
 import ij.gui.ImageWindow;
 import ij.io.FileSaver;
 import loci.common.DebugTools;
+import paint.fiji.tracks.TrackCsvWriter;
+import paint.shared.config.TrackMateConfig;
+import paint.shared.objects.ExperimentInfo;
+import paint.shared.utils.PaintLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,11 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
-
-import paint.fiji.tracks.TrackCsvWriter;
-import paint.shared.utils.PaintLogger;
-import paint.shared.config.TrackMateConfig;
-import paint.shared.objects.ExperimentInfo;
 
 import static paint.shared.config.PaintConfig.getBoolean;
 
@@ -36,22 +35,26 @@ import static paint.shared.config.PaintConfig.getBoolean;
  */
 public class RunTrackMateOnRecording {
 
-    /** Verbose output flag (prints configuration to stdout when enabled). */
+    /**
+     * Verbose output flag (prints configuration to stdout when enabled).
+     */
     final boolean verbose = false;
 
-    /** Global debug flag (enables validation and detailed logging when true). */
+    /**
+     * Global debug flag (enables validation and detailed logging when true).
+     */
     static final boolean debug = true;
 
     /**
      * Executes the TrackMate pipeline on the specified recording and image data.
      *
-     * @param experimentPath        base path of the experiment where results will be stored
-     * @param imagesPath            path containing the input ND2 image files
-     * @param trackMateConfig       configuration parameters controlling detection and tracking
-     * @param threshold             intensity threshold for spot detection
-     * @param experimentInfoRecord  metadata about the experiment (e.g. recording name)
-     * @return                      a {@link TrackMateResults} summarizing the outcome
-     * @throws IOException          if an I/O error occurs while creating directories or saving files
+     * @param experimentPath       base path of the experiment where results will be stored
+     * @param imagesPath           path containing the input ND2 image files
+     * @param trackMateConfig      configuration parameters controlling detection and tracking
+     * @param threshold            intensity threshold for spot detection
+     * @param experimentInfoRecord metadata about the experiment (e.g. recording name)
+     * @return a {@link TrackMateResults} summarizing the outcome
+     * @throws IOException if an I/O error occurs while creating directories or saving files
      */
     public static TrackMateResults RunTrackMateOnRecording(Path experimentPath,
                                                            Path imagesPath,
@@ -84,8 +87,7 @@ public class RunTrackMateOnRecording {
 //                imp = imps[0];  // first series
 //            }
             imp = IJ.openImage(nd2File.getAbsolutePath());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             PaintLogger.errorf("Could not load image file: %s", nd2File.getAbsolutePath());
         }
         if (imp == null) {
@@ -181,13 +183,12 @@ public class RunTrackMateOnRecording {
                 if (win != null) {
                     imp.close();
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 PaintLogger.warningf("Error while closing image: %s", e.getMessage());
             }
             return new TrackMateResults(true, false);
         }
-        PaintLogger.infof("      TrackMate - number of spots detected: %d",  numberSpots);
+        PaintLogger.infof("      TrackMate - number of spots detected: %d", numberSpots);
 
 
         // Start the dot-printing watchdog
@@ -266,8 +267,7 @@ public class RunTrackMateOnRecording {
                     experimentInfoRecord.getRecordingName(),
                     tracksPath.toFile(),
                     true);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             PaintLogger.errorf("Failed to write tracks to 's%'", tracksPath);
         }
 
@@ -291,8 +291,7 @@ public class RunTrackMateOnRecording {
             if (win != null) {
                 imp.close();
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             PaintLogger.warningf("Error while closing image: %s", e.getMessage());
         }
 
