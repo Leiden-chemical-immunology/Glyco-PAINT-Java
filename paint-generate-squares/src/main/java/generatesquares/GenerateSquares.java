@@ -43,6 +43,7 @@ public class GenerateSquares {
                 return;
             }
 
+            // The user pushed OK: we should have a valid project directory
             PaintConfig.initialise(projectPath);
             PaintLogger.initialise(projectPath, "Generate Squares.log", "Info");
 
