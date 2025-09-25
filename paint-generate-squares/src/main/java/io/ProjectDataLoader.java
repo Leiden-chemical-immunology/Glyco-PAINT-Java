@@ -149,8 +149,14 @@ public final class ProjectDataLoader {
                     RECORDING_TYPES,
                     false
             );
-            recordings = recIO.toEntities(recTable);
-            recordings.forEach(experiment::addRecording);
+            if (recTable != null) {
+                recordings = recIO.toEntities(recTable);
+                recordings.forEach(experiment::addRecording);
+            }
+            else {
+                PaintLogger.errorf("Failed to read %s in %s", RECORDINGS_CSV, experimentName);
+                return null;
+            }
         } catch (Exception e) {
             PaintLogger.errorf("Failed to read %s in %s: %s", RECORDINGS_CSV, experimentName, friendlyMessage(e));
             return null;
