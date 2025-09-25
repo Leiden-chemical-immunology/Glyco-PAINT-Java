@@ -1,15 +1,11 @@
 package paint.shared.validate_new;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import paint.shared.constants.PaintConstants;
 import tech.tablesaw.api.ColumnType;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Validator for experiment_info.csv.

@@ -14,7 +14,6 @@ public class ValidatorDemo {
                 "/Users/hans/Paint Test Project/221012 Test 2/All Squares Java.csv",
                 "/Users/hans/Paint Test Project/221012 Test 2/Experiment Info.csv");
 
-
         for (String path : filesToCheck) {
             File file = new File(path);
             if (!file.exists()) {
@@ -22,31 +21,51 @@ public class ValidatorDemo {
                 continue;
             }
 
-            ValidationResult result = validateFile(file);
-
             System.out.println("\n--- Validating " + file.getName() + " ---");
-            if (result.isValid()) {
-                System.out.println("✔ Validation passed.");
+
+            // Header-only check
+            ValidationResult headerOnly = validateFile(file, false);
+            if (headerOnly.isValid()) {
+                System.out.println("✔ Header validation passed.");
             } else {
-                System.out.println("⚠ Validation failed:");
-                result.getErrors().forEach(System.out::println);
+                System.out.println("⚠ Header validation failed:");
+                headerOnly.getErrors().forEach(System.out::println);
+            }
+
+            // Full validation (headers + values + consistency if applicable)
+            ValidationResult full = validateFile(file, true);
+            if (full.isValid()) {
+                System.out.println("✔ Full validation passed.");
+            } else {
+                System.out.println("⚠ Full validation failed:");
+                full.getErrors().forEach(System.out::println);
             }
         }
     }
 
-    private static ValidationResult validateFile(File file) {
+    private static ValidationResult validateFile(File file, boolean checkValues) {
         String name = file.getName().toLowerCase();
 
         if (name.contains("experiment")) {
-            return new ExperimentInfoValidator()
-                    .validateWithConsistency(file, getExperimentName(file));
+            ExperimentInfoValidator validator = new ExperimentInfoValidator();
+            return checkValues
+                    ? validator.validateWithConsistency(file, getExperimentName(file))
+                    : validator.validateHeadersOnly(file);
         } else if (name.contains("recording")) {
-            return new RecordingsValidator()
-                    .validateWithConsistency(file, getExperimentName(file));
+            RecordingsValidator validator = new RecordingsValidator();
+            return checkValues
+                    ? validator.validateWithConsistency(file, getExperimentName(file))
+                    : validator.validateHeadersOnly(file);
         } else if (name.contains("track")) {
-            return new TracksValidator().validate(file);
+            TracksValidator validator = new TracksValidator();
+            return checkValues
+                    ? validator.validate(file)   // full check
+                    : validator.validateHeadersOnly(file);
         } else if (name.contains("square")) {
-            return new SquaresValidator().validate(file);
+            SquaresValidator validator = new SquaresValidator();
+            return checkValues
+                    ? validator.validate(file)   // full check
+                    : validator.validateHeadersOnly(file);
         } else {
             ValidationResult result = new ValidationResult();
             result.addError("Unknown file type: " + name);

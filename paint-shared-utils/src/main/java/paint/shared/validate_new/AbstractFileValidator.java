@@ -20,23 +20,22 @@ public abstract class AbstractFileValidator {
 
     private final Set<String> reportedTypeErrors = new HashSet<>();
 
-    // ISO timestamp parser: supports yyyy-MM-dd and optional fractional seconds
+    // Flexible timestamp parser: supports yyyy-MM-dd and dd/MM/yyyy with optional fractions
     private static final DateTimeFormatter FLEXIBLE_DATE_TIME = new DateTimeFormatterBuilder()
-            .appendPattern("yyyy-MM-dd'T'HH:mm:ss")
+            .appendPattern("[yyyy-MM-dd'T'HH:mm:ss][dd/MM/yyyy'T'HH:mm:ss]")
             .optionalStart()
             .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true)
             .optionalEnd()
             .toFormatter();
 
-    // Slash timestamp parser: supports dd/MM/yyyy and optional fractional seconds
-    private static final DateTimeFormatter SLASH_DATE_TIME = new DateTimeFormatterBuilder()
-            .appendPattern("dd/MM/yyyy'T'HH:mm:ss")
-            .optionalStart()
-            .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true)
-            .optionalEnd()
-            .toFormatter();
-
-    public ValidationResult validate(File file) {
+    /**
+     * Validate headers and optionally values.
+     *
+     * @param file        CSV file
+     * @param checkValues if true, check row values against expected types
+     * @return ValidationResult
+     */
+    public ValidationResult validate(File file, boolean checkValues) {
         ValidationResult result = new ValidationResult();
 
         CSVFormat format = CSVFormat.DEFAULT.builder()
@@ -54,8 +53,11 @@ public abstract class AbstractFileValidator {
 
             validateHeader(header, result);
 
-            ColumnType[] types = getExpectedTypes();
+            if (!checkValues || result.hasErrors()) {
+                return result; // stop if only header check or headers already invalid
+            }
 
+            ColumnType[] types = getExpectedTypes();
             boolean reportedMismatch = false;
 
             for (int i = 0; i < records.size(); i++) {
@@ -84,6 +86,20 @@ public abstract class AbstractFileValidator {
         }
 
         return result;
+    }
+
+    /**
+     * Shortcut: header-only validation
+     */
+    public ValidationResult validateHeadersOnly(File file) {
+        return validate(file, false);
+    }
+
+    /**
+     * Full validation (headers + values)
+     */
+    public ValidationResult validate(File file) {
+        return validate(file, true);
     }
 
     protected abstract void validateHeader(List<String> actualHeader, ValidationResult result);
@@ -151,11 +167,7 @@ public abstract class AbstractFileValidator {
                         throw new IllegalArgumentException();
                     break;
                 case "LOCAL_DATE_TIME":
-                    try {
-                        LocalDateTime.parse(value, FLEXIBLE_DATE_TIME);
-                    } catch (Exception e1) {
-                        LocalDateTime.parse(value, SLASH_DATE_TIME);
-                    }
+                    LocalDateTime.parse(value, FLEXIBLE_DATE_TIME);
                     break;
                 case "STRING":
                     break; // Always valid
