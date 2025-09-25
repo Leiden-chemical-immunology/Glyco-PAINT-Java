@@ -34,8 +34,8 @@ public class GenerateSquares {
         SwingUtilities.invokeLater(() -> {
 
             // Display the project directory selection dialog
-            ProjectSelectionDialog projDlg = new ProjectSelectionDialog(null);
-            Path projectPath = projDlg.showDialog();
+            ProjectSelectionDialog projectSelectionDialog = new ProjectSelectionDialog(null);
+            Path projectPath = projectSelectionDialog.showDialog();
 
             // If the user selected Cancel, then return.
             if (projectPath == null) {

@@ -210,7 +210,7 @@ public class ProjectSpecificationDialog {
 
         // --- Experiment selection checkboxes ---
         checkboxPanel.setLayout(new BoxLayout(checkboxPanel, BoxLayout.Y_AXIS));
-        populateCheckboxes(paintConfig);
+        populateCheckboxes();
 
         JScrollPane scrollPane = new JScrollPane(checkboxPanel);
         scrollPane.setPreferredSize(new Dimension(600, 200));
@@ -288,9 +288,8 @@ public class ProjectSpecificationDialog {
      * as a checkbox. The selection state of each is restored
      * from the provided {@link PaintConfig}.
      *
-     * @param config the configuration used to restore experiment selections
      */
-    private void populateCheckboxes(PaintConfig config) {
+    private void populateCheckboxes() {
         checkboxPanel.removeAll();
         checkBoxes.clear();
 

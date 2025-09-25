@@ -46,7 +46,7 @@ public abstract class AbstractFileValidator {
                 .build();
 
         try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
-             CSVParser parser = format.parse(reader)) {
+            CSVParser parser = format.parse(reader)) {
 
             List<String> header = parser.getHeaderNames();
             List<CSVRecord> records = parser.getRecords();
