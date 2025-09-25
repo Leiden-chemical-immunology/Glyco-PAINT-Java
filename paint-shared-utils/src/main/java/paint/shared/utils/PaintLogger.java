@@ -198,7 +198,7 @@ public class PaintLogger {
         try {
             logger.info(String.format(format, args));
         } catch (Exception e) {
-            System.err.printf("infof called before initialising\n");
+            System.err.print("infof called before initialising\n");
             System.err.printf(format, args);
         }
     }
@@ -217,7 +217,7 @@ public class PaintLogger {
         try {
             logger.warning(String.format(format, args));
         } catch (Exception e) {
-            System.err.printf("warningf called before initialising\n");
+            System.err.print("warningf called before initialising\n");
             System.err.printf(format, args);
         }
     }
@@ -232,7 +232,7 @@ public class PaintLogger {
         try {
             logger.severe(String.format(format, args));
         } catch (Exception e) {
-            System.err.printf("errof called before initialising\n");
+            System.err.print("errof called before initialising\n");
             System.err.printf(format, args);
         }
     }
@@ -247,7 +247,7 @@ public class PaintLogger {
         try {
             logger.fine(String.format(format, args));
         } catch (Exception e) {
-            System.err.printf("Infof called before initialising\n");
+            System.err.print("Infof called before initialising\n");
             System.err.printf(format, args);
         }
     }
