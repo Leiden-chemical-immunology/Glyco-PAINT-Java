@@ -123,9 +123,10 @@ public class ProjectSpecificationDialog {
         UIManager.put("Button.font", baseFont);
 
         // Set dialog title
+        String projectName = projectPath.getFileName().toString();
         String dialogTitle = (mode == DialogMode.TRACKMATE)
-                ? "Run TrackMate on Project"
-                : "Generate Squares for Project";
+                ? "Run TrackMate on Project - '" + projectName + "'"
+                : "Generate Squares for Project - '" + projectName + "'";
 
         this.dialog = new JDialog(owner, dialogTitle, false);
         this.dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
