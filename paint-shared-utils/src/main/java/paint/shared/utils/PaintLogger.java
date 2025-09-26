@@ -24,21 +24,26 @@ public class PaintLogger {
      * Initialize the logger with a given log file name and set the
      * default logging level (from preferences).
      *
+     * @param projectPath base project path
      * @param logFileName base name of the log file (without extension)
      */
     public static void initialise(Path projectPath, String logFileName) {
-        String loggingLeveL = getDefaultLoggingLevel();
-        initialise(projectPath, logFileName, loggingLeveL);
+        initialise(projectPath, logFileName, getDefaultLoggingLevel());
     }
-
 
     /**
      * Initialize the logger with a given log file name and an explicit log level.
      *
+     * @param projectPath  base project path
      * @param logFileName  base name of the log file (without extension)
      * @param loggingLevel log level name (e.g. "INFO", "DEBUG", "WARN")
      */
     public static void initialise(Path projectPath, String logFileName, String loggingLevel) {
+        if (logger != null) {
+            warningf("PaintLogger already initialised, ignoring second initialise call.");
+            return;
+        }
+
         setupLogger(projectPath, logFileName);
         PaintLogger.infof("Logging into file %s.", logFileName);
         setLevel(loggingLevel);
@@ -47,11 +52,17 @@ public class PaintLogger {
     /**
      * Internal helper to configure the logger, its handlers, and the log file.
      *
-     * @param baseName base name for the log file
+     * @param projectPath project base path
+     * @param baseName    base name for the log file
      */
     private static void setupLogger(Path projectPath, String baseName) {
         logger = Logger.getLogger("Paint");
         logger.setUseParentHandlers(false);
+
+        // Clear any handlers just in case
+        for (Handler h : logger.getHandlers()) {
+            logger.removeHandler(h);
+        }
 
         // Console handler
         ConsoleHandler consoleHandler = new ConsoleHandler();
@@ -60,7 +71,7 @@ public class PaintLogger {
         logger.addHandler(consoleHandler);
 
         try {
-            // Create log directory under ~/Paint/Logger if it does not exist
+            // Create log directory under projectPath/Logs if it does not exist
             Path logDirPath = projectPath.resolve("Logs");
             Files.createDirectories(logDirPath);
 
@@ -82,9 +93,6 @@ public class PaintLogger {
     /**
      * Generate the next available log file name by incrementing a counter
      * until an unused name is found.
-     *
-     * @param baseName base name (prefix) for the log file
-     * @return unique log file name with ".log" extension
      */
     private static String nextLogFileName(Path logDir, String baseName) {
         int counter = 0;
@@ -125,8 +133,6 @@ public class PaintLogger {
 
     /**
      * Set the logging level for all handlers.
-     *
-     * @param level the {@link Level} to apply
      */
     public static void setLevel(Level level) {
         if (logger != null) {
@@ -141,8 +147,6 @@ public class PaintLogger {
      * Set the logging level by name, with support for common aliases
      * (e.g. "ERROR" = "SEVERE", "DEBUG" = "FINE").
      * Falls back to INFO if the name is unrecognized.
-     *
-     * @param levelName name of the logging level
      */
     public static void setLevel(String levelName) {
         Level level;
@@ -188,12 +192,6 @@ public class PaintLogger {
 
     // Convenience methods
 
-    /**
-     * Log an INFO level message with printf-style formatting.
-     *
-     * @param format format string
-     * @param args   arguments
-     */
     public static void infof(String format, Object... args) {
         try {
             logger.info(String.format(format, args));
@@ -207,12 +205,6 @@ public class PaintLogger {
         infof("");
     }
 
-    /**
-     * Log a WARNING level message with printf-style formatting.
-     *
-     * @param format format string
-     * @param args   arguments
-     */
     public static void warningf(String format, Object... args) {
         try {
             logger.warning(String.format(format, args));
@@ -222,32 +214,20 @@ public class PaintLogger {
         }
     }
 
-    /**
-     * Log a SEVERE (error) level message with printf-style formatting.
-     *
-     * @param format format string
-     * @param args   arguments
-     */
     public static void errorf(String format, Object... args) {
         try {
             logger.severe(String.format(format, args));
         } catch (Exception e) {
-            System.err.print("errof called before initialising\n");
+            System.err.print("errorf called before initialising\n");
             System.err.printf(format, args);
         }
     }
 
-    /**
-     * Log a FINE (debug) level message with printf-style formatting.
-     *
-     * @param format format string
-     * @param args   arguments
-     */
     public static void debugf(String format, Object... args) {
         try {
             logger.fine(String.format(format, args));
         } catch (Exception e) {
-            System.err.print("Infof called before initialising\n");
+            System.err.print("debugf called before initialising\n");
             System.err.printf(format, args);
         }
     }
@@ -257,12 +237,7 @@ public class PaintLogger {
     }
 
     /**
-     * Sets the logging level from user preferences (Mac: {@code ~/Library/Preferences/com.apple.java.util.prefs.plist}).
-     * <p>
-     * Node: {@code Glyco-PAINT}, Key: {@code loggingLevel}.
-     * Defaults to "Info" if missing.
-     * </p>
-     * This allows persistent configuration of logging verbosity across runs.
+     * Sets the logging level from user preferences.
      */
     public static String getDefaultLoggingLevel() {
         String PREF_NODE = "Glyco-PAINT";
