@@ -59,24 +59,25 @@
 
 
 
+# Development Log
 
 
 
-###### Paint Apps as Desktop App
+#### Paint Apps as Desktop App
 
 - All Paint Apps are standalone and can be started as any macOS application. 
 - The standard Apple app package structure is used.
 
 
 
-###### Paint Config file sits in the project directory
+#### Paint Config file sits in the project directory
 
 - Each project has its own configuration file. 
 - When no file is print, one is created with default parameters
 
 
 
-###### Logs file sits in the project directory
+#### Logs file sits in the project directory
 
 - Log file are no longer kept in a central place, but stored project specifically.
 - In the project directory a Logs directory  will be created if it does not exist.
@@ -84,7 +85,7 @@
 
  
 
-###### PaintLogger uses a console window dedicated to Paint
+#### PaintLogger uses a console window dedicated to Paint
 
 - The Paint plugin and apps use its dedicated Console window (previously the Fiji plugin used Fiji's console and Generate Squares did not have a console).
 - The heavy dump of Fiji messages and AWT stack dumps are now hidden: considerably less distraction.
@@ -94,7 +95,7 @@
 
 
 
-###### SweepUpfront validation
+#### SweepUpfront validation
 
 - Before TrackMate or Generate Squares start, input file correctness is validated.
 - Presence of the expected headers is validated.
@@ -105,13 +106,13 @@
 
 
 
-###### Version information
+#### Version information
 
 - Version information and generation data of jars are reported in the PaintLog to help detect version problems.
 
   
 
-###### Sweep support - under development
+#### Sweep support - under development
 
 - Support for parameter sweeps is implemented allowing TrackMate and Generate Squares calculations to be performed over a range of parameters.
 - A Sweep Config.csv filke in the project directory specifies the sweeo parameters and range.
