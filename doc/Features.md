@@ -59,7 +59,7 @@
 
 
 
-# Development Log
+#  Development Log
 
 
 
@@ -95,7 +95,7 @@
 
 
 
-#### SweepUpfront validation
+#### Upfront validation
 
 - Before TrackMate or Generate Squares start, input file correctness is validated.
 - Presence of the expected headers is validated.
