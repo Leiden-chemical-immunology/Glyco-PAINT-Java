@@ -20,11 +20,7 @@ public class TracksValidator extends AbstractFileValidator {
     @Override
     protected void validateHeader(List<String> actualHeader, ValidationResult result) {
         List<String> expectedHeader = Arrays.asList(PaintConstants.TRACK_COLS);
-        if (!expectedHeader.equals(actualHeader)) {
-            result.addError("Header mismatch."
-                    + "\nExpected: " + expectedHeader
-                    + "\nActual:   " + actualHeader);
-        }
+        headersMatch(expectedHeader, actualHeader, result);
     }
 
     @Override

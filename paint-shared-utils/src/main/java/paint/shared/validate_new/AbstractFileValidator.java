@@ -106,7 +106,7 @@ public abstract class AbstractFileValidator {
 
     protected abstract ColumnType[] getExpectedTypes();
 
-    protected boolean headersMatch(List<String> expected, List<String> actual) {
+    protected boolean headersMatch(List<String> expected, List<String> actual, ValidationResult result) {
         if (expected.equals(actual)) {
             return true;
         }
@@ -119,19 +119,20 @@ public abstract class AbstractFileValidator {
                 .filter(h -> !expected.contains(h))
                 .collect(Collectors.toList());
 
-        StringBuilder error = new StringBuilder("Header mismatch.");
+        StringBuilder error = new StringBuilder("Header mismatch:");
 
         if (!missing.isEmpty()) {
-            error.append("\nMissing headers: ").append(missing);
+            error.append("\n- Missing headers: ").append(missing);
         }
 
         if (!unexpected.isEmpty()) {
-            error.append("\nUnexpected headers: ").append(unexpected);
+            error.append("\n- Unexpected headers: ").append(unexpected);
         }
 
-        error.append("\nExpected: ").append(expected);
+        error.append("\n\nExpected: ").append(expected);
         error.append("\nActual:   ").append(actual);
 
+        result.addError(error.toString());
         return false;
     }
 

@@ -23,11 +23,7 @@ public class ExperimentInfoValidator extends AbstractFileValidator {
     @Override
     protected void validateHeader(List<String> actualHeader, ValidationResult result) {
         List<String> expectedHeader = Arrays.asList(PaintConstants.EXPERIMENT_INFO_COLS);
-        if (!expectedHeader.equals(actualHeader)) {
-            result.addError("Header mismatch."
-                    + "\nExpected: " + expectedHeader
-                    + "\nActual:   " + actualHeader);
-        }
+        headersMatch(expectedHeader, actualHeader, result);
     }
 
     @Override

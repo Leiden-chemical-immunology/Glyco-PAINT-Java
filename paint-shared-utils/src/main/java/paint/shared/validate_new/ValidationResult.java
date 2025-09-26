@@ -6,13 +6,15 @@ import java.util.List;
 
 /**
  * Holds the outcome of a validation process.
- * Collects errors (and potentially warnings in the future).
+ * Collects errors, warnings, and informational messages.
  */
 public class ValidationResult {
 
     private final List<String> errors = new ArrayList<>();
     private final List<String> warnings = new ArrayList<>();
     private final List<String> infos = new ArrayList<>();
+
+    // --- Adders ---
 
     public void addError(String message) {
         errors.add(message);
@@ -26,6 +28,8 @@ public class ValidationResult {
         infos.add(message);
     }
 
+    // --- Getters ---
+
     public List<String> getErrors() {
         return Collections.unmodifiableList(errors);
     }
@@ -38,36 +42,52 @@ public class ValidationResult {
         return Collections.unmodifiableList(infos);
     }
 
+    // --- State checks ---
+
     public boolean hasErrors() {
         return !errors.isEmpty();
+    }
+
+    public boolean hasWarnings() {
+        return !warnings.isEmpty();
     }
 
     public boolean isValid() {
         return errors.isEmpty();
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("ValidationResult:\n");
-        if (!errors.isEmpty()) {
-            sb.append("Errors:\n").append(String.join("\n", errors)).append("\n");
-        }
-        if (!warnings.isEmpty()) {
-            sb.append("Warnings:\n").append(String.join("\n", warnings)).append("\n");
-        }
-        if (!infos.isEmpty()) {
-            sb.append("Infos:\n").append(String.join("\n", infos)).append("\n");
-        }
-        if (errors.isEmpty() && warnings.isEmpty() && infos.isEmpty()) {
-            sb.append("no issues");
-        }
-        return sb.toString();
-    }
+    // --- Merge ---
 
     public void merge(ValidationResult other) {
         if (other == null) return;
         this.errors.addAll(other.getErrors());
         this.warnings.addAll(other.getWarnings());
         this.infos.addAll(other.getInfos());
+    }
+
+    // --- Formatting ---
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        if (errors.isEmpty() && warnings.isEmpty() && infos.isEmpty()) {
+            sb.append("✔ No issues found");
+        } else {
+            if (!errors.isEmpty()) {
+                sb.append("Errors:\n");
+                errors.forEach(e -> sb.append(" - ").append(e).append("\n"));
+            }
+            if (!warnings.isEmpty()) {
+                sb.append("Warnings:\n");
+                warnings.forEach(w -> sb.append(" - ").append(w).append("\n"));
+            }
+            if (!infos.isEmpty()) {
+                sb.append("Info:\n");
+                infos.forEach(i -> sb.append(" - ").append(i).append("\n"));
+            }
+        }
+
+        return sb.toString().trim();
     }
 }
