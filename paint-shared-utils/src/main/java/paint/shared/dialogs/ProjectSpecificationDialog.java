@@ -20,7 +20,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
-import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 
 public class ProjectSpecificationDialog {
 
@@ -219,10 +218,13 @@ public class ProjectSpecificationDialog {
         cancelButton.addActionListener(e -> {
             cancelCount++;
             if (cancelCount == 1) {
-                cancelled = true;               // request stop
-                cancelButton.setText("Close");  // change label
+                cancelled = true; // request stop
+                JOptionPane.showMessageDialog(dialog,
+                        "Processing will stop after the current recording finishes.",
+                        "Cancellation Requested",
+                        JOptionPane.INFORMATION_MESSAGE);
             } else {
-                dialog.dispose();               // second press closes
+                dialog.dispose(); // second cancel closes dialog
             }
         });
 
@@ -342,5 +344,9 @@ public class ProjectSpecificationDialog {
 
     public boolean isCancelled() {
         return cancelled;
+    }
+
+    public JDialog getDialog() {
+        return dialog;
     }
 }

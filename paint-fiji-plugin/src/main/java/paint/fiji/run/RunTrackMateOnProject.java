@@ -7,12 +7,12 @@ import paint.shared.dialogs.ProjectSelectionDialog;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.utils.JarInfo;
 import paint.shared.utils.PaintLogger;
+import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.validate.ValidationResult;
 
 import javax.swing.*;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,10 +28,6 @@ import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.validate.ImageRootValidator.validateImageRoot;
 import static paint.shared.validate.Validation.validateExperiments;
 
-/**
- * SciJava/Fiji command plugin that runs the TrackMate pipeline on
- * selected experiments in a selected project.
- */
 @Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run TrackMate on Project")
 public class RunTrackMateOnProject implements Command {
 
@@ -50,7 +46,6 @@ public class RunTrackMateOnProject implements Command {
             return;
         }
 
-        // Ask user to select a project directory
         ProjectSelectionDialog projDlg = new ProjectSelectionDialog(null);
         Path projectPath = projDlg.showDialog();
 
@@ -59,12 +54,10 @@ public class RunTrackMateOnProject implements Command {
             return;
         }
 
-        // Initialise configuration + logging
         PaintConfig.initialise(projectPath);
         PaintLogger.initialise(projectPath, "TrackMateOnProject");
         PaintLogger.debugf("TrackMate plugin started");
 
-        // Log JAR metadata
         JarInfo info = getJarInfo(RunTrackMateOnProject.class);
         if (info != null) {
             PaintLogger.infof("Compilation date: %s", info.implementationDate);
@@ -76,6 +69,9 @@ public class RunTrackMateOnProject implements Command {
 
         ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(
                 null, projectPath, ProjectSpecificationDialog.DialogMode.TRACKMATE);
+
+        // Ensure the console closes when this dialog closes
+        PaintConsoleWindow.closeOnDialogDispose(dialog.getDialog());
 
         dialog.setCalculationCallback(project -> {
             if (running) {
@@ -165,11 +161,9 @@ public class RunTrackMateOnProject implements Command {
                 }
 
                 for (String experimentName : project.experimentNames) {
-                    System.out.println("Test if we should proceed");
-                    System.out.println(dialog.isCancelled());
                     if (dialog.isCancelled()) {
-                        PaintLogger.warningf("Processing aborted by user request.");
-                        break; // stop before next experiment
+                        PaintLogger.warningf("Processing aborted by user.");
+                        break;
                     }
 
                     Path experimentPath = projectPath.resolve(experimentName);
@@ -178,7 +172,7 @@ public class RunTrackMateOnProject implements Command {
                     } else {
                         try {
                             status = runTrackMateOnExperiment(
-                                    experimentPath, imagesPath.resolve(experimentName));
+                                    experimentPath, imagesPath.resolve(experimentName), dialog);
                         } catch (Exception e) {
                             PaintLogger.errorf("Error during TrackMate run for '%s': %s", experimentName, e.getMessage());
                             StringWriter sw = new StringWriter();
@@ -195,6 +189,12 @@ public class RunTrackMateOnProject implements Command {
 
                 if (dialog.isCancelled()) {
                     PaintLogger.infof("Run was cancelled by the user.");
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(dialog.getDialog(),
+                                "Processing was cancelled.\nThe run stopped after the current recording finished.",
+                                "Processing Cancelled",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    });
                     return false;
                 }
 

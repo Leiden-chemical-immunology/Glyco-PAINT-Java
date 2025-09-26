@@ -6,6 +6,7 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
+import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.objects.ExperimentInfo;
 import paint.shared.utils.PaintLogger;
 
@@ -41,9 +42,12 @@ public class RunTrackMateOnExperiment {
      *
      * @param experimentPath Path to the experiment folder (must contain `experiment_info.csv`)
      * @param imagesPath     Path to the base folder containing raw recording images
+     * @param dialog         Reference to the dialog (for cancellation checks)
      * @return {@code true} if all selected recordings were processed successfully; otherwise {@code false}
      */
-    public static boolean runTrackMateOnExperiment(Path experimentPath, Path imagesPath) {
+    public static boolean runTrackMateOnExperiment(Path experimentPath,
+                                                   Path imagesPath,
+                                                   ProjectSpecificationDialog dialog) {
 
         Duration totalDuration = Duration.ZERO;
         int numberRecordings = 0;
@@ -104,6 +108,12 @@ public class RunTrackMateOnExperiment {
             printer.printRecord(header);
 
             for (CSVRecord record : parser) {
+                // 🔹 Check for cancel request before starting a new recording
+                if (dialog != null && dialog.isCancelled()) {
+                    PaintLogger.warningf("User requested cancellation. Stopping after current recording.");
+                    break;
+                }
+
                 try {
                     // Parse row into a map and wrap in ExperimentInfo
                     Map<String, String> row = new LinkedHashMap<>();

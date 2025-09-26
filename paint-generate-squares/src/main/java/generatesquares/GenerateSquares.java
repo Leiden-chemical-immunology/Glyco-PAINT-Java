@@ -45,7 +45,7 @@ public class GenerateSquares {
 
             // The user pushed OK: we should have a valid project directory
             PaintConfig.initialise(projectPath);
-            PaintLogger.initialise(projectPath, "Generate Squares.log", "Info");
+            PaintLogger.initialise(projectPath, "Generate Squares.log");
 
             PaintLogger.debugf("Starting Generate Squares...");
 
