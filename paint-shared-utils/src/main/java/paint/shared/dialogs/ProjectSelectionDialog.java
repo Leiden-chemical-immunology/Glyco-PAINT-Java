@@ -1,7 +1,5 @@
 package paint.shared.dialogs;
 
-import paint.shared.config.PaintConfig;
-
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
@@ -10,15 +8,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.prefs.Preferences;
 
-import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
-
 public class ProjectSelectionDialog extends JDialog {
 
     private static final String PREF_NODE = "Glyco-PAINT.GenerateSquares";
     private static final String KEY_PROJECT = "projectDir";
 
     private final JTextField directoryField;
+    private final JButton okButton;
+    private final JButton cancelButton;
     private boolean okPressed = false;
+    private volatile boolean cancelled = false;
 
     public ProjectSelectionDialog(Frame owner) {
         super(owner, "Select Project Directory", true); // modal dialog
@@ -38,8 +37,8 @@ public class ProjectSelectionDialog extends JDialog {
         directoryField = new JTextField(lastProjectDirectory, 40);
 
         JButton browseButton = new JButton("Browse...");
-        JButton okButton = new JButton("OK");
-        JButton cancelButton = new JButton("Cancel");
+        okButton = new JButton("OK");
+        cancelButton = new JButton("Cancel");
 
         // === Browse button ===
         browseButton.addActionListener(e -> {
@@ -85,6 +84,7 @@ public class ProjectSelectionDialog extends JDialog {
                 return;
             }
             okPressed = true;
+            cancelled = false; // reset cancelled flag
             prefs.put(KEY_PROJECT, projectDirectory);
 
             dispose();
@@ -93,6 +93,7 @@ public class ProjectSelectionDialog extends JDialog {
         // === Cancel button ===
         cancelButton.addActionListener(e -> {
             okPressed = false;
+            cancelled = true;
             dispose();
         });
 
@@ -122,5 +123,15 @@ public class ProjectSelectionDialog extends JDialog {
     public Path showDialog() {
         setVisible(true); // blocks until dispose()
         return okPressed ? Paths.get(directoryField.getText()) : null;
+    }
+
+    /** Enable/disable the OK button (useful during processing). */
+    public void setOkEnabled(boolean enabled) {
+        okButton.setEnabled(enabled);
+    }
+
+    /** Returns true if user cancelled the dialog or hit Cancel. */
+    public boolean isCancelled() {
+        return cancelled;
     }
 }
