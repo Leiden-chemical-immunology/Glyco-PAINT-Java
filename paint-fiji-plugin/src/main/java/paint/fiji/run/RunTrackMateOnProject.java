@@ -12,12 +12,12 @@ import paint.shared.validate.ValidationResult;
 import javax.swing.*;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static paint.fiji.trackmate.RunTrackMateOnExperiment.runTrackMateOnExperiment;
 import static paint.shared.config.PaintConfig.getBoolean;
@@ -54,7 +54,6 @@ public class RunTrackMateOnProject implements Command {
         ProjectSelectionDialog projDlg = new ProjectSelectionDialog(null);
         Path projectPath = projDlg.showDialog();
 
-        // Handle cancellation
         if (projectPath == null) {
             PaintLogger.infof("User cancelled project selection.");
             return;
@@ -75,7 +74,6 @@ public class RunTrackMateOnProject implements Command {
             PaintLogger.infof();
         }
 
-        // Show experiment selection dialog in TRACKMATE mode
         ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(
                 null, projectPath, ProjectSpecificationDialog.DialogMode.TRACKMATE);
 
@@ -92,14 +90,14 @@ public class RunTrackMateOnProject implements Command {
             }
 
             running = true;
-            dialog.setOkEnabled(false); // 🔹 disable OK while running
+            dialog.setOkEnabled(false);
+
             try {
                 boolean status = true;
                 boolean debug = getBoolean("Debug", "RunTrackMateOnProject", false);
 
                 String imagesRoot = getString("Paths", "Images Root", "validate");
                 boolean error = false;
-
                 LocalDateTime start = LocalDateTime.now();
 
                 if (imagesRoot.equals("Fatal")) {
@@ -110,7 +108,6 @@ public class RunTrackMateOnProject implements Command {
                 if (debug) PaintLogger.debugf("The Image Path is specified as '%s'.", imagesRoot);
 
                 Path imagesPath = Paths.get(imagesRoot);
-
                 if (!error && !imagesPath.toFile().exists()) {
                     PaintLogger.errorf("The Image Root '%s' does not exist - Fatal.", imagesPath);
                     error = true;
@@ -168,9 +165,11 @@ public class RunTrackMateOnProject implements Command {
                 }
 
                 for (String experimentName : project.experimentNames) {
-                    if (dialog.isCancelled()) { // 🔹 check for Cancel pressed
-                        PaintLogger.warningf("Processing aborted by user.");
-                        return false;
+                    System.out.println("Test if we should proceed");
+                    System.out.println(dialog.isCancelled());
+                    if (dialog.isCancelled()) {
+                        PaintLogger.warningf("Processing aborted by user request.");
+                        break; // stop before next experiment
                     }
 
                     Path experimentPath = projectPath.resolve(experimentName);
@@ -178,7 +177,8 @@ public class RunTrackMateOnProject implements Command {
                         PaintLogger.errorf("Experiment directory '%s' does not exist.", experimentPath);
                     } else {
                         try {
-                            status = runTrackMateOnExperiment(experimentPath, imagesPath.resolve(experimentName));
+                            status = runTrackMateOnExperiment(
+                                    experimentPath, imagesPath.resolve(experimentName));
                         } catch (Exception e) {
                             PaintLogger.errorf("Error during TrackMate run for '%s': %s", experimentName, e.getMessage());
                             StringWriter sw = new StringWriter();
@@ -193,6 +193,11 @@ public class RunTrackMateOnProject implements Command {
                     }
                 }
 
+                if (dialog.isCancelled()) {
+                    PaintLogger.infof("Run was cancelled by the user.");
+                    return false;
+                }
+
                 Duration totalDuration = Duration.between(start, LocalDateTime.now());
                 int durationInSeconds = (int) (totalDuration.toMillis() / 1000);
                 PaintLogger.infof();
@@ -203,7 +208,7 @@ public class RunTrackMateOnProject implements Command {
                 return status;
             } finally {
                 running = false;
-                SwingUtilities.invokeLater(() -> dialog.setOkEnabled(true)); // 🔹 re-enable OK after run
+                SwingUtilities.invokeLater(() -> dialog.setOkEnabled(true));
             }
         });
 

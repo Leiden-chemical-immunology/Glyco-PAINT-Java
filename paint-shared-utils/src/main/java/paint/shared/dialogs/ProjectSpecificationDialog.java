@@ -22,21 +22,6 @@ import java.util.List;
 import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
 import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 
-/**
- * Swing dialog for configuring experiments in a Paint project.
- * <p>
- * The dialog supports two modes of operation:
- * <ul>
- *   <li>{@link DialogMode#GENERATE_SQUARES} – configure parameters
- *       for square generation.</li>
- *   <li>{@link DialogMode#TRACKMATE} – configure paths for running TrackMate.</li>
- * </ul>
- * <p>
- * Additionally, the dialog allows selecting which experiment subfolders
- * to include, and optionally persists the configuration back into the
- * {@code Paint Configuration.json} file.
- * </p>
- */
 public class ProjectSpecificationDialog {
 
     public enum DialogMode {
@@ -57,18 +42,14 @@ public class ProjectSpecificationDialog {
 
     private final JDialog dialog;
     private final Path projectPath;
-    private final Path configPath;
     private final Project project;
     private final PaintConfig paintConfig;
 
-    // Fields for GENERATE_SQUARES mode
     private final JTextField nrSquaresField;
     private final JTextField minTracksField;
     private final JTextField minRSquaredField;
     private final JTextField minDensityRatioField;
     private final JTextField maxVariabilityField;
-
-    // Field for TRACKMATE mode
     private final JTextField imageDirectoryField;
 
     private final JCheckBox saveExperimentsCheckBox;
@@ -76,16 +57,15 @@ public class ProjectSpecificationDialog {
     private final java.util.List<JCheckBox> checkBoxes = new ArrayList<>();
     private boolean okPressed = false;
 
-    // 🔹 new fields
     private JButton okButton;
     private JButton cancelButton;
     private volatile boolean cancelled = false;
+    private int cancelCount = 0;
 
     private final DialogMode mode;
 
     public ProjectSpecificationDialog(Frame owner, Path projectPath, DialogMode mode) {
         this.projectPath = projectPath;
-        this.configPath = projectPath.resolve(PAINT_CONFIGURATION_JSON);
         this.paintConfig = PaintConfig.instance();
         this.project = new Project(projectPath);
         this.mode = mode;
@@ -119,6 +99,7 @@ public class ProjectSpecificationDialog {
             minRSquaredField = createTightTextField(String.valueOf(minRSquared), new FloatDocumentFilter());
             minDensityRatioField = createTightTextField(String.valueOf(minDensityRatio), new FloatDocumentFilter());
             maxVariabilityField = createTightTextField(String.valueOf(maxVariability), new FloatDocumentFilter());
+            imageDirectoryField = null;
 
             formPanel.add(createLightLabel("Number of Squares in Row (and Column):"));
             formPanel.add(nrSquaresField);
@@ -130,8 +111,6 @@ public class ProjectSpecificationDialog {
             formPanel.add(minDensityRatioField);
             formPanel.add(createLightLabel("Max Allowed Variability:"));
             formPanel.add(maxVariabilityField);
-
-            imageDirectoryField = null;
         } else {
             nrSquaresField = null;
             minTracksField = null;
@@ -181,14 +160,11 @@ public class ProjectSpecificationDialog {
 
         JScrollPane scrollPane = new JScrollPane(checkboxPanel);
         scrollPane.setPreferredSize(new Dimension(600, 200));
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setBorder(BorderFactory.createEtchedBorder());
 
         JPanel checkboxControlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton selectAllButton = new JButton("Select All");
         JButton clearAllButton = new JButton("Clear All");
-
         selectAllButton.addActionListener(e -> checkBoxes.forEach(cb -> cb.setSelected(true)));
         clearAllButton.addActionListener(e -> checkBoxes.forEach(cb -> cb.setSelected(false)));
 
@@ -200,14 +176,17 @@ public class ProjectSpecificationDialog {
         centerPanel.add(scrollPane, BorderLayout.CENTER);
         dialog.add(centerPanel, BorderLayout.CENTER);
 
+        // --- bottom panel ---
         JPanel buttonPanel = new JPanel(new BorderLayout());
 
+        // left: Save Experiments checkbox
         saveExperimentsCheckBox = new JCheckBox("Save Experiments", false);
         saveExperimentsCheckBox.setFont(saveExperimentsCheckBox.getFont().deriveFont(Font.PLAIN, 12f));
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         leftPanel.add(saveExperimentsCheckBox);
         buttonPanel.add(leftPanel, BorderLayout.WEST);
 
+        // right: OK + Cancel buttons
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         okButton = new JButton("OK");
         cancelButton = new JButton("Cancel");
@@ -215,34 +194,42 @@ public class ProjectSpecificationDialog {
         okButton.addActionListener(e -> {
             okPressed = true;
             cancelled = false;
+            cancelCount = 0;
             saveConfig();
 
             if (calculationCallback != null) {
                 setInputsEnabled(false);
-                okButton.setEnabled(false); // disable OK
+                okButton.setEnabled(false);
                 new Thread(() -> {
                     boolean success = calculationCallback.run(getProject());
                     SwingUtilities.invokeLater(() -> {
                         setInputsEnabled(true);
-                        okButton.setEnabled(true); // re-enable OK
-                        JOptionPane.showMessageDialog(dialog,
-                                success
-                                        ? "Calculations finished successfully! You can select new experiments or close this dialog."
-                                        : "Calculations finished with errors. Please check the log.");
+                        okButton.setEnabled(true);
+                        if (!cancelled) {
+                            JOptionPane.showMessageDialog(dialog,
+                                    success
+                                            ? "Calculations finished successfully!"
+                                            : "Calculations finished with errors. Please check the log.");
+                        }
                     });
                 }).start();
             }
         });
 
         cancelButton.addActionListener(e -> {
-            okPressed = false;
-            cancelled = true;
-            dialog.dispose();
+            cancelCount++;
+            if (cancelCount == 1) {
+                cancelled = true;               // request stop
+                cancelButton.setText("Close");  // change label
+            } else {
+                dialog.dispose();               // second press closes
+            }
         });
 
         rightPanel.add(okButton);
         rightPanel.add(cancelButton);
         buttonPanel.add(rightPanel, BorderLayout.EAST);
+
         dialog.add(buttonPanel, BorderLayout.SOUTH);
 
         dialog.pack();
@@ -253,28 +240,21 @@ public class ProjectSpecificationDialog {
     private void populateCheckboxes() {
         checkboxPanel.removeAll();
         checkBoxes.clear();
-
-        if (project != null) {
-            File[] subs = project.getProjectPath().toFile().listFiles();
-            if (subs != null) {
-                Arrays.sort(subs, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
-                for (File sub : subs) {
-                    if (sub.isDirectory()) {
-                        File file = new File(sub, EXPERIMENT_INFO_CSV);
-                        if (!file.isFile()) {
-                            continue;
-                        }
-                        JCheckBox cb = new JCheckBox(sub.getName());
-                        boolean savedState = PaintConfig.getBoolean("Experiments", sub.getName(), false);
-                        cb.setSelected(savedState);
-                        checkboxPanel.add(cb);
-                        checkBoxes.add(cb);
-                    }
+        File[] subs = project.getProjectPath().toFile().listFiles();
+        if (subs != null) {
+            Arrays.sort(subs, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
+            for (File sub : subs) {
+                if (sub.isDirectory()) {
+                    File file = new File(sub, EXPERIMENT_INFO_CSV);
+                    if (!file.isFile()) continue;
+                    JCheckBox cb = new JCheckBox(sub.getName());
+                    boolean savedState = PaintConfig.getBoolean("Experiments", sub.getName(), false);
+                    cb.setSelected(savedState);
+                    checkboxPanel.add(cb);
+                    checkBoxes.add(cb);
                 }
             }
         }
-        checkboxPanel.revalidate();
-        checkboxPanel.repaint();
     }
 
     private void saveConfig() {
@@ -288,7 +268,6 @@ public class ProjectSpecificationDialog {
             PaintConfig.setString("Paths", "Images Root", imageDirectoryField.getText());
             PaintConfig.setString("Paths", "Project Root", this.projectPath.toString());
         }
-
         if (saveExperimentsCheckBox.isSelected()) {
             for (JCheckBox cb : checkBoxes) {
                 PaintConfig.setBoolean("Experiments", cb.getText(), cb.isSelected());
@@ -301,20 +280,8 @@ public class ProjectSpecificationDialog {
         TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
         GenerateSquaresConfig generateSquaresConfig = GenerateSquaresConfig.from(paintConfig);
         List<String> experimentNames = new ArrayList<>();
-        for (JCheckBox cb : checkBoxes) {
-            if (cb.isSelected()) {
-                experimentNames.add(cb.getText());
-            }
-        }
-        return new Project(
-                okPressed,
-                projectPath,
-                null,
-                experimentNames,
-                paintConfig,
-                generateSquaresConfig,
-                trackMateConfig,
-                null);
+        for (JCheckBox cb : checkBoxes) if (cb.isSelected()) experimentNames.add(cb.getText());
+        return new Project(okPressed, projectPath, null, experimentNames, paintConfig, generateSquaresConfig, trackMateConfig, null);
     }
 
     public Project showDialog() {
@@ -335,9 +302,7 @@ public class ProjectSpecificationDialog {
 
     private JTextField createTightTextField(String value, DocumentFilter filter) {
         JTextField field = new JTextField(value, 6);
-        if (filter != null) {
-            ((AbstractDocument) field.getDocument()).setDocumentFilter(filter);
-        }
+        if (filter != null) ((AbstractDocument) field.getDocument()).setDocumentFilter(filter);
         field.setFont(field.getFont().deriveFont(Font.PLAIN, 12f));
         return field;
     }
@@ -351,34 +316,26 @@ public class ProjectSpecificationDialog {
     static class IntegerDocumentFilter extends DocumentFilter {
         @Override
         public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-            if (string != null && string.matches("\\d*")) {
-                super.insertString(fb, offset, string, attr);
-            }
+            if (string != null && string.matches("\\d*")) super.insertString(fb, offset, string, attr);
         }
         @Override
         public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-            if (text != null && text.matches("\\d*")) {
-                super.replace(fb, offset, length, text, attrs);
-            }
+            if (text != null && text.matches("\\d*")) super.replace(fb, offset, length, text, attrs);
         }
     }
 
     static class FloatDocumentFilter extends DocumentFilter {
         @Override
         public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-            if (string != null && string.matches("\\d*(\\.\\d*)?")) {
-                super.insertString(fb, offset, string, attr);
-            }
+            if (string != null && string.matches("\\d*(\\.\\d*)?")) super.insertString(fb, offset, string, attr);
         }
         @Override
         public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-            if (text != null && text.matches("\\d*(\\.\\d*)?")) {
-                super.replace(fb, offset, length, text, attrs);
-            }
+            if (text != null && text.matches("\\d*(\\.\\d*)?")) super.replace(fb, offset, length, text, attrs);
         }
     }
 
-    // 🔹 externally visible helpers
+    // externally visible helpers
     public void setOkEnabled(boolean enabled) {
         if (okButton != null) okButton.setEnabled(enabled);
     }
