@@ -58,3 +58,61 @@
 
 
 
+
+
+
+
+###### Paint Apps as Desktop App
+
+- All Paint Apps are standalone and can be started as any macOS application. 
+- The standard Apple app package structure is used.
+
+
+
+###### Paint Config file sits in the project directory
+
+- Each project has its own configuration file. 
+- When no file is print, one is created with default parameters
+
+
+
+###### Logs file sits in the project directory
+
+- Log file are no longer kept in a central place, but stored project specifically.
+- In the project directory a Logs directory  will be created if it does not exist.
+- With each run a sequence number for the log will be increased. 
+
+ 
+
+###### PaintLogger uses a console window dedicated to Paint
+
+- The Paint plugin and apps use its dedicated Console window (previously the Fiji plugin used Fiji's console and Generate Squares did not have a console).
+- The heavy dump of Fiji messages and AWT stack dumps are now hidden: considerably less distraction.
+- All messages ares shown in the consoles and stored in the log file.
+- The Logger supports four levels of messages: debug, info, warning and error, The logging level be set so that only 'equal and higher' message are displayed.
+- Info and debug messages are coloured in black, warning and error messages are amber and red. 
+
+
+
+###### SweepUpfront validation
+
+- Before TrackMate or Generate Squares start, input file correctness is validated.
+- Presence of the expected headers is validated.
+- Presence of incorrect datatypes in columns is detected.
+- Inconsistency in Condition parameters is detected.
+- Absence of necessary image files is detected.
+- Clear, specific indications of the error help quick corrections.
+
+
+
+###### Version information
+
+- Version information and generation data of jars are reported in the PaintLog to help detect version problems.
+
+  
+
+###### Sweep support - under development
+
+- Support for parameter sweeps is implemented allowing TrackMate and Generate Squares calculations to be performed over a range of parameters.
+- A Sweep Config.csv filke in the project directory specifies the sweeo parameters and range.
+
