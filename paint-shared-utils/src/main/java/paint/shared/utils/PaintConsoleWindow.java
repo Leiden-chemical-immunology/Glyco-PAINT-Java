@@ -81,4 +81,50 @@ public class PaintConsoleWindow {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
+
+    /** Print a string without newline (default black color). */
+    public static synchronized void print(String message) {
+        print(message, Color.BLACK);
+    }
+
+    /** Print a string without newline with custom color. */
+    public static synchronized void print(String message, Color color) {
+        if (frame == null) {
+            createConsole();
+        }
+        SwingUtilities.invokeLater(() -> {
+            try {
+                Style style = textPane.addStyle("InlineStyle", null);
+                StyleConstants.setForeground(style, color);
+                doc.insertString(doc.getLength(), message, style);
+                textPane.setCaretPosition(doc.getLength());
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    /** Print a single character without newline (default black color). */
+    public static synchronized void printChar(char c) {
+        printChar(c, Color.BLACK);
+    }
+
+    /** Print a single character without newline with custom color. */
+    public static synchronized void printChar(char c, Color color) {
+        if (frame == null) {
+            createConsole();
+        }
+        SwingUtilities.invokeLater(() -> {
+            try {
+                Style style = textPane.addStyle("CharStyle", null);
+                StyleConstants.setForeground(style, color);
+                doc.insertString(doc.getLength(), String.valueOf(c), style);
+                textPane.setCaretPosition(doc.getLength());
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+
 }
