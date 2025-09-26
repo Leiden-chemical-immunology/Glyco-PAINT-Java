@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -17,6 +18,13 @@ import java.util.List;
  *  - If there are no problems at all: "✔ All validations passed"
  */
 public class Validation {
+
+    public static ValidationResult validateExperiments(Path projectPath,
+                                                       List<String> experimentNames,
+                                                       String fileName) {
+        return validateExperiments(projectPath, experimentNames, Collections.singletonList(fileName));
+    }
+
 
     public static ValidationResult validateExperiments(Path projectPath,
                                                        List<String> experimentNames,
@@ -100,8 +108,8 @@ public class Validation {
                 "All Recordings Java.csv"
         );
 
-        ValidationResult out = validateExperiments(projectPath, experiments, fileNames);
-        System.out.println(out.getReport());
+        ValidationResult validateResult = validateExperiments(projectPath, experiments, fileNames);
+        System.out.println(validateResult.getReport());
 
         System.out.println();
         System.out.println();
@@ -113,7 +121,7 @@ public class Validation {
                 "221012 Experiment Info Test 0"
         );
 
-        out = validateExperiments(projectPath, experiments, fileNames);
-        System.out.println(out.getReport());
+        validateResult = validateExperiments(projectPath, experiments, fileNames);
+        System.out.println(validateResult.getReport());
     }
 }
