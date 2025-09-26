@@ -1,4 +1,4 @@
-package paint.shared.validate_new;
+package paint.shared.validate;
 
 import java.util.ArrayList;
 import java.util.Collections;

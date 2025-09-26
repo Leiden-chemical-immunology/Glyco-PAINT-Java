@@ -1,4 +1,4 @@
-package paint.shared.validate_new;
+package paint.shared.validate;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;

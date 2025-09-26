@@ -1,4 +1,4 @@
-package paint.shared.validate_new;
+package paint.shared.validate;
 
 import paint.shared.constants.PaintConstants;
 import tech.tablesaw.api.ColumnType;

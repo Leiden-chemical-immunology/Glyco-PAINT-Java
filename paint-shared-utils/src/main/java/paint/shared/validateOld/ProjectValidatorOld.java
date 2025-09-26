@@ -1,4 +1,4 @@
-package paint.shared.validate;
+package paint.shared.validateOld;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Validates the structure and contents of a Paint project directory.
  */
-public class ProjectValidator {
+public class ProjectValidatorOld {
 
     // Modes of validation for different application contexts
     public enum Mode {
