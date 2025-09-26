@@ -8,8 +8,6 @@ import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.utils.JarInfo;
 import paint.shared.utils.PaintLogger;
 
-import paint.shared.validateOld.ProjectValidatorOld;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
