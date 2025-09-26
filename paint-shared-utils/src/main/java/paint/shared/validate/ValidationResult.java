@@ -4,15 +4,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Holds the outcome of a validation process.
- * Collects errors, warnings, and informational messages.
- */
 public class ValidationResult {
 
     private final List<String> errors = new ArrayList<>();
     private final List<String> warnings = new ArrayList<>();
     private final List<String> infos = new ArrayList<>();
+    private String report = null;   // <-- new
 
     // --- Adders ---
 
@@ -43,18 +40,9 @@ public class ValidationResult {
     }
 
     // --- State checks ---
-
-    public boolean hasErrors() {
-        return !errors.isEmpty();
-    }
-
-    public boolean hasWarnings() {
-        return !warnings.isEmpty();
-    }
-
-    public boolean isValid() {
-        return errors.isEmpty();
-    }
+    public boolean hasErrors() { return !errors.isEmpty(); }
+    public boolean hasWarnings() { return !warnings.isEmpty(); }
+    public boolean isValid() { return errors.isEmpty(); }
 
     // --- Merge ---
 
@@ -63,31 +51,20 @@ public class ValidationResult {
         this.errors.addAll(other.getErrors());
         this.warnings.addAll(other.getWarnings());
         this.infos.addAll(other.getInfos());
+        if (other.report != null) {
+            if (this.report == null) this.report = other.report;
+            else this.report += "\n" + other.report;
+        }
     }
 
-    // --- Formatting ---
+    // --- Report field ---
+    public void setReport(String report) { this.report = report; }
+    public String getReport() { return report; }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-
-        if (errors.isEmpty() && warnings.isEmpty() && infos.isEmpty()) {
-            sb.append("✔ No issues found");
-        } else {
-            if (!errors.isEmpty()) {
-                sb.append("Errors:\n");
-                errors.forEach(e -> sb.append(" - ").append(e).append("\n"));
-            }
-            if (!warnings.isEmpty()) {
-                sb.append("Warnings:\n");
-                warnings.forEach(w -> sb.append(" - ").append(w).append("\n"));
-            }
-            if (!infos.isEmpty()) {
-                sb.append("Info:\n");
-                infos.forEach(i -> sb.append(" - ").append(i).append("\n"));
-            }
-        }
-
-        return sb.toString().trim();
+        if (report != null) return report;
+        if (isValid()) return "✔ No issues found";
+        return String.join("\n", errors);
     }
 }
