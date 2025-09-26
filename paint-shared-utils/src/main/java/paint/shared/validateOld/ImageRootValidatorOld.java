@@ -1,4 +1,4 @@
-package paint.shared.validate;
+package paint.shared.validateOld;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -15,27 +15,24 @@ import java.util.*;
  * Utility for validating that experiment image directories and
  * recording files exist as required by Experiment Info files.
  */
-public class ImageRootValidator {
+public class ImageRootValidatorOld {
 
     public static void main(String[] args) throws IOException {
+
         List<String> experiments = Arrays.asList("221108", "221122");
 
-        List<String> report = ImageRootValidator.validateImageRoot(
+        List<String> report = ImageRootValidatorOld.validateImageRoot(
                 Paths.get("/Users/hans/Paint Test Project"),
                 Paths.get("/Volumes/Extreme Pro/Omero"),
                 experiments
         );
         report.forEach(System.out::println);
-
-        if (report.isEmpty()) {
-            System.out.println("✔ All required image directories and files exist.");
-        }
     }
 
     private static final String EXPERIMENT_INFO_CSV = "Experiment Info.csv";
 
     /**
-     * Validate that all required recording files exist in the image root.
+     * Validate image root consistency.
      *
      * @param projectRoot     path to the project root
      * @param imagesRoot      path to the images root
@@ -72,6 +69,8 @@ public class ImageRootValidator {
                          .build()
                          .parse(reader)) {
 
+                Map<String, Map<String, String>> conditionGroups = new HashMap<>();
+
                 for (CSVRecord record : parser) {
                     String recordingName = record.get("Recording Name");
                     String processFlag = record.get("Process Flag").trim().toLowerCase();
@@ -80,6 +79,31 @@ public class ImageRootValidator {
                         Path recordingFile = imageDir.resolve(recordingName + ".nd2");
                         if (!Files.exists(recordingFile)) {
                             report.add("[Experiment " + experiment + "] Missing recording file: " + recordingFile);
+                        }
+                    }
+
+                    String condition = record.get("Condition Number");
+                    String probeName = record.get("Probe Name");
+                    String probeType = record.get("Probe Type");
+                    String cellType = record.get("Cell Type");
+                    String adjuvant = record.get("Adjuvant");
+                    String conc = record.get("Concentration");
+
+                    Map<String, String> currentAttributes = new LinkedHashMap<>();
+                    currentAttributes.put("Probe Name", probeName);
+                    currentAttributes.put("Probe Type", probeType);
+                    currentAttributes.put("Cell Type", cellType);
+                    currentAttributes.put("Adjuvant", adjuvant);
+                    currentAttributes.put("Concentration", conc);
+
+                    if (!conditionGroups.containsKey(condition)) {
+                        conditionGroups.put(condition, currentAttributes);
+                    } else {
+                        Map<String, String> expectedAttributes = conditionGroups.get(condition);
+                        if (!expectedAttributes.equals(currentAttributes)) {
+                            report.add("[Experiment " + experiment + "] Inconsistent attributes for Condition Number: " + condition +
+                                    "\n → Expected: " + expectedAttributes +
+                                    "\n → Found:    " + currentAttributes);
                         }
                     }
                 }

@@ -7,8 +7,8 @@ import paint.shared.dialogs.ProjectSelectionDialog;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.utils.JarInfo;
 import paint.shared.utils.PaintLogger;
-import paint.shared.validate.ImageRootValidator;
-import paint.shared.validate.ProjectValidator;
+
+import paint.shared.validateOld.ProjectValidatorOld;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -22,10 +22,9 @@ import java.util.List;
 import static paint.fiji.trackmate.RunTrackMateOnExperiment.runTrackMateOnExperiment;
 import static paint.shared.config.PaintConfig.getBoolean;
 import static paint.shared.config.PaintConfig.getString;
-import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.Miscellaneous.formatDuration;
-import static paint.shared.validate.ProjectValidator.*;
+import static paint.shared.validate.ImageRootValidator.validateImageRoot;
 
 /**
  * SciJava/Fiji command plugin that runs the TrackMate pipeline on
@@ -128,7 +127,7 @@ public class RunTrackMateOnProject implements Command {
             if (debug) PaintLogger.debugf("The Image Path '%s' exists.", imagesRoot);
 
             // Validate that the image root contains data for the selected experiments
-            List<String> report = ImageRootValidator.validateImageRoot(
+            List<String> report = validateImageRoot(
                     projectPath,
                     imagesPath,
                     project.experimentNames);
@@ -164,10 +163,10 @@ public class RunTrackMateOnProject implements Command {
             if (debug) PaintLogger.debugf("Experiments %s", project.experimentNames.toString());
 
             // Validate experiment directories
-            ValidateResult validateResult = validateProject(projectPath, project.experimentNames, ProjectValidator.Mode.VALIDATE_TRACKMATE);
-            if (validateResult.isOk()) {
-                formatReport(validateResult.getErrors());
-            }
+//            ProjectValidatorOld.ValidateResult validateResult = validateProject(projectPath, project.experimentNames, ProjectValidatorOld.Mode.VALIDATE_TRACKMATE);
+//            if (validateResult.isOk()) {
+//                formatReport(validateResult.getErrors());
+//            }
 
             if (debug) PaintLogger.debugf("Experiments appear valid.");
 
