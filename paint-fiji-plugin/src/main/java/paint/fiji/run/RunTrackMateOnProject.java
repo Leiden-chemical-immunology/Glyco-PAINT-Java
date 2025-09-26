@@ -7,7 +7,9 @@ import paint.shared.dialogs.ProjectSelectionDialog;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.utils.JarInfo;
 import paint.shared.utils.PaintLogger;
+import paint.shared.validate.ValidationResult;
 
+import javax.swing.*;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
@@ -20,9 +22,11 @@ import java.util.List;
 import static paint.fiji.trackmate.RunTrackMateOnExperiment.runTrackMateOnExperiment;
 import static paint.shared.config.PaintConfig.getBoolean;
 import static paint.shared.config.PaintConfig.getString;
+import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.validate.ImageRootValidator.validateImageRoot;
+import static paint.shared.validate.Validation.validateExperiments;
 
 /**
  * SciJava/Fiji command plugin that runs the TrackMate pipeline on
@@ -100,7 +104,7 @@ public class RunTrackMateOnProject implements Command {
             boolean debug = getBoolean("Debug", "RunTrackMateOnProject", false);
 
             // Load the Images Root path from configuration
-            String imagesRoot = getString("Paths", "Images Root", "Fatal");
+            String imagesRoot = getString("Paths", "Images Root", "validate");
             boolean error = false;
 
             // Record the start time
@@ -125,13 +129,15 @@ public class RunTrackMateOnProject implements Command {
             if (debug) PaintLogger.debugf("The Image Path '%s' exists.", imagesRoot);
 
             // Validate that the image root contains data for the selected experiments
-            List<String> report = validateImageRoot(
+            ValidationResult validateResult = validateImageRoot(
                     projectPath,
                     imagesPath,
                     project.experimentNames);
-            if (!report.isEmpty()) {
-                report.forEach(msg -> PaintLogger.errorf("%s", msg));
-                PaintLogger.errorf("The Image Root Validation Failed - Fatal.");
+            if (!validateResult.isValid()) {
+                List <String> validateErrors = validateResult.getErrors();
+                for (String validateError : validateErrors) {
+                    PaintLogger.errorf(validateError);
+                }
                 error = true;
             }
 
@@ -146,25 +152,45 @@ public class RunTrackMateOnProject implements Command {
             if (debug) PaintLogger.debugf("The project root '%s' exists.", projectPath);
 
             // Abort execution if any critical path is missing
+
             if (error) {
-                try {
-                    PaintLogger.errorf("About to exit with error, refer to log file.", projectPath);
-                    Thread.sleep(10000); // pause to let user read error
-                } catch (InterruptedException e) {
-                    PaintLogger.errorf("Failed to sleep - %s", e.getMessage());
-                }
-                System.exit(-1);
+                JOptionPane optionPane = new JOptionPane(
+                        "Trackmate will not run when not all image files are present. Deselect the offending experment.",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                JDialog errorDialog = optionPane.createDialog(
+                        null, // no parent, standalone
+                        "Aborting operation"
+                );
+                errorDialog.setAlwaysOnTop(true);
+                errorDialog.setVisible(true);
+
+                return false;
             }
 
+            // Abort execution if file format is wrong
+            validateResult = validateExperiments(projectPath, project.experimentNames, EXPERIMENT_INFO_CSV);
+            if (!validateResult.isValid()) {
+                List <String> validateErrors = validateResult.getErrors();
+                for (String validateError : validateErrors) {
+                    PaintLogger.errorf(validateError);
+                }
+                JOptionPane optionPane = new JOptionPane(
+                        "There are problems with Experiment Info files.",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                JDialog errorDialog = optionPane.createDialog(
+                        null, // no parent, standalone
+                        "Aborting operation"
+                );
+                errorDialog.setAlwaysOnTop(true);
+                errorDialog.setVisible(true);
+                return false;
+            }
             // Validation passed, begin processing
             if (debug) PaintLogger.debugf("TrackMate processing started.");
             if (debug) PaintLogger.debugf("Experiments %s", project.experimentNames.toString());
 
-            // Validate experiment directories
-//            ProjectValidatorOld.ValidateResult validateResult = validateProject(projectPath, project.experimentNames, ProjectValidatorOld.Mode.VALIDATE_TRACKMATE);
-//            if (validateResult.isOk()) {
-//                formatReport(validateResult.getErrors());
-//            }
 
             if (debug) PaintLogger.debugf("Experiments appear valid.");
 

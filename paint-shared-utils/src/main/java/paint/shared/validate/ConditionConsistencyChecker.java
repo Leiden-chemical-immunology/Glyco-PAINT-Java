@@ -23,6 +23,7 @@ public class ConditionConsistencyChecker {
 
     public static ValidationResult check(File file, String experimentName) {
         ValidationResult result = new ValidationResult();
+        Set<String> seenErrors = new HashSet<>(); // <-- prevent duplicates
 
         try (FileReader reader = new FileReader(file);
              CSVParser parser = CSVFormat.DEFAULT.builder()
@@ -59,8 +60,12 @@ public class ConditionConsistencyChecker {
                         String expected = baseline.get(col);
 
                         if (!Objects.equals(expected, value)) {
-                            result.addError("[" + experimentName + "] Condition " + condition
-                                    + " - Inconsistent '" + col + "': " + expected + " / " + value);
+                            String msg = "Condition " + condition
+                                    + " - Inconsistent '" + col + "': " + expected + " / " + value;
+
+                            if (seenErrors.add(msg)) { // only add if new
+                                result.addError(msg);
+                            }
                         }
                     }
                 }

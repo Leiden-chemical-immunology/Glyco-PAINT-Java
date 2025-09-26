@@ -1,5 +1,7 @@
 package paint.shared.validate;
 
+import paint.shared.utils.PaintLogger;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,7 +26,6 @@ public class Validation {
                                                        String fileName) {
         return validateExperiments(projectPath, experimentNames, Collections.singletonList(fileName));
     }
-
 
     public static ValidationResult validateExperiments(Path projectPath,
                                                        List<String> experimentNames,
@@ -57,7 +58,16 @@ public class Validation {
                 if (!res.isValid()) {
                     for (String err : res.getErrors()) {
                         String flattened = err.replace("\n", " ").replaceAll("\\s+", " ").trim();
-                        String msg = "[" + expName + "] - " + fileName + " - " + flattened;
+
+                        String msg;
+                        if (flattened.startsWith("[" + expName + "]")) {
+                            // Inner validator already added experiment name
+                            msg = "[" + expName + "] - " + fileName + " - " +
+                                    flattened.substring(flattened.indexOf("]") + 1).trim();
+                        } else {
+                            msg = "[" + expName + "] - " + fileName + " - " + flattened;
+                        }
+
                         overall.addError(msg);
                         report.add(msg);
                     }
@@ -94,6 +104,7 @@ public class Validation {
     public static void main(String[] args) {
         Path projectPath = Paths.get("/Users/hans/JavaPaintProjects/paint-shared-utils/src/test/resources/Paint Test Experiment Error");
 
+        PaintLogger.initialise(projectPath, "Test");
         List<String> experiments = Arrays.asList(
                 "221012 Experiment Info Test 0",
                 "221012 Experiment Info Test 1",
@@ -109,7 +120,9 @@ public class Validation {
         );
 
         ValidationResult validateResult = validateExperiments(projectPath, experiments, fileNames);
-        System.out.println(validateResult.getReport());
+        for (String line : validateResult.getReport().split("\n")) {
+            PaintLogger.errorf(line);
+        }
 
         System.out.println();
         System.out.println();
@@ -122,6 +135,8 @@ public class Validation {
         );
 
         validateResult = validateExperiments(projectPath, experiments, fileNames);
-        System.out.println(validateResult.getReport());
+        for (String line : validateResult.getReport().split("\n")) {
+            PaintLogger.errorf(line);
+        }
     }
 }

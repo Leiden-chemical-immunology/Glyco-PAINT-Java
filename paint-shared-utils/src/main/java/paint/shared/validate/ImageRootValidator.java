@@ -9,7 +9,8 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Utility for validating that experiment image directories and
@@ -17,22 +18,19 @@ import java.util.*;
  */
 public class ImageRootValidator {
 
+    private static final String EXPERIMENT_INFO_CSV = "Experiment Info.csv";
+
     public static void main(String[] args) throws IOException {
         List<String> experiments = Arrays.asList("221108", "221122");
 
-        List<String> report = ImageRootValidator.validateImageRoot(
+        ValidationResult result = ImageRootValidator.validateImageRoot(
                 Paths.get("/Users/hans/Paint Test Project"),
                 Paths.get("/Volumes/Extreme Pro/Omero"),
                 experiments
         );
-        report.forEach(System.out::println);
 
-        if (report.isEmpty()) {
-            System.out.println("✔ All required image directories and files exist.");
-        }
+        System.out.println(result.getReport());
     }
-
-    private static final String EXPERIMENT_INFO_CSV = "Experiment Info.csv";
 
     /**
      * Validate that all required recording files exist in the image root.
@@ -40,12 +38,12 @@ public class ImageRootValidator {
      * @param projectRoot     path to the project root
      * @param imagesRoot      path to the images root
      * @param experimentNames list of experiment names to check
-     * @return list of report lines (missing dirs/files)
+     * @return ValidationResult with all missing directories/files
      */
-    public static List<String> validateImageRoot(Path projectRoot,
-                                                 Path imagesRoot,
-                                                 List<String> experimentNames) {
-        List<String> report = new ArrayList<>();
+    public static ValidationResult validateImageRoot(Path projectRoot,
+                                                     Path imagesRoot,
+                                                     List<String> experimentNames) {
+        ValidationResult result = new ValidationResult();
 
         for (String experiment : experimentNames) {
             Path experimentDir = projectRoot.resolve(experiment);
@@ -53,14 +51,14 @@ public class ImageRootValidator {
 
             // --- 1. Image directory must exist
             if (!Files.isDirectory(imageDir)) {
-                report.add("[Experiment " + experiment + "] Missing image directory: " + imageDir);
+                result.addError("[" + experiment + "] Missing corresponding image directory: " + imageDir);
                 continue;
             }
 
             // --- 2. Experiment Info file must exist
             Path expInfoFile = experimentDir.resolve(EXPERIMENT_INFO_CSV);
             if (!Files.exists(expInfoFile)) {
-                report.add("[Experiment " + experiment + "] Missing " + EXPERIMENT_INFO_CSV + " in " + experimentDir);
+                result.addError("[" + experiment + "] Missing " + EXPERIMENT_INFO_CSV + " in " + experimentDir);
                 continue;
             }
 
@@ -79,16 +77,22 @@ public class ImageRootValidator {
                     if (processFlag.equals("true")) {
                         Path recordingFile = imageDir.resolve(recordingName + ".nd2");
                         if (!Files.exists(recordingFile)) {
-                            report.add("[Experiment " + experiment + "] Missing recording file: " + recordingFile);
+                            result.addError("[" + experiment + "] Missing recording file: " + recordingFile);
                         }
                     }
                 }
 
             } catch (IOException e) {
-                report.add("[Experiment " + experiment + "] Error reading " + expInfoFile + ": " + e.getMessage());
+                result.addError("[" + experiment + "] Error reading " + expInfoFile + ": " + e.getMessage());
             }
         }
 
-        return report;
+        if (!result.hasErrors()) {
+            result.setReport("All required image directories and files exist.");
+        } else {
+            result.setReport(String.join("\n", result.getErrors()));
+        }
+
+        return result;
     }
 }
