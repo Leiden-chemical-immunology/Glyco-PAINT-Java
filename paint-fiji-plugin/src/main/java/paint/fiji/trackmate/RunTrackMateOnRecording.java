@@ -196,7 +196,7 @@ public class RunTrackMateOnRecording {
         Thread dotPrinter = null;
         final int[] dotCount = {0};
 
-        if (dotPrint) {
+        if (dotPrint) {    // ToDo
             dotPrinter = new Thread(() -> {
                 while (!Thread.currentThread().isInterrupted()) {
                     System.out.print(".");
