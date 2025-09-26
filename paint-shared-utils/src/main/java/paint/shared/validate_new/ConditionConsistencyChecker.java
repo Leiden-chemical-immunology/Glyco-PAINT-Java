@@ -41,39 +41,27 @@ public class ConditionConsistencyChecker {
                 String adjuvant = record.get("Adjuvant");
                 String concentration = record.get("Concentration");
 
-                Map<String, String> attributes = conditionGroups.get(condition);
-                if (attributes == null) {
-                    attributes = new HashMap<>();
-                    attributes.put("Probe Name", probeName);
-                    attributes.put("Probe Type", probeType);
-                    attributes.put("Cell Type", cellType);
-                    attributes.put("Adjuvant", adjuvant);
-                    attributes.put("Concentration", concentration);
-                    conditionGroups.put(condition, attributes);
+                Map<String, String> current = new LinkedHashMap<>();
+                current.put("Probe Name", probeName);
+                current.put("Probe Type", probeType);
+                current.put("Cell Type", cellType);
+                current.put("Adjuvant", adjuvant);
+                current.put("Concentration", concentration);
+
+                if (!conditionGroups.containsKey(condition)) {
+                    conditionGroups.put(condition, current);
                 } else {
-                    if (!Objects.equals(attributes.get("Probe Name"), probeName) ||
-                            !Objects.equals(attributes.get("Probe Type"), probeType) ||
-                            !Objects.equals(attributes.get("Cell Type"), cellType) ||
-                            !Objects.equals(attributes.get("Adjuvant"), adjuvant) ||
-                            !Objects.equals(attributes.get("Concentration"), concentration)) {
+                    Map<String, String> baseline = conditionGroups.get(condition);
 
-                        String expected = String.format(
-                                "[%s] Condition %s expected: [Probe Name=%s, Probe Type=%s, Cell Type=%s, Adjuvant=%s, Concentration=%s]",
-                                experimentName, condition,
-                                attributes.get("Probe Name"),
-                                attributes.get("Probe Type"),
-                                attributes.get("Cell Type"),
-                                attributes.get("Adjuvant"),
-                                attributes.get("Concentration"));
+                    for (Map.Entry<String, String> entry : current.entrySet()) {
+                        String col = entry.getKey();
+                        String value = entry.getValue();
+                        String expected = baseline.get(col);
 
-                        String found = String.format(
-                                "[%s] Condition %s found: [Probe Name=%s, Probe Type=%s, Cell Type=%s, Adjuvant=%s, Concentration=%s]",
-                                experimentName, condition,
-                                probeName, probeType, cellType, adjuvant, concentration);
-
-                        result.addError("Inconsistent attributes for Condition Number " + condition
-                                + "\n" + expected
-                                + "\n" + found);
+                        if (!Objects.equals(expected, value)) {
+                            result.addError("[" + experimentName + "] Condition " + condition
+                                    + " - Inconsistent '" + col + "': " + expected + " / " + value);
+                        }
                     }
                 }
             }

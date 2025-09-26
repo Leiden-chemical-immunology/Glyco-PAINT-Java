@@ -129,9 +129,10 @@ public abstract class AbstractFileValidator {
             error.append("\n- Unexpected headers: ").append(unexpected);
         }
 
-        error.append("\n\nExpected: ").append(expected);
-        error.append("\nActual:   ").append(actual);
-
+        if (false) {
+            error.append("\n\nExpected: ").append(expected);
+            error.append("\nActual:   ").append(actual);
+        }
         result.addError(error.toString());
         return false;
     }
