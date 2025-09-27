@@ -16,7 +16,7 @@ public class PaintLogger {
     public enum Level {
         DEBUG(0, Color.GRAY),
         INFO(1, Color.BLACK),
-        WARNING(2, Color.ORANGE.darker()),
+        WARN(2, Color.ORANGE.darker()),
         ERROR(3, Color.RED);
 
         private final int rank;
@@ -155,11 +155,11 @@ public class PaintLogger {
     }
 
     public static void warningf(String fmt, Object... args) {
-        log(Level.WARNING, String.format(fmt, args));
+        log(Level.WARN, String.format(fmt, args));
     }
 
     public static void warningf() {
-        log(Level.WARNING, "");
+        log(Level.WARN, "");
     }
 
     public static void errorf(String fmt, Object... args) {
