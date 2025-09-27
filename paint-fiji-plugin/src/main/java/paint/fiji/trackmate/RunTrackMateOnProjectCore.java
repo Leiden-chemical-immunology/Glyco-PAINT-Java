@@ -27,7 +27,6 @@ public class RunTrackMateOnProjectCore {
                                      ProjectSpecificationDialog dialog,
                                      Path sweepDir) {
 
-        PaintLogger.infof("Starting to run track mate on project %s with sweepdir: %s", projectPath, sweepDir);
         boolean status = true;
         LocalDateTime start = LocalDateTime.now();
 

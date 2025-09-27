@@ -64,10 +64,18 @@ public class RunTrackMateOnExperiment {
         int numberRecordings = 0;
         boolean status = true;
 
-        // Load Paint/TrackMate config
+        // --- Load Paint/TrackMate config from the correct directory ---
         Path configPath = experimentPath.getParent().resolve(PAINT_CONFIGURATION_JSON);
+        if (Files.exists(configPath)) {
+            // Re-initialise so PaintConfig points to the right directory
+            PaintConfig.initialise(experimentPath.getParent());
+        } else {
+            PaintLogger.warningf("No PaintConfig.json found in %s, defaults will be used.",
+                    experimentPath.getParent());
+        }
         PaintConfig paintConfig = PaintConfig.instance();
         TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
+        PaintLogger.infof(trackMateConfig.toString());
 
         // Input/output CSV paths (written under experimentPath, sweep-compatible)
         Path experimentFilePath = experimentPath.resolve(EXPERIMENT_INFO_CSV);
@@ -177,7 +185,9 @@ public class RunTrackMateOnExperiment {
                         runTime = durationInSeconds;
                         timeStamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                     } else {
-                        PaintLogger.infof("   Recording '%s' skipped.", recordingName);
+                        if (verbose) {
+                            PaintLogger.infof("   Recording '%s' skipped.", recordingName);
+                        }
                     }
 
                     // Build row
@@ -215,7 +225,8 @@ public class RunTrackMateOnExperiment {
             status = false;
         }
 
-        PaintLogger.infof("Processed %d recordings in %s.", numberRecordings, formatDuration((int) (totalDuration.toMillis() / 1000)));
+        PaintLogger.infof("Processed %d recordings in %s.", numberRecordings,
+                formatDuration((int) (totalDuration.toMillis() / 1000)));
         PaintLogger.blankline();
 
         return status;

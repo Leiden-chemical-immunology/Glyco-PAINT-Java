@@ -13,6 +13,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 
+import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
+import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
+
 /**
  * Executes TrackMate on a project while sweeping over configuration parameters.
  * Results are written into per-value subdirectories under Sweep/, with a summary CSV.
@@ -20,7 +23,7 @@ import java.util.*;
 public class RunTrackMateSweepOnProject {
 
     /**
-     * Runs TrackMate on the given project with sweep parameters if present.
+     * Runs TrackMate on the given project with sweep parameters if enabled.
      *
      * @param projectPath     base project path
      * @param imagesPath      path to the image root
@@ -34,88 +37,126 @@ public class RunTrackMateSweepOnProject {
         Path sweepFile = projectPath.resolve("Sweep Config.json");
         if (!Files.exists(sweepFile)) {
             PaintLogger.infof("No sweep configuration found at %s", sweepFile);
-            return false;
+            // 👉 Run normal mode if no sweep file
+            return RunTrackMateOnProjectCore.runProject(projectPath, imagesPath, experimentNames, null, projectPath);
         }
 
         SweepConfig sweepConfig = new SweepConfig(sweepFile.toString());
+
+        // 🔑 Require Sweep.Sweep = true
+        boolean sweepEnabled = sweepConfig.getBoolean("Sweep", "Sweep", false);
+        if (!sweepEnabled) {
+            PaintLogger.infof("Sweep configuration present, but sweep mode disabled.");
+            // 👉 Run normal mode if sweep disabled
+            return RunTrackMateOnProjectCore.runProject(projectPath, imagesPath, experimentNames, null, projectPath);
+        }
+
         Map<String, List<Number>> sweeps = sweepConfig.getActiveSweepValues("TrackMate Sweep");
         if (sweeps.isEmpty()) {
             PaintLogger.infof("Sweep enabled, but no active sweep parameters defined.");
-            return false;
+            // 👉 Run normal mode if no sweep parameters
+            return RunTrackMateOnProjectCore.runProject(projectPath, imagesPath, experimentNames, null, projectPath);
         }
 
+        // --- Sweep mode ---
         boolean overallStatus = true;
         List<String[]> summaryRows = new ArrayList<>();
 
-        for (Map.Entry<String, List<Number>> entry : sweeps.entrySet()) {
-            String parameter = entry.getKey();
-            List<Number> values = entry.getValue();
+        try {
+            for (Map.Entry<String, List<Number>> entry : sweeps.entrySet()) {
+                String parameter = entry.getKey();
+                List<Number> values = entry.getValue();
 
-            String originalValue = PaintConfig.getString("TrackMate", parameter, "undefined");
+                String originalValue = PaintConfig.getString("TrackMate", parameter, "undefined");
 
-            for (Number val : values) {
-                PaintLogger.infof("Running sweep for %s = %s", parameter, val);
+                for (Number val : values) {
+                    PaintLogger.infof("Running sweep for %s = %s", parameter, val);
 
-                // Update PaintConfig with correct type
-                if (val.doubleValue() == val.intValue()) {
-                    PaintConfig.setInt("TrackMate", parameter, val.intValue());
-                } else {
-                    PaintConfig.setDouble("TrackMate", parameter, val.doubleValue());
-                }
+                    // Update PaintConfig with correct type
+                    if (val.doubleValue() == val.intValue()) {
+                        PaintConfig.setInt("TrackMate", parameter, val.intValue());
+                    } else {
+                        PaintConfig.setDouble("TrackMate", parameter, val.doubleValue());
+                    }
 
-                Path sweepDir = projectPath.resolve("Sweep").resolve(parameter).resolve(val.toString());
-                sweepDir.toFile().mkdirs();
+                    // Directory name with [PARAM]-[VALUE]
+                    Path sweepDir = projectPath.resolve("Sweep")
+                            .resolve(parameter)
+                            .resolve("[" + parameter + "]-[" + val + "]");
+                    sweepDir.toFile().mkdirs();
 
-                // --- Copy each experiment's Experiment Info.csv ---
-                for (String expName : experimentNames) {
-                    Path expSrc = projectPath.resolve(expName).resolve("Experiment Info.csv");
-                    Path expDstDir = sweepDir.resolve(expName);
-                    Path expDst = expDstDir.resolve("Experiment Info.csv");
-                    try {
-                        if (Files.exists(expSrc)) {
-                            Files.createDirectories(expDstDir);
-                            Files.copy(expSrc, expDst, StandardCopyOption.REPLACE_EXISTING);
-                            //vPaintLogger.infof("Copied Experiment Info.csv for %s to %s", expName, expDst);
-                        } else {
-                            PaintLogger.warningf("Experiment Info.csv not found for %s at %s", expName, expSrc);
-                        }
+                    // --- Copy PaintConfig.json snapshot ---
+                    Path configCopy = sweepDir.resolve(PAINT_CONFIGURATION_JSON);
+                    try (FileWriter fw = new FileWriter(configCopy.toFile())) {
+                        fw.write(PaintConfig.instance().toString());
+                        PaintLogger.infof("Saved PaintConfig.json snapshot to %s", configCopy);
                     } catch (IOException e) {
-                        PaintLogger.errorf("Failed to copy Experiment Info.csv for %s: %s", expName, e.getMessage());
+                        PaintLogger.errorf("Failed to save PaintConfig.json to %s: %s",
+                                configCopy, e.getMessage());
+                    }
+
+                    // 🔑 Reinitialise PaintConfig for this sweep run
+                    PaintConfig.reinitialise(sweepDir);
+
+                    // --- Copy each experiment's Experiment Info.csv ---
+                    for (String expName : experimentNames) {
+                        Path expSrc = projectPath.resolve(expName).resolve(EXPERIMENT_INFO_CSV);
+                        Path expDstDir = sweepDir.resolve(expName);
+                        Path expDst = expDstDir.resolve(EXPERIMENT_INFO_CSV);
+                        try {
+                            if (Files.exists(expSrc)) {
+                                Files.createDirectories(expDstDir);
+                                Files.copy(expSrc, expDst, StandardCopyOption.REPLACE_EXISTING);
+                            } else {
+                                PaintLogger.warningf("Experiment Info.csv not found for %s at %s", expName, expSrc);
+                            }
+                        } catch (IOException e) {
+                            PaintLogger.errorf("Failed to copy Experiment Info.csv for %s: %s", expName, e.getMessage());
+                        }
+                    }
+
+                    // Run TrackMate in sweepDir
+                    boolean status = RunTrackMateOnProjectCore.runProject(
+                            projectPath, imagesPath, experimentNames, null, sweepDir);
+
+                    summaryRows.add(new String[]{
+                            parameter, val.toString(), sweepDir.toString(),
+                            status ? "SUCCESS" : "FAILED"
+                    });
+
+                    if (!status) {
+                        overallStatus = false;
                     }
                 }
 
-                boolean status = RunTrackMateOnProjectCore.runProject(
-                        projectPath, imagesPath, experimentNames, null, sweepDir);
-
-                summaryRows.add(new String[]{
-                        parameter, val.toString(), sweepDir.toString(),
-                        status ? "SUCCESS" : "FAILED"
-                });
-
-                if (!status) {
-                    overallStatus = false;
-                }
-            }
-
-            // Restore original PaintConfig value
-            try {
-                int intVal = Integer.parseInt(originalValue);
-                PaintConfig.setInt("TrackMate", parameter, intVal);
-            } catch (NumberFormatException e1) {
+                // Restore original PaintConfig value
                 try {
-                    double dblVal = Double.parseDouble(originalValue);
-                    PaintConfig.setDouble("TrackMate", parameter, dblVal);
-                } catch (NumberFormatException e2) {
-                    PaintConfig.setString("TrackMate", parameter, originalValue);
+                    int intVal = Integer.parseInt(originalValue);
+                    PaintConfig.setInt("TrackMate", parameter, intVal);
+                } catch (NumberFormatException e1) {
+                    try {
+                        double dblVal = Double.parseDouble(originalValue);
+                        PaintConfig.setDouble("TrackMate", parameter, dblVal);
+                    } catch (NumberFormatException e2) {
+                        PaintConfig.setString("TrackMate", parameter, originalValue);
+                    }
                 }
+                PaintLogger.infof("Restored %s to %s", parameter, originalValue);
             }
-            PaintLogger.infof("Restored %s to %s", parameter, originalValue);
+        } finally {
+            // 🔑 Always restore PaintConfig to project root at the end
+            PaintConfig.reinitialise(projectPath);
+            PaintLogger.infof("Reinitialised PaintConfig back to project root: %s", projectPath);
         }
 
         // Write summary CSV
         Path summaryFile = projectPath.resolve("sweep_summary.csv");
-        try (CSVPrinter printer = new CSVPrinter(new FileWriter(summaryFile.toFile()),
-                CSVFormat.DEFAULT.withHeader("Parameter", "Value", "Result Directory", "Status"))) {
+        try (CSVPrinter printer = new CSVPrinter(
+                new FileWriter(summaryFile.toFile()),
+                CSVFormat.DEFAULT.builder()
+                        .setHeader("Parameter", "Value", "Result Directory", "Status")
+                        .build()
+        )) {
             for (String[] row : summaryRows) {
                 printer.printRecord((Object[]) row);
             }
