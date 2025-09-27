@@ -43,8 +43,8 @@ public class RunTrackMateSweepOnProject {
 
         SweepConfig sweepConfig = new SweepConfig(sweepFile.toString());
 
-        // 🔑 Require Sweep.Sweep = true
-        boolean sweepEnabled = sweepConfig.getBoolean("Sweep", "Sweep", false);
+        // 🔑 Require Sweep Settings.Sweep = true
+        boolean sweepEnabled = sweepConfig.getBoolean("Sweep Settings", "Sweep", false);
         if (!sweepEnabled) {
             PaintLogger.infof("Sweep configuration present, but sweep mode disabled.");
             // 👉 Run normal mode if sweep disabled
@@ -72,31 +72,33 @@ public class RunTrackMateSweepOnProject {
                 for (Number val : values) {
                     PaintLogger.infof("Running sweep for %s = %s", parameter, val);
 
-                    // Update PaintConfig with correct type
+                    // Directory name with [PARAM]-[VALUE]
+                    Path sweepDir = projectPath.resolve("Sweep")
+                            .resolve("[" + parameter + "]-[" + val + "]");
+                    sweepDir.toFile().mkdirs();
+
+                    // --- Copy baseline PaintConfig.json into sweep dir ---
+                    Path baselineConfig = projectPath.resolve(PAINT_CONFIGURATION_JSON);
+                    Path configCopy = sweepDir.resolve(PAINT_CONFIGURATION_JSON);
+                    try {
+                        Files.copy(baselineConfig, configCopy, StandardCopyOption.REPLACE_EXISTING);
+                        PaintLogger.infof("Copied baseline PaintConfig.json to %s", configCopy);
+                    } catch (IOException e) {
+                        PaintLogger.errorf("Failed to copy PaintConfig.json to %s: %s",
+                                configCopy, e.getMessage());
+                    }
+
+                    // 🔑 Reinitialise PaintConfig to point at sweepDir
+                    PaintConfig.reinitialise(sweepDir);
+
+                    // Apply parameter update in sweep config
                     if (val.doubleValue() == val.intValue()) {
                         PaintConfig.setInt("TrackMate", parameter, val.intValue());
                     } else {
                         PaintConfig.setDouble("TrackMate", parameter, val.doubleValue());
                     }
-
-                    // Directory name with [PARAM]-[VALUE]
-                    Path sweepDir = projectPath.resolve("Sweep")
-                            .resolve(parameter)
-                            .resolve("[" + parameter + "]-[" + val + "]");
-                    sweepDir.toFile().mkdirs();
-
-                    // --- Copy PaintConfig.json snapshot ---
-                    Path configCopy = sweepDir.resolve(PAINT_CONFIGURATION_JSON);
-                    try (FileWriter fw = new FileWriter(configCopy.toFile())) {
-                        fw.write(PaintConfig.instance().toString());
-                        PaintLogger.infof("Saved PaintConfig.json snapshot to %s", configCopy);
-                    } catch (IOException e) {
-                        PaintLogger.errorf("Failed to save PaintConfig.json to %s: %s",
-                                configCopy, e.getMessage());
-                    }
-
-                    // 🔑 Reinitialise PaintConfig for this sweep run
-                    PaintConfig.reinitialise(sweepDir);
+                    // 💾 Save updated sweepDir JSON
+                    PaintConfig.instance().save();
 
                     // --- Copy each experiment's Experiment Info.csv ---
                     for (String expName : experimentNames) {
@@ -129,7 +131,7 @@ public class RunTrackMateSweepOnProject {
                     }
                 }
 
-                // Restore original PaintConfig value
+                // Restore original PaintConfig value in memory (not strictly needed if we always reinit)
                 try {
                     int intVal = Integer.parseInt(originalValue);
                     PaintConfig.setInt("TrackMate", parameter, intVal);
