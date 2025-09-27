@@ -1,6 +1,11 @@
 package paint.shared.config;
 
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import static paint.shared.config.PaintConfig.*;
 
 /**
@@ -170,5 +175,16 @@ public class TrackMateConfig {
                 "   allowTrackSplitting=" + allowTrackSplitting + "\n" +
                 "   allowTrackMerging=" + allowTrackMerging + "\n" +
                 "   mergingMaxDistance=" + mergingMaxDistance + "\n";
+    }
+
+    public static void trackMateConfigToFile(TrackMateConfig trackMateConfig, Path filePath)  {
+        String formattedString = trackMateConfig.toString();
+
+        // overwrite or create
+        try {
+            Files.write(filePath, formattedString.getBytes(StandardCharsets.UTF_8));
+        }  catch (IOException e) {
+
+        }
     }
 }

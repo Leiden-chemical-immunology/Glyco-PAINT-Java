@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static paint.shared.config.TrackMateConfig.trackMateConfigToFile;
 import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.utils.CsvConcatenator.concatenateTracksFilesInDirectory;
 import static paint.shared.utils.CsvUtils.countProcessed;
@@ -75,7 +76,8 @@ public class RunTrackMateOnExperiment {
         }
         PaintConfig paintConfig = PaintConfig.instance();
         TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
-        PaintLogger.infof(trackMateConfig.toString());
+
+        trackMateConfigToFile(trackMateConfig, experimentPath.resolve("ParametersUsed.txt"));
 
         // Input/output CSV paths (written under experimentPath, sweep-compatible)
         Path experimentFilePath = experimentPath.resolve(EXPERIMENT_INFO_CSV);
