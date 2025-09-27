@@ -75,10 +75,31 @@ public class PaintConfig {
                 }
             }
         } else {
-            PaintLogger.warningf("PaintConfig already initialised at %s\n", INSTANCE.path);
+            Path newConfigPath = projectPath.resolve(PAINT_CONFIGURATION_JSON);
+            if (!INSTANCE.path.equals(newConfigPath)) {
+                PaintLogger.warningf(
+                        "PaintConfig already initialised at %s (attempted reinit with %s)\n",
+                        INSTANCE.path, newConfigPath
+                );
+            }
         }
     }
 
+
+    /**
+     * Re-initialises the global PaintConfig, replacing any existing instance.
+     * Use this when switching projects (e.g. sweep subdirectories).
+     *
+     * @param projectPath path to the new project directory
+     */
+    public static void reinitialise(Path projectPath) {
+        synchronized (PaintConfig.class) {
+            INSTANCE = null; // force reset
+            initialise(projectPath);
+            PaintLogger.infof("PaintConfig reinitialised at %s",
+                    projectPath.resolve(PAINT_CONFIGURATION_JSON));
+        }
+    }
     /**
      * Returns the current global PaintConfig singleton.
      * <p>
@@ -122,6 +143,7 @@ public class PaintConfig {
                 this.configData = new JsonObject();
             }
         } else {
+            PaintLogger.warningf("No config file exists at %s, default created.\n", path);
             this.configData = new JsonObject();
             loadDefaults();
             save(); // Always save defaults immediately
