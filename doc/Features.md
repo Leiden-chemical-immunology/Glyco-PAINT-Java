@@ -88,10 +88,11 @@
 #### PaintLogger uses a console window dedicated to Paint
 
 - The Paint plugin and apps use its dedicated Console window (previously the Fiji plugin used Fiji's console and Generate Squares did not have a console).
-- The heavy dump of Fiji messages and AWT stack dumps are now hidden: considerably less distraction.
-- All messages ares shown in the consoles and stored in the log file.
+- The Fiji console is blocked. The heavy dump of Fiji messages and AWT stack dumps are now hidden: considerably less distraction.
+- All messages are shown in the console and additionally stored in the log file.
 - The Logger supports four levels of messages: debug, info, warning and error, The logging level be set so that only 'equal and higher' message are displayed.
 - Info and debug messages are coloured in black, warning and error messages are amber and red. 
+- Console can be closed, saved and auto scrolling can be (to allow the user to inspect a section higher up).
 
 
 
@@ -110,7 +111,14 @@
 
 - Version information and generation data of jars are reported in the PaintLog to help detect version problems.
 
-  
+
+
+
+#### TrackMate progress
+
+- TrackMate now runs in a separate thread and is given time slices of 3 seconds allowing the printing of progress dots (in the Console). User has visual conformation that TrackMate is still alive.
+
+
 
 #### Sweep support - under development
 
