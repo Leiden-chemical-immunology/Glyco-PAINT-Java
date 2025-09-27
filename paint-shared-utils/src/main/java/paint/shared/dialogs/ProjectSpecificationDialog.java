@@ -4,6 +4,7 @@ import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.objects.Project;
+import paint.shared.utils.PaintLogger;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -36,6 +37,7 @@ public class ProjectSpecificationDialog {
     private CalculationCallback calculationCallback;
 
     public void setCalculationCallback(CalculationCallback callback) {
+        PaintLogger.infof(">>> setCalculationCallback called");
         this.calculationCallback = callback;
     }
 
@@ -64,6 +66,8 @@ public class ProjectSpecificationDialog {
     private final DialogMode mode;
 
     public ProjectSpecificationDialog(Frame owner, Path projectPath, DialogMode mode) {
+        PaintLogger.infof(">>> ProjectSpecificationDialog constructor called, mode=%s", mode);
+
         this.projectPath = projectPath;
         this.paintConfig = PaintConfig.instance();
         this.project = new Project(projectPath);
@@ -80,8 +84,17 @@ public class ProjectSpecificationDialog {
                 ? "Run TrackMate on Project - '" + projectName + "'"
                 : "Generate Squares for Project - '" + projectName + "'";
 
+        // 🔑 Modal so setVisible() blocks until closed
         this.dialog = new JDialog(owner, dialogTitle, false);
+
         this.dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        this.dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                PaintLogger.warningf(">>> Dialog closed by window manager (red X)");
+                dialog.dispose();
+            }
+        });
 
         JPanel formPanel = new JPanel(new GridLayout(0, 2, 5, 5));
         formPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -178,53 +191,66 @@ public class ProjectSpecificationDialog {
         // --- bottom panel ---
         JPanel buttonPanel = new JPanel(new BorderLayout());
 
-        // left: Save Experiments checkbox
         saveExperimentsCheckBox = new JCheckBox("Save Experiments", false);
         saveExperimentsCheckBox.setFont(saveExperimentsCheckBox.getFont().deriveFont(Font.PLAIN, 12f));
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         leftPanel.add(saveExperimentsCheckBox);
         buttonPanel.add(leftPanel, BorderLayout.WEST);
 
-        // right: OK + Cancel buttons
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         okButton = new JButton("OK");
         cancelButton = new JButton("Cancel");
 
         okButton.addActionListener(e -> {
+            PaintLogger.infof(">>> OK button pressed in ProjectSpecificationDialog");
             okPressed = true;
             cancelled = false;
             cancelCount = 0;
             saveConfig();
 
             if (calculationCallback != null) {
+                PaintLogger.infof(">>> Calculation callback detected, starting in background thread");
                 setInputsEnabled(false);
                 okButton.setEnabled(false);
                 new Thread(() -> {
-                    boolean success = calculationCallback.run(getProject());
-                    SwingUtilities.invokeLater(() -> {
-                        setInputsEnabled(true);
-                        okButton.setEnabled(true);
-                        if (!cancelled) {
-                            JOptionPane.showMessageDialog(dialog,
-                                    success
-                                            ? "Calculations finished successfully!"
-                                            : "Calculations finished with errors. Please check the log.");
-                        }
-                    });
+                    try {
+                        PaintLogger.infof(">>> About to call calculationCallback.run(...)");
+                        Project p = getProject();
+                        PaintLogger.infof(">>> getProject() returned, now calling callback");
+                        boolean success = calculationCallback.run(p);
+                        PaintLogger.infof(">>> Returned from calculationCallback.run(...) with success=%s", success);
+
+                        SwingUtilities.invokeLater(() -> {
+                            setInputsEnabled(true);
+                            okButton.setEnabled(true);
+                            if (!cancelled) {
+                                JOptionPane.showMessageDialog(dialog,
+                                        success
+                                                ? "Calculations finished successfully!"
+                                                : "Calculations finished with errors. Please check the log.");
+                            }
+                        });
+                    } catch (Exception ex1) {
+                        PaintLogger.errorf(">>> Exception in background thread: %s", ex1.getMessage());
+                        ex1.printStackTrace();
+                    }
                 }).start();
+            } else {
+                PaintLogger.warningf(">>> No calculationCallback set!");
             }
         });
 
         cancelButton.addActionListener(e -> {
+            PaintLogger.infof(">>> Cancel button pressed");
             cancelCount++;
             if (cancelCount == 1) {
-                cancelled = true; // request stop
+                cancelled = true;
                 JOptionPane.showMessageDialog(dialog,
                         "Processing will stop after the current recording finishes.",
                         "Cancellation Requested",
                         JOptionPane.INFORMATION_MESSAGE);
             } else {
-                dialog.dispose(); // second cancel closes dialog
+                dialog.dispose();
             }
         });
 
@@ -240,6 +266,7 @@ public class ProjectSpecificationDialog {
     }
 
     private void populateCheckboxes() {
+        PaintLogger.infof(">>> populateCheckboxes called");
         checkboxPanel.removeAll();
         checkBoxes.clear();
         File[] subs = project.getProjectPath().toFile().listFiles();
@@ -260,6 +287,7 @@ public class ProjectSpecificationDialog {
     }
 
     private void saveConfig() {
+        PaintLogger.infof(">>> saveConfig called");
         if (mode == DialogMode.GENERATE_SQUARES) {
             PaintConfig.setInt("Generate Squares", "Nr of Squares in Row", Integer.parseInt(nrSquaresField.getText()));
             PaintConfig.setInt("Generate Squares", "Min Tracks to Calculate Tau", Integer.parseInt(minTracksField.getText()));
@@ -279,6 +307,7 @@ public class ProjectSpecificationDialog {
     }
 
     private Project getProject() {
+        PaintLogger.infof(">>> getProject() called");
         TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
         GenerateSquaresConfig generateSquaresConfig = GenerateSquaresConfig.from(paintConfig);
         List<String> experimentNames = new ArrayList<>();
@@ -287,7 +316,9 @@ public class ProjectSpecificationDialog {
     }
 
     public Project showDialog() {
+        PaintLogger.infof(">>> showDialog() called");
         dialog.setVisible(true);
+        PaintLogger.infof(">>> Dialog closed, returning project");
         return getProject();
     }
 
@@ -337,7 +368,6 @@ public class ProjectSpecificationDialog {
         }
     }
 
-    // externally visible helpers
     public void setOkEnabled(boolean enabled) {
         if (okButton != null) okButton.setEnabled(enabled);
     }

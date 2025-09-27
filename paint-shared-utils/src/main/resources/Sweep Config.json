@@ -1,10 +1,14 @@
-{  
+{
+  "Sweep Settings": {
+    "Sweep": true
+  },
+
   "TrackMate Sweep": {
-    "MAX_FRAME_GAP": false,
+    "MAX_FRAME_GAP": true,
     "ALTERNATIVE_LINKING_COST_FACTOR": false,
     "DO_SUBPIXEL_LOCALIZATION": false,
     "MIN_NR_SPOTS_IN_TRACK": false,
-    "LINKING_MAX_DISTANCE": true,
+    "LINKING_MAX_DISTANCE": false,
     "MAX_NR_SPOTS_IN_IMAGE": false,
     "GAP_CLOSING_MAX_DISTANCE": false,
     "TARGET_CHANNEL": false,
@@ -19,8 +23,6 @@
   },
 
   "MAX_FRAME_GAP": {
-    "Value 1": 1,
-    "Value 2": 2,
     "Value 3": 3,
     "Value 4": 4,
     "Value 5": 5
@@ -109,7 +111,7 @@
   },
 
   
-  "Generate Sweep": {
+  "Generate Squares Sweep": {
     "Min Required R Squared": false,
     "Min Tracks to Calculate Tau": true,
     "Fraction of Squares to Determine Background": false,
