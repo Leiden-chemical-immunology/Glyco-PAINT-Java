@@ -71,7 +71,7 @@ public class PaintConsoleWindow {
 
     private static void createConsole() {
         frame = new JFrame("Paint Console");
-        frame.setSize(800, 400);
+        frame.setSize(1200, 400);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 

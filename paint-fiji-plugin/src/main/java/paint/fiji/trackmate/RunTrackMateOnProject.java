@@ -71,8 +71,9 @@ public class RunTrackMateOnProject implements Command {
             PaintLogger.infof("Version: %s", info.implementationVersion);
         } else {
             PaintLogger.errorf("No manifest information found.");
-            PaintLogger.blankline();
         }
+        PaintLogger.blankline();
+        PaintLogger.blankline();
 
         // Experiment selection dialog
         ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(
@@ -82,7 +83,6 @@ public class RunTrackMateOnProject implements Command {
         PaintConsoleWindow.closeOnDialogDispose(dialog.getDialog());
 
         dialog.setCalculationCallback(project -> {
-            PaintLogger.infof(">>> Entered calculation callback");
 
             if (running) {
                 JOptionPane optionPane = new JOptionPane(
@@ -94,7 +94,6 @@ public class RunTrackMateOnProject implements Command {
                 warnDialog.setVisible(true);
                 return false;
             }
-            PaintLogger.infof("@@@ TrackMate plugin started 1");
 
             running = true;
             dialog.setOkEnabled(false);
@@ -111,7 +110,7 @@ public class RunTrackMateOnProject implements Command {
 
                 // Sweep detection
                 Path sweepFile = projectPath.resolve("Sweep Config.json");
-                PaintLogger.infof("Sweep Config file %s", sweepFile.toString());
+                // PaintLogger.infof("Sweep Config file %s", sweepFile.toString());
                 if (Files.exists(sweepFile)) {
                     PaintLogger.infof("Sweep configuration detected at %s", sweepFile);
                     try {

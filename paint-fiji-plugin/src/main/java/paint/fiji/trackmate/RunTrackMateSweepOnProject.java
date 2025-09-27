@@ -6,10 +6,11 @@ import paint.shared.utils.PaintLogger;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 /**
@@ -30,13 +31,13 @@ public class RunTrackMateSweepOnProject {
     public static boolean runWithSweep(Path projectPath,
                                        Path imagesPath,
                                        List<String> experimentNames) throws IOException {
-        File sweepFile = projectPath.resolve("Sweep Config.json").toFile();
-        if (!sweepFile.exists()) {
-            PaintLogger.infof("No sweep configuration found at %s", sweepFile.getAbsolutePath());
+        Path sweepFile = projectPath.resolve("Sweep Config.json");
+        if (!Files.exists(sweepFile)) {
+            PaintLogger.infof("No sweep configuration found at %s", sweepFile);
             return false;
         }
 
-        SweepConfig sweepConfig = new SweepConfig(sweepFile.getAbsolutePath());
+        SweepConfig sweepConfig = new SweepConfig(sweepFile.toString());
         Map<String, List<Number>> sweeps = sweepConfig.getActiveSweepValues("TrackMate Sweep");
         if (sweeps.isEmpty()) {
             PaintLogger.infof("Sweep enabled, but no active sweep parameters defined.");
@@ -64,6 +65,24 @@ public class RunTrackMateSweepOnProject {
 
                 Path sweepDir = projectPath.resolve("Sweep").resolve(parameter).resolve(val.toString());
                 sweepDir.toFile().mkdirs();
+
+                // --- Copy each experiment's Experiment Info.csv ---
+                for (String expName : experimentNames) {
+                    Path expSrc = projectPath.resolve(expName).resolve("Experiment Info.csv");
+                    Path expDstDir = sweepDir.resolve(expName);
+                    Path expDst = expDstDir.resolve("Experiment Info.csv");
+                    try {
+                        if (Files.exists(expSrc)) {
+                            Files.createDirectories(expDstDir);
+                            Files.copy(expSrc, expDst, StandardCopyOption.REPLACE_EXISTING);
+                            //vPaintLogger.infof("Copied Experiment Info.csv for %s to %s", expName, expDst);
+                        } else {
+                            PaintLogger.warningf("Experiment Info.csv not found for %s at %s", expName, expSrc);
+                        }
+                    } catch (IOException e) {
+                        PaintLogger.errorf("Failed to copy Experiment Info.csv for %s: %s", expName, e.getMessage());
+                    }
+                }
 
                 boolean status = RunTrackMateOnProjectCore.runProject(
                         projectPath, imagesPath, experimentNames, null, sweepDir);
