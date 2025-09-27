@@ -76,13 +76,13 @@ public class RunTrackMateOnExperiment {
         String experimentName = experimentPath.getFileName().toString();
         String projectName = experimentPath.getParent().getFileName().toString();
 
-        PaintLogger.infof();
+        PaintLogger.blankline();
         PaintLogger.infof("Processing %d %s in experiment '%s' in project '%s'.",
                 numberRecordingsToProcess,
                 numberRecordingsToProcess == 1 ? "recording" : "recordings",
                 experimentName,
                 projectName);
-        PaintLogger.infof();
+        PaintLogger.blankline();
 
         // Try-with-resources for reading experiment_info.csv and writing recordings.csv
         try (
@@ -160,7 +160,7 @@ public class RunTrackMateOnExperiment {
                         PaintLogger.infof("   Recording '%s' (%d of %d) processed in %s.",
                                 recordingName, numberRecordings + 1, numberRecordingsToProcess,
                                 formatDuration(durationInSeconds));
-                        PaintLogger.infof();
+                        PaintLogger.blankline();
 
                         // Update counters and values
                         totalDuration = totalDuration.plus(trackMateResults.getDuration());

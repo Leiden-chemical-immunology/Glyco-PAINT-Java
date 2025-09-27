@@ -71,7 +71,7 @@ public class RunTrackMateOnProject implements Command {
             PaintLogger.infof("Version: %s", info.implementationVersion);
         } else {
             PaintLogger.errorf("No manifest information found.");
-            PaintLogger.infof();
+            PaintLogger.blankline();
         }
 
         ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(
@@ -207,7 +207,7 @@ public class RunTrackMateOnProject implements Command {
 
                 Duration totalDuration = Duration.between(start, LocalDateTime.now());
                 int durationInSeconds = (int) (totalDuration.toMillis() / 1000);
-                PaintLogger.infof();
+                PaintLogger.blankline();
                 PaintLogger.infof("Processed %d experiments in %s.",
                         project.experimentNames.size(),
                         formatDuration(durationInSeconds));
