@@ -190,44 +190,10 @@ public class RunTrackMateOnRecording {
         }
         PaintLogger.infof("      TrackMate - number of spots detected: %d", numberSpots);
 
-
-        // Start the dot-printing watchdog
-        Boolean dotPrint = numberSpots > 500000;
-        Thread dotPrinter = null;
-        final int[] dotCount = {0};
-
-        if (dotPrint) {    // ToDo
-            dotPrinter = new Thread(() -> {
-                while (!Thread.currentThread().isInterrupted()) {
-                    System.out.print(".");
-                    System.out.flush(); // Force immediate output
-                    dotCount[0] += 1;
-                    if (dotCount[0] >= 110) {
-                        System.out.print("\n");
-                        System.out.flush(); // Force immediate output
-                        dotCount[0] = 0;
-                    }
-
-                    try {
-                        Thread.sleep(numberSpots / 500); // Print dot every so often
-                    } catch (InterruptedException e) {
-                        break;
-                    }
-                }
-            });
-            dotPrinter.start();
-        }
-
         // Continue with full TrackMate processing - nr_spots is within limits
         if (!trackmate.process()) {
             PaintLogger.errorf("   TrackMate process failed: %s", trackmate.getErrorMessage());
             return new TrackMateResults(false);
-        }
-
-        // Stop the dot printer
-        if (dotPrint) {
-            dotPrinter.interrupt();
-            System.out.println(); // Finish the line cleanly
         }
 
         // --- Visualization ---
