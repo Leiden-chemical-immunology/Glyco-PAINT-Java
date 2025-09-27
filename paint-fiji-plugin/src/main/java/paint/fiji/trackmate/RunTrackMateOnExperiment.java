@@ -82,6 +82,7 @@ public class RunTrackMateOnExperiment {
                 numberRecordingsToProcess == 1 ? "recording" : "recordings",
                 experimentName,
                 projectName);
+        PaintLogger.infof();
 
         // Try-with-resources for reading experiment_info.csv and writing recordings.csv
         try (
