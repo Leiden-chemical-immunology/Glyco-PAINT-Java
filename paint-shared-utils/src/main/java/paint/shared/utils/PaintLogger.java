@@ -37,6 +37,7 @@ public class PaintLogger {
     private static BufferedWriter writer;
     private static boolean initialised = false;
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private static boolean justPrintedRaw = false;
 
     private static volatile Level currentLevel = Level.INFO;
 
@@ -120,8 +121,13 @@ public class PaintLogger {
             return;
         }
 
-        String timestamp = LocalDateTime.now().format(TIME_FMT );
+        String timestamp = LocalDateTime.now().format(TIME_FMT);
         String formatted = String.format("%s [%-5s] %s", timestamp, level, message);
+
+        if (justPrintedRaw) {
+            PaintConsoleWindow.print("\n");
+            justPrintedRaw = false;
+        }
 
         PaintConsoleWindow.log(formatted, level.color());
 
@@ -181,5 +187,32 @@ public class PaintLogger {
             sb.append("    at ").append(el.toString()).append("\n");
         }
         return sb.toString();
+    }
+
+    public static void raw(String text) {
+        PaintConsoleWindow.print(text);
+        justPrintedRaw = true;
+    }
+
+    public static void raw(char c) {
+        PaintConsoleWindow.printChar(c);
+        justPrintedRaw = true;
+    }
+
+    public static void blankline() {
+        if (justPrintedRaw) {
+            PaintConsoleWindow.print("\n");
+            justPrintedRaw = false;
+        }
+        PaintConsoleWindow.log("", Color.BLACK); // empty line in GUI console
+
+        if (initialised && writer != null) {
+            try {
+                writer.newLine(); // or: writer.write("[INFO ]"); writer.newLine();
+                writer.flush();
+            } catch (IOException e) {
+                System.err.println("PaintLogger failed to write blank line: " + e.getMessage());
+            }
+        }
     }
 }
