@@ -72,6 +72,7 @@ public class RunTrackMateOnRecording {
         DebugTools.setRootLevel("OFF");
 
         // --- Load image from ND2 file ---
+        PaintLogger.raw("                       TrackMate - Image Loading: ");
         ImagePlus imp = null;
         File nd2File = new File(imagesPath.toFile(), experimentInfoRecord.getRecordingName() + ".nd2");
         if (!nd2File.exists()) {
@@ -168,11 +169,13 @@ public class RunTrackMateOnRecording {
         }
 
         // Run the spot detection step first
+        PaintLogger.raw("\n                       Trackmate - spot detection: ");
+
         if (!trackmate.execDetection()) {
             PaintLogger.errorf("TrackMate - execDetection failed:", trackmate.getErrorMessage());
             return new TrackMateResults(false);
         }
-        if (debug) PaintLogger.debugf("      TrackMate - spot detection succeeded");
+        if (debug) PaintLogger.debugf("                  TrackMate - spot detection succeeded");
 
         int numberSpots = model.getSpots().getNSpots(false);
         if (numberSpots > trackMateConfig.getMaxNrSpotsInImage()) {
@@ -188,9 +191,10 @@ public class RunTrackMateOnRecording {
             }
             return new TrackMateResults(true, false);
         }
-        PaintLogger.infof("      TrackMate - number of spots detected: %d", numberSpots);
+        PaintLogger.raw("\n                       TrackMate - number of spots detected: " + numberSpots);
 
         // Continue with full TrackMate processing - nr_spots is within limits
+        PaintLogger.raw("\n                       Trackmate - track detection: ");
         if (!trackmate.process()) {
             PaintLogger.errorf("   TrackMate process failed: %s", trackmate.getErrorMessage());
             return new TrackMateResults(false);
