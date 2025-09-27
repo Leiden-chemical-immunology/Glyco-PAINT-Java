@@ -1,5 +1,6 @@
 package paint.fiji.run;
 
+import org.ojalgo.matrix.store.operation.ApplyLDL;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 import paint.shared.config.PaintConfig;
@@ -35,6 +36,12 @@ public class RunTrackMateOnProject implements Command {
 
     @Override
     public void run() {
+
+        // To stop AWT complaining visibly (we could filter messages, but don't)
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            PaintLogger.warningf("AWT is complaining - ignore");
+        });
+
         if (running) {
             JOptionPane optionPane = new JOptionPane(
                     "TrackMate processing is already running.\nPlease wait until it finishes.",
