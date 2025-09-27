@@ -30,31 +30,30 @@ import java.time.LocalDateTime;
 import static paint.shared.config.PaintConfig.getBoolean;
 
 /**
- * Utility class for executing the TrackMate plugin on a single recording.
- * This includes image loading, spot detection, tracking, visualization, and result output.
+ * Executes the TrackMate pipeline on a single recording.
+ * <p>
+ * Handles loading of an ND2 image, spot detection, tracking, visualization,
+ * result export (overlay images, tracks CSV), and returns a {@link TrackMateResults}
+ * object with key statistics.
  */
 public class RunTrackMateOnRecording {
 
-    /**
-     * Verbose output flag (prints configuration to stdout when enabled).
-     */
+    /** Verbose flag to optionally print extra config information. */
     final boolean verbose = false;
 
-    /**
-     * Global debug flag (enables validation and detailed logging when true).
-     */
+    /** Global debug flag for enabling extra validation/logging. */
     static final boolean debug = true;
 
     /**
-     * Executes the TrackMate pipeline on the specified recording and image data.
+     * Run the TrackMate workflow on a single recording.
      *
-     * @param experimentPath       base path of the experiment where results will be stored
-     * @param imagesPath           path containing the input ND2 image files
-     * @param trackMateConfig      configuration parameters controlling detection and tracking
+     * @param experimentPath       base path of the experiment where results are written
+     * @param imagesPath           path to input ND2 image files
+     * @param trackMateConfig      TrackMate configuration settings
      * @param threshold            intensity threshold for spot detection
-     * @param experimentInfoRecord metadata about the experiment (e.g. recording name)
-     * @return a {@link TrackMateResults} summarizing the outcome
-     * @throws IOException if an I/O error occurs while creating directories or saving files
+     * @param experimentInfoRecord metadata about the current experiment/recording
+     * @return {@link TrackMateResults} with run outcome and statistics
+     * @throws IOException if directories or files cannot be created/written
      */
     public static TrackMateResults RunTrackMateOnRecording(Path experimentPath,
                                                            Path imagesPath,
@@ -65,13 +64,13 @@ public class RunTrackMateOnRecording {
         final boolean verbose = false;
         final boolean debug = getBoolean("Debug", "RunTrackMateOnRecording", false);
 
-        // Record the start time
+        // Start timestamp
         LocalDateTime start = LocalDateTime.now();
 
-        // Suppress Bio-Formats console output
+        // Disable noisy Bio-Formats console output
         DebugTools.setRootLevel("OFF");
 
-        // --- Load image from ND2 file ---
+        // --- Step 1: Load ND2 image ---
         PaintLogger.raw("                       TrackMate - Image Loading: ");
         ImagePlus imp = null;
         File nd2File = new File(imagesPath.toFile(), experimentInfoRecord.getRecordingName() + ".nd2");
@@ -79,14 +78,7 @@ public class RunTrackMateOnRecording {
             PaintLogger.errorf("Could not open image file: %s", nd2File.getAbsolutePath());
         }
         try {
-//            ImporterOptions options = new ImporterOptions();
-//            options.setId(nd2File.getAbsolutePath());
-//            options.setQuiet(true); // suppress Bio-Formats dialogs
-//
-//            ImagePlus[] imps = BF.openImagePlus(options);
-//            if (imps != null && imps.length > 0) {
-//                imp = imps[0];  // first series
-//            }
+            // Using ImageJ to load ND2 instead of Bio-Formats importer (simplified)
             imp = IJ.openImage(nd2File.getAbsolutePath());
         } catch (Exception e) {
             PaintLogger.errorf("Could not load image file: %s", nd2File.getAbsolutePath());
@@ -98,13 +90,13 @@ public class RunTrackMateOnRecording {
 
         // Show the image in ImageJ
         imp.show();
-        IJ.wait(100); // Wait for UI window to initialize
+        IJ.wait(100); // small delay to let window initialize
 
-        // Enhance contrast and convert to grayscale
+        // Enhance contrast & convert to grayscale
         IJ.run(imp, "Enhance Contrast", "saturated=0.35");
         IJ.run("Grays");
 
-        // --- Save Brightfield JPEG snapshot ---
+        // --- Step 2: Save Brightfield snapshot ---
         Path jpgPath = experimentPath.resolve("Brightfield Images")
                 .resolve(experimentInfoRecord.getRecordingName() + ".jpg");
         if (Files.notExists(jpgPath.getParent())) {
@@ -114,12 +106,11 @@ public class RunTrackMateOnRecording {
             IJ.saveAs(imp, "Jpeg", jpgPath.toString());
         }
 
-        // --- Set up TrackMate model ---
+        // --- Step 3: Prepare TrackMate model and settings ---
         Model model = new Model();
         model.setLogger(Logger.IJ_LOGGER);
         model.setLogger(Logger.VOID_LOGGER);
 
-        // --- Build TrackMate settings from config ---
         Settings settings = new Settings(imp);
 
         if (debug && verbose) {
@@ -136,7 +127,7 @@ public class RunTrackMateOnRecording {
         settings.detectorSettings.put("THRESHOLD", threshold);
         settings.detectorSettings.put("DO_MEDIAN_FILTERING", trackMateConfig.isMedianFiltering());
 
-        // Tracker settings
+        // Configure tracker
         settings.trackerFactory = new SparseLAPTrackerFactory();
         settings.trackerSettings = settings.trackerFactory.getDefaultSettings();
         settings.trackerSettings.put("LINKING_MAX_DISTANCE", trackMateConfig.getLinkingMaxDistance());
@@ -149,18 +140,18 @@ public class RunTrackMateOnRecording {
         settings.trackerSettings.put("ALLOW_TRACK_MERGING", trackMateConfig.isAllowTrackMerging());
         settings.trackerSettings.put("MERGING_MAX_DISTANCE", trackMateConfig.getMergingMaxDistance());
 
-        // --- Filter and analyze ---
+        // Filters and analyzers
         settings.addSpotFilter(new FeatureFilter("QUALITY", 0, true));
         settings.addAllAnalyzers();
         settings.addTrackFilter(new FeatureFilter("NUMBER_SPOTS", trackMateConfig.getMinNrSpotsInTrack(), true));
 
-        // Optional debugging
+        // Optional debug dump of settings
         if (debug && verbose) {
             TrackMateSettingsDebugger.logSettings(settings);
             TrackMateSettingsValidator.validate(settings);
         }
 
-        // --- Run TrackMate pipeline ---
+        // --- Step 4: Run TrackMate pipeline ---
         TrackMate trackmate = new TrackMate(model, settings);
 
         if (!trackmate.checkInput()) {
@@ -168,9 +159,8 @@ public class RunTrackMateOnRecording {
             return new TrackMateResults(false);
         }
 
-        // Run the spot detection step first
+        // Spot detection
         PaintLogger.raw("\n                       Trackmate - spot detection: ");
-
         if (!trackmate.execDetection()) {
             PaintLogger.errorf("TrackMate - execDetection failed:", trackmate.getErrorMessage());
             return new TrackMateResults(false);
@@ -178,6 +168,7 @@ public class RunTrackMateOnRecording {
         if (debug) PaintLogger.debugf("                  TrackMate - spot detection succeeded");
 
         int numberSpots = model.getSpots().getNSpots(false);
+        // Guardrail: stop if too many spots
         if (numberSpots > trackMateConfig.getMaxNrSpotsInImage()) {
             PaintLogger.warningf("   Too many spots detected (%d). Limit is %d.", numberSpots, trackMateConfig.getMaxNrSpotsInImage());
             PaintLogger.warningf("");
@@ -193,14 +184,14 @@ public class RunTrackMateOnRecording {
         }
         PaintLogger.raw("\n                       TrackMate - number of spots detected: " + numberSpots);
 
-        // Continue with full TrackMate processing - nr_spots is within limits
+        // Track building
         PaintLogger.raw("\n                       Trackmate - track detection: ");
         if (!trackmate.process()) {
             PaintLogger.errorf("   TrackMate process failed: %s", trackmate.getErrorMessage());
             return new TrackMateResults(false);
         }
 
-        // --- Visualization ---
+        // --- Step 5: Visualization ---
         final SelectionModel selectionModel = new SelectionModel(model);
         final DisplaySettings ds = DisplaySettingsIO.readUserDefault();
         ds.setSpotVisible(false);
@@ -211,7 +202,7 @@ public class RunTrackMateOnRecording {
         displayer.refresh();
         if (debug) PaintLogger.debugf("      TrackMate - visualisation successful");
 
-        // --- Capture overlay image ---
+        // Capture track overlay image
         final ImagePlus capture = CaptureOverlayAction.capture(imp, -1, 1, null);
         Path imagePath = experimentPath.resolve("TrackMate Images")
                 .resolve(experimentInfoRecord.getRecordingName() + ".jpg");
@@ -219,13 +210,12 @@ public class RunTrackMateOnRecording {
             if (!new FileSaver(capture).saveAsTiff(String.valueOf(imagePath))) {
                 PaintLogger.errorf("Failed to save TIFF to: %s", imagePath);
             }
-
         } else {
             PaintLogger.infof("Overlay capture returned null.");
         }
         if (debug) PaintLogger.debugf("      TrackMate - wrote trackmate image '%s'", imagePath.toString());
 
-        // --- Write tracks to CSV ---
+        // --- Step 6: Write tracks CSV ---
         String tracksName = experimentInfoRecord.getRecordingName() + "-tracks.csv";
         Path tracksPath = experimentPath.resolve(tracksName);
         if (debug) PaintLogger.debugf("      TrackMate - wrote tracks file '%s'", tracksPath);
@@ -241,21 +231,20 @@ public class RunTrackMateOnRecording {
             PaintLogger.errorf("Failed to write tracks to 's%'", tracksPath);
         }
 
-        // --- Summarize results ---
-        int numberOfSpots = model.getSpots().getNSpots(true);
+        // --- Step 7: Summarize results ---
+        int numberOfSpotsTotal = model.getSpots().getNSpots(true);
         int numberOfTracks = model.getTrackModel().nTracks(false);
         int numberOfFilteredTracks = model.getTrackModel().nTracks(true);
         int numberOfFrames = imp.getNFrames();
 
-        // Optional pause before closing
+        // Small pause before cleanup
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             PaintLogger.errorf("Failed to sleep - %s", e.getMessage());
         }
 
-        // Safely close the image window
-
+        // Safely close image window
         try {
             ImageWindow win = imp.getWindow();
             if (win != null) {
@@ -267,14 +256,15 @@ public class RunTrackMateOnRecording {
 
         Duration duration = Duration.between(start, LocalDateTime.now());
 
-        return new TrackMateResults(true, true, numberOfSpots, numberOfTracks, numberOfFilteredTracks,
-                numberOfFrames, duration, numberOfSpotsInALlTracks);
+        // Return encapsulated results
+        return new TrackMateResults(true, true, numberOfSpotsTotal, numberOfTracks,
+                numberOfFilteredTracks, numberOfFrames, duration, numberOfSpotsInALlTracks);
     }
 
     /**
-     * Prints a debug message if the global {@link #debug} flag is set.
+     * Print debug message to stdout if {@link #debug} is enabled.
      *
-     * @param message the debug message to print
+     * @param message the debug message
      */
     static void debugMessage(String message) {
         if (debug) {
