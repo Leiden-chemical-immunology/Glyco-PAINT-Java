@@ -48,17 +48,25 @@ public class FilterDialog extends JDialog {
         adjuvantList = createList(adjuvants);
         concentrationList = createList(concentrations);
 
-        JPanel listPanel = new JPanel(new GridLayout(1, 5, 10, 0));
+        JPanel listPanel = new JPanel(new GridLayout(1, 6, 10, 0));
         listPanel.add(createListBoxWithButtons("Cell Type", cellTypeList));
         listPanel.add(createListBoxWithButtons("Probe Name", probeNameList));
         listPanel.add(createListBoxWithButtons("Probe Type", probeTypeList));
         listPanel.add(createListBoxWithButtons("Adjuvant", adjuvantList));
         listPanel.add(createListBoxWithButtons("Concentration", concentrationList));
 
-        // Global Apply / Reset All / Cancel buttons
+        // Global Apply / Reset All / Cancel buttons (right side, aligned top)
+        JPanel rightButtonPanel = new JPanel();
+        rightButtonPanel.setLayout(new BoxLayout(rightButtonPanel, BoxLayout.Y_AXIS));
+
         JButton applyButton = new JButton("Apply");
         JButton resetAllButton = new JButton("Reset All");
         JButton cancelButton = new JButton("Cancel");
+
+        Dimension btnSize = new Dimension(100, 30);
+        applyButton.setMaximumSize(btnSize);
+        resetAllButton.setMaximumSize(btnSize);
+        cancelButton.setMaximumSize(btnSize);
 
         applyButton.addActionListener(e -> {
             cancelled = false;
@@ -71,17 +79,16 @@ public class FilterDialog extends JDialog {
             dispose();
         });
 
-        JPanel bottomPanel = new JPanel(new GridLayout(1, 3, 10, 0));
-        Dimension btnSize = new Dimension(100, 30);
-        applyButton.setPreferredSize(btnSize);
-        resetAllButton.setPreferredSize(btnSize);
-        cancelButton.setPreferredSize(btnSize);
-        bottomPanel.add(applyButton);
-        bottomPanel.add(resetAllButton);
-        bottomPanel.add(cancelButton);
+        rightButtonPanel.add(applyButton);
+        rightButtonPanel.add(Box.createVerticalStrut(10));
+        rightButtonPanel.add(resetAllButton);
+        rightButtonPanel.add(Box.createVerticalStrut(10));
+        rightButtonPanel.add(cancelButton);
+        rightButtonPanel.add(Box.createVerticalGlue());
+
+        listPanel.add(rightButtonPanel);
 
         add(listPanel, BorderLayout.CENTER);
-        add(bottomPanel, BorderLayout.SOUTH);
 
         pack();
         setLocationRelativeTo(owner);
@@ -90,7 +97,7 @@ public class FilterDialog extends JDialog {
     private JList<String> createList(Set<String> values) {
         JList<String> list = new JList<>(values.toArray(new String[0]));
         list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        list.setVisibleRowCount(5); // smaller height
+        list.setVisibleRowCount(5);
         return list;
     }
 
@@ -99,7 +106,7 @@ public class FilterDialog extends JDialog {
         panel.setBorder(BorderFactory.createTitledBorder(title));
 
         JScrollPane scrollPane = new JScrollPane(list);
-        scrollPane.setPreferredSize(new Dimension(120, 80)); // smaller size
+        scrollPane.setPreferredSize(new Dimension(120, 160));
         panel.add(scrollPane, BorderLayout.CENTER);
 
         JPanel btnPanel = new JPanel(new GridLayout(2, 1, 0, 5));
@@ -130,7 +137,6 @@ public class FilterDialog extends JDialog {
     }
 
     private void resetSingleFilter(JList<String> list) {
-        // Reset just this list → restore from original
         filteredRecordings = new ArrayList<>(originalRecordings);
         updateLists();
     }
