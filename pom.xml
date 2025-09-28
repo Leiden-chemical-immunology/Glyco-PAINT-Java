@@ -79,6 +79,9 @@
         <!-- Java 8 globally -->
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+
+        <!-- Common JVM args for all GUI apps -->
+        <app.jvm.args>-Xms512m -Xmx2048m -XX:ReservedCodeCacheSize=256m</app.jvm.args>
     </properties>
 
     <!-- Central place for dependency versions -->
