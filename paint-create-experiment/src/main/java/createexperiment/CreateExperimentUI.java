@@ -13,7 +13,6 @@ public class CreateExperimentUI {
     private static final String PREF_NODE = "paint/create-experiment";
     private static final String KEY_IMAGES = "lastImagesDir";
     private static final String KEY_PROJECT = "lastProjectDir";
-    private static final String KEY_REGEX_HISTORY = "regexHistory";
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(CreateExperimentUI::createAndShowGUI);
@@ -37,10 +36,12 @@ public class CreateExperimentUI {
         regexCombo.setFont(smallFont);
         regexCombo.addItem(""); // always empty regex
 
-        String history = prefs.get(KEY_REGEX_HISTORY, "");
-        if (!history.isEmpty()) {
-            for (String rx : history.split(",")) {
-                if (!rx.trim().isEmpty()) regexCombo.addItem(rx.trim());
+        // Load regex history
+        for (int i = 0; ; i++) {
+            String rx = prefs.get("regex." + i, null);
+            if (rx == null) break;
+            if (!rx.trim().isEmpty()) {
+                regexCombo.addItem(rx.trim());
             }
         }
 
@@ -144,8 +145,8 @@ public class CreateExperimentUI {
         // === Helper: refresh file list ===
         Runnable refresh = () -> {
             String regex = ((String) regexCombo.getEditor().getItem()).trim();
-            // save regex if new
-            if (!regex.isEmpty() && ((DefaultComboBoxModel<String>) regexCombo.getModel()).getIndexOf(regex) == -1) {
+            if (!regex.isEmpty() && regex.length() <= 100 &&
+                    ((DefaultComboBoxModel<String>) regexCombo.getModel()).getIndexOf(regex) == -1) {
                 regexCombo.addItem(regex);
                 saveRegexHistory(regexCombo, prefs);
             }
@@ -173,7 +174,7 @@ public class CreateExperimentUI {
             }
         });
 
-        // --- Project chooser (JFileChooser with Create Experiment button at bottom) ---
+        // --- Project chooser (with Create Experiment option) ---
         projectButton.addActionListener((ActionEvent e) -> {
             JFileChooser chooser = new JFileChooser(outputDir[0]);
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -267,15 +268,22 @@ public class CreateExperimentUI {
     }
 
     private static void saveRegexHistory(JComboBox<String> combo, Preferences prefs) {
-        StringBuilder sb = new StringBuilder();
+        try {
+            for (int i = 0; ; i++) {
+                String key = "regex." + i;
+                if (prefs.get(key, null) == null) break;
+                prefs.remove(key);
+            }
+        } catch (Exception ignored) {}
+
+        int idx = 0;
         for (int i = 0; i < combo.getItemCount(); i++) {
             String item = combo.getItemAt(i).trim();
-            if (!item.isEmpty()) {
-                if (sb.length() > 0) sb.append(",");
-                sb.append(item);
+            if (!item.isEmpty() && item.length() <= 100) {
+                prefs.put("regex." + idx, item);
+                idx++;
             }
         }
-        prefs.put(KEY_REGEX_HISTORY, sb.toString());
     }
 
     private static void refreshList(DefaultListModel<File> model, File dir, String regex, Component parent) {
