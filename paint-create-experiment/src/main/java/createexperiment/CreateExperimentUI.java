@@ -44,6 +44,21 @@ public class CreateExperimentUI {
             }
         }
 
+        // === Right-click menu to delete regex ===
+        JTextField regexEditor = (JTextField) regexCombo.getEditor().getEditorComponent();
+        JPopupMenu regexMenu = new JPopupMenu();
+        JMenuItem deleteItem = new JMenuItem("Delete this regex");
+        regexMenu.add(deleteItem);
+        regexEditor.setComponentPopupMenu(regexMenu);
+
+        deleteItem.addActionListener(ev -> {
+            String selected = regexEditor.getText().trim();
+            if (!selected.isEmpty()) {
+                regexCombo.removeItem(selected);
+                saveRegexHistory(regexCombo, prefs);
+            }
+        });
+
         JButton filterButton = new JButton("Filter");
         filterButton.setFont(smallFont);
         filterButton.setPreferredSize(new Dimension(70, 22));
@@ -128,17 +143,28 @@ public class CreateExperimentUI {
 
         // === Helper: refresh file list ===
         Runnable refresh = () -> {
-            String regex = (String) regexCombo.getEditor().getItem();
+            String regex = ((String) regexCombo.getEditor().getItem()).trim();
+            // save regex if new
+            if (!regex.isEmpty() && ((DefaultComboBoxModel<String>) regexCombo.getModel()).getIndexOf(regex) == -1) {
+                regexCombo.addItem(regex);
+                saveRegexHistory(regexCombo, prefs);
+            }
             refreshList(listModel, inputDir[0], regex, frame);
         };
 
         // --- Images chooser ---
         imagesButton.addActionListener((ActionEvent e) -> {
-            JFileChooser chooser = createSimpleDirChooser(inputDir[0], "Select Images Directory");
+            JFileChooser chooser = new JFileChooser(inputDir[0]);
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            chooser.setFileHidingEnabled(true);
+            chooser.setAcceptAllFileFilterUsed(false);
+            chooser.setDialogTitle("Select Images Directory");
+            chooser.setPreferredSize(new Dimension(600, 350));
+
             int result = chooser.showOpenDialog(frame);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File chosen = chooser.getSelectedFile();
-                if (chosen != null && chosen.isDirectory()) {
+                if (chosen != null && chosen.isDirectory() && !chosen.isHidden()) {
                     inputDir[0] = chosen;
                     inputDirLabel.setText(inputDir[0].getAbsolutePath());
                     prefs.put(KEY_IMAGES, inputDir[0].getAbsolutePath());
@@ -147,11 +173,61 @@ public class CreateExperimentUI {
             }
         });
 
-        // --- Project chooser (custom dialog with Create Experiment button) ---
+        // --- Project chooser (JFileChooser with Create Experiment button at bottom) ---
         projectButton.addActionListener((ActionEvent e) -> {
-            File chosen = showProjectChooserDialog(frame, outputDir[0]);
-            if (chosen != null) {
-                outputDir[0] = chosen;
+            JFileChooser chooser = new JFileChooser(outputDir[0]);
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            chooser.setFileHidingEnabled(true);
+            chooser.setAcceptAllFileFilterUsed(false);
+            chooser.setDialogTitle("Select or Create Experiment Directory");
+
+            // Wrap chooser in a dialog
+            JDialog dialog = new JDialog(frame, "Select or Create Experiment", true);
+            dialog.setLayout(new BorderLayout());
+            dialog.add(chooser, BorderLayout.CENTER);
+
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            JButton createButton = new JButton("Create Experiment");
+            JButton approveButton = new JButton("Open");
+            JButton cancelButton = new JButton("Cancel");
+
+            buttonPanel.add(createButton);
+            buttonPanel.add(approveButton);
+            buttonPanel.add(cancelButton);
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+            final File[] chosenDir = {null};
+
+            approveButton.addActionListener(ev -> {
+                File sel = chooser.getSelectedFile();
+                if (sel != null && sel.isDirectory() && !sel.isHidden()) {
+                    chosenDir[0] = sel;
+                    dialog.dispose();
+                }
+            });
+
+            cancelButton.addActionListener(ev -> dialog.dispose());
+
+            createButton.addActionListener(ev -> {
+                File baseDir = chooser.getCurrentDirectory();
+                String expName = JOptionPane.showInputDialog(dialog, "Enter new experiment name:");
+                if (expName != null && !expName.trim().isEmpty()) {
+                    File newExp = new File(baseDir, expName.trim());
+                    if (!newExp.exists() && !newExp.mkdir()) {
+                        JOptionPane.showMessageDialog(dialog, "Failed to create experiment folder.");
+                        return;
+                    }
+                    chosenDir[0] = newExp;
+                    dialog.dispose();
+                }
+            });
+
+            dialog.setSize(600, 400);
+            dialog.setLocationRelativeTo(frame);
+            dialog.setVisible(true);
+
+            if (chosenDir[0] != null) {
+                outputDir[0] = chosenDir[0];
                 outputDirLabel.setText(outputDir[0].getAbsolutePath());
                 prefs.put(KEY_PROJECT, outputDir[0].getAbsolutePath());
             }
@@ -190,67 +266,16 @@ public class CreateExperimentUI {
         }
     }
 
-    private static JFileChooser createSimpleDirChooser(File startDir, String title) {
-        JFileChooser chooser = new JFileChooser(startDir);
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setDialogTitle(title);
-        chooser.setFileHidingEnabled(true);
-        chooser.setAcceptAllFileFilterUsed(false);
-        chooser.setPreferredSize(new Dimension(600, 350));
-        return chooser;
-    }
-
-    private static File showProjectChooserDialog(JFrame parent, File startDir) {
-        final JFileChooser chooser = createSimpleDirChooser(startDir, "Select or Create Experiment Directory");
-
-        final JDialog dialog = new JDialog(parent, "Project Directory", true);
-        dialog.setLayout(new BorderLayout());
-        dialog.add(chooser, BorderLayout.CENTER);
-
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton openBtn = new JButton("Open");
-        JButton cancelBtn = new JButton("Cancel");
-        JButton createBtn = new JButton("Create Experiment");
-        buttons.add(createBtn);
-        buttons.add(openBtn);
-        buttons.add(cancelBtn);
-        dialog.add(buttons, BorderLayout.SOUTH);
-
-        final File[] result = {null};
-
-        openBtn.addActionListener(ev -> {
-            File sel = chooser.getSelectedFile();
-            if (sel != null && sel.isDirectory()) {
-                result[0] = sel;
-                dialog.dispose();
+    private static void saveRegexHistory(JComboBox<String> combo, Preferences prefs) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < combo.getItemCount(); i++) {
+            String item = combo.getItemAt(i).trim();
+            if (!item.isEmpty()) {
+                if (sb.length() > 0) sb.append(",");
+                sb.append(item);
             }
-        });
-
-        cancelBtn.addActionListener(ev -> dialog.dispose());
-
-        createBtn.addActionListener(ev -> {
-            File base = chooser.getCurrentDirectory();
-            if (base == null || !base.isDirectory()) {
-                JOptionPane.showMessageDialog(dialog, "Please navigate to a valid project directory first.");
-                return;
-            }
-            String expName = JOptionPane.showInputDialog(dialog, "Enter new experiment name:");
-            if (expName != null && !expName.trim().isEmpty()) {
-                File newExp = new File(base, expName.trim());
-                if (!newExp.exists() && !newExp.mkdir()) {
-                    JOptionPane.showMessageDialog(dialog, "Failed to create experiment folder.");
-                    return;
-                }
-                result[0] = newExp;
-                dialog.dispose();
-            }
-        });
-
-        dialog.setSize(650, 450);
-        dialog.setLocationRelativeTo(parent);
-        dialog.setVisible(true);
-
-        return result[0];
+        }
+        prefs.put(KEY_REGEX_HISTORY, sb.toString());
     }
 
     private static void refreshList(DefaultListModel<File> model, File dir, String regex, Component parent) {
