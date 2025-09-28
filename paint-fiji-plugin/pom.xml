@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Maven project descriptor for the Paint Fiji Plugin -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Inherit common settings (like groupId and version) from parent -->
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
@@ -14,84 +12,19 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <!-- Module-specific coordinates -->
     <artifactId>paint-fiji-plugin</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-    <packaging>jar</packaging> <!-- This is a standard thin jar -->
+    <packaging>jar</packaging>
 
-    <!-- Descriptive project metadata -->
     <name>Paint Fiji Plugin</name>
     <description>Integration of Paint application with Fiji/TrackMate plugin</description>
-    <url>https://github.com/jjabakker/paint-fiji-plugin</url>
-    <inceptionYear>2025</inceptionYear>
-
-    <!-- License and authorship -->
-    <organization>
-        <name>jjabakker</name>
-        <url>https://github.com/jjabakker</url>
-    </organization>
-
-    <licenses>
-        <license>
-            <name>BSD-2-Clause</name>
-            <url>https://opensource.org/licenses/BSD-2-Clause</url>
-        </license>
-    </licenses>
-
-    <developers>
-        <developer>
-            <id>hans</id>
-            <name>Hans Bakker</name>
-            <email>hans@example.com</email>
-        </developer>
-    </developers>
-
-    <contributors>
-        <contributor>
-            <name>Contributors welcome</name>
-        </contributor>
-    </contributors>
-
-    <!-- Optional mailing list reference -->
-    <mailingLists>
-        <mailingList>
-            <name>Paint Fiji Plugin Users</name>
-            <post>paint-fiji-plugin@example.com</post>
-        </mailingList>
-    </mailingLists>
-
-    <!-- Source control info -->
-    <scm>
-        <connection>scm:git:git://github.com/jjabakker/paint-fiji-plugin.git</connection>
-        <developerConnection>scm:git:ssh://github.com:jjabakker/paint-fiji-plugin.git</developerConnection>
-        <url>https://github.com/jjabakker/paint-fiji-plugin</url>
-    </scm>
-
-    <!-- Issue and CI tracking -->
-    <issueManagement>
-        <system>GitHub</system>
-        <url>https://github.com/jjabakker/paint-fiji-plugin/issues</url>
-    </issueManagement>
-
-    <ciManagement>
-        <system>GitHub Actions</system>
-        <url>https://github.com/jjabakker/paint-fiji-plugin/actions</url>
-    </ciManagement>
 
     <properties>
-        <!-- Used in license plugin or reports -->
-        <license.licenseName>BSD-2-Clause</license.licenseName>
-        <license.copyrightOwners>Hans Bakker</license.copyrightOwners>
-
-        <!-- Used to know where Fiji is installed -->
+        <!-- Fiji install location -->
         <fiji.dir>/Applications/Fiji.app</fiji.dir>
-
-        <!-- ⏱ UTC time used in JAR metadata (no seconds, no TZ offset) -->
-        <project.build.outputTimestamp>2025-09-23T08:55:00Z</project.build.outputTimestamp>
     </properties>
 
     <dependencies>
-        <!-- Fiji plugin dependencies (provided = available in runtime but not bundled) -->
+        <!-- Fiji plugin dependencies -->
         <dependency>
             <groupId>sc.fiji</groupId>
             <artifactId>TrackMate</artifactId>
@@ -102,6 +35,7 @@
         <dependency>
             <groupId>org.scijava</groupId>
             <artifactId>scijava-common</artifactId>
+            <version>2.94.1</version>
             <scope>provided</scope>
         </dependency>
 
@@ -112,15 +46,14 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Project's shared module (must be present in classpath at runtime) -->
+        <!-- Project’s shared module -->
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
             <version>1.0.0-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
 
-        <!-- Explicitly bundled third-party dependencies -->
+        <!-- Explicit bundled dependencies -->
         <dependency>
             <groupId>tech.tablesaw</groupId>
             <artifactId>tablesaw-core</artifactId>
@@ -132,28 +65,19 @@
             <artifactId>commons-csv</artifactId>
             <version>1.10.0</version>
         </dependency>
-
     </dependencies>
 
     <repositories>
-        <!-- Fiji and SciJava dependencies -->
         <repository>
             <id>scijava.public</id>
             <url>https://maven.scijava.org/content/groups/public</url>
         </repository>
-
-        <!-- Maven Central fallback -->
-        <repository>
-            <id>central</id>
-            <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-
     </repositories>
 
     <build>
         <plugins>
 
-            <!-- 📦 Unpacks runtime dependencies to target/dependency -->
+            <!-- Copy runtime dependencies -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -162,9 +86,7 @@
                     <execution>
                         <id>copy-dependencies</id>
                         <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
+                        <goals><goal>copy-dependencies</goal></goals>
                         <configuration>
                             <outputDirectory>${project.build.directory}/dependency</outputDirectory>
                             <includeScope>runtime</includeScope>
@@ -173,7 +95,7 @@
                 </executions>
             </plugin>
 
-            <!-- 🧠 Ensures annotation processing for SciJava -->
+            <!-- Compiler with annotation processing -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -181,23 +103,15 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.scijava</groupId>
-                            <artifactId>scijava-common</artifactId>
-                            <version>${scijava-common.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
 
-            <!-- 🧩 Copies the plugin jar and selected dependencies into Fiji install dir -->
+            <!-- Copy plugin + deps into Fiji -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
-                    <!-- Copy plugin JAR to Fiji's plugins directory -->
                     <execution>
                         <id>copy-plugin-to-fiji</id>
                         <phase>package</phase>
@@ -205,13 +119,10 @@
                         <configuration>
                             <target>
                                 <copy file="${project.build.directory}/${project.build.finalName}.jar"
-                                      todir="${fiji.dir}/plugins/"
-                                      overwrite="true"/>
+                                      todir="${fiji.dir}/plugins/" overwrite="true"/>
                             </target>
                         </configuration>
                     </execution>
-
-                    <!-- Copy specific dependency jars into Fiji's jars/ folder -->
                     <execution>
                         <id>copy-deps-to-fiji</id>
                         <phase>package</phase>
@@ -232,7 +143,7 @@
                 </executions>
             </plugin>
 
-            <!-- 📦 Adds manifest info to the plugin JAR (for JarInfoLogger, etc.) -->
+            <!-- Add manifest info -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -240,16 +151,13 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <!-- Add basic metadata like main version, created-by, etc. -->
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                         <manifestEntries>
-                            <!-- Explicit metadata (readable by JarInfoLogger) -->
                             <Implementation-Title>${project.name}</Implementation-Title>
                             <Implementation-Version>${project.version}</Implementation-Version>
                             <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
-                            <Implementation-Date>${maven.build.timestamp}</Implementation-Date>
                             <Specification-Title>${project.name}</Specification-Title>
                             <Specification-Version>${project.version}</Specification-Version>
                             <Specification-Vendor>${project.organization.name}</Specification-Vendor>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- Application identity -->
+  <key>CFBundleName</key>
+  <string>${app.name}</string>
+  <key>CFBundleDisplayName</key>
+  <string>${app.name}</string>
+  <key>CFBundleExecutable</key>
+  <string>launch</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.github.jjabakker.paint.createexperiment</string>
+  <key>CFBundleVersion</key>
+  <string>${project.version}</string>
+  <key>CFBundleShortVersionString</key>
+  <string>${project.version}</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleSignature</key>
+  <string>????</string>
+
+  <!-- Icon -->
+  <key>CFBundleIconFile</key>
+  <string>icon.icns</string>
+
+  <!-- Minimum macOS version -->
+  <key>LSMinimumSystemVersion</key>
+  <string>10.11</string>
+
+  <!-- Hide terminal window -->
+  <key>LSUIElement</key>
+  <false/>
+
+  <!-- Document types (optional) -->
+  <key>CFBundleDocumentTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleTypeName</key>
+      <string>CSV File</string>
+      <key>CFBundleTypeExtensions</key>
+      <array>
+        <string>csv</string>
+      </array>
+      <key>CFBundleTypeIconFile</key>
+      <string>icon.icns</string>
+      <key>LSHandlerRank</key>
+      <string>None</string>
+      <key>CFBundleTypeRole</key>
+      <string>Viewer</string>
+    </dict>
+  </array>
+
+  <!-- App category -->
+  <key>LSApplicationCategoryType</key>
+  <string>public.app-category.developer-tools</string>
+
+  <!-- High resolution support -->
+  <key>NSHighResolutionCapable</key>
+  <true/>
+
+  <!-- Copyright -->
+  <key>NSHumanReadableCopyright</key>
+  <string>© ${project.inceptionYear} Hans Bakker</string>
+</dict>
+</plist>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="https://maven.apache.org/POM/4.0.0"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -13,85 +13,24 @@
     </parent>
 
     <artifactId>paint-viewer</artifactId>
-    <packaging>pom</packaging>
-
-    <!--
     <packaging>jar</packaging>
-    -->
 
     <name>Paint Viewer</name>
     <description>Paint desktop application</description>
-    <url>http://example.com/paint-app</url>
-    <inceptionYear>2025</inceptionYear>
-
-    <organization>
-        <name>jjabakker</name>
-        <url>http://example.com</url>
-    </organization>
-
-    <licenses>
-        <license>
-            <name>MIT License</name>
-            <url>https://opensource.org/licenses/MIT</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <developers>
-        <developer>
-            <id>hans</id>
-            <name>Hans Bakker</name>
-            <email>hans@example.com</email>
-        </developer>
-    </developers>
-
-    <contributors>
-        <contributor>
-            <name>Contributor Name</name>
-        </contributor>
-    </contributors>
-
-    <scm>
-        <connection>scm:git:https://github.com/jjabakker/paint-app.git</connection>
-        <developerConnection>scm:git:https://github.com/jjabakker/paint-app.git</developerConnection>
-        <url>https://github.com/jjabakker/paint-app</url>
-    </scm>
-
-    <issueManagement>
-        <system>GitHub Issues</system>
-        <url>https://github.com/jjabakker/paint-app/issues</url>
-    </issueManagement>
-
-    <ciManagement>
-        <system>GitHub Actions</system>
-        <url>https://github.com/jjabakker/paint-app/actions</url>
-    </ciManagement>
 
     <properties>
-        <license.licenseName>MIT</license.licenseName>
-        <license.copyrightOwners>Hans Bakker</license.copyrightOwners>
+        <project.build.outputTimestamp>2025-09-23T08:55:00Z</project.build.outputTimestamp>
     </properties>
 
-    <mailingLists>
-        <mailingList>
-            <name>Users</name>
-            <subscribe>mailto:users@example.com</subscribe>
-            <unsubscribe>mailto:users@example.com</unsubscribe>
-            <post>mailto:users@example.com</post>
-            <archive>http://example.com/mailing-list/users</archive>
-        </mailingList>
-    </mailingLists>
-
     <dependencies>
-
-        <!-- The Paint Utilities -->
+        <!-- Shared utilities -->
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
-        <!-- ImageJ1 core (provides "ij.*") -->
+        <!-- ImageJ1 core -->
         <dependency>
             <groupId>net.imagej</groupId>
             <artifactId>ij</artifactId>
@@ -105,78 +44,68 @@
             <version>7.14.0</version>
         </dependency>
 
-        <!-- Fiji lib (support classes) -->
+        <!-- Fiji lib -->
         <dependency>
             <groupId>sc.fiji</groupId>
             <artifactId>fiji-lib</artifactId>
             <version>2.1.3</version>
         </dependency>
 
-        <!-- ImgLib2 core (TrackMate depends on this) -->
+        <!-- ImgLib2 -->
         <dependency>
             <groupId>net.imglib2</groupId>
             <artifactId>imglib2</artifactId>
             <version>7.1.5</version>
         </dependency>
 
-        <!-- Bio-Formats Plugins (provides loci.plugins.BF) -->
+        <!-- Bio-Formats -->
         <dependency>
             <groupId>ome</groupId>
             <artifactId>bio-formats_plugins</artifactId>
             <version>6.13.0</version>
         </dependency>
-
-        <!-- Bio-Formats core API -->
         <dependency>
             <groupId>ome</groupId>
             <artifactId>formats-gpl</artifactId>
             <version>6.13.0</version>
         </dependency>
-
         <dependency>
             <groupId>ome</groupId>
             <artifactId>formats-api</artifactId>
             <version>6.13.0</version>
         </dependency>
 
-        <!-- Tablesaw handling -->
+        <!-- Tablesaw -->
         <dependency>
             <groupId>tech.tablesaw</groupId>
             <artifactId>tablesaw-core</artifactId>
             <version>0.43.1</version>
         </dependency>
 
-        <!-- CSV handling -->
+        <!-- CSV -->
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>5.9</version>
         </dependency>
 
-        <!-- JSON handling -->
+        <!-- JSON -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.11.0</version>
         </dependency>
-
     </dependencies>
 
     <repositories>
-
-        <!-- JFiji/ImgLib2 artifacts aren’t in Maven Central. They live in the SciJava Maven repository -->
         <repository>
             <id>scijava.public</id>
             <url>https://maven.scijava.org/content/groups/public</url>
         </repository>
-
-        <!-- OME Bio-Formats artifacts -->
         <repository>
             <id>ome.releases</id>
             <url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
         </repository>
-
     </repositories>
-
 
 </project>
