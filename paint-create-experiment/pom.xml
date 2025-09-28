@@ -1,0 +1,121 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <groupId>com.github.jjabakker</groupId>
+        <artifactId>paint-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>paint-create-experiment</artifactId>
+    <packaging>jar</packaging>
+
+    <name>Paint Create Experiment</name>
+    <description>Standalone Swing app for creating experiments</description>
+    <url>https://github.com/jjabakker/paint-create-experiment</url>
+    <inceptionYear>2025</inceptionYear>
+
+    <!-- License and authorship -->
+    <organization>
+        <name>jjabakker</name>
+        <url>https://github.com/jjabakker</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>BSD-2-Clause</name>
+            <url>https://opensource.org/licenses/BSD-2-Clause</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>hans</id>
+            <name>Hans Bakker</name>
+            <email>hans@example.com</email>
+        </developer>
+    </developers>
+
+    <contributors>
+        <contributor>
+            <name>Contributors welcome</name>
+        </contributor>
+    </contributors>
+
+    <!-- Optional mailing list reference -->
+    <mailingLists>
+        <mailingList>
+            <name>Paint Fiji Plugin Users</name>
+            <post>paint-fiji-plugin@example.com</post>
+        </mailingList>
+    </mailingLists>
+
+    <!-- Source control info -->
+    <scm>
+        <connection>scm:git:git://github.com/jjabakker/paint-fiji-plugin.git</connection>
+        <developerConnection>scm:git:ssh://github.com:jjabakker/paint-fiji-plugin.git</developerConnection>
+        <url>https://github.com/jjabakker/paint-fiji-plugin</url>
+    </scm>
+
+    <!-- Issue and CI tracking -->
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/jjabakker/paint-fiji-plugin/issues</url>
+    </issueManagement>
+
+    <ciManagement>
+        <system>GitHub Actions</system>
+        <url>https://github.com/jjabakker/paint-fiji-plugin/actions</url>
+    </ciManagement>
+
+    <properties>
+        <!-- Used in license plugin or reports -->
+        <license.licenseName>BSD-2-Clause</license.licenseName>
+        <license.copyrightOwners>Hans Bakker</license.copyrightOwners>
+
+        <!-- ⏱ UTC time used in JAR metadata (no seconds, no TZ offset) -->
+        <project.build.outputTimestamp>2025-09-23T08:55:00Z</project.build.outputTimestamp>
+    </properties>
+
+    <build>
+        <plugins>
+            <!-- Java 8 -->
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+            <!-- Fat JAR -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>paint.createexperiment.CreateExperimentUI</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

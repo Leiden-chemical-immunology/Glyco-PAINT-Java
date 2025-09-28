@@ -99,6 +99,7 @@
         <module>paint-fiji-plugin</module>
         <module>paint-integrated-fiji</module>
         <module>paint-viewer</module>
+        <module>paint-create-experiment</module>
     </modules>
 
     <build>

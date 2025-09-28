@@ -6,9 +6,10 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="paint-integrated-fiji" />
         <module name="paint-generate-squares" />
         <module name="paint-shared-utils" />
-        <module name="paint-integrated-fiji" />
+        <module name="paint-create-experiment" />
       </profile>
       <profile name="Annotation profile for paint-parent" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
