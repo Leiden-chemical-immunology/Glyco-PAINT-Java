@@ -6,12 +6,13 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="paint-viewer" />
         <module name="paint-integrated-fiji" />
-        <module name="paint-generate-squares" />
         <module name="paint-fiji-plugin" />
         <module name="paint-shared-utils" />
+        <module name="paint-viewer" />
+        <module name="paint-generate-squares" />
         <module name="paint-create-experiment" />
+        <module name="paint-get-omero" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

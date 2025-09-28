@@ -72,6 +72,7 @@
         <module>paint-integrated-fiji</module>
         <module>paint-create-experiment</module>
         <module>paint-viewer</module>
+        <module>paint-get-omero</module>
     </modules>
 
     <properties>
