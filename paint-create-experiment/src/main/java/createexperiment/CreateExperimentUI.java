@@ -16,6 +16,13 @@ public class CreateExperimentUI {
     private static final String KEY_IMAGES = "lastImagesDir";
     private static final String KEY_PROJECT = "lastProjectDir";
 
+    // Default baseline regexes (always included)
+    private static final String[] DEFAULT_REGEXES = {
+            "",  // blank
+            "^\\d-Exp-\\d+-[A-Z]\\d+-\\d+\\.nd2$",
+            "^(?!.*BF).*\\.nd2$"
+    };
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(CreateExperimentUI::createAndShowGUI);
     }
@@ -36,22 +43,36 @@ public class CreateExperimentUI {
         JComboBox<String> regexCombo = new JComboBox<>();
         regexCombo.setEditable(true);
         regexCombo.setFont(smallFont);
-        regexCombo.addItem(""); // always empty regex
+
+        // Always insert defaults first
+        for (String def : DEFAULT_REGEXES) {
+            regexCombo.addItem(def);
+        }
 
         // Load regex history
+        boolean hasAnySaved = false;
         String lastRegex = "";
         for (int i = 0; ; i++) {
             String rx = prefs.get("regex." + i, null);
             if (rx == null) break;
             if (!rx.trim().isEmpty()) {
-                regexCombo.addItem(rx.trim());
-                lastRegex = rx.trim(); // remember last
+                hasAnySaved = true;
+                if (((DefaultComboBoxModel<String>) regexCombo.getModel()).getIndexOf(rx.trim()) == -1) {
+                    regexCombo.addItem(rx.trim());
+                }
+                lastRegex = rx.trim();
             }
         }
         // Select last used regex if any
         if (!lastRegex.isEmpty()) {
             regexCombo.setSelectedItem(lastRegex);
         }
+
+        // If first installation (no saved regex), persist defaults
+        if (!hasAnySaved) {
+            saveRegexHistory(regexCombo, prefs);
+        }
+
         // Right-click delete regex
         JTextField regexEditor = (JTextField) regexCombo.getEditor().getEditorComponent();
         JPopupMenu regexMenu = new JPopupMenu();
@@ -235,12 +256,6 @@ public class CreateExperimentUI {
                         "Success",
                         JOptionPane.INFORMATION_MESSAGE
                 );
-
-                // 🔹 Auto-open the CSV in the system default app
-                if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().open(createdFile);
-                }
-
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(frame, "Error writing ExperimentInfo.csv: " + ex.getMessage());
             }
