@@ -235,6 +235,12 @@ public class CreateExperimentUI {
                         "Success",
                         JOptionPane.INFORMATION_MESSAGE
                 );
+
+                // 🔹 Auto-open the CSV in the system default app
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(createdFile);
+                }
+
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(frame, "Error writing ExperimentInfo.csv: " + ex.getMessage());
             }
