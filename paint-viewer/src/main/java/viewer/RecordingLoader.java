@@ -27,7 +27,9 @@ public class RecordingLoader {
 
             try (BufferedReader br = new BufferedReader(new FileReader(recordingsFile.toFile()))) {
                 String header = br.readLine(); // skip header
-                if (header == null) continue;
+                if (header == null) {
+                    continue;
+                }
 
                 String line;
                 while ((line = br.readLine()) != null) {
@@ -35,11 +37,15 @@ public class RecordingLoader {
 
                     String recordingName = parts[0].trim();
                     String probeName = parts[3].trim();
+                    String probeType = parts[4].trim();
                     String cellType = parts[5].trim();
                     String adjuvant = parts[6].trim();
+                    double concentration = parseDouble(parts[7]);
                     boolean processFlag = Boolean.parseBoolean(parts[8].trim());
 
-                    if (!processFlag) continue;
+                    if (!processFlag) {
+                        continue;
+                    }
 
                     double threshold = parseDouble(parts[9]);
                     int spots = parseInt(parts[10]);
@@ -49,9 +55,15 @@ public class RecordingLoader {
                     double density = parseDouble(parts[19]);
 
                     // TrackMate image
-                    Path trackmateImage = experimentFolder.resolve("TrackMate Images").resolve(recordingName + ".jpg");
+                    Path trackmateImage = experimentFolder
+                            .resolve("TrackMate Images")
+                            .resolve(recordingName + ".jpg");
+
                     if (!Files.exists(trackmateImage)) {
-                        System.err.println("Missing TrackMate image for recording " + recordingName + " in " + experimentFolder);
+                        System.err.println(
+                                "Missing TrackMate image for recording " + recordingName +
+                                        " in " + experimentFolder
+                        );
                         continue;
                     }
 
@@ -64,10 +76,9 @@ public class RecordingLoader {
                             for (Path p : (Iterable<Path>) Files.list(brightfieldDir)::iterator) {
                                 String fname = p.getFileName().toString();
 
-                                // Accept exact match (no BF), or -BF, or -BF with number suffix
-                                if ((fname.equals(recordingName + ".jpg")) ||
-                                        (fname.startsWith(recordingName + "-BF") && fname.endsWith(".jpg"))) {
-                                    brightfieldImage = brightfieldDir.resolve(fname); // ✅ ensure full path
+                                if ((fname.startsWith(recordingName + "-BF") || fname.startsWith(recordingName))
+                                        && fname.endsWith(".jpg")) {
+                                    brightfieldImage = brightfieldDir.resolve(fname);
                                     break;
                                 }
                             }
@@ -77,22 +88,39 @@ public class RecordingLoader {
                     }
 
                     if (brightfieldImage == null) {
-                        System.err.println("Missing BrightField image for recording " + recordingName + " in " + experimentFolder);
+                        System.err.println(
+                                "Missing BrightField image for recording " + recordingName +
+                                        " in " + experimentFolder
+                        );
                         continue;
                     }
 
                     // Thresholds from PaintConfig
-                    double minDensityRatio = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
-                    double maxVariability = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
-                    double minRSquared = PaintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
+                    double minDensityRatio = PaintConfig.getDouble(
+                            "Generate Squares",
+                            "Min Required Density Ratio",
+                            2.0
+                    );
+                    double maxVariability = PaintConfig.getDouble(
+                            "Generate Squares",
+                            "Max Allowable Variability",
+                            10.0
+                    );
+                    double minRSquared = PaintConfig.getDouble(
+                            "Generate Squares",
+                            "Min Required R Squared",
+                            0.1
+                    );
 
                     RecordingEntry entry = new RecordingEntry(
                             trackmateImage,
                             brightfieldImage,
-                            experimentName,  // ✅ pass experiment name
+                            experimentName,
                             probeName,
+                            probeType,
                             adjuvant,
                             cellType,
+                            concentration,
                             spots,
                             tracks,
                             threshold,
@@ -103,6 +131,7 @@ public class RecordingLoader {
                             minRSquared,
                             rSquared
                     );
+
                     entries.add(entry);
                 }
             } catch (Exception e) {
@@ -114,10 +143,18 @@ public class RecordingLoader {
     }
 
     private static int parseInt(String s) {
-        try { return Integer.parseInt(s.trim()); } catch (Exception e) { return 0; }
+        try {
+            return Integer.parseInt(s.trim());
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     private static double parseDouble(String s) {
-        try { return Double.parseDouble(s.trim()); } catch (Exception e) { return 0.0; }
+        try {
+            return Double.parseDouble(s.trim());
+        } catch (Exception e) {
+            return 0.0;
+        }
     }
 }

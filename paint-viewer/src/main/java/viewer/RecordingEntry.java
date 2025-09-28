@@ -6,17 +6,20 @@ import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 
 public class RecordingEntry {
+
     private final Path leftImagePath;
     private final Path rightImagePath;
     private final ImageIcon leftImage;
     private final ImageIcon rightImage;
 
     // Metadata fields
-    private final String experimentName;   // 🔹 new
-    private final String recordingName;    // 🔹 new (base name without extension)
+    private final String experimentName;
+    private final String recordingName;
     private final String probeName;
+    private final String probeType;
     private final String adjuvant;
     private final String cellType;
+    private final double concentration;
     private final int numberOfSpots;
     private final int numberOfTracks;
     private final double threshold;
@@ -36,8 +39,10 @@ public class RecordingEntry {
                           Path rightImagePath,
                           String experimentName,
                           String probeName,
+                          String probeType,
                           String adjuvant,
                           String cellType,
+                          double concentration,
                           int numberOfSpots,
                           int numberOfTracks,
                           double threshold,
@@ -47,24 +52,31 @@ public class RecordingEntry {
                           double maxAllowableVariability,
                           double minRequiredRSquared,
                           double observedRSquared) {
+
         this.leftImagePath = leftImagePath;
         this.rightImagePath = rightImagePath;
         this.leftImage = loadImageIcon(leftImagePath);
         this.rightImage = loadImageIcon(rightImagePath);
 
         this.experimentName = experimentName;
-        this.recordingName = deriveRecordingName(leftImagePath); // drop extension
+        this.recordingName = deriveRecordingName(leftImagePath);
+
         this.probeName = probeName;
+        this.probeType = probeType;
         this.adjuvant = adjuvant;
         this.cellType = cellType;
+        this.concentration = concentration;
+
         this.numberOfSpots = numberOfSpots;
         this.numberOfTracks = numberOfTracks;
         this.threshold = threshold;
         this.tau = tau;
         this.density = density;
+
         this.minRequiredDensityRatio = minRequiredDensityRatio;
         this.maxAllowableVariability = maxAllowableVariability;
         this.minRequiredRSquared = minRequiredRSquared;
+
         this.observedRSquared = observedRSquared;
     }
 
@@ -73,8 +85,10 @@ public class RecordingEntry {
                           ImageIcon rightImage,
                           String experimentName,
                           String probeName,
+                          String probeType,
                           String adjuvant,
                           String cellType,
+                          double concentration,
                           int numberOfSpots,
                           int numberOfTracks,
                           double threshold,
@@ -84,6 +98,7 @@ public class RecordingEntry {
                           double maxAllowableVariability,
                           double minRequiredRSquared,
                           double observedRSquared) {
+
         this.leftImagePath = null;
         this.rightImagePath = null;
         this.leftImage = leftImage;
@@ -91,23 +106,32 @@ public class RecordingEntry {
 
         this.experimentName = experimentName;
         this.recordingName = "(dummy)";
+
         this.probeName = probeName;
+        this.probeType = probeType;
         this.adjuvant = adjuvant;
         this.cellType = cellType;
+        this.concentration = concentration;
+
         this.numberOfSpots = numberOfSpots;
         this.numberOfTracks = numberOfTracks;
         this.threshold = threshold;
         this.tau = tau;
         this.density = density;
+
         this.minRequiredDensityRatio = minRequiredDensityRatio;
         this.maxAllowableVariability = maxAllowableVariability;
         this.minRequiredRSquared = minRequiredRSquared;
+
         this.observedRSquared = observedRSquared;
     }
 
     // --- Helper to load images safely ---
     private static ImageIcon loadImageIcon(Path path) {
-        if (path == null) return new ImageIcon();
+        if (path == null) {
+            return new ImageIcon();
+        }
+
         try {
             BufferedImage img = ImageIO.read(path.toFile());
             if (img != null) {
@@ -125,7 +149,9 @@ public class RecordingEntry {
 
     // --- Helpers for recording name ---
     private static String deriveRecordingName(Path path) {
-        if (path == null) return "";
+        if (path == null) {
+            return "";
+        }
         String fileName = path.getFileName().toString();
         int dot = fileName.lastIndexOf('.');
         return (dot > 0) ? fileName.substring(0, dot) : fileName;
@@ -134,23 +160,22 @@ public class RecordingEntry {
     // --- Getters ---
     public ImageIcon getLeftImage() { return leftImage; }
     public ImageIcon getRightImage() { return rightImage; }
-
     public String getExperimentName() { return experimentName; }
     public String getRecordingName() { return recordingName; }
     public String getProbeName() { return probeName; }
+    public String getProbeType() { return probeType; }
     public String getAdjuvant() { return adjuvant; }
     public String getCellType() { return cellType; }
+    public double getConcentration() { return concentration; }
     public int getNumberOfSpots() { return numberOfSpots; }
     public int getNumberOfTracks() { return numberOfTracks; }
     public double getThreshold() { return threshold; }
     public double getTau() { return tau; }
     public double getDensity() { return density; }
-
     public double getMinRequiredDensityRatio() { return minRequiredDensityRatio; }
     public double getMaxAllowableVariability() { return maxAllowableVariability; }
     public double getMinRequiredRSquared() { return minRequiredRSquared; }
     public double getObservedRSquared() { return observedRSquared; }
-
     public Path getLeftImagePath() { return leftImagePath; }
     public Path getRightImagePath() { return rightImagePath; }
 }

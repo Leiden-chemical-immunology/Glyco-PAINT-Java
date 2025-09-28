@@ -2,115 +2,176 @@ package viewer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * A dialog for filtering recordings by metadata fields.
- * Provides independent multi-selection lists for Cell Type,
- * Probe Name, Probe Type, and Adjuvant.
- */
 public class FilterDialog extends JDialog {
+
+    private final List<RecordingEntry> originalRecordings;
+    private List<RecordingEntry> filteredRecordings;
 
     private final JList<String> cellTypeList;
     private final JList<String> probeNameList;
     private final JList<String> probeTypeList;
     private final JList<String> adjuvantList;
+    private final JList<String> concentrationList;
 
-    private boolean applied = false;
+    private boolean cancelled = true;
 
-    public FilterDialog(Frame owner,
-                        Set<String> cellTypes,
-                        Set<String> probeNames,
-                        Set<String> probeTypes,
-                        Set<String> adjuvants) {
+    public FilterDialog(Frame owner, List<RecordingEntry> recordings) {
         super(owner, "Filter Recordings", true);
+        this.originalRecordings = new ArrayList<>(recordings);
+        this.filteredRecordings = new ArrayList<>(recordings);
+
         setLayout(new BorderLayout(10, 10));
         setResizable(false);
 
-        JPanel listsPanel = new JPanel(new GridLayout(1, 4, 10, 0));
+        // Collect distinct values for each attribute
+        Set<String> cellTypes = new TreeSet<>();
+        Set<String> probeNames = new TreeSet<>();
+        Set<String> probeTypes = new TreeSet<>();
+        Set<String> adjuvants = new TreeSet<>();
+        Set<String> concentrations = new TreeSet<>();
 
-        cellTypeList = createList(cellTypes, "Cell Type");
-        probeNameList = createList(probeNames, "Probe Name");
-        probeTypeList = createList(probeTypes, "Probe Type");
-        adjuvantList = createList(adjuvants, "Adjuvant");
+        for (RecordingEntry entry : recordings) {
+            cellTypes.add(entry.getCellType());
+            probeNames.add(entry.getProbeName());
+            probeTypes.add(entry.getProbeType());
+            adjuvants.add(entry.getAdjuvant());
+            concentrations.add(String.valueOf(entry.getConcentration()));
+        }
 
-        listsPanel.add(wrapWithTitledBorder(cellTypeList, "Cell Type"));
-        listsPanel.add(wrapWithTitledBorder(probeNameList, "Probe Name"));
-        listsPanel.add(wrapWithTitledBorder(probeTypeList, "Probe Type"));
-        listsPanel.add(wrapWithTitledBorder(adjuvantList, "Adjuvant"));
+        cellTypeList = createList(cellTypes);
+        probeNameList = createList(probeNames);
+        probeTypeList = createList(probeTypes);
+        adjuvantList = createList(adjuvants);
+        concentrationList = createList(concentrations);
 
-        add(listsPanel, BorderLayout.CENTER);
+        JPanel listPanel = new JPanel(new GridLayout(1, 5, 10, 0));
+        listPanel.add(createListBoxWithButtons("Cell Type", cellTypeList));
+        listPanel.add(createListBoxWithButtons("Probe Name", probeNameList));
+        listPanel.add(createListBoxWithButtons("Probe Type", probeTypeList));
+        listPanel.add(createListBoxWithButtons("Adjuvant", adjuvantList));
+        listPanel.add(createListBoxWithButtons("Concentration", concentrationList));
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        // Global Apply / Reset All / Cancel buttons
         JButton applyButton = new JButton("Apply");
-        JButton clearButton = new JButton("Clear");
+        JButton resetAllButton = new JButton("Reset All");
         JButton cancelButton = new JButton("Cancel");
 
-        applyButton.addActionListener(this::applyAction);
-        clearButton.addActionListener(e -> clearSelections());
-        cancelButton.addActionListener(e -> {
-            applied = false;
-            setVisible(false);
+        applyButton.addActionListener(e -> {
+            cancelled = false;
+            dispose();
         });
 
-        buttonPanel.add(clearButton);
-        buttonPanel.add(cancelButton);
-        buttonPanel.add(applyButton);
+        resetAllButton.addActionListener(e -> resetAllFilters());
+        cancelButton.addActionListener(e -> {
+            cancelled = true;
+            dispose();
+        });
 
-        add(buttonPanel, BorderLayout.SOUTH);
+        JPanel bottomPanel = new JPanel(new GridLayout(1, 3, 10, 0));
+        Dimension btnSize = new Dimension(100, 30);
+        applyButton.setPreferredSize(btnSize);
+        resetAllButton.setPreferredSize(btnSize);
+        cancelButton.setPreferredSize(btnSize);
+        bottomPanel.add(applyButton);
+        bottomPanel.add(resetAllButton);
+        bottomPanel.add(cancelButton);
+
+        add(listPanel, BorderLayout.CENTER);
+        add(bottomPanel, BorderLayout.SOUTH);
 
         pack();
         setLocationRelativeTo(owner);
     }
 
-    private JList<String> createList(Set<String> values, String name) {
-        DefaultListModel<String> model = new DefaultListModel<>();
-        values.stream().sorted().forEach(model::addElement);
-        JList<String> list = new JList<>(model);
+    private JList<String> createList(Set<String> values) {
+        JList<String> list = new JList<>(values.toArray(new String[0]));
         list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        list.setVisibleRowCount(10);
-        list.setLayoutOrientation(JList.VERTICAL);
+        list.setVisibleRowCount(5); // smaller height
         return list;
     }
 
-    private JScrollPane wrapWithTitledBorder(JList<String> list, String title) {
+    private JPanel createListBoxWithButtons(String title, JList<String> list) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createTitledBorder(title));
+
         JScrollPane scrollPane = new JScrollPane(list);
-        scrollPane.setBorder(BorderFactory.createTitledBorder(title));
-        return scrollPane;
+        scrollPane.setPreferredSize(new Dimension(120, 80)); // smaller size
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        JPanel btnPanel = new JPanel(new GridLayout(2, 1, 0, 5));
+        JButton filterBtn = new JButton("Filter");
+        JButton resetBtn = new JButton("Reset");
+
+        filterBtn.addActionListener(e -> applySingleFilter(list));
+        resetBtn.addActionListener(e -> resetSingleFilter(list));
+
+        btnPanel.add(filterBtn);
+        btnPanel.add(resetBtn);
+
+        panel.add(btnPanel, BorderLayout.SOUTH);
+        return panel;
     }
 
-    private void applyAction(ActionEvent e) {
-        applied = true;
-        setVisible(false);
+    private void applySingleFilter(JList<String> list) {
+        List<String> selected = list.getSelectedValuesList();
+        if (selected.isEmpty()) {
+            return;
+        }
+
+        filteredRecordings = filteredRecordings.stream()
+                .filter(entry -> matches(entry, list, selected))
+                .collect(Collectors.toList());
+
+        updateLists();
     }
 
-    private void clearSelections() {
-        cellTypeList.clearSelection();
-        probeNameList.clearSelection();
-        probeTypeList.clearSelection();
-        adjuvantList.clearSelection();
+    private void resetSingleFilter(JList<String> list) {
+        // Reset just this list → restore from original
+        filteredRecordings = new ArrayList<>(originalRecordings);
+        updateLists();
     }
 
-    public boolean isApplied() {
-        return applied;
+    private void resetAllFilters() {
+        filteredRecordings = new ArrayList<>(originalRecordings);
+        updateLists();
     }
 
-    public List<String> getSelectedCellTypes() {
-        return cellTypeList.getSelectedValuesList();
+    private boolean matches(RecordingEntry entry, JList<String> list, List<String> selected) {
+        if (list == cellTypeList) {
+            return selected.contains(entry.getCellType());
+        } else if (list == probeNameList) {
+            return selected.contains(entry.getProbeName());
+        } else if (list == probeTypeList) {
+            return selected.contains(entry.getProbeType());
+        } else if (list == adjuvantList) {
+            return selected.contains(entry.getAdjuvant());
+        } else if (list == concentrationList) {
+            return selected.contains(String.valueOf(entry.getConcentration()));
+        }
+        return true;
     }
 
-    public List<String> getSelectedProbeNames() {
-        return probeNameList.getSelectedValuesList();
+    private void updateLists() {
+        updateList(cellTypeList, filteredRecordings.stream().map(RecordingEntry::getCellType).collect(Collectors.toSet()));
+        updateList(probeNameList, filteredRecordings.stream().map(RecordingEntry::getProbeName).collect(Collectors.toSet()));
+        updateList(probeTypeList, filteredRecordings.stream().map(RecordingEntry::getProbeType).collect(Collectors.toSet()));
+        updateList(adjuvantList, filteredRecordings.stream().map(RecordingEntry::getAdjuvant).collect(Collectors.toSet()));
+        updateList(concentrationList, filteredRecordings.stream().map(e -> String.valueOf(e.getConcentration())).collect(Collectors.toSet()));
     }
 
-    public List<String> getSelectedProbeTypes() {
-        return probeTypeList.getSelectedValuesList();
+    private void updateList(JList<String> list, Set<String> values) {
+        list.setListData(values.toArray(new String[0]));
     }
 
-    public List<String> getSelectedAdjuvants() {
-        return adjuvantList.getSelectedValuesList();
+    public List<RecordingEntry> getFilteredRecordings() {
+        return filteredRecordings;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
     }
 }
