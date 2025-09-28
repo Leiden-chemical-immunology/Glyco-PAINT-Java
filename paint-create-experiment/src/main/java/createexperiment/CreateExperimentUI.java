@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -37,21 +39,25 @@ public class CreateExperimentUI {
         regexCombo.addItem(""); // always empty regex
 
         // Load regex history
+        String lastRegex = "";
         for (int i = 0; ; i++) {
             String rx = prefs.get("regex." + i, null);
             if (rx == null) break;
             if (!rx.trim().isEmpty()) {
                 regexCombo.addItem(rx.trim());
+                lastRegex = rx.trim(); // remember last
             }
         }
-
-        // === Right-click menu to delete regex ===
+        // Select last used regex if any
+        if (!lastRegex.isEmpty()) {
+            regexCombo.setSelectedItem(lastRegex);
+        }
+        // Right-click delete regex
         JTextField regexEditor = (JTextField) regexCombo.getEditor().getEditorComponent();
         JPopupMenu regexMenu = new JPopupMenu();
         JMenuItem deleteItem = new JMenuItem("Delete this regex");
         regexMenu.add(deleteItem);
         regexEditor.setComponentPopupMenu(regexMenu);
-
         deleteItem.addActionListener(ev -> {
             String selected = regexEditor.getText().trim();
             if (!selected.isEmpty()) {
@@ -97,7 +103,7 @@ public class CreateExperimentUI {
         final File[] inputDir = {new File(prefs.get(KEY_IMAGES, System.getProperty("user.home")))};
         final File[] outputDir = {new File(prefs.get(KEY_PROJECT, System.getProperty("user.home")))};
 
-        // --- Images row ---
+        // Images row
         JPanel imagesRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 2));
         JButton imagesButton = new JButton("Images");
         imagesButton.setPreferredSize(buttonSize);
@@ -107,7 +113,7 @@ public class CreateExperimentUI {
         imagesRow.add(imagesButton);
         imagesRow.add(inputDirLabel);
 
-        // --- Project row ---
+        // Project row
         JPanel projectRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 2));
         JButton projectButton = new JButton("Project");
         projectButton.setPreferredSize(buttonSize);
@@ -120,7 +126,7 @@ public class CreateExperimentUI {
         ioPanel.add(imagesRow);
         ioPanel.add(projectRow);
 
-        // === Action buttons ===
+        // Action buttons
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton processButton = new JButton("Process");
         JButton closeButton = new JButton("Close");
@@ -131,7 +137,7 @@ public class CreateExperimentUI {
         actionPanel.add(processButton);
         actionPanel.add(closeButton);
 
-        // === Bottom container ===
+        // Bottom container
         JPanel bottomPanel = new JPanel(new BorderLayout(0, 8));
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         bottomPanel.add(ioPanel, BorderLayout.CENTER);
@@ -142,7 +148,7 @@ public class CreateExperimentUI {
         frame.add(scrollPane, BorderLayout.CENTER);
         frame.add(bottomPanel, BorderLayout.SOUTH);
 
-        // === Helper: refresh file list ===
+        // Refresh helper
         Runnable refresh = () -> {
             String regex = ((String) regexCombo.getEditor().getItem()).trim();
             if (!regex.isEmpty() && regex.length() <= 100 &&
@@ -153,7 +159,7 @@ public class CreateExperimentUI {
             refreshList(listModel, inputDir[0], regex, frame);
         };
 
-        // --- Images chooser ---
+        // Images chooser
         imagesButton.addActionListener((ActionEvent e) -> {
             JFileChooser chooser = new JFileChooser(inputDir[0]);
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -161,7 +167,6 @@ public class CreateExperimentUI {
             chooser.setAcceptAllFileFilterUsed(false);
             chooser.setDialogTitle("Select Images Directory");
             chooser.setPreferredSize(new Dimension(600, 350));
-
             int result = chooser.showOpenDialog(frame);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File chosen = chooser.getSelectedFile();
@@ -174,91 +179,70 @@ public class CreateExperimentUI {
             }
         });
 
-        // --- Project chooser (with Create Experiment option) ---
+        // Project chooser
         projectButton.addActionListener((ActionEvent e) -> {
             JFileChooser chooser = new JFileChooser(outputDir[0]);
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             chooser.setFileHidingEnabled(true);
             chooser.setAcceptAllFileFilterUsed(false);
-            chooser.setDialogTitle("Select or Create Experiment Directory");
-
-            // Wrap chooser in a dialog
-            JDialog dialog = new JDialog(frame, "Select or Create Experiment", true);
-            dialog.setLayout(new BorderLayout());
-            dialog.add(chooser, BorderLayout.CENTER);
-
-            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-            JButton createButton = new JButton("Create Experiment");
-            JButton approveButton = new JButton("Open");
-            JButton cancelButton = new JButton("Cancel");
-
-            buttonPanel.add(createButton);
-            buttonPanel.add(approveButton);
-            buttonPanel.add(cancelButton);
-            dialog.add(buttonPanel, BorderLayout.SOUTH);
-
-            final File[] chosenDir = {null};
-
-            approveButton.addActionListener(ev -> {
-                File sel = chooser.getSelectedFile();
-                if (sel != null && sel.isDirectory() && !sel.isHidden()) {
-                    chosenDir[0] = sel;
-                    dialog.dispose();
+            chooser.setDialogTitle("Select Project Directory");
+            int result = chooser.showOpenDialog(frame);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File chosen = chooser.getSelectedFile();
+                if (chosen != null && chosen.isDirectory() && !chosen.isHidden()) {
+                    outputDir[0] = chosen;
+                    outputDirLabel.setText(outputDir[0].getAbsolutePath());
+                    prefs.put(KEY_PROJECT, outputDir[0].getAbsolutePath());
                 }
-            });
-
-            cancelButton.addActionListener(ev -> dialog.dispose());
-
-            createButton.addActionListener(ev -> {
-                File baseDir = chooser.getCurrentDirectory();
-                String expName = JOptionPane.showInputDialog(dialog, "Enter new experiment name:");
-                if (expName != null && !expName.trim().isEmpty()) {
-                    File newExp = new File(baseDir, expName.trim());
-                    if (!newExp.exists() && !newExp.mkdir()) {
-                        JOptionPane.showMessageDialog(dialog, "Failed to create experiment folder.");
-                        return;
-                    }
-                    chosenDir[0] = newExp;
-                    dialog.dispose();
-                }
-            });
-
-            dialog.setSize(600, 400);
-            dialog.setLocationRelativeTo(frame);
-            dialog.setVisible(true);
-
-            if (chosenDir[0] != null) {
-                outputDir[0] = chosenDir[0];
-                outputDirLabel.setText(outputDir[0].getAbsolutePath());
-                prefs.put(KEY_PROJECT, outputDir[0].getAbsolutePath());
             }
         });
 
-        // --- Regex combo + filter ---
+        // Regex combo + filter
         regexCombo.addActionListener(e -> refresh.run());
         filterButton.addActionListener(e -> refresh.run());
 
-        // --- Process button ---
+        // Process button
         processButton.addActionListener((ActionEvent e) -> {
             if (outputDir[0] == null) {
                 JOptionPane.showMessageDialog(frame, "No project directory chosen.");
                 return;
             }
-            java.util.List<File> selectedFiles = fileList.getSelectedValuesList();
+            if (inputDir[0] == null) {
+                JOptionPane.showMessageDialog(frame, "No images directory chosen.");
+                return;
+            }
+            List<File> selectedFiles = fileList.getSelectedValuesList();
             if (selectedFiles.isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "No files selected to process.");
                 return;
             }
-            for (File f : selectedFiles) {
-                // TODO: Replace with real logic
-                System.out.println("Processing " + f.getAbsolutePath() + " -> " + outputDir[0].getAbsolutePath());
+
+            try {
+                // 🔹 Use last component of Images dir to create experiment folder under Project dir
+                String experimentName = inputDir[0].getName();
+                File experimentDir = new File(outputDir[0], experimentName);
+                if (!experimentDir.exists() && !experimentDir.mkdirs()) {
+                    throw new IOException("Failed to create experiment directory: " + experimentDir);
+                }
+
+                // 🔹 Write ExperimentInfo.csv (with versioned name if exists)
+                File createdFile = ExperimentInfoWriter.writeExperimentInfo(experimentDir, selectedFiles);
+
+                fileList.clearSelection();
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Experiment info written to:\n" + createdFile.getAbsolutePath(),
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(frame, "Error writing ExperimentInfo.csv: " + ex.getMessage());
             }
-            JOptionPane.showMessageDialog(frame, "Processing complete.");
         });
 
         closeButton.addActionListener(e -> frame.dispose());
 
-        frame.setSize(700, 500);
+        frame.setSize(400, 500);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 

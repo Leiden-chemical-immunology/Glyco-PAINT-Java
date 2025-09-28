@@ -80,6 +80,21 @@
         <project.build.outputTimestamp>2025-09-23T08:55:00Z</project.build.outputTimestamp>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-shared-utils</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+
+    </dependencies>
+
     <build>
         <plugins>
             <!-- Java 8 -->
