@@ -305,6 +305,10 @@ public class ProjectSpecificationDialog {
         }
 
         if (saveExperimentsCheckBox.isSelected()) {
+            // Clean out the Experiments section first
+            PaintConfig.removeSection("Experiments");
+
+            // And then write fresh experiments
             for (JCheckBox cb : checkBoxes) {
                 PaintConfig.setBoolean("Experiments", cb.getText(), cb.isSelected());
             }

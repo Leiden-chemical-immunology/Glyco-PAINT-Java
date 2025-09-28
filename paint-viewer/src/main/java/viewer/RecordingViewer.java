@@ -1,13 +1,17 @@
 package viewer;
 
+import paint.shared.config.PaintConfig;
 import paint.shared.dialogs.ProjectSelectionDialog;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.ProjectSpecificationDialog.DialogMode;
 import paint.shared.objects.Project;
 
 import javax.swing.*;
-import java.awt.*;
+import java.awt.Frame;
+import java.awt.image.BufferedImage;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RecordingViewer {
 
@@ -21,6 +25,7 @@ public class RecordingViewer {
                 System.out.println("User cancelled selection.");
                 System.exit(0);
             }
+            PaintConfig.initialise(projectPath);
 
             // --- Step 2: Project specification (force modal only here) ---
             ProjectSpecificationDialog specificationDialog =
@@ -35,8 +40,20 @@ public class RecordingViewer {
             }
 
             // --- Step 3: Show the main viewer ---
-            RecordingViewerFrame viewer = new RecordingViewerFrame(project);
+            // --- Step 3: Show the main viewer ---
+            List<RecordingEntry> entries = RecordingLoader.loadFromProject(project);
+
+            if (entries.isEmpty()) {
+                JOptionPane.showMessageDialog(null,
+                        "No valid recordings found in selected experiments.",
+                        "No Recordings",
+                        JOptionPane.WARNING_MESSAGE);
+                System.exit(0);
+            }
+
+            RecordingViewerFrame viewer = new RecordingViewerFrame(project, entries);
             viewer.setVisible(true);
+
         });
     }
 }
