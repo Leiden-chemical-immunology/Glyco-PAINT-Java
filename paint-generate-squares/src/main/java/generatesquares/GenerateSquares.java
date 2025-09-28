@@ -57,6 +57,9 @@ public class GenerateSquares {
                 PaintLogger.errorf("No manifest information found.");
                 PaintLogger.infof();
             }
+            PaintLogger.infof("Current time is: %s", LocalDateTime.now());
+            PaintLogger.blankline();
+            PaintLogger.blankline();
 
             // Use the project directory to display the experiment selection dialog.
             PaintLogger.debugf("User selected: " + projectPath);
