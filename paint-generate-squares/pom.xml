@@ -57,7 +57,7 @@
             <version>7.1.5</version>
         </dependency>
 
-        <!-- Logging -->
+        <!-- Logging Suppores SLF4J errors-->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
