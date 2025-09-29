@@ -102,7 +102,7 @@ public class SquareGridPanel extends JPanel {
     }
 
     private Color colorForCell(int cellId) {
-        if (cellId == 0) return Color.BLUE;
+        if (cellId == 0) return Color.WHITE;
         if (cellId == 1) return Color.GREEN;
         if (cellId == 2) return Color.MAGENTA;
         return Color.ORANGE;
