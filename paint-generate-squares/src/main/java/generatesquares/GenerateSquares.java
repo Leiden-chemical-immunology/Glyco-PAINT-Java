@@ -28,12 +28,17 @@ public class GenerateSquares {
     public static void main(String[] args) {
 
         try {
+            // On macOS this will be Aqua, on Windows/Linux the native system L&F
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+
+            // Extra hints for macOS integration
+            System.setProperty("apple.laf.useScreenMenuBar", "true");
+            System.setProperty("swing.aatext", "true");
+            System.setProperty("swing.useSystemFontSettings", "true");
         } catch (Exception e) {
-            StringWriter sw = new StringWriter();
-            e.printStackTrace(new PrintWriter(sw));
-            PaintLogger.errorf("An exception occurred:\n" + sw);
+            e.printStackTrace();
         }
+
 
         SwingUtilities.invokeLater(() -> {
 
