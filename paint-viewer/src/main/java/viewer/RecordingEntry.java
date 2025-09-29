@@ -197,7 +197,7 @@ public class RecordingEntry {
                 squares = java.util.Collections.emptyList();
             }
         }
-        randomlySelectSquares(squares);  //ToDo: remove later
+        // randomlySelectSquares(squares);  //ToDo: remove later
         return squares;
     }
 

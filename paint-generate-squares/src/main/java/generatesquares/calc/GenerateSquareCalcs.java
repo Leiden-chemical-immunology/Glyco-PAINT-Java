@@ -136,6 +136,8 @@ public class GenerateSquareCalcs {
         double imageHeight = 1;
         double minRequiredRSquared = generateSquaresConfig.getMinRequiredRSquared();
         int minTracksForTau = generateSquaresConfig.getMinTracksToCalculateTau();
+        double maxAllowableVariability = generateSquaresConfig.getMaxAllowableVariability();
+        double minRequiredDensityRatio = generateSquaresConfig.getMinRequiredDensityRatio();
         int numberOfSquaresInRow = generateSquaresConfig.getNrSquaresInRow();
         double area = imageWidth * imageWidth / (generateSquaresConfig.getNrSquaresInRow() * generateSquaresConfig.getNrSquaresInRow());
         double concentration = recording.getConcentration();
@@ -188,6 +190,11 @@ public class GenerateSquareCalcs {
 
             double densityRatio = tracksInSquare.size() / averageTracks;
             square.setDensityRatio(densityRatio);
+
+            boolean densityRatioOk = densityRatio >= minRequiredDensityRatio;
+            boolean variabilityOK = variability <= maxAllowableVariability;
+            boolean trackCountOk = numberOfSquaresInRow <= minTracksForTau;
+            square.setSelected(densityRatioOk && variabilityOK && trackCountOk);
         }
 
     }
