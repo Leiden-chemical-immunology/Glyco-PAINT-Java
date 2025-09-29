@@ -10,18 +10,20 @@ import java.util.List;
 public class RecordingViewerFrame extends JFrame {
 
     private final Project project;
-    private final List<RecordingEntry> originalRecordings;
-    private List<RecordingEntry> recordings;
+    private final List<RecordingEntry> recordings;
     private int currentIndex = 0;
 
-    private final JLabel leftImageLabel = new JLabel("", SwingConstants.CENTER);
+    // Panels and labels
     private final JLabel rightImageLabel = new JLabel("", SwingConstants.CENTER);
+    private final SquareGridPanel leftGridPanel; // custom grid panel
+
     private final DefaultTableModel attributesModel;
     private final JTable attributesTable;
 
     private final JLabel experimentLabel = new JLabel("", SwingConstants.CENTER);
     private final JLabel recordingLabel = new JLabel("", SwingConstants.CENTER);
 
+    // Navigation
     private final JButton firstBtn = new JButton("|<");
     private final JButton prevBtn = new JButton("<");
     private final JButton nextBtn = new JButton(">");
@@ -30,7 +32,6 @@ public class RecordingViewerFrame extends JFrame {
     public RecordingViewerFrame(Project project, List<RecordingEntry> recordings) {
         super("Recording Viewer - " + project.getProjectPath().getFileName());
         this.project = project;
-        this.originalRecordings = recordings;
         this.recordings = recordings;
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -40,31 +41,25 @@ public class RecordingViewerFrame extends JFrame {
         int GAP = 15;
 
         // --- Images area ---
+        leftGridPanel = new SquareGridPanel(20, 20, 512, 512); // default 20x20 grid
         JPanel imagesInner = new JPanel(new GridLayout(1, 2, GAP, 0));
-        imagesInner.add(createSquareImagePanel(leftImageLabel));
+        imagesInner.add(createSquareImagePanel(leftGridPanel));
         imagesInner.add(createSquareImagePanel(rightImageLabel));
 
         // --- Labels under images ---
         JPanel labelsPanel = new JPanel(new GridLayout(2, 1));
-        labelsPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        ));
+        labelsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         experimentLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
         recordingLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
         labelsPanel.add(experimentLabel);
         labelsPanel.add(recordingLabel);
 
-        // --- Navigation ---
+        // --- Navigation centered below labels ---
         JPanel navPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         navPanel.add(firstBtn);
         navPanel.add(prevBtn);
         navPanel.add(nextBtn);
         navPanel.add(lastBtn);
-
-        JPanel southWrapper = new JPanel(new BorderLayout());
-        southWrapper.add(labelsPanel, BorderLayout.NORTH);
-        southWrapper.add(navPanel, BorderLayout.SOUTH);
 
         JPanel imagesWithNav = new JPanel(new BorderLayout(GAP, GAP));
         imagesWithNav.setBorder(BorderFactory.createCompoundBorder(
@@ -72,9 +67,10 @@ public class RecordingViewerFrame extends JFrame {
                 BorderFactory.createEmptyBorder(GAP, GAP, GAP, GAP)
         ));
         imagesWithNav.add(imagesInner, BorderLayout.CENTER);
-        imagesWithNav.add(southWrapper, BorderLayout.SOUTH);
+        imagesWithNav.add(labelsPanel, BorderLayout.SOUTH);
+        imagesWithNav.add(navPanel, BorderLayout.NORTH);
 
-        // --- Attributes block ---
+        // --- Attributes block (left) ---
         JPanel attrPanel = new JPanel(new BorderLayout());
         attrPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
@@ -90,7 +86,6 @@ public class RecordingViewerFrame extends JFrame {
         };
         attributesTable = new JTable(attributesModel);
         attributesTable.setRowHeight(22);
-        attributesTable.setFont(new Font("SansSerif", Font.PLAIN, 12));
         attributesTable.setFocusable(false);
         attributesTable.setRowSelectionAllowed(false);
         attributesTable.setColumnSelectionAllowed(false);
@@ -103,7 +98,7 @@ public class RecordingViewerFrame extends JFrame {
         scrollPane.setPreferredSize(new Dimension(220, attributesTable.getRowHeight() * 6));
         attrPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // --- Actions block ---
+        // --- Actions block (right) ---
         JPanel actionsPanel = new JPanel(new BorderLayout());
         actionsPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
@@ -114,19 +109,33 @@ public class RecordingViewerFrame extends JFrame {
         JPanel actionsContent = new JPanel();
         actionsContent.setLayout(new BoxLayout(actionsContent, BoxLayout.Y_AXIS));
 
-        JButton action1Button = new JButton("Filter…");
-        action1Button.addActionListener(e -> openFilterDialog());
+        JButton filterButton = new JButton("Filter");
+        JButton squareDialogButton = new JButton("Square Dialog");
 
-        actionsContent.add(action1Button);
+        filterButton.addActionListener(e -> {
+            FilterDialog dialog = new FilterDialog(this, recordings);
+            dialog.setVisible(true);
+            if (!dialog.isCancelled()) {
+                List<RecordingEntry> filtered = dialog.getFilteredRecordings();
+                if (!filtered.isEmpty()) {
+                    currentIndex = 0;
+                    showEntry(0); // refresh view with first filtered recording
+                }
+            }
+        });
+
+        squareDialogButton.addActionListener(e -> {
+            SquareControlDialog dialog = new SquareControlDialog(this, leftGridPanel);
+            dialog.setVisible(true);
+        });
+
+        actionsContent.add(filterButton);
         actionsContent.add(Box.createVerticalStrut(15));
-        actionsContent.add(new JButton("Action 2"));
-        actionsContent.add(Box.createVerticalStrut(15));
-        actionsContent.add(new JButton("Action 3"));
+        actionsContent.add(squareDialogButton);
         actionsContent.add(Box.createVerticalGlue());
 
         actionsPanel.add(actionsContent, BorderLayout.NORTH);
-
-        // --- Assemble ---
+        // --- Assemble main layout ---
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.add(attrPanel, BorderLayout.WEST);
         mainPanel.add(imagesWithNav, BorderLayout.CENTER);
@@ -134,13 +143,14 @@ public class RecordingViewerFrame extends JFrame {
 
         add(mainPanel, BorderLayout.CENTER);
 
-        setSize(1500, 600);
+        // --- Window size ---
+        setSize(1500, 700);
         setLocationRelativeTo(null);
 
-        // Nav actions
+        // --- Nav actions ---
         firstBtn.addActionListener(e -> showEntry(0));
-        prevBtn.addActionListener(e -> showEntry(currentIndex - 1));
-        nextBtn.addActionListener(e -> showEntry(currentIndex + 1));
+        prevBtn.addActionListener(e -> showEntry(Math.max(0, currentIndex - 1)));
+        nextBtn.addActionListener(e -> showEntry(Math.min(recordings.size() - 1, currentIndex + 1)));
         lastBtn.addActionListener(e -> showEntry(recordings.size() - 1));
 
         if (!recordings.isEmpty()) {
@@ -148,15 +158,20 @@ public class RecordingViewerFrame extends JFrame {
         }
     }
 
-    private JPanel createSquareImagePanel(JLabel label) {
+    private JPanel createSquareImagePanel(JComponent comp) {
         JPanel panel = new JPanel(new BorderLayout()) {
             @Override
             public Dimension getPreferredSize() {
                 return new Dimension(512, 512);
             }
+            @Override
+            public void setBounds(int x, int y, int width, int height) {
+                int size = Math.min(width, height);
+                super.setBounds(x, y, size, size);
+            }
         };
         panel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-        panel.add(label, BorderLayout.CENTER);
+        panel.add(comp, BorderLayout.CENTER);
         return panel;
     }
 
@@ -168,28 +183,17 @@ public class RecordingViewerFrame extends JFrame {
     }
 
     private void showEntry(int index) {
-        if (recordings.isEmpty()) {
-            experimentLabel.setText("No recordings");
-            recordingLabel.setText("");
-            leftImageLabel.setIcon(null);
-            rightImageLabel.setIcon(null);
-            updateNavButtons();
-            return;
-        }
-
         if (index < 0 || index >= recordings.size()) return;
         currentIndex = index;
         RecordingEntry entry = recordings.get(index);
 
         int size = 512;
-        leftImageLabel.setIcon(scaleToFit(entry.getLeftImage(), size, size));
+        leftGridPanel.setBackgroundImage(entry.getLeftImage()); // grid overlays image
         rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), size, size));
-        leftImageLabel.setText(null);
-        rightImageLabel.setText(null);
 
-        experimentLabel.setText("Experiment: " + entry.getExperimentName());
-        recordingLabel.setText("Recording: " + entry.getRecordingName() +
-                " (" + (index + 1) + " / " + recordings.size() + ")");
+        experimentLabel.setText("Experiment: " + entry.getExperimentName() +
+                " (" + (currentIndex + 1) + "/" + recordings.size() + ")");
+        recordingLabel.setText("Recording: " + entry.getRecordingName());
 
         boolean densityOk = entry.getDensity() >= entry.getMinRequiredDensityRatio();
         boolean tauOk = entry.getTau() <= entry.getMaxAllowableVariability();
@@ -222,19 +226,5 @@ public class RecordingViewerFrame extends JFrame {
         prevBtn.setEnabled(currentIndex > 0);
         nextBtn.setEnabled(currentIndex < recordings.size() - 1);
         lastBtn.setEnabled(currentIndex < recordings.size() - 1);
-    }
-
-    private void openFilterDialog() {
-        FilterDialog dialog = new FilterDialog(this, originalRecordings);
-        dialog.setVisible(true);
-
-        if (!dialog.isCancelled()) {
-            recordings = dialog.getFilteredRecordings();
-            if (!recordings.isEmpty()) {
-                showEntry(0);
-            } else {
-                showEntry(-1);
-            }
-        }
     }
 }
