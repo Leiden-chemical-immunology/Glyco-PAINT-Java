@@ -102,7 +102,7 @@ public class RunTrackMateOnProject implements Command {
 
             try {
                 boolean debug = getBoolean("Debug", "RunTrackMateOnProject", false);
-                String imagesRoot = getString("Paths", "Images Root", "validate");
+                String imagesRoot = getString("Paths", "Images Root", "");  //ToDo
                 Path imagesPath = Paths.get(imagesRoot);
 
                 if (debug) {
