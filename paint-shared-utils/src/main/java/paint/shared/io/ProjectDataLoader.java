@@ -1,4 +1,4 @@
-package io;
+package paint.shared.io;
 
 import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.config.PaintConfig;
@@ -19,7 +19,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import static generatesquares.calc.CalculateDensity.calculateAverageTrackCountOfBackground;
+// import static generatesquares.calc.CalculateDensity.calculateAverageTrackCountOfBackground;
 import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.utils.Miscellaneous.friendlyMessage;
 
@@ -89,7 +89,7 @@ public final class ProjectDataLoader {
                 numberOfTracksInProject += numberOfTracksInSquare;
                 numberOfTracksInExperiment += numberOfTracksInSquare;
 
-                calculateAverageTrackCountOfBackground(rec, 60);
+                // calculateAverageTrackCountOfBackground(rec, 60);
             }
             System.out.printf("Tracks in experiment: %d%n", numberOfTracksInExperiment);
         }

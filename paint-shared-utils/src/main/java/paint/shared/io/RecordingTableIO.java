@@ -1,4 +1,4 @@
-package io;
+package paint.shared.io;
 
 import paint.shared.objects.Recording;
 import tech.tablesaw.api.ColumnType;

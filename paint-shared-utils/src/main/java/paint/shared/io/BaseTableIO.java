@@ -1,4 +1,4 @@
-package io;
+package paint.shared.io;
 
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Table;

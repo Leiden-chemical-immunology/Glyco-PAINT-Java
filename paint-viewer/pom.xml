@@ -64,11 +64,13 @@
             <artifactId>bio-formats_plugins</artifactId>
             <version>6.13.0</version>
         </dependency>
+
         <dependency>
             <groupId>ome</groupId>
             <artifactId>formats-gpl</artifactId>
             <version>6.13.0</version>
         </dependency>
+
         <dependency>
             <groupId>ome</groupId>
             <artifactId>formats-api</artifactId>
@@ -95,17 +97,22 @@
             <artifactId>gson</artifactId>
             <version>2.11.0</version>
         </dependency>
+
     </dependencies>
 
+
     <repositories>
+
         <repository>
             <id>scijava.public</id>
             <url>https://maven.scijava.org/content/groups/public</url>
         </repository>
+
         <repository>
             <id>ome.releases</id>
             <url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
         </repository>
+
     </repositories>
 
 </project>
