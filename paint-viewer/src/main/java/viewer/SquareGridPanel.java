@@ -18,7 +18,14 @@ public class SquareGridPanel extends JPanel {
     private final List<SquareForDisplay> squares = new ArrayList<>();
 
     private boolean showBorders = true;
-    private int numberMode = 0; // 0 = none, 1 = label number, 2 = square number
+
+    public enum NumberMode {
+        NONE,
+        LABEL,
+        SQUARE
+    };
+
+    private NumberMode numberMode = NumberMode.NONE;
 
     public SquareGridPanel(int rows, int cols, int width, int height) {
         this.rows = rows;
@@ -85,9 +92,9 @@ public class SquareGridPanel extends JPanel {
                 g.drawRect(x, y, squareW, squareH);
             }
 
-            if (numberMode == 1 && sq.selected) {
+            if (numberMode == NumberMode.LABEL && sq.selected) {
                 drawCenteredString(g, String.valueOf(sq.labelNumber), x, y, squareW, squareH);
-            } else if (numberMode == 2 && sq.selected) {
+            } else if (numberMode == NumberMode.SQUARE && sq.selected) {
                 drawCenteredString(g, String.valueOf(sq.squareNumber), x, y, squareW, squareH);
             }
         }
@@ -97,7 +104,7 @@ public class SquareGridPanel extends JPanel {
         FontMetrics fm = g.getFontMetrics();
         int tx = x + (w - fm.stringWidth(text)) / 2;
         int ty = y + (h + fm.getAscent() - fm.getDescent()) / 2;
-        g.setColor(Color.RED);
+        g.setColor(Color.WHITE);
         g.drawString(text, tx, ty);
     }
 
@@ -114,8 +121,16 @@ public class SquareGridPanel extends JPanel {
         repaint();
     }
 
-    public void setNumberMode(int mode) {
+    public void setNumberMode(NumberMode mode) {
         this.numberMode = mode;
         repaint();
     }
+
+    // 🔹 New: replace default squares with CSV-loaded ones
+    public void setSquares(List<SquareForDisplay> newSquares) {
+        this.squares.clear();
+        this.squares.addAll(newSquares);
+        repaint();
+    }
+
 }

@@ -1,9 +1,13 @@
 package viewer;
 
+import paint.shared.objects.Project;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Random;
 
 public class RecordingEntry {
 
@@ -25,6 +29,7 @@ public class RecordingEntry {
     private final double threshold;
     private final double tau;
     private final double density;
+    private List<SquareForDisplay> squares;
 
     // Thresholds (from config)
     private final double minRequiredDensityRatio;
@@ -178,4 +183,30 @@ public class RecordingEntry {
     public double getObservedRSquared() { return observedRSquared; }
     public Path getLeftImagePath() { return leftImagePath; }
     public Path getRightImagePath() { return rightImagePath; }
+
+
+    public List<SquareForDisplay> getSquares(Project project) {
+        if (squares == null) {
+            try {
+                squares = SquareCsvLoader.loadSquaresForRecording(
+                        project.getProjectPath(),
+                        getExperimentName(),
+                        getRecordingName());
+            } catch (Exception e) {
+                e.printStackTrace();
+                squares = java.util.Collections.emptyList();
+            }
+        }
+        randomlySelectSquares(squares);  //ToDo: remove later
+        return squares;
+    }
+
+    public static void randomlySelectSquares(List<SquareForDisplay> squares) {
+        Random rnd = new Random();
+        for (SquareForDisplay sq : squares) {
+            if (rnd.nextDouble() < 0.10) { // 10% chance
+                sq.selected = true;
+            }
+        }
+    }
 }

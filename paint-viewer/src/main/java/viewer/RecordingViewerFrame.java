@@ -13,9 +13,11 @@ public class RecordingViewerFrame extends JFrame {
     private final List<RecordingEntry> recordings;
     private int currentIndex = 0;
 
+    // Grid panel with default 20x20; replaced with CSV data later
+    private final SquareGridPanel leftGridPanel = new SquareGridPanel(20, 20, 512, 512);
+
     // Panels and labels
     private final JLabel rightImageLabel = new JLabel("", SwingConstants.CENTER);
-    private final SquareGridPanel leftGridPanel; // custom grid panel
 
     private final DefaultTableModel attributesModel;
     private final JTable attributesTable;
@@ -41,7 +43,6 @@ public class RecordingViewerFrame extends JFrame {
         int GAP = 15;
 
         // --- Images area ---
-        leftGridPanel = new SquareGridPanel(20, 20, 512, 512); // default 20x20 grid
         JPanel imagesInner = new JPanel(new GridLayout(1, 2, GAP, 0));
         imagesInner.add(createSquareImagePanel(leftGridPanel));
         imagesInner.add(createSquareImagePanel(rightImageLabel));
@@ -135,6 +136,7 @@ public class RecordingViewerFrame extends JFrame {
         actionsContent.add(Box.createVerticalGlue());
 
         actionsPanel.add(actionsContent, BorderLayout.NORTH);
+
         // --- Assemble main layout ---
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.add(attrPanel, BorderLayout.WEST);
@@ -190,6 +192,8 @@ public class RecordingViewerFrame extends JFrame {
         int size = 512;
         leftGridPanel.setBackgroundImage(entry.getLeftImage()); // grid overlays image
         rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), size, size));
+
+        leftGridPanel.setSquares(entry.getSquares(project));
 
         experimentLabel.setText("Experiment: " + entry.getExperimentName() +
                 " (" + (currentIndex + 1) + "/" + recordings.size() + ")");

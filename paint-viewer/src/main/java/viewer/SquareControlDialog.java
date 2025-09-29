@@ -1,64 +1,105 @@
 package viewer;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class SquareControlDialog extends JDialog {
 
-    private final JCheckBox showBordersCheck;
-    private final JRadioButton noNumberRadio;
-    private final JRadioButton labelNumberRadio;
-    private final JRadioButton squareNumberRadio;
+    private final JCheckBox showBordersCheckBox;
+    private final JRadioButton numberNoneRadio;
+    private final JRadioButton numberLabelRadio;
+    private final JRadioButton numberSquareRadio;
 
-    public SquareControlDialog(Frame owner, SquareGridPanel gridPanel) {
+    // Remember last selected number mode when borders are ON
+    private SquareGridPanel.NumberMode lastNumberMode = SquareGridPanel.NumberMode.NONE;
+
+    public SquareControlDialog(JFrame owner, SquareGridPanel gridPanel) {
         super(owner, "Square Controls", false);
 
         setLayout(new BorderLayout(10, 10));
-        setResizable(false);
+        JPanel content = new JPanel();
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
-        // --- Border controls ---
-        showBordersCheck = new JCheckBox("Show borders of selected squares", true);
-        showBordersCheck.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        showBordersCheck.addActionListener(e -> gridPanel.setShowBorders(showBordersCheck.isSelected()));
-
-        JPanel borderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        borderPanel.setBorder(new EmptyBorder(10, 10, 5, 10));
-        borderPanel.add(showBordersCheck);
-
-        // --- Number controls ---
-        noNumberRadio = new JRadioButton("Show no number", true);
-        labelNumberRadio = new JRadioButton("Show label number");
-        squareNumberRadio = new JRadioButton("Show square number");
-
-        for (JRadioButton btn : new JRadioButton[]{noNumberRadio, labelNumberRadio, squareNumberRadio}) {
-            btn.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        }
+        // --- Radio buttons ---
+        numberNoneRadio = new JRadioButton("Show no number", true);
+        numberLabelRadio = new JRadioButton("Show label number");
+        numberSquareRadio = new JRadioButton("Show square number");
 
         ButtonGroup group = new ButtonGroup();
-        group.add(noNumberRadio);
-        group.add(labelNumberRadio);
-        group.add(squareNumberRadio);
+        group.add(numberNoneRadio);
+        group.add(numberLabelRadio);
+        group.add(numberSquareRadio);
 
-        noNumberRadio.addActionListener(e -> gridPanel.setNumberMode(0));
-        labelNumberRadio.addActionListener(e -> gridPanel.setNumberMode(1));
-        squareNumberRadio.addActionListener(e -> gridPanel.setNumberMode(2));
+        numberNoneRadio.addActionListener(e -> {
+            gridPanel.setNumberMode(SquareGridPanel.NumberMode.NONE);
+            lastNumberMode = SquareGridPanel.NumberMode.NONE;
+        });
+        numberLabelRadio.addActionListener(e -> {
+            gridPanel.setNumberMode(SquareGridPanel.NumberMode.LABEL);
+            lastNumberMode = SquareGridPanel.NumberMode.LABEL;
+        });
+        numberSquareRadio.addActionListener(e -> {
+            gridPanel.setNumberMode(SquareGridPanel.NumberMode.SQUARE);
+            lastNumberMode = SquareGridPanel.NumberMode.SQUARE;
+        });
 
-        JPanel numbersPanel = new JPanel();
-        numbersPanel.setLayout(new BoxLayout(numbersPanel, BoxLayout.Y_AXIS));
-        numbersPanel.setBorder(new EmptyBorder(5, 10, 10, 10));
-        numbersPanel.add(noNumberRadio);
-        numbersPanel.add(Box.createVerticalStrut(5));
-        numbersPanel.add(labelNumberRadio);
-        numbersPanel.add(Box.createVerticalStrut(5));
-        numbersPanel.add(squareNumberRadio);
+        JPanel radioPanel = new JPanel();
+        radioPanel.setLayout(new BoxLayout(radioPanel, BoxLayout.Y_AXIS));
+        radioPanel.setBorder(BorderFactory.createTitledBorder("Numbers"));
+        radioPanel.add(numberNoneRadio);
+        radioPanel.add(numberLabelRadio);
+        radioPanel.add(numberSquareRadio);
 
-        // --- Assemble ---
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.add(borderPanel, BorderLayout.NORTH);
-        mainPanel.add(numbersPanel, BorderLayout.CENTER);
+        // --- Show borders checkbox ---
+        showBordersCheckBox = new JCheckBox("Show borders of selected squares", true);
+        showBordersCheckBox.addActionListener(e -> {
+            boolean show = showBordersCheckBox.isSelected();
+            gridPanel.setShowBorders(show);
 
-        add(mainPanel, BorderLayout.CENTER);
+            if (!show) {
+                // Remember current mode before forcing to NONE
+                if (numberLabelRadio.isSelected()) lastNumberMode = SquareGridPanel.NumberMode.LABEL;
+                else if (numberSquareRadio.isSelected()) lastNumberMode = SquareGridPanel.NumberMode.SQUARE;
+                else lastNumberMode = SquareGridPanel.NumberMode.NONE;
+
+                // Force to "Show no number"
+                numberNoneRadio.setSelected(true);
+                gridPanel.setNumberMode(SquareGridPanel.NumberMode.NONE);
+
+                // Disable radios
+                numberNoneRadio.setEnabled(false);
+                numberLabelRadio.setEnabled(false);
+                numberSquareRadio.setEnabled(false);
+
+            } else {
+                // Re-enable radios
+                numberNoneRadio.setEnabled(true);
+                numberLabelRadio.setEnabled(true);
+                numberSquareRadio.setEnabled(true);
+
+                // Restore last remembered mode
+                switch (lastNumberMode) {
+                    case LABEL:
+                        numberLabelRadio.setSelected(true);
+                        gridPanel.setNumberMode(SquareGridPanel.NumberMode.LABEL);
+                        break;
+                    case SQUARE:
+                        numberSquareRadio.setSelected(true);
+                        gridPanel.setNumberMode(SquareGridPanel.NumberMode.SQUARE);
+                        break;
+                    default:
+                        numberNoneRadio.setSelected(true);
+                        gridPanel.setNumberMode(SquareGridPanel.NumberMode.NONE);
+                        break;
+                }
+            }
+        });
+
+        content.add(showBordersCheckBox);
+        content.add(Box.createVerticalStrut(10));
+        content.add(radioPanel);
+
+        add(content, BorderLayout.CENTER);
 
         pack();
         setLocationRelativeTo(owner);
