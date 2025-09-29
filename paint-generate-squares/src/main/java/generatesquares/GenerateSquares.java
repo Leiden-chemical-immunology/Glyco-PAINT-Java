@@ -5,6 +5,7 @@ import paint.shared.dialogs.ProjectSelectionDialog;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.utils.JarInfo;
 import paint.shared.utils.PaintLogger;
+import paint.shared.validate.ValidationResult;
 
 import javax.swing.*;
 import java.io.PrintWriter;
@@ -12,12 +13,15 @@ import java.io.StringWriter;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 import static generatesquares.calc.GenerateSquareCalcs.generateSquaresForExperiment;
-import static paint.shared.constants.PaintConstants.SQUARES_CSV;
+import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.utils.CsvConcatenator.concatenateExperimentCsvFiles;
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.Miscellaneous.formatDuration;
+import static paint.shared.validate.ValidationHandler.validateExperiments;
 
 public class GenerateSquares {
 
@@ -68,6 +72,18 @@ public class GenerateSquares {
             // Wire the callback to perform calculations while keeping the dialog open
             dialog.setCalculationCallback(project -> {
 
+                List<String> fileNames = Arrays.asList(
+                        EXPERIMENT_INFO_CSV,
+                        RECORDINGS_CSV
+                );
+                ValidationResult validateResult = validateExperiments(projectPath, project.experimentNames, fileNames);
+
+                for (String line : validateResult.getReport().split("\n")) {
+                    PaintLogger.errorf(line);
+                }
+                if (validateResult.hasErrors()) {
+                    return false;
+                 }
                 LocalDateTime start = LocalDateTime.now();
                 for (String experimentName : project.experimentNames) {
                     generateSquaresForExperiment(project, experimentName);

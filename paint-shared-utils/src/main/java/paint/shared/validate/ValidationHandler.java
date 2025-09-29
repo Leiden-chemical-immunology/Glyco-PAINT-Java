@@ -19,7 +19,7 @@ import java.util.List;
  *      [ExperimentName] - [FileName] - [Problem summary]
  *  - If there are no problems at all: "✔ All validations passed"
  */
-public class Validation {
+public class ValidationHandler {
 
     public static ValidationResult validateExperiments(Path projectPath,
                                                        List<String> experimentNames,

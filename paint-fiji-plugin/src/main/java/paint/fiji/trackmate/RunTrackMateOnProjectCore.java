@@ -14,7 +14,7 @@ import static paint.fiji.trackmate.RunTrackMateOnExperiment.runTrackMateOnExperi
 import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.validate.ImageRootValidator.validateImageRoot;
-import static paint.shared.validate.Validation.validateExperiments;
+import static paint.shared.validate.ValidationHandler.validateExperiments;
 
 /**
  * Core TrackMate project runner, reusable by plugin and sweep runner.
