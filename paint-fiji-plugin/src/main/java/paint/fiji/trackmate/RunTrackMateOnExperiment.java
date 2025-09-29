@@ -110,9 +110,6 @@ public class RunTrackMateOnExperiment {
              BufferedWriter writer = Files.newBufferedWriter(allRecordingFilePath);
              CSVPrinter printer = new CSVPrinter(writer,
                      CSVFormat.DEFAULT.builder()
-                             .setHeader(parser.getHeaderMap()
-                                     .keySet()
-                                     .toArray(new String[0]))
                              .build())
         ) {
             // Output header
