@@ -19,27 +19,25 @@ public class RecordingViewerFrame extends JFrame {
     private final List<RecordingEntry> recordings;
     private int currentIndex = 0;
 
-    // Grid panel with default 20x20; replaced with CSV data later
+    // Grid panel
     private final SquareGridPanel leftGridPanel = new SquareGridPanel(20, 20, 512, 512);
 
-    // Panels and labels
+    // Labels, tables, UI
     private final JLabel rightImageLabel = new JLabel("", SwingConstants.CENTER);
-
     private final DefaultTableModel attributesModel;
     private final JTable attributesTable;
-
     private final JLabel experimentLabel = new JLabel("", SwingConstants.CENTER);
     private final JLabel recordingLabel = new JLabel("", SwingConstants.CENTER);
 
-    // Navigation
+    // Navigation buttons
     private final JButton firstBtn = new JButton("|<");
     private final JButton prevBtn = new JButton("<");
     private final JButton nextBtn = new JButton(">");
     private final JButton lastBtn = new JButton(">|");
 
-    // --- Square filter parameters (current state) ---
-    private int minDensityRatio = 2;
-    private int maxVariability = 2;
+    // --- Square filter parameters (now with doubles for density & variability) ---
+    private double minDensityRatio = 0.0;
+    private double maxVariability = 0.0;
     private double minRSquared = 0.5;
     private int minDuration = 100;
     private int maxDuration = 500;
@@ -69,7 +67,7 @@ public class RecordingViewerFrame extends JFrame {
         labelsPanel.add(experimentLabel);
         labelsPanel.add(recordingLabel);
 
-        // --- Navigation centered below labels ---
+        // --- Navigation ---
         JPanel navPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         navPanel.add(firstBtn);
         navPanel.add(prevBtn);
@@ -85,7 +83,7 @@ public class RecordingViewerFrame extends JFrame {
         imagesWithNav.add(labelsPanel, BorderLayout.SOUTH);
         imagesWithNav.add(navPanel, BorderLayout.NORTH);
 
-        // --- Attributes block (left) ---
+        // --- Attributes panel (left) ---
         JPanel attrPanel = new JPanel(new BorderLayout());
         attrPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
@@ -113,7 +111,7 @@ public class RecordingViewerFrame extends JFrame {
         scrollPane.setPreferredSize(new Dimension(220, attributesTable.getRowHeight() * 6));
         attrPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // --- Actions block (right) ---
+        // --- Actions panel (right) ---
         JPanel actionsPanel = new JPanel(new BorderLayout());
         actionsPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
@@ -134,7 +132,7 @@ public class RecordingViewerFrame extends JFrame {
                 List<RecordingEntry> filtered = dialog.getFilteredRecordings();
                 if (!filtered.isEmpty()) {
                     currentIndex = 0;
-                    showEntry(0); // refresh view with first filtered recording
+                    showEntry(0);
                 }
             }
         });
@@ -163,7 +161,7 @@ public class RecordingViewerFrame extends JFrame {
 
         actionsPanel.add(actionsContent, BorderLayout.NORTH);
 
-        // --- Assemble main layout ---
+        // --- Main assembly ---
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.add(attrPanel, BorderLayout.WEST);
         mainPanel.add(imagesWithNav, BorderLayout.CENTER);
@@ -171,11 +169,10 @@ public class RecordingViewerFrame extends JFrame {
 
         add(mainPanel, BorderLayout.CENTER);
 
-        // --- Window size ---
         setSize(1500, 700);
         setLocationRelativeTo(null);
 
-        // --- Nav actions ---
+        // Navigation actions
         firstBtn.addActionListener(e -> showEntry(0));
         prevBtn.addActionListener(e -> showEntry(Math.max(0, currentIndex - 1)));
         nextBtn.addActionListener(e -> showEntry(Math.min(recordings.size() - 1, currentIndex + 1)));
@@ -215,22 +212,21 @@ public class RecordingViewerFrame extends JFrame {
             return;
         }
 
-        int expectNumberOfSquares = 0;     // ToDo get the real number of squares from somewhere later
+        int expectNumberOfSquares = 0; // TODO
 
         currentIndex = index;
         RecordingEntry entry = recordings.get(index);
 
         int size = 512;
-        leftGridPanel.setBackgroundImage(entry.getLeftImage()); // grid overlays image
+        leftGridPanel.setBackgroundImage(entry.getLeftImage());
         rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), size, size));
 
         leftGridPanel.setSquares(entry.getSquaresForViewer(project, expectNumberOfSquares));
 
-        // --- experiment counter + overall counter ---
+        // Count experiment index
         int totalInExperiment = 0;
         int indexInExperiment = 0;
-        for (int i = 0; i < recordings.size(); i++) {
-            RecordingEntry r = recordings.get(i);
+        for (RecordingEntry r : recordings) {
             if (r.getExperimentName().equals(entry.getExperimentName())) {
                 totalInExperiment++;
                 if (r == entry) {
@@ -244,6 +240,7 @@ public class RecordingViewerFrame extends JFrame {
                 "   [Overall: " + (currentIndex + 1) + "/" + recordings.size() + "]");
 
         recordingLabel.setText("Recording: " + entry.getRecordingName());
+
         boolean densityOk = entry.getDensity() >= entry.getMinRequiredDensityRatio();
         boolean tauOk = entry.getTau() <= entry.getMaxAllowableVariability();
         boolean r2Ok = entry.getObservedRSquared() >= entry.getMinRequiredRSquared();
@@ -277,34 +274,34 @@ public class RecordingViewerFrame extends JFrame {
         lastBtn.setEnabled(currentIndex < recordings.size() - 1);
     }
 
-    // --- Called continuously when sliders change ---
+    // Called during slider changes
     public void updateSquareControlParameters(
-            int densityRatio,
-            int variability,
-            double rSquared,   // <-- change to double
+            double densityRatio,
+            double variability,
+            double rSquared,
             int minDuration,
             int maxDuration,
             String neighbourMode
     ) {
         this.minDensityRatio = densityRatio;
         this.maxVariability = variability;
-        this.minRSquared = rSquared; // also make this field double
+        this.minRSquared = rSquared;
         this.minDuration = minDuration;
         this.maxDuration = maxDuration;
         this.neighbourMode = neighbourMode;
 
         System.out.println("Updated square controls:");
-        System.out.println(" DensityRatio=" + minDensityRatio);
-        System.out.println(" Variability=" + maxVariability);
-        System.out.println(" R²=" + minRSquared);
-        System.out.println(" MinDuration=" + minDuration);
-        System.out.println(" MaxDuration=" + maxDuration);
-        System.out.println(" NeighbourMode=" + neighbourMode);
+        System.out.println(" DensityRatio = " + minDensityRatio);
+        System.out.println(" Variability   = " + maxVariability);
+        System.out.println(" R²            = " + minRSquared);
+        System.out.println(" MinDuration   = " + minDuration);
+        System.out.println(" MaxDuration   = " + maxDuration);
+        System.out.println(" NeighbourMode = " + neighbourMode);
 
         repaint();
     }
 
-    // --- Called when Apply buttons are pressed ---
+    // Called when “Apply” is pressed
     public void applySquareControlParameters(String scope, SquareControlParams params) {
         String timestamp = LocalDateTime.now().toString();
         File csvFile = new File(project.getProjectRootPath().toFile(), "Viewer Override.csv");
@@ -338,7 +335,6 @@ public class RecordingViewerFrame extends JFrame {
                 lines = Files.readAllLines(csvFile.toPath());
             }
 
-            // Ensure header row exists
             if (lines.isEmpty() || !lines.get(0).startsWith("recordingName,")) {
                 lines.clear();
                 lines.add("recordingName,timestamp,densityRatio,variability,rSquared,minDuration,maxDuration,neighbourMode");
@@ -350,7 +346,7 @@ public class RecordingViewerFrame extends JFrame {
                     params.minDuration + "," + params.maxDuration + "," + params.neighbourMode;
 
             boolean replaced = false;
-            for (int i = 1; i < lines.size(); i++) { // skip header
+            for (int i = 1; i < lines.size(); i++) {
                 if (lines.get(i).startsWith(prefix)) {
                     lines.set(i, newLine);
                     replaced = true;
@@ -361,7 +357,6 @@ public class RecordingViewerFrame extends JFrame {
                 lines.add(newLine);
             }
 
-            // Write atomically
             File tmp = new File(csvFile.getParentFile(), csvFile.getName() + ".tmp");
             Files.write(tmp.toPath(), lines);
             Files.move(tmp.toPath(), csvFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
