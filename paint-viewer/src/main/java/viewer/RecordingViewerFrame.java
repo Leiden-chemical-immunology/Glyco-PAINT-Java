@@ -5,6 +5,12 @@ import paint.shared.objects.Project;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RecordingViewerFrame extends JFrame {
@@ -31,10 +37,10 @@ public class RecordingViewerFrame extends JFrame {
     private final JButton nextBtn = new JButton(">");
     private final JButton lastBtn = new JButton(">|");
 
-    // --- New square filter parameters ---
-    private int minDensityRatio = 50;
-    private int maxVariability = 50;
-    private int minRSquared = 50;
+    // --- Square filter parameters (current state) ---
+    private int minDensityRatio = 2;
+    private int maxVariability = 2;
+    private double minRSquared = 0.5;
     private int minDuration = 100;
     private int maxDuration = 500;
     private String neighbourMode = "Free";
@@ -134,7 +140,19 @@ public class RecordingViewerFrame extends JFrame {
         });
 
         squareDialogButton.addActionListener(e -> {
-            SquareControlDialog dialog = new SquareControlDialog(this, leftGridPanel, this);
+            SquareControlDialog dialog = new SquareControlDialog(
+                    this,
+                    leftGridPanel,
+                    this,
+                    new SquareControlParams(
+                            minDensityRatio,
+                            maxVariability,
+                            minRSquared,
+                            minDuration,
+                            maxDuration,
+                            neighbourMode
+                    )
+            );
             dialog.setVisible(true);
         });
 
@@ -251,6 +269,7 @@ public class RecordingViewerFrame extends JFrame {
 
         updateNavButtons();
     }
+
     private void updateNavButtons() {
         firstBtn.setEnabled(currentIndex > 0);
         prevBtn.setEnabled(currentIndex > 0);
@@ -258,18 +277,18 @@ public class RecordingViewerFrame extends JFrame {
         lastBtn.setEnabled(currentIndex < recordings.size() - 1);
     }
 
-    // --- New method for SquareControlDialog to call ---
+    // --- Called continuously when sliders change ---
     public void updateSquareControlParameters(
             int densityRatio,
             int variability,
-            int rSquared,
+            double rSquared,   // <-- change to double
             int minDuration,
             int maxDuration,
             String neighbourMode
     ) {
         this.minDensityRatio = densityRatio;
         this.maxVariability = variability;
-        this.minRSquared = rSquared;
+        this.minRSquared = rSquared; // also make this field double
         this.minDuration = minDuration;
         this.maxDuration = maxDuration;
         this.neighbourMode = neighbourMode;
@@ -283,5 +302,73 @@ public class RecordingViewerFrame extends JFrame {
         System.out.println(" NeighbourMode=" + neighbourMode);
 
         repaint();
+    }
+
+    // --- Called when Apply buttons are pressed ---
+    public void applySquareControlParameters(String scope, SquareControlParams params) {
+        String timestamp = LocalDateTime.now().toString();
+        File csvFile = new File(project.getProjectRootPath().toFile(), "Viewer Override.csv");
+
+        switch (scope) {
+            case "Recording":
+                RecordingEntry current = recordings.get(currentIndex);
+                writeOverrideRecord(current.getRecordingName(), params, timestamp, csvFile);
+                break;
+            case "Experiment":
+                RecordingEntry cur = recordings.get(currentIndex);
+                for (RecordingEntry r : recordings) {
+                    if (r.getExperimentName().equals(cur.getExperimentName())) {
+                        writeOverrideRecord(r.getRecordingName(), params, timestamp, csvFile);
+                    }
+                }
+                break;
+            case "Project":
+                for (RecordingEntry r : recordings) {
+                    writeOverrideRecord(r.getRecordingName(), params, timestamp, csvFile);
+                }
+                break;
+        }
+    }
+
+    private void writeOverrideRecord(String recordingName, SquareControlParams params,
+                                     String timestamp, File csvFile) {
+        try {
+            List<String> lines = new ArrayList<>();
+            if (csvFile.exists()) {
+                lines = Files.readAllLines(csvFile.toPath());
+            }
+
+            // Ensure header row exists
+            if (lines.isEmpty() || !lines.get(0).startsWith("recordingName,")) {
+                lines.clear();
+                lines.add("recordingName,timestamp,densityRatio,variability,rSquared,minDuration,maxDuration,neighbourMode");
+            }
+
+            String prefix = recordingName + ",";
+            String newLine = recordingName + "," + timestamp + "," +
+                    params.densityRatio + "," + params.variability + "," + params.rSquared + "," +
+                    params.minDuration + "," + params.maxDuration + "," + params.neighbourMode;
+
+            boolean replaced = false;
+            for (int i = 1; i < lines.size(); i++) { // skip header
+                if (lines.get(i).startsWith(prefix)) {
+                    lines.set(i, newLine);
+                    replaced = true;
+                    break;
+                }
+            }
+            if (!replaced) {
+                lines.add(newLine);
+            }
+
+            // Write atomically
+            File tmp = new File(csvFile.getParentFile(), csvFile.getName() + ".tmp");
+            Files.write(tmp.toPath(), lines);
+            Files.move(tmp.toPath(), csvFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            System.out.println("Wrote override record for " + recordingName + " into " + csvFile);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 }
