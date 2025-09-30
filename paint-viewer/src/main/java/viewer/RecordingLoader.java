@@ -17,7 +17,7 @@ public class RecordingLoader {
         List<RecordingEntry> entries = new ArrayList<>();
 
         for (String experimentName : project.experimentNames) {
-            Path experimentFolder = project.getProjectPath().resolve(experimentName);
+            Path experimentFolder = project.getProjectRootPath().resolve(experimentName);
             Path recordingsFile = experimentFolder.resolve(PaintConstants.RECORDINGS_CSV);
 
             if (!Files.exists(recordingsFile)) {

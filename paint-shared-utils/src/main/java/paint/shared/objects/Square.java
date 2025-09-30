@@ -15,40 +15,40 @@ public class Square {
 
     // Attributes
 
-    private String uniqueKey;                       // 0
-    private String recordingName;                   // 1
-    private int squareNumber;                       // 2
-    private int rowNumber;                          // 3
-    private int colNumber;                          // 4
-    private int labelNumber;                        // 5
-    private int cellId;                             // 6
-    private boolean selected;                       // 7
-    private boolean squareManuallyExcluded;         // 8
-    private boolean imageExcluded;                  // 9
-    private double x0;                              // 10
-    private double y0;                              // 11
-    private double x1;                              // 12
-    private double y1;                              // 13
-    private int numberOfTracks;                     // 14
-    private double variability;                     // 15
-    private double density;                         // 16
-    private double densityRatio;                    // 17
-    private double tau;                             // 18
-    private double rSquared;                        // 19
-    private double medianDiffusionCoefficient;      // 20
-    private double medianDiffusionCoefficientExt;   // 21
-    private double medianLongTrackDuration;         // 22
-    private double medianShortTrackDuration;        // 23
-    private double medianDisplacement;              // 24
-    private double maxDisplacement;                 // 25
-    private double totalDisplacement;               // 26
-    private double medianMaxSpeed;                  // 27
-    private double maxMaxSpeed;                     // 28
-    private double medianMeanSpeed;                 // 29
-    private double maxMeanSpeed;                    // 30
-    private double maxTrackDuration;                // 31
-    private double totalTrackDuration;              // 32
-    private double medianTrackDuration;             // 33
+    private String  uniqueKey;                       // 0
+    private String  recordingName;                   // 1
+    private int     squareNumber;                    // 2
+    private int     rowNumber;                       // 3
+    private int     colNumber;                       // 4
+    private int     labelNumber;                     // 5
+    private int     cellId;                          // 6
+    private boolean selected;                        // 7
+    private boolean squareManuallyExcluded;          // 8
+    private boolean imageExcluded;                   // 9
+    private double  x0;                              // 10
+    private double  y0;                              // 11
+    private double  x1;                              // 12
+    private double  y1;                              // 13
+    private int     numberOfTracks;                  // 14
+    private double  variability;                     // 15
+    private double  density;                         // 16
+    private double  densityRatio;                    // 17
+    private double  tau;                             // 18
+    private double  rSquared;                        // 19
+    private double  medianDiffusionCoefficient;      // 20
+    private double  medianDiffusionCoefficientExt;   // 21
+    private double  medianLongTrackDuration;         // 22
+    private double  medianShortTrackDuration;        // 23
+    private double  medianDisplacement;              // 24
+    private double  maxDisplacement;                 // 25
+    private double  totalDisplacement;               // 26
+    private double  medianMaxSpeed;                  // 27
+    private double  maxMaxSpeed;                     // 28
+    private double  medianMeanSpeed;                 // 29
+    private double  maxMeanSpeed;                    // 30
+    private double  maxTrackDuration;                // 31
+    private double  totalTrackDuration;              // 32
+    private double  medianTrackDuration;             // 33
 
     private List<Track> tracks = new ArrayList<>();
     private Table tracksTable = null;
@@ -81,7 +81,6 @@ public class Square {
         this.y1 = y1;
     }
 
-
     public Square(int squareNumber, int numberOfSquaresInRecording) {
 
         int numberSquaresInRow = (int) Math.sqrt(numberOfSquaresInRecording);
@@ -97,7 +96,6 @@ public class Square {
         y0 = rowNumber * height;
         y1 = (rowNumber + 1) * width;
         this.squareNumber = squareNumber;
-
     }
 
 

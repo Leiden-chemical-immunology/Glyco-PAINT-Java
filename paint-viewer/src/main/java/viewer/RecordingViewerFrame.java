@@ -32,7 +32,7 @@ public class RecordingViewerFrame extends JFrame {
     private final JButton lastBtn = new JButton(">|");
 
     public RecordingViewerFrame(Project project, List<RecordingEntry> recordings) {
-        super("Recording Viewer - " + project.getProjectPath().getFileName());
+        super("Recording Viewer - " + project.getProjectRootPath().getFileName());
         this.project = project;
         this.recordings = recordings;
 
@@ -185,7 +185,12 @@ public class RecordingViewerFrame extends JFrame {
     }
 
     private void showEntry(int index) {
-        if (index < 0 || index >= recordings.size()) return;
+        if (index < 0 || index >= recordings.size()) {
+            return;
+        }
+
+        int expectNumberOfSquares = 0;     // ToDo get the real number of squares from somewhere later
+
         currentIndex = index;
         RecordingEntry entry = recordings.get(index);
 
@@ -193,12 +198,26 @@ public class RecordingViewerFrame extends JFrame {
         leftGridPanel.setBackgroundImage(entry.getLeftImage()); // grid overlays image
         rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), size, size));
 
-        leftGridPanel.setSquares(entry.getSquares(project));
+        leftGridPanel.setSquares(entry.getSquaresForViewer(project, expectNumberOfSquares));
+
+        // --- experiment counter + overall counter ---
+        int totalInExperiment = 0;
+        int indexInExperiment = 0;
+        for (int i = 0; i < recordings.size(); i++) {
+            RecordingEntry r = recordings.get(i);
+            if (r.getExperimentName().equals(entry.getExperimentName())) {
+                totalInExperiment++;
+                if (r == entry) {
+                    indexInExperiment = totalInExperiment;
+                }
+            }
+        }
 
         experimentLabel.setText("Experiment: " + entry.getExperimentName() +
-                " (" + (currentIndex + 1) + "/" + recordings.size() + ")");
-        recordingLabel.setText("Recording: " + entry.getRecordingName());
+                " (" + indexInExperiment + "/" + totalInExperiment + ")" +
+                "   [Overall: " + (currentIndex + 1) + "/" + recordings.size() + "]");
 
+        recordingLabel.setText("Recording: " + entry.getRecordingName());
         boolean densityOk = entry.getDensity() >= entry.getMinRequiredDensityRatio();
         boolean tauOk = entry.getTau() <= entry.getMaxAllowableVariability();
         boolean r2Ok = entry.getObservedRSquared() >= entry.getMinRequiredRSquared();
@@ -224,7 +243,6 @@ public class RecordingViewerFrame extends JFrame {
 
         updateNavButtons();
     }
-
     private void updateNavButtons() {
         firstBtn.setEnabled(currentIndex > 0);
         prevBtn.setEnabled(currentIndex > 0);

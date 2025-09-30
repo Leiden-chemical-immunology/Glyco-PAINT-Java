@@ -11,8 +11,8 @@ import java.util.Random;
 
 public class RecordingEntry {
 
-    private final Path leftImagePath;
-    private final Path rightImagePath;
+    private final Path      leftImagePath;
+    private final Path      rightImagePath;
     private final ImageIcon leftImage;
     private final ImageIcon rightImage;
 
@@ -24,8 +24,8 @@ public class RecordingEntry {
     private final String adjuvant;
     private final String cellType;
     private final double concentration;
-    private final int numberOfSpots;
-    private final int numberOfTracks;
+    private final int    numberOfSpots;
+    private final int    numberOfTracks;
     private final double threshold;
     private final double tau;
     private final double density;
@@ -163,35 +163,98 @@ public class RecordingEntry {
     }
 
     // --- Getters ---
-    public ImageIcon getLeftImage() { return leftImage; }
-    public ImageIcon getRightImage() { return rightImage; }
-    public String getExperimentName() { return experimentName; }
-    public String getRecordingName() { return recordingName; }
-    public String getProbeName() { return probeName; }
-    public String getProbeType() { return probeType; }
-    public String getAdjuvant() { return adjuvant; }
-    public String getCellType() { return cellType; }
-    public double getConcentration() { return concentration; }
-    public int getNumberOfSpots() { return numberOfSpots; }
-    public int getNumberOfTracks() { return numberOfTracks; }
-    public double getThreshold() { return threshold; }
-    public double getTau() { return tau; }
-    public double getDensity() { return density; }
-    public double getMinRequiredDensityRatio() { return minRequiredDensityRatio; }
-    public double getMaxAllowableVariability() { return maxAllowableVariability; }
-    public double getMinRequiredRSquared() { return minRequiredRSquared; }
-    public double getObservedRSquared() { return observedRSquared; }
-    public Path getLeftImagePath() { return leftImagePath; }
-    public Path getRightImagePath() { return rightImagePath; }
+    public ImageIcon getLeftImage() {
+        return leftImage;
+    }
 
+    public ImageIcon getRightImage() {
+        return rightImage;
+    }
 
-    public List<SquareForDisplay> getSquares(Project project) {
+    public String getExperimentName() {
+        return experimentName;
+    }
+
+    public String getRecordingName() {
+        return recordingName;
+    }
+
+    public String getProbeName() {
+        return probeName;
+    }
+
+    public String getProbeType() {
+        return probeType;
+    }
+
+    public String getAdjuvant() {
+        return adjuvant;
+    }
+
+    public String getCellType() {
+        return cellType;
+    }
+
+    public double getConcentration() {
+        return concentration;
+    }
+
+    public int getNumberOfSpots() {
+        return numberOfSpots;
+    }
+
+    public int getNumberOfTracks() {
+        return numberOfTracks;
+    }
+
+    public double getThreshold() {
+        return threshold;
+    }
+
+    public double getTau() {
+        return tau;
+    }
+
+    public double getDensity() {
+        return density;
+    }
+
+    public double getMinRequiredDensityRatio() {
+        return minRequiredDensityRatio;
+    }
+
+    public double getMaxAllowableVariability() {
+        return maxAllowableVariability;
+    }
+
+    public double getMinRequiredRSquared() {
+        return minRequiredRSquared;
+    }
+
+    public double getObservedRSquared() {
+        return observedRSquared;
+    }
+
+    public Path getLeftImagePath() {
+        return leftImagePath;
+    }
+
+    public Path getRightImagePath() {
+        return rightImagePath;
+    }
+
+    // ToDo - It is very inefficient to read the file for every recordingName
+    // Better would be to read it once and then serach in memory.
+    // Need to bring reading et Array List forwards
+
+    public List<SquareForDisplay> getSquaresForViewer(Project project, int expectedNumberOfSquares) {
         if (squares == null) {
             try {
                 squares = SquareCsvLoader.loadSquaresForRecording(
-                        project.getProjectPath(),
+                        project.getProjectRootPath(),
                         getExperimentName(),
-                        getRecordingName());
+                        getRecordingName(),
+                        expectedNumberOfSquares);
             } catch (Exception e) {
                 e.printStackTrace();
                 squares = java.util.Collections.emptyList();

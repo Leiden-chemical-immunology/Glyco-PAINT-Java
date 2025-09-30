@@ -284,7 +284,7 @@ public class ProjectSpecificationDialog {
     private void populateCheckboxes() {
         checkboxPanel.removeAll();
         checkBoxes.clear();
-        File[] subs = project.getProjectPath().toFile().listFiles();
+        File[] subs = project.getProjectRootPath().toFile().listFiles();
         if (subs != null) {
             Arrays.sort(subs, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
             for (File sub : subs) {

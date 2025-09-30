@@ -32,7 +32,7 @@ public class GenerateSquareCalcs {
 
         LocalDateTime start = LocalDateTime.now();
         PaintLogger.infof("Loading Experiment '%s'", experimentName);
-        Experiment experiment = loadExperimentForSquaresCalc(project.projectPath, experimentName);
+        Experiment experiment = loadExperimentForSquaresCalc(project.projectRootPath, experimentName);
         if (experiment != null) {
             for (Recording recording : experiment.getRecordings()) {
                 PaintLogger.infof("   Processing: %s", recording.getRecordingName());
@@ -56,7 +56,7 @@ public class GenerateSquareCalcs {
             PaintLogger.infof("Finished processing experiment '%s' in %s", experimentName, formatDuration(duration));
             PaintLogger.infof();
 
-            writeSquares(project.projectPath, experiment);
+            writeSquares(project.projectRootPath, experiment);
 
             return true;
         } else {

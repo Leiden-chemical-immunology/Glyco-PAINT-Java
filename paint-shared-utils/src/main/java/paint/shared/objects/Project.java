@@ -14,37 +14,37 @@ public class Project {
     // Attributes
     //
 
-    boolean status;
-    public Path projectPath;
-    public Path imagePath;
-    public String projectName;
-    public PaintConfig paintConfig;
-    public TrackMateConfig trackMateConfig;
+    boolean                      status;
+    public Path                  projectRootPath;
+    public Path                  imagesRootPath;
+    public String                projectName;
+    public PaintConfig           paintConfig;
+    public TrackMateConfig       trackMateConfig;
     public GenerateSquaresConfig generateSquaresConfig;
-    public List<String> experimentNames;
-    public List<Experiment> experiments;
+    public List<String>          experimentNames;
+    public List<Experiment>      experiments;
 
     //
     // Constructors
     //
 
     public Project(boolean status,
-                   Path projectPath,
-                   Path imagePath,
+                   Path projectRootPath,
+                   Path imagesRootPath,
                    List<String> experimentNames,
                    PaintConfig paintConfig,
                    GenerateSquaresConfig generateSquaresConfig,
                    TrackMateConfig trackMateConfig,
                    List<Experiment> experiments) {
 
-        this.status = status;
-        this.projectPath = projectPath;
-        this.imagePath = imagePath;
-        this.projectName = projectPath.getFileName().toString();
-        this.experimentNames = experimentNames;
-        this.paintConfig = paintConfig;
+        this.status                = status;
+        this.projectRootPath       = projectRootPath;
+        this.imagesRootPath        = imagesRootPath;
+        this.projectName           = projectRootPath.getFileName().toString();
+        this.experimentNames       = experimentNames;
+        this.paintConfig           = paintConfig;
         this.generateSquaresConfig = generateSquaresConfig;
-        this.trackMateConfig = trackMateConfig;
+        this.trackMateConfig       = trackMateConfig;
         if (experiments == null) {
             this.experiments = new ArrayList<>();
         } else {
@@ -52,17 +52,17 @@ public class Project {
         }
     }
 
-    public Project(Path projectPath,
+    public Project(Path projectRootPath,
                    List<Experiment> experiments) {
 
-        this.status = false;
-        this.projectPath = projectPath;
-        this.imagePath = null;
-        this.projectName = projectPath.getFileName().toString();
-        this.experimentNames = experimentNames;
-        this.paintConfig = null;
+        this.status                = false;
+        this.projectRootPath       = projectRootPath;
+        this.imagesRootPath        = null;
+        this.projectName           = projectRootPath.getFileName().toString();
+        this.experimentNames       = experimentNames;
+        this.paintConfig           = null;
         this.generateSquaresConfig = null;
-        this.trackMateConfig = null;
+        this.trackMateConfig       = null;
         if (experiments == null) {
             this.experiments = new ArrayList<>();
         } else {
@@ -74,9 +74,9 @@ public class Project {
         this.experimentNames = new ArrayList<>();
     }
 
-    public Project(Path projectPath) {
-        this.projectPath = projectPath;
-        this.projectName = projectPath.getFileName().toString();
+    public Project(Path projectRootPath) {
+        this.projectRootPath = projectRootPath;
+        this.projectName     = projectRootPath.getFileName().toString();
     }
 
 
@@ -86,12 +86,12 @@ public class Project {
         return projectName;
     }
 
-    public Path getProjectPath() {
-        return projectPath;
+    public Path getProjectRootPath() {
+        return projectRootPath;
     }
 
-    public void setProjectPath(Path projectPath) {
-        this.projectPath = projectPath;
+    public void setProjectRootPath(Path projectRootPath) {
+        this.projectRootPath = projectRootPath;
     }
 
     public List<Experiment> getExperiments() {
@@ -114,7 +114,6 @@ public class Project {
     public void addExperiment(Experiment experiment) { // ToDo Should maybe make a deep copy
         this.experiments.add(experiment);
     }
-
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
