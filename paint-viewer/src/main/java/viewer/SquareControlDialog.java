@@ -4,7 +4,6 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -43,18 +42,19 @@ public class SquareControlDialog extends JDialog {
         this.viewerFrame = viewerFrame;
 
         setLayout(new BorderLayout(10, 10));
+
         JPanel content = new JPanel();
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
-        // --- Radio buttons for numbers ---
+        // --- Number display radios (init first so Borders can use them) ---
         numberNoneRadio = new JRadioButton("Show no number", true);
         numberLabelRadio = new JRadioButton("Show label number");
         numberSquareRadio = new JRadioButton("Show square number");
 
-        ButtonGroup group = new ButtonGroup();
-        group.add(numberNoneRadio);
-        group.add(numberLabelRadio);
-        group.add(numberSquareRadio);
+        ButtonGroup numbersGroup = new ButtonGroup();
+        numbersGroup.add(numberNoneRadio);
+        numbersGroup.add(numberLabelRadio);
+        numbersGroup.add(numberSquareRadio);
 
         numberNoneRadio.addActionListener(e -> {
             gridPanel.setNumberMode(SquareGridPanel.NumberMode.NONE);
@@ -69,15 +69,9 @@ public class SquareControlDialog extends JDialog {
             lastNumberMode = SquareGridPanel.NumberMode.SQUARE;
         });
 
-        JPanel radioPanel = new JPanel();
-        radioPanel.setLayout(new BoxLayout(radioPanel, BoxLayout.Y_AXIS));
-        radioPanel.setBorder(BorderFactory.createTitledBorder("Numbers"));
-        radioPanel.add(numberNoneRadio);
-        radioPanel.add(numberLabelRadio);
-        radioPanel.add(numberSquareRadio);
-
-        // --- Show borders checkbox ---
+        // --- Show borders checkbox (own frame, full width, left content) ---
         showBordersCheckBox = new JCheckBox("Show borders of selected squares", true);
+
         showBordersCheckBox.addActionListener(e -> {
             boolean show = showBordersCheckBox.isSelected();
             gridPanel.setShowBorders(show);
@@ -116,27 +110,53 @@ public class SquareControlDialog extends JDialog {
             }
         });
 
-        content.add(showBordersCheckBox);
+        JPanel bordersPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        bordersPanel.setBorder(BorderFactory.createTitledBorder("Borders"));
+        bordersPanel.add(showBordersCheckBox);
+        bordersPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, bordersPanel.getPreferredSize().height));
+
+        content.add(bordersPanel);
         content.add(Box.createVerticalStrut(10));
-        content.add(radioPanel);
 
-        // --- Sliders ---
-        densityRatioSlider = createSlider(0, 100, 50, "Min Required Density Ratio");
-        variabilitySlider = createSlider(0, 100, 50, "Max Allowable Variability");
-        rSquaredSlider = createSlider(0, 100, 50, "Min Required R²");
-        minDurationSlider = createSlider(0, 1000, 100, "Min Longest Duration");
-        maxDurationSlider = createSlider(0, 1000, 500, "Max Longest Duration");
+        // --- Numbers frame (FULL WIDTH, left-aligned radios) ---
+        // Inner vertical column for radios (keeps content left-aligned)
+        JPanel numbersInner = new JPanel();
+        numbersInner.setLayout(new BoxLayout(numbersInner, BoxLayout.Y_AXIS));
+        numberNoneRadio.setAlignmentX(Component.LEFT_ALIGNMENT);
+        numberLabelRadio.setAlignmentX(Component.LEFT_ALIGNMENT);
+        numberSquareRadio.setAlignmentX(Component.LEFT_ALIGNMENT);
+        numbersInner.add(numberNoneRadio);
+        numbersInner.add(numberLabelRadio);
+        numbersInner.add(numberSquareRadio);
 
-        content.add(densityRatioSlider);
-        content.add(variabilitySlider);
-        content.add(rSquaredSlider);
-        content.add(minDurationSlider);
-        content.add(maxDurationSlider);
+        // Outer panel with titled border that spans full width
+        JPanel numbersPanel = new JPanel(new BorderLayout());
+        numbersPanel.setBorder(BorderFactory.createTitledBorder("Numbers"));
+        numbersPanel.add(numbersInner, BorderLayout.WEST); // keep radios left inside full-width frame
+        numbersPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, numbersPanel.getPreferredSize().height));
 
-        // --- Neighbour mode radios ---
+        content.add(numbersPanel);
+
+        // --- Sliders (leave full width) ---
+        densityRatioSlider = createSlider(0, 100, 50);
+        variabilitySlider = createSlider(0, 100, 50);
+        rSquaredSlider = createSlider(0, 100, 50);
+        minDurationSlider = createSlider(0, 1000, 100);
+        maxDurationSlider = createSlider(0, 1000, 500);
+
+        JPanel slidersPanel = new JPanel(new GridLayout(1, 5, 10, 0));
+        slidersPanel.add(wrapSlider(densityRatioSlider, "Min Required Density Ratio"));
+        slidersPanel.add(wrapSlider(variabilitySlider, "Max Allowable Variability"));
+        slidersPanel.add(wrapSlider(rSquaredSlider, "Min Required R²"));
+        slidersPanel.add(wrapSlider(minDurationSlider, "Min Longest Duration"));
+        slidersPanel.add(wrapSlider(maxDurationSlider, "Max Longest Duration"));
+
+        content.add(Box.createVerticalStrut(10));
+        content.add(slidersPanel);
+
+        // --- Neighbour mode frame (full width, left content) ---
         JPanel neighbourPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         neighbourPanel.setBorder(BorderFactory.createTitledBorder("Neighbour Mode"));
-
         neighbourFree = new JRadioButton("Free", true);
         neighbourRelaxed = new JRadioButton("Relaxed");
         neighbourStrict = new JRadioButton("Strict");
@@ -149,24 +169,28 @@ public class SquareControlDialog extends JDialog {
         neighbourPanel.add(neighbourFree);
         neighbourPanel.add(neighbourRelaxed);
         neighbourPanel.add(neighbourStrict);
+        neighbourPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, neighbourPanel.getPreferredSize().height));
 
+        content.add(Box.createVerticalStrut(10));
         content.add(neighbourPanel);
 
         add(content, BorderLayout.CENTER);
 
-        // --- Buttons ---
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        // --- Apply buttons frame (unchanged alignment per your instruction) ---
+        JPanel applyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        applyPanel.setBorder(BorderFactory.createTitledBorder("Apply Changes"));
+
         JButton applyRecording = new JButton("Apply to Recording");
         JButton applyExperiment = new JButton("Apply to Experiment");
         JButton applyProject = new JButton("Apply to Project");
         JButton cancelButton = new JButton("Cancel");
 
-        buttonPanel.add(applyRecording);
-        buttonPanel.add(applyExperiment);
-        buttonPanel.add(applyProject);
-        buttonPanel.add(cancelButton);
+        applyPanel.add(applyRecording);
+        applyPanel.add(applyExperiment);
+        applyPanel.add(applyProject);
+        applyPanel.add(cancelButton);
 
-        add(buttonPanel, BorderLayout.SOUTH);
+        add(applyPanel, BorderLayout.SOUTH);
 
         // --- Listeners ---
         ChangeListener sliderListener = (ChangeEvent e) -> propagateValues();
@@ -176,15 +200,9 @@ public class SquareControlDialog extends JDialog {
         minDurationSlider.addChangeListener(sliderListener);
         maxDurationSlider.addChangeListener(sliderListener);
 
-        Action neighbourListener = new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                propagateValues();
-            }
-        };
-        neighbourFree.addActionListener(neighbourListener);
-        neighbourRelaxed.addActionListener(neighbourListener);
-        neighbourStrict.addActionListener(neighbourListener);
+        neighbourFree.addActionListener(e -> propagateValues());
+        neighbourRelaxed.addActionListener(e -> propagateValues());
+        neighbourStrict.addActionListener(e -> propagateValues());
 
         applyRecording.addActionListener(e -> saveParameters("recording_params.csv"));
         applyExperiment.addActionListener(e -> saveParameters("experiment_params.csv"));
@@ -207,13 +225,19 @@ public class SquareControlDialog extends JDialog {
         setLocationRelativeTo(owner);
     }
 
-    private JSlider createSlider(int min, int max, int value, String title) {
-        JSlider slider = new JSlider(min, max, value);
+    private JSlider createSlider(int min, int max, int value) {
+        JSlider slider = new JSlider(JSlider.VERTICAL, min, max, value);
         slider.setMajorTickSpacing((max - min) / 5);
         slider.setPaintTicks(true);
         slider.setPaintLabels(true);
-        slider.setBorder(BorderFactory.createTitledBorder(title));
         return slider;
+    }
+
+    private JPanel wrapSlider(JSlider slider, String title) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createTitledBorder(title));
+        panel.add(slider, BorderLayout.CENTER);
+        return panel;
     }
 
     private void propagateValues() {
