@@ -119,7 +119,6 @@ public class SquareControlDialog extends JDialog {
         content.add(Box.createVerticalStrut(10));
 
         // --- Numbers frame (FULL WIDTH, left-aligned radios) ---
-        // Inner vertical column for radios (keeps content left-aligned)
         JPanel numbersInner = new JPanel();
         numbersInner.setLayout(new BoxLayout(numbersInner, BoxLayout.Y_AXIS));
         numberNoneRadio.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -129,15 +128,14 @@ public class SquareControlDialog extends JDialog {
         numbersInner.add(numberLabelRadio);
         numbersInner.add(numberSquareRadio);
 
-        // Outer panel with titled border that spans full width
         JPanel numbersPanel = new JPanel(new BorderLayout());
         numbersPanel.setBorder(BorderFactory.createTitledBorder("Numbers"));
-        numbersPanel.add(numbersInner, BorderLayout.WEST); // keep radios left inside full-width frame
+        numbersPanel.add(numbersInner, BorderLayout.WEST);
         numbersPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, numbersPanel.getPreferredSize().height));
 
         content.add(numbersPanel);
 
-        // --- Sliders (leave full width) ---
+        // --- Sliders (leave full width, tooltips enabled) ---
         densityRatioSlider = createSlider(0, 100, 50);
         variabilitySlider = createSlider(0, 100, 50);
         rSquaredSlider = createSlider(0, 100, 50);
@@ -176,7 +174,7 @@ public class SquareControlDialog extends JDialog {
 
         add(content, BorderLayout.CENTER);
 
-        // --- Apply buttons frame (unchanged alignment per your instruction) ---
+        // --- Apply buttons frame ---
         JPanel applyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         applyPanel.setBorder(BorderFactory.createTitledBorder("Apply Changes"));
 
@@ -236,6 +234,14 @@ public class SquareControlDialog extends JDialog {
     private JPanel wrapSlider(JSlider slider, String title) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder(title));
+
+        // Ensure tooltips are enabled globally
+        ToolTipManager.sharedInstance().setEnabled(true);
+
+        // Tooltip on BOTH panel and slider
+        panel.setToolTipText(title);
+        slider.setToolTipText(title);
+
         panel.add(slider, BorderLayout.CENTER);
         return panel;
     }
