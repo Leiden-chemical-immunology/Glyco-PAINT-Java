@@ -31,6 +31,14 @@ public class RecordingViewerFrame extends JFrame {
     private final JButton nextBtn = new JButton(">");
     private final JButton lastBtn = new JButton(">|");
 
+    // --- New square filter parameters ---
+    private int minDensityRatio = 50;
+    private int maxVariability = 50;
+    private int minRSquared = 50;
+    private int minDuration = 100;
+    private int maxDuration = 500;
+    private String neighbourMode = "Free";
+
     public RecordingViewerFrame(Project project, List<RecordingEntry> recordings) {
         super("Recording Viewer - " + project.getProjectRootPath().getFileName());
         this.project = project;
@@ -126,7 +134,7 @@ public class RecordingViewerFrame extends JFrame {
         });
 
         squareDialogButton.addActionListener(e -> {
-            SquareControlDialog dialog = new SquareControlDialog(this, leftGridPanel);
+            SquareControlDialog dialog = new SquareControlDialog(this, leftGridPanel, this);
             dialog.setVisible(true);
         });
 
@@ -248,5 +256,32 @@ public class RecordingViewerFrame extends JFrame {
         prevBtn.setEnabled(currentIndex > 0);
         nextBtn.setEnabled(currentIndex < recordings.size() - 1);
         lastBtn.setEnabled(currentIndex < recordings.size() - 1);
+    }
+
+    // --- New method for SquareControlDialog to call ---
+    public void updateSquareControlParameters(
+            int densityRatio,
+            int variability,
+            int rSquared,
+            int minDuration,
+            int maxDuration,
+            String neighbourMode
+    ) {
+        this.minDensityRatio = densityRatio;
+        this.maxVariability = variability;
+        this.minRSquared = rSquared;
+        this.minDuration = minDuration;
+        this.maxDuration = maxDuration;
+        this.neighbourMode = neighbourMode;
+
+        System.out.println("Updated square controls:");
+        System.out.println(" DensityRatio=" + minDensityRatio);
+        System.out.println(" Variability=" + maxVariability);
+        System.out.println(" R²=" + minRSquared);
+        System.out.println(" MinDuration=" + minDuration);
+        System.out.println(" MaxDuration=" + maxDuration);
+        System.out.println(" NeighbourMode=" + neighbourMode);
+
+        repaint();
     }
 }
