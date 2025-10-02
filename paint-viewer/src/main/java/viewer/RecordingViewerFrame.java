@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 public class RecordingViewerFrame extends JFrame {
@@ -35,13 +35,17 @@ public class RecordingViewerFrame extends JFrame {
     private final JButton nextBtn = new JButton(">");
     private final JButton lastBtn = new JButton(">|");
 
-    // --- Square filter parameters (now with doubles for density & variability) ---
+    // --- Square filter parameters ---
     private double minDensityRatio = 0.0;
     private double maxVariability = 0.0;
     private double minRSquared = 0.5;
     private int minDuration = 100;
     private int maxDuration = 500;
     private String neighbourMode = "Free";
+
+    // --- Cell assignment state ---
+    private final Map<Integer, Integer> squareAssignments = new HashMap<>();
+    private final Deque<Map<Integer, Integer>> undoStack = new ArrayDeque<>();
 
     public RecordingViewerFrame(Project project, List<RecordingEntry> recordings) {
         super("Recording Viewer - " + project.getProjectRootPath().getFileName());
@@ -124,6 +128,7 @@ public class RecordingViewerFrame extends JFrame {
 
         JButton filterButton = new JButton("Filter");
         JButton squareDialogButton = new JButton("Square Dialog");
+        JButton cellDialogButton = new JButton("Cell Assignment");
 
         filterButton.addActionListener(e -> {
             FilterDialog dialog = new FilterDialog(this, recordings);
@@ -154,9 +159,29 @@ public class RecordingViewerFrame extends JFrame {
             dialog.setVisible(true);
         });
 
+        cellDialogButton.addActionListener(e -> {
+            CellAssignmentDialog dialog = new CellAssignmentDialog(this, new CellAssignmentDialog.Listener() {
+                @Override
+                public void onAssign(int cellId) {
+                    assignSelectedSquares(cellId);
+                }
+                @Override
+                public void onUndo() {
+                    undoLastAssignment();
+                }
+                @Override
+                public void onCancelSelection() {
+                    clearSelection();
+                }
+            });
+            dialog.setVisible(true);
+        });
+
         actionsContent.add(filterButton);
         actionsContent.add(Box.createVerticalStrut(15));
         actionsContent.add(squareDialogButton);
+        actionsContent.add(Box.createVerticalStrut(15));
+        actionsContent.add(cellDialogButton);
         actionsContent.add(Box.createVerticalGlue());
 
         actionsPanel.add(actionsContent, BorderLayout.NORTH);
@@ -223,6 +248,10 @@ public class RecordingViewerFrame extends JFrame {
 
         leftGridPanel.setSquares(entry.getSquaresForViewer(project, expectNumberOfSquares));
 
+        // Re-sync assignment map from the squares we just loaded
+        resyncAssignmentsFromSquares();
+        leftGridPanel.clearSelection();
+
         // Count experiment index
         int totalInExperiment = 0;
         int indexInExperiment = 0;
@@ -267,6 +296,15 @@ public class RecordingViewerFrame extends JFrame {
         updateNavButtons();
     }
 
+    private void resyncAssignmentsFromSquares() {
+        squareAssignments.clear();
+        for (SquareForDisplay sq : leftGridPanel.getSquares()) {
+            if (sq.cellId > 0) {
+                squareAssignments.put(sq.squareNumber, sq.cellId);
+            }
+        }
+    }
+
     private void updateNavButtons() {
         firstBtn.setEnabled(currentIndex > 0);
         prevBtn.setEnabled(currentIndex > 0);
@@ -274,7 +312,62 @@ public class RecordingViewerFrame extends JFrame {
         lastBtn.setEnabled(currentIndex < recordings.size() - 1);
     }
 
-    // Called during slider changes
+    // === Cell assignment methods ===
+    public void assignSelectedSquares(int cellId) {
+        Set<Integer> selected = leftGridPanel.getSelectedSquares();
+        if (selected.isEmpty()) return;
+
+        long timestamp = System.currentTimeMillis();
+
+        // save current state for undo
+        undoStack.push(new HashMap<>(squareAssignments));
+
+        for (Integer sqId : selected) {
+            squareAssignments.put(sqId, cellId);
+            for (SquareForDisplay sq : leftGridPanel.getSquares()) {
+                if (sq.squareNumber == sqId) {
+                    sq.cellId = cellId;
+                }
+            }
+        }
+
+        RecordingEntry entry = recordings.get(currentIndex);
+        String recordingName = entry.getRecordingName();
+
+        // Log only assigned (cellId != 0) with one shared timestamp for this batch
+        for (Integer sqId : selected) {
+            int assignedCell = squareAssignments.getOrDefault(sqId, 0);
+            if (assignedCell != 0) {
+                System.out.printf("%s,%d,%d,%d%n",
+                        recordingName, sqId, assignedCell, timestamp);
+            }
+        }
+
+        leftGridPanel.repaint();
+    }
+
+    public void undoLastAssignment() {
+        if (!undoStack.isEmpty()) {
+            squareAssignments.clear();
+            squareAssignments.putAll(undoStack.pop());
+
+            // sync with panel
+            for (SquareForDisplay sq : leftGridPanel.getSquares()) {
+                sq.cellId = squareAssignments.getOrDefault(sq.squareNumber, 0);
+            }
+
+            leftGridPanel.repaint();
+            System.out.println("Undo performed");
+        }
+    }
+
+    public void clearSelection() {
+        leftGridPanel.clearSelection();
+        leftGridPanel.repaint();
+        System.out.println("Selection cleared");
+    }
+
+    // === Existing square control ===
     public void updateSquareControlParameters(
             double densityRatio,
             double variability,
