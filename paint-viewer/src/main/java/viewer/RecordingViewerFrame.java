@@ -4,14 +4,23 @@ import paint.shared.objects.Project;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 public class RecordingViewerFrame extends JFrame {
 
@@ -59,12 +68,12 @@ public class RecordingViewerFrame extends JFrame {
         int GAP = 15;
 
         // --- Images area ---
-        JPanel imagesInner = new JPanel(new GridLayout(1, 2, GAP, 0));
+        JPanel imagesInner = new JPanel(new java.awt.GridLayout(1, 2, GAP, 0));
         imagesInner.add(createSquareImagePanel(leftGridPanel));
         imagesInner.add(createSquareImagePanel(rightImageLabel));
 
         // --- Labels under images ---
-        JPanel labelsPanel = new JPanel(new GridLayout(2, 1));
+        JPanel labelsPanel = new JPanel(new java.awt.GridLayout(2, 1));
         labelsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         experimentLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
         recordingLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
@@ -72,7 +81,7 @@ public class RecordingViewerFrame extends JFrame {
         labelsPanel.add(recordingLabel);
 
         // --- Navigation ---
-        JPanel navPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JPanel navPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 10));
         navPanel.add(firstBtn);
         navPanel.add(prevBtn);
         navPanel.add(nextBtn);
@@ -165,10 +174,12 @@ public class RecordingViewerFrame extends JFrame {
                 public void onAssign(int cellId) {
                     assignSelectedSquares(cellId);
                 }
+
                 @Override
                 public void onUndo() {
                     undoLastAssignment();
                 }
+
                 @Override
                 public void onCancelSelection() {
                     clearSelection();
@@ -227,8 +238,8 @@ public class RecordingViewerFrame extends JFrame {
 
     private ImageIcon scaleToFit(ImageIcon icon, int width, int height) {
         if (icon == null || icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) return null;
-        Image img = icon.getImage();
-        Image scaled = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        java.awt.Image img = icon.getImage();
+        java.awt.Image scaled = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
         return new ImageIcon(scaled);
     }
 
@@ -247,10 +258,6 @@ public class RecordingViewerFrame extends JFrame {
         rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), size, size));
 
         leftGridPanel.setSquares(entry.getSquaresForViewer(project, expectNumberOfSquares));
-
-        // Re-sync assignment map from the squares we just loaded
-        resyncAssignmentsFromSquares();
-        leftGridPanel.clearSelection();
 
         // Count experiment index
         int totalInExperiment = 0;
@@ -296,15 +303,6 @@ public class RecordingViewerFrame extends JFrame {
         updateNavButtons();
     }
 
-    private void resyncAssignmentsFromSquares() {
-        squareAssignments.clear();
-        for (SquareForDisplay sq : leftGridPanel.getSquares()) {
-            if (sq.cellId > 0) {
-                squareAssignments.put(sq.squareNumber, sq.cellId);
-            }
-        }
-    }
-
     private void updateNavButtons() {
         firstBtn.setEnabled(currentIndex > 0);
         prevBtn.setEnabled(currentIndex > 0);
@@ -319,9 +317,10 @@ public class RecordingViewerFrame extends JFrame {
 
         long timestamp = System.currentTimeMillis();
 
-        // save current state for undo
+        // Save current state for undo
         undoStack.push(new HashMap<>(squareAssignments));
 
+        // Update assignments + SquareForDisplay objects
         for (Integer sqId : selected) {
             squareAssignments.put(sqId, cellId);
             for (SquareForDisplay sq : leftGridPanel.getSquares()) {
@@ -331,10 +330,9 @@ public class RecordingViewerFrame extends JFrame {
             }
         }
 
+        // Log all assignments with one shared timestamp
         RecordingEntry entry = recordings.get(currentIndex);
         String recordingName = entry.getRecordingName();
-
-        // Log only assigned (cellId != 0) with one shared timestamp for this batch
         for (Integer sqId : selected) {
             int assignedCell = squareAssignments.getOrDefault(sqId, 0);
             if (assignedCell != 0) {
@@ -343,6 +341,8 @@ public class RecordingViewerFrame extends JFrame {
             }
         }
 
+        // 🔹 Clear selection after assignment
+        clearSelection();
         leftGridPanel.repaint();
     }
 
@@ -367,7 +367,7 @@ public class RecordingViewerFrame extends JFrame {
         System.out.println("Selection cleared");
     }
 
-    // === Existing square control ===
+    // === Existing SquareControl methods remain ===
     public void updateSquareControlParameters(
             double densityRatio,
             double variability,
@@ -394,7 +394,6 @@ public class RecordingViewerFrame extends JFrame {
         repaint();
     }
 
-    // Called when “Apply” is pressed
     public void applySquareControlParameters(String scope, SquareControlParams params) {
         String timestamp = LocalDateTime.now().toString();
         File csvFile = new File(project.getProjectRootPath().toFile(), "Viewer Override.csv");
