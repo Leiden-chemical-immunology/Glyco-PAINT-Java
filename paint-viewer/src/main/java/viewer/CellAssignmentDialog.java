@@ -25,8 +25,8 @@ public class CellAssignmentDialog extends JDialog {
         JPanel list = new JPanel();
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
 
-        // --- ID 0: Do not assign ---
-        list.add(createCellRow(0, "Do not assign to cell (ID 0)", Color.GRAY, true));
+        // --- ID 0: No cell ---
+        list.add(createCellRow(0, "No cell", Color.GRAY, true));
 
         // --- IDs 1..N vertically ---
         int cellCount = SquareGridPanel.getSupportedCellCount();
@@ -71,18 +71,22 @@ public class CellAssignmentDialog extends JDialog {
     private JPanel createCellRow(int cellId, String label, Color baseColor, boolean selected) {
         JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
 
-        // Black text only
         JRadioButton radio = new JRadioButton(label);
         radio.setForeground(Color.BLACK);
         radio.putClientProperty("cellId", Integer.valueOf(cellId));
         if (selected) radio.setSelected(true);
         group.add(radio);
 
-        // Small square showing the color; clickable
+        // Square with only border, not filled
         JPanel square = new JPanel() {
             @Override public Dimension getPreferredSize() { return new Dimension(20, 20); }
+            @Override protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.setColor(baseColor);
+                g.drawRect(1, 1, getWidth() - 3, getHeight() - 3);
+            }
         };
-        square.setBackground(baseColor);
+        square.setBackground(Color.WHITE);
         square.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
         square.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
@@ -97,8 +101,10 @@ public class CellAssignmentDialog extends JDialog {
             }
         });
 
-        row.add(radio);
+        // 🔹 Square first, then radio for alignment
         row.add(square);
+        row.add(radio);
+
         return row;
     }
 
@@ -109,7 +115,6 @@ public class CellAssignmentDialog extends JDialog {
                 if (v instanceof Integer) return ((Integer) v).intValue();
             }
         }
-        // Fallback: none
         return 0;
     }
 
@@ -122,21 +127,11 @@ public class CellAssignmentDialog extends JDialog {
             Color base = (id == 0) ? Color.GRAY : SquareGridPanel.getColorForCell(id);
 
             if (rb.isSelected()) {
-                sq.setBackground(lightenTowardWhite(base, 0.35));
-                sq.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // thicker border when selected
+                sq.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // selected row emphasized
             } else {
-                sq.setBackground(base);
-                sq.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+                sq.setBorder(BorderFactory.createLineBorder(base, 2));
             }
         }
         repaint();
-    }
-
-    private static Color lightenTowardWhite(Color c, double factor) {
-        // factor in [0,1]; 0 => original, 1 => white
-        int r = (int) Math.round(c.getRed()   + (255 - c.getRed())   * factor);
-        int g = (int) Math.round(c.getGreen() + (255 - c.getGreen()) * factor);
-        int b = (int) Math.round(c.getBlue()  + (255 - c.getBlue())  * factor);
-        return new Color(Math.min(255, r), Math.min(255, g), Math.min(255, b));
     }
 }

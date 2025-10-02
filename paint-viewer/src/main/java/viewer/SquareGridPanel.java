@@ -60,7 +60,7 @@ public class SquareGridPanel extends JPanel {
             public void mouseReleased(MouseEvent e) {
                 if (selectionRect != null) {
                     selectSquaresInRect(selectionRect);
-                    selectionRect = null;
+                    selectionRect = null; // finalize
                     repaint();
                 }
             }
@@ -146,41 +146,46 @@ public class SquareGridPanel extends JPanel {
         int squareW = width / cols;
         int squareH = height / rows;
 
+        Graphics2D g2 = (Graphics2D) g;
+
         for (SquareForDisplay sq : squares) {
             int x = sq.col * squareW;
             int y = sq.row * squareH;
 
             // Assigned cell border
             if (sq.cellId > 0) {
-                g.setColor(getColorForCell(sq.cellId));
-                g.drawRect(x, y, squareW, squareH);
-            } else if (showBorders) {
-                g.setColor(Color.BLACK);
-                g.drawRect(x, y, squareW, squareH);
+                g2.setColor(getColorForCell(sq.cellId));
+                g2.setStroke(new BasicStroke(2f));
+                g2.drawRect(x, y, squareW, squareH);
+            }
+            // Unassigned grid lines (white)
+            else if (showBorders) {
+                g2.setColor(Color.WHITE);
+                g2.setStroke(new BasicStroke(1f));
+                g2.drawRect(x, y, squareW, squareH);
             }
 
-            // Selection overlay (lighter/whitish)
+            // Selection overlay (fill only, no thick border)
             if (sq.selected) {
-                g.setColor(new Color(255, 255, 255, 120)); // soft white overlay
-                g.fillRect(x, y, squareW, squareH);
-                g.setColor(new Color(0, 0, 0, 80)); // subtle outline for selected
-                g.drawRect(x, y, squareW, squareH);
+                g2.setColor(new Color(255, 255, 255, 120)); // whitish fill
+                g2.fillRect(x, y, squareW, squareH);
             }
 
             // Numbers if enabled
             if (numberMode == NumberMode.LABEL && sq.selected) {
-                drawCenteredString(g, String.valueOf(sq.labelNumber), x, y, squareW, squareH);
+                drawCenteredString(g2, String.valueOf(sq.labelNumber), x, y, squareW, squareH);
             } else if (numberMode == NumberMode.SQUARE && sq.selected) {
-                drawCenteredString(g, String.valueOf(sq.squareNumber), x, y, squareW, squareH);
+                drawCenteredString(g2, String.valueOf(sq.squareNumber), x, y, squareW, squareH);
             }
         }
 
-        // Drag rectangle overlay
+        // Drag rectangle overlay: whitish preview only
         if (selectionRect != null) {
-            Graphics2D g2 = (Graphics2D) g;
-            g2.setColor(new Color(0, 0, 255, 50));
+            g2.setColor(new Color(255, 255, 255, 120)); // whitish preview fill
             g2.fill(selectionRect);
-            g2.setColor(Color.BLUE);
+
+            g2.setColor(Color.BLACK);
+            g2.setStroke(new BasicStroke(1.5f)); // thin outline
             g2.draw(selectionRect);
         }
     }
