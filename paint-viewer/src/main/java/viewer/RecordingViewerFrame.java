@@ -13,14 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 
 public class RecordingViewerFrame extends JFrame {
 
@@ -168,7 +161,9 @@ public class RecordingViewerFrame extends JFrame {
             dialog.setVisible(true);
         });
 
+        // --- Corrected cell dialog handling ---
         cellDialogButton.addActionListener(e -> {
+            leftGridPanel.setSelectionEnabled(true);   // enable selection while dialog is open
             CellAssignmentDialog dialog = new CellAssignmentDialog(this, new CellAssignmentDialog.Listener() {
                 @Override
                 public void onAssign(int cellId) {
@@ -185,7 +180,15 @@ public class RecordingViewerFrame extends JFrame {
                     clearSelection();
                 }
             });
-            dialog.setVisible(true);
+
+            dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowClosed(java.awt.event.WindowEvent e) {
+                    leftGridPanel.setSelectionEnabled(false);
+                }
+            });
+
+            dialog.setVisible(true); // modeless
         });
 
         actionsContent.add(filterButton);
@@ -259,7 +262,6 @@ public class RecordingViewerFrame extends JFrame {
 
         leftGridPanel.setSquares(entry.getSquaresForViewer(project, expectNumberOfSquares));
 
-        // Count experiment index
         int totalInExperiment = 0;
         int indexInExperiment = 0;
         for (RecordingEntry r : recordings) {
@@ -317,10 +319,8 @@ public class RecordingViewerFrame extends JFrame {
 
         long timestamp = System.currentTimeMillis();
 
-        // Save current state for undo
         undoStack.push(new HashMap<>(squareAssignments));
 
-        // Update assignments + SquareForDisplay objects
         for (Integer sqId : selected) {
             squareAssignments.put(sqId, cellId);
             for (SquareForDisplay sq : leftGridPanel.getSquares()) {
@@ -330,7 +330,6 @@ public class RecordingViewerFrame extends JFrame {
             }
         }
 
-        // Log all assignments with one shared timestamp
         RecordingEntry entry = recordings.get(currentIndex);
         String recordingName = entry.getRecordingName();
         for (Integer sqId : selected) {
@@ -341,7 +340,6 @@ public class RecordingViewerFrame extends JFrame {
             }
         }
 
-        // 🔹 Clear selection after assignment
         clearSelection();
         leftGridPanel.repaint();
     }
@@ -350,12 +348,9 @@ public class RecordingViewerFrame extends JFrame {
         if (!undoStack.isEmpty()) {
             squareAssignments.clear();
             squareAssignments.putAll(undoStack.pop());
-
-            // sync with panel
             for (SquareForDisplay sq : leftGridPanel.getSquares()) {
                 sq.cellId = squareAssignments.getOrDefault(sq.squareNumber, 0);
             }
-
             leftGridPanel.repaint();
             System.out.println("Undo performed");
         }
@@ -367,7 +362,7 @@ public class RecordingViewerFrame extends JFrame {
         System.out.println("Selection cleared");
     }
 
-    // === Existing SquareControl methods remain ===
+    // === SquareControl ===
     public void updateSquareControlParameters(
             double densityRatio,
             double variability,
@@ -382,14 +377,6 @@ public class RecordingViewerFrame extends JFrame {
         this.minDuration = minDuration;
         this.maxDuration = maxDuration;
         this.neighbourMode = neighbourMode;
-
-        System.out.println("Updated square controls:");
-        System.out.println(" DensityRatio = " + minDensityRatio);
-        System.out.println(" Variability   = " + maxVariability);
-        System.out.println(" R²            = " + minRSquared);
-        System.out.println(" MinDuration   = " + minDuration);
-        System.out.println(" MaxDuration   = " + maxDuration);
-        System.out.println(" NeighbourMode = " + neighbourMode);
 
         repaint();
     }
@@ -453,7 +440,6 @@ public class RecordingViewerFrame extends JFrame {
             Files.write(tmp.toPath(), lines);
             Files.move(tmp.toPath(), csvFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-            System.out.println("Wrote override record for " + recordingName + " into " + csvFile);
         } catch (IOException ex) {
             ex.printStackTrace();
         }

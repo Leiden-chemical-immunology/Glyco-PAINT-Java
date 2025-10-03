@@ -18,8 +18,9 @@ public class CellAssignmentDialog extends JDialog {
     private final Listener listener;
 
     public CellAssignmentDialog(Frame owner, Listener listener) {
-        super(owner, "Assign Cells", false);
+        super(owner, "Assign Cells", false); // 🔹 modeless now
         this.listener = listener;
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
         JPanel list = new JPanel();
@@ -47,10 +48,7 @@ public class CellAssignmentDialog extends JDialog {
         JButton cancelBtn = new JButton("Cancel");
         JButton closeBtn = new JButton("Close");
 
-        assignBtn.addActionListener(e -> {
-            int selected = getSelectedCellId();
-            listener.onAssign(selected);
-        });
+        assignBtn.addActionListener(e -> listener.onAssign(getSelectedCellId()));
         undoBtn.addActionListener(e -> listener.onUndo());
         cancelBtn.addActionListener(e -> listener.onCancelSelection());
         closeBtn.addActionListener(e -> dispose());
@@ -64,8 +62,7 @@ public class CellAssignmentDialog extends JDialog {
         pack();
         setLocationRelativeTo(owner);
 
-        // Ensure initial visual state applied
-        updateVisualSelection();
+        updateVisualSelection(); // initial state
     }
 
     private JPanel createCellRow(int cellId, String label, Color baseColor, boolean selected) {
@@ -101,7 +98,7 @@ public class CellAssignmentDialog extends JDialog {
             }
         });
 
-        // 🔹 Square first, then radio for alignment
+        // Square first, then radio for alignment
         row.add(square);
         row.add(radio);
 
@@ -125,12 +122,6 @@ public class CellAssignmentDialog extends JDialog {
 
             int id = ((Integer) rb.getClientProperty("cellId")).intValue();
             Color base = (id == 0) ? Color.GRAY : SquareGridPanel.getColorForCell(id);
-
-            if (rb.isSelected()) {
-                sq.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // selected row emphasized
-            } else {
-                sq.setBorder(BorderFactory.createLineBorder(base, 2));
-            }
         }
         repaint();
     }

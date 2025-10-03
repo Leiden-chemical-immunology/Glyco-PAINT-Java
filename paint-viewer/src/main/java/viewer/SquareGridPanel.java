@@ -21,6 +21,9 @@ public class SquareGridPanel extends JPanel {
     private Rectangle selectionRect = null;
     private Point dragStart = null;
 
+    // 🔹 Selection toggle
+    private boolean selectionEnabled = false;
+
     public enum NumberMode {
         NONE,
         LABEL,
@@ -52,12 +55,14 @@ public class SquareGridPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                if (!selectionEnabled) return;
                 dragStart = e.getPoint();
                 selectionRect = new Rectangle(dragStart);
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                if (!selectionEnabled) return;
                 if (selectionRect != null) {
                     selectSquaresInRect(selectionRect);
                     selectionRect = null; // finalize
@@ -67,6 +72,7 @@ public class SquareGridPanel extends JPanel {
 
             @Override
             public void mouseClicked(MouseEvent e) {
+                if (!selectionEnabled) return;
                 int squareW = width / cols;
                 int squareH = height / rows;
                 int col = e.getX() / squareW;
@@ -91,6 +97,7 @@ public class SquareGridPanel extends JPanel {
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
+                if (!selectionEnabled) return;
                 int x = Math.min(dragStart.x, e.getX());
                 int y = Math.min(dragStart.y, e.getY());
                 int w = Math.abs(dragStart.x - e.getX());
@@ -114,6 +121,10 @@ public class SquareGridPanel extends JPanel {
     }
 
     // === API ===
+    public void setSelectionEnabled(boolean enabled) {
+        this.selectionEnabled = enabled;
+    }
+
     public Set<Integer> getSelectedSquares() {
         return new HashSet<>(selectedSquares);
     }
@@ -145,42 +156,57 @@ public class SquareGridPanel extends JPanel {
 
         int squareW = width / cols;
         int squareH = height / rows;
-
         Graphics2D g2 = (Graphics2D) g;
 
-        for (SquareForDisplay sq : squares) {
-            int x = sq.col * squareW;
-            int y = sq.row * squareH;
-
-            // Assigned cell border
-            if (sq.cellId > 0) {
-                g2.setColor(getColorForCell(sq.cellId));
-                g2.setStroke(new BasicStroke(2f));
-                g2.drawRect(x, y, squareW, squareH);
-            }
-            // Unassigned grid lines (white)
-            else if (showBorders) {
-                g2.setColor(Color.WHITE);
-                g2.setStroke(new BasicStroke(1f));
-                g2.drawRect(x, y, squareW, squareH);
-            }
-
-            // Selection overlay (fill only, no thick border)
-            if (sq.selected) {
-                g2.setColor(new Color(255, 255, 255, 120)); // whitish fill
-                g2.fillRect(x, y, squareW, squareH);
-            }
-
-            // Numbers if enabled
-            if (numberMode == NumberMode.LABEL && sq.selected) {
-                drawCenteredString(g2, String.valueOf(sq.labelNumber), x, y, squareW, squareH);
-            } else if (numberMode == NumberMode.SQUARE && sq.selected) {
-                drawCenteredString(g2, String.valueOf(sq.squareNumber), x, y, squareW, squareH);
+        // --- Step 1: Draw unassigned grid lines ---
+        if (showBorders) {
+            g2.setColor(Color.WHITE);
+            g2.setStroke(new BasicStroke(1f));
+            for (SquareForDisplay sq : squares) {
+                if (sq.cellId == 0) {
+                    int x = sq.col * squareW;
+                    int y = sq.row * squareH;
+                    g2.drawRect(x, y, squareW, squareH);
+                }
             }
         }
 
-        // Drag rectangle overlay: whitish preview only
-        if (selectionRect != null) {
+        // --- Step 2: Fill selection overlays ---
+        for (SquareForDisplay sq : squares) {
+            if (sq.selected) {
+                int x = sq.col * squareW;
+                int y = sq.row * squareH;
+                g2.setColor(new Color(255, 255, 255, 120)); // whitish fill
+                g2.fillRect(x, y, squareW, squareH);
+            }
+        }
+
+        // --- Step 3: Draw numbers if enabled ---
+        for (SquareForDisplay sq : squares) {
+            if (sq.selected) {
+                int x = sq.col * squareW;
+                int y = sq.row * squareH;
+                if (numberMode == NumberMode.LABEL) {
+                    drawCenteredString(g2, String.valueOf(sq.labelNumber), x, y, squareW, squareH);
+                } else if (numberMode == NumberMode.SQUARE) {
+                    drawCenteredString(g2, String.valueOf(sq.squareNumber), x, y, squareW, squareH);
+                }
+            }
+        }
+
+        // --- Step 4: Draw assigned cell borders LAST ---
+        g2.setStroke(new BasicStroke(2f));
+        for (SquareForDisplay sq : squares) {
+            if (sq.cellId > 0) {
+                int x = sq.col * squareW;
+                int y = sq.row * squareH;
+                g2.setColor(getColorForCell(sq.cellId));
+                g2.drawRect(x, y, squareW, squareH);
+            }
+        }
+
+        // --- Step 5: Drag rectangle overlay ---
+        if (selectionRect != null && selectionEnabled) {
             g2.setColor(new Color(255, 255, 255, 120)); // whitish preview fill
             g2.fill(selectionRect);
 
@@ -222,7 +248,6 @@ public class SquareGridPanel extends JPanel {
 
     public static Color getColorForCell(int cellId) {
         if (cellId <= 0) return Color.GRAY;
-        // 1-based id maps to array index 0
         return CELL_COLORS[(cellId - 1) % CELL_COLORS.length];
     }
 }
