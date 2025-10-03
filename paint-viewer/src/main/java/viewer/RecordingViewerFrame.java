@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.awt.Component;
 
 public class RecordingViewerFrame extends JFrame {
 
@@ -128,9 +129,25 @@ public class RecordingViewerFrame extends JFrame {
         JPanel actionsContent = new JPanel();
         actionsContent.setLayout(new BoxLayout(actionsContent, BoxLayout.Y_AXIS));
 
-        JButton filterButton = new JButton("Filter");
-        JButton squareDialogButton = new JButton("Square Dialog");
-        JButton cellDialogButton = new JButton("Cell Assignment");
+        // 🔹 Renamed buttons
+        JButton filterButton = new JButton("Filter recordings");
+        JButton squareDialogButton = new JButton("Select Squares");
+        JButton cellDialogButton = new JButton("Assign Cells");
+
+        // --- Compute widest button width ---
+        int maxWidth = Math.max(
+                filterButton.getPreferredSize().width,
+                Math.max(squareDialogButton.getPreferredSize().width,
+                        cellDialogButton.getPreferredSize().width)
+        );
+
+        // --- Force equal width (keep height) ---
+        Dimension uniformSize = new Dimension(maxWidth, filterButton.getPreferredSize().height);
+        for (JButton b : Arrays.asList(filterButton, squareDialogButton, cellDialogButton)) {
+            b.setMaximumSize(uniformSize);
+            b.setPreferredSize(uniformSize);
+            b.setAlignmentX(Component.CENTER_ALIGNMENT);
+        }
 
         filterButton.addActionListener(e -> {
             FilterDialog dialog = new FilterDialog(this, recordings);
@@ -163,7 +180,7 @@ public class RecordingViewerFrame extends JFrame {
 
         // --- Corrected cell dialog handling ---
         cellDialogButton.addActionListener(e -> {
-            leftGridPanel.setSelectionEnabled(true);   // enable selection while dialog is open
+            leftGridPanel.setSelectionEnabled(true);
             CellAssignmentDialog dialog = new CellAssignmentDialog(this, new CellAssignmentDialog.Listener() {
                 @Override
                 public void onAssign(int cellId) {
@@ -188,7 +205,7 @@ public class RecordingViewerFrame extends JFrame {
                 }
             });
 
-            dialog.setVisible(true); // modeless
+            dialog.setVisible(true);
         });
 
         actionsContent.add(filterButton);
