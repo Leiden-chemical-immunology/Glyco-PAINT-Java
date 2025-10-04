@@ -1,20 +1,18 @@
 package viewer;
 
 import paint.shared.objects.Project;
+import paint.shared.utils.PaintLogger;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.awt.Component;
+import java.util.List;
 
 public class RecordingViewerFrame extends JFrame {
 
@@ -178,7 +176,7 @@ public class RecordingViewerFrame extends JFrame {
             dialog.setVisible(true);
         });
 
-        // --- Corrected cell dialog handling ---
+        // --- Cell dialog handling ---
         cellDialogButton.addActionListener(e -> {
             leftGridPanel.setSelectionEnabled(true);
             CellAssignmentDialog dialog = new CellAssignmentDialog(this, new CellAssignmentDialog.Listener() {
@@ -264,11 +262,13 @@ public class RecordingViewerFrame extends JFrame {
     }
 
     private void showEntry(int index) {
+        System.out.println("Hallo 1");
+        PaintLogger.infof("Hallo 2");
         if (index < 0 || index >= recordings.size()) {
             return;
         }
 
-        int expectNumberOfSquares = 0; // TODO
+        int expectNumberOfSquares = 400; // TODO
 
         currentIndex = index;
         RecordingEntry entry = recordings.get(index);
@@ -277,7 +277,7 @@ public class RecordingViewerFrame extends JFrame {
         leftGridPanel.setBackgroundImage(entry.getLeftImage());
         rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), size, size));
 
-        leftGridPanel.setSquares(entry.getSquaresForViewer(project, expectNumberOfSquares));
+        leftGridPanel.setSquaresGrid(entry.getSquaresForViewer(project, expectNumberOfSquares));
 
         int totalInExperiment = 0;
         int indexInExperiment = 0;
@@ -299,6 +299,13 @@ public class RecordingViewerFrame extends JFrame {
         boolean densityOk = entry.getDensity() >= entry.getMinRequiredDensityRatio();
         boolean tauOk = entry.getTau() <= entry.getMaxAllowableVariability();
         boolean r2Ok = entry.getObservedRSquared() >= entry.getMinRequiredRSquared();
+
+        if (densityOk && tauOk && r2Ok) {
+            System.out.println("Selected!");
+        }
+        else {
+            System.out.println("Not Selected!");
+        }
 
         attributesModel.setRowCount(0);
         attributesModel.addRow(new Object[]{"Probe", entry.getProbeName()});

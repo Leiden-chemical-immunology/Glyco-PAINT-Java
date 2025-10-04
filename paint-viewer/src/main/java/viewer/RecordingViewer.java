@@ -5,12 +5,11 @@ import paint.shared.dialogs.ProjectSelectionDialog;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.ProjectSpecificationDialog.DialogMode;
 import paint.shared.objects.Project;
+import paint.shared.utils.PaintLogger;
 
 import javax.swing.*;
 import java.awt.Frame;
-import java.awt.image.BufferedImage;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 public class RecordingViewer {
@@ -26,6 +25,7 @@ public class RecordingViewer {
                 System.exit(0);
             }
             PaintConfig.initialise(projectPath);
+            PaintLogger.initialise(projectPath, "Viewer");
 
             // --- Step 2: Project specification (force modal only here) ---
             ProjectSpecificationDialog specificationDialog =
@@ -39,7 +39,6 @@ public class RecordingViewer {
                 System.exit(0);
             }
 
-            // --- Step 3: Show the main viewer ---
             // --- Step 3: Show the main viewer ---
             List<RecordingEntry> entries = RecordingLoader.loadFromProject(project);
 
