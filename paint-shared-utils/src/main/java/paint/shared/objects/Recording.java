@@ -225,11 +225,11 @@ public class Recording {
     }
 
     // --- Associated objects ---
-    public List<Square> getSquares() {
+    public List<Square> getSquaresOfRecording() {
         return squares;
     }
 
-    public void setSquares(List<Square> squares) {
+    public void setSquaresOfRecording(List<Square> squares) {
         this.squares = squares;
     }
 

@@ -34,7 +34,7 @@ public class CalculateDensity {
     public static double calculateAverageTrackCountOfBackground(Recording recording, int nrOfAverageCountSquares) {
 
         List<Integer> trackCounts = new ArrayList<>();
-        List<Square> squares = recording.getSquares();
+        List<Square> squares = recording.getSquaresOfRecording();
 
         for (Square sq : squares) {
             trackCounts.add(sq.getTracks().size());

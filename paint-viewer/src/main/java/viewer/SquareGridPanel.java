@@ -235,7 +235,7 @@ public class SquareGridPanel extends JPanel {
         repaint();
     }
 
-    public void setSquares(List<SquareForDisplay> newSquares) {
+    public void setSquaresGrid(List<SquareForDisplay> newSquares) {
         this.squares.clear();
         this.squares.addAll(newSquares);
         clearSelection();

@@ -40,7 +40,7 @@ public class GenerateSquareCalcs {
 
                 // Create the squares with basic geometric information
                 List<Square> squares = generateSquaresForRecording(generateSquaresConfig, recording);
-                recording.setSquares(squares);
+                recording.setSquaresOfRecording(squares);
 
                 // Assign the recording tracks to the squares
                 assignTracksToSquares(recording, generateSquaresConfig);
@@ -107,7 +107,7 @@ public class GenerateSquareCalcs {
 
         int lastRowCol = context.getNrSquaresInRow() - 1;
 
-        for (Square square : recording.getSquares()) {
+        for (Square square : recording.getSquaresOfRecording()) {
             Table squareTracksTable = filterTracksInSquare(tracksOfRecording, square, lastRowCol);
             List<Track> tracks = trackTableIO.toEntities(squareTracksTable);
             square.setTracks(tracks);
@@ -146,7 +146,7 @@ public class GenerateSquareCalcs {
 
         double averageTracks = calculateAverageTrackCountOfBackground(recording, nrOfAverageCountSquares);
 
-        for (Square square : recording.getSquares()) {
+        for (Square square : recording.getSquaresOfRecording()) {
             int squareNumber = square.getSquareNumber();
             List<Track> tracksInSquare = square.getTracks();
             Table tracksInSquareTable = square.getTracksTable();
@@ -252,7 +252,7 @@ public class GenerateSquareCalcs {
         Table allSquaresExperimentTable = squaresTableIO.emptyTable();
 
         for (Recording recording : experiment.getRecordings()) {
-            Table table = squaresTableIO.toTable(recording.getSquares());
+            Table table = squaresTableIO.toTable(recording.getSquaresOfRecording());
 
             // squaresTableIO.appendInPlace(allSquaresProjectTable, table);
             squaresTableIO.appendInPlace(allSquaresExperimentTable, table);

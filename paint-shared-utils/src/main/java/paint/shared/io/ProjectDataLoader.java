@@ -83,7 +83,7 @@ public final class ProjectDataLoader {
 
             for (Recording rec : exp.getRecordings()) {
                 int numberOfTracksInSquare = 0;
-                for (Square square : rec.getSquares()) {
+                for (Square square : rec.getSquaresOfRecording()) {
                     numberOfTracksInSquare += square.getTracks().size();
                 }
                 numberOfTracksInProject += numberOfTracksInSquare;
@@ -270,7 +270,7 @@ public final class ProjectDataLoader {
 
             // Assign tracks into squares
             int lastRowCol = generateSquaresConfig.getNrSquaresInRow() - 1;
-            for (Square square : rec.getSquares()) {
+            for (Square square : rec.getSquaresOfRecording()) {
                 Table squareTracks = filterTracksInSquare(recTracks, square, lastRowCol);
                 square.setTracks(trackIO.toEntities(squareTracks));
             }
