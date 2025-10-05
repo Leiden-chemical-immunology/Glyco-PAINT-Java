@@ -57,4 +57,27 @@ public final class SquareCsvLoader {
         }
         return out;
     }
+
+    // ── NEW method: load all squares for an experiment once ──────────────────
+    public static List<Square> loadAllSquaresForExperiment(Path projectPath, String experimentName)
+            throws IOException {
+
+        Path squaresCsv = projectPath.resolve(experimentName).resolve(SQUARES_CSV);
+        SquareTableIO io = new SquareTableIO();
+        Table table = io.readCsv(squaresCsv);
+
+        List<Square> out = new ArrayList<>();
+        for (Row row : table) {
+            Square s = new Square();
+            s.setRecordingName(row.getString("Recording Name"));
+            s.setSquareNumber(row.getInt("Square Number"));
+            s.setRowNumber(row.getInt("Row Number"));
+            s.setColNumber(row.getInt("Column Number"));
+            s.setLabelNumber(row.getInt("Label Number"));
+            s.setCellId(row.getInt("Cell ID"));
+            s.setSelected(row.getBoolean("Selected"));
+            out.add(s);
+        }
+        return out;
+    }
 }

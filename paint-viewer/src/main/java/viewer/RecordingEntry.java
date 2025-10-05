@@ -132,11 +132,12 @@ public class RecordingEntry {
     public ImageIcon getRightImage() { return rightImage; }
 
     // === Square loading and caching ===
+    // === Square loading and caching (experiment-level) ===
     public List<Square> getSquares(Project project, int expectedNumberOfSquares) {
         if (squares == null) {
             try {
-                PaintLogger.infof("Loading squares for recording: %s", recordingName);
-                squares = SquareCsvLoader.loadSquaresForRecording(
+                PaintLogger.infof("Fetching squares (cached per experiment) for recording: %s", recordingName);
+                squares = ExperimentSquareCache.getSquaresForRecording(
                         project.getProjectRootPath(),
                         experimentName,
                         recordingName,
