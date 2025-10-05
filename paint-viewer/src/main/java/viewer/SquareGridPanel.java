@@ -1,5 +1,7 @@
 package viewer;
 
+import paint.shared.objects.Square;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -14,7 +16,7 @@ public class SquareGridPanel extends JPanel {
     private final int height;
 
     private Image backgroundImage;
-    private final List<SquareForDisplay> squares = new ArrayList<>();
+    private List<Square> squares = new ArrayList<>();
     private final Set<Integer> selectedSquares = new HashSet<>();
 
     private boolean showBorders = true;
@@ -45,13 +47,6 @@ public class SquareGridPanel extends JPanel {
         this.height = height;
         setPreferredSize(new Dimension(width, height));
 
-        int squareNumber = 0;
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                squares.add(new SquareForDisplay(r, c, squareNumber++));
-            }
-        }
-
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -65,7 +60,7 @@ public class SquareGridPanel extends JPanel {
                 if (!selectionEnabled) return;
                 if (selectionRect != null) {
                     selectSquaresInRect(selectionRect);
-                    selectionRect = null; // finalize
+                    selectionRect = null;
                     repaint();
                 }
             }
@@ -78,15 +73,12 @@ public class SquareGridPanel extends JPanel {
                 int col = e.getX() / squareW;
                 int row = e.getY() / squareH;
 
-                for (SquareForDisplay sq : squares) {
-                    if (sq.row == row && sq.col == col) {
-                        // toggle selection on click
-                        sq.selected = !sq.selected;
-                        if (sq.selected) {
-                            selectedSquares.add(sq.squareNumber);
-                        } else {
-                            selectedSquares.remove(sq.squareNumber);
-                        }
+                for (Square sq : squares) {
+                    if (sq.getRowNumber() == row && sq.getColNumber() == col) {
+                        boolean newSel = !sq.isSelected();
+                        sq.setSelected(newSel);
+                        if (newSel) selectedSquares.add(sq.getSquareNumber());
+                        else selectedSquares.remove(sq.getSquareNumber());
                         repaint();
                         break;
                     }
@@ -111,16 +103,21 @@ public class SquareGridPanel extends JPanel {
     private void selectSquaresInRect(Rectangle rect) {
         int squareW = width / cols;
         int squareH = height / rows;
-        for (SquareForDisplay sq : squares) {
-            Rectangle r = new Rectangle(sq.col * squareW, sq.row * squareH, squareW, squareH);
+        for (Square sq : squares) {
+            Rectangle r = new Rectangle(
+                    sq.getColNumber() * squareW,
+                    sq.getRowNumber() * squareH,
+                    squareW, squareH
+            );
             if (rect.intersects(r)) {
-                sq.selected = true;
-                selectedSquares.add(sq.squareNumber);
+                sq.setSelected(true);
+                selectedSquares.add(sq.getSquareNumber());
             }
         }
     }
 
     // === API ===
+
     public void setSelectionEnabled(boolean enabled) {
         this.selectionEnabled = enabled;
     }
@@ -131,14 +128,19 @@ public class SquareGridPanel extends JPanel {
 
     public void clearSelection() {
         selectedSquares.clear();
-        for (SquareForDisplay sq : squares) {
-            sq.selected = false;
+        for (Square sq : squares) {
+            sq.setSelected(false);
         }
         repaint();
     }
 
-    public List<SquareForDisplay> getSquares() {
+    public List<Square> getSquares() {
         return squares;
+    }
+
+    public void setSquares(List<Square> newSquares) {
+        this.squares = newSquares != null ? newSquares : new ArrayList<>();
+        clearSelection();
     }
 
     public void setBackgroundImage(ImageIcon icon) {
@@ -154,6 +156,7 @@ public class SquareGridPanel extends JPanel {
             g.drawImage(backgroundImage, 0, 0, width, height, this);
         }
 
+        if (squares == null) return;
         int squareW = width / cols;
         int squareH = height / rows;
         Graphics2D g2 = (Graphics2D) g;
@@ -162,56 +165,55 @@ public class SquareGridPanel extends JPanel {
         if (showBorders) {
             g2.setColor(Color.WHITE);
             g2.setStroke(new BasicStroke(1f));
-            for (SquareForDisplay sq : squares) {
-                if (sq.cellId == 0) {
-                    int x = sq.col * squareW;
-                    int y = sq.row * squareH;
+            for (Square sq : squares) {
+                if (sq.getCellId() == 0) {
+                    int x = sq.getColNumber() * squareW;
+                    int y = sq.getRowNumber() * squareH;
                     g2.drawRect(x, y, squareW, squareH);
                 }
             }
         }
 
         // --- Step 2: Fill selection overlays ---
-        for (SquareForDisplay sq : squares) {
-            if (sq.selected) {
-                int x = sq.col * squareW;
-                int y = sq.row * squareH;
-                g2.setColor(new Color(255, 255, 255, 120)); // whitish fill
+        for (Square sq : squares) {
+            if (sq.isSelected()) {
+                int x = sq.getColNumber() * squareW;
+                int y = sq.getRowNumber() * squareH;
+                g2.setColor(new Color(255, 255, 255, 120));
                 g2.fillRect(x, y, squareW, squareH);
             }
         }
 
         // --- Step 3: Draw numbers if enabled ---
-        for (SquareForDisplay sq : squares) {
-            if (sq.selected) {
-                int x = sq.col * squareW;
-                int y = sq.row * squareH;
+        for (Square sq : squares) {
+            if (sq.isSelected()) {
+                int x = sq.getColNumber() * squareW;
+                int y = sq.getRowNumber() * squareH;
                 if (numberMode == NumberMode.LABEL) {
-                    drawCenteredString(g2, String.valueOf(sq.labelNumber), x, y, squareW, squareH);
+                    drawCenteredString(g2, String.valueOf(sq.getLabelNumber()), x, y, squareW, squareH);
                 } else if (numberMode == NumberMode.SQUARE) {
-                    drawCenteredString(g2, String.valueOf(sq.squareNumber), x, y, squareW, squareH);
+                    drawCenteredString(g2, String.valueOf(sq.getSquareNumber()), x, y, squareW, squareH);
                 }
             }
         }
 
-        // --- Step 4: Draw assigned cell borders LAST ---
+        // --- Step 4: Draw assigned cell borders ---
         g2.setStroke(new BasicStroke(2f));
-        for (SquareForDisplay sq : squares) {
-            if (sq.cellId > 0) {
-                int x = sq.col * squareW;
-                int y = sq.row * squareH;
-                g2.setColor(getColorForCell(sq.cellId));
+        for (Square sq : squares) {
+            if (sq.getCellId() > 0) {
+                int x = sq.getColNumber() * squareW;
+                int y = sq.getRowNumber() * squareH;
+                g2.setColor(getColorForCell(sq.getCellId()));
                 g2.drawRect(x, y, squareW, squareH);
             }
         }
 
         // --- Step 5: Drag rectangle overlay ---
         if (selectionRect != null && selectionEnabled) {
-            g2.setColor(new Color(255, 255, 255, 120)); // whitish preview fill
+            g2.setColor(new Color(255, 255, 255, 120));
             g2.fill(selectionRect);
-
             g2.setColor(Color.BLACK);
-            g2.setStroke(new BasicStroke(1.5f)); // thin outline
+            g2.setStroke(new BasicStroke(1.5f));
             g2.draw(selectionRect);
         }
     }
@@ -235,13 +237,7 @@ public class SquareGridPanel extends JPanel {
         repaint();
     }
 
-    public void setSquaresGrid(List<SquareForDisplay> newSquares) {
-        this.squares.clear();
-        this.squares.addAll(newSquares);
-        clearSelection();
-    }
-
-    // === Shared color helpers for dialog + panel ===
+    // === Shared color helpers ===
     public static int getSupportedCellCount() {
         return CELL_COLORS.length;
     }

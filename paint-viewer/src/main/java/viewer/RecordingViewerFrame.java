@@ -2,6 +2,7 @@ package viewer;
 
 import paint.shared.objects.Project;
 import paint.shared.utils.PaintLogger;
+import paint.shared.objects.Square;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -277,7 +278,7 @@ public class RecordingViewerFrame extends JFrame {
         leftGridPanel.setBackgroundImage(entry.getLeftImage());
         rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), size, size));
 
-        leftGridPanel.setSquaresGrid(entry.getSquaresForViewer(project, expectNumberOfSquares));
+        leftGridPanel.setSquares(entry.getSquaresForViewer(project, expectNumberOfSquares));
 
         int totalInExperiment = 0;
         int indexInExperiment = 0;
@@ -343,13 +344,15 @@ public class RecordingViewerFrame extends JFrame {
 
         long timestamp = System.currentTimeMillis();
 
+        // Save current assignment state for undo
         undoStack.push(new HashMap<>(squareAssignments));
 
+        // Assign cell IDs to selected squares
         for (Integer sqId : selected) {
             squareAssignments.put(sqId, cellId);
-            for (SquareForDisplay sq : leftGridPanel.getSquares()) {
-                if (sq.squareNumber == sqId) {
-                    sq.cellId = cellId;
+            for (Square sq : leftGridPanel.getSquares()) {
+                if (sq.getSquareNumber() == sqId) {
+                    sq.setCellId(cellId);
                 }
             }
         }
@@ -368,13 +371,17 @@ public class RecordingViewerFrame extends JFrame {
         leftGridPanel.repaint();
     }
 
+
     public void undoLastAssignment() {
         if (!undoStack.isEmpty()) {
             squareAssignments.clear();
             squareAssignments.putAll(undoStack.pop());
-            for (SquareForDisplay sq : leftGridPanel.getSquares()) {
-                sq.cellId = squareAssignments.getOrDefault(sq.squareNumber, 0);
+
+            for (Square sq : leftGridPanel.getSquares()) {
+                int cellId = squareAssignments.getOrDefault(sq.getSquareNumber(), 0);
+                sq.setCellId(cellId);
             }
+
             leftGridPanel.repaint();
             System.out.println("Undo performed");
         }

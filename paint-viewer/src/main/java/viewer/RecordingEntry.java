@@ -1,13 +1,21 @@
 package viewer;
 
 import paint.shared.objects.Project;
+import paint.shared.objects.Square;
+import paint.shared.io.SquareTableIO;
+import tech.tablesaw.api.Row;
+import tech.tablesaw.api.Table;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+
+import static paint.shared.constants.PaintConstants.SQUARES_CSV;
 
 public class RecordingEntry {
 
@@ -29,7 +37,6 @@ public class RecordingEntry {
     private final double threshold;
     private final double tau;
     private final double density;
-    private List<SquareForDisplay> squares;
 
     // Thresholds (from config)
     private final double minRequiredDensityRatio;
@@ -39,7 +46,8 @@ public class RecordingEntry {
     // Observed value from CSV
     private final double observedRSquared;
 
-    /** Constructor for real image files */
+    private List<Square> squares; // ✅ unified type
+
     public RecordingEntry(Path leftImagePath,
                           Path rightImagePath,
                           String experimentName,
@@ -71,82 +79,23 @@ public class RecordingEntry {
         this.adjuvant = adjuvant;
         this.cellType = cellType;
         this.concentration = concentration;
-
         this.numberOfSpots = numberOfSpots;
         this.numberOfTracks = numberOfTracks;
         this.threshold = threshold;
         this.tau = tau;
         this.density = density;
-
         this.minRequiredDensityRatio = minRequiredDensityRatio;
         this.maxAllowableVariability = maxAllowableVariability;
         this.minRequiredRSquared = minRequiredRSquared;
-
         this.observedRSquared = observedRSquared;
     }
 
-    /** Constructor for prebuilt ImageIcons (testing) */
-    public RecordingEntry(ImageIcon leftImage,
-                          ImageIcon rightImage,
-                          String experimentName,
-                          String probeName,
-                          String probeType,
-                          String adjuvant,
-                          String cellType,
-                          double concentration,
-                          int numberOfSpots,
-                          int numberOfTracks,
-                          double threshold,
-                          double tau,
-                          double density,
-                          double minRequiredDensityRatio,
-                          double maxAllowableVariability,
-                          double minRequiredRSquared,
-                          double observedRSquared) {
-
-        this.leftImagePath = null;
-        this.rightImagePath = null;
-        this.leftImage = leftImage;
-        this.rightImage = rightImage;
-
-        this.experimentName = experimentName;
-        this.recordingName = "(dummy)";
-
-        this.probeName = probeName;
-        this.probeType = probeType;
-        this.adjuvant = adjuvant;
-        this.cellType = cellType;
-        this.concentration = concentration;
-
-        this.numberOfSpots = numberOfSpots;
-        this.numberOfTracks = numberOfTracks;
-        this.threshold = threshold;
-        this.tau = tau;
-        this.density = density;
-
-        this.minRequiredDensityRatio = minRequiredDensityRatio;
-        this.maxAllowableVariability = maxAllowableVariability;
-        this.minRequiredRSquared = minRequiredRSquared;
-
-        this.observedRSquared = observedRSquared;
-    }
-
-    // --- Helper to load images safely ---
     private static ImageIcon loadImageIcon(Path path) {
-        if (path == null) {
-            return new ImageIcon();
-        }
-
+        if (path == null) return new ImageIcon();
         try {
             BufferedImage img = ImageIO.read(path.toFile());
-            if (img != null) {
-                return new ImageIcon(img);
-            } else {
-                System.err.println("Unable to read image: " + path);
-                return new ImageIcon();
-            }
+            return new ImageIcon(img);
         } catch (Exception e) {
-            System.err.println("Error loading image: " + path);
             e.printStackTrace();
             return new ImageIcon();
         }
@@ -154,122 +103,103 @@ public class RecordingEntry {
 
     // --- Helpers for recording name ---
     private static String deriveRecordingName(Path path) {
-        if (path == null) {
-            return "";
-        }
-        String fileName = path.getFileName().toString();
-        int dot = fileName.lastIndexOf('.');
-        return (dot > 0) ? fileName.substring(0, dot) : fileName;
+        if (path == null) return "";
+        String name = path.getFileName().toString();
+        int dot = name.lastIndexOf('.');
+        return (dot > 0) ? name.substring(0, dot) : name;
     }
 
-    // --- Getters ---
-    public ImageIcon getLeftImage() {
-        return leftImage;
-    }
-
-    public ImageIcon getRightImage() {
-        return rightImage;
-    }
-
-    public String getExperimentName() {
-        return experimentName;
-    }
-
-    public String getRecordingName() {
-        return recordingName;
-    }
-
-    public String getProbeName() {
-        return probeName;
-    }
-
-    public String getProbeType() {
-        return probeType;
-    }
-
-    public String getAdjuvant() {
-        return adjuvant;
-    }
-
-    public String getCellType() {
-        return cellType;
-    }
-
-    public double getConcentration() {
-        return concentration;
-    }
-
-    public int getNumberOfSpots() {
-        return numberOfSpots;
-    }
-
-    public int getNumberOfTracks() {
-        return numberOfTracks;
-    }
-
-    public double getThreshold() {
-        return threshold;
-    }
-
-    public double getTau() {
-        return tau;
-    }
-
-    public double getDensity() {
-        return density;
-    }
-
-    public double getMinRequiredDensityRatio() {
-        return minRequiredDensityRatio;
-    }
-
-    public double getMaxAllowableVariability() {
-        return maxAllowableVariability;
-    }
-
-    public double getMinRequiredRSquared() {
-        return minRequiredRSquared;
-    }
-
-    public double getObservedRSquared() {
-        return observedRSquared;
-    }
-
-    public Path getLeftImagePath() {
-        return leftImagePath;
-    }
-
-    public Path getRightImagePath() {
-        return rightImagePath;
-    }
-
-    // ToDo - It is very inefficient to read the file for every recordingName
-    // Better would be to read it once and then serach in memory.
-    // Need to bring reading et Array List forwards
-
-    public List<SquareForDisplay> getSquaresForViewer(Project project, int expectedNumberOfSquares) {
+    // === Unified viewer entry loader ===
+    public List<Square> getSquaresForViewer(Project project, int expectedNumberOfSquares) {
         if (squares == null) {
             try {
-                squares = SquareCsvLoader.loadSquaresForRecording(
+                squares = loadSquaresForRecording(
                         project.getProjectRootPath(),
                         getExperimentName(),
                         getRecordingName(),
                         expectedNumberOfSquares);
             } catch (Exception e) {
                 e.printStackTrace();
-                squares = java.util.Collections.emptyList();
+                squares = Collections.emptyList();
             }
         }
-        // randomlySelectSquares(squares);  //ToDo: remove later
         return squares;
     }
 
-    public static void randomlySelectSquares(List<SquareForDisplay> squares) {
+    // === CSV reader for unified Square ===
+    private static List<Square> loadSquaresForRecording(
+            Path projectPath,
+            String experimentName,
+            String recordingName,
+            int expectedNumberOfSquares) throws Exception {
+
+        int numberOfSquaresRead = 0;
+        Path squaresCsv = projectPath.resolve(experimentName).resolve(SQUARES_CSV);
+
+        SquareTableIO io = new SquareTableIO();
+        Table table = io.readCsv(squaresCsv);
+
+        List<Square> out = new ArrayList<>();
+        for (Row row : table) {
+            if (!recordingName.equals(row.getString("Recording Name"))) {
+                continue;
+            }
+            numberOfSquaresRead++;
+
+            Square s = new Square();
+            s.setRecordingName(recordingName);
+            s.setSquareNumber(row.getInt("Square Number"));
+            s.setRowNumber(row.getInt("Row Number"));
+            s.setColNumber(row.getInt("Column Number"));
+            s.setLabelNumber(row.getInt("Label Number"));
+            s.setCellId(row.getInt("Cell ID"));
+            s.setSelected(row.getBoolean("Selected"));
+
+            out.add(s);
+
+            if (expectedNumberOfSquares != 0 && numberOfSquaresRead >= expectedNumberOfSquares) {
+                break;
+            }
+        }
+
+        if (expectedNumberOfSquares != 0 && numberOfSquaresRead != expectedNumberOfSquares) {
+            throw new IllegalStateException(
+                    "Expected " + expectedNumberOfSquares +
+                            " squares, but found " + numberOfSquaresRead +
+                            " in recording: " + recordingName
+            );
+        }
+
+        return out;
+    }
+
+    // --- Random selection (for testing)
+    public static void randomlySelectSquares(List<Square> squares) {
         Random rnd = new Random();
-        for (SquareForDisplay sq : squares) {
-            if (rnd.nextDouble() < 0.10) { // 10% chance
-                sq.selected = true;
+        for (Square sq : squares) {
+            if (rnd.nextDouble() < 0.10) {
+                sq.setSelected(true);
             }
         }
     }
+
+    // === Getters ===
+    public ImageIcon getLeftImage() { return leftImage; }
+    public ImageIcon getRightImage() { return rightImage; }
+    public String getExperimentName() { return experimentName; }
+    public String getRecordingName() { return recordingName; }
+    public String getProbeName() { return probeName; }
+    public String getProbeType() { return probeType; }
+    public String getAdjuvant() { return adjuvant; }
+    public String getCellType() { return cellType; }
+    public double getConcentration() { return concentration; }
+    public int getNumberOfSpots() { return numberOfSpots; }
+    public int getNumberOfTracks() { return numberOfTracks; }
+    public double getThreshold() { return threshold; }
+    public double getTau() { return tau; }
+    public double getDensity() { return density; }
+    public double getMinRequiredDensityRatio() { return minRequiredDensityRatio; }
+    public double getMaxAllowableVariability() { return maxAllowableVariability; }
+    public double getMinRequiredRSquared() { return minRequiredRSquared; }
+    public double getObservedRSquared() { return observedRSquared; }
 }
