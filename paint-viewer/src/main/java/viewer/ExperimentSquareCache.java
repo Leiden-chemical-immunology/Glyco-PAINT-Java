@@ -6,55 +6,63 @@ import paint.shared.utils.PaintLogger;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
+/**
+ * Maintains a per-experiment cache of squares loaded from disk,
+ * to avoid reading the same All Squares CSV multiple times.
+ */
 public final class ExperimentSquareCache {
 
-    // experimentName -> (recordingName -> squares)
-    private static final Map<String, Map<String, List<Square>>> CACHE = new HashMap<>();
+    private static final Map<String, Map<String, List<Square>>> experimentCache = new HashMap<>();
 
     private ExperimentSquareCache() {}
 
+    /**
+     * Returns all squares for a specific recording within an experiment.
+     * Loads the experiment's CSV only once and splits it per recording.
+     */
     public static synchronized List<Square> getSquaresForRecording(
             Path projectPath,
             String experimentName,
             String recordingName,
-            int expectedNumberOfSquares
-    ) throws IOException {
+            int expectedNumberOfSquares) throws IOException {
 
-        Map<String, List<Square>> experimentMap = CACHE.get(experimentName);
-
-        if (experimentMap == null) {
+        // If experiment not yet cached, load and split
+        if (!experimentCache.containsKey(experimentName)) {
             PaintLogger.infof("Loading all squares for experiment: %s", experimentName);
-            experimentMap = new HashMap<>();
+            List<Square> allSquares = SquareCsvLoader.loadAllSquaresForExperiment(projectPath, experimentName);
 
-            List<Square> allSquares = SquareCsvLoader.loadAllSquaresForExperiment(
-                    projectPath, experimentName
+            // Group by recording name
+            Map<String, List<Square>> grouped = allSquares.stream()
+                    .collect(Collectors.groupingBy(Square::getRecordingName));
+
+            experimentCache.put(experimentName, grouped);
+            PaintLogger.infof("Cached %d recordings for experiment: %s", grouped.size(), experimentName);
+        }
+
+        Map<String, List<Square>> expMap = experimentCache.get(experimentName);
+        List<Square> result = expMap.getOrDefault(recordingName, Collections.emptyList());
+
+        if (expectedNumberOfSquares != 0 && result.size() != expectedNumberOfSquares) {
+            PaintLogger.warningf(
+                    "Recording %s expected %d squares but has %d",
+                    recordingName, expectedNumberOfSquares, result.size()
             );
-
-            for (Square s : allSquares) {
-                experimentMap
-                        .computeIfAbsent(s.getRecordingName(), k -> new ArrayList<>())
-                        .add(s);
-            }
-            CACHE.put(experimentName, experimentMap);
-        }
-
-        List<Square> result = experimentMap.get(recordingName);
-        if (result == null) {
-            PaintLogger.warningf("No squares found for recording %s in experiment %s",
-                    recordingName, experimentName);
-            return Collections.emptyList();
-        }
-
-        if (expectedNumberOfSquares > 0 && result.size() != expectedNumberOfSquares) {
-            PaintLogger.warningf("Recording %s expected %d squares, found %d",
-                    recordingName, expectedNumberOfSquares, result.size());
         }
 
         return result;
     }
 
-    public static synchronized void clear() {
-        CACHE.clear();
+    /** Clears all cached experiments (optional manual reset). */
+    public static synchronized void clearCache() {
+        experimentCache.clear();
+        PaintLogger.infof("Cleared ExperimentSquareCache");
+    }
+
+    /** Clears only a specific experiment's cached squares. */
+    public static synchronized void clearExperiment(String experimentName) {
+        experimentCache.remove(experimentName);
+        PaintLogger.infof("Cleared cache for experiment: %s", experimentName);
     }
 }
