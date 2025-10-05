@@ -1,8 +1,8 @@
 package viewer;
 
 import paint.shared.objects.Project;
-import paint.shared.utils.PaintLogger;
 import paint.shared.objects.Square;
+import paint.shared.utils.PaintLogger;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -14,7 +14,6 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
-
 public class RecordingViewerFrame extends JFrame {
 
     private final Project project;
@@ -278,7 +277,7 @@ public class RecordingViewerFrame extends JFrame {
         leftGridPanel.setBackgroundImage(entry.getLeftImage());
         rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), size, size));
 
-        leftGridPanel.setSquares(entry.getSquaresForViewer(project, expectNumberOfSquares));
+        leftGridPanel.setSquares(entry.getSquares(project, expectNumberOfSquares));
 
         int totalInExperiment = 0;
         int indexInExperiment = 0;

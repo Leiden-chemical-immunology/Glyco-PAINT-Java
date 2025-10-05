@@ -27,9 +27,7 @@ public class RecordingLoader {
 
             try (BufferedReader br = new BufferedReader(new FileReader(recordingsFile.toFile()))) {
                 String header = br.readLine(); // skip header
-                if (header == null) {
-                    continue;
-                }
+                if (header == null) continue;
 
                 String line;
                 while ((line = br.readLine()) != null) {
@@ -43,9 +41,7 @@ public class RecordingLoader {
                     double concentration = parseDouble(parts[7]);
                     boolean processFlag = Boolean.parseBoolean(parts[8].trim());
 
-                    if (!processFlag) {
-                        continue;
-                    }
+                    if (!processFlag) continue;
 
                     double threshold = parseDouble(parts[9]);
                     int spots = parseInt(parts[10]);
@@ -54,20 +50,16 @@ public class RecordingLoader {
                     double rSquared = parseDouble(parts[18]);
                     double density = parseDouble(parts[19]);
 
-                    // TrackMate image
+                    // --- Paths ---
                     Path trackmateImage = experimentFolder
                             .resolve("TrackMate Images")
                             .resolve(recordingName + ".jpg");
 
                     if (!Files.exists(trackmateImage)) {
-                        System.err.println(
-                                "Missing TrackMate image for recording " + recordingName +
-                                        " in " + experimentFolder
-                        );
+                        System.err.println("Missing TrackMate image for " + recordingName);
                         continue;
                     }
 
-                    // Brightfield image (variants allowed)
                     Path brightfieldDir = experimentFolder.resolve("BrightField Images");
                     Path brightfieldImage = null;
 
@@ -75,10 +67,9 @@ public class RecordingLoader {
                         try {
                             for (Path p : (Iterable<Path>) Files.list(brightfieldDir)::iterator) {
                                 String fname = p.getFileName().toString();
-
                                 if ((fname.startsWith(recordingName + "-BF") || fname.startsWith(recordingName))
                                         && fname.endsWith(".jpg")) {
-                                    brightfieldImage = brightfieldDir.resolve(fname);
+                                    brightfieldImage = p;
                                     break;
                                 }
                             }
@@ -88,31 +79,18 @@ public class RecordingLoader {
                     }
 
                     if (brightfieldImage == null) {
-                        System.err.println(
-                                "Missing BrightField image for recording " + recordingName +
-                                        " in " + experimentFolder
-                        );
+                        System.err.println("Missing BrightField image for " + recordingName);
                         continue;
                     }
 
-                    // Thresholds from PaintConfig
-                    double minDensityRatio = PaintConfig.getDouble(
-                            "Generate Squares",
-                            "Min Required Density Ratio",
-                            2.0
-                    );
-                    double maxVariability = PaintConfig.getDouble(
-                            "Generate Squares",
-                            "Max Allowable Variability",
-                            10.0
-                    );
-                    double minRSquared = PaintConfig.getDouble(
-                            "Generate Squares",
-                            "Min Required R Squared",
-                            0.1
-                    );
+                    // --- Thresholds ---
+                    double minDensityRatio = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
+                    double maxVariability = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
+                    double minRSquared = PaintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
 
+                    // --- Construct entry (now includes recordingName first) ---
                     RecordingEntry entry = new RecordingEntry(
+                            recordingName,
                             trackmateImage,
                             brightfieldImage,
                             experimentName,
