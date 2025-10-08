@@ -67,9 +67,20 @@ public class SquareControlDialog extends JDialog {
         numbersGroup.add(numberLabelRadio);
         numbersGroup.add(numberSquareRadio);
 
-        numberNoneRadio.addActionListener(e -> gridPanel.setNumberMode(SquareGridPanel.NumberMode.NONE));
-        numberLabelRadio.addActionListener(e -> gridPanel.setNumberMode(SquareGridPanel.NumberMode.LABEL));
-        numberSquareRadio.addActionListener(e -> gridPanel.setNumberMode(SquareGridPanel.NumberMode.SQUARE));
+        numberNoneRadio.addActionListener(e -> {
+            gridPanel.setNumberMode(SquareGridPanel.NumberMode.NONE);
+            viewerFrame.updateSquareNumberMode(SquareGridPanel.NumberMode.NONE);
+        });
+
+        numberLabelRadio.addActionListener(e -> {
+            gridPanel.setNumberMode(SquareGridPanel.NumberMode.LABEL);
+            viewerFrame.updateSquareNumberMode(SquareGridPanel.NumberMode.LABEL);
+        });
+
+        numberSquareRadio.addActionListener(e -> {
+            gridPanel.setNumberMode(SquareGridPanel.NumberMode.SQUARE);
+            viewerFrame.updateSquareNumberMode(SquareGridPanel.NumberMode.SQUARE);
+        });
 
         JPanel numbersInner = new JPanel();
         numbersInner.setLayout(new BoxLayout(numbersInner, BoxLayout.Y_AXIS));

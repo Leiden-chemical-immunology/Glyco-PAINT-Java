@@ -408,6 +408,13 @@ public class RecordingViewerFrame extends JFrame {
         repaint();
     }
 
+
+    public void updateSquareNumberMode(SquareGridPanel.NumberMode mode) {
+        leftGridPanel.setNumberMode(mode);
+        leftGridPanel.repaint();
+    }
+
+
     public void applySquareControlParameters(String scope, SquareControlParams params) {
         String timestamp = LocalDateTime.now().toString();
         File csvFile = new File(project.getProjectRootPath().toFile(), "Viewer Override.csv");

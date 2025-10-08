@@ -152,10 +152,25 @@ public class SquareGridPanel extends JPanel {
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
         }
 
-        if (squares == null) return;
+        if (squares == null) {
+            return;
+        }
         int squareW = getWidth() / cols;
         int squareH = getHeight() / rows;
         Graphics2D g2 = (Graphics2D) g;
+
+        // 🟡 stop drawing borders if disabled
+        if (!showBorders) {
+            // still allow drawing drag rectangle if active
+            if (selectionRect != null && selectionEnabled) {
+                g2.setColor(new Color(255, 255, 255, 120));
+                g2.fill(selectionRect);
+                g2.setColor(Color.BLACK);
+                g2.setStroke(new BasicStroke(1.5f));
+                g2.draw(selectionRect);
+            }
+            return;
+        }
 
         // --- Step 1: Draw borders for assigned or selected squares ---
         for (Square sq : squares) {
