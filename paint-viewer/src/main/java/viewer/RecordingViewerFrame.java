@@ -112,6 +112,10 @@ public class RecordingViewerFrame extends JFrame {
         attributesTable.setCellSelectionEnabled(false);
         attributesTable.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
 
+        // 🔹 Make “Attr” wider than “Val”
+        attributesTable.getColumnModel().getColumn(0).setPreferredWidth(150);
+        attributesTable.getColumnModel().getColumn(1).setPreferredWidth(70);
+
         JScrollPane scrollPane = new JScrollPane(attributesTable,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -316,6 +320,10 @@ public class RecordingViewerFrame extends JFrame {
         attributesModel.addRow(new Object[]{"Tau", entry.getTau()});
         attributesModel.addRow(new Object[]{"R²", entry.getObservedRSquared()});
         attributesModel.addRow(new Object[]{"Density", entry.getDensity()});
+        attributesModel.addRow(new Object[]{"Min Required Density Ratio", entry.getMinRequiredDensityRatio()});
+        attributesModel.addRow(new Object[]{"Max Allowable Variability", entry.getMaxAllowableVariability()});
+        attributesModel.addRow(new Object[]{"Min Required R²", entry.getMinRequiredRSquared()});
+        attributesModel.addRow(new Object[]{"Neighbour Mode", entry.getNeighbourMode()});
 
 
 //        });
