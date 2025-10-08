@@ -37,6 +37,8 @@ public class SquareGridPanel extends JPanel {
     // 🔹 Selection toggle
     private boolean selectionEnabled = false;
 
+    private final Set<Integer> dragSelectedSquares = new HashSet<>();
+
     public enum NumberMode {
         NONE,
         LABEL,
@@ -201,17 +203,24 @@ public class SquareGridPanel extends JPanel {
     private void selectSquaresInRect(Rectangle rect) {
         int squareW = getWidth() / cols;
         int squareH = getHeight() / rows;
+
+        dragSelectedSquares.clear(); // only clear the visual yellow highlight from the last drag
+
         for (Square sq : squares) {
             Rectangle r = new Rectangle(
                     sq.getColNumber() * squareW,
                     sq.getRowNumber() * squareH,
                     squareW, squareH
             );
+
             if (rect.intersects(r)) {
                 sq.setSelected(true);
                 selectedSquares.add(sq.getSquareNumber());
+                dragSelectedSquares.add(sq.getSquareNumber()); // for yellow highlight
             }
         }
+
+        repaint();
     }
 
     // === API ===
@@ -256,15 +265,15 @@ public class SquareGridPanel extends JPanel {
         if (squares == null) {
             return;
         }
+
         int squareW = getWidth() / cols;
         int squareH = getHeight() / rows;
         Graphics2D g2 = (Graphics2D) g;
 
         // 🟡 stop drawing borders if disabled
         if (!showBorders) {
-            // still allow drawing drag rectangle if active
             if (selectionRect != null && selectionEnabled) {
-                g2.setColor(new Color(255, 255, 255, 120));
+                g2.setColor(new Color(255, 120, 0, 255)); // yellow fill when dragging
                 g2.fill(selectionRect);
                 g2.setColor(Color.BLACK);
                 g2.setStroke(new BasicStroke(1.5f));
@@ -273,45 +282,48 @@ public class SquareGridPanel extends JPanel {
             return;
         }
 
-        // --- Step 1: Draw borders for assigned or selected squares ---
         for (Square sq : squares) {
             int x = sq.getColNumber() * squareW;
             int y = sq.getRowNumber() * squareH;
 
-            if (sq.isSelected() && sq.getCellId() <= 0) {
-                Color fillColor;
-                if (backgroundImage instanceof BufferedImage) {
-                    int sampleX = Math.min(((BufferedImage) backgroundImage).getWidth() - 1, x + squareW / 2);
-                    int sampleY = Math.min(((BufferedImage) backgroundImage).getHeight() - 1, y + squareH / 2);
-                    int rgb = ((BufferedImage) backgroundImage).getRGB(sampleX, sampleY);
-                    int r = (rgb >> 16) & 0xFF;
-                    int bg = (rgb >> 8) & 0xFF;
-                    int b = rgb & 0xFF;
-                    double brightness = (0.299 * r + 0.587 * bg + 0.114 * b);
-                    fillColor = (brightness < 128)
-                            ? new Color(255, 255, 255, 60) // translucent white for dark bg
-                            : new Color(0, 0, 0, 60);      // translucent black for light bg
-                } else {
-                    fillColor = new Color(255, 255, 255, 60);
+            // --- Step 1: Fill base overlays ---
+            if (sq.getCellId() <= 0) {
+                if (selectedSquares.contains(sq.getSquareNumber())) {
+                    // 🟨 Mouse-drag selected (additive selection)
+                    g2.setColor(new Color(255, 235, 0, 200)); // bright yellow
+                    g2.fillRect(x, y, squareW, squareH);
+                } else if (sq.isSelected()) {
+                    // ⚪ Visible, not mouse-selected
+                    g2.setColor(new Color(255, 255, 255, 80)); // light translucent white
+                    g2.fillRect(x, y, squareW, squareH);
                 }
-
-                g2.setColor(fillColor);
-                g2.fillRect(x, y, squareW, squareH);
             }
+
+            // --- Step 2: Borders for assigned and selected ---
             if (sq.getCellId() > 0) {
-                // Assigned square → thick colored border
-                g2.setStroke(new BasicStroke(4f));
-                g2.setColor(getColorForCell(sq.getCellId()));
+                // --- Cell-assigned squares ---
+                Color border = getColorForCell(sq.getCellId());
+
+                // Light but clearly visible fill (~40% opacity)
+                int rVal = Math.min(255, border.getRed() + 40);
+                int gVal = Math.min(255, border.getGreen() + 40);
+                int bVal = Math.min(255, border.getBlue() + 40);
+                Color fill = new Color(rVal, gVal, bVal, 100);
+
+                g2.setColor(fill);
+                g2.fillRect(x, y, squareW, squareH);
+
+                g2.setStroke(new BasicStroke(1.5f));
+                g2.setColor(border);
                 g2.drawRect(x, y, squareW, squareH);
             } else if (sq.isSelected()) {
-                // Selected but unassigned → thin white border
                 g2.setStroke(new BasicStroke(1.5f));
                 g2.setColor(Color.WHITE);
                 g2.drawRect(x, y, squareW, squareH);
             }
         }
 
-        // --- Step 2: Draw numbers if enabled (for selected squares only) ---
+        // --- Step 2: Draw numbers ---
         for (Square sq : squares) {
             if (sq.isSelected()) {
                 int x = sq.getColNumber() * squareW;
@@ -324,9 +336,9 @@ public class SquareGridPanel extends JPanel {
             }
         }
 
-        // --- Step 3: Drag rectangle overlay ---
+        // --- Step 3: Draw drag-selection rectangle ---
         if (selectionRect != null && selectionEnabled) {
-            g2.setColor(new Color(255, 255, 255, 120));
+            g2.setColor(new Color(255, 255, 180, 100)); // translucent yellow rectangle
             g2.fill(selectionRect);
             g2.setColor(Color.BLACK);
             g2.setStroke(new BasicStroke(1.5f));
@@ -377,6 +389,25 @@ public class SquareGridPanel extends JPanel {
     /** Re-apply selection/visibility based on the current control params. */
     public void applyVisibilityFilter() {
         SquareUtils.applyVisibilityFilter(squares, ctrlMinDensityRatio, ctrlMaxVariability, ctrlMinRSquared);
+        repaint();
+    }
+
+    // In SquareGridPanel (add this method)
+    public void assignSelectedToCell(int cellId) {
+        if (squares == null) return;
+        for (Square sq : squares) {
+            if (sq.isSelected()) {
+                sq.setCellId(cellId);   // assign cell to selected only
+            }
+        }
+        repaint(); // show colored borders for newly assigned squares
+    }
+
+    public void clearMouseSelection() {
+        selectedSquares.clear();      // mouse-picked squares
+        dragSelectedSquares.clear();  // last drag selection
+        selectionRect = null;         // remove rubber-band rectangle
+        dragStart = null;
         repaint();
     }
 }

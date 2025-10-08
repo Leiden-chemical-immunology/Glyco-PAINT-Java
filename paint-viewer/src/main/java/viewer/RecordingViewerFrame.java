@@ -353,36 +353,34 @@ public class RecordingViewerFrame extends JFrame {
 
     // === Cell assignment methods ===
     public void assignSelectedSquares(int cellId) {
-        Set<Integer> selected = leftGridPanel.getSelectedSquares();
-        if (selected.isEmpty()) return;
+        // Get only the currently mouse-selected squares
+        Set<Integer> selectedNow = leftGridPanel.getSelectedSquares();
+        if (selectedNow.isEmpty()) {
+            return;
+        }
 
-        long timestamp = System.currentTimeMillis();
-
-        // Save current assignment state for undo
+        // Save state for undo
         undoStack.push(new HashMap<>(squareAssignments));
 
-        // Assign cell IDs to selected squares
-        for (Integer sqId : selected) {
-            squareAssignments.put(sqId, cellId);
-            for (Square sq : leftGridPanel.getSquares()) {
-                if (sq.getSquareNumber() == sqId) {
-                    sq.setCellId(cellId);
-                }
+        // Assign new cell ID only to selected squares
+        for (Square sq : leftGridPanel.getSquares()) {
+            if (selectedNow.contains(sq.getSquareNumber())) {
+                sq.setCellId(cellId);
+                squareAssignments.put(sq.getSquareNumber(), cellId);
             }
         }
 
+        // Deselect but keep visibility and other cell assignments intact
+        leftGridPanel.clearMouseSelection();
+        leftGridPanel.repaint();
+
+        // Logging
         RecordingEntry entry = recordings.get(currentIndex);
         String recordingName = entry.getRecordingName();
-        for (Integer sqId : selected) {
-            int assignedCell = squareAssignments.getOrDefault(sqId, 0);
-            if (assignedCell != 0) {
-                System.out.printf("%s,%d,%d,%d%n",
-                        recordingName, sqId, assignedCell, timestamp);
-            }
+        long timestamp = System.currentTimeMillis();
+        for (Integer sqId : selectedNow) {
+            System.out.printf("%s,%d,%d,%d%n", recordingName, sqId, cellId, timestamp);
         }
-
-        clearSelection();
-        leftGridPanel.repaint();
     }
 
 
