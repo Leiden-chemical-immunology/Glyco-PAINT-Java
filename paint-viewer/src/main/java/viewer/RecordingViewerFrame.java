@@ -462,6 +462,14 @@ public class RecordingViewerFrame extends JFrame {
 
     private void writeOverrideRecord(String recordingName, SquareControlParams params,
                                      String timestamp, File csvFile) {
+        PaintLogger.infof(
+                "Override for '%s': MinDensityRatio=%.0f, MaxVariability=%.0f, MinRSquared=%.2f, NeighbourMode=%s",
+                recordingName,
+                params.densityRatio,
+                params.variability,
+                params.rSquared,
+                params.neighbourMode
+        );
         try {
             List<String> lines = new ArrayList<>();
             if (csvFile.exists()) {
@@ -493,7 +501,6 @@ public class RecordingViewerFrame extends JFrame {
             File tmp = new File(csvFile.getParentFile(), csvFile.getName() + ".tmp");
             Files.write(tmp.toPath(), lines);
             Files.move(tmp.toPath(), csvFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
         } catch (IOException ex) {
             ex.printStackTrace();
         }
