@@ -1,7 +1,8 @@
 package viewer;
 
-import paint.shared.objects.Square;
 import paint.shared.objects.Project;
+import paint.shared.objects.Recording;
+import paint.shared.objects.Square;
 import paint.shared.utils.PaintLogger;
 
 import javax.swing.*;
@@ -10,102 +11,81 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
-public class RecordingEntry {
+public class RecordingEntry
+{
+    private final Recording recording;
+    private final Path      trackmateImagePath;
+    private final Path      brightfieldImagePath;
+    private final String    experimentName;
+    private final double    minRequiredDensityRatio;
+    private final double    maxAllowableVariability;
+    private final double    minRequiredRSquared;
+    private final String    neighbourMode;
+    private final double    observedRSquared;
 
-    private final String recordingName;
-    private final Path   trackmateImagePath;
-    private final Path   brightfieldImagePath;
-    private final String experimentName;
-    private final String probeName;
-    private final String probeType;
-    private final String adjuvant;
-    private final String cellType;
-    private final double concentration;
-    private final int    numberOfSpots;
-    private final int    numberOfTracks;
-    private final double threshold;
-    private final double tau;
-    private final double density;
-    private final double minRequiredDensityRatio;
-    private final double maxAllowableVariability;
-    private final double minRequiredRSquared;
-    private final String neighbourMode;
-    private final double observedRSquared;
-
-    private ImageIcon    leftImage;
-    private ImageIcon    rightImage;
-    private List<Square> squares;
+    private ImageIcon       leftImage;
+    private ImageIcon       rightImage;
+    private List<Square>    squares;
 
     public RecordingEntry(
-            String recordingName,
+            Recording recording,
             Path trackmateImagePath,
             Path brightfieldImagePath,
             String experimentName,
-            String probeName,
-            String probeType,
-            String adjuvant,
-            String cellType,
-            double concentration,
-            int numberOfSpots,
-            int numberOfTracks,
-            double threshold,
-            double tau,
-            double density,
             double minRequiredDensityRatio,
             double maxAllowableVariability,
             double minRequiredRSquared,
             String neighbourMode,
-            double observedRSquared) {
-        this.recordingName = recordingName;
-        this.trackmateImagePath = trackmateImagePath;
-        this.brightfieldImagePath = brightfieldImagePath;
-        this.experimentName = experimentName;
-        this.probeName = probeName;
-        this.probeType = probeType;
-        this.adjuvant = adjuvant;
-        this.cellType = cellType;
-        this.concentration = concentration;
-        this.numberOfSpots = numberOfSpots;
-        this.numberOfTracks = numberOfTracks;
-        this.threshold = threshold;
-        this.tau = tau;
-        this.density = density;
+            double observedRSquared
+    )
+    {
+        this.recording               = recording;
+        this.trackmateImagePath      = trackmateImagePath;
+        this.brightfieldImagePath    = brightfieldImagePath;
+        this.experimentName          = experimentName;
         this.minRequiredDensityRatio = minRequiredDensityRatio;
         this.maxAllowableVariability = maxAllowableVariability;
-        this.minRequiredRSquared = minRequiredRSquared;
-        this.neighbourMode = neighbourMode;
-        this.observedRSquared = observedRSquared;
+        this.minRequiredRSquared     = minRequiredRSquared;
+        this.neighbourMode           = neighbourMode;
+        this.observedRSquared        = observedRSquared;
 
-        // --- Robust image loading ---
-        this.leftImage = loadImage(trackmateImagePath, "TrackMate");
+        this.leftImage  = loadImage(trackmateImagePath, "TrackMate");
         this.rightImage = loadImage(brightfieldImagePath, "Brightfield");
     }
 
     // === Robust image loading helper ===
-    private static ImageIcon loadImage(Path imagePath, String label) {
+    private static ImageIcon loadImage(Path imagePath, String label)
+    {
         if (imagePath == null) return null;
 
-        try {
+        try
+        {
             BufferedImage img = javax.imageio.ImageIO.read(imagePath.toFile());
-            if (img != null) {
+            if (img != null)
+            {
                 PaintLogger.debugf("[%s] Loaded via ImageIO: %s", label, imagePath);
                 return new ImageIcon(img);
             }
             PaintLogger.warningf("[%s] ImageIO returned null for %s", label, imagePath);
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             PaintLogger.warningf("[%s] ImageIO failed for %s (%s)", label, imagePath, e.getMessage());
         }
 
-        // --- Fallback: try ImageJ Opener ---
-        try {
+        try
+        {
             ij.io.Opener opener = new ij.io.Opener();
             ij.ImagePlus imp = opener.openImage(imagePath.toString());
-            if (imp != null && imp.getImage() != null) {
+            if (imp != null && imp.getImage() != null)
+            {
                 PaintLogger.debugf("[%s] Loaded via ImageJ Opener: %s", label, imagePath);
                 return new ImageIcon(imp.getImage());
             }
             PaintLogger.warningf("[%s] ImageJ Opener returned null for %s", label, imagePath);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             PaintLogger.warningf("[%s] ImageJ Opener threw error for %s (%s)", label, imagePath, t.getMessage());
         }
 
@@ -114,100 +94,136 @@ public class RecordingEntry {
     }
 
     // === Getters ===
-    public String getRecordingName() {
-        return recordingName;
+    public String getRecordingName()
+    {
+        return recording.getRecordingName();
     }
 
-    public String getExperimentName() {
+    public String getExperimentName()
+    {
         return experimentName;
     }
 
-    public String getProbeName() {
-        return probeName;
+    public String getProbeName()
+    {
+        return recording.getProbeName();
     }
 
-    public String getProbeType() {
-        return probeType;
+    public String getProbeType()
+    {
+        return recording.getProbeType();
     }
 
-    public String getAdjuvant() {
-        return adjuvant;
+    public String getAdjuvant()
+    {
+        return recording.getAdjuvant();
     }
 
-    public String getCellType() {
-        return cellType;
+    public String getCellType()
+    {
+        return recording.getCellType();
     }
 
-    public double getConcentration() {
-        return concentration;
+    public double getConcentration()
+    {
+        return recording.getConcentration();
     }
 
-    public int getNumberOfSpots() {
-        return numberOfSpots;
+    public int getNumberOfSpots()
+    {
+        return recording.getNumberOfSpots();
     }
 
-    public int getNumberOfTracks() {
-        return numberOfTracks;
+    public int getNumberOfTracks()
+    {
+        return recording.getNumberOfTracks();
     }
 
-    public double getThreshold() {
-        return threshold;
+    public double getThreshold()
+    {
+        return recording.getThreshold();
     }
 
-    public double getTau() {
-        return tau;
+    public double getTau()
+    {
+        return recording.getTau();
     }
 
-    public double getDensity() {
-        return density;
+    public double getDensity()
+    {
+        return recording.getDensity();
     }
 
-    public double getMinRequiredDensityRatio() {
+    public double getMinRequiredDensityRatio()
+    {
         return minRequiredDensityRatio;
     }
 
-    public double getMaxAllowableVariability() {
+    public double getMaxAllowableVariability()
+    {
         return maxAllowableVariability;
     }
 
-    public double getMinRequiredRSquared() {
+    public double getMinRequiredRSquared()
+    {
         return minRequiredRSquared;
     }
 
-    public double getObservedRSquared() {
+    public double getObservedRSquared()
+    {
         return observedRSquared;
     }
 
-    public ImageIcon getLeftImage() {
+    public String getNeighbourMode()
+    {
+        return neighbourMode;
+    }
+
+    public ImageIcon getLeftImage()
+    {
         return leftImage;
     }
 
-    public ImageIcon getRightImage() {
+    public ImageIcon getRightImage()
+    {
         return rightImage;
     }
 
+    public Recording getRecording()
+    {
+        return recording;
+    }
+
     // === Square loading and caching (experiment-level) ===
-    public List<Square> getSquares(Project project, int expectedNumberOfSquares) {
-        if (squares == null) {
-            try {
-                PaintLogger.debugf("Fetching squares (cached per experiment) for recording: %s", recordingName);
+    public List<Square> getSquares(Project project, int expectedNumberOfSquares)
+    {
+        if (squares == null)
+        {
+            try
+            {
+                PaintLogger.debugf("Fetching squares (cached per experiment) for recording: %s", getRecordingName());
                 squares = ExperimentSquareCache.getSquaresForRecording(
                         project.getProjectRootPath(),
-                        experimentName,
-                        recordingName,
+                        getExperimentName(),
+                        getRecordingName(),
                         expectedNumberOfSquares
                 );
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 e.printStackTrace();
                 squares = Collections.emptyList();
             }
-        } else {
-            PaintLogger.debugf("Returning cached squares for recording: %s", recordingName);
+        }
+        else
+        {
+            PaintLogger.debugf("Returning cached squares for recording: %s", getRecordingName());
         }
         return squares;
     }
 
-    public void clearCachedSquares() {
+    public void clearCachedSquares()
+    {
         this.squares = null;
     }
 }
