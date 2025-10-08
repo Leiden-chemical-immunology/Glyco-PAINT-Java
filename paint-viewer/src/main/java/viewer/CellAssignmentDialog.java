@@ -71,7 +71,9 @@ public class CellAssignmentDialog extends JDialog {
         JRadioButton radio = new JRadioButton(label);
         radio.setForeground(Color.BLACK);
         radio.putClientProperty("cellId", Integer.valueOf(cellId));
-        if (selected) radio.setSelected(true);
+        if (selected) {
+            radio.setSelected(true);
+        }
         group.add(radio);
 
         // Square with only border, not filled

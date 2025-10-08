@@ -279,8 +279,12 @@ public class SquareControlDialog extends JDialog {
     }
 
     private String getNeighbourMode() {
-        if (neighbourFree.isSelected()) return "Free";
-        if (neighbourRelaxed.isSelected()) return "Relaxed";
+        if (neighbourFree.isSelected()) {
+            return "Free";
+        }
+        if (neighbourRelaxed.isSelected()) {
+            return "Relaxed";
+        }
         return "Strict";
     }
 
@@ -289,9 +293,15 @@ public class SquareControlDialog extends JDialog {
         variabilitySlider.setValue((int) Math.round(origVariability * 10));
         rSquaredSlider.setValue((int) Math.round(origRSquared * 100));
 
-        if ("Free".equals(origNeighbourMode)) neighbourFree.setSelected(true);
-        else if ("Relaxed".equals(origNeighbourMode)) neighbourRelaxed.setSelected(true);
-        else neighbourStrict.setSelected(true);
+        if ("Free".equals(origNeighbourMode)) {
+            neighbourFree.setSelected(true);
+        }
+        else if ("Relaxed".equals(origNeighbourMode)) {
+            neighbourRelaxed.setSelected(true);
+        }
+        else {
+            neighbourStrict.setSelected(true);
+        }
 
         updateValueLabels();
         propagateValues();

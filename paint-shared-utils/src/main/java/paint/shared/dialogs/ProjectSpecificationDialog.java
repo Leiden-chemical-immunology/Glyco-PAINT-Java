@@ -235,8 +235,8 @@ public class ProjectSpecificationDialog {
                 okButton.setEnabled(false);
                 new Thread(() -> {
                     try {
-                        Project p = getProject();
-                        boolean success = calculationCallback.run(p);
+                        Project project = getProject();
+                        boolean success = calculationCallback.run(project);
 
                         SwingUtilities.invokeLater(() -> {
                             setInputsEnabled(true);
