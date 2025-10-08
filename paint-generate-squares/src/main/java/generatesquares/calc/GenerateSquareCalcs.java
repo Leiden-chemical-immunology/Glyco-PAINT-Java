@@ -31,7 +31,7 @@ public class GenerateSquareCalcs {
         GenerateSquaresConfig generateSquaresConfig = project.generateSquaresConfig;
 
         LocalDateTime start = LocalDateTime.now();
-        PaintLogger.infof("Loading Experiment '%s'", experimentName);
+        PaintLogger.debugf("Loading Experiment '%s'", experimentName);
         Experiment experiment = loadExperimentForSquaresCalc(project.projectRootPath, experimentName);
         if (experiment != null) {
             for (Recording recording : experiment.getRecordings()) {

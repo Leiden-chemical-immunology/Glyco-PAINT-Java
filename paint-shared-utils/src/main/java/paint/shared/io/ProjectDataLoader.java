@@ -113,7 +113,7 @@ public final class ProjectDataLoader {
         for (String experimentName : experimentNames) {
             Path experimentPath = projectPath.resolve(experimentName);
             if (experimentSeemsValid(experimentPath, matureProject)) {
-                PaintLogger.infof("Loading experiment: %s", experimentName);
+                PaintLogger.debugf("Loading experiment: %s", experimentName);
                 try {
                     PaintConfig paintConfig = PaintConfig.instance();
                     GenerateSquaresConfig generateSquaresConfig = GenerateSquaresConfig.from(paintConfig);

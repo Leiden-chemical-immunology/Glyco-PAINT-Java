@@ -86,7 +86,7 @@ public class RecordingEntry {
         try {
             BufferedImage img = javax.imageio.ImageIO.read(imagePath.toFile());
             if (img != null) {
-                PaintLogger.infof("[%s] Loaded via ImageIO: %s", label, imagePath);
+                PaintLogger.debugf("[%s] Loaded via ImageIO: %s", label, imagePath);
                 return new ImageIcon(img);
             }
             PaintLogger.warningf("[%s] ImageIO returned null for %s", label, imagePath);
@@ -99,7 +99,7 @@ public class RecordingEntry {
             ij.io.Opener opener = new ij.io.Opener();
             ij.ImagePlus imp = opener.openImage(imagePath.toString());
             if (imp != null && imp.getImage() != null) {
-                PaintLogger.infof("[%s] Loaded via ImageJ Opener: %s", label, imagePath);
+                PaintLogger.debugf("[%s] Loaded via ImageJ Opener: %s", label, imagePath);
                 return new ImageIcon(imp.getImage());
             }
             PaintLogger.warningf("[%s] ImageJ Opener returned null for %s", label, imagePath);
@@ -136,7 +136,7 @@ public class RecordingEntry {
     public List<Square> getSquares(Project project, int expectedNumberOfSquares) {
         if (squares == null) {
             try {
-                PaintLogger.infof("Fetching squares (cached per experiment) for recording: %s", recordingName);
+                PaintLogger.debugf("Fetching squares (cached per experiment) for recording: %s", recordingName);
                 squares = ExperimentSquareCache.getSquaresForRecording(
                         project.getProjectRootPath(),
                         experimentName,
@@ -148,7 +148,7 @@ public class RecordingEntry {
                 squares = Collections.emptyList();
             }
         } else {
-            PaintLogger.infof("Returning cached squares for recording: %s", recordingName);
+            PaintLogger.debugf("Returning cached squares for recording: %s", recordingName);
         }
         return squares;
     }

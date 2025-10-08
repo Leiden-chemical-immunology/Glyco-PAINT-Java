@@ -23,7 +23,7 @@ public class RecordingViewerFrame extends JFrame {
     private int currentIndex = 0;
 
     // Grid panel
-    private final SquareGridPanel leftGridPanel = new SquareGridPanel(20, 20, 512, 512);
+    private final SquareGridPanel leftGridPanel = new SquareGridPanel(20, 20);
 
     // Labels, tables, UI
     private final JLabel rightImageLabel = new JLabel("", SwingConstants.CENTER);
@@ -264,8 +264,6 @@ public class RecordingViewerFrame extends JFrame {
     }
 
     private void showEntry(int index) {
-        System.out.println("Hallo 1");
-        PaintLogger.infof("Hallo 2");
         if (index < 0 || index >= recordings.size()) {
             return;
         }

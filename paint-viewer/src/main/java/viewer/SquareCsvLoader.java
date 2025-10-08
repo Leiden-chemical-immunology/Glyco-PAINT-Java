@@ -114,9 +114,9 @@ public final class SquareCsvLoader {
             s.setSelected(row.getBoolean("Selected"));
             out.add(s);
 
-            if (s.isSelected()) {
-                PaintLogger.infof("Square %s is selected", s.getSquareNumber());
-            }
+//            if (s.isSelected()) {
+//                PaintLogger.infof("Square %s is selected", s.getSquareNumber());
+//            }
         }
 
         return out;

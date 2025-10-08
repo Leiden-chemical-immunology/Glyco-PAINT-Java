@@ -30,7 +30,7 @@ public final class ExperimentSquareCache {
 
         // If experiment not yet cached, load and split
         if (!experimentCache.containsKey(experimentName)) {
-            PaintLogger.infof("Loading all squares for experiment: %s", experimentName);
+            PaintLogger.debugf("Loading all squares for experiment: %s", experimentName);
             List<Square> allSquares = SquareCsvLoader.loadAllSquaresForExperiment(projectPath, experimentName);
 
             // Group by recording name
@@ -38,7 +38,7 @@ public final class ExperimentSquareCache {
                     .collect(Collectors.groupingBy(Square::getRecordingName));
 
             experimentCache.put(experimentName, grouped);
-            PaintLogger.infof("Cached %d recordings for experiment: %s", grouped.size(), experimentName);
+            PaintLogger.debugf("Cached %d recordings for experiment: %s", grouped.size(), experimentName);
         }
 
         Map<String, List<Square>> expMap = experimentCache.get(experimentName);
