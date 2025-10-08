@@ -76,7 +76,7 @@ public class ValidationHandler {
         }
 
         if (report.isEmpty()) {
-            overall.setReport("✔ All validations passed");
+            // overall.setReport("✔ All validations passed");
         } else {
             overall.setReport(String.join("\n", report));
         }
