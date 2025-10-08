@@ -297,13 +297,13 @@ public class RecordingViewerFrame extends JFrame {
 
         recordingLabel.setText("Recording: " + entry.getRecordingName());
 
-        boolean densityOk = entry.getDensity() >= entry.getMinRequiredDensityRatio();
-        boolean tauOk = entry.getTau() <= entry.getMaxAllowableVariability();
-        boolean r2Ok = entry.getObservedRSquared() >= entry.getMinRequiredRSquared();
+//        boolean densityOk = entry.getDensity() >= entry.getMinRequiredDensityRatio();
+//        boolean tauOk = entry.getTau() <= entry.getMaxAllowableVariability();
+//        boolean r2Ok = entry.getObservedRSquared() >= entry.getMinRequiredRSquared();
 
 //        for (Square square : entry.getSquares()) {     #TODO
-//
 //        }
+
         attributesModel.setRowCount(0);
         attributesModel.addRow(new Object[]{"Probe", entry.getProbeName()});
         attributesModel.addRow(new Object[]{"Probe Type", entry.getProbeType()});
@@ -313,15 +313,27 @@ public class RecordingViewerFrame extends JFrame {
         attributesModel.addRow(new Object[]{"Spots", entry.getNumberOfSpots()});
         attributesModel.addRow(new Object[]{"Tracks", entry.getNumberOfTracks()});
         attributesModel.addRow(new Object[]{"Threshold", entry.getThreshold()});
-        attributesModel.addRow(new Object[]{
-                "Tau", entry.getTau() + " " + (tauOk ? "✅ ≤ " : "❌ ≤ ") + entry.getMaxAllowableVariability()
-        });
-        attributesModel.addRow(new Object[]{
-                "Density", entry.getDensity() + " " + (densityOk ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredDensityRatio()
-        });
-        attributesModel.addRow(new Object[]{
-                "R²", entry.getObservedRSquared() + " " + (r2Ok ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredRSquared()
-        });
+        attributesModel.addRow(new Object[]{"Tau", entry.getTau()});
+        attributesModel.addRow(new Object[]{"R²", entry.getObservedRSquared()});
+        attributesModel.addRow(new Object[]{"Density", entry.getDensity()});
+
+
+//        });
+//        attributesModel.addRow(new Object[]{
+//                "Density", entry.getDensity() + " " + (densityOk ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredDensityRatio()
+//        });
+//        attributesModel.addRow(new Object[]{
+//                "R²", entry.getObservedRSquared() + " " + (r2Ok ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredRSquared()
+//        });
+//        attributesModel.addRow(new Object[]{
+//                "Tau", entry.getTau() + " " + (tauOk ? "✅ ≤ " : "❌ ≤ ") + entry.getMaxAllowableVariability()
+//        });
+//        attributesModel.addRow(new Object[]{
+//                "Density", entry.getDensity() + " " + (densityOk ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredDensityRatio()
+//        });
+//        attributesModel.addRow(new Object[]{
+//                "R²", entry.getObservedRSquared() + " " + (r2Ok ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredRSquared()
+//        });
 
         updateNavButtons();
     }
