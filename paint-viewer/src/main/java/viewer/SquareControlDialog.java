@@ -5,6 +5,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.text.DecimalFormat;
+import java.util.Hashtable;
 
 /**
  * Square Control Dialog (3-slider version)
@@ -231,7 +232,25 @@ public class SquareControlDialog extends JDialog {
     private JSlider createSlider(int min, int max, int value) {
         JSlider slider = new JSlider(JSlider.VERTICAL, min, max, Math.min(max, Math.max(min, value)));
         slider.setMajorTickSpacing(Math.max(1, (max - min) / 5));
+        slider.setMinorTickSpacing(1);
         slider.setPaintTicks(true);
+        slider.setPaintLabels(true);
+        slider.setSnapToTicks(true);
+
+        // Scale labels: /10 for 0..200 sliders, /100 for 0..100 (R²)
+        int major = Math.max(1, (max - min) / 5);
+        boolean isRSquared = (max == 100);
+        double divisor = isRSquared ? 100.0 : 10.0;
+
+        java.util.Hashtable<Integer, JLabel> table = new java.util.Hashtable<>();
+        for (int v = min; v <= max; v += major) {
+            String text = isRSquared
+                    ? ONE_DEC.format(v / divisor)       // keep 1 decimal for R²
+                    : String.valueOf((int) Math.round(v / divisor)); // integer for the others
+            table.put(v, new JLabel(text));
+        }
+        slider.setLabelTable(table);
+
         return slider;
     }
 
