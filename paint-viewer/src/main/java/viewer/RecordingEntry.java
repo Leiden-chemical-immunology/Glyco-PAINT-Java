@@ -31,8 +31,8 @@ public class RecordingEntry {
     private final double minRequiredRSquared;
     private final double observedRSquared;
 
-    private ImageIcon leftImage;
-    private ImageIcon rightImage;
+    private ImageIcon    leftImage;
+    private ImageIcon    rightImage;
     private List<Square> squares;
 
     public RecordingEntry(
@@ -112,26 +112,78 @@ public class RecordingEntry {
     }
 
     // === Getters ===
-    public String getRecordingName() { return recordingName; }
-    public String getExperimentName() { return experimentName; }
-    public String getProbeName() { return probeName; }
-    public String getProbeType() { return probeType; }
-    public String getAdjuvant() { return adjuvant; }
-    public String getCellType() { return cellType; }
-    public double getConcentration() { return concentration; }
-    public int getNumberOfSpots() { return numberOfSpots; }
-    public int getNumberOfTracks() { return numberOfTracks; }
-    public double getThreshold() { return threshold; }
-    public double getTau() { return tau; }
-    public double getDensity() { return density; }
-    public double getMinRequiredDensityRatio() { return minRequiredDensityRatio; }
-    public double getMaxAllowableVariability() { return maxAllowableVariability; }
-    public double getMinRequiredRSquared() { return minRequiredRSquared; }
-    public double getObservedRSquared() { return observedRSquared; }
-    public ImageIcon getLeftImage() { return leftImage; }
-    public ImageIcon getRightImage() { return rightImage; }
+    public String getRecordingName() {
+        return recordingName;
+    }
 
-    // === Square loading and caching ===
+    public String getExperimentName() {
+        return experimentName;
+    }
+
+    public String getProbeName() {
+        return probeName;
+    }
+
+    public String getProbeType() {
+        return probeType;
+    }
+
+    public String getAdjuvant() {
+        return adjuvant;
+    }
+
+    public String getCellType() {
+        return cellType;
+    }
+
+    public double getConcentration() {
+        return concentration;
+    }
+
+    public int getNumberOfSpots() {
+        return numberOfSpots;
+    }
+
+    public int getNumberOfTracks() {
+        return numberOfTracks;
+    }
+
+    public double getThreshold() {
+        return threshold;
+    }
+
+    public double getTau() {
+        return tau;
+    }
+
+    public double getDensity() {
+        return density;
+    }
+
+    public double getMinRequiredDensityRatio() {
+        return minRequiredDensityRatio;
+    }
+
+    public double getMaxAllowableVariability() {
+        return maxAllowableVariability;
+    }
+
+    public double getMinRequiredRSquared() {
+        return minRequiredRSquared;
+    }
+
+    public double getObservedRSquared() {
+        return observedRSquared;
+    }
+
+    public ImageIcon getLeftImage() {
+        return leftImage;
+    }
+
+    public ImageIcon getRightImage() {
+        return rightImage;
+    }
+
     // === Square loading and caching (experiment-level) ===
     public List<Square> getSquares(Project project, int expectedNumberOfSquares) {
         if (squares == null) {
