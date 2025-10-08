@@ -29,6 +29,7 @@ public class RecordingEntry {
     private final double minRequiredDensityRatio;
     private final double maxAllowableVariability;
     private final double minRequiredRSquared;
+    private final String neighbourMode;
     private final double observedRSquared;
 
     private ImageIcon    leftImage;
@@ -53,8 +54,8 @@ public class RecordingEntry {
             double minRequiredDensityRatio,
             double maxAllowableVariability,
             double minRequiredRSquared,
-            double observedRSquared
-    ) {
+            String neighbourMode,
+            double observedRSquared) {
         this.recordingName = recordingName;
         this.trackmateImagePath = trackmateImagePath;
         this.brightfieldImagePath = brightfieldImagePath;
@@ -72,6 +73,7 @@ public class RecordingEntry {
         this.minRequiredDensityRatio = minRequiredDensityRatio;
         this.maxAllowableVariability = maxAllowableVariability;
         this.minRequiredRSquared = minRequiredRSquared;
+        this.neighbourMode = neighbourMode;
         this.observedRSquared = observedRSquared;
 
         // --- Robust image loading ---
