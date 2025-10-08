@@ -25,6 +25,7 @@ public class SquareGridPanel extends JPanel {
     private final Set<Integer> selectedSquares = new HashSet<>();
 
     private boolean   showBorders   = true;
+    private boolean   showShading   = true;
     private Rectangle selectionRect = null;
     private Point     dragStart     = null;
 
@@ -286,8 +287,8 @@ public class SquareGridPanel extends JPanel {
             int x = sq.getColNumber() * squareW;
             int y = sq.getRowNumber() * squareH;
 
-            // --- Step 1: Fill base overlays ---
-            if (sq.getCellId() <= 0) {
+            // --- Step 1: Fill base overlays (only if shading is enabled) ---
+            if (showShading && sq.getCellId() <= 0) {
                 if (selectedSquares.contains(sq.getSquareNumber())) {
                     // 🟨 Mouse-drag selected (additive selection)
                     g2.setColor(new Color(255, 235, 0, 200)); // bright yellow
@@ -301,17 +302,17 @@ public class SquareGridPanel extends JPanel {
 
             // --- Step 2: Borders for assigned and selected ---
             if (sq.getCellId() > 0) {
-                // --- Cell-assigned squares ---
                 Color border = getColorForCell(sq.getCellId());
 
-                // Light but clearly visible fill (~40% opacity)
-                int rVal = Math.min(255, border.getRed() + 40);
-                int gVal = Math.min(255, border.getGreen() + 40);
-                int bVal = Math.min(255, border.getBlue() + 40);
-                Color fill = new Color(rVal, gVal, bVal, 100);
-
-                g2.setColor(fill);
-                g2.fillRect(x, y, squareW, squareH);
+                // light fill for assigned cells (only if shading is on)
+                if (showShading) {
+                    int rVal = Math.min(255, border.getRed() + 40);
+                    int gVal = Math.min(255, border.getGreen() + 40);
+                    int bVal = Math.min(255, border.getBlue() + 40);
+                    Color fill = new Color(rVal, gVal, bVal, 100);
+                    g2.setColor(fill);
+                    g2.fillRect(x, y, squareW, squareH);
+                }
 
                 g2.setStroke(new BasicStroke(1.5f));
                 g2.setColor(border);
@@ -345,6 +346,7 @@ public class SquareGridPanel extends JPanel {
             g2.draw(selectionRect);
         }
     }
+
 
     private void drawCenteredString(Graphics g, String text, int x, int y, int w, int h) {
         FontMetrics fm = g.getFontMetrics();
@@ -408,6 +410,11 @@ public class SquareGridPanel extends JPanel {
         dragSelectedSquares.clear();  // last drag selection
         selectionRect = null;         // remove rubber-band rectangle
         dragStart = null;
+        repaint();
+    }
+
+    public void setShowShading(boolean show) {
+        this.showShading = show;
         repaint();
     }
 }

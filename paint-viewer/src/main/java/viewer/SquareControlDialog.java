@@ -17,6 +17,8 @@ import java.util.Hashtable;
 public class SquareControlDialog extends JDialog {
 
     private final JCheckBox showBordersCheckBox;
+    private final JCheckBox showShadingCheckBox;
+
     private final JRadioButton numberNoneRadio;
     private final JRadioButton numberLabelRadio;
     private final JRadioButton numberSquareRadio;
@@ -93,7 +95,7 @@ public class SquareControlDialog extends JDialog {
         numbersPanel.setBorder(BorderFactory.createTitledBorder("Numbers"));
         numbersPanel.add(numbersInner, BorderLayout.WEST);
 
-        // --- Borders ---
+// --- Borders & Shading ---
         showBordersCheckBox = new JCheckBox("Show borders of selected squares", true);
         showBordersCheckBox.addActionListener(e -> {
             boolean show = showBordersCheckBox.isSelected();
@@ -130,9 +132,19 @@ public class SquareControlDialog extends JDialog {
             }
         });
 
-        JPanel bordersPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bordersPanel.setBorder(BorderFactory.createTitledBorder("Borders"));
+        // 🔹 NEW checkbox for shading
+        showShadingCheckBox = new JCheckBox("Show shading of selected squares", true);
+        showShadingCheckBox.addActionListener(e -> {
+            boolean show = showShadingCheckBox.isSelected();
+            gridPanel.setShowShading(show);
+        });
+
+        // 🔹 Combine both into one titled panel
+        JPanel bordersPanel = new JPanel();
+        bordersPanel.setLayout(new BoxLayout(bordersPanel, BoxLayout.Y_AXIS));
+        bordersPanel.setBorder(BorderFactory.createTitledBorder("Borders & Shading"));
         bordersPanel.add(showBordersCheckBox);
+        bordersPanel.add(showShadingCheckBox);
 
         content.add(bordersPanel);
         content.add(Box.createVerticalStrut(10));
