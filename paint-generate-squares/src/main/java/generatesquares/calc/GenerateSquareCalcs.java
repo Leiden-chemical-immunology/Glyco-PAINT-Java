@@ -5,6 +5,7 @@ import paint.shared.io.SquareTableIO;
 import paint.shared.io.TrackTableIO;
 import paint.shared.objects.*;
 import paint.shared.utils.PaintLogger;
+import paint.shared.utils.SquareUtils;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.Table;
 
@@ -190,22 +191,45 @@ public class GenerateSquareCalcs {
             double variability = calcVariability(tracksInSquareTable, squareNumber, numberOfSquaresInRow, 10);
             square.setVariability(variability);
 
+            double rSquared = square.getRSquared();
+
             double density = calculateDensity(tracksInSquare.size(), area, time, concentration);
             square.setDensity(density);
 
             double densityRatio = tracksInSquare.size() / averageTracks;
             square.setDensityRatio(densityRatio);
 
-            boolean densityRatioOk = densityRatio >= minRequiredDensityRatio;
-            boolean variabilityOK = variability <= maxAllowableVariability;
-            boolean trackCountOk = numberOfSquaresInRow <= minTracksForTau;
-            if (densityRatioOk && variabilityOK && trackCountOk) {
-                square.setLabelNumber(labelNumber);
-                labelNumber += 1;
-                square.setSelected(true);
-            }
-            else {
-                square.setSelected(false);
+//            boolean densityValid     = Double.isFinite(densityRatio);
+//            boolean variabilityValid = Double.isFinite(variability);
+//            boolean r2Valid          = Double.isFinite(rSquared);
+//
+//            boolean densityRatioOK = densityValid     && densityRatio >= minRequiredDensityRatio;
+//            boolean variabilityOK  = variabilityValid && variability <= maxAllowableVariability;
+//            boolean rSquaredOK     = r2Valid          && rSquared  >= minRequiredRSquared;
+//
+//
+//            if (densityRatioOK && variabilityOK && rSquaredOK) {
+//                square.setLabelNumber(labelNumber);
+//                labelNumber += 1;
+//                square.setSelected(true);
+//            }
+//            else {
+//                square.setSelected(false);
+//            }
+
+            // Apply the shared visibility filter logic
+            SquareUtils.applyVisibilityFilter(
+                    recording.getSquaresOfRecording(),
+                    minRequiredDensityRatio,
+                    maxAllowableVariability,
+                    minRequiredRSquared
+            );
+
+            // Re-assign label numbers to selected squares
+            for (Square sq : recording.getSquaresOfRecording()) {
+                if (sq.isSelected()) {
+                    sq.setLabelNumber(labelNumber++);
+                }
             }
         }
     }
