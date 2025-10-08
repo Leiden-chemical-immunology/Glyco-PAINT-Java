@@ -4,32 +4,36 @@
     <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
     <option name="KEEP_BLANK_LINES_BEFORE_RBRACE" value="1" />
 
-    <!-- Braces on same line -->
-    <option name="BRACE_STYLE" value="END_OF_LINE" />
-    <option name="CLASS_BRACE_STYLE" value="END_OF_LINE" />
-    <option name="METHOD_BRACE_STYLE" value="END_OF_LINE" />
-    <option name="ELSE_ON_NEW_LINE" value="false" />
-    <option name="CATCH_ON_NEW_LINE" value="false" />
-    <option name="FINALLY_ON_NEW_LINE" value="false" />
-    <option name="WHILE_ON_NEW_LINE" value="false" />
-
-    <!-- Don’t compress methods or classes to one-liners -->
-    <option name="KEEP_SIMPLE_BLOCKS_IN_ONE_LINE" value="false" />
-    <option name="KEEP_SIMPLE_METHODS_IN_ONE_LINE" value="false" />
-    <option name="KEEP_SIMPLE_CLASSES_IN_ONE_LINE" value="false" />
-
-    <!-- Preserve manual spacing -->
-    <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
-    <option name="ALIGN_MULTILINE_ASSIGNMENT" value="false" />
-    <option name="ALIGN_MULTILINE_BINARY_OPERATION" value="false" />
-    <option name="ALIGN_GROUP_FIELD_DECLARATIONS" value="false" />
-
-    <!-- Formatter off/on markers -->
-    <option name="FORMATTER_OFF_TAG" value="@formatter:off" />
-    <option name="FORMATTER_ON_TAG" value="@formatter:on" />
-
     <!-- Tabs & indents -->
     <option name="TAB_SIZE" value="4" />
     <option name="INDENT_SIZE" value="4" />
     <option name="CONTINUATION_INDENT_SIZE" value="8" />
+
+    <JavaCodeStyleSettings>
+        <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
+        <option name="ALIGN_MULTILINE_ASSIGNMENT" value="false" />
+        <option name="ALIGN_MULTILINE_BINARY_OPERATION" value="false" />
+        <option name="ALIGN_GROUP_FIELD_DECLARATIONS" value="false" />
+    </JavaCodeStyleSettings>
+
+    <codeStyleSettings language="JAVA">
+        <!-- Braces on same line -->
+        <option name="BRACE_STYLE" value="END_OF_LINE" />
+        <option name="CLASS_BRACE_STYLE" value="END_OF_LINE" />
+        <option name="METHOD_BRACE_STYLE" value="END_OF_LINE" />
+        <option name="LAMBDA_BRACE_STYLE" value="END_OF_LINE" />
+        <option name="ELSE_ON_NEW_LINE" value="false" />
+        <option name="CATCH_ON_NEW_LINE" value="false" />
+        <option name="FINALLY_ON_NEW_LINE" value="false" />
+        <option name="WHILE_ON_NEW_LINE" value="false" />
+
+        <!-- Don’t compress to one-liners -->
+        <option name="KEEP_SIMPLE_BLOCKS_IN_ONE_LINE" value="false" />
+        <option name="KEEP_SIMPLE_METHODS_IN_ONE_LINE" value="false" />
+        <option name="KEEP_SIMPLE_CLASSES_IN_ONE_LINE" value="false" />
+
+        <!-- Formatter markers -->
+        <option name="FORMATTER_OFF_TAG" value="@formatter:off" />
+        <option name="FORMATTER_ON_TAG" value="@formatter:on" />
+    </codeStyleSettings>
 </code_scheme>
