@@ -80,8 +80,10 @@ public class GenerateSquares {
                 );
                 ValidationResult validateResult = validateExperiments(projectPath, project.experimentNames, fileNames);
 
-                for (String line : validateResult.getReport().split("\n")) {
-                    PaintLogger.errorf(line);
+                if (!validateResult.isValid()) {
+                    for (String line : validateResult.getReport().split("\n")) {
+                        PaintLogger.errorf(line);
+                    }
                 }
                 if (validateResult.hasErrors()) {
                     return false;
