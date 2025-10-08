@@ -1,152 +1,280 @@
 package viewer;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.Arrays;
-
-
+import java.text.DecimalFormat;
 
 /**
- * Dialog for adjusting square control parameters
- * (density ratio, variability, R², duration, neighbour mode)
- * and applying them to a Recording / Experiment / Project scope.
+ * Square Control Dialog (3-slider version)
+ * - Density Ratio, Variability, R² sliders
+ * - Border + Number display controls
+ * - Neighbour mode (Free / Relaxed / Strict)
+ * Compatible with new SquareGridPanel that loads squares once.
  */
 public class SquareControlDialog extends JDialog {
 
-    private final RecordingViewerFrame parentFrame;
+    private final JCheckBox showBordersCheckBox;
+    private final JRadioButton numberNoneRadio;
+    private final JRadioButton numberLabelRadio;
+    private final JRadioButton numberSquareRadio;
+
+    private final JSlider densityRatioSlider;
+    private final JSlider variabilitySlider;
+    private final JSlider rSquaredSlider;
+
+    private final JLabel densityRatioValue;
+    private final JLabel variabilityValue;
+    private final JLabel rSquaredValue;
+
+    private final JRadioButton neighbourFree;
+    private final JRadioButton neighbourRelaxed;
+    private final JRadioButton neighbourStrict;
+
+    private final RecordingViewerFrame viewerFrame;
     private final SquareGridPanel gridPanel;
 
-    private final JSpinner densitySpinner;
-    private final JSpinner variabilitySpinner;
-    private final JSpinner r2Spinner;
-    private final JSpinner minDurationSpinner;
-    private final JSpinner maxDurationSpinner;
-    private final JComboBox<String> neighbourBox;
+    private SquareGridPanel.NumberMode lastNumberMode = SquareGridPanel.NumberMode.NONE;
 
-    private boolean cancelled = true;
+    private double origDensityRatio;
+    private double origVariability;
+    private double origRSquared;
+    private String origNeighbourMode;
 
-    public SquareControlDialog(
-            RecordingViewerFrame parentFrame,
-            SquareGridPanel gridPanel,
-            Frame owner,
-            SquareControlParams defaults
-    ) {
-        super(owner, "Square Control Parameters", true);
-        this.parentFrame = parentFrame;
+    private static final DecimalFormat ONE_DEC = new DecimalFormat("0.0");
+
+    public SquareControlDialog(JFrame owner,
+                               SquareGridPanel gridPanel,
+                               RecordingViewerFrame viewerFrame,
+                               SquareControlParams initParams) {
+        super(owner, "Square Controls", false);
+        this.viewerFrame = viewerFrame;
         this.gridPanel = gridPanel;
 
         setLayout(new BorderLayout(10, 10));
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        JPanel form = new JPanel(new GridLayout(0, 2, 10, 6));
+        JPanel content = new JPanel();
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
-        densitySpinner = new JSpinner(new SpinnerNumberModel(defaults.densityRatio, 0.0, 10.0, 0.01));
-        variabilitySpinner = new JSpinner(new SpinnerNumberModel(defaults.variability, 0.0, 10.0, 0.01));
-        r2Spinner = new JSpinner(new SpinnerNumberModel(defaults.rSquared, 0.0, 1.0, 0.01));
-        minDurationSpinner = new JSpinner(new SpinnerNumberModel(defaults.minDuration, 0, 10000, 10));
-        maxDurationSpinner = new JSpinner(new SpinnerNumberModel(defaults.maxDuration, 0, 10000, 10));
-        neighbourBox = new JComboBox<>(new String[]{"Free", "Fixed", "Neighbour"});
-        neighbourBox.setSelectedItem(defaults.neighbourMode);
+        // --- Numbers first so they're initialized before borders listener ---
+        numberNoneRadio = new JRadioButton("Show no number", true);
+        numberLabelRadio = new JRadioButton("Show label number");
+        numberSquareRadio = new JRadioButton("Show square number");
 
-        form.add(new JLabel("Min Density Ratio:"));
-        form.add(densitySpinner);
-        form.add(new JLabel("Max Variability:"));
-        form.add(variabilitySpinner);
-        form.add(new JLabel("Min R²:"));
-        form.add(r2Spinner);
-        form.add(new JLabel("Min Duration:"));
-        form.add(minDurationSpinner);
-        form.add(new JLabel("Max Duration:"));
-        form.add(maxDurationSpinner);
-        form.add(new JLabel("Neighbour Mode:"));
-        form.add(neighbourBox);
+        ButtonGroup numbersGroup = new ButtonGroup();
+        numbersGroup.add(numberNoneRadio);
+        numbersGroup.add(numberLabelRadio);
+        numbersGroup.add(numberSquareRadio);
 
-        add(form, BorderLayout.CENTER);
+        numberNoneRadio.addActionListener(e -> gridPanel.setNumberMode(SquareGridPanel.NumberMode.NONE));
+        numberLabelRadio.addActionListener(e -> gridPanel.setNumberMode(SquareGridPanel.NumberMode.LABEL));
+        numberSquareRadio.addActionListener(e -> gridPanel.setNumberMode(SquareGridPanel.NumberMode.SQUARE));
 
-        // --- Bottom buttons ---
-        JPanel bottomPanel = new JPanel(new BorderLayout());
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton cancelBtn = new JButton("Cancel");
-        JButton applyBtn = new JButton("Apply");
-        buttons.add(applyBtn);
-        buttons.add(cancelBtn);
+        JPanel numbersInner = new JPanel();
+        numbersInner.setLayout(new BoxLayout(numbersInner, BoxLayout.Y_AXIS));
+        numbersInner.add(numberNoneRadio);
+        numbersInner.add(numberLabelRadio);
+        numbersInner.add(numberSquareRadio);
 
-        JPanel scopePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel applyLabel = new JLabel("Apply scope:");
-        JButton applyRecordingBtn = new JButton("Recording");
-        JButton applyExperimentBtn = new JButton("Experiment");
-        JButton applyProjectBtn = new JButton("Project");
-        for (JButton b : Arrays.asList(applyRecordingBtn, applyExperimentBtn, applyProjectBtn)) {
-            b.setFocusPainted(false);
+        JPanel numbersPanel = new JPanel(new BorderLayout());
+        numbersPanel.setBorder(BorderFactory.createTitledBorder("Numbers"));
+        numbersPanel.add(numbersInner, BorderLayout.WEST);
+
+        // --- Borders ---
+        showBordersCheckBox = new JCheckBox("Show borders of selected squares", true);
+        showBordersCheckBox.addActionListener(e -> {
+            boolean show = showBordersCheckBox.isSelected();
+            gridPanel.setShowBorders(show);
+
+            if (!show) {
+                if (numberLabelRadio.isSelected()) lastNumberMode = SquareGridPanel.NumberMode.LABEL;
+                else if (numberSquareRadio.isSelected()) lastNumberMode = SquareGridPanel.NumberMode.SQUARE;
+                else lastNumberMode = SquareGridPanel.NumberMode.NONE;
+
+                numberNoneRadio.setSelected(true);
+                gridPanel.setNumberMode(SquareGridPanel.NumberMode.NONE);
+                numberNoneRadio.setEnabled(false);
+                numberLabelRadio.setEnabled(false);
+                numberSquareRadio.setEnabled(false);
+            } else {
+                numberNoneRadio.setEnabled(true);
+                numberLabelRadio.setEnabled(true);
+                numberSquareRadio.setEnabled(true);
+                switch (lastNumberMode) {
+                    case LABEL:
+                        numberLabelRadio.setSelected(true);
+                        gridPanel.setNumberMode(SquareGridPanel.NumberMode.LABEL);
+                        break;
+                    case SQUARE:
+                        numberSquareRadio.setSelected(true);
+                        gridPanel.setNumberMode(SquareGridPanel.NumberMode.SQUARE);
+                        break;
+                    default:
+                        numberNoneRadio.setSelected(true);
+                        gridPanel.setNumberMode(SquareGridPanel.NumberMode.NONE);
+                        break;
+                }
+            }
+        });
+
+        JPanel bordersPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        bordersPanel.setBorder(BorderFactory.createTitledBorder("Borders"));
+        bordersPanel.add(showBordersCheckBox);
+
+        content.add(bordersPanel);
+        content.add(Box.createVerticalStrut(10));
+        content.add(numbersPanel);
+        content.add(Box.createVerticalStrut(10));
+
+        // --- Three sliders ---
+        densityRatioSlider = createSlider(0, 200, (int) Math.round(initParams.densityRatio * 10));
+        variabilitySlider = createSlider(0, 200, (int) Math.round(initParams.variability * 10));
+        rSquaredSlider = createSlider(0, 100, (int) Math.round(initParams.rSquared * 100));
+
+        densityRatioValue = new JLabel();
+        variabilityValue = new JLabel();
+        rSquaredValue = new JLabel();
+
+        JPanel slidersPanel = new JPanel(new GridLayout(1, 3, 15, 0));
+        slidersPanel.add(wrapSlider(densityRatioSlider, "Min Required Density Ratio", densityRatioValue));
+        slidersPanel.add(wrapSlider(variabilitySlider, "Max Allowable Variability", variabilityValue));
+        slidersPanel.add(wrapSlider(rSquaredSlider, "Min Required R²", rSquaredValue));
+
+        content.add(slidersPanel);
+        content.add(Box.createVerticalStrut(10));
+
+        // --- Neighbour mode ---
+        neighbourFree = new JRadioButton("Free");
+        neighbourRelaxed = new JRadioButton("Relaxed");
+        neighbourStrict = new JRadioButton("Strict");
+
+        ButtonGroup neighbourGroup = new ButtonGroup();
+        neighbourGroup.add(neighbourFree);
+        neighbourGroup.add(neighbourRelaxed);
+        neighbourGroup.add(neighbourStrict);
+
+        switch (initParams.neighbourMode) {
+            case "Relaxed": neighbourRelaxed.setSelected(true); break;
+            case "Strict": neighbourStrict.setSelected(true); break;
+            default: neighbourFree.setSelected(true);
         }
 
-        scopePanel.add(applyLabel);
-        scopePanel.add(applyRecordingBtn);
-        scopePanel.add(applyExperimentBtn);
-        scopePanel.add(applyProjectBtn);
+        JPanel neighbourPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        neighbourPanel.setBorder(BorderFactory.createTitledBorder("Neighbour Mode"));
+        neighbourPanel.add(neighbourFree);
+        neighbourPanel.add(neighbourRelaxed);
+        neighbourPanel.add(neighbourStrict);
+        content.add(neighbourPanel);
+        content.add(Box.createVerticalStrut(10));
 
-        bottomPanel.add(scopePanel, BorderLayout.WEST);
-        bottomPanel.add(buttons, BorderLayout.EAST);
-        add(bottomPanel, BorderLayout.SOUTH);
+        add(content, BorderLayout.CENTER);
 
-        // --- Actions ---
-        applyBtn.addActionListener(e -> {
-            cancelled = false;
-            applyLocally();
+        // --- Apply / Cancel ---
+        JPanel applyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        applyPanel.setBorder(BorderFactory.createTitledBorder("Apply Changes"));
+        JButton applyRecording = new JButton("Apply to Recording");
+        JButton applyExperiment = new JButton("Apply to Experiment");
+        JButton applyProject = new JButton("Apply to Project");
+        JButton cancelButton = new JButton("Cancel");
+        applyPanel.add(applyRecording);
+        applyPanel.add(applyExperiment);
+        applyPanel.add(applyProject);
+        applyPanel.add(cancelButton);
+        add(applyPanel, BorderLayout.SOUTH);
+
+        // --- Listeners ---
+        ChangeListener sliderListener = (ChangeEvent e) -> {
+            updateValueLabels();
+            propagateValues();
+        };
+        densityRatioSlider.addChangeListener(sliderListener);
+        variabilitySlider.addChangeListener(sliderListener);
+        rSquaredSlider.addChangeListener(sliderListener);
+
+        neighbourFree.addActionListener(e -> propagateValues());
+        neighbourRelaxed.addActionListener(e -> propagateValues());
+        neighbourStrict.addActionListener(e -> propagateValues());
+
+        applyRecording.addActionListener(e -> viewerFrame.applySquareControlParameters("Recording", collectParams()));
+        applyExperiment.addActionListener(e -> viewerFrame.applySquareControlParameters("Experiment", collectParams()));
+        applyProject.addActionListener(e -> viewerFrame.applySquareControlParameters("Project", collectParams()));
+        cancelButton.addActionListener(e -> {
+            restoreOriginals();
             dispose();
         });
 
-        cancelBtn.addActionListener(e -> dispose());
+        // --- Save originals ---
+        origDensityRatio = initParams.densityRatio;
+        origVariability = initParams.variability;
+        origRSquared = initParams.rSquared;
+        origNeighbourMode = initParams.neighbourMode;
 
-        applyRecordingBtn.addActionListener(e -> {
-            cancelled = false;
-            applyLocally();
-            parentFrame.applySquareControlParameters("Recording", buildParams());
-            dispose();
-        });
-
-        applyExperimentBtn.addActionListener(e -> {
-            cancelled = false;
-            applyLocally();
-            parentFrame.applySquareControlParameters("Experiment", buildParams());
-            dispose();
-        });
-
-        applyProjectBtn.addActionListener(e -> {
-            cancelled = false;
-            applyLocally();
-            parentFrame.applySquareControlParameters("Project", buildParams());
-            dispose();
-        });
+        updateValueLabels();
+        propagateValues();
 
         pack();
         setLocationRelativeTo(owner);
     }
 
-    private void applyLocally() {
-        parentFrame.updateSquareControlParameters(
-                (double) densitySpinner.getValue(),
-                (double) variabilitySpinner.getValue(),
-                (double) r2Spinner.getValue(),
-                (int) minDurationSpinner.getValue(),
-                (int) maxDurationSpinner.getValue(),
-                (String) neighbourBox.getSelectedItem()
+    private JSlider createSlider(int min, int max, int value) {
+        JSlider slider = new JSlider(JSlider.VERTICAL, min, max, Math.min(max, Math.max(min, value)));
+        slider.setMajorTickSpacing(Math.max(1, (max - min) / 5));
+        slider.setPaintTicks(true);
+        return slider;
+    }
+
+    private JPanel wrapSlider(JSlider slider, String title, JLabel valueLabel) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createTitledBorder(title));
+        panel.add(slider, BorderLayout.CENTER);
+        valueLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        panel.add(valueLabel, BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private void updateValueLabels() {
+        densityRatioValue.setText(ONE_DEC.format(densityRatioSlider.getValue() / 10.0));
+        variabilityValue.setText(ONE_DEC.format(variabilitySlider.getValue() / 10.0));
+        rSquaredValue.setText(ONE_DEC.format(rSquaredSlider.getValue() / 100.0));
+    }
+
+    private void propagateValues() {
+        viewerFrame.updateSquareControlParameters(
+                densityRatioSlider.getValue() / 10.0,
+                variabilitySlider.getValue() / 10.0,
+                rSquaredSlider.getValue() / 100.0,
+                0, 0,
+                getNeighbourMode()
         );
     }
 
-    private SquareControlParams buildParams() {
+    private String getNeighbourMode() {
+        if (neighbourFree.isSelected()) return "Free";
+        if (neighbourRelaxed.isSelected()) return "Relaxed";
+        return "Strict";
+    }
+
+    private void restoreOriginals() {
+        densityRatioSlider.setValue((int) Math.round(origDensityRatio * 10));
+        variabilitySlider.setValue((int) Math.round(origVariability * 10));
+        rSquaredSlider.setValue((int) Math.round(origRSquared * 100));
+
+        if ("Free".equals(origNeighbourMode)) neighbourFree.setSelected(true);
+        else if ("Relaxed".equals(origNeighbourMode)) neighbourRelaxed.setSelected(true);
+        else neighbourStrict.setSelected(true);
+
+        updateValueLabels();
+        propagateValues();
+    }
+
+    private SquareControlParams collectParams() {
         return new SquareControlParams(
-                (double) densitySpinner.getValue(),
-                (double) variabilitySpinner.getValue(),
-                (double) r2Spinner.getValue(),
-                (int) minDurationSpinner.getValue(),
-                (int) maxDurationSpinner.getValue(),
-                (String) neighbourBox.getSelectedItem()
+                densityRatioSlider.getValue() / 10.0,
+                variabilitySlider.getValue() / 10.0,
+                rSquaredSlider.getValue() / 100.0,
+                0, 0,
+                getNeighbourMode()
         );
-    }
-
-    public boolean isCancelled() {
-        return cancelled;
     }
 }
