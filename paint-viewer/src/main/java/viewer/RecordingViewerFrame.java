@@ -279,7 +279,8 @@ public class RecordingViewerFrame extends JFrame {
         leftGridPanel.setBackgroundImage(entry.getLeftImage());
         rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), size, size));
 
-        leftGridPanel.setSquares(entry.getSquares(project, expectNumberOfSquares));
+        List<Square> squares = entry.getSquares(project, expectNumberOfSquares);
+        leftGridPanel.setSquares(squares);
 
         int totalInExperiment = 0;
         int indexInExperiment = 0;

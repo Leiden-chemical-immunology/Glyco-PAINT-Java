@@ -7,7 +7,6 @@ import java.util.Arrays;
 
 
 
-
 /**
  * Dialog for adjusting square control parameters
  * (density ratio, variability, R², duration, neighbour mode)

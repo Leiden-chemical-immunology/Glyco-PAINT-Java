@@ -140,7 +140,6 @@ public class SquareGridPanel extends JPanel {
 
     public void setSquares(List<Square> newSquares) {
         this.squares = newSquares != null ? newSquares : new ArrayList<>();
-        clearSelection();
     }
 
     public void setBackgroundImage(ImageIcon icon) {
@@ -161,30 +160,25 @@ public class SquareGridPanel extends JPanel {
         int squareH = height / rows;
         Graphics2D g2 = (Graphics2D) g;
 
-        // --- Step 1: Draw unassigned grid lines ---
-        if (showBorders) {
-            g2.setColor(Color.WHITE);
-            g2.setStroke(new BasicStroke(1f));
-            for (Square sq : squares) {
-                if (sq.getCellId() == 0) {
-                    int x = sq.getColNumber() * squareW;
-                    int y = sq.getRowNumber() * squareH;
-                    g2.drawRect(x, y, squareW, squareH);
-                }
-            }
-        }
-
-        // --- Step 2: Fill selection overlays ---
+        // --- Step 1: Draw borders for assigned or selected squares ---
         for (Square sq : squares) {
-            if (sq.isSelected()) {
-                int x = sq.getColNumber() * squareW;
-                int y = sq.getRowNumber() * squareH;
-                g2.setColor(new Color(255, 255, 255, 120));
-                g2.fillRect(x, y, squareW, squareH);
+            int x = sq.getColNumber() * squareW;
+            int y = sq.getRowNumber() * squareH;
+
+            if (sq.getCellId() > 0) {
+                // Assigned square → thick colored border
+                g2.setStroke(new BasicStroke(4f));
+                g2.setColor(getColorForCell(sq.getCellId()));
+                g2.drawRect(x, y, squareW, squareH);
+            } else if (sq.isSelected()) {
+                // Selected but unassigned → thin white border
+                g2.setStroke(new BasicStroke(1.5f));
+                g2.setColor(Color.WHITE);
+                g2.drawRect(x, y, squareW, squareH);
             }
         }
 
-        // --- Step 3: Draw numbers if enabled ---
+        // --- Step 2: Draw numbers if enabled (for selected squares only) ---
         for (Square sq : squares) {
             if (sq.isSelected()) {
                 int x = sq.getColNumber() * squareW;
@@ -197,18 +191,7 @@ public class SquareGridPanel extends JPanel {
             }
         }
 
-        // --- Step 4: Draw assigned cell borders ---
-        g2.setStroke(new BasicStroke(2f));
-        for (Square sq : squares) {
-            if (sq.getCellId() > 0) {
-                int x = sq.getColNumber() * squareW;
-                int y = sq.getRowNumber() * squareH;
-                g2.setColor(getColorForCell(sq.getCellId()));
-                g2.drawRect(x, y, squareW, squareH);
-            }
-        }
-
-        // --- Step 5: Drag rectangle overlay ---
+        // --- Step 3: Drag rectangle overlay ---
         if (selectionRect != null && selectionEnabled) {
             g2.setColor(new Color(255, 255, 255, 120));
             g2.fill(selectionRect);
