@@ -478,6 +478,7 @@ public class PaintConfig {
         if (sec != null && sec.has(key) && sec.get(key).isJsonPrimitive()) {
             return sec.getAsJsonPrimitive(key).getAsString();
         }
+        PaintLogger.warningf("No value for '%s' found, default value '%s' applied", key, defaultValue);
         setStringValue(section, key, defaultValue, true);
         return defaultValue;
     }
@@ -489,10 +490,12 @@ public class PaintConfig {
             try {
                 return sec.getAsJsonPrimitive(key).getAsInt();
             } catch (NumberFormatException e) {
+                PaintLogger.warningf("Invalid value for '%s' found, default value '%d' applied", key, defaultValue);
                 setIntValue(section, key, defaultValue, true);
                 return defaultValue;
             }
         }
+        PaintLogger.warningf("No value for '%s' found, default value '%d' applied", key, defaultValue);
         setIntValue(section, key, defaultValue, true);
         return defaultValue;
     }
@@ -504,10 +507,12 @@ public class PaintConfig {
             try {
                 return sec.getAsJsonPrimitive(key).getAsDouble();
             } catch (NumberFormatException e) {
+                PaintLogger.warningf("Invalid value for '%s' found, default value '%0.2f' applied", key, defaultValue);
                 setDoubleValue(section, key, defaultValue, true);
                 return defaultValue;
             }
         }
+        PaintLogger.warningf("No value for '%s' found, default value '%0.2f' applied", key, defaultValue);
         setDoubleValue(section, key, defaultValue, true);
         return defaultValue;
     }
@@ -519,10 +524,12 @@ public class PaintConfig {
             try {
                 return sec.getAsJsonPrimitive(key).getAsBoolean();
             } catch (Exception e) {
+                PaintLogger.warningf("Invalid value for '%s' found, default value '%b' applied", key, defaultValue);
                 setBooleanValue(section, key, defaultValue, true);
                 return defaultValue;
             }
         }
+        PaintLogger.warningf("No value for '%s' found, default value '%b' applied", key, defaultValue);
         setBooleanValue(section, key, defaultValue, true);
         return defaultValue;
     }
