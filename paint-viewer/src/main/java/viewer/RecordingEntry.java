@@ -13,16 +13,16 @@ import java.util.List;
 public class RecordingEntry {
 
     private final String recordingName;
-    private final Path trackmateImagePath;
-    private final Path brightfieldImagePath;
+    private final Path   trackmateImagePath;
+    private final Path   brightfieldImagePath;
     private final String experimentName;
     private final String probeName;
     private final String probeType;
     private final String adjuvant;
     private final String cellType;
     private final double concentration;
-    private final int numberOfSpots;
-    private final int numberOfTracks;
+    private final int    numberOfSpots;
+    private final int    numberOfTracks;
     private final double threshold;
     private final double tau;
     private final double density;

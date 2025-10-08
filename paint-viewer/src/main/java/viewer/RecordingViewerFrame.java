@@ -302,13 +302,9 @@ public class RecordingViewerFrame extends JFrame {
         boolean tauOk = entry.getTau() <= entry.getMaxAllowableVariability();
         boolean r2Ok = entry.getObservedRSquared() >= entry.getMinRequiredRSquared();
 
-        if (densityOk && tauOk && r2Ok) {
-            System.out.println("Selected!");
-        }
-        else {
-            System.out.println("Not Selected!");
-        }
-
+//        for (Square square : entry.getSquares()) {     #TODO
+//
+//        }
         attributesModel.setRowCount(0);
         attributesModel.addRow(new Object[]{"Probe", entry.getProbeName()});
         attributesModel.addRow(new Object[]{"Probe Type", entry.getProbeType()});
