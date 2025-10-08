@@ -1,8 +1,8 @@
 package generatesquares.calc;
 
+import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.io.SquareTableIO;
 import paint.shared.io.TrackTableIO;
-import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.objects.*;
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.DoubleColumn;
@@ -19,9 +19,9 @@ import static generatesquares.calc.CalculateDensity.calculateAverageTrackCountOf
 import static generatesquares.calc.CalculateDensity.calculateDensity;
 import static generatesquares.calc.CalculateTau.calcTau;
 import static generatesquares.calc.CalculateVariability.calcVariability;
+import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.io.ProjectDataLoader.filterTracksInSquare;
 import static paint.shared.io.ProjectDataLoader.loadExperimentForSquaresCalc;
-import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 
 public class GenerateSquareCalcs {
@@ -132,17 +132,19 @@ public class GenerateSquareCalcs {
 
     public static void calculateSquareAttributes(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
 
-        double imageWidth = 1;
-        double imageHeight = 1;
-        double minRequiredRSquared = generateSquaresConfig.getMinRequiredRSquared();
-        int minTracksForTau = generateSquaresConfig.getMinTracksToCalculateTau();
+        // @formatter:off
+        double imageWidth              = 1;   // TODO
+        double imageHeight             = 1;
+        double minRequiredRSquared     = generateSquaresConfig.getMinRequiredRSquared();
+        int    minTracksForTau         = generateSquaresConfig.getMinTracksToCalculateTau();
         double maxAllowableVariability = generateSquaresConfig.getMaxAllowableVariability();
         double minRequiredDensityRatio = generateSquaresConfig.getMinRequiredDensityRatio();
-        int numberOfSquaresInRow = generateSquaresConfig.getNrSquaresInRow();
-        double area = imageWidth * imageWidth / (generateSquaresConfig.getNrSquaresInRow() * generateSquaresConfig.getNrSquaresInRow());
-        double concentration = recording.getConcentration();
-        double time = 100;
-        int nrOfAverageCountSquares = 10;
+        int    numberOfSquaresInRow    = generateSquaresConfig.getNrSquaresInRow();
+        double area                    = imageWidth * imageWidth / (generateSquaresConfig.getNrSquaresInRow() * generateSquaresConfig.getNrSquaresInRow());
+        double concentration           = recording.getConcentration();
+        double time                    = 100;
+        int    nrOfAverageCountSquares = 10;
+        // @formatter:on
 
         double averageTracks = calculateAverageTrackCountOfBackground(recording, nrOfAverageCountSquares);
 
@@ -204,7 +206,6 @@ public class GenerateSquareCalcs {
                 square.setSelected(false);
             }
         }
-
     }
 
     public static double calculateMedianLongTrack(Table tracks, double fraction) {

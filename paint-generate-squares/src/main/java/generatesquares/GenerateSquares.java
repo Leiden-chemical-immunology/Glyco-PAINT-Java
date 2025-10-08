@@ -8,8 +8,6 @@ import paint.shared.utils.PaintLogger;
 import paint.shared.validate.ValidationResult;
 
 import javax.swing.*;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -38,7 +36,6 @@ public class GenerateSquares {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
 
         SwingUtilities.invokeLater(() -> {
 
@@ -88,7 +85,7 @@ public class GenerateSquares {
                 }
                 if (validateResult.hasErrors()) {
                     return false;
-                 }
+                }
                 LocalDateTime start = LocalDateTime.now();
                 for (String experimentName : project.experimentNames) {
                     generateSquaresForExperiment(project, experimentName);

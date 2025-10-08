@@ -4,9 +4,13 @@ import paint.shared.objects.Square;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class SquareGridPanel extends JPanel {
 
