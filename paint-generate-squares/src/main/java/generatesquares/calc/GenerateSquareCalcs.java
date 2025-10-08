@@ -22,6 +22,7 @@ import static generatesquares.calc.CalculateVariability.calcVariability;
 import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.io.ProjectDataLoader.filterTracksInSquare;
 import static paint.shared.io.ProjectDataLoader.loadExperimentForSquaresCalc;
+import static paint.shared.objects.Square.calcSquareArea;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 
 public class GenerateSquareCalcs {
@@ -133,14 +134,15 @@ public class GenerateSquareCalcs {
     public static void calculateSquareAttributes(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
 
         // @formatter:off
-        double imageWidth              = 1;   // TODO
-        double imageHeight             = 1;
+//        double imageWidth              = IMAGE_WIDTH;   // TODO
+//        double imageHeight             = IMAGE_HEIGHT;
         double minRequiredRSquared     = generateSquaresConfig.getMinRequiredRSquared();
         int    minTracksForTau         = generateSquaresConfig.getMinTracksToCalculateTau();
         double maxAllowableVariability = generateSquaresConfig.getMaxAllowableVariability();
         double minRequiredDensityRatio = generateSquaresConfig.getMinRequiredDensityRatio();
         int    numberOfSquaresInRow    = generateSquaresConfig.getNrSquaresInRow();
-        double area                    = imageWidth * imageWidth / (generateSquaresConfig.getNrSquaresInRow() * generateSquaresConfig.getNrSquaresInRow());
+        // double area                    = imageWidth * imageWidth / (generateSquaresConfig.getNrSquaresInRow() * generateSquaresConfig.getNrSquaresInRow());
+        double area                    = calcSquareArea(400);
         double concentration           = recording.getConcentration();
         double time                    = 100;
         int    nrOfAverageCountSquares = 10;
