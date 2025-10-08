@@ -2,12 +2,14 @@ package viewer;
 
 import paint.shared.objects.Square;
 import paint.shared.utils.PaintLogger;
+import paint.shared.utils.SquareUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -45,9 +47,14 @@ public class SquareGridPanel extends JPanel {
 
     // 🔹 Palette used also by CellAssignmentDialog
     private static final Color[] CELL_COLORS = {
-            Color.RED, Color.GREEN, Color.BLUE,
-            Color.MAGENTA, Color.ORANGE, Color.CYAN
+            Color.RED,
+            Color.GREEN,
+            Color.BLUE,
+            Color.MAGENTA,
+            Color.ORANGE, Color.CYAN
     };
+
+    private JWindow infoPopup;
 
     public SquareGridPanel(int rows, int cols) {
         this.rows = rows;
@@ -75,21 +82,33 @@ public class SquareGridPanel extends JPanel {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (!selectionEnabled) return;
                 int squareW = getWidth() / cols;
                 int squareH = getHeight() / rows;
                 int col = e.getX() / squareW;
                 int row = e.getY() / squareH;
 
-                for (Square sq : squares) {
-                    if (sq.getRowNumber() == row && sq.getColNumber() == col) {
-                        boolean newSel = !sq.isSelected();
-                        sq.setSelected(newSel);
-                        if (newSel) selectedSquares.add(sq.getSquareNumber());
-                        else selectedSquares.remove(sq.getSquareNumber());
-                        repaint();
-                        break;
+                if (selectionEnabled) {
+                    for (Square sq : squares) {
+                        if (sq.getRowNumber() == row && sq.getColNumber() == col) {
+                            boolean newSel = !sq.isSelected();
+                            sq.setSelected(newSel);
+                            if (newSel) {
+                                selectedSquares.add(sq.getSquareNumber());
+                            }
+                            else {
+                                selectedSquares.remove(sq.getSquareNumber());
+                            }
+                            repaint();
+                            break;
+                        }
                     }
+                }
+
+                // 🔹 Always allow popup, even if selection is off
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    showSquareInfo(e.getX(), e.getY());
+                } else if (SwingUtilities.isRightMouseButton(e)) {
+                    hideInfoPopup();
                 }
             }
         });
@@ -106,6 +125,77 @@ public class SquareGridPanel extends JPanel {
                 repaint();
             }
         });
+    }
+
+    // 🔹 Popup feature
+    private void showSquareInfo(int mouseX, int mouseY) {
+        if (squares == null || squares.isEmpty()) return;
+
+        int squareW = getWidth() / cols;
+        int squareH = getHeight() / rows;
+        int row = mouseY / squareH;
+        int col = mouseX / squareW;
+        int index = row * cols + col;
+        if (index < 0 || index >= squares.size()) return;
+
+        Square sq = squares.get(index);
+
+        String html = String.format(
+                "<html><body style='font-family:sans-serif;font-size:11px;'>"
+                        + "<b>Square %d</b><br>"
+                        + "Density Ratio: %.2f<br>"
+                        + "Variability: %.2f<br>"
+                        + "R²: %.2f<br>"
+                        + "Tracks: %d<br>"
+                        + "<i>(Right-click anywhere to close)</i>"
+                        + "</body></html>",
+                sq.getSquareNumber(),
+                sq.getDensityRatio(),
+                sq.getVariability(),
+                sq.getRSquared(),
+                sq.getTracks() != null ? sq.getTracks().size() : 0
+        );
+
+        // 🔹 Create or update popup
+        if (infoPopup == null) {
+            infoPopup = new JWindow(SwingUtilities.getWindowAncestor(this));
+            JLabel label = new JLabel(html);
+            label.setOpaque(true);
+            label.setBackground(new Color(255, 255, 255, 230));
+            label.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(Color.DARK_GRAY),
+                    BorderFactory.createEmptyBorder(6, 8, 6, 8)
+            ));
+            infoPopup.add(label);
+            infoPopup.pack();
+            infoPopup.setAlwaysOnTop(true);
+        } else {
+            ((JLabel) infoPopup.getContentPane().getComponent(0)).setText(html);
+        }
+
+        // 🔹 Reposition near the clicked square each time
+        Point panelScreen = getLocationOnScreen();
+        int popupX = panelScreen.x + col * squareW + squareW + 8;
+        int popupY = panelScreen.y + row * squareH + squareH / 4;
+
+        Rectangle screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        if (popupX + infoPopup.getWidth() > screen.x + screen.width) {
+            popupX = panelScreen.x + col * squareW - infoPopup.getWidth() - 8;
+        }
+        if (popupY + infoPopup.getHeight() > screen.y + screen.height) {
+            popupY = screen.y + screen.height - infoPopup.getHeight() - 8;
+        }
+
+        infoPopup.setLocation(popupX, popupY);
+        infoPopup.setVisible(true);
+    }
+
+    private void hideInfoPopup() {
+        if (infoPopup != null) {
+            infoPopup.setVisible(false);
+            infoPopup.dispose();
+            infoPopup = null;
+        }
     }
 
     private void selectSquaresInRect(Rectangle rect) {
@@ -188,6 +278,26 @@ public class SquareGridPanel extends JPanel {
             int x = sq.getColNumber() * squareW;
             int y = sq.getRowNumber() * squareH;
 
+            if (sq.isSelected() && sq.getCellId() <= 0) {
+                Color fillColor;
+                if (backgroundImage instanceof BufferedImage) {
+                    int sampleX = Math.min(((BufferedImage) backgroundImage).getWidth() - 1, x + squareW / 2);
+                    int sampleY = Math.min(((BufferedImage) backgroundImage).getHeight() - 1, y + squareH / 2);
+                    int rgb = ((BufferedImage) backgroundImage).getRGB(sampleX, sampleY);
+                    int r = (rgb >> 16) & 0xFF;
+                    int bg = (rgb >> 8) & 0xFF;
+                    int b = rgb & 0xFF;
+                    double brightness = (0.299 * r + 0.587 * bg + 0.114 * b);
+                    fillColor = (brightness < 128)
+                            ? new Color(255, 255, 255, 60) // translucent white for dark bg
+                            : new Color(0, 0, 0, 60);      // translucent black for light bg
+                } else {
+                    fillColor = new Color(255, 255, 255, 60);
+                }
+
+                g2.setColor(fillColor);
+                g2.fillRect(x, y, squareW, squareH);
+            }
             if (sq.getCellId() > 0) {
                 // Assigned square → thick colored border
                 g2.setStroke(new BasicStroke(4f));
@@ -266,34 +376,7 @@ public class SquareGridPanel extends JPanel {
 
     /** Re-apply selection/visibility based on the current control params. */
     public void applyVisibilityFilter() {
-
-        System.out.printf(
-                "Filter triggered: DR>=%.1f, Var<=%.1f, R²>=%.2f%n",
-                ctrlMinDensityRatio, ctrlMaxVariability, ctrlMinRSquared
-        );
-        int nrSelected = 0;
-
-        if (squares == null || squares.isEmpty()) {
-            return;
-        }
-        for (Square sq : squares) {
-
-            boolean densityOK = sq.getDensityRatio() >= ctrlMinDensityRatio;
-            boolean variabilityOK = sq.getVariability() <= ctrlMaxVariability;
-            boolean rSquaredOK = sq.getRSquared() >= ctrlMinRSquared;
-
-            boolean pass = densityOK && variabilityOK && rSquaredOK;
-
-            if (pass) {
-                nrSelected++;
-                PaintLogger.debugf("Square %d: Dens=%b Var=%b R2=%b%n",
-                        sq.getSquareNumber(), densityOK, variabilityOK, rSquaredOK);
-                PaintLogger.debugf("Square %d: DR=%.2f Var=%.2f R2=%.2f%n",
-                        sq.getSquareNumber(), sq.getDensityRatio(), sq.getVariability(), sq.getRSquared());
-            }
-            sq.setSelected(pass);
-        }
+        SquareUtils.applyVisibilityFilter(squares, ctrlMinDensityRatio, ctrlMaxVariability, ctrlMinRSquared);
         repaint();
-        PaintLogger.debugf("Number squares selected: %d\n", nrSelected);
     }
 }
