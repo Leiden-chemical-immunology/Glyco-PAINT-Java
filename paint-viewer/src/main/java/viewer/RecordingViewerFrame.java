@@ -23,14 +23,14 @@ public class RecordingViewerFrame extends JFrame {
     private int currentIndex = 0;
 
     // Grid panel
-    private final SquareGridPanel leftGridPanel = new SquareGridPanel(20, 20);
+    private final SquareGridPanel leftGridPanel = new SquareGridPanel(20, 20);     //T ODO
 
     // Labels, tables, UI
-    private final JLabel rightImageLabel = new JLabel("", SwingConstants.CENTER);
+    private final JLabel            rightImageLabel = new JLabel("", SwingConstants.CENTER);
     private final DefaultTableModel attributesModel;
-    private final JTable attributesTable;
-    private final JLabel experimentLabel = new JLabel("", SwingConstants.CENTER);
-    private final JLabel recordingLabel = new JLabel("", SwingConstants.CENTER);
+    private final JTable            attributesTable;
+    private final JLabel            experimentLabel = new JLabel("", SwingConstants.CENTER);
+    private final JLabel            recordingLabel  = new JLabel("", SwingConstants.CENTER);
 
     // Navigation buttons
     private final JButton firstBtn = new JButton("|<");
@@ -40,11 +40,9 @@ public class RecordingViewerFrame extends JFrame {
 
     // --- Square filter parameters ---
     private double minDensityRatio = 0.0;
-    private double maxVariability = 0.0;
-    private double minRSquared = 0.5;
-    private int minDuration = 100;
-    private int maxDuration = 500;
-    private String neighbourMode = "Free";
+    private double maxVariability  = 0.0;
+    private double minRSquared     = 0.5;
+    private String neighbourMode   = "Free";
 
     // --- Cell assignment state ---
     private final Map<Integer, Integer> squareAssignments = new HashMap<>();
@@ -410,22 +408,19 @@ public class RecordingViewerFrame extends JFrame {
     }
 
     // === SquareControl ===
-    public void updateSquareControlParameters(
-            double densityRatio,
-            double variability,
-            double rSquared,
-            int minDuration,
-            int maxDuration,
-            String neighbourMode
-    ) {
-        this.minDensityRatio = densityRatio;
-        this.maxVariability = variability;
-        this.minRSquared = rSquared;
-        this.minDuration = minDuration;
-        this.maxDuration = maxDuration;
-        this.neighbourMode = neighbourMode;
+    public void updateSquareControlParameters(double densityRatio,
+                                              double variability,
+                                              double rSquared,
+                                              String neighbourMode) {
+        leftGridPanel.setControlParameters(
+                densityRatio,
+                variability,
+                rSquared,
+                neighbourMode
+        );
 
-        repaint();
+        leftGridPanel.applyVisibilityFilter();  // recompute visible squares
+        leftGridPanel.repaint();                // refresh display
     }
 
 
