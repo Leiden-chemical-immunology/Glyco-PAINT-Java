@@ -11,21 +11,20 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
-public class RecordingEntry
-{
+public class RecordingEntry {
     private final Recording recording;
-    private final Path      trackmateImagePath;
-    private final Path      brightfieldImagePath;
-    private final String    experimentName;
-    private final double    minRequiredDensityRatio;
-    private final double    maxAllowableVariability;
-    private final double    minRequiredRSquared;
-    private final String    neighbourMode;
-    private final double    observedRSquared;
+    private final Path trackmateImagePath;
+    private final Path brightfieldImagePath;
+    private final String experimentName;
+    private final double minRequiredDensityRatio;
+    private final double maxAllowableVariability;
+    private final double minRequiredRSquared;
+    private final String neighbourMode;
+    private final double observedRSquared;
 
-    private ImageIcon       leftImage;
-    private ImageIcon       rightImage;
-    private List<Square>    squares;
+    private ImageIcon leftImage;
+    private ImageIcon rightImage;
+    private List<Square> squares;
 
     public RecordingEntry(
             Recording recording,
@@ -37,55 +36,47 @@ public class RecordingEntry
             double minRequiredRSquared,
             String neighbourMode,
             double observedRSquared
-    )
-    {
-        this.recording               = recording;
-        this.trackmateImagePath      = trackmateImagePath;
-        this.brightfieldImagePath    = brightfieldImagePath;
-        this.experimentName          = experimentName;
+    ) {
+        this.recording = recording;
+        this.trackmateImagePath = trackmateImagePath;
+        this.brightfieldImagePath = brightfieldImagePath;
+        this.experimentName = experimentName;
         this.minRequiredDensityRatio = minRequiredDensityRatio;
         this.maxAllowableVariability = maxAllowableVariability;
-        this.minRequiredRSquared     = minRequiredRSquared;
-        this.neighbourMode           = neighbourMode;
-        this.observedRSquared        = observedRSquared;
+        this.minRequiredRSquared = minRequiredRSquared;
+        this.neighbourMode = neighbourMode;
+        this.observedRSquared = observedRSquared;
 
-        this.leftImage  = loadImage(trackmateImagePath, "TrackMate");
+        this.leftImage = loadImage(trackmateImagePath, "TrackMate");
         this.rightImage = loadImage(brightfieldImagePath, "Brightfield");
     }
 
     // === Robust image loading helper ===
-    private static ImageIcon loadImage(Path imagePath, String label)
-    {
-        if (imagePath == null) return null;
+    private static ImageIcon loadImage(Path imagePath, String label) {
+        if (imagePath == null) {
+            return null;
+        }
 
-        try
-        {
+        try {
             BufferedImage img = javax.imageio.ImageIO.read(imagePath.toFile());
-            if (img != null)
-            {
+            if (img != null) {
                 PaintLogger.debugf("[%s] Loaded via ImageIO: %s", label, imagePath);
                 return new ImageIcon(img);
             }
             PaintLogger.warningf("[%s] ImageIO returned null for %s", label, imagePath);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             PaintLogger.warningf("[%s] ImageIO failed for %s (%s)", label, imagePath, e.getMessage());
         }
 
-        try
-        {
+        try {
             ij.io.Opener opener = new ij.io.Opener();
             ij.ImagePlus imp = opener.openImage(imagePath.toString());
-            if (imp != null && imp.getImage() != null)
-            {
+            if (imp != null && imp.getImage() != null) {
                 PaintLogger.debugf("[%s] Loaded via ImageJ Opener: %s", label, imagePath);
                 return new ImageIcon(imp.getImage());
             }
             PaintLogger.warningf("[%s] ImageJ Opener returned null for %s", label, imagePath);
-        }
-        catch (Throwable t)
-        {
+        } catch (Throwable t) {
             PaintLogger.warningf("[%s] ImageJ Opener threw error for %s (%s)", label, imagePath, t.getMessage());
         }
 
@@ -94,113 +85,90 @@ public class RecordingEntry
     }
 
     // === Getters ===
-    public String getRecordingName()
-    {
+    public String getRecordingName() {
         return recording.getRecordingName();
     }
 
-    public String getExperimentName()
-    {
+    public String getExperimentName() {
         return experimentName;
     }
 
-    public String getProbeName()
-    {
+    public String getProbeName() {
         return recording.getProbeName();
     }
 
-    public String getProbeType()
-    {
+    public String getProbeType() {
         return recording.getProbeType();
     }
 
-    public String getAdjuvant()
-    {
+    public String getAdjuvant() {
         return recording.getAdjuvant();
     }
 
-    public String getCellType()
-    {
+    public String getCellType() {
         return recording.getCellType();
     }
 
-    public double getConcentration()
-    {
+    public double getConcentration() {
         return recording.getConcentration();
     }
 
-    public int getNumberOfSpots()
-    {
+    public int getNumberOfSpots() {
         return recording.getNumberOfSpots();
     }
 
-    public int getNumberOfTracks()
-    {
+    public int getNumberOfTracks() {
         return recording.getNumberOfTracks();
     }
 
-    public double getThreshold()
-    {
+    public double getThreshold() {
         return recording.getThreshold();
     }
 
-    public double getTau()
-    {
+    public double getTau() {
         return recording.getTau();
     }
 
-    public double getDensity()
-    {
+    public double getDensity() {
         return recording.getDensity();
     }
 
-    public double getMinRequiredDensityRatio()
-    {
+    public double getMinRequiredDensityRatio() {
         return minRequiredDensityRatio;
     }
 
-    public double getMaxAllowableVariability()
-    {
+    public double getMaxAllowableVariability() {
         return maxAllowableVariability;
     }
 
-    public double getMinRequiredRSquared()
-    {
+    public double getMinRequiredRSquared() {
         return minRequiredRSquared;
     }
 
-    public double getObservedRSquared()
-    {
+    public double getObservedRSquared() {
         return observedRSquared;
     }
 
-    public String getNeighbourMode()
-    {
+    public String getNeighbourMode() {
         return neighbourMode;
     }
 
-    public ImageIcon getLeftImage()
-    {
+    public ImageIcon getLeftImage() {
         return leftImage;
     }
 
-    public ImageIcon getRightImage()
-    {
+    public ImageIcon getRightImage() {
         return rightImage;
     }
 
-    public Recording getRecording()
-    {
+    public Recording getRecording() {
         return recording;
     }
 
     // === Square loading and caching (experiment-level) ===
-    public List<Square> getSquares(Project project, int expectedNumberOfSquares)
-    {
-        if (squares == null)
-        {
-            try
-            {
+    public List<Square> getSquares(Project project, int expectedNumberOfSquares) {
+        if (squares == null) {
+            try {
                 PaintLogger.debugf("Fetching squares (cached per experiment) for recording: %s", getRecordingName());
                 squares = ExperimentSquareCache.getSquaresForRecording(
                         project.getProjectRootPath(),
@@ -208,22 +176,17 @@ public class RecordingEntry
                         getRecordingName(),
                         expectedNumberOfSquares
                 );
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
                 squares = Collections.emptyList();
             }
-        }
-        else
-        {
+        } else {
             PaintLogger.debugf("Returning cached squares for recording: %s", getRecordingName());
         }
         return squares;
     }
 
-    public void clearCachedSquares()
-    {
+    public void clearCachedSquares() {
         this.squares = null;
     }
 }
