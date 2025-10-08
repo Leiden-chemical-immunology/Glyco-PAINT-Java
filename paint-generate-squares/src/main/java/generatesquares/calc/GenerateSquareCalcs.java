@@ -146,6 +146,7 @@ public class GenerateSquareCalcs {
 
         double averageTracks = calculateAverageTrackCountOfBackground(recording, nrOfAverageCountSquares);
 
+        int labelNumber = 0;
         for (Square square : recording.getSquaresOfRecording()) {
             int squareNumber = square.getSquareNumber();
             List<Track> tracksInSquare = square.getTracks();
@@ -194,7 +195,14 @@ public class GenerateSquareCalcs {
             boolean densityRatioOk = densityRatio >= minRequiredDensityRatio;
             boolean variabilityOK = variability <= maxAllowableVariability;
             boolean trackCountOk = numberOfSquaresInRow <= minTracksForTau;
-            square.setSelected(densityRatioOk && variabilityOK && trackCountOk);
+            if (densityRatioOk && variabilityOK && trackCountOk) {
+                square.setLabelNumber(labelNumber);
+                labelNumber += 1;
+                square.setSelected(true);
+            }
+            else {
+                square.setSelected(false);
+            }
         }
 
     }
