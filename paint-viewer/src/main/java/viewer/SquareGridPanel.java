@@ -1,6 +1,7 @@
 package viewer;
 
 import paint.shared.objects.Square;
+import paint.shared.utils.PaintLogger;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,9 +22,15 @@ public class SquareGridPanel extends JPanel {
     private List<Square> squares = new ArrayList<>();
     private final Set<Integer> selectedSquares = new HashSet<>();
 
-    private boolean showBorders = true;
+    private boolean   showBorders   = true;
     private Rectangle selectionRect = null;
-    private Point dragStart = null;
+    private Point     dragStart     = null;
+
+    // --- Control params (set from RecordingViewerFrame / SquareControlDialog)
+    private double ctrlMinDensityRatio = 0.0;
+    private double ctrlMaxVariability  = Double.MAX_VALUE;
+    private double ctrlMinRSquared     = 0.0;
+    private String ctrlNeighbourMode   = "Free";
 
     // 🔹 Selection toggle
     private boolean selectionEnabled = false;
@@ -244,5 +251,49 @@ public class SquareGridPanel extends JPanel {
     public static Color getColorForCell(int cellId) {
         if (cellId <= 0) return Color.GRAY;
         return CELL_COLORS[(cellId - 1) % CELL_COLORS.length];
+    }
+
+    /** Update current control parameters (no UI side-effects here). */
+    public void setControlParameters(double densityRatio,
+                                     double variability,
+                                     double rSquared,
+                                     String neighbourMode) {
+        this.ctrlMinDensityRatio = densityRatio;
+        this.ctrlMaxVariability  = variability;
+        this.ctrlMinRSquared     = rSquared;
+        this.ctrlNeighbourMode   = (neighbourMode != null) ? neighbourMode : "Free";
+    }
+
+    /** Re-apply selection/visibility based on the current control params. */
+    public void applyVisibilityFilter() {
+
+        System.out.printf(
+                "Filter triggered: DR>=%.1f, Var<=%.1f, R²>=%.2f%n",
+                ctrlMinDensityRatio, ctrlMaxVariability, ctrlMinRSquared
+        );
+        int nrSelected = 0;
+
+        if (squares == null || squares.isEmpty()) {
+            return;
+        }
+        for (Square sq : squares) {
+
+            boolean densityOK = sq.getDensityRatio() >= ctrlMinDensityRatio;
+            boolean variabilityOK = sq.getVariability() <= ctrlMaxVariability;
+            boolean rSquaredOK = sq.getRSquared() >= ctrlMinRSquared;
+
+            boolean pass = densityOK && variabilityOK && rSquaredOK;
+
+            if (pass) {
+                nrSelected++;
+                PaintLogger.debugf("Square %d: Dens=%b Var=%b R2=%b%n",
+                        sq.getSquareNumber(), densityOK, variabilityOK, rSquaredOK);
+                PaintLogger.debugf("Square %d: DR=%.2f Var=%.2f R2=%.2f%n",
+                        sq.getSquareNumber(), sq.getDensityRatio(), sq.getVariability(), sq.getRSquared());
+            }
+            sq.setSelected(pass);
+        }
+        repaint();
+        PaintLogger.debugf("Number squares selected: %d\n", nrSelected);
     }
 }
