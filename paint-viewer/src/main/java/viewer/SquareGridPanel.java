@@ -302,20 +302,22 @@ public class SquareGridPanel extends JPanel {
 
             // --- Step 2: Borders for assigned and selected ---
             if (sq.getCellId() > 0) {
-                Color border = getColorForCell(sq.getCellId());
+                // --- Cell-assigned squares ---
+                Color baseColor = getColorForCell(sq.getCellId());
 
-                // light fill for assigned cells (only if shading is on)
+                // Only apply shading, not colored border
                 if (showShading) {
-                    int rVal = Math.min(255, border.getRed() + 40);
-                    int gVal = Math.min(255, border.getGreen() + 40);
-                    int bVal = Math.min(255, border.getBlue() + 40);
+                    int rVal = Math.min(255, baseColor.getRed() + 40);
+                    int gVal = Math.min(255, baseColor.getGreen() + 40);
+                    int bVal = Math.min(255, baseColor.getBlue() + 40);
                     Color fill = new Color(rVal, gVal, bVal, 100);
                     g2.setColor(fill);
                     g2.fillRect(x, y, squareW, squareH);
                 }
 
-                g2.setStroke(new BasicStroke(1.5f));
-                g2.setColor(border);
+                // 🟩 Keep the standard thin white border for all squares
+                g2.setStroke(new BasicStroke(1.0f));
+                g2.setColor(Color.WHITE);
                 g2.drawRect(x, y, squareW, squareH);
             } else if (sq.isSelected()) {
                 g2.setStroke(new BasicStroke(1.5f));
