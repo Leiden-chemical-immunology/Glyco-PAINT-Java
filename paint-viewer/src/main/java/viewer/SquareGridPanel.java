@@ -12,8 +12,6 @@ public class SquareGridPanel extends JPanel {
 
     private final int rows;
     private final int cols;
-    private final int width;
-    private final int height;
 
     private Image backgroundImage;
     private List<Square> squares = new ArrayList<>();
@@ -40,12 +38,11 @@ public class SquareGridPanel extends JPanel {
             Color.MAGENTA, Color.ORANGE, Color.CYAN
     };
 
-    public SquareGridPanel(int rows, int cols, int width, int height) {
+    public SquareGridPanel(int rows, int cols) {
         this.rows = rows;
         this.cols = cols;
-        this.width = width;
-        this.height = height;
-        setPreferredSize(new Dimension(width, height));
+
+        setPreferredSize(new Dimension(512, 512));
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -68,8 +65,8 @@ public class SquareGridPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (!selectionEnabled) return;
-                int squareW = width / cols;
-                int squareH = height / rows;
+                int squareW = getWidth() / cols;
+                int squareH = getHeight() / rows;
                 int col = e.getX() / squareW;
                 int row = e.getY() / squareH;
 
@@ -101,8 +98,8 @@ public class SquareGridPanel extends JPanel {
     }
 
     private void selectSquaresInRect(Rectangle rect) {
-        int squareW = width / cols;
-        int squareH = height / rows;
+        int squareW = getWidth() / cols;
+        int squareH = getHeight() / rows;
         for (Square sq : squares) {
             Rectangle r = new Rectangle(
                     sq.getColNumber() * squareW,
@@ -152,12 +149,12 @@ public class SquareGridPanel extends JPanel {
         super.paintComponent(g);
 
         if (backgroundImage != null) {
-            g.drawImage(backgroundImage, 0, 0, width, height, this);
+            g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
         }
 
         if (squares == null) return;
-        int squareW = width / cols;
-        int squareH = height / rows;
+        int squareW = getWidth() / cols;
+        int squareH = getHeight() / rows;
         Graphics2D g2 = (Graphics2D) g;
 
         // --- Step 1: Draw borders for assigned or selected squares ---
