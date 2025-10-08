@@ -226,6 +226,7 @@ public class GenerateSquareCalcs {
             );
 
             // Re-assign label numbers to selected squares
+            labelNumber = 0;
             for (Square sq : recording.getSquaresOfRecording()) {
                 if (sq.isSelected()) {
                     sq.setLabelNumber(labelNumber++);

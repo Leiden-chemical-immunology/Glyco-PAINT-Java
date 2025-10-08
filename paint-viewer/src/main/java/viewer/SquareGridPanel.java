@@ -349,11 +349,18 @@ public class SquareGridPanel extends JPanel {
 
 
     private void drawCenteredString(Graphics g, String text, int x, int y, int w, int h) {
+        // make font a bit smaller than default
+        Font original = g.getFont();
+        Font small = original.deriveFont(original.getSize2D() * 0.8f); // 80% size
+        g.setFont(small);
+
         FontMetrics fm = g.getFontMetrics();
         int tx = x + (w - fm.stringWidth(text)) / 2;
         int ty = y + (h + fm.getAscent() - fm.getDescent()) / 2;
         g.setColor(Color.WHITE);
         g.drawString(text, tx, ty);
+
+        g.setFont(original); // restore original font
     }
 
     // === Toggles ===
