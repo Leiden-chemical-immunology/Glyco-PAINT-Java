@@ -284,7 +284,6 @@ public class SquareControlDialog extends JDialog {
                 densityRatioSlider.getValue() / 10.0,
                 variabilitySlider.getValue() / 10.0,
                 rSquaredSlider.getValue() / 100.0,
-                0, 0,
                 getNeighbourMode()
         );
     }

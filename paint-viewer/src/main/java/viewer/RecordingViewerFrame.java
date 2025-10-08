@@ -162,17 +162,17 @@ public class RecordingViewerFrame extends JFrame {
         });
 
         squareDialogButton.addActionListener(e -> {
+            RecordingEntry current = recordings.get(currentIndex);
+
             SquareControlDialog dialog = new SquareControlDialog(
                     this,
                     leftGridPanel,
                     this,
                     new SquareControlParams(
-                            minDensityRatio,
-                            maxVariability,
-                            minRSquared,
-                            minDuration,
-                            maxDuration,
-                            neighbourMode
+                            current.getMinRequiredDensityRatio(),
+                            current.getMaxAllowableVariability(),
+                            current.getMinRequiredRSquared(),
+                            "Free" // default neighbour mode, since it's not in RecordingEntry
                     )
             );
             dialog.setVisible(true);
@@ -456,7 +456,7 @@ public class RecordingViewerFrame extends JFrame {
             String prefix = recordingName + ",";
             String newLine = recordingName + "," + timestamp + "," +
                     params.densityRatio + "," + params.variability + "," + params.rSquared + "," +
-                    params.minDuration + "," + params.maxDuration + "," + params.neighbourMode;
+                    params.neighbourMode;
 
             boolean replaced = false;
             for (int i = 1; i < lines.size(); i++) {
