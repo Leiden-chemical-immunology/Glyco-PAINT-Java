@@ -3,19 +3,20 @@ package paint.shared.utils;
 import de.rototor.pdfbox.graphics2d.PdfBoxGraphics2D;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
-import org.apache.pdfbox.util.Matrix;
 
 import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class HistogramPdfExporter {
 
@@ -65,11 +66,11 @@ public class HistogramPdfExporter {
                 PDPage page = new PDPage(PDRectangle.A4);
                 doc.addPage(page);
 
-                float pageWidth  = page.getMediaBox().getWidth();
+                float pageWidth = page.getMediaBox().getWidth();
                 float pageHeight = page.getMediaBox().getHeight();
 
                 // Draw at your preferred Swing-like size
-                int plotWidth  = 800;   // or 512 if you prefer 512×512
+                int plotWidth = 800;   // or 512 if you prefer 512×512
                 int plotHeight = 600;
 
                 PdfBoxGraphics2D g2 = new PdfBoxGraphics2D(doc, plotWidth, plotHeight);
@@ -89,13 +90,13 @@ public class HistogramPdfExporter {
 
                 // ✅ Scale-to-fit into the page with margins and center it
                 float margin = 36f; // 0.5 inch
-                float maxW = pageWidth  - 2 * margin;
+                float maxW = pageWidth - 2 * margin;
                 float maxH = pageHeight - 2 * margin;
                 float scale = Math.min(Math.min(maxW / plotWidth, maxH / plotHeight), 1.0f); // don't upscale
-                float scaledW = plotWidth  * scale;
+                float scaledW = plotWidth * scale;
                 float scaledH = plotHeight * scale;
 
-                float offsetX = (pageWidth  - scaledW) / 2f;
+                float offsetX = (pageWidth - scaledW) / 2f;
                 float offsetY = (pageHeight - scaledH) / 2f;
 
                 try (PDPageContentStream contentStream =
@@ -118,11 +119,17 @@ public class HistogramPdfExporter {
         PaintLogger.debugf("✅ Saved combined experiment PDF → %s%n", outputFile);
     }
 
-    private static void drawHistogram(Graphics2D g2, int w, int h,
-                                      int[] allBins, int[] bgBins, int binSize,
+    private static void drawHistogram(Graphics2D g2,
+                                      int w,
+                                      int h,
+                                      int[] allBins,
+                                      int[] bgBins,
+                                      int binSize,
                                       String title,
-                                      int totalSquares, int totalTracks,
-                                      int nBackground, int backgroundTracksTotal,
+                                      int totalSquares,
+                                      int totalTracks,
+                                      int nBackground,
+                                      int backgroundTracksTotal,
                                       double avgTracksInBackground) {
 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
