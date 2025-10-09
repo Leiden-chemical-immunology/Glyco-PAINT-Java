@@ -143,34 +143,41 @@ public class SquareGridPanel extends JPanel {
             return;
         }
 
+        // @formatter:off
         int squareW = getWidth() / cols;
         int squareH = getHeight() / rows;
-        int row = mouseY / squareH;
-        int col = mouseX / squareW;
-        int index = row * cols + col;
+        int row     = mouseY / squareH;
+        int col     = mouseX / squareW;
+        int index   = row * cols + col;
+        // @formatter:on
+
         if (index < 0 || index >= squares.size()) {
             return;
         }
 
         Square sq = squares.get(index);
+        int trackCount = sq.getNumberOfTracks();
 
         String html = String.format(
                 "<html><body style='font-family:sans-serif;font-size:11px;'>"
-                        + "<b>Square %d</b><br>"
-                        + "Density Ratio: %.2f<br>"
-                        + "Variability: %.2f<br>"
-                        + "R²: %.2f<br>"
-                        + "Tracks: %d<br>"
-                        + "<i>(Right-click anywhere to close)</i>"
+                        + "<b>Square %d</b>"
+                        + "<table style='margin-top:4px;'>"
+                        + "<tr><td style='padding-right:8px;'>Density Ratio:</td><td align='right'>%.1f</td></tr>"
+                        + "<tr><td>Variability:</td><td align='right'>%.1f</td></tr>"
+                        + "<tr><td>R²:</td><td align='right'>%.2f</td></tr>"
+                        + "<tr><td>Tracks:</td><td align='right'>%d</td></tr>"
+                        + "</table>"
+                        + "<div style='margin-top:4px; font-style:italic; color:#666;'>"
+                        + "Right-click anywhere to close"
+                        + "</div>"
                         + "</body></html>",
                 sq.getSquareNumber(),
                 sq.getDensityRatio(),
                 sq.getVariability(),
                 sq.getRSquared(),
-                sq.getTracks() != null ? sq.getTracks().size() : 0
+                trackCount
         );
 
-        // 🔹 Create or update popup
         if (infoPopup == null) {
             infoPopup = new JWindow(SwingUtilities.getWindowAncestor(this));
             JLabel label = new JLabel(html);
@@ -187,7 +194,6 @@ public class SquareGridPanel extends JPanel {
             ((JLabel) infoPopup.getContentPane().getComponent(0)).setText(html);
         }
 
-        // 🔹 Reposition near the clicked square each time
         Point panelScreen = getLocationOnScreen();
         int popupX = panelScreen.x + col * squareW + squareW + 8;
         int popupY = panelScreen.y + row * squareH + squareH / 4;
