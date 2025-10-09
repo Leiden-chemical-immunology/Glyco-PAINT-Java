@@ -3,6 +3,8 @@ package generatesquares;
 import paint.shared.config.PaintConfig;
 import paint.shared.dialogs.ProjectSelectionDialog;
 import paint.shared.dialogs.ProjectSpecificationDialog;
+import paint.shared.objects.Experiment;
+import paint.shared.utils.HistogramPdfExporter;
 import paint.shared.utils.JarInfo;
 import paint.shared.utils.PaintLogger;
 import paint.shared.validate.ValidationResult;
@@ -16,6 +18,7 @@ import java.util.List;
 
 import static generatesquares.calc.GenerateSquareCalcs.generateSquaresForExperiment;
 import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.io.ProjectDataLoader.loadExperiment;
 import static paint.shared.utils.CsvConcatenator.concatenateExperimentCsvFiles;
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.Miscellaneous.formatDuration;
@@ -91,6 +94,18 @@ public class GenerateSquares {
                 LocalDateTime start = LocalDateTime.now();
                 for (String experimentName : project.experimentNames) {
                     generateSquaresForExperiment(project, experimentName);
+                    // Now export the histograms to a PDF
+                    try {
+                        Experiment experiment = loadExperiment(project.projectRootPath, experimentName, true);
+                        Path pdfOut = project.projectRootPath
+                                .resolve(experimentName)
+                                .resolve("histograms.pdf");
+
+                        HistogramPdfExporter.exportExperimentHistogramsToPdf(experiment, pdfOut);
+
+                    } catch (Exception e) {
+                        PaintLogger.errorf("Failed to export histograms to PDF: %s", e.getMessage());
+                    }
                 }
                 PaintLogger.debugf("\n\nFinished calculating");
 

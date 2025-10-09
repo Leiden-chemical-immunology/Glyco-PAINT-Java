@@ -52,7 +52,6 @@ public class GenerateSquareCalcs {
 
                 // Assign the recording tracks to the squares
                 assignTracksToSquares(recording, generateSquaresConfig);
-                showTrackCountDistribution(recording);
 
                 // Calculate recording attributes
                 calculateRecordingAttributes(recording, generateSquaresConfig);
@@ -157,11 +156,8 @@ public class GenerateSquareCalcs {
 
         SquareUtils.BackgroundEstimationResult result;
         result = estimateBackgroundDensity(recording.getSquaresOfRecording());
-        System.out.printf("Normal Background mean = %.2f, n = %d%n", result.getBackgroundMean(), result.getBackgroundSquares().size());
+        PaintLogger.debugf("Estimated Background trackcount = %.2f, n = %d%n", result.getBackgroundMean(), result.getBackgroundSquares().size());
 
-        plotTrackCountHistogramWithBackground(recording, result);
-//        result = SquareUtils.estimateBackgroundDensityRobust(recording.getSquaresOfRecording());
-//        System.out.printf("Robust Background mean = %.2f, n = %d%n%n", result.getBackgroundMean(), result.getBackgroundSquares().size());
 
         int labelNumber = 0;
         for (Square square : recording.getSquaresOfRecording()) {
