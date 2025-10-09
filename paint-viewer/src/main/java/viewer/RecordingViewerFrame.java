@@ -301,13 +301,6 @@ public class RecordingViewerFrame extends JFrame {
 
         recordingLabel.setText("Recording: " + entry.getRecordingName());
 
-//        boolean densityOk = entry.getDensity() >= entry.getMinRequiredDensityRatio();
-//        boolean tauOk = entry.getTau() <= entry.getMaxAllowableVariability();
-//        boolean r2Ok = entry.getObservedRSquared() >= entry.getMinRequiredRSquared();
-
-//        for (Square square : entry.getSquares()) {     #TODO
-//        }
-
         attributesModel.setRowCount(0);
         attributesModel.addRow(new Object[]{"Probe", entry.getProbeName()});
         attributesModel.addRow(new Object[]{"Probe Type", entry.getProbeType()});
@@ -317,31 +310,14 @@ public class RecordingViewerFrame extends JFrame {
         attributesModel.addRow(new Object[]{"Spots", entry.getNumberOfSpots()});
         attributesModel.addRow(new Object[]{"Tracks", entry.getNumberOfTracks()});
         attributesModel.addRow(new Object[]{"Threshold", entry.getThreshold()});
-        attributesModel.addRow(new Object[]{"Tau", entry.getTau()});
-        attributesModel.addRow(new Object[]{"R²", entry.getObservedRSquared()});
+        attributesModel.addRow(new Object[]{"Tau", formatWithPrecision(entry.getTau(), 1)});
+        attributesModel.addRow(new Object[]{"R²", formatWithPrecision(entry.getObservedRSquared(), 3)});
         attributesModel.addRow(new Object[]{"Density", entry.getDensity()});
         attributesModel.addRow(new Object[]{"Min Required Density Ratio", entry.getMinRequiredDensityRatio()});
         attributesModel.addRow(new Object[]{"Max Allowable Variability", entry.getMaxAllowableVariability()});
         attributesModel.addRow(new Object[]{"Min Required R²", entry.getMinRequiredRSquared()});
         attributesModel.addRow(new Object[]{"Neighbour Mode", entry.getNeighbourMode()});
-
-
-        //        });
-        //        attributesModel.addRow(new Object[]{
-        //                "Density", entry.getDensity() + " " + (densityOk ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredDensityRatio()
-        //        });
-        //        attributesModel.addRow(new Object[]{
-        //                "R²", entry.getObservedRSquared() + " " + (r2Ok ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredRSquared()
-        //        });
-        //        attributesModel.addRow(new Object[]{
-        //                "Tau", entry.getTau() + " " + (tauOk ? "✅ ≤ " : "❌ ≤ ") + entry.getMaxAllowableVariability()
-        //        });
-        //        attributesModel.addRow(new Object[]{
-        //                "Density", entry.getDensity() + " " + (densityOk ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredDensityRatio()
-        //        });
-        //        attributesModel.addRow(new Object[]{
-        //                "R²", entry.getObservedRSquared() + " " + (r2Ok ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredRSquared()
-        //        });
+        // attributesModel.addRow(new Object[]{"Background density", entry.getNeighbourMode()}); // TODO
 
         updateNavButtons();
     }
@@ -499,5 +475,39 @@ public class RecordingViewerFrame extends JFrame {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    private static String formatWithPrecision(double value, int precision) {
+
+        String formatString;
+
+        if (Double.isNaN(value)) {
+            return "NaN";
+        }
+        if (Double.isInfinite(value)) {
+            return (value > 0 ? "∞" : "-∞");
+        }
+
+        switch (precision) {
+            case 0:
+                formatString = "%.0f";
+                break;
+            case 1:
+                formatString = "%.1f";
+                break;
+            case 2:
+                formatString = "%.2f";
+                break;
+            case 3:
+                formatString = "%.3f";
+                break;
+            case 4:
+                formatString = "%.4f";
+                break;
+            default:
+                formatString = "%.6f";  // fallback
+                break;
+        }
+        return String.format(formatString, value);
     }
 }
