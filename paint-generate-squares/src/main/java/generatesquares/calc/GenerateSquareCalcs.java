@@ -25,6 +25,7 @@ import static paint.shared.io.ProjectDataLoader.filterTracksInSquare;
 import static paint.shared.io.ProjectDataLoader.loadExperimentForSquaresCalc;
 import static paint.shared.objects.Square.calcSquareArea;
 import static paint.shared.utils.Miscellaneous.formatDuration;
+import static paint.shared.utils.SquareUtils.*;
 
 public class GenerateSquareCalcs {
 
@@ -46,6 +47,8 @@ public class GenerateSquareCalcs {
 
                 // Assign the recording tracks to the squares
                 assignTracksToSquares(recording, generateSquaresConfig);
+                showTrackCountDistribution(recording);
+                plotHybridTrackDistribution(recording);
 
                 // Calculate recording attributes
                 calculateRecordingAttributes(recording, generateSquaresConfig);
@@ -146,6 +149,15 @@ public class GenerateSquareCalcs {
         // @formatter:on
 
         double averageTracks = calculateAverageTrackCountOfBackground(recording, nrOfAverageCountSquares);
+        //System.out.printf("Background mean = %.2f, n = %n", averageTracks);
+
+        SquareUtils.BackgroundEstimationResult result;
+        result = estimateBackgroundDensity(recording.getSquaresOfRecording());
+        System.out.printf("Normal Background mean = %.2f, n = %d%n", result.getBackgroundMean(), result.getBackgroundSquares().size());
+
+        plotTrackCountHistogramWithBackground(recording, result);
+//        result = SquareUtils.estimateBackgroundDensityRobust(recording.getSquaresOfRecording());
+//        System.out.printf("Robust Background mean = %.2f, n = %d%n%n", result.getBackgroundMean(), result.getBackgroundSquares().size());
 
         int labelNumber = 0;
         for (Square square : recording.getSquaresOfRecording()) {
