@@ -10,6 +10,7 @@ import paint.shared.utils.PaintLogger;
 import paint.shared.validate.ValidationResult;
 
 import javax.swing.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -99,8 +100,11 @@ public class GenerateSquares {
                         Experiment experiment = loadExperiment(project.projectRootPath, experimentName, true);
                         Path pdfOut = project.projectRootPath
                                 .resolve(experimentName)
-                                .resolve("histograms.pdf");
+                                .resolve("Output")
+                                .resolve("Background.pdf");
 
+                        // Ensure all parent directories exist
+                        Files.createDirectories(pdfOut.getParent());
                         HistogramPdfExporter.exportExperimentHistogramsToPdf(experiment, pdfOut);
 
                     } catch (Exception e) {

@@ -79,7 +79,18 @@ public class RunTrackMateOnExperiment {
         PaintConfig paintConfig = PaintConfig.instance();
         TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
 
-        trackMateConfigToFile(trackMateConfig, experimentPath.resolve("ParametersUsed.txt"));
+        try {
+            Path filePath = experimentPath
+                    .resolve("Output")
+                    .resolve("ParametersUsed.txt");
+            Files.createDirectories(filePath.getParent());
+            trackMateConfigToFile(trackMateConfig, filePath);
+        } catch (IOException ex) {
+            PaintLogger.errorf("Could not write file '%s'");
+        }
+        catch (Exception ex) {
+            PaintLogger.errorf("Could not write file '%s'");
+        }
 
         // Input/output CSV paths (written under experimentPath, sweep-compatible)
         Path experimentFilePath = experimentPath.resolve(EXPERIMENT_INFO_CSV);
