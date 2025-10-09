@@ -12,116 +12,111 @@ import java.util.List;
 
 import static paint.shared.constants.PaintConstants.SQUARES_CSV;
 
+/**
+ * Loads square information from the SQUARES_CSV file.
+ * This version assumes the CSV is complete and always contains
+ * all standard columns defined in {@link Square}.
+ */
 public final class SquareCsvLoader {
 
     private SquareCsvLoader() {
     }
 
-    // ── Existing method: load squares for one recording ───────────────────────
+    // ── Load squares for one recording ────────────────────────────────
     public static List<Square> loadSquaresForRecording(
             Path projectPath,
             String experimentName,
             String recordingName,
             int expectedNumberOfSquares) throws IOException {
 
-        int numberOfSquaresRead = 0;
         Path squaresCsv = projectPath.resolve(experimentName).resolve(SQUARES_CSV);
-        SquareTableIO io = new SquareTableIO();
-        Table table = io.readCsv(squaresCsv);
+        Table table = new SquareTableIO().readCsv(squaresCsv);
 
         List<Square> out = new ArrayList<>();
+        int numberOfSquaresRead = 0;
+
         for (Row row : table) {
             if (!recordingName.equals(row.getString("Recording Name"))) {
                 continue;
             }
+
             numberOfSquaresRead++;
-
-            Square s = new Square();
-            s.setRecordingName(recordingName);
-            s.setSquareNumber(row.getInt("Square Number"));
-            s.setRowNumber(row.getInt("Row Number"));
-            s.setColNumber(row.getInt("Column Number"));
-            s.setLabelNumber(row.getInt("Label Number"));
-            s.setCellId(row.getInt("Cell ID"));
-            s.setSelected(row.getBoolean("Selected"));
-
-            // Optional attributes
-            if (table.columnNames().contains("Density Ratio")) {
-                s.setDensityRatio(row.getDouble("Density Ratio"));
-            }
-            if (table.columnNames().contains("Variability")) {
-                s.setVariability(row.getDouble("Variability"));
-            }
-            if (table.columnNames().contains("R Squared")) {
-                s.setRSquared(row.getDouble("R Squared"));
-            }
-
-            // Duration-related columns
-            if (table.columnNames().contains("Median Track Duration")) {
-                s.setMedianTrackDuration(row.getDouble("Median Track Duration"));
-            }
-            if (table.columnNames().contains("Max Track Duration")) {
-                s.setMaxTrackDuration(row.getDouble("Max Track Duration"));
-            }
-            if (table.columnNames().contains("Total Track Duration")) {
-                s.setTotalTrackDuration(row.getDouble("Total Track Duration"));
-            }
-            if (table.columnNames().contains("Median Long Track Duration")) {
-                s.setMedianLongTrackDuration(row.getDouble("Median Long Track Duration"));
-            }
-            if (table.columnNames().contains("Median Short Track Duration")) {
-                s.setMedianShortTrackDuration(row.getDouble("Median Short Track Duration"));
-            }
-
-            // Neighbour Mode column exists in some CSVs, but we ignore it
-            if (table.columnNames().contains("Neighbour Mode")) {
-                // just ignore; no field in Square
-            }
-
+            Square s = createSquareFromRow(row);
             out.add(s);
+
             if (expectedNumberOfSquares != 0 && numberOfSquaresRead >= expectedNumberOfSquares) {
                 break;
             }
         }
 
         if (expectedNumberOfSquares != 0 && numberOfSquaresRead != expectedNumberOfSquares) {
-            throw new IllegalStateException(
-                    "Expected " + expectedNumberOfSquares +
-                            " squares, but found " + numberOfSquaresRead +
-                            " in recording: " + recordingName);
+            throw new IllegalStateException(String.format(
+                    "Expected %d squares, but found %d in recording: %s",
+                    expectedNumberOfSquares, numberOfSquaresRead, recordingName));
         }
+
         return out;
     }
 
-    // ── NEW method: load all squares for an experiment ────────────────────────
+    // ── Load all squares for an experiment ────────────────────────────
     public static List<Square> loadAllSquaresForExperiment(Path projectPath, String experimentName)
             throws IOException {
 
         Path squaresCsv = projectPath.resolve(experimentName).resolve(SQUARES_CSV);
-        SquareTableIO io = new SquareTableIO();
-        Table table = io.readCsv(squaresCsv);
+        Table table = new SquareTableIO().readCsv(squaresCsv);
 
         List<Square> out = new ArrayList<>();
         for (Row row : table) {
-            Square s = new Square();
-            s.setRecordingName(row.getString("Recording Name"));
-            s.setSquareNumber(row.getInt("Square Number"));
-            s.setRowNumber(row.getInt("Row Number"));
-            s.setColNumber(row.getInt("Column Number"));
-            s.setLabelNumber(row.getInt("Label Number"));
-            s.setCellId(row.getInt("Cell ID"));
-            s.setSelected(row.getBoolean("Selected"));
-            s.setDensityRatio(row.getDouble("Density Ratio"));
-            s.setVariability(row.getDouble("Variability"));
-            s.setRSquared(row.getDouble("R Squared"));
-            s.setMedianTrackDuration(row.getDouble("Median Track Duration"));
-            s.setMaxTrackDuration(row.getDouble("Max Track Duration"));
-            s.setTotalTrackDuration(row.getDouble("Total Track Duration"));
-            s.setMedianLongTrackDuration(row.getDouble("Median Long Track Duration"));
-            s.setMedianShortTrackDuration(row.getDouble("Median Short Track Duration"));
-            s.setSelected(row.getBoolean("Selected"));
-            out.add(s);
+            out.add(createSquareFromRow(row));
         }
+
         return out;
+    }
+
+    // ── Helper to populate all Square fields ──────────────────────────
+    private static Square createSquareFromRow(Row row) {
+        Square s = new Square();
+
+        s.setUniqueKey(row.getString("Unique Key"));
+        s.setRecordingName(row.getString("Recording Name"));
+        s.setSquareNumber(row.getInt("Square Number"));
+        s.setRowNumber(row.getInt("Row Number"));
+        s.setColNumber(row.getInt("Column Number"));
+        s.setLabelNumber(row.getInt("Label Number"));
+        s.setCellId(row.getInt("Cell ID"));
+        s.setSelected(row.getBoolean("Selected"));
+        s.setSquareManuallyExcluded(row.getBoolean("Square Manually Excluded"));
+        s.setImageExcluded(row.getBoolean("Image Excluded"));
+
+        s.setX0(row.getDouble("X0"));
+        s.setY0(row.getDouble("Y0"));
+        s.setX1(row.getDouble("X1"));
+        s.setY1(row.getDouble("Y1"));
+
+        s.setNumberOfTracks(row.getInt("Number of Tracks"));
+        s.setVariability(row.getDouble("Variability"));
+        s.setDensity(row.getDouble("Density"));
+        s.setDensityRatio(row.getDouble("Density Ratio"));
+        s.setTau(row.getDouble("Tau"));
+        s.setRSquared(row.getDouble("R Squared"));
+
+        s.setMedianDiffusionCoefficient(row.getDouble("Median Diffusion Coefficient"));
+        s.setMedianDiffusionCoefficientExt(row.getDouble("Median Diffusion Coefficient Ext"));
+        s.setMedianLongTrackDuration(row.getDouble("Median Long Track Duration"));
+        s.setMedianShortTrackDuration(row.getDouble("Median Short Track Duration"));
+        s.setMedianDisplacement(row.getDouble("Median Displacement"));
+        s.setMaxDisplacement(row.getDouble("Max Displacement"));
+        s.setTotalDisplacement(row.getDouble("Total Displacement"));
+
+        s.setMedianMaxSpeed(row.getDouble("Median Max Speed"));
+        s.setMaxMaxSpeed(row.getDouble("Max Max Speed"));
+        s.setMedianMeanSpeed(row.getDouble("Median Mean Speed"));
+        s.setMaxMeanSpeed(row.getDouble("Max Mean Speed"));
+
+        s.setMaxTrackDuration(row.getDouble("Max Track Duration"));
+        s.setTotalTrackDuration(row.getDouble("Total Track Duration"));
+        s.setMedianTrackDuration(row.getDouble("Median Track Duration"));
+
+        return s;
     }
 }
