@@ -32,18 +32,15 @@ public class HistogramPdfExporter {
                 }
 
                 // --- Compute background estimation ---
-                SquareUtils.BackgroundEstimationResult backgroundResult =
-                        SquareUtils.estimateBackgroundDensity(squares);
+                SquareUtils.BackgroundEstimationResult backgroundResult = SquareUtils.estimateBackgroundDensity(squares);
 
                 Set<Square> backgroundSet = new HashSet<>(backgroundResult.getBackgroundSquares());
-                double backgroundMean = backgroundResult.getBackgroundMean();
+                double backgroundTracksPerSquare = backgroundResult.getBackgroundMean();
 
                 int totalSquares = squares.size();
                 int nBackground = backgroundSet.size();
                 int totalTracks = squares.stream().mapToInt(Square::getNumberOfTracks).sum();
                 int backgroundTracksTotal = backgroundSet.stream().mapToInt(Square::getNumberOfTracks).sum();
-                double avgTracksInBackground =
-                        (nBackground > 0) ? (backgroundTracksTotal / (double) nBackground) : Double.NaN;
 
                 // --- Build histogram bins ---
                 int maxTracks = squares.stream().mapToInt(Square::getNumberOfTracks).max().orElse(0);
@@ -82,22 +79,24 @@ public class HistogramPdfExporter {
                         recording.getRecordingName(),
                         totalSquares, totalTracks,
                         nBackground, backgroundTracksTotal,
-                        avgTracksInBackground
+                        backgroundTracksPerSquare
                 );
 
                 g2.dispose();
                 PDFormXObject formXObject = g2.getXFormObject();
 
                 // ✅ Scale-to-fit into the page with margins and center it
-                float margin = 36f; // 0.5 inch
-                float maxW = pageWidth - 2 * margin;
-                float maxH = pageHeight - 2 * margin;
-                float scale = Math.min(Math.min(maxW / plotWidth, maxH / plotHeight), 1.0f); // don't upscale
+                // @formatter:off
+                float margin  = 36f; // 0.5 inch
+                float maxW    = pageWidth - 2 * margin;
+                float maxH    = pageHeight - 2 * margin;
+                float scale   = Math.min(Math.min(maxW / plotWidth, maxH / plotHeight), 1.0f); // don't upscale
                 float scaledW = plotWidth * scale;
                 float scaledH = plotHeight * scale;
 
                 float offsetX = (pageWidth - scaledW) / 2f;
                 float offsetY = (pageHeight - scaledH) / 2f;
+                // @formatter:on
 
                 try (PDPageContentStream contentStream =
                              new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, true, true)) {
@@ -136,10 +135,10 @@ public class HistogramPdfExporter {
         g2.setColor(Color.WHITE);
         g2.fillRect(0, 0, w, h);
 
-        int marginLeft = 70;
+        int marginLeft   = 70;
         int marginBottom = 50;
-        int marginTop = 50;
-        int marginRight = 40;
+        int marginTop    = 50;
+        int marginRight  = 40;
 
         int binCount = allBins.length;
         int maxBinCount = Arrays.stream(allBins).max().orElse(1);
