@@ -19,7 +19,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-// import static generatesquares.calc.CalculateDensity.calculateAverageTrackCountOfBackground;
 import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.utils.Miscellaneous.friendlyMessage;
 
@@ -70,7 +69,7 @@ public final class ProjectDataLoader {
         int numberOfTracksInProject = 0;
 
         System.out.printf("Project %s has %d experiments:%n",
-                project.getProjectName(), project.getExperiments().size());
+                          project.getProjectName(), project.getExperiments().size());
 
         for (Experiment exp : project.getExperiments()) {
             System.out.printf("\t%s%n", exp.getExperimentName());
@@ -79,7 +78,7 @@ public final class ProjectDataLoader {
         for (Experiment exp : project.getExperiments()) {
             int numberOfTracksInExperiment = 0;
             System.out.printf("%nExperiment %s has %d recordings.%n",
-                    exp.getExperimentName(), exp.getRecordings().size());
+                              exp.getExperimentName(), exp.getRecordings().size());
 
             for (Recording rec : exp.getRecordings()) {
                 int numberOfTracksInSquare = 0;
@@ -151,8 +150,7 @@ public final class ProjectDataLoader {
             if (recTable != null) {
                 recordings = recIO.toEntities(recTable);
                 recordings.forEach(experiment::addRecording);
-            }
-            else {
+            } else {
                 PaintLogger.errorf("Failed to read %s in %s", RECORDINGS_CSV, experimentName);
                 return null;
             }

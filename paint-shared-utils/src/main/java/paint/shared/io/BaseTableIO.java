@@ -21,7 +21,7 @@ public abstract class BaseTableIO {
     protected Table newEmptyTable(String tableName, String[] colNames, ColumnType[] colTypes) {
         if (colNames.length != colTypes.length) {
             throw new IllegalArgumentException("Names and types length mismatch: "
-                    + colNames.length + " vs " + colTypes.length);
+                                                       + colNames.length + " vs " + colTypes.length);
         }
         Table t = Table.create(tableName);
         for (int i = 0; i < colNames.length; i++) {
@@ -38,13 +38,13 @@ public abstract class BaseTableIO {
     public void appendInPlace(Table target, Table source) {
         if (target.columnCount() != source.columnCount()) {
             throw new IllegalArgumentException("Cannot append: column count mismatch (" +
-                    target.columnCount() + " vs " + source.columnCount() + ")");
+                                                       target.columnCount() + " vs " + source.columnCount() + ")");
         }
         // Enforce same column names in order
         for (int i = 0; i < target.columnCount(); i++) {
             if (!target.column(i).name().equals(source.column(i).name())) {
                 throw new IllegalArgumentException("Cannot append: schema mismatch at column " + i +
-                        " (" + target.column(i).name() + " vs " + source.column(i).name() + ")");
+                                                           " (" + target.column(i).name() + " vs " + source.column(i).name() + ")");
             }
         }
         target.append(source);
@@ -79,13 +79,13 @@ public abstract class BaseTableIO {
         List<String> headerErrors = validateHeader(table, expectedCols, allowSuperset);
         if (!headerErrors.isEmpty()) {
             throw new IOException("Header validation failed for " + logicalName + ":\n  - "
-                    + String.join("\n  - ", headerErrors));
+                                          + String.join("\n  - ", headerErrors));
         }
 
         List<String> typeErrors = validateTypes(table, expectedCols, expectedTypes);
         if (!typeErrors.isEmpty()) {
             throw new IOException("Type validation failed for " + logicalName + ":\n  - "
-                    + String.join("\n  - ", typeErrors));
+                                          + String.join("\n  - ", typeErrors));
         }
 
         return table;

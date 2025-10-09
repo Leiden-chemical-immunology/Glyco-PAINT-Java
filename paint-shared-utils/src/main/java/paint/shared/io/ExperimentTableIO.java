@@ -151,7 +151,7 @@ public class ExperimentTableIO extends BaseTableIO {
      */
     public Table readCsv(Path csvPath) throws IOException {
         return readCsvWithSchema(csvPath, "Experiment Info",
-                EXPERIMENT_INFO_COLS, EXPERIMENT_INFO_TYPES, false);
+                                 EXPERIMENT_INFO_COLS, EXPERIMENT_INFO_TYPES, false);
     }
 
     /**
@@ -174,7 +174,9 @@ public class ExperimentTableIO extends BaseTableIO {
      * @throws IllegalArgumentException if the source contains an unsupported column type
      */
     public void appendInPlace(Table target, Table source) {
-        if (source.isEmpty()) return; // nothing to do
+        if (source.isEmpty()) {
+            return; // nothing to do
+        }
 
         for (Row srcRow : source) {
             Row dst = target.appendRow();
