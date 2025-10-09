@@ -22,7 +22,7 @@ import static generatesquares.calc.CalculateTau.calcTau;
 import static generatesquares.calc.CalculateVariability.calcVariability;
 import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.io.ProjectDataLoader.filterTracksInSquare;
-import static paint.shared.io.ProjectDataLoader.loadExperimentForSquaresCalc;
+import static paint.shared.io.ProjectDataLoader.loadExperiment;
 import static paint.shared.objects.Square.calcSquareArea;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.utils.SquareUtils.*;
@@ -32,10 +32,15 @@ public class GenerateSquareCalcs {
     public static boolean generateSquaresForExperiment(Project project, String experimentName) {
 
         GenerateSquaresConfig generateSquaresConfig = project.generateSquaresConfig;
+        Experiment experiment = null;
 
         LocalDateTime start = LocalDateTime.now();
         PaintLogger.debugf("Loading Experiment '%s'", experimentName);
-        Experiment experiment = loadExperimentForSquaresCalc(project.projectRootPath, experimentName);
+        try {
+            experiment = loadExperiment(project.projectRootPath, experimentName, false);
+        } catch (Exception e) {
+            PaintLogger.errorf("Failed to load Experiment '%s'", experimentName);  // vTODO
+        }
         if (experiment != null) {
             for (Recording recording : experiment.getRecordings()) {
                 PaintLogger.infof("   Processing: %s", recording.getRecordingName());
@@ -48,7 +53,6 @@ public class GenerateSquareCalcs {
                 // Assign the recording tracks to the squares
                 assignTracksToSquares(recording, generateSquaresConfig);
                 showTrackCountDistribution(recording);
-                plotHybridTrackDistribution(recording);
 
                 // Calculate recording attributes
                 calculateRecordingAttributes(recording, generateSquaresConfig);

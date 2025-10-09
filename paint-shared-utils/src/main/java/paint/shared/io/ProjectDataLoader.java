@@ -1,6 +1,5 @@
 package paint.shared.io;
 
-import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.config.PaintConfig;
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Project;
@@ -22,48 +21,14 @@ import java.util.List;
 import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.utils.Miscellaneous.friendlyMessage;
 
-
 public final class ProjectDataLoader {
 
     private ProjectDataLoader() {
     }
 
-    public static void main(String[] args) {
-        Project project = null;
-        Path loggerPath = Paths.get(System.getProperty("user.home"), "Paint").resolve("Logger");
-        PaintLogger.initialise(loggerPath, "Load Project");
-
-        try {
-            if (args == null || args.length == 0) {
-                System.out.println("Usage: java -cp <jar> io.ProjectDataLoader <project-root-path> [experiments...] [--mature]");
-                return;
-            }
-
-            Path projectPath = java.nio.file.Paths.get(args[0]);
-            boolean matureProject = false;
-            List<String> experimentNames = new ArrayList<>();
-
-            // Parse args
-            for (int i = 1; i < args.length; i++) {
-                if ("--mature".equalsIgnoreCase(args[i])) {
-                    matureProject = true;
-                } else {
-                    experimentNames.add(args[i]);
-                }
-            }
-
-            project = loadProject(projectPath, experimentNames, matureProject);
-
-        } catch (Exception e) {
-            System.err.println("Failed to load project: " + e.getMessage());
-            System.exit(1);
-        }
-
-        System.out.println(project);
-        cycleThroughProject(project);
-    }
-
-    // ---------- Public API ----------
+    // ───────────────────────────────────────────────────────────────────────────────
+    // Public API
+    // ───────────────────────────────────────────────────────────────────────────────
 
     public static void cycleThroughProject(Project project) {
         int numberOfTracksInProject = 0;
@@ -87,8 +52,6 @@ public final class ProjectDataLoader {
                 }
                 numberOfTracksInProject += numberOfTracksInSquare;
                 numberOfTracksInExperiment += numberOfTracksInSquare;
-
-                // calculateAverageTrackCountOfBackground(rec, 60);
             }
             System.out.printf("Tracks in experiment: %d%n", numberOfTracksInExperiment);
         }
@@ -98,6 +61,7 @@ public final class ProjectDataLoader {
     public static Project loadProject(Path projectPath, List<String> experimentNames, boolean matureProject) {
         List<Experiment> experiments = new ArrayList<>();
 
+        // ─── Find experiments if none provided ────────────────────────────────
         if (experimentNames == null || experimentNames.isEmpty()) {
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(projectPath, Files::isDirectory)) {
                 for (Path path : stream) {
@@ -109,95 +73,46 @@ public final class ProjectDataLoader {
             }
         }
 
+        // ─── Load each experiment ─────────────────────────────────────────────
         for (String experimentName : experimentNames) {
-            Path experimentPath = projectPath.resolve(experimentName);
-            if (experimentSeemsValid(experimentPath, matureProject)) {
-                PaintLogger.debugf("Loading experiment: %s", experimentName);
-                try {
-                    PaintConfig paintConfig = PaintConfig.instance();
-                    GenerateSquaresConfig generateSquaresConfig = GenerateSquaresConfig.from(paintConfig);
-                    Experiment experiment = loadExperiment(projectPath, experimentName, generateSquaresConfig, matureProject);
-                    if (experiment != null) {
-                        experiments.add(experiment);
-                    }
-                } catch (Exception e) {
-                    throw new RuntimeException("Failed to load experiment " + experimentName, e);
+            try {
+                PaintConfig paintConfig = PaintConfig.instance();
+                Experiment experiment = loadExperiment(projectPath, experimentName, matureProject);
+
+                if (experiment != null) {
+                    experiments.add(experiment);
+                    PaintLogger.debugf("Loaded experiment: %s", experimentName);
+                } else {
+                    PaintLogger.errorf("Skipping invalid or failed experiment: %s", experimentName);
                 }
-            } else {
-                PaintLogger.errorf("Experiment '%s' is invalid.", experimentName);
-                PaintLogger.errorf(reasonForExperimentProblem(experimentPath, matureProject));
+            } catch (Exception e) {
+                PaintLogger.errorf("Failed to load experiment %s: %s", experimentName, e.getMessage());
             }
         }
 
         return new Project(projectPath, experiments);
     }
 
-    public static Experiment loadExperimentForSquaresCalc(Path projectPath, String experimentName) {
-        Path experimentPath = projectPath.resolve(experimentName);
-        Experiment experiment = new Experiment(experimentName);
+    // ───────────────────────────────────────────────────────────────────────────────
+    // Experiment Loader
+    // ───────────────────────────────────────────────────────────────────────────────
 
-        // Recordings
-        RecordingTableIO recIO = new RecordingTableIO();
-        List<Recording> recordings;
-        try {
-            Table recTable = recIO.readCsvWithSchema(
-                    experimentPath.resolve(RECORDINGS_CSV),
-                    "Recordings",
-                    RECORDING_COLS,
-                    RECORDING_TYPES,
-                    false
-            );
-            if (recTable != null) {
-                recordings = recIO.toEntities(recTable);
-                recordings.forEach(experiment::addRecording);
-            } else {
-                PaintLogger.errorf("Failed to read %s in %s", RECORDINGS_CSV, experimentName);
-                return null;
-            }
-        } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s in %s: %s", RECORDINGS_CSV, experimentName, friendlyMessage(e));
-            return null;
-        }
-
-        // Tracks
-        TrackTableIO trackIO = new TrackTableIO();
-        Table tracksTable;
-        try {
-            tracksTable = trackIO.readCsvWithSchema(
-                    experimentPath.resolve(TRACKS_CSV),
-                    "Tracks",
-                    TRACK_COLS,
-                    TRACK_TYPES,
-                    false
-            );
-        } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s in %s: %s", TRACKS_CSV, experimentName, friendlyMessage(e));
-            return null;
-        }
-
-        try {
-            for (Recording rec : recordings) {
-                Table recTracks = tracksTable.where(
-                        tracksTable.stringColumn(COL_RECORDING_NAME)
-                                .matchesRegex("^" + rec.getRecordingName() + "(?:-threshold-\\d{1,3})?$"));
-                rec.setTracks(trackIO.toEntities(recTracks));
-                rec.setTracksTable(recTracks);
-            }
-        } catch (Exception e) {
-            PaintLogger.errorf("Failed to split Tracks Table of %s: %s", experimentName, friendlyMessage(e));
-            return null;
-        }
-
-        return experiment;
-    }
-
-    public static Experiment loadExperiment(Path projectPath, String experimentName,
-                                            GenerateSquaresConfig generateSquaresConfig,
+    public static Experiment loadExperiment(Path projectPath,
+                                            String experimentName,
                                             boolean matureProject) throws Exception {
+
         Path experimentPath = projectPath.resolve(experimentName);
+
+        // ─── Validate experiment structure first ──────────────────────────────
+        if (!experimentSeemsValid(experimentPath, matureProject)) {
+            PaintLogger.errorf("Experiment '%s' is invalid.", experimentName);
+            PaintLogger.errorf(reasonForExperimentProblem(experimentPath, matureProject));
+            return null;
+        }
+
         Experiment experiment = new Experiment(experimentName);
 
-        // Recordings
+        // ─── Recordings ───────────────────────────────────────────────────────
         RecordingTableIO recIO = new RecordingTableIO();
         List<Recording> recordings;
         try {
@@ -215,7 +130,7 @@ public final class ProjectDataLoader {
             return null;
         }
 
-        // Tracks
+        // ─── Tracks ───────────────────────────────────────────────────────────
         TrackTableIO trackIO = new TrackTableIO();
         Table tracksTable;
         try {
@@ -231,51 +146,68 @@ public final class ProjectDataLoader {
             return null;
         }
 
-        // Squares
-        SquareTableIO squareIO = new SquareTableIO();
-        Table squaresTable;
-        try {
-            squaresTable = squareIO.readCsvWithSchema(
-                    experimentPath.resolve(SQUARES_CSV),
-                    "Squares",
-                    SQUARE_COLS,
-                    SQUARE_TYPES,
-                    false
-            );
-        } catch (Exception e) {
-            if (matureProject) {
-                PaintLogger.errorf("Failed to read %s in %s: %s", SQUARES_CSV, experimentName, friendlyMessage(e));
-                return null;
-            } else {
-                squaresTable = squareIO.emptyTable();
-            }
-        }
-
-        // Assign to recordings
+        // Attach tracks to recordings
         for (Recording rec : recordings) {
-            // Squares
-            Table recSquares = squaresTable.where(
-                    squaresTable.stringColumn(COL_RECORDING_NAME)
-                            .matchesRegex("^" + rec.getRecordingName() + "(?:-threshold-\\d{1,3})?$"));
-            rec.addSquares(squareIO.toEntities(recSquares));
-
-            // Tracks
             Table recTracks = tracksTable.where(
                     tracksTable.stringColumn(COL_RECORDING_NAME)
                             .matchesRegex("^" + rec.getRecordingName() + "(?:-threshold-\\d{1,3})?$"));
             rec.setTracks(trackIO.toEntities(recTracks));
             rec.setTracksTable(recTracks);
+        }
 
-            // Assign tracks into squares
-            int lastRowCol = generateSquaresConfig.getNrSquaresInRow() - 1;
-            for (Square square : rec.getSquaresOfRecording()) {
-                Table squareTracks = filterTracksInSquare(recTracks, square, lastRowCol);
-                square.setTracks(trackIO.toEntities(squareTracks));
+        // ─── Squares (ONLY for mature projects) ───────────────────────────────
+        if (matureProject) {
+            SquareTableIO squareIO = new SquareTableIO();
+            Table squaresTable;
+            try {
+                squaresTable = squareIO.readCsvWithSchema(
+                        experimentPath.resolve(SQUARES_CSV),
+                        "Squares",
+                        SQUARE_COLS,
+                        SQUARE_TYPES,
+                        false
+                );
+            } catch (Exception e) {
+                PaintLogger.errorf("Failed to read %s in %s: %s", SQUARES_CSV, experimentName, friendlyMessage(e));
+                return null;
+            }
+
+            int numberOfRecordings = recordings.size();
+            int numberOfSquares = squaresTable.rowCount();
+            int numberOfSquaresPerRecording = (numberOfRecordings == 0) ? 0 : numberOfSquares / numberOfRecordings;
+            int numberOfRows = (numberOfSquaresPerRecording > 0)
+                    ? (int) Math.round(Math.sqrt(numberOfSquaresPerRecording))
+                    : 0;
+
+            if (numberOfRows > 0 && numberOfRows * numberOfRows != numberOfSquaresPerRecording) {
+                PaintLogger.errorf("Invalid squares layout in experiment '%s'", experimentName);
+                System.exit(-1);
+            }
+
+            // Assign squares and map tracks into them
+            for (Recording rec : recordings) {
+                Table recSquares = squaresTable.where(
+                        squaresTable.stringColumn(COL_RECORDING_NAME)
+                                .matchesRegex("^" + rec.getRecordingName() + "(?:-threshold-\\d{1,3})?$"));
+                rec.addSquares(squareIO.toEntities(recSquares));
+
+                if (numberOfRows > 0) {
+                    int lastRowCol = numberOfRows - 1;
+                    Table recTracks = rec.getTracksTable();
+                    for (Square square : rec.getSquaresOfRecording()) {
+                        Table squareTracks = filterTracksInSquare(recTracks, square, lastRowCol);
+                        square.setTracks(trackIO.toEntities(squareTracks));
+                    }
+                }
             }
         }
 
         return experiment;
     }
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // Validation Helpers
+    // ───────────────────────────────────────────────────────────────────────────────
 
     private static boolean experimentSeemsValid(Path experimentPath, boolean matureProject) {
         return (Files.isDirectory(experimentPath) &&
@@ -303,6 +235,10 @@ public final class ProjectDataLoader {
         return sb.toString();
     }
 
+    // ───────────────────────────────────────────────────────────────────────────────
+    // Track Filtering Utility
+    // ───────────────────────────────────────────────────────────────────────────────
+
     public static Table filterTracksInSquare(Table tracks, Square square, int lastRowCol) {
         double x0 = square.getX0(), y0 = square.getY0(), x1 = square.getX1(), y1 = square.getY1();
 
@@ -324,5 +260,44 @@ public final class ProjectDataLoader {
                 : y.isGreaterThanOrEqualTo(top).and(y.isLessThan(bottom));
 
         return tracks.where(selX.and(selY));
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // CLI Entrypoint
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    public static void main(String[] args) {
+        Project project;
+        Path loggerPath = Paths.get(System.getProperty("user.home"), "Paint").resolve("Logger");
+        PaintLogger.initialise(loggerPath, "Load Project");
+
+        try {
+            if (args == null || args.length == 0) {
+                System.out.println("Usage: java -cp <jar> io.ProjectDataLoader <project-root-path> [experiments...] [--mature]");
+                return;
+            }
+
+            Path projectPath = Paths.get(args[0]);
+            boolean matureProject = false;
+            List<String> experimentNames = new ArrayList<>();
+
+            // Parse args
+            for (int i = 1; i < args.length; i++) {
+                if ("--mature".equalsIgnoreCase(args[i])) {
+                    matureProject = true;
+                } else {
+                    experimentNames.add(args[i]);
+                }
+            }
+
+            project = loadProject(projectPath, experimentNames, matureProject);
+        } catch (Exception e) {
+            System.err.println("Failed to load project: " + e.getMessage());
+            System.exit(1);
+            return;
+        }
+
+        System.out.println(project);
+        cycleThroughProject(project);
     }
 }
