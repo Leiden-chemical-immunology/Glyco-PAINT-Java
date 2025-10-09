@@ -21,7 +21,7 @@ public class CsvUtils {
                     .build();
 
             try (CSVParser parser = CSVParser.parse(filePath.toFile(),
-                    java.nio.charset.StandardCharsets.UTF_8, format)) {
+                                                    java.nio.charset.StandardCharsets.UTF_8, format)) {
 
                 String processFlagKey = null;
                 for (String header : parser.getHeaderMap().keySet()) {

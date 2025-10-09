@@ -46,7 +46,7 @@ public abstract class AbstractFileValidator {
                 .build();
 
         try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
-            CSVParser parser = format.parse(reader)) {
+             CSVParser parser = format.parse(reader)) {
 
             List<String> header = parser.getHeaderNames();
             List<CSVRecord> records = parser.getRecords();
@@ -71,8 +71,8 @@ public abstract class AbstractFileValidator {
                 if (row.length != types.length) {
                     if (!reportedMismatch) {
                         result.addError("Row " + (i + 2) + " has " + row.length
-                                + " values; expected " + types.length
-                                + ". This may indicate a formatting error (e.g. extra or missing commas).");
+                                                + " values; expected " + types.length
+                                                + ". This may indicate a formatting error (e.g. extra or missing commas).");
                         reportedMismatch = true;
                     }
                     continue;
@@ -154,7 +154,9 @@ public abstract class AbstractFileValidator {
     }
 
     private boolean canParse(String value, ColumnType type) {
-        if (value == null || value.trim().isEmpty()) return true;
+        if (value == null || value.trim().isEmpty()) {
+            return true;
+        }
 
         try {
             switch (type.name()) {
@@ -165,8 +167,9 @@ public abstract class AbstractFileValidator {
                     Double.parseDouble(value);
                     break;
                 case "BOOLEAN":
-                    if (!(value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")))
+                    if (!(value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"))) {
                         throw new IllegalArgumentException();
+                    }
                     break;
                 case "LOCAL_DATE_TIME":
                     LocalDateTime.parse(value, FLEXIBLE_DATE_TIME);

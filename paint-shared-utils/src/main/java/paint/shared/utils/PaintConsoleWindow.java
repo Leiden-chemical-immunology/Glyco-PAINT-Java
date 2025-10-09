@@ -4,7 +4,10 @@ import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class PaintConsoleWindow {
 
@@ -66,7 +69,9 @@ public class PaintConsoleWindow {
     // --- Internal helpers ---
 
     private static void ensureConsoleCreated() {
-        if (frame == null) createConsole();
+        if (frame == null) {
+            createConsole();
+        }
     }
 
     private static void createConsole() {

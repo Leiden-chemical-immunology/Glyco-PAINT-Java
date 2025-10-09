@@ -1,5 +1,6 @@
 package paint.shared.utils;
 
+import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -8,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.awt.Color;
 
 
 public class PaintLogger {
@@ -26,9 +26,11 @@ public class PaintLogger {
             this.rank = rank;
             this.color = color;
         }
+
         public int rank() {
             return rank;
         }
+
         public Color color() {
             return color;
         }
@@ -96,7 +98,8 @@ public class PaintLogger {
                         if (index > maxIndex) {
                             maxIndex = index;
                         }
-                    } catch (NumberFormatException ignored) {}
+                    } catch (NumberFormatException ignored) {
+                    }
                 }
             }
         }
@@ -110,7 +113,8 @@ public class PaintLogger {
         if (writer != null) {
             try {
                 writer.close();
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
         initialised = false;
     }

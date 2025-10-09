@@ -18,7 +18,7 @@ public class RecordingLoader {
 
         for (String experimentName : project.experimentNames) {
             Path experimentFolder = project.getProjectRootPath().resolve(experimentName);
-            Path recordingsFile   = experimentFolder.resolve(PaintConstants.RECORDINGS_CSV);
+            Path recordingsFile = experimentFolder.resolve(PaintConstants.RECORDINGS_CSV);
 
             if (!Files.exists(recordingsFile)) {
                 System.err.println("No recordings CSV for " + experimentName);
@@ -27,7 +27,8 @@ public class RecordingLoader {
 
             try (BufferedReader br = new BufferedReader(new FileReader(recordingsFile.toFile()))) {
                 String header = br.readLine(); // skip header
-                if (header == null) continue;
+                if (header == null)
+                    continue;
 
                 String line;
                 while ((line = br.readLine()) != null) {
@@ -36,6 +37,7 @@ public class RecordingLoader {
                         continue;
                     }
 
+                    // @formatter:off
                     String recordingName = parts[0].trim();
                     String probeName     = parts[3].trim();
                     String probeType     = parts[4].trim();
@@ -43,17 +45,20 @@ public class RecordingLoader {
                     String adjuvant      = parts[6].trim();
                     double concentration = parseDouble(parts[7]);
                     boolean processFlag  = Boolean.parseBoolean(parts[8].trim());
+                    // @formatter:on
 
                     if (!processFlag) {
                         continue;
                     }
 
+                    // @formatter:off
                     double threshold     = parseDouble(parts[9]);
                     int    spots         = parseInt(parts[10]);
                     int    tracks        = parseInt(parts[11]);
                     double tau           = parseDouble(parts[17]);
                     double rSquared      = parseDouble(parts[18]);
                     double density       = parseDouble(parts[19]);
+                    // @formatter:on
 
                     // --- Build Recording object ---
                     Recording recording = new Recording(
@@ -84,7 +89,7 @@ public class RecordingLoader {
                         continue;
                     }
 
-                    Path brightfieldDir   = experimentFolder.resolve("BrightField Images");
+                    Path brightfieldDir = experimentFolder.resolve("BrightField Images");
                     Path brightfieldImage = null;
 
                     if (Files.isDirectory(brightfieldDir)) {
@@ -108,10 +113,12 @@ public class RecordingLoader {
                     }
 
                     // --- Thresholds from config ---
+                    // @formatter:off
                     double minDensityRatio = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
                     double maxVariability  = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
                     double minRSquared     = PaintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
                     String neighbourMode   = PaintConfig.getString("Generate Squares", "Neighbour Mode", "Free");
+                    // @formatter:on
 
                     // --- Build final entry ---
                     RecordingEntry entry = new RecordingEntry(

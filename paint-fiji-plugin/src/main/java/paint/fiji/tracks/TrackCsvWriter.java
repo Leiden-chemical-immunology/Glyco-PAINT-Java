@@ -101,25 +101,25 @@ public class TrackCsvWriter {
 
                 // Write one CSV row (aligned with TRACK_COLS)
                 writeCsvRow(printWriter,
-                        uniqueKey,              // 0
-                        recordingName,          // 1
-                        trackId,                // 2
-                        trackLabel,             // 3
-                        asInt(nrSpots),         // 4
-                        asInt(nrGaps),          // 5
-                        asInt(longestGap),      // 6
-                        duration,               // 7
-                        xLoc,                   // 8
-                        yLoc,                   // 9
-                        displacement,           // 10 (from TrackMate)
-                        maxSpeed,               // 11
-                        medSpeed,               // 12
-                        diffusionCoeff,         // 13 (calculated)
-                        diffusionCoeffExt,      // 14 (calculated)
-                        totalDistance,          // 15 (calculated)
-                        confinementRatio,       // 16 (calculated)
-                        squareNumber,           // 17
-                        labelNumber             // 18
+                            uniqueKey,              // 0
+                            recordingName,          // 1
+                            trackId,                // 2
+                            trackLabel,             // 3
+                            asInt(nrSpots),         // 4
+                            asInt(nrGaps),          // 5
+                            asInt(longestGap),      // 6
+                            duration,               // 7
+                            xLoc,                   // 8
+                            yLoc,                   // 9
+                            displacement,           // 10 (from TrackMate)
+                            maxSpeed,               // 11
+                            medSpeed,               // 12
+                            diffusionCoeff,         // 13 (calculated)
+                            diffusionCoeffExt,      // 14 (calculated)
+                            totalDistance,          // 15 (calculated)
+                            confinementRatio,       // 16 (calculated)
+                            squareNumber,           // 17
+                            labelNumber             // 18
                 );
             }
         }
@@ -155,7 +155,9 @@ public class TrackCsvWriter {
     private static void writeCsvRow(PrintWriter pw, Object... values) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < values.length; i++) {
-            if (i > 0) sb.append(',');
+            if (i > 0) {
+                sb.append(',');
+            }
             sb.append(escapeCsv(values[i]));
         }
         pw.println(sb);

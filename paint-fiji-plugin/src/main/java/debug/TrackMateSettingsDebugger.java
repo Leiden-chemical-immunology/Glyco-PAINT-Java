@@ -9,7 +9,7 @@ public class TrackMateSettingsDebugger {
 
     public static void logSettings(Settings settings) {
         PaintLogger.infof("==== Detector Settings (%s) ====",
-                settings.detectorFactory.getKey());
+                          settings.detectorFactory.getKey());
 
         for (Map.Entry<String, Object> entry : settings.detectorSettings.entrySet()) {
             String key = entry.getKey();
@@ -19,7 +19,7 @@ public class TrackMateSettingsDebugger {
         }
 
         PaintLogger.infof("==== Tracker Settings (%s) ====",
-                settings.trackerFactory.getKey());
+                          settings.trackerFactory.getKey());
 
         for (Map.Entry<String, Object> entry : settings.trackerSettings.entrySet()) {
             String key = entry.getKey();

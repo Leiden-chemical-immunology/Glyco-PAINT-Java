@@ -6,7 +6,10 @@ import com.google.gson.JsonParser;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * SweepConfig loads and provides access to sweep configuration JSON.
@@ -17,7 +20,7 @@ import java.util.*;
  *   <li>Return active sweep values for TrackMate (numeric lists)</li>
  *   <li>Convenience boolean getter for flags (true/false, 1/0, strings)</li>
  * </ul>
- *
+ * <p>
  * Typical JSON structure:
  * <pre>{@code
  * {
@@ -100,8 +103,8 @@ public class SweepConfig {
      * Convenience getter for booleans under a section/key.
      * Accepts true/false, "true"/"false" (case-insensitive), or 1/0.
      *
-     * @param section section name (e.g. "Sweep Settings")
-     * @param key     key name (e.g. "Sweep")
+     * @param section      section name (e.g. "Sweep Settings")
+     * @param key          key name (e.g. "Sweep")
      * @param defaultValue value to return if not found or invalid
      * @return resolved boolean value
      */

@@ -13,11 +13,11 @@ import java.util.List;
 
 /**
  * Batch validator that checks one or more specific CSV files across multiple experiments in a project.
- *
+ * <p>
  * Output policy:
- *  - Only problems are collected, one per line:
- *      [ExperimentName] - [FileName] - [Problem summary]
- *  - If there are no problems at all: "✔ All validations passed"
+ * - Only problems are collected, one per line:
+ * [ExperimentName] - [FileName] - [Problem summary]
+ * - If there are no problems at all: "✔ All validations passed"
  */
 public class ValidationHandler {
 

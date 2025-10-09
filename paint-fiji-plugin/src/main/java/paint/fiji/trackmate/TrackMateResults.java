@@ -172,11 +172,11 @@ public class TrackMateResults {
     @Override
     public String toString() {
         return String.format("Success: %b, Spots: %d, Tracks: %d, Filtered Tracks: %d, Frames: %d, Milliseconds: %d",
-                success,
-                numberOfSpots,
-                numberOfTracks,
-                numberOfFilteredTracks,
-                numberOFrames,
-                duration != null ? duration.toMillis() : 0);
+                             success,
+                             numberOfSpots,
+                             numberOfTracks,
+                             numberOfFilteredTracks,
+                             numberOFrames,
+                             duration != null ? duration.toMillis() : 0);
     }
 }

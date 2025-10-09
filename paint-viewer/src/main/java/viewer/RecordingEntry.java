@@ -12,15 +12,18 @@ import java.util.Collections;
 import java.util.List;
 
 public class RecordingEntry {
+
+    // @formatter:off
     private final Recording recording;
-    private final Path trackmateImagePath;
-    private final Path brightfieldImagePath;
-    private final String experimentName;
-    private final double minRequiredDensityRatio;
-    private final double maxAllowableVariability;
-    private final double minRequiredRSquared;
-    private final String neighbourMode;
-    private final double observedRSquared;
+    private final Path      trackmateImagePath;
+    private final Path      brightfieldImagePath;
+    private final String    experimentName;
+    private final double    minRequiredDensityRatio;
+    private final double    maxAllowableVariability;
+    private final double    minRequiredRSquared;
+    private final String    neighbourMode;
+    private final double    observedRSquared;
+    // @formatter:on
 
     private ImageIcon leftImage;
     private ImageIcon rightImage;
@@ -37,15 +40,17 @@ public class RecordingEntry {
             String neighbourMode,
             double observedRSquared
     ) {
-        this.recording = recording;
-        this.trackmateImagePath = trackmateImagePath;
-        this.brightfieldImagePath = brightfieldImagePath;
-        this.experimentName = experimentName;
+        // @formatter:off
+        this.recording               = recording;
+        this.trackmateImagePath      = trackmateImagePath;
+        this.brightfieldImagePath    = brightfieldImagePath;
+        this.experimentName          = experimentName;
         this.minRequiredDensityRatio = minRequiredDensityRatio;
         this.maxAllowableVariability = maxAllowableVariability;
-        this.minRequiredRSquared = minRequiredRSquared;
-        this.neighbourMode = neighbourMode;
-        this.observedRSquared = observedRSquared;
+        this.minRequiredRSquared     = minRequiredRSquared;
+        this.neighbourMode           = neighbourMode;
+        this.observedRSquared        = observedRSquared;
+        // @formatter:on
 
         this.leftImage = loadImage(trackmateImagePath, "TrackMate");
         this.rightImage = loadImage(brightfieldImagePath, "Brightfield");

@@ -5,7 +5,10 @@ import paint.shared.utils.PaintLogger;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -16,7 +19,8 @@ public final class ExperimentSquareCache {
 
     private static final Map<String, Map<String, List<Square>>> experimentCache = new HashMap<>();
 
-    private ExperimentSquareCache() {}
+    private ExperimentSquareCache() {
+    }
 
     /**
      * Returns all squares for a specific recording within an experiment.
@@ -54,13 +58,17 @@ public final class ExperimentSquareCache {
         return result;
     }
 
-    /** Clears all cached experiments (optional manual reset). */
+    /**
+     * Clears all cached experiments (optional manual reset).
+     */
     public static synchronized void clearCache() {
         experimentCache.clear();
         PaintLogger.infof("Cleared ExperimentSquareCache");
     }
 
-    /** Clears only a specific experiment's cached squares. */
+    /**
+     * Clears only a specific experiment's cached squares.
+     */
     public static synchronized void clearExperiment(String experimentName) {
         experimentCache.remove(experimentName);
         PaintLogger.infof("Cleared cache for experiment: %s", experimentName);

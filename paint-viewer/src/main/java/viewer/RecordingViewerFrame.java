@@ -259,7 +259,9 @@ public class RecordingViewerFrame extends JFrame {
     }
 
     private ImageIcon scaleToFit(ImageIcon icon, int width, int height) {
-        if (icon == null || icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) return null;
+        if (icon == null || icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) {
+            return null;
+        }
         java.awt.Image img = icon.getImage();
         java.awt.Image scaled = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
         return new ImageIcon(scaled);
@@ -324,22 +326,22 @@ public class RecordingViewerFrame extends JFrame {
         attributesModel.addRow(new Object[]{"Neighbour Mode", entry.getNeighbourMode()});
 
 
-//        });
-//        attributesModel.addRow(new Object[]{
-//                "Density", entry.getDensity() + " " + (densityOk ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredDensityRatio()
-//        });
-//        attributesModel.addRow(new Object[]{
-//                "R²", entry.getObservedRSquared() + " " + (r2Ok ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredRSquared()
-//        });
-//        attributesModel.addRow(new Object[]{
-//                "Tau", entry.getTau() + " " + (tauOk ? "✅ ≤ " : "❌ ≤ ") + entry.getMaxAllowableVariability()
-//        });
-//        attributesModel.addRow(new Object[]{
-//                "Density", entry.getDensity() + " " + (densityOk ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredDensityRatio()
-//        });
-//        attributesModel.addRow(new Object[]{
-//                "R²", entry.getObservedRSquared() + " " + (r2Ok ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredRSquared()
-//        });
+        //        });
+        //        attributesModel.addRow(new Object[]{
+        //                "Density", entry.getDensity() + " " + (densityOk ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredDensityRatio()
+        //        });
+        //        attributesModel.addRow(new Object[]{
+        //                "R²", entry.getObservedRSquared() + " " + (r2Ok ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredRSquared()
+        //        });
+        //        attributesModel.addRow(new Object[]{
+        //                "Tau", entry.getTau() + " " + (tauOk ? "✅ ≤ " : "❌ ≤ ") + entry.getMaxAllowableVariability()
+        //        });
+        //        attributesModel.addRow(new Object[]{
+        //                "Density", entry.getDensity() + " " + (densityOk ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredDensityRatio()
+        //        });
+        //        attributesModel.addRow(new Object[]{
+        //                "R²", entry.getObservedRSquared() + " " + (r2Ok ? "✅ ≥ " : "❌ ≥ ") + entry.getMinRequiredRSquared()
+        //        });
 
         updateNavButtons();
     }
@@ -379,7 +381,7 @@ public class RecordingViewerFrame extends JFrame {
         String recordingName = entry.getRecordingName();
         long timestamp = System.currentTimeMillis();
         for (Integer sqId : selectedNow) {
-            System.out.printf("%s,%d,%d,%d%n", recordingName, sqId, cellId, timestamp);
+            System.out.printf("%s,%d,%d,%d%n", recordingName, sqId, cellId, timestamp);   // TODO
         }
     }
 

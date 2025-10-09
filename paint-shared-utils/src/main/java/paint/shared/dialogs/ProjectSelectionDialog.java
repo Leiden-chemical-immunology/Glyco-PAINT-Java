@@ -59,9 +59,9 @@ public class ProjectSelectionDialog extends JDialog {
             String projectDirectory = directoryField.getText().trim();
             if (projectDirectory.isEmpty()) {
                 JOptionPane.showMessageDialog(this,
-                        "A directory needs to be specified",
-                        "Specify a directory",
-                        JOptionPane.ERROR_MESSAGE);
+                                              "A directory needs to be specified",
+                                              "Specify a directory",
+                                              JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -69,17 +69,17 @@ public class ProjectSelectionDialog extends JDialog {
             Path path = Paths.get(projectDirectory);
             if (Files.isRegularFile(path)) {
                 JOptionPane.showMessageDialog(this,
-                        "Please specify a directory, not a file",
-                        "Specify a directory",
-                        JOptionPane.ERROR_MESSAGE);
+                                              "Please specify a directory, not a file",
+                                              "Specify a directory",
+                                              JOptionPane.ERROR_MESSAGE);
 
                 return;
             }
             if (!Files.isDirectory(path)) {
                 JOptionPane.showMessageDialog(this,
-                        "The directory does no longer exist",
-                        "Specify a directory",
-                        JOptionPane.ERROR_MESSAGE);
+                                              "The directory does no longer exist",
+                                              "Specify a directory",
+                                              JOptionPane.ERROR_MESSAGE);
 
                 return;
             }
@@ -125,12 +125,16 @@ public class ProjectSelectionDialog extends JDialog {
         return okPressed ? Paths.get(directoryField.getText()) : null;
     }
 
-    /** Enable/disable the OK button (useful during processing). */
+    /**
+     * Enable/disable the OK button (useful during processing).
+     */
     public void setOkEnabled(boolean enabled) {
         okButton.setEnabled(enabled);
     }
 
-    /** Returns true if user cancelled the dialog or hit Cancel. */
+    /**
+     * Returns true if user cancelled the dialog or hit Cancel.
+     */
     public boolean isCancelled() {
         return cancelled;
     }

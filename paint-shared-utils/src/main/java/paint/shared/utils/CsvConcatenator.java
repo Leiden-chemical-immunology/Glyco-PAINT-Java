@@ -44,9 +44,9 @@ public class CsvConcatenator {
                 ) {
                     if (!headerWritten) {
                         printer = new CSVPrinter(writer,
-                                CSVFormat.DEFAULT.builder()
-                                        .setHeader(parser.getHeaderMap().keySet().toArray(new String[0]))
-                                        .build()
+                                                 CSVFormat.DEFAULT.builder()
+                                                         .setHeader(parser.getHeaderMap().keySet().toArray(new String[0]))
+                                                         .build()
                         );
                         headerWritten = true;
                     }

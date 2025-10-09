@@ -1,4 +1,4 @@
-package paint.fiji.trackmate;
+package paint.fiji.trackmate;   //TODO
 
 /**
  * Configuration parameters for running the TrackMate plugin in Fiji.

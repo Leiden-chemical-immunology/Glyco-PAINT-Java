@@ -40,31 +40,53 @@ public class ValidationResult {
     }
 
     // --- State checks ---
-    public boolean hasErrors() { return !errors.isEmpty(); }
-    public boolean hasWarnings() { return !warnings.isEmpty(); }
-    public boolean isValid() { return errors.isEmpty(); }
+    public boolean hasErrors() {
+        return !errors.isEmpty();
+    }
+
+    public boolean hasWarnings() {
+        return !warnings.isEmpty();
+    }
+
+    public boolean isValid() {
+        return errors.isEmpty();
+    }
 
     // --- Merge ---
 
     public void merge(ValidationResult other) {
-        if (other == null) return;
+        if (other == null) {
+            return;
+        }
         this.errors.addAll(other.getErrors());
         this.warnings.addAll(other.getWarnings());
         this.infos.addAll(other.getInfos());
         if (other.report != null) {
-            if (this.report == null) this.report = other.report;
-            else this.report += "\n" + other.report;
+            if (this.report == null) {
+                this.report = other.report;
+            } else {
+                this.report += "\n" + other.report;
+            }
         }
     }
 
     // --- Report field ---
-    public void setReport(String report) { this.report = report; }
-    public String getReport() { return report; }
+    public void setReport(String report) {
+        this.report = report;
+    }
+
+    public String getReport() {
+        return report;
+    }
 
     @Override
     public String toString() {
-        if (report != null) return report;
-        if (isValid()) return "✔ No issues found";
+        if (report != null) {
+            return report;
+        }
+        if (isValid()) {
+            return "✔ No issues found";
+        }
         return String.join("\n", errors);
     }
 }

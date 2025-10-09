@@ -38,10 +38,14 @@ import static paint.shared.config.PaintConfig.getBoolean;
  */
 public class RunTrackMateOnRecording {
 
-    /** Verbose flag to optionally print extra config information. */
+    /**
+     * Verbose flag to optionally print extra config information.
+     */
     final boolean verbose = false;
 
-    /** Global debug flag for enabling extra validation/logging. */
+    /**
+     * Global debug flag for enabling extra validation/logging.
+     */
     static final boolean debug = true;
 
     /**
@@ -165,7 +169,9 @@ public class RunTrackMateOnRecording {
             PaintLogger.errorf("TrackMate - execDetection failed:", trackmate.getErrorMessage());
             return new TrackMateResults(false);
         }
-        if (debug) PaintLogger.debugf("                  TrackMate - spot detection succeeded");
+        if (debug) {
+            PaintLogger.debugf("                  TrackMate - spot detection succeeded");
+        }
 
         int numberSpots = model.getSpots().getNSpots(false);
         // Guardrail: stop if too many spots
@@ -200,7 +206,9 @@ public class RunTrackMateOnRecording {
         final HyperStackDisplayer displayer = new HyperStackDisplayer(model, selectionModel, imp, ds);
         displayer.render();
         displayer.refresh();
-        if (debug) PaintLogger.debugf("      TrackMate - visualisation successful");
+        if (debug) {
+            PaintLogger.debugf("      TrackMate - visualisation successful");
+        }
 
         // Capture track overlay image
         final ImagePlus capture = CaptureOverlayAction.capture(imp, -1, 1, null);
@@ -213,12 +221,16 @@ public class RunTrackMateOnRecording {
         } else {
             PaintLogger.infof("Overlay capture returned null.");
         }
-        if (debug) PaintLogger.debugf("      TrackMate - wrote trackmate image '%s'", imagePath.toString());
+        if (debug) {
+            PaintLogger.debugf("      TrackMate - wrote trackmate image '%s'", imagePath.toString());
+        }
 
         // --- Step 6: Write tracks CSV ---
         String tracksName = experimentInfoRecord.getRecordingName() + "-tracks.csv";
         Path tracksPath = experimentPath.resolve(tracksName);
-        if (debug) PaintLogger.debugf("      TrackMate - wrote tracks file '%s'", tracksPath);
+        if (debug) {
+            PaintLogger.debugf("      TrackMate - wrote tracks file '%s'", tracksPath);
+        }
 
         int numberOfSpotsInALlTracks = 0;
         try {
@@ -258,7 +270,7 @@ public class RunTrackMateOnRecording {
 
         // Return encapsulated results
         return new TrackMateResults(true, true, numberOfSpotsTotal, numberOfTracks,
-                numberOfFilteredTracks, numberOfFrames, duration, numberOfSpotsInALlTracks);
+                                    numberOfFilteredTracks, numberOfFrames, duration, numberOfSpotsInALlTracks);
     }
 
     /**

@@ -44,9 +44,9 @@ public class RecordingViewer {
 
             if (entries.isEmpty()) {
                 JOptionPane.showMessageDialog(null,
-                        "No valid recordings found in selected experiments.",
-                        "No Recordings",
-                        JOptionPane.WARNING_MESSAGE);
+                                              "No valid recordings found in selected experiments.",
+                                              "No Recordings",
+                                              JOptionPane.WARNING_MESSAGE);
                 System.exit(0);
             }
 

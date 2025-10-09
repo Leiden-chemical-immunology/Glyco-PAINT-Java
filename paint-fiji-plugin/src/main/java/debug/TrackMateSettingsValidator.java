@@ -51,7 +51,7 @@ public class TrackMateSettingsValidator {
         if (!expectedType.isInstance(value)) {
             throw new IllegalArgumentException(
                     String.format("Setting '%s' has wrong type: expected %s but got %s (value=%s)",
-                            key, expectedType.getSimpleName(), value.getClass().getSimpleName(), value)
+                                  key, expectedType.getSimpleName(), value.getClass().getSimpleName(), value)
             );
         }
         PaintLogger.debugf("  %s = %s (type=%s)", key, value, value.getClass().getSimpleName());

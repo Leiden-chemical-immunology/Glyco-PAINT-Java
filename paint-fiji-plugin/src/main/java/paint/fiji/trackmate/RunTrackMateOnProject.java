@@ -6,8 +6,8 @@ import paint.shared.config.PaintConfig;
 import paint.shared.dialogs.ProjectSelectionDialog;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.utils.JarInfo;
-import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintConsoleWindow;
+import paint.shared.utils.PaintLogger;
 
 import javax.swing.*;
 import java.io.IOException;

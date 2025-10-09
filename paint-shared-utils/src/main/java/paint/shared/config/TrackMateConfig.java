@@ -1,6 +1,5 @@
 package paint.shared.config;
 
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -13,22 +12,24 @@ import static paint.shared.config.PaintConfig.*;
  */
 public class TrackMateConfig {
 
-    private final int maxFrameGap;
-    private final double alternativeLinkingCostFactor;
+    // @formatter:off
+    private final int     maxFrameGap;
+    private final double  alternativeLinkingCostFactor;
     private final boolean doSubpixelLocalization;
-    private final int minNrSpotsInTrack;
-    private final double linkingMaxDistance;
-    private final int maxNrSpotsInImage;
-    private final double gapClosingMaxDistance;
-    private final int targetChannel;
-    private final double splittingMaxDistance;
-    private final String trackColouring;
-    private final double radius;
+    private final int     minNrSpotsInTrack;
+    private final double  linkingMaxDistance;
+    private final int     maxNrSpotsInImage;
+    private final double  gapClosingMaxDistance;
+    private final int     targetChannel;
+    private final double  splittingMaxDistance;
+    private final String  trackColouring;
+    private final double  radius;
     private final boolean allowGapClosing;
     private final boolean medianFiltering;
     private final boolean allowTrackSplitting;
     private final boolean allowTrackMerging;
-    private final double mergingMaxDistance;
+    private final double  mergingMaxDistance;
+    // @formatter:on
 
     // Full constructor with all values specified
 
@@ -49,41 +50,46 @@ public class TrackMateConfig {
             boolean allowTrackSplitting,
             boolean allowTrackMerging,
             double mergingMaxDistance) {
-        this.maxFrameGap = maxFrameGap;
+
+        // @formatter:off
+        this.maxFrameGap                  = maxFrameGap;
         this.alternativeLinkingCostFactor = alternativeLinkingCostFactor;
-        this.doSubpixelLocalization = doSubpixelLocalization;
-        this.minNrSpotsInTrack = minNrSpotsInTrack;
-        this.linkingMaxDistance = linkingMaxDistance;
-        this.maxNrSpotsInImage = maxNrSpotsInImage;
-        this.gapClosingMaxDistance = gapClosingMaxDistance;
-        this.targetChannel = targetChannel;
-        this.splittingMaxDistance = splittingMaxDistance;
-        this.trackColouring = trackColouring;
-        this.radius = radius;
-        this.allowGapClosing = allowGapClosing;
-        this.medianFiltering = doMedianFiltering;
-        this.allowTrackSplitting = allowTrackSplitting;
-        this.allowTrackMerging = allowTrackMerging;
-        this.mergingMaxDistance = mergingMaxDistance;
+        this.doSubpixelLocalization       = doSubpixelLocalization;
+        this.minNrSpotsInTrack            = minNrSpotsInTrack;
+        this.linkingMaxDistance           = linkingMaxDistance;
+        this.maxNrSpotsInImage            = maxNrSpotsInImage;
+        this.gapClosingMaxDistance        = gapClosingMaxDistance;
+        this.targetChannel                = targetChannel;
+        this.splittingMaxDistance         = splittingMaxDistance;
+        this.trackColouring               = trackColouring;
+        this.radius                       = radius;
+        this.allowGapClosing              = allowGapClosing;
+        this.medianFiltering              = doMedianFiltering;
+        this.allowTrackSplitting          = allowTrackSplitting;
+        this.allowTrackMerging            = allowTrackMerging;
+        this.mergingMaxDistance           = mergingMaxDistance;
+        // @formatter:on
     }
 
     private TrackMateConfig(PaintConfig paintConfig) {
-        this.maxFrameGap = getInt("TrackMate", "MAX_FRAME_GAP", 3);
+        // @formatter:off
+        this.maxFrameGap                  = getInt("TrackMate", "MAX_FRAME_GAP", 3);
         this.alternativeLinkingCostFactor = getDouble("TrackMate", "ALTERNATIVE_LINKING_COST_FACTOR", 2.0);
-        this.doSubpixelLocalization = getBoolean("TrackMate", "DO_SUBPIXEL_LOCALIZATION", true);
-        this.minNrSpotsInTrack = getInt("TrackMate", "MIN_NR_SPOTS_IN_TRACK", 3);
-        this.linkingMaxDistance = getDouble("TrackMate", "LINKING_MAX_DISTANCE", 0.6);
-        this.maxNrSpotsInImage = getInt("TrackMate", "MAX_NR_SPOTS_IN_IMAGE", 10000);
-        this.gapClosingMaxDistance = getDouble("TrackMate", "GAP_CLOSING_MAX_DISTANCE", 1.2);
-        this.targetChannel = getInt("TrackMate", "TARGET_CHANNEL", 1);
-        this.splittingMaxDistance = getDouble("TrackMate", "SPLITTING_MAX_DISTANCE", 1.0);
-        this.trackColouring = getString("TrackMate", "TRACK_COLOURING", "Default");
-        this.radius = getDouble("TrackMate", "RADIUS", 1.0);
-        this.allowGapClosing = getBoolean("TrackMate", "ALLOW_GAP_CLOSING", true);
-        this.medianFiltering = getBoolean("TrackMate", "DO_MEDIAN_FILTERING", false);
-        this.allowTrackSplitting = getBoolean("TrackMate", "ALLOW_TRACK_SPLITTING", false);
-        this.allowTrackMerging = getBoolean("TrackMate", "ALLOW_TRACK_MERGING", false);
-        this.mergingMaxDistance = getDouble("TrackMate", "MERGING_MAX_DISTANCE", 1.0);
+        this.doSubpixelLocalization       = getBoolean("TrackMate", "DO_SUBPIXEL_LOCALIZATION", true);
+        this.minNrSpotsInTrack            = getInt("TrackMate", "MIN_NR_SPOTS_IN_TRACK", 3);
+        this.linkingMaxDistance           = getDouble("TrackMate", "LINKING_MAX_DISTANCE", 0.6);
+        this.maxNrSpotsInImage            = getInt("TrackMate", "MAX_NR_SPOTS_IN_IMAGE", 10000);
+        this.gapClosingMaxDistance        = getDouble("TrackMate", "GAP_CLOSING_MAX_DISTANCE", 1.2);
+        this.targetChannel                = getInt("TrackMate", "TARGET_CHANNEL", 1);
+        this.splittingMaxDistance         = getDouble("TrackMate", "SPLITTING_MAX_DISTANCE", 1.0);
+        this.trackColouring               = getString("TrackMate", "TRACK_COLOURING", "Default");
+        this.radius                       = getDouble("TrackMate", "RADIUS", 1.0);
+        this.allowGapClosing              = getBoolean("TrackMate", "ALLOW_GAP_CLOSING", true);
+        this.medianFiltering              = getBoolean("TrackMate", "DO_MEDIAN_FILTERING", false);
+        this.allowTrackSplitting          = getBoolean("TrackMate", "ALLOW_TRACK_SPLITTING", false);
+        this.allowTrackMerging            = getBoolean("TrackMate", "ALLOW_TRACK_MERGING", false);
+        this.mergingMaxDistance           = getDouble("TrackMate", "MERGING_MAX_DISTANCE", 1.0);
+        // @formatter:on
     }
 
     public static TrackMateConfig from(PaintConfig paintConfig) {
@@ -177,13 +183,13 @@ public class TrackMateConfig {
                 "   mergingMaxDistance=" + mergingMaxDistance + "\n";
     }
 
-    public static void trackMateConfigToFile(TrackMateConfig trackMateConfig, Path filePath)  {
+    public static void trackMateConfigToFile(TrackMateConfig trackMateConfig, Path filePath) {
         String formattedString = trackMateConfig.toString();
 
         // overwrite or create
         try {
             Files.write(filePath, formattedString.getBytes(StandardCharsets.UTF_8));
-        }  catch (IOException e) {
+        } catch (IOException e) {
 
         }
     }

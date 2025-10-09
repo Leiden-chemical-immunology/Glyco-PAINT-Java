@@ -120,7 +120,9 @@ public class CalculateTau {
      */
     private static Map<Double, Integer> createFrequencyDistribution(double[] trackDurations) {
         Map<Double, Integer> frequencyDistribution = new TreeMap<>();
-        if (trackDurations == null) return frequencyDistribution;
+        if (trackDurations == null) {
+            return frequencyDistribution;
+        }
 
         for (double duration : trackDurations) {
             Integer prev = frequencyDistribution.get(duration);
@@ -236,9 +238,15 @@ class CalculateTauExpDecayFitterNew {
         double maxY = Double.NEGATIVE_INFINITY;
         double maxX = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < y.length; i++) {
-            if (y[i] < minY) minY = y[i];
-            if (y[i] > maxY) maxY = y[i];
-            if (x[i] > maxX) maxX = x[i];
+            if (y[i] < minY) {
+                minY = y[i];
+            }
+            if (y[i] > maxY) {
+                maxY = y[i];
+            }
+            if (x[i] > maxX) {
+                maxX = x[i];
+            }
         }
 
         // Baseline guess b = min(y)
@@ -282,7 +290,9 @@ class CalculateTauExpDecayFitterNew {
 
     private static double computeRSquared(double[] x, double[] y, double m, double t, double b) {
         double meanY = 0.0;
-        for (double v : y) meanY += v;
+        for (double v : y) {
+            meanY += v;
+        }
         meanY /= y.length;
 
         double ssRes = 0.0, ssTot = 0.0;

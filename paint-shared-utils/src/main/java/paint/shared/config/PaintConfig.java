@@ -100,6 +100,7 @@ public class PaintConfig {
                     projectPath.resolve(PAINT_CONFIGURATION_JSON));
         }
     }
+
     /**
      * Returns the current global PaintConfig singleton.
      * <p>

@@ -2,8 +2,10 @@ package viewer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class FilterDialog extends JDialog {
@@ -28,11 +30,13 @@ public class FilterDialog extends JDialog {
         setResizable(false);
 
         // Collect distinct values for each attribute
-        Set<String> cellTypes = new TreeSet<>();
-        Set<String> probeNames = new TreeSet<>();
-        Set<String> probeTypes = new TreeSet<>();
-        Set<String> adjuvants = new TreeSet<>();
+        // @formatter:off
+        Set<String> cellTypes      = new TreeSet<>();
+        Set<String> probeNames     = new TreeSet<>();
+        Set<String> probeTypes     = new TreeSet<>();
+        Set<String> adjuvants      = new TreeSet<>();
         Set<String> concentrations = new TreeSet<>();
+        // @formatter:on
 
         for (RecordingEntry entry : recordings) {
             cellTypes.add(entry.getCellType());
@@ -42,11 +46,13 @@ public class FilterDialog extends JDialog {
             concentrations.add(String.valueOf(entry.getConcentration()));
         }
 
-        cellTypeList = createList(cellTypes);
-        probeNameList = createList(probeNames);
-        probeTypeList = createList(probeTypes);
-        adjuvantList = createList(adjuvants);
+        // @formatter:off
+        cellTypeList      = createList(cellTypes);
+        probeNameList     = createList(probeNames);
+        probeTypeList     = createList(probeTypes);
+        adjuvantList      = createList(adjuvants);
         concentrationList = createList(concentrations);
+        // @formatter:on
 
         JPanel listPanel = new JPanel(new GridLayout(1, 6, 10, 0));
         listPanel.add(createListBoxWithButtons("Cell Type", cellTypeList));
@@ -109,9 +115,11 @@ public class FilterDialog extends JDialog {
         scrollPane.setPreferredSize(new Dimension(120, 160));
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        JPanel btnPanel = new JPanel(new GridLayout(2, 1, 0, 5));
+        // @formatter:off
+        JPanel btnPanel   = new JPanel(new GridLayout(2, 1, 0, 5));
         JButton filterBtn = new JButton("Filter");
-        JButton resetBtn = new JButton("Reset");
+        JButton resetBtn  = new JButton("Reset");
+        // @formatter:on
 
         filterBtn.addActionListener(e -> applySingleFilter(list));
         resetBtn.addActionListener(e -> resetSingleFilter(list));

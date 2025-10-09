@@ -79,7 +79,7 @@ public class RunTrackMateOnProjectCore {
         // Report
         Duration totalDuration = Duration.between(start, LocalDateTime.now());
         PaintLogger.infof("Processed %d experiments in %s.",
-                experimentNames.size(), formatDuration((int) (totalDuration.toMillis() / 1000)));
+                          experimentNames.size(), formatDuration((int) (totalDuration.toMillis() / 1000)));
         return status;
     }
 }

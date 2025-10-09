@@ -1,7 +1,6 @@
 package viewer;
 
 import paint.shared.objects.Square;
-import paint.shared.utils.PaintLogger;
 import paint.shared.utils.SquareUtils;
 
 import javax.swing.*;
@@ -23,16 +22,20 @@ public class SquareGridPanel extends JPanel {
     private List<Square> squares = new ArrayList<>();
     private final Set<Integer> selectedSquares = new HashSet<>();
 
+    // @formatter:off
     private boolean   showBorders   = true;
     private boolean   showShading   = true;
     private Rectangle selectionRect = null;
     private Point     dragStart     = null;
+    // @formatter:on
 
     // --- Control params (set from RecordingViewerFrame / SquareControlDialog)
+    // @formatter:off
     private double ctrlMinDensityRatio = 0.0;
     private double ctrlMaxVariability  = Double.MAX_VALUE;
     private double ctrlMinRSquared     = 0.0;
     private String ctrlNeighbourMode   = "Free";
+    // @formatter:on
 
     // 🔹 Selection toggle
     private boolean selectionEnabled = false;
@@ -67,14 +70,18 @@ public class SquareGridPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (!selectionEnabled) return;
+                if (!selectionEnabled) {
+                    return;
+                }
                 dragStart = e.getPoint();
                 selectionRect = new Rectangle(dragStart);
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (!selectionEnabled) return;
+                if (!selectionEnabled) {
+                    return;
+                }
                 if (selectionRect != null) {
                     selectSquaresInRect(selectionRect);
                     selectionRect = null;
@@ -96,8 +103,7 @@ public class SquareGridPanel extends JPanel {
                             sq.setSelected(newSel);
                             if (newSel) {
                                 selectedSquares.add(sq.getSquareNumber());
-                            }
-                            else {
+                            } else {
                                 selectedSquares.remove(sq.getSquareNumber());
                             }
                             repaint();
@@ -118,7 +124,9 @@ public class SquareGridPanel extends JPanel {
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (!selectionEnabled) return;
+                if (!selectionEnabled) {
+                    return;
+                }
                 int x = Math.min(dragStart.x, e.getX());
                 int y = Math.min(dragStart.y, e.getY());
                 int w = Math.abs(dragStart.x - e.getX());
@@ -131,14 +139,18 @@ public class SquareGridPanel extends JPanel {
 
     // 🔹 Popup feature
     private void showSquareInfo(int mouseX, int mouseY) {
-        if (squares == null || squares.isEmpty()) return;
+        if (squares == null || squares.isEmpty()) {
+            return;
+        }
 
         int squareW = getWidth() / cols;
         int squareH = getHeight() / rows;
         int row = mouseY / squareH;
         int col = mouseX / squareW;
         int index = row * cols + col;
-        if (index < 0 || index >= squares.size()) return;
+        if (index < 0 || index >= squares.size()) {
+            return;
+        }
 
         Square sq = squares.get(index);
 
@@ -381,22 +393,28 @@ public class SquareGridPanel extends JPanel {
     }
 
     public static Color getColorForCell(int cellId) {
-        if (cellId <= 0) return Color.GRAY;
+        if (cellId <= 0) {
+            return Color.GRAY;
+        }
         return CELL_COLORS[(cellId - 1) % CELL_COLORS.length];
     }
 
-    /** Update current control parameters (no UI side-effects here). */
+    /**
+     * Update current control parameters (no UI side effects here).
+     */
     public void setControlParameters(double densityRatio,
                                      double variability,
                                      double rSquared,
                                      String neighbourMode) {
         this.ctrlMinDensityRatio = densityRatio;
-        this.ctrlMaxVariability  = variability;
-        this.ctrlMinRSquared     = rSquared;
-        this.ctrlNeighbourMode   = (neighbourMode != null) ? neighbourMode : "Free";
+        this.ctrlMaxVariability = variability;
+        this.ctrlMinRSquared = rSquared;
+        this.ctrlNeighbourMode = (neighbourMode != null) ? neighbourMode : "Free";
     }
 
-    /** Re-apply selection/visibility based on the current control params. */
+    /**
+     * Re-apply selection/visibility based on the current control params.
+     */
     public void applyVisibilityFilter() {
         SquareUtils.applyVisibilityFilter(squares, ctrlMinDensityRatio, ctrlMaxVariability, ctrlMinRSquared, ctrlNeighbourMode);
         repaint();
@@ -404,7 +422,9 @@ public class SquareGridPanel extends JPanel {
 
     // In SquareGridPanel (add this method)
     public void assignSelectedToCell(int cellId) {
-        if (squares == null) return;
+        if (squares == null) {
+            return;
+        }
         for (Square sq : squares) {
             if (sq.isSelected()) {
                 sq.setCellId(cellId);   // assign cell to selected only

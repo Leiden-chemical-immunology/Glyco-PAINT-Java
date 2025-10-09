@@ -10,7 +10,9 @@ import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.objects.ExperimentInfo;
 import paint.shared.utils.PaintLogger;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -72,7 +74,7 @@ public class RunTrackMateOnExperiment {
             PaintConfig.initialise(experimentPath.getParent());
         } else {
             PaintLogger.warningf("No PaintConfig.json found in %s, defaults will be used.",
-                    experimentPath.getParent());
+                                 experimentPath.getParent());
         }
         PaintConfig paintConfig = PaintConfig.instance();
         TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
@@ -94,23 +96,23 @@ public class RunTrackMateOnExperiment {
 
         PaintLogger.blankline();
         PaintLogger.infof("Processing %d %s in experiment '%s' in project '%s'.",
-                numberRecordingsToProcess,
-                numberRecordingsToProcess == 1 ? "recording" : "recordings",
-                experimentName,
-                projectName);
+                          numberRecordingsToProcess,
+                          numberRecordingsToProcess == 1 ? "recording" : "recordings",
+                          experimentName,
+                          projectName);
         PaintLogger.blankline();
 
         // Try-with-resources for experiment_info.csv
         try (Reader reader = Files.newBufferedReader(experimentFilePath);
              CSVParser parser = new CSVParser(reader,
-                     CSVFormat.DEFAULT.builder()
-                             .setHeader()
-                             .setSkipHeaderRecord(true)
-                             .build());
+                                              CSVFormat.DEFAULT.builder()
+                                                      .setHeader()
+                                                      .setSkipHeaderRecord(true)
+                                                      .build());
              BufferedWriter writer = Files.newBufferedWriter(allRecordingFilePath);
              CSVPrinter printer = new CSVPrinter(writer,
-                     CSVFormat.DEFAULT.builder()
-                             .build())
+                                                 CSVFormat.DEFAULT.builder()
+                                                         .build())
         ) {
             // Output header
             List<String> header = new ArrayList<>(parser.getHeaderMap().keySet());
@@ -225,7 +227,7 @@ public class RunTrackMateOnExperiment {
         }
 
         PaintLogger.infof("Processed %d recordings in %s.", numberRecordings,
-                formatDuration((int) (totalDuration.toMillis() / 1000)));
+                          formatDuration((int) (totalDuration.toMillis() / 1000)));
         PaintLogger.blankline();
 
         return status;

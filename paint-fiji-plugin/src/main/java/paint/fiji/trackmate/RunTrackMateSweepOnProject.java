@@ -1,20 +1,22 @@
 package paint.fiji.trackmate;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import paint.shared.config.PaintConfig;
 import paint.shared.config.SweepConfig;
 import paint.shared.utils.PaintLogger;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
+import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 
 /**
  * Executes TrackMate on a project while sweeping over configuration parameters.
@@ -85,7 +87,7 @@ public class RunTrackMateSweepOnProject {
                         PaintLogger.infof("Copied baseline PaintConfig.json to %s", configCopy);
                     } catch (IOException e) {
                         PaintLogger.errorf("Failed to copy PaintConfig.json to %s: %s",
-                                configCopy, e.getMessage());
+                                           configCopy, e.getMessage());
                     }
 
                     // 🔑 Reinitialise PaintConfig to point at sweepDir

@@ -10,10 +10,16 @@
     <option name="CONTINUATION_INDENT_SIZE" value="8" />
 
     <JavaCodeStyleSettings>
+        <!-- Alignment rules -->
+        <option name="ALIGN_GROUP_FIELD_DECLARATIONS" value="true" />
+        <option name="ALIGN_CONSECUTIVE_VARIABLE_DECLARATIONS" value="true" />
+        <option name="ALIGN_CONSECUTIVE_ASSIGNMENTS" value="true" />
+
+        <!-- Optional: make multiline assignments line up too -->
+        <option name="ALIGN_MULTILINE_ASSIGNMENT" value="true" />
         <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
-        <option name="ALIGN_MULTILINE_ASSIGNMENT" value="false" />
         <option name="ALIGN_MULTILINE_BINARY_OPERATION" value="false" />
-        <option name="ALIGN_GROUP_FIELD_DECLARATIONS" value="false" />
+
     </JavaCodeStyleSettings>
 
     <codeStyleSettings language="JAVA">
@@ -26,6 +32,7 @@
         <option name="CATCH_ON_NEW_LINE" value="false" />
         <option name="FINALLY_ON_NEW_LINE" value="false" />
         <option name="WHILE_ON_NEW_LINE" value="false" />
+        <option name="FORCE_BRACES" value="ALWAYS" />
 
         <!-- Don’t compress to one-liners -->
         <option name="KEEP_SIMPLE_BLOCKS_IN_ONE_LINE" value="false" />

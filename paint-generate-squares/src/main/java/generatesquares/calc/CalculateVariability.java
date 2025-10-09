@@ -59,7 +59,9 @@ public class CalculateVariability {
     // Utility: compute mean
     private static double mean(double[] values) {
         double sum = 0.0;
-        for (double v : values) sum += v;
+        for (double v : values) {
+            sum += v;
+        }
         return sum / values.length;
     }
 

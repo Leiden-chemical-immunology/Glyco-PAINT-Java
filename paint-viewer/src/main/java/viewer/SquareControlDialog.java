@@ -5,7 +5,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.text.DecimalFormat;
-import java.util.Hashtable;
 
 /**
  * Square Control Dialog (3-slider version)
@@ -95,16 +94,20 @@ public class SquareControlDialog extends JDialog {
         numbersPanel.setBorder(BorderFactory.createTitledBorder("Numbers"));
         numbersPanel.add(numbersInner, BorderLayout.WEST);
 
-// --- Borders & Shading ---
+        // --- Borders & Shading ---
         showBordersCheckBox = new JCheckBox("Show borders of selected squares", true);
         showBordersCheckBox.addActionListener(e -> {
             boolean show = showBordersCheckBox.isSelected();
             gridPanel.setShowBorders(show);
 
             if (!show) {
-                if (numberLabelRadio.isSelected()) lastNumberMode = SquareGridPanel.NumberMode.LABEL;
-                else if (numberSquareRadio.isSelected()) lastNumberMode = SquareGridPanel.NumberMode.SQUARE;
-                else lastNumberMode = SquareGridPanel.NumberMode.NONE;
+                if (numberLabelRadio.isSelected()) {
+                    lastNumberMode = SquareGridPanel.NumberMode.LABEL;
+                } else if (numberSquareRadio.isSelected()) {
+                    lastNumberMode = SquareGridPanel.NumberMode.SQUARE;
+                } else {
+                    lastNumberMode = SquareGridPanel.NumberMode.NONE;
+                }
 
                 numberNoneRadio.setSelected(true);
                 gridPanel.setNumberMode(SquareGridPanel.NumberMode.NONE);
@@ -179,9 +182,14 @@ public class SquareControlDialog extends JDialog {
         neighbourGroup.add(neighbourStrict);
 
         switch (initParams.neighbourMode) {
-            case "Relaxed": neighbourRelaxed.setSelected(true); break;
-            case "Strict": neighbourStrict.setSelected(true); break;
-            default: neighbourFree.setSelected(true);
+            case "Relaxed":
+                neighbourRelaxed.setSelected(true);
+                break;
+            case "Strict":
+                neighbourStrict.setSelected(true);
+                break;
+            default:
+                neighbourFree.setSelected(true);
         }
 
         JPanel neighbourPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -256,8 +264,7 @@ public class SquareControlDialog extends JDialog {
 
         java.util.Hashtable<Integer, JLabel> table = new java.util.Hashtable<>();
         for (int v = min; v <= max; v += major) {
-            String text = isRSquared
-                    ? ONE_DEC.format(v / divisor)       // keep 1 decimal for R²
+            String text = isRSquared ? ONE_DEC.format(v / divisor)       // keep 1 decimal for R²
                     : String.valueOf((int) Math.round(v / divisor)); // integer for the others
             table.put(v, new JLabel(text));
         }
@@ -307,11 +314,9 @@ public class SquareControlDialog extends JDialog {
 
         if ("Free".equals(origNeighbourMode)) {
             neighbourFree.setSelected(true);
-        }
-        else if ("Relaxed".equals(origNeighbourMode)) {
+        } else if ("Relaxed".equals(origNeighbourMode)) {
             neighbourRelaxed.setSelected(true);
-        }
-        else {
+        } else {
             neighbourStrict.setSelected(true);
         }
 

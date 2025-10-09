@@ -9,7 +9,9 @@ public class CellAssignmentDialog extends JDialog {
 
     public interface Listener {
         void onAssign(int cellId);
+
         void onUndo();
+
         void onCancelSelection();
     }
 
@@ -78,8 +80,13 @@ public class CellAssignmentDialog extends JDialog {
 
         // Square with only border, not filled
         JPanel square = new JPanel() {
-            @Override public Dimension getPreferredSize() { return new Dimension(20, 20); }
-            @Override protected void paintComponent(Graphics g) {
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension(20, 20);
+            }
+
+            @Override
+            protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 g.setColor(baseColor);
                 g.drawRect(1, 1, getWidth() - 3, getHeight() - 3);
@@ -94,7 +101,8 @@ public class CellAssignmentDialog extends JDialog {
         // Sync clicks
         radio.addActionListener(e -> updateVisualSelection());
         square.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override public void mouseClicked(java.awt.event.MouseEvent e) {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
                 radio.setSelected(true);
                 updateVisualSelection();
             }

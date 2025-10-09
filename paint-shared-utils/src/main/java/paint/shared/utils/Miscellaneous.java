@@ -89,17 +89,22 @@ public class Miscellaneous {
     }
 
     public static String friendlyMessage(Throwable t) {
-        if (t == null)
+        if (t == null) {
             return "";
+        }
         String m = t.toString();
         int colon = m.lastIndexOf(':');
         return (colon != -1) ? m.substring(colon + 1).trim() : m;
     }
 
     public static String rootCauseFriendlyMessage(Throwable t) {
-        if (t == null) return "";
+        if (t == null) {
+            return "";
+        }
         Throwable cur = t;
-        while (cur.getCause() != null) cur = cur.getCause();
+        while (cur.getCause() != null) {
+            cur = cur.getCause();
+        }
         return friendlyMessage(cur);
     }
 

@@ -1,8 +1,9 @@
 package paint.shared.utils;
 
 import paint.shared.objects.Square;
-import java.util.List;
+
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class SquareUtils {
@@ -16,7 +17,9 @@ public class SquareUtils {
                                              double maxVariability,
                                              double minRSquared,
                                              String neighbourMode) {
-        if (squares == null || squares.isEmpty()) return;
+        if (squares == null || squares.isEmpty()) {
+            return;
+        }
 
         int total = squares.size();
         int visibleBasic = 0;
@@ -29,11 +32,13 @@ public class SquareUtils {
                     && !Double.isNaN(sq.getRSquared());
 
             sq.setSelected(passes);
-            if (passes) visibleBasic++;
+            if (passes) {
+                visibleBasic++;
+            }
         }
 
         PaintLogger.debugf("VisibilityFilter [%s] basic pass: %d / %d squares visible",
-                neighbourMode, visibleBasic, total);
+                           neighbourMode, visibleBasic, total);
 
         // --- Second pass: neighbour filtering ---
         if ("Free".equalsIgnoreCase(neighbourMode)) {
@@ -45,14 +50,18 @@ public class SquareUtils {
         int keptCount = 0;
 
         for (Square sq : squares) {
-            if (!sq.isSelected()) continue;
+            if (!sq.isSelected()) {
+                continue;
+            }
 
             boolean hasNeighbour = false;
             int r = sq.getRowNumber();
             int c = sq.getColNumber();
 
             for (Square other : squares) {
-                if (other == sq || !other.isSelected()) continue;
+                if (other == sq || !other.isSelected()) {
+                    continue;
+                }
                 int dr = Math.abs(other.getRowNumber() - r);
                 int dc = Math.abs(other.getColNumber() - c);
 
@@ -85,6 +94,6 @@ public class SquareUtils {
         }
 
         PaintLogger.debugf("NeighbourMode [%s] neighbour-filtered: %d / %d retained",
-                neighbourMode, keptCount, visibleBasic);
+                           neighbourMode, keptCount, visibleBasic);
     }
 }

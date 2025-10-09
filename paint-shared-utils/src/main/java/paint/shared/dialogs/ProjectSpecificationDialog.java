@@ -58,8 +58,8 @@ public class ProjectSpecificationDialog {
     private final java.util.List<JCheckBox> checkBoxes = new ArrayList<>();
     private boolean okPressed = false;
 
-    private JButton okButton;
-    private JButton cancelButton;
+    private final JButton okButton;
+    private final JButton cancelButton;
     private volatile boolean cancelled = false;
     private int cancelCount = 0;
 
@@ -109,7 +109,8 @@ public class ProjectSpecificationDialog {
             maxVariabilityField = createTightTextField(String.valueOf(maxVariability), new FloatDocumentFilter());
 
             int row = 0;
-            gbc.gridx = 0; gbc.gridy = row;
+            gbc.gridx = 0;
+            gbc.gridy = row;
             JLabel lbl1 = new JLabel("Number of Squares in Row (and Column):", SwingConstants.LEFT);
             lbl1.setPreferredSize(labelSize);
             formPanel.add(lbl1, gbc);
@@ -117,7 +118,8 @@ public class ProjectSpecificationDialog {
             formPanel.add(nrSquaresField, gbc);
 
             row++;
-            gbc.gridx = 0; gbc.gridy = row;
+            gbc.gridx = 0;
+            gbc.gridy = row;
             JLabel lbl2 = new JLabel("Min Number of Tracks to Calculate:", SwingConstants.LEFT);
             lbl2.setPreferredSize(labelSize);
             formPanel.add(lbl2, gbc);
@@ -125,7 +127,8 @@ public class ProjectSpecificationDialog {
             formPanel.add(minTracksField, gbc);
 
             row++;
-            gbc.gridx = 0; gbc.gridy = row;
+            gbc.gridx = 0;
+            gbc.gridy = row;
             JLabel lbl3 = new JLabel("Min Required R²:", SwingConstants.LEFT);
             lbl3.setPreferredSize(labelSize);
             formPanel.add(lbl3, gbc);
@@ -133,7 +136,8 @@ public class ProjectSpecificationDialog {
             formPanel.add(minRSquaredField, gbc);
 
             row++;
-            gbc.gridx = 0; gbc.gridy = row;
+            gbc.gridx = 0;
+            gbc.gridy = row;
             JLabel lbl4 = new JLabel("Min Required Density Ratio:", SwingConstants.LEFT);
             lbl4.setPreferredSize(labelSize);
             formPanel.add(lbl4, gbc);
@@ -141,7 +145,8 @@ public class ProjectSpecificationDialog {
             formPanel.add(minDensityRatioField, gbc);
 
             row++;
-            gbc.gridx = 0; gbc.gridy = row;
+            gbc.gridx = 0;
+            gbc.gridy = row;
             JLabel lbl5 = new JLabel("Max Allowed Variability:", SwingConstants.LEFT);
             lbl5.setPreferredSize(labelSize);
             formPanel.add(lbl5, gbc);
@@ -243,9 +248,9 @@ public class ProjectSpecificationDialog {
                             okButton.setEnabled(true);
                             if (!cancelled) {
                                 JOptionPane.showMessageDialog(dialog,
-                                        success
-                                                ? "Calculations finished successfully!"
-                                                : "Calculations finished with errors. Please check the log.");
+                                                              success
+                                                                      ? "Calculations finished successfully!"
+                                                                      : "Calculations finished with errors. Please check the log.");
                             }
                         });
                     } catch (Exception ex1) {
@@ -262,9 +267,9 @@ public class ProjectSpecificationDialog {
             if (cancelCount == 1) {
                 cancelled = true;
                 JOptionPane.showMessageDialog(dialog,
-                        "Processing will stop after the current recording finishes.",
-                        "Cancellation Requested",
-                        JOptionPane.INFORMATION_MESSAGE);
+                                              "Processing will stop after the current recording finishes.",
+                                              "Cancellation Requested",
+                                              JOptionPane.INFORMATION_MESSAGE);
             } else {
                 dialog.dispose();
             }
@@ -336,7 +341,7 @@ public class ProjectSpecificationDialog {
             }
         }
         return new Project(okPressed, projectPath, null, experimentNames,
-                paintConfig, generateSquaresConfig, trackMateConfig, null);
+                           paintConfig, generateSquaresConfig, trackMateConfig, null);
     }
 
     public Project showDialog() {
@@ -346,16 +351,28 @@ public class ProjectSpecificationDialog {
 
     private void setInputsEnabled(boolean enabled) {
         if (mode == DialogMode.GENERATE_SQUARES) {
-            if (nrSquaresField != null) nrSquaresField.setEnabled(enabled);
-            if (minTracksField != null) minTracksField.setEnabled(enabled);
-            if (minRSquaredField != null) minRSquaredField.setEnabled(enabled);
-            if (minDensityRatioField != null) minDensityRatioField.setEnabled(enabled);
-            if (maxVariabilityField != null) maxVariabilityField.setEnabled(enabled);
+            if (nrSquaresField != null) {
+                nrSquaresField.setEnabled(enabled);
+            }
+            if (minTracksField != null) {
+                minTracksField.setEnabled(enabled);
+            }
+            if (minRSquaredField != null) {
+                minRSquaredField.setEnabled(enabled);
+            }
+            if (minDensityRatioField != null) {
+                minDensityRatioField.setEnabled(enabled);
+            }
+            if (maxVariabilityField != null) {
+                maxVariabilityField.setEnabled(enabled);
+            }
         }
         if (mode == DialogMode.TRACKMATE && imageDirectoryField != null) {
             imageDirectoryField.setEnabled(enabled);
         }
-        for (JCheckBox cb : checkBoxes) cb.setEnabled(enabled);
+        for (JCheckBox cb : checkBoxes) {
+            cb.setEnabled(enabled);
+        }
         saveExperimentsCheckBox.setEnabled(enabled);
     }
 
@@ -377,6 +394,7 @@ public class ProjectSpecificationDialog {
                 super.insertString(fb, offset, string, attr);
             }
         }
+
         @Override
         public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
                 throws BadLocationException {
@@ -394,6 +412,7 @@ public class ProjectSpecificationDialog {
                 super.insertString(fb, offset, string, attr);
             }
         }
+
         @Override
         public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
                 throws BadLocationException {
@@ -404,7 +423,9 @@ public class ProjectSpecificationDialog {
     }
 
     public void setOkEnabled(boolean enabled) {
-        if (okButton != null) okButton.setEnabled(enabled);
+        if (okButton != null) {
+            okButton.setEnabled(enabled);
+        }
     }
 
     public boolean isCancelled() {

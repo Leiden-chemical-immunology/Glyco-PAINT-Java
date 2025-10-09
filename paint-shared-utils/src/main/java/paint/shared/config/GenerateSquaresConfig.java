@@ -18,15 +18,21 @@ public class GenerateSquaresConfig {
     /*
      * Full constructor with all values specified
      */
+
+
     private GenerateSquaresConfig(PaintConfig paintConfig) {
-        this.nrSquaresInRow = getInt("Generate Squares", "Nr of Squares in Row", 5);
-        this.nrSquaresInColumn = getInt("Generate Squares", "Nr of Squares in Column", 5);
-        this.minTracksToCalculateTau = getInt("Generate Squares", "Min Tracks to Calculate Tau", 20);
-        this.minRequiredRSquared = getDouble("Generate Squares", "Min Required R Squared", 0.1);
+
+        // @formatter:off
+        this.nrSquaresInRow          = getInt("Generate Squares",    "Nr of Squares in Row", 5);
+        this.nrSquaresInColumn       = getInt("Generate Squares",    "Nr of Squares in Column", 5);
+        this.minTracksToCalculateTau = getInt("Generate Squares",    "Min Tracks to Calculate Tau", 20);
+        this.minRequiredRSquared     = getDouble("Generate Squares", "Min Required R Squared", 0.1);
         this.minRequiredDensityRatio = getDouble("Generate Squares", "Min Required Density Ratio", 0.1);
         this.maxAllowableVariability = getDouble("Generate Squares", "Max Allowable Variability", 10.0);
-        this.neighbourMode = getString("Generate Squares", "Neighbour Mode", "Free");
+        this.neighbourMode           = getString("Generate Squares", "Neighbour Mode", "Free");
+        // @formatter:on
     }
+
 
     public static GenerateSquaresConfig from(PaintConfig paintConfig) {
         return new GenerateSquaresConfig(paintConfig);

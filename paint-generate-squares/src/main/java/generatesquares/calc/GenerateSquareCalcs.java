@@ -67,7 +67,6 @@ public class GenerateSquareCalcs {
         }
     }
 
-
     public static List<Square> generateSquaresForRecording(GenerateSquaresConfig generateSquaresConfig, Recording recording) {
 
         int n = generateSquaresConfig.getNrSquaresInRow();
@@ -196,24 +195,6 @@ public class GenerateSquareCalcs {
             double densityRatio = tracksInSquare.size() / averageTracks;
             square.setDensityRatio(densityRatio);
 
-//            boolean densityValid     = Double.isFinite(densityRatio);
-//            boolean variabilityValid = Double.isFinite(variability);
-//            boolean r2Valid          = Double.isFinite(rSquared);
-//
-//            boolean densityRatioOK = densityValid     && densityRatio >= minRequiredDensityRatio;
-//            boolean variabilityOK  = variabilityValid && variability <= maxAllowableVariability;
-//            boolean rSquaredOK     = r2Valid          && rSquared  >= minRequiredRSquared;
-//
-//
-//            if (densityRatioOK && variabilityOK && rSquaredOK) {
-//                square.setLabelNumber(labelNumber);
-//                labelNumber += 1;
-//                square.setSelected(true);
-//            }
-//            else {
-//                square.setSelected(false);
-//            }
-
             // Apply the shared visibility filter logic
             SquareUtils.applyVisibilityFilter(
                     recording.getSquaresOfRecording(),
@@ -246,7 +227,6 @@ public class GenerateSquareCalcs {
         DoubleColumn durations = sorted.doubleColumn("Track Duration");
         List<Double> tail = durations.asList()
                 .subList(nrOfTracks - nrTracksToAverage, nrOfTracks);
-
         return median(tail);
     }
 
@@ -302,6 +282,5 @@ public class GenerateSquareCalcs {
             PaintLogger.errorf(e.getMessage());
             return false;
         }
-
     }
 }
