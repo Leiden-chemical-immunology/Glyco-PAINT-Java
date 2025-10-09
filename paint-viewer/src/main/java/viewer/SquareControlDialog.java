@@ -155,7 +155,7 @@ public class SquareControlDialog extends JDialog {
         content.add(Box.createVerticalStrut(10));
 
         // --- Three sliders ---
-        densityRatioSlider = createSlider(0, 200, (int) Math.round(initParams.densityRatio * 10));
+        densityRatioSlider = createSlider(0, 20000, (int) Math.round(initParams.densityRatio * 10));
         variabilitySlider = createSlider(0, 200, (int) Math.round(initParams.variability * 10));
         rSquaredSlider = createSlider(0, 100, (int) Math.round(initParams.rSquared * 100));
 
