@@ -1,6 +1,7 @@
 package generatesquares.calc;
 
 import paint.shared.config.GenerateSquaresConfig;
+import paint.shared.io.RecordingTableIO;
 import paint.shared.io.SquareTableIO;
 import paint.shared.io.TrackTableIO;
 import paint.shared.objects.*;
@@ -16,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import static generatesquares.calc.CalculateDensity.calculateAverageTrackCountOfBackground;
 import static generatesquares.calc.CalculateDensity.calculateDensity;
 import static generatesquares.calc.CalculateTau.calcTau;
 import static generatesquares.calc.CalculateVariability.calcVariability;
@@ -42,6 +42,7 @@ public class GenerateSquareCalcs {
             PaintLogger.errorf("Failed to load Experiment '%s'", experimentName);  // vTODO
         }
         if (experiment != null) {
+
             for (Recording recording : experiment.getRecordings()) {
                 PaintLogger.infof("   Processing: %s", recording.getRecordingName());
                 PaintLogger.debugf(recording.toString());
@@ -54,7 +55,7 @@ public class GenerateSquareCalcs {
                 assignTracksToSquares(recording, generateSquaresConfig);
 
                 // Calculate recording attributes
-                calculateRecordingAttributes(recording, generateSquaresConfig);
+                calculateRecordingAttributes(recording, generateSquaresConfig);  //TODO
 
                 // Calculate squares attributes
                 calculateSquareAttributes(recording, generateSquaresConfig);
@@ -65,6 +66,7 @@ public class GenerateSquareCalcs {
             PaintLogger.infof();
 
             writeSquares(project.projectRootPath, experiment);
+            writeRecordingsForExperiment(project.projectRootPath, experiment);
 
             return true;
         } else {
@@ -126,7 +128,7 @@ public class GenerateSquareCalcs {
     public static void calculateRecordingAttributes(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
 
         double minRequiredRSquared = generateSquaresConfig.getMinRequiredRSquared();
-        int minTracksForTau = generateSquaresConfig.getMinTracksToCalculateTau();
+        int minTracksForTau        = generateSquaresConfig.getMinTracksToCalculateTau();
         CalculateTau.CalculateTauResult results = calcTau(recording.getTracks(), minTracksForTau, minRequiredRSquared);
         if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
             recording.setTau(results.getTau());
@@ -144,6 +146,7 @@ public class GenerateSquareCalcs {
         int    minTracksForTau         = generateSquaresConfig.getMinTracksToCalculateTau();
         double maxAllowableVariability = generateSquaresConfig.getMaxAllowableVariability();
         double minRequiredDensityRatio = generateSquaresConfig.getMinRequiredDensityRatio();
+        String neighbourMode           = generateSquaresConfig.getNeighbourMode();
         int    numberOfSquaresInRow    = generateSquaresConfig.getNrSquaresInRow();
         double area                    = calcSquareArea(400);
         double concentration           = recording.getConcentration();
@@ -151,12 +154,13 @@ public class GenerateSquareCalcs {
         int    nrOfAverageCountSquares = 10;
         // @formatter:on
 
-        double averageTracks = calculateAverageTrackCountOfBackground(recording, nrOfAverageCountSquares);
+        // double averageTracks = calculateAverageTrackCountOfBackground(recording, nrOfAverageCountSquares);
         //System.out.printf("Background mean = %.2f, n = %n", averageTracks);
 
         SquareUtils.BackgroundEstimationResult result;
         result = estimateBackgroundDensity(recording.getSquaresOfRecording());
-        PaintLogger.debugf("Estimated Background trackcount = %.2f, n = %d%n", result.getBackgroundMean(), result.getBackgroundSquares().size());
+        double numberOfTracksInBackgroundSquares  = result.getBackgroundMean();
+        PaintLogger.debugf("Estimated Background track count = %.2f, n = %d%n", numberOfTracksInBackgroundSquares, result.getBackgroundSquares().size());
 
 
         int labelNumber = 0;
@@ -204,7 +208,7 @@ public class GenerateSquareCalcs {
             double density = calculateDensity(tracksInSquare.size(), area, time, concentration);
             square.setDensity(density);
 
-            double densityRatio = tracksInSquare.size() / averageTracks;
+            double densityRatio = tracksInSquare.size() / numberOfTracksInBackgroundSquares;
             square.setDensityRatio(densityRatio);
 
             // Apply the shared visibility filter logic
@@ -213,7 +217,7 @@ public class GenerateSquareCalcs {
                     minRequiredDensityRatio,
                     maxAllowableVariability,
                     minRequiredRSquared,
-                    generateSquaresConfig.getNeighbourMode()
+                    neighbourMode
             );
 
             // Re-assign label numbers to selected squares
@@ -289,6 +293,29 @@ public class GenerateSquareCalcs {
         Path squaresExperimentFilePath = projectPath.resolve(experiment.getExperimentName()).resolve(SQUARES_CSV);
         try {
             squaresTableIO.writeCsv(allSquaresExperimentTable, squaresExperimentFilePath);
+            return true;
+        } catch (Exception e) {
+            PaintLogger.errorf(e.getMessage());
+            return false;
+        }
+    }
+
+    private static boolean writeRecordingsForExperiment(Path projectPath, Experiment experiment) {
+
+        RecordingTableIO recordingTableIO = new RecordingTableIO();
+        Table allRecordingsExperimentTable = recordingTableIO.emptyTable();
+
+        Table table = recordingTableIO.toTable(experiment.getRecordings());
+
+            // squaresTableIO.appendInPlace(allSquaresProjectTable, table);
+        recordingTableIO.appendInPlace(allRecordingsExperimentTable, table);
+        PaintLogger.debugf("Processing recordings for experiment '%s'", experiment.getExperimentName());
+
+
+        // Write the experiment recording file
+        Path recordingsExperimentFilePath = projectPath.resolve(experiment.getExperimentName()).resolve(RECORDINGS_CSV);
+        try {
+            recordingTableIO.writeCsv(allRecordingsExperimentTable, recordingsExperimentFilePath);
             return true;
         } catch (Exception e) {
             PaintLogger.errorf(e.getMessage());
