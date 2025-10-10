@@ -1,4 +1,4 @@
-package viewer;
+package viewer.panels;
 
 import paint.shared.objects.Square;
 import paint.shared.utils.SquareUtils;

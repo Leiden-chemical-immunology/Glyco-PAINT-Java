@@ -1,4 +1,4 @@
-package viewer;
+package viewer.utils;
 
 import paint.shared.config.PaintConfig;
 import paint.shared.objects.Project;

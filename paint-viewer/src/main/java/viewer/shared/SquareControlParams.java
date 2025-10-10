@@ -1,4 +1,4 @@
-package viewer;
+package viewer.shared;
 
 public class SquareControlParams {
     public final double densityRatio;   // now double

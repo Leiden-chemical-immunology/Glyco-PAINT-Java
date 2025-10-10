@@ -6,6 +6,8 @@ import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.ProjectSpecificationDialog.DialogMode;
 import paint.shared.objects.Project;
 import paint.shared.utils.PaintLogger;
+import viewer.utils.RecordingEntry;
+import viewer.utils.RecordingLoader;
 
 import javax.swing.*;
 import java.awt.Frame;

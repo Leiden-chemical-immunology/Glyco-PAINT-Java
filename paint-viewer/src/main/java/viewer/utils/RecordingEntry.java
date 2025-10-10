@@ -1,4 +1,4 @@
-package viewer;
+package viewer.utils;
 
 import paint.shared.objects.Project;
 import paint.shared.objects.Recording;

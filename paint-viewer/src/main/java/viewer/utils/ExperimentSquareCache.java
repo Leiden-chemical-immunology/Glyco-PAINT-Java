@@ -1,9 +1,8 @@
-package viewer;
+package viewer.utils;
 
 import paint.shared.objects.Square;
 import paint.shared.utils.PaintLogger;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;

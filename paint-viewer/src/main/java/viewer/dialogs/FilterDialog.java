@@ -1,4 +1,6 @@
-package viewer;
+package viewer.dialogs;
+
+import viewer.utils.RecordingEntry;
 
 import javax.swing.*;
 import java.awt.*;

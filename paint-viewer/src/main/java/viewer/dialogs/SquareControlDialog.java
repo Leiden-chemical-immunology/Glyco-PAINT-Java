@@ -1,4 +1,9 @@
-package viewer;
+package viewer.dialogs;
+
+
+import viewer.shared.SquareControlParams;
+import viewer.panels.RecordingControlsPanel;
+import viewer.panels.SquareGridPanel;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -27,7 +32,7 @@ public class SquareControlDialog extends JDialog {
     private final JRadioButton neighbourRelaxed;
     private final JRadioButton neighbourStrict;
 
-    private final RecordingViewerFrame viewerFrame;
+    private final RecordingControlsPanel.Listener listener;
     private final SquareGridPanel gridPanel;
 
     private double origDensityRatio;
@@ -39,10 +44,10 @@ public class SquareControlDialog extends JDialog {
 
     public SquareControlDialog(JFrame owner,
                                SquareGridPanel gridPanel,
-                               RecordingViewerFrame viewerFrame,
+                               RecordingControlsPanel.Listener listener,
                                SquareControlParams initParams) {
         super(owner, "Square Controls", false);
-        this.viewerFrame = viewerFrame;
+        this.listener = listener;
         this.gridPanel = gridPanel;
 
         setLayout(new BorderLayout(10, 10));
@@ -121,9 +126,12 @@ public class SquareControlDialog extends JDialog {
         add(content, BorderLayout.CENTER);
 
         // --- Listeners ---
-        ChangeListener sliderListener = (ChangeEvent e) -> {
-            updateValueLabels();
-            propagateValues();
+        ChangeListener sliderListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                updateValueLabels();
+                propagateValues();
+            }
         };
         densityRatioSlider.addChangeListener(sliderListener);
         variabilitySlider.addChangeListener(sliderListener);
@@ -133,9 +141,18 @@ public class SquareControlDialog extends JDialog {
         neighbourRelaxed.addActionListener(e -> propagateValues());
         neighbourStrict.addActionListener(e -> propagateValues());
 
-        applyRecording.addActionListener(e -> viewerFrame.applySquareControlParameters("Recording", collectParams()));
-        applyExperiment.addActionListener(e -> viewerFrame.applySquareControlParameters("Experiment", collectParams()));
-        applyProject.addActionListener(e -> viewerFrame.applySquareControlParameters("Project", collectParams()));
+        applyRecording.addActionListener(e -> {
+            listener.onApplySquareControl("Recording", collectParams());
+            dispose();
+        });
+        applyExperiment.addActionListener(e -> {
+            listener.onApplySquareControl("Experiment", collectParams());
+            dispose();
+        });
+        applyProject.addActionListener(e -> {
+            listener.onApplySquareControl("Project", collectParams());
+            dispose();
+        });
         cancelButton.addActionListener(e -> {
             restoreOriginals();
             dispose();
@@ -164,7 +181,7 @@ public class SquareControlDialog extends JDialog {
         boolean isRSquared = (max == 100);
         double divisor = isRSquared ? 100.0 : 10.0;
 
-        java.util.Hashtable<Integer, JLabel> table = new java.util.Hashtable<>();
+        java.util.Hashtable<Integer, JLabel> table = new java.util.Hashtable<Integer, JLabel>();
         int major = Math.max(1, (max - min) / 5);
         for (int v = min; v <= max; v += major) {
             String text = isRSquared ? ONE_DEC.format(v / divisor)
@@ -191,12 +208,15 @@ public class SquareControlDialog extends JDialog {
     }
 
     private void propagateValues() {
-        viewerFrame.updateSquareControlParameters(
+        // directly update grid while sliding, no call to RecordingViewerFrame
+        gridPanel.setControlParameters(
                 densityRatioSlider.getValue() / 10.0,
                 variabilitySlider.getValue() / 10.0,
                 rSquaredSlider.getValue() / 100.0,
                 getNeighbourMode()
         );
+        gridPanel.applyVisibilityFilter();
+        gridPanel.repaint();
     }
 
     private String getNeighbourMode() {
