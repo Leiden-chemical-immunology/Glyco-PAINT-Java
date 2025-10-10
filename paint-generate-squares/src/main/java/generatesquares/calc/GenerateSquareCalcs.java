@@ -164,14 +164,11 @@ public class GenerateSquareCalcs {
         int    nrOfAverageCountSquares = 10;
         // @formatter:on
 
-        // double averageTracks = calculateAverageTrackCountOfBackground(recording, nrOfAverageCountSquares);
-        //System.out.printf("Background mean = %.2f, n = %n", averageTracks);
 
         SquareUtils.BackgroundEstimationResult result;
         result = estimateBackgroundDensity(recording.getSquaresOfRecording());
         double numberOfTracksInBackgroundSquares  = result.getBackgroundMean();
         PaintLogger.debugf("Estimated Background track count = %.2f, n = %d%n", numberOfTracksInBackgroundSquares, result.getBackgroundSquares().size());
-
 
         int labelNumber = 0;
         for (Square square : recording.getSquaresOfRecording()) {
@@ -293,8 +290,6 @@ public class GenerateSquareCalcs {
 
         for (Recording recording : experiment.getRecordings()) {
             Table table = squaresTableIO.toTable(recording.getSquaresOfRecording());
-
-            // squaresTableIO.appendInPlace(allSquaresProjectTable, table);
             squaresTableIO.appendInPlace(allSquaresExperimentTable, table);
             PaintLogger.debugf("Processing squares for experiment '%s'  - recording '%s'", experiment.getExperimentName(), recording.getRecordingName());
         }
@@ -320,7 +315,6 @@ public class GenerateSquareCalcs {
             // squaresTableIO.appendInPlace(allSquaresProjectTable, table);
         recordingTableIO.appendInPlace(allRecordingsExperimentTable, table);
         PaintLogger.debugf("Processing recordings for experiment '%s'", experiment.getExperimentName());
-
 
         // Write the experiment recording file
         Path recordingsExperimentFilePath = projectPath.resolve(experiment.getExperimentName()).resolve(RECORDINGS_CSV);
