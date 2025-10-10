@@ -39,10 +39,10 @@ public class RecordingViewerFrame extends JFrame {
     private final JButton lastBtn = new JButton(">|");
 
     // --- Square filter parameters ---
-    private double minDensityRatio = 0.0;
-    private double maxVariability  = 0.0;
-    private double minRSquared     = 0.5;
-    private String neighbourMode   = "Free";
+//    private final double minDensityRatio = 0.0;
+//    private final double maxVariability  = 0.0;
+//    private final double minRSquared     = 0.5;
+//    private final String neighbourMode   = "Free";
 
     // --- Cell assignment state ---
     private final Map<Integer, Integer> squareAssignments = new HashMap<>();

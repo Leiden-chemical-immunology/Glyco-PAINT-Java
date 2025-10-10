@@ -1,7 +1,6 @@
 package generatesquares.calc;
 
 import paint.shared.config.GenerateSquaresConfig;
-import paint.shared.io.RecordingTableIO;
 import paint.shared.io.SquareTableIO;
 import paint.shared.io.TrackTableIO;
 import paint.shared.objects.*;
@@ -27,7 +26,6 @@ import static paint.shared.io.ProjectDataLoader.filterTracksInSquare;
 import static paint.shared.io.ProjectDataLoader.loadExperiment;
 import static paint.shared.objects.Square.calcSquareArea;
 import static paint.shared.utils.Miscellaneous.formatDuration;
-import static paint.shared.utils.Miscellaneous.rootCauseFriendlyMessage;
 import static paint.shared.utils.SquareUtils.*;
 
 public class GenerateSquareCalcs {
@@ -69,7 +67,7 @@ public class GenerateSquareCalcs {
             PaintLogger.infof();
 
             // Compile all squares and write
-            Table allSquaresTable = compileAllSquares(project.projectRootPath, experiment);
+            Table allSquaresTable = compileAllSquares(experiment);
             Path allSquaresFilePath = project.projectRootPath.resolve(experiment.getExperimentName());
             writeAllSquares(allSquaresFilePath, allSquaresTable);
 
@@ -219,8 +217,6 @@ public class GenerateSquareCalcs {
             double variability = calcVariability(tracksInSquareTable, squareNumber, numberOfSquaresInRow, 10);
             square.setVariability(variability);
 
-            double rSquared = square.getRSquared();
-
             double density = calculateDensity(tracksInSquare.size(), area, time, concentration);
             square.setDensity(density);
 
@@ -292,7 +288,7 @@ public class GenerateSquareCalcs {
         }
     }
 
-    private static Table compileAllSquares(Path projectPath, Experiment experiment) {
+    private static Table compileAllSquares(Experiment experiment) {
 
         SquareTableIO squaresTableIO = new SquareTableIO();
         Table allSquaresTable = squaresTableIO.emptyTable();

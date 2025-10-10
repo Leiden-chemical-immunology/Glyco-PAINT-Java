@@ -32,7 +32,8 @@ public final class ExperimentSquareCache {
             Path projectPath,
             String experimentName,
             String recordingName,
-            int expectedNumberOfSquares) throws IOException {
+            int expectedNumberOfSquares) {
+
 
         // If experiment not yet cached, load and split
         if (!experimentCache.containsKey(experimentName)) {
@@ -40,6 +41,11 @@ public final class ExperimentSquareCache {
             Path experimentPath = projectPath.resolve(experimentName);
             List<Square> allSquares = readAllSquares(experimentPath);
 
+            if  (allSquares == null) {
+                PaintLogger.errorf("Failed to load all squares for experiment: %s", experimentName);
+                Exception e =  new Exception();
+                e.printStackTrace();
+            }
             // Group by recording name
             Map<String, List<Square>> grouped = allSquares.stream()
                     .collect(Collectors.groupingBy(Square::getRecordingName));

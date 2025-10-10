@@ -63,8 +63,9 @@ public class HelperIO {
 
         SquareTableIO squareIO = new SquareTableIO();
         List<Square> squares;
-        Table squareTable = readAllSquaresTable(experimentPath);
+
         try {
+            Table squareTable = readAllSquaresTable(experimentPath);
             squares = squareIO.toEntities(squareTable);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to read %s: %s", SQUARES_CSV, friendlyMessage(e));
@@ -130,9 +131,8 @@ public class HelperIO {
         Table tracksTable;
         List<Track> tracks;
 
-        tracksTable = readAllTracksTable(experimentPath);
-
         try {
+            tracksTable = readAllTracksTable(experimentPath);
             tracks = trackIO.toEntities(tracksTable);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to read %s: %s", TRACKS_CSV, friendlyMessage(e));

@@ -39,7 +39,7 @@ public class SquareControlDialog extends JDialog {
 
     private SquareGridPanel.NumberMode lastNumberMode = SquareGridPanel.NumberMode.NONE;
 
-    private double origDensityRatio;
+    private double origDensityRatio;  // TODO
     private double origVariability;
     private double origRSquared;
     private String origNeighbourMode;

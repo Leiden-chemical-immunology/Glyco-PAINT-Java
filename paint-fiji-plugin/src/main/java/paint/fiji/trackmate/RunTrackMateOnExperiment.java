@@ -40,7 +40,7 @@ public class RunTrackMateOnExperiment {
         Thread t = new Thread(task, "TrackMateThread");
         t.start();
 
-        for (int i = 0; i < maxSeconds; i++) {
+        for (int i = 0; i < maxSeconds; i++) {      // TODO
             try {
                 t.join(3000);
             } catch (InterruptedException e) {

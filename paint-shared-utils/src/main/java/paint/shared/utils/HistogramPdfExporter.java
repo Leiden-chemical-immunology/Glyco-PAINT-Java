@@ -160,7 +160,7 @@ public class HistogramPdfExporter {
         g2.setColor(Color.BLACK);
         int nTicks = 5;
         for (int i = 0; i <= nTicks; i++) {
-            int y = y0 - (int) (i * (h - marginTop - marginBottom) / nTicks);
+            int y = y0 - (i * (h - marginTop - marginBottom) / nTicks);
             int value = (int) Math.round(i * (double) maxBinCount / nTicks);
             g2.drawLine(x0 - 5, y, x0, y);
             g2.drawString(String.valueOf(value), x0 - 45, y + 5);

@@ -331,9 +331,11 @@ public class Recording {
         }
 
         int numberOfSquaresWithTracks = 0;
-        for (Square square : squares) {
-            if (square.getTracks() != null && !square.getTracks().isEmpty()) {
-                numberOfSquaresWithTracks++;
+        if (squares != null) {
+            for (Square square : squares) {
+                if (square.getTracks() != null && !square.getTracks().isEmpty()) {
+                    numberOfSquaresWithTracks++;
+                }
             }
         }
         sb.append(String.format("\tNumber of squares with tracks : %d%n", numberOfSquaresWithTracks));

@@ -23,6 +23,9 @@ public class RecordingLoader {
             Path experimentPath = project.getProjectRootPath().resolve(experimentName);
 
             List<Recording> recordings = readAllRecordings(experimentPath);
+            if (recordings == null || recordings.isEmpty()) {
+                continue;
+            }
 
             for (Recording recording : recordings) {
                 String recordingName = recording.getRecordingName();

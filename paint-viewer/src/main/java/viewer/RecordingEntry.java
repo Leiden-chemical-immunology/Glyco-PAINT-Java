@@ -24,8 +24,8 @@ public class RecordingEntry {
     private final String    neighbourMode;
     // @formatter:on
 
-    private ImageIcon leftImage;
-    private ImageIcon rightImage;
+    private final ImageIcon leftImage;
+    private final ImageIcon rightImage;
     private List<Square> squares;
 
     public RecordingEntry(
@@ -184,7 +184,7 @@ public class RecordingEntry {
         return squares;
     }
 
-    public void clearCachedSquares() {
-        this.squares = null;
-    }
+//    public void clearCachedSquares() {
+//        this.squares = null;
+//    }
 }
