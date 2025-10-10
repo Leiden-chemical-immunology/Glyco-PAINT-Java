@@ -17,7 +17,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
-import static paint.shared.constants.PaintConstants.RECORDINGS_CSV;
+import static paint.shared.constants.PaintConstants.RECORDING_CSV;
 import static paint.shared.utils.Miscellaneous.deleteAssociatedFiles;
 
 public class TrackMateExperiment {
@@ -139,7 +139,7 @@ public class TrackMateExperiment {
         }
 
         // Now write the All Recordings.csv file
-        Path outputFile = experimentInfoFile.getParent().resolve(RECORDINGS_CSV);
+        Path outputFile = experimentInfoFile.getParent().resolve(RECORDING_CSV);
         try (CSVWriter writer = new CSVWriter(new FileWriter(outputFile.toFile()))) {
             // Use headers from the first row (original plus new)
             Set<String> headers = recordings.get(0).keySet();

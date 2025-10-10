@@ -158,7 +158,7 @@ public class GenerateSquareCalcs {
         recording.setAverageTracksInBackGround(result.getBackgroundMean());
 
         // Calculate the density
-        double density = calculateDensity(recording.getNumberOfTracks(), calcSquareArea(1), 100, recording.getConcentration());
+        double density = calculateDensity(recording.getNumberOfTracks(), calcSquareArea(1), RECORDING_DURATION, recording.getConcentration());
         recording.setDensity(density);
     }
 
@@ -173,7 +173,6 @@ public class GenerateSquareCalcs {
         int    numberOfSquaresInRow    = generateSquaresConfig.getNrSquaresInRow();
         double area                    = calcSquareArea(400);    //TODO
         double concentration           = recording.getConcentration();
-        double time                    = 100;
         // @formatter:on
 
 
@@ -222,7 +221,7 @@ public class GenerateSquareCalcs {
             double variability = calcVariability(tracksInSquareTable, squareNumber, numberOfSquaresInRow, 10);
             square.setVariability(variability);
 
-            double density = calculateDensity(tracksInSquare.size(), area, time, concentration);
+            double density = calculateDensity(tracksInSquare.size(), area, RECORDING_DURATION, concentration);
             square.setDensity(density);
 
             double densityRatio = tracksInSquare.size() / numberOfTracksInBackgroundSquares;

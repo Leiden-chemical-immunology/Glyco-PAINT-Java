@@ -94,7 +94,7 @@ public class RunTrackMateOnExperiment {
 
         // Input/output CSV paths (written under experimentPath, sweep-compatible)
         Path experimentFilePath = experimentPath.resolve(EXPERIMENT_INFO_CSV);
-        Path allRecordingFilePath = experimentPath.resolve(RECORDINGS_CSV);
+        Path allRecordingFilePath = experimentPath.resolve(RECORDING_CSV);
 
         if (!Files.exists(experimentFilePath)) {
             PaintLogger.errorf("Experiment info file does not exist in %s.", experimentFilePath);
@@ -246,7 +246,7 @@ public class RunTrackMateOnExperiment {
         }
 
         // Concatenate tracks
-        Path tracksFilePath = experimentPath.resolve(TRACKS_CSV);
+        Path tracksFilePath = experimentPath.resolve(TRACK_CSV);
         try {
             concatenateTracksFilesInDirectory(experimentPath, tracksFilePath);
         } catch (IOException e) {

@@ -61,14 +61,14 @@ public class DirectoryClassifier {
     private static final HashSet<String> REQUIRED_TOP_LEVEL_FILES =
             new HashSet<>(Arrays.asList(
                     EXPERIMENT_INFO_CSV,
-                    RECORDINGS_CSV
+                    RECORDING_CSV
             ));
 
     private static final HashSet<String> EXPECTED_EXPERIMENT_FILES =
             new HashSet<>(Arrays.asList(
-                    SQUARES_CSV,
-                    TRACKS_CSV,
-                    PAINT_JSON
+                    SQUARE_CSV,
+                    TRACK_CSV,
+                    PAINT_CONFIGURATION_JSON
             ));
 
     private static final HashSet<String> EXPECTED_EXPERIMENT_DIRS =

@@ -25,8 +25,8 @@ public class SweepFlattener {
      * @param deleteSubdirs if true, numeric subdirectories are deleted afterwards
      */
     public static void flattenSweep(Path sweepParamDir, boolean deleteSubdirs) throws IOException {
-        Path allRecordingsOut = sweepParamDir.resolve(RECORDINGS_CSV);
-        Path allTracksOut = sweepParamDir.resolve(TRACKS_CSV);
+        Path allRecordingsOut = sweepParamDir.resolve(RECORDING_CSV);
+        Path allTracksOut = sweepParamDir.resolve(TRACK_CSV);
         Path brightfieldOut = sweepParamDir.resolve(DIR_BRIGHTFIELD_IMAGES);
         Path trackmateOut = sweepParamDir.resolve(DIR_TRACKMATE_IMAGES);
 

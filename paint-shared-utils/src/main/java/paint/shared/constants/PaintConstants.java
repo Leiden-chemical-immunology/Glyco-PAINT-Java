@@ -29,89 +29,38 @@ public final class PaintConstants {
     // Filenames
     // =====================
 
-    /**
-     * CSV file name containing recording-level statistics.
-     */
-    public static final String RECORDINGS_CSV = "All Recordings Java.csv";
-
-    /**
-     * CSV file name containing track-level data.
-     */
-    public static final String TRACKS_CSV = "All Tracks Java.csv";
-
-    /**
-     * CSV file name containing square-level data.
-     */
-    public static final String SQUARES_CSV = "All Squares Java.csv";
-
-    /**
-     * CSV file name containing experiment-level metadata.
-     */
+    public static final String RECORDING_CSV = "All Recordings Java.csv";
+    public static final String TRACK_CSV = "All Tracks Java.csv";
+    public static final String SQUARE_CSV = "All Squares Java.csv";
     public static final String EXPERIMENT_INFO_CSV = "Experiment Info.csv";
-
-    /**
-     * JSON file name containing Paint project configuration.
-     */
-    public static final String PAINT_JSON = "Paint Configuration.json";
-
-    /**
-     * JSON configuration file used throughout Paint.
-     */
     public static final String PAINT_CONFIGURATION_JSON = "Paint Configuration.json";
 
     // =====================
     // Directories
     // =====================
 
-    /**
-     * Directory name for TrackMate-processed images.
-     */
     public static final String DIR_TRACKMATE_IMAGES = "TrackMate Images";
-
-    /**
-     * Directory name for brightfield images.
-     */
     public static final String DIR_BRIGHTFIELD_IMAGES = "Brightfield Images";
-
-    // =====================
-    // Column names (common)
-    // =====================
-
-    /**
-     * Shared column name for recording identifiers.
-     */
-    public static final String COL_RECORDING_NAME = "Recording Name";
 
     // =====================
     // Geometry
     // =====================
 
-    /**
-     * Default image width in microns.
-     */
     public static final double IMAGE_WIDTH = 82.0864;
-
-    /**
-     * Default image height in microns.
-     */
     public static final double IMAGE_HEIGHT = 82.0864;
 
     // =====================
     // Timing
     // =====================
 
-    /**
-     * Default time interval between frames (seconds).
-     */
     public static final double TIME_INTERVAL = 0.05;
+    public static final double FRAMES = 2000;
+    public static final double RECORDING_DURATION = FRAMES * TIME_INTERVAL;
 
     // =====================
     // Track schema
     // =====================
 
-    /**
-     * Column names for the Track-level CSV schema.
-     */
     public static final String[] TRACK_COLS = {
             "Unique Key",
             "Recording Name",
@@ -134,9 +83,6 @@ public final class PaintConstants {
             "Label Number"
     };
 
-    /**
-     * Column types for the Track-level CSV schema.
-     */
     public static final ColumnType[] TRACK_TYPES = {
             ColumnType.STRING,  // Unique Key
             ColumnType.STRING,  // Recording Name
@@ -163,9 +109,6 @@ public final class PaintConstants {
     // Square schema
     // =====================
 
-    /**
-     * Column names for the Square-level CSV schema.
-     */
     public static final String[] SQUARE_COLS = {
             "Unique Key",
             "Recording Name",
@@ -203,9 +146,6 @@ public final class PaintConstants {
             "Median Track Duration"
     };
 
-    /**
-     * Column types for the Square-level CSV schema.
-     */
     public static final ColumnType[] SQUARE_TYPES = {
             ColumnType.STRING,   // Unique Key
             ColumnType.STRING,   // Recording Name
@@ -247,9 +187,6 @@ public final class PaintConstants {
     // Recording schema
     // =====================
 
-    /**
-     * Column names for the Recording-level CSV schema.
-     */
     public static final String[] RECORDING_COLS = {
             "Recording Name",
             "Condition Number",
@@ -276,9 +213,6 @@ public final class PaintConstants {
             "Density"
     };
 
-    /**
-     * Column types for the Recording-level CSV schema.
-     */
     public static final ColumnType[] RECORDING_TYPES = {
             ColumnType.STRING,            // Recording Name
             ColumnType.INTEGER,           // Condition Number
@@ -309,9 +243,6 @@ public final class PaintConstants {
     // Experiment info schema
     // =====================
 
-    /**
-     * Column names for the Experiment info CSV schema.
-     */
     public static final String[] EXPERIMENT_INFO_COLS = {
             "Recording Name",
             "Condition Number",
@@ -325,9 +256,6 @@ public final class PaintConstants {
             "Threshold"
     };
 
-    /**
-     * Column types for the Experiment info CSV schema.
-     */
     public static final ColumnType[] EXPERIMENT_INFO_TYPES = {
             ColumnType.STRING,   // Recording Name
             ColumnType.INTEGER,  // Condition Number

@@ -80,7 +80,7 @@ public class GenerateSquares {
 
                 List<String> fileNames = Arrays.asList(
                         EXPERIMENT_INFO_CSV,
-                        RECORDINGS_CSV
+                        RECORDING_CSV
                 );
                 ValidationResult validateResult = validateExperiments(projectPath, project.experimentNames, fileNames);
 
@@ -115,7 +115,7 @@ public class GenerateSquares {
 
                 // Write the projects squares file
                 try {
-                    concatenateExperimentCsvFiles(projectPath, SQUARES_CSV, project.experimentNames);
+                    concatenateExperimentCsvFiles(projectPath, SQUARE_CSV, project.experimentNames);
                     Duration duration = Duration.between(start, LocalDateTime.now());
                     PaintLogger.infof("Generated squares info for the selected experiments and for the project in %s", formatDuration(duration));
                 } catch (Exception e) {
