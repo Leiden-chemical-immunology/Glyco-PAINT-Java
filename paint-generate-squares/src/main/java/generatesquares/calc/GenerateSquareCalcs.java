@@ -171,7 +171,9 @@ public class GenerateSquareCalcs {
         double minRequiredDensityRatio = generateSquaresConfig.getMinRequiredDensityRatio();
         String neighbourMode           = generateSquaresConfig.getNeighbourMode();
         int    numberOfSquaresInRow    = generateSquaresConfig.getNumberOfSquaresInRow();
-        double area                    = calcSquareArea(400);    //TODO
+        int    numberOfSquaresInColum  = generateSquaresConfig.getNumberOfSquaresInColumn();
+        int    numberOfSquaresInImage  = numberOfSquaresInRow * numberOfSquaresInColum;
+        double area                    = calcSquareArea(numberOfSquaresInImage);
         double concentration           = recording.getConcentration();
         // @formatter:on
 

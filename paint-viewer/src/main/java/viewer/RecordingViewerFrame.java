@@ -1,5 +1,6 @@
 package viewer;
 
+import paint.shared.config.PaintConfig;
 import paint.shared.objects.Project;
 import paint.shared.objects.Square;
 import paint.shared.utils.PaintLogger;
@@ -336,11 +337,17 @@ public class RecordingViewerFrame extends JFrame {
         }
         currentIndex = index;
         RecordingEntry entry = recordings.get(index);
-        int expectNumberOfSquares = 400;
+        int numberOfSquaresInRow = PaintConfig.getInt("Generate Squares", "Number of Squares in Row", -1);
+        int numberOfSquaresInColumn = PaintConfig.getInt("Generate Squares", "Number of Squares in Column", -1);
+        if (numberOfSquaresInRow == -1 || numberOfSquaresInColumn == -1) {
+            PaintLogger.errorf("RecordingViewerFrame - Number of Squares in Row and Column are not valid");
+            System.exit(-1);
+        }
+        int numberOfSquaresInImage = numberOfSquaresInRow * numberOfSquaresInColumn;
 
         leftGridPanel.setBackgroundImage(entry.getLeftImage());
         rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), NUMBER_PIXELS_WIDTH, NUMBER_PIXELS_HEIGHT));
-        leftGridPanel.setSquares(entry.getSquares(project, expectNumberOfSquares));
+        leftGridPanel.setSquares(entry.getSquares(project, numberOfSquaresInImage));
 
         experimentLabel.setText("Experiment: " + entry.getExperimentName() +
                                         "   [Overall: " + (currentIndex + 1) + "/" + recordings.size() + "]");
@@ -354,6 +361,7 @@ public class RecordingViewerFrame extends JFrame {
         attributesModel.addRow(new Object[]{"Concentration", entry.getConcentration()});
         attributesModel.addRow(new Object[]{"Number of Spots", entry.getNumberOfSpots()});
         attributesModel.addRow(new Object[]{"Number of Tracks", entry.getNumberOfTracks()});
+        attributesModel.addRow(new Object[]{"Number of Squares", numberOfSquaresInImage});
         attributesModel.addRow(new Object[]{"Threshold", entry.getThreshold()});
         attributesModel.addRow(new Object[]{"Tau", formatWithPrecision(entry.getTau(), 1)});
         attributesModel.addRow(new Object[]{"Density", entry.getDensity()});
