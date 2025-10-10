@@ -22,7 +22,6 @@ public class RecordingEntry {
     private final double    maxAllowableVariability;
     private final double    minRequiredRSquared;
     private final String    neighbourMode;
-    private final double    observedRSquared;
     // @formatter:on
 
     private ImageIcon leftImage;
@@ -37,8 +36,7 @@ public class RecordingEntry {
             double minRequiredDensityRatio,
             double maxAllowableVariability,
             double minRequiredRSquared,
-            String neighbourMode,
-            double observedRSquared
+            String neighbourMode
     ) {
         // @formatter:off
         this.recording               = recording;
@@ -49,7 +47,6 @@ public class RecordingEntry {
         this.maxAllowableVariability = maxAllowableVariability;
         this.minRequiredRSquared     = minRequiredRSquared;
         this.neighbourMode           = neighbourMode;
-        this.observedRSquared        = observedRSquared;
         // @formatter:on
 
         this.leftImage = loadImage(trackmateImagePath, "TrackMate");
@@ -148,10 +145,6 @@ public class RecordingEntry {
 
     public double getMinRequiredRSquared() {
         return minRequiredRSquared;
-    }
-
-    public double getObservedRSquared() {
-        return observedRSquared;
     }
 
     public String getNeighbourMode() {
