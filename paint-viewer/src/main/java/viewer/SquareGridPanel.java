@@ -65,12 +65,10 @@ public class SquareGridPanel extends JPanel {
      * Enumeration representing numeric display modes for squares.
      */
     public enum NumberMode {
-        /** No numbers are drawn on squares. */
-        NONE,
-        /** Draws label numbers on selected squares. */
-        LABEL,
-        /** Draws square numbers on selected squares. */
-        SQUARE
+
+        NONE,    // No numbers are drawn on squares.
+        LABEL,   // Draws label numbers on selected squares.
+        SQUARE   // Draws square numbers on selected squares.
     }
 
     private NumberMode numberMode = NumberMode.NONE;
