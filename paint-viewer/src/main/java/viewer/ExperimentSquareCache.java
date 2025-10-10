@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static paint.shared.io.HelperIO.readAllSquares;
+
 /**
  * Maintains a per-experiment cache of squares loaded from disk,
  * to avoid reading the same All Squares CSV multiple times.
@@ -35,7 +37,8 @@ public final class ExperimentSquareCache {
         // If experiment not yet cached, load and split
         if (!experimentCache.containsKey(experimentName)) {
             PaintLogger.debugf("Loading all squares for experiment: %s", experimentName);
-            List<Square> allSquares = SquareCsvLoader.loadAllSquaresForExperiment(projectPath, experimentName);
+            Path experimentPath = projectPath.resolve(experimentName);
+            List<Square> allSquares = readAllSquares(experimentPath);
 
             // Group by recording name
             Map<String, List<Square>> grouped = allSquares.stream()

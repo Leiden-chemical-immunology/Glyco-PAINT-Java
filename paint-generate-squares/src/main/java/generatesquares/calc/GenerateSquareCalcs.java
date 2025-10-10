@@ -21,10 +21,13 @@ import static generatesquares.calc.CalculateDensity.calculateDensity;
 import static generatesquares.calc.CalculateTau.calcTau;
 import static generatesquares.calc.CalculateVariability.calcVariability;
 import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.io.HelperIO.writeAllRecordings;
+import static paint.shared.io.HelperIO.writeAllSquares;
 import static paint.shared.io.ProjectDataLoader.filterTracksInSquare;
 import static paint.shared.io.ProjectDataLoader.loadExperiment;
 import static paint.shared.objects.Square.calcSquareArea;
 import static paint.shared.utils.Miscellaneous.formatDuration;
+import static paint.shared.utils.Miscellaneous.rootCauseFriendlyMessage;
 import static paint.shared.utils.SquareUtils.*;
 
 public class GenerateSquareCalcs {
@@ -65,8 +68,14 @@ public class GenerateSquareCalcs {
             PaintLogger.infof("Finished processing experiment '%s' in %s", experimentName, formatDuration(duration));
             PaintLogger.infof();
 
-            writeSquares(project.projectRootPath, experiment);
-            writeRecordingsForExperiment(project.projectRootPath, experiment);
+            // Compile all squares and write
+            Table allSquaresTable = compileAllSquares(project.projectRootPath, experiment);
+            Path allSquaresFilePath = project.projectRootPath.resolve(experiment.getExperimentName());
+            writeAllSquares(allSquaresFilePath, allSquaresTable);
+
+            // Write recordings
+            Path allRecordingsFilePath = project.projectRootPath.resolve(experiment.getExperimentName());
+            writeAllRecordings(allRecordingsFilePath, experiment.getRecordings());
 
             return true;
         } else {
@@ -283,47 +292,17 @@ public class GenerateSquareCalcs {
         }
     }
 
-    private static boolean writeSquares(Path projectPath, Experiment experiment) {
+    private static Table compileAllSquares(Path projectPath, Experiment experiment) {
 
         SquareTableIO squaresTableIO = new SquareTableIO();
-        Table allSquaresExperimentTable = squaresTableIO.emptyTable();
+        Table allSquaresTable = squaresTableIO.emptyTable();
 
         for (Recording recording : experiment.getRecordings()) {
             Table table = squaresTableIO.toTable(recording.getSquaresOfRecording());
-            squaresTableIO.appendInPlace(allSquaresExperimentTable, table);
+            squaresTableIO.appendInPlace(allSquaresTable, table);
             PaintLogger.debugf("Processing squares for experiment '%s'  - recording '%s'", experiment.getExperimentName(), recording.getRecordingName());
         }
-
-        // Write the experiment squares file
-        Path squaresExperimentFilePath = projectPath.resolve(experiment.getExperimentName()).resolve(SQUARES_CSV);
-        try {
-            squaresTableIO.writeCsv(allSquaresExperimentTable, squaresExperimentFilePath);
-            return true;
-        } catch (Exception e) {
-            PaintLogger.errorf(e.getMessage());
-            return false;
-        }
+        return allSquaresTable;
     }
 
-    private static boolean writeRecordingsForExperiment(Path projectPath, Experiment experiment) {
-
-        RecordingTableIO recordingTableIO = new RecordingTableIO();
-        Table allRecordingsExperimentTable = recordingTableIO.emptyTable();
-
-        Table table = recordingTableIO.toTable(experiment.getRecordings());
-
-            // squaresTableIO.appendInPlace(allSquaresProjectTable, table);
-        recordingTableIO.appendInPlace(allRecordingsExperimentTable, table);
-        PaintLogger.debugf("Processing recordings for experiment '%s'", experiment.getExperimentName());
-
-        // Write the experiment recording file
-        Path recordingsExperimentFilePath = projectPath.resolve(experiment.getExperimentName()).resolve(RECORDINGS_CSV);
-        try {
-            recordingTableIO.writeCsv(allRecordingsExperimentTable, recordingsExperimentFilePath);
-            return true;
-        } catch (Exception e) {
-            PaintLogger.errorf(e.getMessage());
-            return false;
-        }
-    }
 }

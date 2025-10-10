@@ -37,7 +37,7 @@ public class HelperIO {
         return recordings;
     }
 
-    public static void writeAllRecordings(List<Recording> recordings, Path experimentPath) {
+    public static void writeAllRecordings(Path experimentPath, List<Recording> recordings) {
 
         RecordingTableIO recordingTableIO = new RecordingTableIO();
         Table table;
@@ -95,7 +95,7 @@ public class HelperIO {
     }
 
 
-    public static void writeAllSquares(List<Square> squares, Path experimentPath) {
+    public static void writeAllSquares(Path experimentPath, List<Square> squares) {
 
         SquareTableIO squareTableIO = new SquareTableIO();
         Table squaresTable;
@@ -107,11 +107,11 @@ public class HelperIO {
             PaintLogger.errorf("Failed to create table %s : %s", SQUARES_CSV, friendlyMessage(e));
             return;
         }
-        writeAllSquares(squaresTable, experimentPath);
+        writeAllSquares(experimentPath, squaresTable);
     }
 
 
-    public static void writeAllSquares(Table squaresTable, Path experimentPath) {
+    public static void writeAllSquares(Path experimentPath, Table squaresTable) {
 
         SquareTableIO squareTableIO = new SquareTableIO();
 
@@ -163,7 +163,7 @@ public class HelperIO {
     }
 
 
-    public static void writeAllTracks(List<Track> tracks, Path experimentPath) {
+    public static void writeAllTracks(Path experimentPath, List<Track> tracks) {
 
         TrackTableIO trackTableIO = new TrackTableIO();
         Table tracksTable;
@@ -175,10 +175,10 @@ public class HelperIO {
             PaintLogger.errorf("Failed to create table %s : %s", TRACKS_CSV, friendlyMessage(e));
             return;
         }
-        writeAllTracks(tracksTable, experimentPath);
+        writeAllTracks(experimentPath, tracksTable);
     }
 
-    public static void writeAllTracks(Table tracksTable, Path experimentPath) {
+    public static void writeAllTracks(Path experimentPath, Table tracksTable) {
 
         TrackTableIO trackTableIO = new TrackTableIO();
 
