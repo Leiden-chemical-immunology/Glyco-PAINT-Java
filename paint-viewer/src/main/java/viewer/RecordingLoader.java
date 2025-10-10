@@ -1,161 +1,95 @@
 package viewer;
 
 import paint.shared.config.PaintConfig;
-import paint.shared.constants.PaintConstants;
 import paint.shared.objects.Project;
 import paint.shared.objects.Recording;
+import paint.shared.utils.PaintLogger;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import static paint.shared.io.HelperIO.readAllRecordings;
+
 public class RecordingLoader {
+
     public static List<RecordingEntry> loadFromProject(Project project) {
+
         List<RecordingEntry> entries = new ArrayList<>();
 
         for (String experimentName : project.experimentNames) {
-            Path experimentFolder = project.getProjectRootPath().resolve(experimentName);
-            Path recordingsFile = experimentFolder.resolve(PaintConstants.RECORDINGS_CSV);
 
-            if (!Files.exists(recordingsFile)) {
-                System.err.println("No recordings CSV for " + experimentName);
-                continue;
-            }
+            Path experimentPath = project.getProjectRootPath().resolve(experimentName);
 
-            try (BufferedReader br = new BufferedReader(new FileReader(recordingsFile.toFile()))) {
-                String header = br.readLine(); // skip header
-                if (header == null)
+            List<Recording> recordings = readAllRecordings(experimentPath);
+
+            for (Recording recording : recordings) {
+                String recordingName = recording.getRecordingName();
+                if (!recording.isProcessFlag()) {
                     continue;
+                }
 
-                String line;
-                while ((line = br.readLine()) != null) {
-                    String[] parts = line.split(",", -1);
-                    if (parts.length < 20) {
-                        continue;
-                    }
+                // --- Image paths ---
+                Path trackmateImagePath = experimentPath
+                        .resolve("TrackMate Images")
+                        .resolve(recordingName + ".jpg");
 
-                    // @formatter:off
-                    String recordingName = parts[0].trim();
-                    String probeName     = parts[3].trim();
-                    String probeType     = parts[4].trim();
-                    String cellType      = parts[5].trim();
-                    String adjuvant      = parts[6].trim();
-                    double concentration = parseDouble(parts[7]);
-                    boolean processFlag  = Boolean.parseBoolean(parts[8].trim());
-                    // @formatter:on
+                if (!Files.exists(trackmateImagePath)) {
+                    PaintLogger.errorf("Missing TrackMate image for '%s'", recordingName);
+                    continue;
+                }
 
-                    if (!processFlag) {
-                        continue;
-                    }
+                Path brightfieldDirPath = experimentPath.resolve("BrightField Images");
+                Path brightfieldImagePath = null;
 
-                    // @formatter:off
-                    double threshold     = parseDouble(parts[9]);
-                    int    spots         = parseInt(parts[10]);
-                    int    tracks        = parseInt(parts[11]);
-                    double tau           = parseDouble(parts[17]);
-                    double rSquared      = parseDouble(parts[18]);
-                    double density       = parseDouble(parts[19]);
-                    // @formatter:on
+                if (!Files.isDirectory(brightfieldDirPath)) {
+                    PaintLogger.errorf("Missing Brightfield directory '%s' image for recording '%s'", brightfieldDirPath, recordingName);
+                    continue;
+                }
 
-                    // --- Build Recording object ---
-                    Recording recording = new Recording(
-                            recordingName,
-                            parseInt(parts[1]),     // condition number
-                            parseInt(parts[2]),     // replicate number
-                            probeName,
-                            probeType,
-                            cellType,
-                            adjuvant,
-                            concentration,
-                            processFlag,
-                            threshold
-                    );
-                    recording.setNumberOfSpots(spots);
-                    recording.setNumberOfTracks(tracks);
-                    recording.setTau(tau);
-                    recording.setRSquared(rSquared);
-                    recording.setDensity(density);
-
-                    // --- Image paths ---
-                    Path trackmateImage = experimentFolder
-                            .resolve("TrackMate Images")
-                            .resolve(recordingName + ".jpg");
-
-                    if (!Files.exists(trackmateImage)) {
-                        System.err.println("Missing TrackMate image for " + recordingName);
-                        continue;
-                    }
-
-                    Path brightfieldDir = experimentFolder.resolve("BrightField Images");
-                    Path brightfieldImage = null;
-
-                    if (Files.isDirectory(brightfieldDir)) {
-                        try {
-                            for (Path p : (Iterable<Path>) Files.list(brightfieldDir)::iterator) {
-                                String fname = p.getFileName().toString();
-                                if ((fname.startsWith(recordingName + "-BF") || fname.startsWith(recordingName))
-                                        && fname.endsWith(".jpg")) {
-                                    brightfieldImage = p;
-                                    break;
-                                }
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                try {
+                    for (Path p : (Iterable<Path>) Files.list(brightfieldDirPath)::iterator) {
+                        String fname = p.getFileName().toString();
+                        if ((fname.startsWith(recordingName + "-BF") || fname.startsWith(recordingName))
+                                && fname.endsWith(".jpg")) {
+                            brightfieldImagePath = p;
+                            break;
                         }
                     }
-
-                    if (brightfieldImage == null) {
-                        System.err.println("Missing BrightField image for " + recordingName);
-                        continue;
-                    }
-
-                    // --- Thresholds from config ---
-                    // @formatter:off
-                    double minDensityRatio = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
-                    double maxVariability  = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
-                    double minRSquared     = PaintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
-                    String neighbourMode   = PaintConfig.getString("Generate Squares", "Neighbour Mode", "Free");
-                    // @formatter:on
-
-                    // --- Build final entry ---
-                    RecordingEntry entry = new RecordingEntry(
-                            recording,
-                            trackmateImage,
-                            brightfieldImage,
-                            experimentName,
-                            minDensityRatio,
-                            maxVariability,
-                            minRSquared,
-                            neighbourMode,
-                            rSquared
-                    );
-
-                    entries.add(entry);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+
+                if (brightfieldImagePath == null) {
+                    PaintLogger.errorf("Missing BrightField image for '%s'", recordingName);
+                    continue;
+                }
+
+                // --- Thresholds from config ---
+                // @formatter:off
+                double minDensityRatio = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
+                double maxVariability  = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
+                double minRSquared     = PaintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
+                String neighbourMode   = PaintConfig.getString("Generate Squares", "Neighbour Mode", "Free");
+                // @formatter:on
+
+                // --- Build final entry ---
+                RecordingEntry entry = new RecordingEntry(
+                        recording,
+                        trackmateImagePath,
+                        brightfieldImagePath,
+                        experimentName,
+                        minDensityRatio,
+                        maxVariability,
+                        minRSquared,
+                        neighbourMode
+                );
+
+                entries.add(entry);
             }
         }
-
         return entries;
     }
 
-    private static int parseInt(String s) {
-        try {
-            return Integer.parseInt(s.trim());
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-
-    private static double parseDouble(String s) {
-        try {
-            return Double.parseDouble(s.trim());
-        } catch (Exception e) {
-            return 0.0;
-        }
-    }
 }
