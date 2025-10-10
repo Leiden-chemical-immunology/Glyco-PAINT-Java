@@ -115,12 +115,12 @@ public class Project {
         return null;
     }
 
-    public void setExperiments(List<Experiment> experiments) {  // ToDo Should maybe make a deep copy
+    public void setExperiments(List<Experiment> experiments) {
         this.experiments = experiments;
     }
 
-    public void addExperiment(Experiment experiment) { // ToDo Should maybe make a deep copy
-        // this.experiments.add(experiment);
+    public void addExperiment(Experiment experiment) {
+        this.experiments.add(experiment);
     }
 
     public String toString() {
