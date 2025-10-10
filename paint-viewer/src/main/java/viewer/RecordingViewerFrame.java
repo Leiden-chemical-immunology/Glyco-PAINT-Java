@@ -174,7 +174,7 @@ public class RecordingViewerFrame extends JFrame {
                             current.getMinRequiredDensityRatio(),
                             current.getMaxAllowableVariability(),
                             current.getMinRequiredRSquared(),
-                            "Free" // default neighbour mode, since it's not in RecordingEntry
+                            "Free" //  TODO  default neighbour mode, since it's not in RecordingEntry
                     )
             );
             dialog.setVisible(true);
@@ -309,9 +309,9 @@ public class RecordingViewerFrame extends JFrame {
         attributesModel.addRow(new Object[]{"Concentration", entry.getConcentration()});
         attributesModel.addRow(new Object[]{"Number of Spots", entry.getNumberOfSpots()});
         attributesModel.addRow(new Object[]{"Number of Tracks", entry.getNumberOfTracks()});
-        attributesModel.addRow(new Object[]{"Number of Tracks in Background", "-1"});
-        attributesModel.addRow(new Object[]{"Number of Squares in Background", "-2"});
-        attributesModel.addRow(new Object[]{"Background tracks per sdquare", "-3"});
+        attributesModel.addRow(new Object[]{"Number of Tracks in Background", entry.getRecording().getNumberOfTracksInBackground()});
+        attributesModel.addRow(new Object[]{"Number of Squares in Background", entry.getRecording().getNumberOfTracksInBackground()});
+        attributesModel.addRow(new Object[]{"Background Tracks per Square", entry.getRecording().getAverageTracksInBackGround()});
         attributesModel.addRow(new Object[]{"Threshold", entry.getThreshold()});
         attributesModel.addRow(new Object[]{"Recording Tau", formatWithPrecision(entry.getTau(), 1)});
         attributesModel.addRow(new Object[]{"Recording R²", formatWithPrecision(entry.getObservedRSquared(), 3)});

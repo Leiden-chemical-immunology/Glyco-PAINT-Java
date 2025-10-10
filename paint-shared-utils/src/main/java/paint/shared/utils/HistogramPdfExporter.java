@@ -74,11 +74,16 @@ public class HistogramPdfExporter {
 
                 drawHistogram(
                         g2,
-                        plotWidth, plotHeight,
-                        allBins, bgBins, binSize,
+                        plotWidth,
+                        plotHeight,
+                        allBins,
+                        bgBins,
+                        binSize,
                         recording.getRecordingName(),
-                        totalSquares, totalTracks,
-                        nBackground, backgroundTracksTotal,
+                        totalSquares,
+                        totalTracks,
+                        nBackground,
+                        backgroundTracksTotal,
                         backgroundTracksPerSquare
                 );
 
