@@ -119,7 +119,7 @@
     "Exclude zero DC tracks from Tau Calculation": false,
     "Max Allowable Variability": false,
     "Min Required Density Ratio": false,
-    "Number of Squares in Column": false
+    "Number of Squares In Column": false
   },
 
   "Threshold": {
