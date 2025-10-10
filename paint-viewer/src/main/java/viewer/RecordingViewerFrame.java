@@ -162,15 +162,25 @@ public class RecordingViewerFrame extends JFrame {
         JCheckBox showBordersCheckBox = new JCheckBox("Show borders", true);
         JCheckBox showShadingCheckBox = new JCheckBox("Show shading", true);
 
+//        showBordersCheckBox.addActionListener(e -> {
+//            boolean show = showBordersCheckBox.isSelected();
+//            leftGridPanel.setShowBorders(show);
+//            leftGridPanel.repaint();
+//        });
+//
+//        showShadingCheckBox.addActionListener(e -> {
+//            boolean show = showShadingCheckBox.isSelected();
+//            leftGridPanel.setShowShading(show);
+//            leftGridPanel.repaint();
+//        });
+
         showBordersCheckBox.addActionListener(e -> {
-            boolean show = showBordersCheckBox.isSelected();
-            leftGridPanel.setShowBorders(show);
+            leftGridPanel.setShowBorders(showBordersCheckBox.isSelected());
             leftGridPanel.repaint();
         });
 
         showShadingCheckBox.addActionListener(e -> {
-            boolean show = showShadingCheckBox.isSelected();
-            leftGridPanel.setShowShading(show);
+            leftGridPanel.setShowShading(showShadingCheckBox.isSelected());
             leftGridPanel.repaint();
         });
 
@@ -179,9 +189,11 @@ public class RecordingViewerFrame extends JFrame {
         bordersPanel.setBorder(BorderFactory.createTitledBorder("Borders and Shading"));
         bordersPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         bordersPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, bordersPanel.getPreferredSize().height));
+
         bordersPanel.add(showBordersCheckBox);
         bordersPanel.add(Box.createVerticalStrut(5));
         bordersPanel.add(showShadingCheckBox);
+
         actionsContent.add(bordersPanel);
         actionsContent.add(Box.createVerticalStrut(15));
 
