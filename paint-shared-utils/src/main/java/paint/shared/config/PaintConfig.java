@@ -469,86 +469,191 @@ public class PaintConfig {
         return gson.toJson(configData);
     }
 
+
     // ================================================================
-    // Internal Helpers
+    // Internal Helpers (with forgiving, case-insensitive lookup)
     // ================================================================
 
+    /**
+     * Retrieves a string value from the configuration, ignoring key case.
+     * <p>
+     * If the section or key cannot be found (case-insensitively), a warning is logged
+     * and the provided default value is inserted into the configuration and saved.
+     *
+     * @param section       name of the config section (case-insensitive)
+     * @param key           key name within the section (case-insensitive)
+     * @param defaultValue  fallback value if missing or invalid
+     * @return the stored or default value
+     */
     private String getStringInternal(String section, String key, String defaultValue) {
         ensureLoaded();
         JsonObject sec = getSection(section);
-        if (sec != null && sec.has(key) && sec.get(key).isJsonPrimitive()) {
-            return sec.getAsJsonPrimitive(key).getAsString();
+
+        // Try to find an existing key, ignoring case differences
+        if (sec != null) {
+            String realKey = findKeyIgnoreCase(sec, key);
+            if (realKey != null && sec.get(realKey).isJsonPrimitive()) {
+                return sec.getAsJsonPrimitive(realKey).getAsString();
+            }
         }
+
+        // If missing, log and insert default (case-insensitive forgiving behavior)
         PaintLogger.warningf("No value for '%s' found, default value '%s' applied", key, defaultValue);
         setStringValue(section, key, defaultValue, true);
         return defaultValue;
     }
 
+    /**
+     * Retrieves an integer value from the configuration, ignoring key case.
+     * Falls back to default on missing or invalid values.
+     */
     private int getIntInternal(String section, String key, int defaultValue) {
         ensureLoaded();
         JsonObject sec = getSection(section);
-        if (sec != null && sec.has(key) && sec.get(key).isJsonPrimitive()) {
-            try {
-                return sec.getAsJsonPrimitive(key).getAsInt();
-            } catch (NumberFormatException e) {
-                PaintLogger.warningf("Invalid value for '%s' found, default value '%d' applied", key, defaultValue);
-                setIntValue(section, key, defaultValue, true);
-                return defaultValue;
+
+        if (sec != null) {
+            String realKey = findKeyIgnoreCase(sec, key);
+            if (realKey != null && sec.get(realKey).isJsonPrimitive()) {
+                try {
+                    return sec.getAsJsonPrimitive(realKey).getAsInt();
+                } catch (NumberFormatException e) {
+                    PaintLogger.warningf("Invalid value for '%s' found, default value '%d' applied", realKey, defaultValue);
+                    setIntValue(section, key, defaultValue, true);
+                    return defaultValue;
+                }
             }
         }
+
         PaintLogger.warningf("No value for '%s' found, default value '%d' applied", key, defaultValue);
         setIntValue(section, key, defaultValue, true);
         return defaultValue;
     }
 
+    /**
+     * Retrieves a double value from the configuration, ignoring key case.
+     * Falls back to default on missing or invalid values.
+     */
     private double getDoubleInternal(String section, String key, double defaultValue) {
         ensureLoaded();
         JsonObject sec = getSection(section);
-        if (sec != null && sec.has(key) && sec.get(key).isJsonPrimitive()) {
-            try {
-                return sec.getAsJsonPrimitive(key).getAsDouble();
-            } catch (NumberFormatException e) {
-                PaintLogger.warningf("Invalid value for '%s' found, default value '%0.2f' applied", key, defaultValue);
-                setDoubleValue(section, key, defaultValue, true);
-                return defaultValue;
+
+        if (sec != null) {
+            String realKey = findKeyIgnoreCase(sec, key);
+            if (realKey != null && sec.get(realKey).isJsonPrimitive()) {
+                try {
+                    return sec.getAsJsonPrimitive(realKey).getAsDouble();
+                } catch (NumberFormatException e) {
+                    PaintLogger.warningf("Invalid value for '%s' found, default value '%0.2f' applied", realKey, defaultValue);
+                    setDoubleValue(section, key, defaultValue, true);
+                    return defaultValue;
+                }
             }
         }
+
         PaintLogger.warningf("No value for '%s' found, default value '%0.2f' applied", key, defaultValue);
         setDoubleValue(section, key, defaultValue, true);
         return defaultValue;
     }
 
+    /**
+     * Retrieves a boolean value from the configuration, ignoring key case.
+     * Falls back to default on missing or invalid values.
+     */
     private boolean getBooleanInternal(String section, String key, boolean defaultValue) {
         ensureLoaded();
         JsonObject sec = getSection(section);
-        if (sec != null && sec.has(key) && sec.get(key).isJsonPrimitive()) {
-            try {
-                return sec.getAsJsonPrimitive(key).getAsBoolean();
-            } catch (Exception e) {
-                PaintLogger.warningf("Invalid value for '%s' found, default value '%b' applied", key, defaultValue);
-                setBooleanValue(section, key, defaultValue, true);
-                return defaultValue;
+
+        if (sec != null) {
+            String realKey = findKeyIgnoreCase(sec, key);
+            if (realKey != null && sec.get(realKey).isJsonPrimitive()) {
+                try {
+                    return sec.getAsJsonPrimitive(realKey).getAsBoolean();
+                } catch (Exception e) {
+                    PaintLogger.warningf("Invalid value for '%s' found, default value '%b' applied", realKey, defaultValue);
+                    setBooleanValue(section, key, defaultValue, true);
+                    return defaultValue;
+                }
             }
         }
+
         PaintLogger.warningf("No value for '%s' found, default value '%b' applied", key, defaultValue);
         setBooleanValue(section, key, defaultValue, true);
         return defaultValue;
     }
 
-    private JsonObject getOrCreateSection(String section) {
-        ensureLoaded();
-        if (!configData.has(section) || !configData.get(section).isJsonObject()) {
-            JsonObject newSection = new JsonObject();
-            configData.add(section, newSection);
-            return newSection;
-        }
-        return configData.getAsJsonObject(section);
-    }
-
+    /**
+     * Returns a section from the configuration, performing a case-insensitive lookup.
+     * <p>
+     * This makes section access forgiving — e.g., both "Paint" and "paint"
+     * resolve to the same section if it exists.
+     *
+     * @param section the section name (case-insensitive)
+     * @return matching {@link JsonObject} or {@code null} if not found
+     */
     private JsonObject getSection(String section) {
         ensureLoaded();
-        if (configData.has(section) && configData.get(section).isJsonObject()) {
-            return configData.getAsJsonObject(section);
+        JsonObject sec = findSectionIgnoreCase(section);
+        if (sec != null) return sec;
+        return null;
+    }
+
+    /**
+     * Returns an existing section or creates a new one if missing.
+     * Lookup is case-insensitive.
+     *
+     * @param section section name (case-insensitive)
+     * @return the found or newly created {@link JsonObject} for that section
+     */
+    private JsonObject getOrCreateSection(String section) {
+        ensureLoaded();
+        JsonObject sec = findSectionIgnoreCase(section);
+        if (sec != null) return sec;
+        JsonObject newSec = new JsonObject();
+        configData.add(section, newSec);
+        return newSec;
+    }
+
+    // ---------------------------------------------------------------
+    // Case-insensitive lookup helpers (for forgiving key access)
+    // ---------------------------------------------------------------
+
+    /**
+     * Performs a case-insensitive search for a key within a given {@link JsonObject}.
+     * <p>
+     * Returns the actual stored key name if found, preserving its case.
+     * This allows read operations to ignore user capitalization errors
+     * while preserving the original key casing when writing back to disk.
+     *
+     * @param obj the JSON section object to search
+     * @param key the key name to match (case-insensitive)
+     * @return the actual stored key if found, otherwise {@code null}
+     */
+    private String findKeyIgnoreCase(JsonObject obj, String key) {
+        if (obj == null || key == null) {
+            return null;
+        }
+        for (String k : obj.keySet()) {
+            if (k.equalsIgnoreCase(key)) {
+                return k; // return the real key casing stored in JSON
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Performs a case-insensitive search for a section within the root configuration.
+     * <p>
+     * This allows accessing "Paint", "paint", or "PAINT" interchangeably.
+     *
+     * @param section the section name to look up
+     * @return the matching section {@link JsonObject} or {@code null} if not found
+     */
+    private JsonObject findSectionIgnoreCase(String section) {
+        ensureLoaded();
+        for (String s : configData.keySet()) {
+            if (s.equalsIgnoreCase(section)) {
+                return configData.getAsJsonObject(s);
+            }
         }
         return null;
     }
