@@ -39,6 +39,9 @@ public class RecordingTableIO extends BaseTableIO {
             row.setDouble("Threshold", rec.getThreshold());
             row.setInt("Number of Spots", rec.getNumberOfSpots());
             row.setInt("Number of Tracks", rec.getNumberOfTracks());
+            row.setInt("Number of Squares in Background", rec.getNumberOfSquaresInBackground());
+            row.setInt("Number of Tracks in Background", rec.getNumberOfTracksInBackground());
+            row.setDouble("Average Tracks in Background", rec.getAverageTracksInBackGround());
             row.setInt("Number of Spots in All Tracks", rec.getNumberOfSpotsInAllTracks());
             row.setInt("Number of Frames", rec.getNumberOfFrames());
             row.setDouble("Run Time", rec.getRunTime());
@@ -67,6 +70,9 @@ public class RecordingTableIO extends BaseTableIO {
             rec.setThreshold(row.getDouble("Threshold"));
             rec.setNumberOfSpots(row.getInt("Number of Spots"));
             rec.setNumberOfTracks(row.getInt("Number of Tracks"));
+            rec.setNumberOfSquaresInBackground(row.getInt("Number of Squares in Background"));
+            rec.setNumberOfTracksInBackground(row.getInt("Number of Tracks in Background"));
+            rec.setAverageTracksInBackGround(row.getDouble("Average Tracks in Background"));
             rec.setNumberOfSpotsInAllTracks(row.getInt("Number of Spots in All Tracks"));
             rec.setNumberOfFrames(row.getInt("Number of Frames"));
             rec.setRunTime(row.getDouble("Run Time"));

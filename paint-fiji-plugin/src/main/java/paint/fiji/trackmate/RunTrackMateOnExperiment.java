@@ -128,8 +128,19 @@ public class RunTrackMateOnExperiment {
             // Output header
             List<String> header = new ArrayList<>(parser.getHeaderMap().keySet());
             header.addAll(Arrays.asList(
-                    "Number of Spots", "Number of Tracks", "Number of Spots in All Tracks",
-                    "Number of Frames", "Run Time", "Time Stamp", "Exclude", "Tau", "R Squared", "Density"
+                    "Number of Spots",
+                    "Number of Tracks",
+                    "Number of Tracks in Background",
+                    "Number of Squares in Background",
+                    "Average Tracks in Background",
+                    "Number of Spots in All Tracks",
+                    "Number of Frames",
+                    "Run Time",
+                    "Time Stamp",
+                    "Exclude",
+                    "Tau",
+                    "R Squared",
+                    "Density"
             ));
             printer.printRecord(header);
 
@@ -190,7 +201,7 @@ public class RunTrackMateOnExperiment {
                         totalDuration = totalDuration.plus(trackMateResults[0].getDuration());
                         numberRecordings++;
 
-                        numberOfSpots = trackMateResults[0].getNumberOfSpots();
+                        numberOfSpots  = trackMateResults[0].getNumberOfSpots();
                         numberOfTracks = trackMateResults[0].getNumberOfTracks();
                         numberOfFrames = trackMateResults[0].getNumberOfFrames();
                         numberOfSpotsInAllTracks = trackMateResults[0].getNumberOfSpotsInALlTracks();
@@ -210,11 +221,17 @@ public class RunTrackMateOnExperiment {
                     output.addAll(Arrays.asList(
                             String.valueOf(numberOfSpots),
                             String.valueOf(numberOfTracks),
+                            "",
+                            "",
+                            "",
                             String.valueOf(numberOfSpotsInAllTracks),
                             String.valueOf(numberOfFrames),
                             String.valueOf(runTime),
                             timeStamp,
-                            "False", "", "", ""
+                            "False",
+                            "",
+                            "",
+                            ""
                     ));
                     printer.printRecord(output);
 

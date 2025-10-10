@@ -24,6 +24,9 @@ public class Recording {
     private double        threshold;
     private int           numberOfSpots;
     private int           numberOfTracks;
+    private int           numberOfTracksInBackground;
+    private int           numberOfSquaresInBackground;
+    private double        averageTracksInBackGround;
     private int           numberOfSpotsInAllTracks;
     private int           numberOfFrames;
     private double        runTime;
@@ -32,7 +35,7 @@ public class Recording {
     private double        tau;
     private double        rSquared;
     private double        density;
-    
+
     // --- Associated objects ---
     private List<Square> squares = new ArrayList<>();
     private List<Track>  tracks  = new ArrayList<>();
@@ -170,6 +173,30 @@ public class Recording {
 
     public void setNumberOfSpotsInAllTracks(int numberOfSpotsInAllTracks) {
         this.numberOfSpotsInAllTracks = numberOfSpotsInAllTracks;
+    }
+
+    public int getNumberOfTracksInBackground() {
+        return numberOfTracksInBackground;
+    }
+
+    public void setNumberOfTracksInBackground(int numberOfTracksInBackground) {
+        this.numberOfTracksInBackground = numberOfTracksInBackground;
+    }
+
+    public int getNumberOfSquaresInBackground() {
+        return numberOfSquaresInBackground;
+    }
+
+    public void setNumberOfSquaresInBackground(int numberOfSquaresInBackground) {
+        this.numberOfSquaresInBackground = numberOfSquaresInBackground;
+    }
+
+    public double getAverageTracksInBackGround() {
+        return averageTracksInBackGround;
+    }
+
+    public void setAverageTracksInBackGround(double averageTracksInBackGround) {
+        this.averageTracksInBackGround = averageTracksInBackGround;
     }
 
     public int getNumberOfFrames() {

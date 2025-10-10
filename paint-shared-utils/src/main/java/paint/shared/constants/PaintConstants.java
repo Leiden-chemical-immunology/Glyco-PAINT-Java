@@ -263,6 +263,9 @@ public final class PaintConstants {
             "Threshold",
             "Number of Spots",
             "Number of Tracks",
+            "Number of Tracks in Background",
+            "Number of Squares in Background",
+            "Average Tracks in Background",
             "Number of Spots in All Tracks",
             "Number of Frames",
             "Run Time",
@@ -289,6 +292,9 @@ public final class PaintConstants {
             ColumnType.DOUBLE,            // Threshold
             ColumnType.INTEGER,           // Number of Spots
             ColumnType.INTEGER,           // Number of Tracks
+            ColumnType.INTEGER,           // Number of Tracks in Background
+            ColumnType.INTEGER,           // Number of Squares in Background
+            ColumnType.DOUBLE,            // Average Tracks in Background
             ColumnType.INTEGER,           // Number of Spots in All Tracks
             ColumnType.INTEGER,           // Number of Frames
             ColumnType.DOUBLE,            // Run Time
