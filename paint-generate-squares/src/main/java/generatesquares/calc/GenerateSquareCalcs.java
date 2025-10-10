@@ -134,6 +134,7 @@ public class GenerateSquareCalcs {
 
     public static void calculateRecordingAttributes(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
 
+        // Calculate the Tau
         double minRequiredRSquared = generateSquaresConfig.getMinRequiredRSquared();
         int minTracksForTau        = generateSquaresConfig.getMinTracksToCalculateTau();
         CalculateTau.CalculateTauResult results = calcTau(recording.getTracks(), minTracksForTau, minRequiredRSquared);
@@ -145,6 +146,7 @@ public class GenerateSquareCalcs {
             recording.setRSquared(Double.NaN);
         }
 
+        // Calcukate the background trackcount
         SquareUtils.BackgroundEstimationResult result;
         result = estimateBackgroundDensity(recording.getSquaresOfRecording());
         double numberOfTracksInBackgroundSquares  = result.getBackgroundMean();
@@ -154,6 +156,10 @@ public class GenerateSquareCalcs {
         recording.setNumberOfSquaresInBackground(result.getBackgroundSquares().size());
         recording.setNumberOfTracksInBackground(backgroundTracks);
         recording.setAverageTracksInBackGround(result.getBackgroundMean());
+
+        // Calculate the density
+        double density = calculateDensity(recording.getNumberOfTracks(), calcSquareArea(1), 100, recording.getConcentration());
+        recording.setDensity(density);
     }
 
     public static void calculateSquareAttributes(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
@@ -165,10 +171,9 @@ public class GenerateSquareCalcs {
         double minRequiredDensityRatio = generateSquaresConfig.getMinRequiredDensityRatio();
         String neighbourMode           = generateSquaresConfig.getNeighbourMode();
         int    numberOfSquaresInRow    = generateSquaresConfig.getNrSquaresInRow();
-        double area                    = calcSquareArea(400);
+        double area                    = calcSquareArea(400);    //TODO
         double concentration           = recording.getConcentration();
         double time                    = 100;
-        int    nrOfAverageCountSquares = 10;
         // @formatter:on
 
 
