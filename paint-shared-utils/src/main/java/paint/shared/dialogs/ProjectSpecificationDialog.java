@@ -96,7 +96,7 @@ public class ProjectSpecificationDialog {
         Dimension labelSize = new Dimension(220, 20);
 
         if (mode == DialogMode.GENERATE_SQUARES) {
-            int nrSquares = PaintConfig.getInt("Generate Squares", "Nr of Squares in Row", 5);
+            int nrSquares = PaintConfig.getInt("Generate Squares", "Number of Squares in Row", 5);
             int minTracks = PaintConfig.getInt("Generate Squares", "Min Tracks to Calculate Tau", 11);
             double minRSquared = PaintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
             double minDensityRatio = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
@@ -310,7 +310,7 @@ public class ProjectSpecificationDialog {
 
     private void saveConfig() {
         if (mode == DialogMode.GENERATE_SQUARES) {
-            PaintConfig.setInt("Generate Squares", "Nr of Squares in Row", Integer.parseInt(nrSquaresField.getText()));
+            PaintConfig.setInt("Generate Squares", "Number of Squares in Row", Integer.parseInt(nrSquaresField.getText()));
             PaintConfig.setInt("Generate Squares", "Min Tracks to Calculate Tau", Integer.parseInt(minTracksField.getText()));
             PaintConfig.setDouble("Generate Squares", "Min Required R Squared", Double.parseDouble(minRSquaredField.getText()));
             PaintConfig.setDouble("Generate Squares", "Min Required Density Ratio", Double.parseDouble(minDensityRatioField.getText()));

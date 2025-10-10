@@ -7,13 +7,16 @@ import static paint.shared.config.PaintConfig.*;
  */
 public class GenerateSquaresConfig {
 
-    private final int nrSquaresInRow;
-    private final int nrSquaresInColumn;
-    private final int minTracksToCalculateTau;
+    // @formatter:off
+    private final int    numberOfSquaresInRow;
+    private final int    numberOfSquaresInColumn;
+    private final int    minTracksToCalculateTau;
     private final double minRequiredRSquared;
     private final double minRequiredDensityRatio;
     private final double maxAllowableVariability;
     private final String neighbourMode;
+    // @formatter:on
+
 
     /*
      * Full constructor with all values specified
@@ -23,8 +26,8 @@ public class GenerateSquaresConfig {
     private GenerateSquaresConfig(PaintConfig paintConfig) {
 
         // @formatter:off
-        this.nrSquaresInRow          = getInt("Generate Squares",    "Nr of Squares in Row", 5);
-        this.nrSquaresInColumn       = getInt("Generate Squares",    "Nr of Squares in Column", 5);
+        this.numberOfSquaresInRow    = getInt("Generate Squares",    "Number of Squares in Row", 5);
+        this.numberOfSquaresInColumn = getInt("Generate Squares",    "Number of Squares in Column", 5);
         this.minTracksToCalculateTau = getInt("Generate Squares",    "Min Tracks to Calculate Tau", 20);
         this.minRequiredRSquared     = getDouble("Generate Squares", "Min Required R Squared", 0.1);
         this.minRequiredDensityRatio = getDouble("Generate Squares", "Min Required Density Ratio", 0.1);
@@ -41,12 +44,12 @@ public class GenerateSquaresConfig {
     // Getters are not really needed as attributes are public
     // Setter methods are not needed either, as the attributes are final
 
-    public int getNrSquaresInRow() {
-        return nrSquaresInRow;
+    public int getNumberOfSquaresInRow() {
+        return numberOfSquaresInRow;
     }
 
-    public int getNrSquaresInColumn() {
-        return nrSquaresInColumn;
+    public int getNumberOfSquaresInColumn() {
+        return numberOfSquaresInColumn;
     }
 
     public int getMinTracksToCalculateTau() {
@@ -72,8 +75,8 @@ public class GenerateSquaresConfig {
     @Override
     public String toString() {
         return "GenerateSquaresConfig{" +
-                "nrSquaresInRow=" + nrSquaresInRow +
-                ", nrSquaresInColumn=" + nrSquaresInColumn +
+                "nrSquaresInRow=" + numberOfSquaresInRow +
+                ", nrSquaresInColumn=" + numberOfSquaresInColumn +
                 ", minTracksToCalculateTau=" + minTracksToCalculateTau +
                 ", minRequiredRSquared=" + minRequiredRSquared +
                 ", minRequiredDensityRatio=" + minRequiredDensityRatio +

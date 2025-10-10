@@ -164,7 +164,7 @@ public class PaintConfig {
         generateSquares.addProperty("Min Required R Squared", 0.1);
         generateSquares.addProperty("Min Track Duration", 0);
         generateSquares.addProperty("Fraction of Squares to Determine Background", 0.1);
-        generateSquares.addProperty("Nr of Squares in Row", 30);
+        generateSquares.addProperty("Number of Squares in Row", 30);
         generateSquares.addProperty("Exclude zero DC tracks from Tau Calculation", false);
         generateSquares.addProperty("Max Allowable Variability", 10.0);
         generateSquares.addProperty("Min Required Density Ratio", 2.0);

@@ -115,11 +115,11 @@
     "Min Required R Squared": false,
     "Min Tracks to Calculate Tau": true,
     "Fraction of Squares to Determine Background": false,
-    "Nr of Squares in Row": false,
+    "Number of Squares in Row": false,
     "Exclude zero DC tracks from Tau Calculation": false,
     "Max Allowable Variability": false,
     "Min Required Density Ratio": false,
-    "Nr of Squares in Column": false
+    "Number of Squares in Column": false
   },
 
   "Threshold": {

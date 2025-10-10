@@ -84,7 +84,7 @@ public class GenerateSquareCalcs {
 
     public static List<Square> generateSquaresForRecording(GenerateSquaresConfig generateSquaresConfig, Recording recording) {
 
-        int n = generateSquaresConfig.getNrSquaresInRow();
+        int n = generateSquaresConfig.getNumberOfSquaresInRow();
 
         List<Square> squares = new ArrayList<>();
         double squareWidth = IMAGE_WIDTH / n;
@@ -121,7 +121,7 @@ public class GenerateSquareCalcs {
         Table tracksOfRecording = recording.getTracksTable();
         TrackTableIO trackTableIO = new TrackTableIO();
 
-        int lastRowCol = context.getNrSquaresInRow() - 1;
+        int lastRowCol = context.getNumberOfSquaresInRow() - 1;
 
         for (Square square : recording.getSquaresOfRecording()) {
             Table squareTracksTable = filterTracksInSquare(tracksOfRecording, square, lastRowCol);
@@ -170,11 +170,10 @@ public class GenerateSquareCalcs {
         double maxAllowableVariability = generateSquaresConfig.getMaxAllowableVariability();
         double minRequiredDensityRatio = generateSquaresConfig.getMinRequiredDensityRatio();
         String neighbourMode           = generateSquaresConfig.getNeighbourMode();
-        int    numberOfSquaresInRow    = generateSquaresConfig.getNrSquaresInRow();
+        int    numberOfSquaresInRow    = generateSquaresConfig.getNumberOfSquaresInRow();
         double area                    = calcSquareArea(400);    //TODO
         double concentration           = recording.getConcentration();
         // @formatter:on
-
 
         SquareUtils.BackgroundEstimationResult result;
         result = estimateBackgroundDensity(recording.getSquaresOfRecording());
