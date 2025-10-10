@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
 
-
 public class RecordingViewerFrame extends JFrame {
 
     private final Project project;
@@ -23,14 +22,14 @@ public class RecordingViewerFrame extends JFrame {
     private int currentIndex = 0;
 
     // Grid panel
-    private final SquareGridPanel leftGridPanel = new SquareGridPanel(20, 20);     //T ODO
+    private final SquareGridPanel leftGridPanel = new SquareGridPanel(20, 20);
 
     // Labels, tables, UI
-    private final JLabel            rightImageLabel = new JLabel("", SwingConstants.CENTER);
+    private final JLabel rightImageLabel = new JLabel("", SwingConstants.CENTER);
     private final DefaultTableModel attributesModel;
-    private final JTable            attributesTable;
-    private final JLabel            experimentLabel = new JLabel("", SwingConstants.CENTER);
-    private final JLabel            recordingLabel  = new JLabel("", SwingConstants.CENTER);
+    private final JTable attributesTable;
+    private final JLabel experimentLabel = new JLabel("", SwingConstants.CENTER);
+    private final JLabel recordingLabel = new JLabel("", SwingConstants.CENTER);
 
     // Navigation buttons
     private final JButton firstBtn = new JButton("|<");
@@ -38,13 +37,7 @@ public class RecordingViewerFrame extends JFrame {
     private final JButton nextBtn = new JButton(">");
     private final JButton lastBtn = new JButton(">|");
 
-    // --- Square filter parameters ---
-//    private final double minDensityRatio = 0.0;
-//    private final double maxVariability  = 0.0;
-//    private final double minRSquared     = 0.5;
-//    private final String neighbourMode   = "Free";
-
-    // --- Cell assignment state ---
+    // Cell assignment state
     private final Map<Integer, Integer> squareAssignments = new HashMap<>();
     private final Deque<Map<Integer, Integer>> undoStack = new ArrayDeque<>();
 
@@ -60,12 +53,12 @@ public class RecordingViewerFrame extends JFrame {
         int GAP = 15;
 
         // --- Images area ---
-        JPanel imagesInner = new JPanel(new java.awt.GridLayout(1, 2, GAP, 0));
+        JPanel imagesInner = new JPanel(new GridLayout(1, 2, GAP, 0));
         imagesInner.add(createSquareImagePanel(leftGridPanel));
         imagesInner.add(createSquareImagePanel(rightImageLabel));
 
         // --- Labels under images ---
-        JPanel labelsPanel = new JPanel(new java.awt.GridLayout(2, 1));
+        JPanel labelsPanel = new JPanel(new GridLayout(2, 1));
         labelsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         experimentLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
         recordingLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
@@ -73,7 +66,7 @@ public class RecordingViewerFrame extends JFrame {
         labelsPanel.add(recordingLabel);
 
         // --- Navigation ---
-        JPanel navPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 10));
+        JPanel navPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         navPanel.add(firstBtn);
         navPanel.add(prevBtn);
         navPanel.add(nextBtn);
@@ -88,7 +81,7 @@ public class RecordingViewerFrame extends JFrame {
         imagesWithNav.add(labelsPanel, BorderLayout.SOUTH);
         imagesWithNav.add(navPanel, BorderLayout.NORTH);
 
-        // --- Attributes panel (left) ---
+        // --- Attributes panel ---
         JPanel attrPanel = new JPanel(new BorderLayout());
         attrPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
@@ -106,21 +99,15 @@ public class RecordingViewerFrame extends JFrame {
         attributesTable.setRowHeight(22);
         attributesTable.setFocusable(false);
         attributesTable.setRowSelectionAllowed(false);
-        attributesTable.setColumnSelectionAllowed(false);
-        attributesTable.setCellSelectionEnabled(false);
         attributesTable.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
-
-        // 🔹 Make “Attr” wider than “Val”
         attributesTable.getColumnModel().getColumn(0).setPreferredWidth(150);
         attributesTable.getColumnModel().getColumn(1).setPreferredWidth(70);
 
-        JScrollPane scrollPane = new JScrollPane(attributesTable,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        JScrollPane scrollPane = new JScrollPane(attributesTable);
         scrollPane.setPreferredSize(new Dimension(220, attributesTable.getRowHeight() * 6));
         attrPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // --- Actions panel (right) ---
+        // --- Actions panel ---
         JPanel actionsPanel = new JPanel(new BorderLayout());
         actionsPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
@@ -131,19 +118,16 @@ public class RecordingViewerFrame extends JFrame {
         JPanel actionsContent = new JPanel();
         actionsContent.setLayout(new BoxLayout(actionsContent, BoxLayout.Y_AXIS));
 
-        // 🔹 Renamed buttons
+        // --- Buttons ---
         JButton filterButton = new JButton("Filter recordings");
         JButton squareDialogButton = new JButton("Select Squares");
         JButton cellDialogButton = new JButton("Assign Cells");
 
-        // --- Compute widest button width ---
         int maxWidth = Math.max(
                 filterButton.getPreferredSize().width,
                 Math.max(squareDialogButton.getPreferredSize().width,
-                        cellDialogButton.getPreferredSize().width)
+                         cellDialogButton.getPreferredSize().width)
         );
-
-        // --- Force equal width (keep height) ---
         Dimension uniformSize = new Dimension(maxWidth, filterButton.getPreferredSize().height);
         for (JButton b : Arrays.asList(filterButton, squareDialogButton, cellDialogButton)) {
             b.setMaximumSize(uniformSize);
@@ -151,6 +135,118 @@ public class RecordingViewerFrame extends JFrame {
             b.setAlignmentX(Component.CENTER_ALIGNMENT);
         }
 
+        // --- Controls frame ---
+        JPanel controlsPanel = new JPanel(new BorderLayout());
+        controlsPanel.setBorder(BorderFactory.createTitledBorder("Controls"));
+        controlsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        controlsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 180));
+        controlsPanel.setPreferredSize(new Dimension(Integer.MAX_VALUE, 180));
+
+        // Inner container for buttons (vertical)
+        JPanel controlsInner = new JPanel();
+        controlsInner.setLayout(new BoxLayout(controlsInner, BoxLayout.Y_AXIS));
+        controlsInner.setBorder(BorderFactory.createEmptyBorder(5, 10, 0, 10));
+
+        controlsInner.add(filterButton);
+        controlsInner.add(Box.createVerticalStrut(10));
+        controlsInner.add(squareDialogButton);
+        controlsInner.add(Box.createVerticalStrut(10));
+        controlsInner.add(cellDialogButton);
+
+        controlsPanel.add(controlsInner, BorderLayout.CENTER);
+
+        actionsContent.add(controlsPanel);
+        actionsContent.add(Box.createVerticalStrut(5));
+
+        // --- Borders & Shading ---
+        JCheckBox showBordersCheckBox = new JCheckBox("Show borders", true);
+        JCheckBox showShadingCheckBox = new JCheckBox("Show shading", true);
+
+        showBordersCheckBox.addActionListener(e -> {
+            boolean show = showBordersCheckBox.isSelected();
+            leftGridPanel.setShowBorders(show);
+            leftGridPanel.repaint();
+        });
+
+        showShadingCheckBox.addActionListener(e -> {
+            boolean show = showShadingCheckBox.isSelected();
+            leftGridPanel.setShowShading(show);
+            leftGridPanel.repaint();
+        });
+
+        JPanel bordersPanel = new JPanel();
+        bordersPanel.setLayout(new BoxLayout(bordersPanel, BoxLayout.Y_AXIS));
+        bordersPanel.setBorder(BorderFactory.createTitledBorder("Borders and Shading"));
+        bordersPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        bordersPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, bordersPanel.getPreferredSize().height));
+        bordersPanel.add(showBordersCheckBox);
+        bordersPanel.add(Box.createVerticalStrut(5));
+        bordersPanel.add(showShadingCheckBox);
+        actionsContent.add(bordersPanel);
+        actionsContent.add(Box.createVerticalStrut(15));
+
+        // --- Numbers ---
+        JRadioButton numberNoneRadio = new JRadioButton("None", true);
+        JRadioButton numberLabelRadio = new JRadioButton("Label");
+        JRadioButton numberSquareRadio = new JRadioButton("Square");
+
+        ButtonGroup numbersGroup = new ButtonGroup();
+        numbersGroup.add(numberNoneRadio);
+        numbersGroup.add(numberLabelRadio);
+        numbersGroup.add(numberSquareRadio);
+
+        numberNoneRadio.addActionListener(e -> {
+            leftGridPanel.setNumberMode(SquareGridPanel.NumberMode.NONE);
+            leftGridPanel.repaint();
+        });
+        numberLabelRadio.addActionListener(e -> {
+            leftGridPanel.setNumberMode(SquareGridPanel.NumberMode.LABEL);
+            leftGridPanel.repaint();
+        });
+        numberSquareRadio.addActionListener(e -> {
+            leftGridPanel.setNumberMode(SquareGridPanel.NumberMode.SQUARE);
+            leftGridPanel.repaint();
+        });
+
+        JPanel numbersInner = new JPanel();
+        numbersInner.setLayout(new BoxLayout(numbersInner, BoxLayout.Y_AXIS));
+        numbersInner.add(numberNoneRadio);
+        numbersInner.add(Box.createVerticalStrut(5));
+        numbersInner.add(numberLabelRadio);
+        numbersInner.add(Box.createVerticalStrut(5));
+        numbersInner.add(numberSquareRadio);
+
+        JPanel numbersPanel = new JPanel(new BorderLayout());
+        numbersPanel.setBorder(BorderFactory.createTitledBorder("Numbers"));
+        numbersPanel.add(numbersInner, BorderLayout.WEST);
+        numbersPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        numbersPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, numbersPanel.getPreferredSize().height));
+        actionsContent.add(numbersPanel);
+        actionsContent.add(Box.createVerticalGlue());
+
+        // --- Equalize widths ---
+        int panelWidth = Math.max(
+                Math.max(controlsPanel.getPreferredSize().width,
+                         bordersPanel.getPreferredSize().width),
+                numbersPanel.getPreferredSize().width
+        );
+        controlsPanel.setMaximumSize(new Dimension(panelWidth, controlsPanel.getMaximumSize().height));
+        bordersPanel.setMaximumSize(new Dimension(panelWidth, bordersPanel.getMaximumSize().height));
+        numbersPanel.setMaximumSize(new Dimension(panelWidth, numbersPanel.getMaximumSize().height));
+
+        actionsPanel.add(actionsContent, BorderLayout.NORTH);
+
+        // --- Assemble ---
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(attrPanel, BorderLayout.WEST);
+        mainPanel.add(imagesWithNav, BorderLayout.CENTER);
+        mainPanel.add(actionsPanel, BorderLayout.EAST);
+        add(mainPanel, BorderLayout.CENTER);
+
+        setSize(1500, 700);
+        setLocationRelativeTo(null);
+
+        // --- Button logic ---
         filterButton.addActionListener(e -> {
             FilterDialog dialog = new FilterDialog(this, recordings);
             dialog.setVisible(true);
@@ -165,7 +261,6 @@ public class RecordingViewerFrame extends JFrame {
 
         squareDialogButton.addActionListener(e -> {
             RecordingEntry current = recordings.get(currentIndex);
-
             SquareControlDialog dialog = new SquareControlDialog(
                     this,
                     leftGridPanel,
@@ -174,82 +269,42 @@ public class RecordingViewerFrame extends JFrame {
                             current.getMinRequiredDensityRatio(),
                             current.getMaxAllowableVariability(),
                             current.getMinRequiredRSquared(),
-                            "Free" //  TODO  default neighbour mode, since it's not in RecordingEntry
+                            "Free"
                     )
             );
             dialog.setVisible(true);
         });
 
-        // --- Cell dialog handling ---
         cellDialogButton.addActionListener(e -> {
             leftGridPanel.setSelectionEnabled(true);
             CellAssignmentDialog dialog = new CellAssignmentDialog(this, new CellAssignmentDialog.Listener() {
-                @Override
-                public void onAssign(int cellId) {
-                    assignSelectedSquares(cellId);
-                }
-
-                @Override
-                public void onUndo() {
-                    undoLastAssignment();
-                }
-
-                @Override
-                public void onCancelSelection() {
-                    clearSelection();
-                }
+                public void onAssign(int cellId) { assignSelectedSquares(cellId); }
+                public void onUndo() { undoLastAssignment(); }
+                public void onCancelSelection() { clearSelection(); }
             });
-
             dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                 @Override
                 public void windowClosed(java.awt.event.WindowEvent e) {
                     leftGridPanel.setSelectionEnabled(false);
                 }
             });
-
             dialog.setVisible(true);
         });
 
-        actionsContent.add(filterButton);
-        actionsContent.add(Box.createVerticalStrut(15));
-        actionsContent.add(squareDialogButton);
-        actionsContent.add(Box.createVerticalStrut(15));
-        actionsContent.add(cellDialogButton);
-        actionsContent.add(Box.createVerticalGlue());
-
-        actionsPanel.add(actionsContent, BorderLayout.NORTH);
-
-        // --- Main assembly ---
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.add(attrPanel, BorderLayout.WEST);
-        mainPanel.add(imagesWithNav, BorderLayout.CENTER);
-        mainPanel.add(actionsPanel, BorderLayout.EAST);
-
-        add(mainPanel, BorderLayout.CENTER);
-
-        setSize(1500, 700);
-        setLocationRelativeTo(null);
-
-        // Navigation actions
+        // --- Navigation ---
         firstBtn.addActionListener(e -> showEntry(0));
         prevBtn.addActionListener(e -> showEntry(Math.max(0, currentIndex - 1)));
         nextBtn.addActionListener(e -> showEntry(Math.min(recordings.size() - 1, currentIndex + 1)));
         lastBtn.addActionListener(e -> showEntry(recordings.size() - 1));
 
-        if (!recordings.isEmpty()) {
-            showEntry(0);
-        }
+        if (!recordings.isEmpty()) showEntry(0);
     }
 
     private JPanel createSquareImagePanel(JComponent comp) {
         JPanel panel = new JPanel(new BorderLayout()) {
-            @Override
-            public Dimension getPreferredSize() {
-                return new Dimension(512, 512);
-            }
-            @Override
-            public void setBounds(int x, int y, int width, int height) {
-                int size = Math.min(width, height);
+            public Dimension getPreferredSize() { return new Dimension(512, 512); }
+            public void setBounds(int x, int y, int w, int h) {
+                int size = Math.min(w, h);
                 super.setBounds(x, y, size, size);
             }
         };
@@ -258,47 +313,25 @@ public class RecordingViewerFrame extends JFrame {
         return panel;
     }
 
-    private ImageIcon scaleToFit(ImageIcon icon, int width, int height) {
-        if (icon == null || icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) {
-            return null;
-        }
-        java.awt.Image img = icon.getImage();
-        java.awt.Image scaled = img.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
+    private ImageIcon scaleToFit(ImageIcon icon, int w, int h) {
+        if (icon == null || icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) return null;
+        Image img = icon.getImage();
+        Image scaled = img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
         return new ImageIcon(scaled);
     }
 
     private void showEntry(int index) {
-        if (index < 0 || index >= recordings.size()) {
-            return;
-        }
-
-        int expectNumberOfSquares = 400; // TODO
-
+        if (index < 0 || index >= recordings.size()) return;
         currentIndex = index;
         RecordingEntry entry = recordings.get(index);
+        int expectNumberOfSquares = 400;
 
-        int size = 512;
         leftGridPanel.setBackgroundImage(entry.getLeftImage());
-        rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), size, size));
-
-        List<Square> squares = entry.getSquares(project, expectNumberOfSquares);
-        leftGridPanel.setSquares(squares);
-
-        int totalInExperiment = 0;
-        int indexInExperiment = 0;
-        for (RecordingEntry r : recordings) {
-            if (r.getExperimentName().equals(entry.getExperimentName())) {
-                totalInExperiment++;
-                if (r == entry) {
-                    indexInExperiment = totalInExperiment;
-                }
-            }
-        }
+        rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), 512, 512));
+        leftGridPanel.setSquares(entry.getSquares(project, expectNumberOfSquares));
 
         experimentLabel.setText("Experiment: " + entry.getExperimentName() +
-                " (" + indexInExperiment + "/" + totalInExperiment + ")" +
-                "   [Overall: " + (currentIndex + 1) + "/" + recordings.size() + "]");
-
+                                        "   [Overall: " + (currentIndex + 1) + "/" + recordings.size() + "]");
         recordingLabel.setText("Recording: " + entry.getRecordingName());
 
         attributesModel.setRowCount(0);
@@ -309,18 +342,13 @@ public class RecordingViewerFrame extends JFrame {
         attributesModel.addRow(new Object[]{"Concentration", entry.getConcentration()});
         attributesModel.addRow(new Object[]{"Number of Spots", entry.getNumberOfSpots()});
         attributesModel.addRow(new Object[]{"Number of Tracks", entry.getNumberOfTracks()});
-        attributesModel.addRow(new Object[]{"Number of Tracks in Background", entry.getRecording().getNumberOfTracksInBackground()});
-        attributesModel.addRow(new Object[]{"Number of Squares in Background", entry.getRecording().getNumberOfSquaresInBackground()});
-        attributesModel.addRow(new Object[]{"Background Tracks per Square", entry.getRecording().getAverageTracksInBackGround()});
         attributesModel.addRow(new Object[]{"Threshold", entry.getThreshold()});
-        attributesModel.addRow(new Object[]{"Recording Tau", formatWithPrecision(entry.getTau(), 1)});
-        attributesModel.addRow(new Object[]{"Recording Density", entry.getDensity()});
-        attributesModel.addRow(new Object[]{"Min Required Density Ratio", entry.getMinRequiredDensityRatio()});
-        attributesModel.addRow(new Object[]{"Max Allowable Variability", entry.getMaxAllowableVariability()});
-        attributesModel.addRow(new Object[]{"Min Required R²", entry.getMinRequiredRSquared()});
+        attributesModel.addRow(new Object[]{"Tau", formatWithPrecision(entry.getTau(), 1)});
+        attributesModel.addRow(new Object[]{"Density", entry.getDensity()});
+        attributesModel.addRow(new Object[]{"Min Density Ratio", entry.getMinRequiredDensityRatio()});
+        attributesModel.addRow(new Object[]{"Max Variability", entry.getMaxAllowableVariability()});
+        attributesModel.addRow(new Object[]{"Min R²", entry.getMinRequiredRSquared()});
         attributesModel.addRow(new Object[]{"Neighbour Mode", entry.getNeighbourMode()});
-        // attributesModel.addRow(new Object[]{"Background density", entry.getNeighbourMode()}); // TODO
-
         updateNavButtons();
     }
 
@@ -333,59 +361,39 @@ public class RecordingViewerFrame extends JFrame {
 
     // === Cell assignment methods ===
     public void assignSelectedSquares(int cellId) {
-        // Get only the currently mouse-selected squares
         Set<Integer> selectedNow = leftGridPanel.getSelectedSquares();
-        if (selectedNow.isEmpty()) {
-            return;
-        }
+        if (selectedNow.isEmpty()) return;
 
-        // Save state for undo
         undoStack.push(new HashMap<>(squareAssignments));
-
-        // Assign new cell ID only to selected squares
         for (Square sq : leftGridPanel.getSquares()) {
             if (selectedNow.contains(sq.getSquareNumber())) {
                 sq.setCellId(cellId);
                 squareAssignments.put(sq.getSquareNumber(), cellId);
             }
         }
-
-        // Deselect but keep visibility and other cell assignments intact
         leftGridPanel.clearMouseSelection();
         leftGridPanel.repaint();
-
-        // Logging
-        RecordingEntry entry = recordings.get(currentIndex);
-        String recordingName = entry.getRecordingName();
-        long timestamp = System.currentTimeMillis();
-        for (Integer sqId : selectedNow) {
-            System.out.printf("%s,%d,%d,%d%n", recordingName, sqId, cellId, timestamp);   // TODO
-        }
     }
-
 
     public void undoLastAssignment() {
         if (!undoStack.isEmpty()) {
             squareAssignments.clear();
             squareAssignments.putAll(undoStack.pop());
-
             for (Square sq : leftGridPanel.getSquares()) {
                 int cellId = squareAssignments.getOrDefault(sq.getSquareNumber(), 0);
                 sq.setCellId(cellId);
             }
-
             leftGridPanel.repaint();
-            System.out.println("Undo performed");
         }
     }
 
     public void clearSelection() {
         leftGridPanel.clearSelection();
         leftGridPanel.repaint();
-        System.out.println("Selection cleared");
     }
 
     // === SquareControl ===
+
     public void updateSquareControlParameters(double densityRatio,
                                               double variability,
                                               double rSquared,
@@ -401,12 +409,10 @@ public class RecordingViewerFrame extends JFrame {
         leftGridPanel.repaint();                // refresh display
     }
 
-
     public void updateSquareNumberMode(SquareGridPanel.NumberMode mode) {
         leftGridPanel.setNumberMode(mode);
         leftGridPanel.repaint();
     }
-
 
     public void applySquareControlParameters(String scope, SquareControlParams params) {
         String timestamp = LocalDateTime.now().toString();
@@ -480,36 +486,8 @@ public class RecordingViewerFrame extends JFrame {
     }
 
     private static String formatWithPrecision(double value, int precision) {
-
-        String formatString;
-
-        if (Double.isNaN(value)) {
-            return "NaN";
-        }
-        if (Double.isInfinite(value)) {
-            return (value > 0 ? "∞" : "-∞");
-        }
-
-        switch (precision) {
-            case 0:
-                formatString = "%.0f";
-                break;
-            case 1:
-                formatString = "%.1f";
-                break;
-            case 2:
-                formatString = "%.2f";
-                break;
-            case 3:
-                formatString = "%.3f";
-                break;
-            case 4:
-                formatString = "%.4f";
-                break;
-            default:
-                formatString = "%.6f";  // fallback
-                break;
-        }
-        return String.format(formatString, value);
+        if (Double.isNaN(value)) return "NaN";
+        if (Double.isInfinite(value)) return value > 0 ? "∞" : "-∞";
+        return String.format("%." + precision + "f", value);
     }
 }

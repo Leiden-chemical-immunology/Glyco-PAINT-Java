@@ -7,20 +7,13 @@ import java.awt.*;
 import java.text.DecimalFormat;
 
 /**
- * Square Control Dialog (3-slider version)
+ * Square Control Dialog (sliders + neighbour mode only)
  * - Density Ratio, Variability, R² sliders
- * - Border + Number display controls
  * - Neighbour mode (Free / Relaxed / Strict)
- * Compatible with new SquareGridPanel that loads squares once.
+ * - Apply / Cancel controls
+ * Compatible with RecordingViewerFrame and SquareGridPanel.
  */
 public class SquareControlDialog extends JDialog {
-
-    private final JCheckBox showBordersCheckBox;
-    private final JCheckBox showShadingCheckBox;
-
-    private final JRadioButton numberNoneRadio;
-    private final JRadioButton numberLabelRadio;
-    private final JRadioButton numberSquareRadio;
 
     private final JSlider densityRatioSlider;
     private final JSlider variabilitySlider;
@@ -37,9 +30,7 @@ public class SquareControlDialog extends JDialog {
     private final RecordingViewerFrame viewerFrame;
     private final SquareGridPanel gridPanel;
 
-    private SquareGridPanel.NumberMode lastNumberMode = SquareGridPanel.NumberMode.NONE;
-
-    private double origDensityRatio;  // TODO
+    private double origDensityRatio;
     private double origVariability;
     private double origRSquared;
     private String origNeighbourMode;
@@ -59,102 +50,7 @@ public class SquareControlDialog extends JDialog {
         JPanel content = new JPanel();
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
-        // --- Numbers first so they're initialized before borders listener ---
-        numberNoneRadio = new JRadioButton("Show no number", true);
-        numberLabelRadio = new JRadioButton("Show label number");
-        numberSquareRadio = new JRadioButton("Show square number");
-
-        ButtonGroup numbersGroup = new ButtonGroup();
-        numbersGroup.add(numberNoneRadio);
-        numbersGroup.add(numberLabelRadio);
-        numbersGroup.add(numberSquareRadio);
-
-        numberNoneRadio.addActionListener(e -> {
-            gridPanel.setNumberMode(SquareGridPanel.NumberMode.NONE);
-            viewerFrame.updateSquareNumberMode(SquareGridPanel.NumberMode.NONE);
-        });
-
-        numberLabelRadio.addActionListener(e -> {
-            gridPanel.setNumberMode(SquareGridPanel.NumberMode.LABEL);
-            viewerFrame.updateSquareNumberMode(SquareGridPanel.NumberMode.LABEL);
-        });
-
-        numberSquareRadio.addActionListener(e -> {
-            gridPanel.setNumberMode(SquareGridPanel.NumberMode.SQUARE);
-            viewerFrame.updateSquareNumberMode(SquareGridPanel.NumberMode.SQUARE);
-        });
-
-        JPanel numbersInner = new JPanel();
-        numbersInner.setLayout(new BoxLayout(numbersInner, BoxLayout.Y_AXIS));
-        numbersInner.add(numberNoneRadio);
-        numbersInner.add(numberLabelRadio);
-        numbersInner.add(numberSquareRadio);
-
-        JPanel numbersPanel = new JPanel(new BorderLayout());
-        numbersPanel.setBorder(BorderFactory.createTitledBorder("Numbers"));
-        numbersPanel.add(numbersInner, BorderLayout.WEST);
-
-        // --- Borders & Shading ---
-        showBordersCheckBox = new JCheckBox("Show borders of selected squares", true);
-        showBordersCheckBox.addActionListener(e -> {
-            boolean show = showBordersCheckBox.isSelected();
-            gridPanel.setShowBorders(show);
-
-            if (!show) {
-                if (numberLabelRadio.isSelected()) {
-                    lastNumberMode = SquareGridPanel.NumberMode.LABEL;
-                } else if (numberSquareRadio.isSelected()) {
-                    lastNumberMode = SquareGridPanel.NumberMode.SQUARE;
-                } else {
-                    lastNumberMode = SquareGridPanel.NumberMode.NONE;
-                }
-
-                numberNoneRadio.setSelected(true);
-                gridPanel.setNumberMode(SquareGridPanel.NumberMode.NONE);
-                numberNoneRadio.setEnabled(false);
-                numberLabelRadio.setEnabled(false);
-                numberSquareRadio.setEnabled(false);
-            } else {
-                numberNoneRadio.setEnabled(true);
-                numberLabelRadio.setEnabled(true);
-                numberSquareRadio.setEnabled(true);
-                switch (lastNumberMode) {
-                    case LABEL:
-                        numberLabelRadio.setSelected(true);
-                        gridPanel.setNumberMode(SquareGridPanel.NumberMode.LABEL);
-                        break;
-                    case SQUARE:
-                        numberSquareRadio.setSelected(true);
-                        gridPanel.setNumberMode(SquareGridPanel.NumberMode.SQUARE);
-                        break;
-                    default:
-                        numberNoneRadio.setSelected(true);
-                        gridPanel.setNumberMode(SquareGridPanel.NumberMode.NONE);
-                        break;
-                }
-            }
-        });
-
-        // 🔹 NEW checkbox for shading
-        showShadingCheckBox = new JCheckBox("Show shading of selected squares", true);
-        showShadingCheckBox.addActionListener(e -> {
-            boolean show = showShadingCheckBox.isSelected();
-            gridPanel.setShowShading(show);
-        });
-
-        // 🔹 Combine both into one titled panel
-        JPanel bordersPanel = new JPanel();
-        bordersPanel.setLayout(new BoxLayout(bordersPanel, BoxLayout.Y_AXIS));
-        bordersPanel.setBorder(BorderFactory.createTitledBorder("Borders & Shading"));
-        bordersPanel.add(showBordersCheckBox);
-        bordersPanel.add(showShadingCheckBox);
-
-        content.add(bordersPanel);
-        content.add(Box.createVerticalStrut(10));
-        content.add(numbersPanel);
-        content.add(Box.createVerticalStrut(10));
-
-        // --- Three sliders ---
+        // --- Sliders ---
         densityRatioSlider = createSlider(0, 20000, (int) Math.round(initParams.densityRatio * 10));
         variabilitySlider = createSlider(0, 200, (int) Math.round(initParams.variability * 10));
         rSquaredSlider = createSlider(0, 100, (int) Math.round(initParams.rSquared * 100));
@@ -164,12 +60,10 @@ public class SquareControlDialog extends JDialog {
         rSquaredValue = new JLabel();
 
         JPanel slidersPanel = new JPanel(new GridLayout(1, 3, 15, 0));
-        slidersPanel.add(wrapSlider(densityRatioSlider, "Min Required Density Ratio", densityRatioValue));
-        slidersPanel.add(wrapSlider(variabilitySlider, "Max Allowable Variability", variabilityValue));
-        slidersPanel.add(wrapSlider(rSquaredSlider, "Min Required R²", rSquaredValue));
-
-        content.add(slidersPanel);
-        content.add(Box.createVerticalStrut(10));
+        slidersPanel.setBorder(BorderFactory.createTitledBorder("Square Filters"));
+        slidersPanel.add(wrapSlider(densityRatioSlider, "Min Density Ratio", densityRatioValue));
+        slidersPanel.add(wrapSlider(variabilitySlider, "Max Variability", variabilityValue));
+        slidersPanel.add(wrapSlider(rSquaredSlider, "Min R²", rSquaredValue));
 
         // --- Neighbour mode ---
         neighbourFree = new JRadioButton("Free");
@@ -197,10 +91,7 @@ public class SquareControlDialog extends JDialog {
         neighbourPanel.add(neighbourFree);
         neighbourPanel.add(neighbourRelaxed);
         neighbourPanel.add(neighbourStrict);
-        content.add(neighbourPanel);
-        content.add(Box.createVerticalStrut(10));
-
-        add(content, BorderLayout.CENTER);
+        neighbourPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // --- Apply / Cancel ---
         JPanel applyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -209,11 +100,25 @@ public class SquareControlDialog extends JDialog {
         JButton applyExperiment = new JButton("Apply to Experiment");
         JButton applyProject = new JButton("Apply to Project");
         JButton cancelButton = new JButton("Cancel");
+
+        for (JButton b : new JButton[]{applyRecording, applyExperiment, applyProject, cancelButton}) {
+            b.setPreferredSize(new Dimension(180, 28));
+        }
+
         applyPanel.add(applyRecording);
         applyPanel.add(applyExperiment);
         applyPanel.add(applyProject);
         applyPanel.add(cancelButton);
-        add(applyPanel, BorderLayout.SOUTH);
+        applyPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // --- Layout assembly ---
+        content.add(slidersPanel);
+        content.add(Box.createVerticalStrut(10));
+        content.add(neighbourPanel);
+        content.add(Box.createVerticalStrut(10));
+        content.add(applyPanel);
+
+        add(content, BorderLayout.CENTER);
 
         // --- Listeners ---
         ChangeListener sliderListener = (ChangeEvent e) -> {
@@ -252,24 +157,21 @@ public class SquareControlDialog extends JDialog {
     private JSlider createSlider(int min, int max, int value) {
         JSlider slider = new JSlider(JSlider.VERTICAL, min, max, Math.min(max, Math.max(min, value)));
         slider.setMajorTickSpacing(Math.max(1, (max - min) / 5));
-        slider.setMinorTickSpacing(1);
         slider.setPaintTicks(true);
         slider.setPaintLabels(true);
         slider.setSnapToTicks(true);
 
-        // Scale labels: /10 for 0..200 sliders, /100 for 0..100 (R²)
-        int major = Math.max(1, (max - min) / 5);
         boolean isRSquared = (max == 100);
         double divisor = isRSquared ? 100.0 : 10.0;
 
         java.util.Hashtable<Integer, JLabel> table = new java.util.Hashtable<>();
+        int major = Math.max(1, (max - min) / 5);
         for (int v = min; v <= max; v += major) {
-            String text = isRSquared ? ONE_DEC.format(v / divisor)       // keep 1 decimal for R²
-                    : String.valueOf((int) Math.round(v / divisor)); // integer for the others
+            String text = isRSquared ? ONE_DEC.format(v / divisor)
+                    : String.valueOf((int) Math.round(v / divisor));
             table.put(v, new JLabel(text));
         }
         slider.setLabelTable(table);
-
         return slider;
     }
 
@@ -298,12 +200,8 @@ public class SquareControlDialog extends JDialog {
     }
 
     private String getNeighbourMode() {
-        if (neighbourFree.isSelected()) {
-            return "Free";
-        }
-        if (neighbourRelaxed.isSelected()) {
-            return "Relaxed";
-        }
+        if (neighbourFree.isSelected()) return "Free";
+        if (neighbourRelaxed.isSelected()) return "Relaxed";
         return "Strict";
     }
 
@@ -312,14 +210,16 @@ public class SquareControlDialog extends JDialog {
         variabilitySlider.setValue((int) Math.round(origVariability * 10));
         rSquaredSlider.setValue((int) Math.round(origRSquared * 100));
 
-        if ("Free".equals(origNeighbourMode)) {
-            neighbourFree.setSelected(true);
-        } else if ("Relaxed".equals(origNeighbourMode)) {
-            neighbourRelaxed.setSelected(true);
-        } else {
-            neighbourStrict.setSelected(true);
+        switch (origNeighbourMode) {
+            case "Relaxed":
+                neighbourRelaxed.setSelected(true);
+                break;
+            case "Strict":
+                neighbourStrict.setSelected(true);
+                break;
+            default:
+                neighbourFree.setSelected(true);
         }
-
         updateValueLabels();
         propagateValues();
     }
