@@ -8,7 +8,6 @@ import paint.shared.utils.PaintLogger;
 import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_HEIGHT;
 import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH;
 
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -26,13 +25,13 @@ public class RecordingViewerFrame extends JFrame {
     private final List<RecordingEntry> recordings;
     private int currentIndex = 0;
 
-    // Grid panel
-    private final SquareGridPanel leftGridPanel = new SquareGridPanel(20, 20);
+    // Grid panel — will be initialized in constructor
+    private SquareGridPanel leftGridPanel;
 
     // Labels, tables, UI
     private final JLabel rightImageLabel = new JLabel("", SwingConstants.CENTER);
-    private final DefaultTableModel attributesModel;
-    private final JTable attributesTable;
+    private DefaultTableModel attributesModel;
+    private JTable attributesTable;
     private final JLabel experimentLabel = new JLabel("", SwingConstants.CENTER);
     private final JLabel recordingLabel = new JLabel("", SwingConstants.CENTER);
 
@@ -51,6 +50,23 @@ public class RecordingViewerFrame extends JFrame {
         this.project = project;
         this.recordings = recordings;
 
+        // --- Read configuration ---
+        int numberOfSquaresInRow = PaintConfig.getInt("Generate Squares", "Number of Squares In Row", -1);
+        int numberOfSquaresInColumn = PaintConfig.getInt("Generate Squares", "Number of Squares In Column", -1);
+
+        if (numberOfSquaresInRow <= 0 || numberOfSquaresInColumn <= 0) {
+            PaintLogger.errorf("Invalid square layout.",
+                               numberOfSquaresInRow, numberOfSquaresInColumn);
+            return;
+        }
+        if (numberOfSquaresInRow !=  numberOfSquaresInColumn) {
+            PaintLogger.errorf("Only rectangular gris is supported, not (%d x %d).",
+                               numberOfSquaresInRow, numberOfSquaresInColumn);
+            return;
+        }
+
+        // --- Initialize grid panel ---
+        leftGridPanel = new SquareGridPanel(numberOfSquaresInRow, numberOfSquaresInColumn);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         setResizable(false);
@@ -338,7 +354,7 @@ public class RecordingViewerFrame extends JFrame {
         currentIndex = index;
         RecordingEntry entry = recordings.get(index);
         int numberOfSquaresInRow = PaintConfig.getInt("Generate Squares", "Number of Squares in Row", -1);
-        int numberOfSquaresInColumn = PaintConfig.getInt("Generate Squares", "Number of Squares in Column", -1);
+        int numberOfSquaresInColumn = PaintConfig.getInt("Generate Squares", "Number of Squares In Column", -1);
         if (numberOfSquaresInRow == -1 || numberOfSquaresInColumn == -1) {
             PaintLogger.errorf("RecordingViewerFrame - Number of Squares in Row and Column are not valid");
             System.exit(-1);
