@@ -310,11 +310,10 @@ public class RecordingViewerFrame extends JFrame {
         attributesModel.addRow(new Object[]{"Number of Spots", entry.getNumberOfSpots()});
         attributesModel.addRow(new Object[]{"Number of Tracks", entry.getNumberOfTracks()});
         attributesModel.addRow(new Object[]{"Number of Tracks in Background", entry.getRecording().getNumberOfTracksInBackground()});
-        attributesModel.addRow(new Object[]{"Number of Squares in Background", entry.getRecording().getNumberOfTracksInBackground()});
+        attributesModel.addRow(new Object[]{"Number of Squares in Background", entry.getRecording().getNumberOfSquaresInBackground()});
         attributesModel.addRow(new Object[]{"Background Tracks per Square", entry.getRecording().getAverageTracksInBackGround()});
         attributesModel.addRow(new Object[]{"Threshold", entry.getThreshold()});
         attributesModel.addRow(new Object[]{"Recording Tau", formatWithPrecision(entry.getTau(), 1)});
-        attributesModel.addRow(new Object[]{"Recording R²", formatWithPrecision(entry.getObservedRSquared(), 3)});
         attributesModel.addRow(new Object[]{"Recording Density", entry.getDensity()});
         attributesModel.addRow(new Object[]{"Min Required Density Ratio", entry.getMinRequiredDensityRatio()});
         attributesModel.addRow(new Object[]{"Max Allowable Variability", entry.getMaxAllowableVariability()});
