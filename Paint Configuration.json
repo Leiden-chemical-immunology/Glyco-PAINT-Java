@@ -6,14 +6,16 @@
     "Min Required R Squared": 0.1,
     "Min Track Duration": 0,
     "Fraction of Squares to Determine Background": 0.1,
-    "Number of Squares In Row": 30,
+    "Number of Squares in Row": 30,
     "Exclude zero DC tracks from Tau Calculation": false,
     "Max Allowable Variability": 10.0,
     "Min Required Density Ratio": 2.0,
     "Plot Max": 5,
     "Neighbour Mode": "Free",
     "Last Used Directory": "",
-    "Number of Squares In Column": 5
+    "Number of Squares in Column": 5,
+    "Number of Squares in Row": 5,
+    "Number of Squares in Recording": 25
   },
   "Paint": {
     "Version": "1.0",

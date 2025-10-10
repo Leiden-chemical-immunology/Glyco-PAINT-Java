@@ -62,11 +62,12 @@ Software
     "Min Required R Squared": false,
     "Min Tracks to Calculate Tau": false,
     "Fraction of Squares to Determine Background": false,
-    "Number of Squares In Row": false,
+    "Number of Squares in Row": false,
     "Exclude zero DC tracks from Tau Calculation": false,
     "Max Allowable Variability": false,
     "Min Required Density Ratio": false,
-    "Number of Squares In Column": false
+    "Number of Squares in Column": false,
+    "Number of Squares In Recording": false
   },
 
   "Threshold": {

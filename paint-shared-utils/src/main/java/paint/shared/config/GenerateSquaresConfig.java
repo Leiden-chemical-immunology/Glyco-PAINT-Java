@@ -26,8 +26,8 @@ public class GenerateSquaresConfig {
     private GenerateSquaresConfig(PaintConfig paintConfig) {
 
         // @formatter:off
-        this.numberOfSquaresInRow    = getInt("Generate Squares",    "Number of Squares In Row", 5);
-        this.numberOfSquaresInColumn = getInt("Generate Squares",    "Number of Squares In Column", 5);
+        this.numberOfSquaresInRow    = getInt("Generate Squares",    "Number of Squares in Row", 5);
+        this.numberOfSquaresInColumn = getInt("Generate Squares",    "Number of Squares in Column", 5);
         this.minTracksToCalculateTau = getInt("Generate Squares",    "Min Tracks to Calculate Tau", 20);
         this.minRequiredRSquared     = getDouble("Generate Squares", "Min Required R Squared", 0.1);
         this.minRequiredDensityRatio = getDouble("Generate Squares", "Min Required Density Ratio", 0.1);

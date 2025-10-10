@@ -186,7 +186,7 @@ public class DirectoryClassifier {
             if (!foundExperiment) {
                 return new CheckResult(false, "No valid Experiment directories found in " + dir);
             } else {
-                System.out.printf("Number Of Experiment Directories is %d and Non Experiment Directories is %d \n", numberOfExperimentDirectories, numberOfNonExperimentDirectories);
+                System.out.printf("Number of Experiment Directories is %d and Non Experiment Directories is %d \n", numberOfExperimentDirectories, numberOfNonExperimentDirectories);
                 return new CheckResult(true, "Found Experiment directory found in " + dir);
             }
 
