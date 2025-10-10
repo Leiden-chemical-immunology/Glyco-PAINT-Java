@@ -137,6 +137,16 @@ public class GenerateSquareCalcs {
             recording.setTau(Double.NaN);
             recording.setRSquared(Double.NaN);
         }
+
+        SquareUtils.BackgroundEstimationResult result;
+        result = estimateBackgroundDensity(recording.getSquaresOfRecording());
+        double numberOfTracksInBackgroundSquares  = result.getBackgroundMean();
+        PaintLogger.debugf("Estimated Background track count = %.2f, n = %d%n", numberOfTracksInBackgroundSquares, result.getBackgroundSquares().size());
+        int backgroundTracks = result.getBackgroundSquares().stream().mapToInt(Square::getNumberOfTracks).sum();
+
+        recording.setNumberOfSquaresInBackground(result.getBackgroundSquares().size());
+        recording.setNumberOfTracksInBackground(backgroundTracks);
+        recording.setAverageTracksInBackGround(result.getBackgroundMean());
     }
 
     public static void calculateSquareAttributes(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
