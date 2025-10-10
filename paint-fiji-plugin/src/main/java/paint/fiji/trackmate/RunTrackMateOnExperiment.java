@@ -164,7 +164,7 @@ public class RunTrackMateOnExperiment {
                             numberOfFrames = 0, runTime = 0;
                     String timeStamp = "";
 
-                    if (experimentInfo.getProcessFlag()) {
+                    if (experimentInfo.isProcessFlag()) {
                         double threshold = experimentInfo.getThreshold();
 
                         // Ensure subdirs exist

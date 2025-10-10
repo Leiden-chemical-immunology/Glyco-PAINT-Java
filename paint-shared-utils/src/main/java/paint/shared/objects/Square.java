@@ -1,7 +1,6 @@
 package paint.shared.objects;
 
 import tech.tablesaw.api.Table;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +8,21 @@ import static paint.shared.constants.PaintConstants.IMAGE_HEIGHT;
 import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
 
 /**
+ * Represents a square region within a recording image.
+ * <p>
+ * Each {@code Square} corresponds to a defined spatial subregion of an image
+ * used for localized tracking or analysis of particle motion. A square contains
+ * numerical descriptors such as density, variability, displacement metrics,
+ * and diffusion coefficients derived from the tracks assigned to it.
+ * </p>
+ * <p>
+ * Squares are identified by their {@code squareNumber}, position
+ * ({@code rowNumber}, {@code colNumber}), and pixel boundaries
+ * ({@code x0, y0, x1, y1}). They may also maintain an associated list of
+ * {@link Track} objects representing motion events within the region.
+ * </p>
  *
+ * <p><b>Note:</b> This class is not thread-safe.</p>
  */
 public class Square {
 
@@ -53,15 +66,37 @@ public class Square {
 
     private List<Track> tracks = new ArrayList<>();
     private Table tracksTable = null;
-    // @formatter:on
 
-    // Constructors
+    // --- Constructors ---
 
+    /**
+     * Creates an empty {@code Square}.
+     * */
     public Square() {
     }
 
-    public Square(String uniqueKey, String recordingName, int squareNumber, int rowNumber, int colNumber, double x0, double y0, double x1, double y1) {
-
+    /**
+     * Creates a {@code Square} with explicit coordinate and recording information.
+     *
+     * @param uniqueKey     a unique identifier for this square
+     * @param recordingName the recording this square belongs to
+     * @param squareNumber  sequential number of this square
+     * @param rowNumber     row index within the grid
+     * @param colNumber     column index within the grid
+     * @param x0            left coordinate in pixels
+     * @param y0            top coordinate in pixels
+     * @param x1            right coordinate in pixels
+     * @param y1            bottom coordinate in pixels
+     */
+    public Square(String uniqueKey,
+                  String recordingName,
+                  int squareNumber,
+                  int rowNumber,
+                  int colNumber,
+                  double x0,
+                  double y0,
+                  double x1,
+                  double y1) {
         this.uniqueKey = uniqueKey;
         this.recordingName = recordingName;
         this.squareNumber = squareNumber;
@@ -73,12 +108,17 @@ public class Square {
         this.y1 = y1;
     }
 
+    /**
+     * Creates a {@code Square} based on its sequential number and total number of squares
+     * in a recording, automatically calculating its coordinates.
+     *
+     * @param squareNumber               the sequential number of this square
+     * @param numberOfSquaresInRecording the total number of squares in the recording
+     */
     public Square(int squareNumber, int numberOfSquaresInRecording) {
-
         int numberSquaresInRow = (int) Math.sqrt(numberOfSquaresInRecording);
-
-        double width = IMAGE_WIDTH / numberSquaresInRow;
-        double height = IMAGE_HEIGHT / numberSquaresInRow;
+        double width           = IMAGE_WIDTH / numberSquaresInRow;
+        double height          = IMAGE_HEIGHT / numberSquaresInRow;
 
         colNumber = squareNumber % numberSquaresInRow;
         rowNumber = squareNumber / numberSquaresInRow;
@@ -87,9 +127,9 @@ public class Square {
         x1 = (colNumber + 1) * width;
         y0 = rowNumber * height;
         y1 = (rowNumber + 1) * width;
+
         this.squareNumber = squareNumber;
     }
-
 
     // --- Getters and Setters ---
 
@@ -381,16 +421,19 @@ public class Square {
         this.tracksTable = tracksTable;
     }
 
+    /** Adds a single {@link Track} to this square. */
     public void addTrack(Track track) {
         this.tracks.add(track);
     }
-
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("\n").append("----------------------------------------------------------------------\n").append("Square ").append(squareNumber).append(" (Recording: ").append(recordingName != null ? recordingName : "N/A").append(")\n").append("----------------------------------------------------------------------\n");
+        sb.append("\n----------------------------------------------------------------------\n")
+                .append("Square ").append(squareNumber)
+                .append(" (Recording: ").append(recordingName != null ? recordingName : "N/A").append(")\n")
+                .append("----------------------------------------------------------------------\n");
 
         sb.append(String.format("Row,Col Number                 : %d,%d%n", rowNumber, colNumber));
         sb.append(String.format("Coordinates [x0,y0]-[x1,y1]    : [%.2f, %.2f] - [%.2f, %.2f]%n", x0, y0, x1, y1));
@@ -430,32 +473,23 @@ public class Square {
             sb.append(String.format("Tracks attached                : %d%n", tracks.size()));
         }
         if (tracksTable != null) {
-            sb.append("Tracks table available\n");
+            sb.append("Tracks table available%n");
         }
 
         return sb.toString();
     }
 
-    private static double calcSquareAreaOriginal(int nrSquaresInRow) {
-        double micrometer_per_pixel = 0.1602804;
-        int pixel_per_image = 512;
-        double micrometer_per_image_axis = micrometer_per_pixel * pixel_per_image;
-        double micrometer_per_square_axis = micrometer_per_image_axis / nrSquaresInRow;
-        return micrometer_per_square_axis * micrometer_per_square_axis;
-    }
-
     /**
-     * Calculates the area of a square by dividing the area of the image by the number of squares in the recording.
-     * The area of a recording is currently hard coded and specified by IMAGE_WIDTH and IMAGE_HEIGHT.
+     * Calculates the theoretical square area based on a fixed image size.
      *
-     * @param nrSquaresInRecording The number of squares in the recording
-     * @return The area of the square.
+     * @param nrSquaresInRecording number of squares in the recording
+     * @return the area of a single square
      */
-
     public static double calcSquareArea(int nrSquaresInRecording) {
         return IMAGE_WIDTH * IMAGE_HEIGHT / nrSquaresInRecording;
     }
 
+    /** Example driver for debugging square area calculations. */
     public static void main(String[] args) {
         List<Square> squares = new ArrayList<>();
         for (int i = 0; i < 21; i++) {
@@ -472,5 +506,13 @@ public class Square {
         System.out.println("Area new: " + areaNew);
         System.out.printf("Difference: %.6f%n", difference);
         System.out.printf("Percentual difference: %.4f%%%n", percentualDifference);
+    }
+
+    private static double calcSquareAreaOriginal(int nrSquaresInRow) {
+        double micrometerPerPixel = 0.1602804;
+        int pixelsPerImage = 512;
+        double micrometerPerImageAxis = micrometerPerPixel * pixelsPerImage;
+        double micrometerPerSquareAxis = micrometerPerImageAxis / nrSquaresInRow;
+        return micrometerPerSquareAxis * micrometerPerSquareAxis;
     }
 }

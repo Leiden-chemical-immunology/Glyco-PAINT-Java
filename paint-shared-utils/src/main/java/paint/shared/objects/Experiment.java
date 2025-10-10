@@ -19,7 +19,7 @@ public class Experiment {
         this.recordings = new ArrayList<>();
     }
 
-    public Experiment(String experimentName, ArrayList<Recording> recordings) { // ToDo Should maybe make a deep copy
+    public Experiment(String experimentName, ArrayList<Recording> recordings) {
         this.experimentName = experimentName;
         this.recordings = recordings;
     }
@@ -34,11 +34,11 @@ public class Experiment {
         return experimentName;
     }
 
-    public void addRecording(Recording recording) { // ToDo Should maybe make a deep copy
+    public void addRecording(Recording recording) {
         this.recordings.add(recording);
     }
 
-    public List<Recording> getRecordings() { // ToDo Should maybe make a deep copy
+    public List<Recording> getRecordings() {
         return recordings;
     }
 

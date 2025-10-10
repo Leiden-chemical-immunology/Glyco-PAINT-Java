@@ -25,37 +25,48 @@ public final class PaintConstants {
         // Prevent instantiation
     }
 
+
+    // @formatter:off
+
     // =====================
     // Filenames
     // =====================
 
-    public static final String RECORDING_CSV = "All Recordings Java.csv";
-    public static final String TRACK_CSV = "All Tracks Java.csv";
-    public static final String SQUARE_CSV = "All Squares Java.csv";
-    public static final String EXPERIMENT_INFO_CSV = "Experiment Info.csv";
+    public static final String RECORDING_CSV            = "All Recordings Java.csv";
+    public static final String TRACK_CSV                = "All Tracks Java.csv";
+    public static final String SQUARE_CSV               = "All Squares Java.csv";
+    public static final String EXPERIMENT_INFO_CSV      = "Experiment Info.csv";
     public static final String PAINT_CONFIGURATION_JSON = "Paint Configuration.json";
 
     // =====================
     // Directories
     // =====================
 
-    public static final String DIR_TRACKMATE_IMAGES = "TrackMate Images";
-    public static final String DIR_BRIGHTFIELD_IMAGES = "Brightfield Images";
+    public static final String DIR_TRACKMATE_IMAGES     = "TrackMate Images";
+    public static final String DIR_BRIGHTFIELD_IMAGES   = "Brightfield Images";
 
     // =====================
     // Geometry
     // =====================
 
-    public static final double IMAGE_WIDTH = 82.0864;
-    public static final double IMAGE_HEIGHT = 82.0864;
+    public static final double PIXEL_WIDTH              = 0.1603251;              // Specified by Nikon (in µm)
+    public static final double PIXEL_HEIGHT             = 0.1603251;              // Specified by Nikon (in µm)
+    public static final int    NUMBER_PIXELS_WIDTH      = 512;                    // Specified by Nikon
+    public static final int    NUMBER_PIXELS_HEIGHT     = 512;                    // Specified by Nikon
+    public static final double IMAGE_WIDTH              = PIXEL_WIDTH * NUMBER_PIXELS_WIDTH;      // 82.08645 (in µm)
+    public static final double IMAGE_HEIGHT             = PIXEL_HEIGHT * NUMBER_PIXELS_HEIGHT;    // 82.08645 (in µm)
+
+
 
     // =====================
     // Timing
     // =====================
 
-    public static final double TIME_INTERVAL = 0.05;
-    public static final double FRAMES = 2000;
-    public static final double RECORDING_DURATION = FRAMES * TIME_INTERVAL;
+    public static final double TIME_INTERVAL            = 0.05;                    // The time between images (in seconds)
+    public static final double FRAMES                   = 2000;                    // The number of images in a recording
+    public static final double RECORDING_DURATION       = FRAMES * TIME_INTERVAL;  // The timespabn of a recording
+
+    // @formatter:on
 
     // =====================
     // Track schema
@@ -269,10 +280,4 @@ public final class PaintConstants {
             ColumnType.DOUBLE    // Threshold
     };
 
-    /**
-     * Minimal experiment list schema (single column).
-     */
-    public static final String[] EXPERIMENT_COLS = {
-            "experimentName"
-    };
 }

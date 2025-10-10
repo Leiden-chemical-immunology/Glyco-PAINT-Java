@@ -17,17 +17,18 @@ import static java.lang.Integer.parseInt;
 public class ExperimentInfo {
 
     // --- Core fields (columns in All Recordings/Experiment Info) ---
-    private String recordingName;
-    private int conditionNumber;
-    private int replicateNumber;
-    private String probeName;
-    private String probeType;
-    private String cellType;
-    private String adjuvant;
-    private double concentration;
+    // @formatter:off
+    private String  recordingName;
+    private int     conditionNumber;
+    private int     replicateNumber;
+    private String  probeName;
+    private String  probeType;
+    private String  cellType;
+    private String  adjuvant;
+    private double  concentration;
     private boolean processFlag;               // renamed from doProcess
-    private double threshold;
-
+    private double  threshold;
+    // @formatter:on
 
     // --- Associated objects ---
     private List<Square> squares = new ArrayList<>();
@@ -68,16 +69,18 @@ public class ExperimentInfo {
      */
     public ExperimentInfo(Map<String, String> row) {
         try {
-            this.recordingName = row.get("Recording Name");
+            // @formatter:off
+            this.recordingName   = row.get("Recording Name");
             this.conditionNumber = parseInt(row.get("Condition Number"));
             this.replicateNumber = parseInt(row.get("Replicate Number"));
-            this.probeName = row.get("Probe Name");
-            this.probeType = row.get("Probe Type");
-            this.cellType = row.get("Cell Type");
-            this.adjuvant = row.get("Adjuvant");
-            this.concentration = parseDouble(row.get("Concentration"));
-            this.processFlag = parseBoolean(row.get("Process Flag"));
-            this.threshold = parseDouble(row.get("Threshold"));
+            this.probeName       = row.get("Probe Name");
+            this.probeType       = row.get("Probe Type");
+            this.cellType        = row.get("Cell Type");
+            this.adjuvant        = row.get("Adjuvant");
+            this.concentration   = parseDouble(row.get("Concentration"));
+            this.processFlag     = parseBoolean(row.get("Process Flag"));
+            this.threshold       = parseDouble(row.get("Threshold"));
+            // @formatter:on
         } catch (Exception e) {
             PaintLogger.errorf("Problem in Experiment Info");
             PaintLogger.errorf(row.toString());
@@ -152,7 +155,7 @@ public class ExperimentInfo {
         this.concentration = concentration;
     }
 
-    public boolean getProcessFlag() {
+    public boolean isProcessFlag() {
         return processFlag;
     }
 
@@ -168,8 +171,6 @@ public class ExperimentInfo {
         this.threshold = threshold;
     }
 
-
-    // --- Associated objects ---
     public List<Square> getSquares() {
         return squares;
     }
@@ -240,8 +241,8 @@ public class ExperimentInfo {
                 numberOfSquaresWithTracks++;
             }
         }
-        sb.append(String.format("\tNumber of squares with tracks : %d%n", numberOfSquaresWithTracks));
 
+        sb.append(String.format("\tNumber of squares with tracks : %d%n", numberOfSquaresWithTracks));
         return sb.toString();
     }
 }

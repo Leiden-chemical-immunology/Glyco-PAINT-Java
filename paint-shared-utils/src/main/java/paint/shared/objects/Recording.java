@@ -6,7 +6,27 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * Represents a Recording with metadata, squares, and tracks.
+ * Represents a single imaging or experimental recording within a Paint project.
+ * <p>
+ * A {@code Recording} stores metadata about experimental conditions,
+ * quantitative analysis results (e.g., number of spots, tracks, tau, R², etc.),
+ * and associations to related objects such as {@link Square} and {@link Track}.
+ * </p>
+ * <p>
+ * Each recording corresponds to one row in the <b>All Recordings</b>  CSV files, and may
+ * include references to derived data such as Tablesaw {@link Table} instances for track analysis.
+ * </p>
+ *
+ * <h3>Core Responsibilities</h3>
+ * <ul>
+ *   <li>Maintain metadata about a single recording (probe, condition, threshold, etc.).</li>
+ *   <li>Hold quantitative measurements produced by analysis.</li>
+ *   <li>Reference associated {@link Square} and {@link Track} objects.</li>
+ *   <li>Provide a human-readable summary via {@link #toString()}.</li>
+ * </ul>
+ *
+ * <p><b>Thread safety:</b> This class is not thread-safe. External synchronization
+ * is required if instances are accessed from multiple threads.</p>
  */
 public class Recording {
 
@@ -36,28 +56,41 @@ public class Recording {
     private double        rSquared;
     private double        density;
 
-    // --- Associated objects ---
     private List<Square> squares = new ArrayList<>();
     private List<Track>  tracks  = new ArrayList<>();
     private Table        tracksTable;
     // @formatter:on
 
-    // --- Constructors ---
+    /**
+     * Creates an empty {@code Recording} with default values.
+     */
     public Recording() {
     }
 
-    public Recording(
-            String recordingName,
-            int conditionNumber,
-            int replicateNumber,
-            String probeName,
-            String probeType,
-            String cellType,
-            String adjuvant,
-            double concentration,
-            boolean processFlag,
-            double threshold
-    ) {
+    /**
+     * Creates a {@code Recording} initialized with its basic metadata.
+     *
+     * @param recordingName   the name or identifier of the recording
+     * @param conditionNumber the associated experimental condition number
+     * @param replicateNumber the replicate number within the experiment
+     * @param probeName       the name of the probe used
+     * @param probeType       the probe type (e.g., dye, antibody, etc.)
+     * @param cellType        the cell type involved in the experiment
+     * @param adjuvant        the adjuvant (if any) used in the experiment
+     * @param concentration   the concentration of the probe or treatment
+     * @param processFlag     whether this recording should be processed
+     * @param threshold       the detection or filtering threshold
+     */
+    public Recording(String recordingName,
+                     int conditionNumber,
+                     int replicateNumber,
+                     String probeName,
+                     String probeType,
+                     String cellType,
+                     String adjuvant,
+                     double concentration,
+                     boolean processFlag,
+                     double threshold) {
         this.recordingName = recordingName;
         this.conditionNumber = conditionNumber;
         this.replicateNumber = replicateNumber;
@@ -70,7 +103,6 @@ public class Recording {
         this.threshold = threshold;
     }
 
-    // --- Getters and Setters ---
     public String getRecordingName() {
         return recordingName;
     }
@@ -255,7 +287,6 @@ public class Recording {
         this.density = density;
     }
 
-    // --- Associated objects ---
     public List<Square> getSquaresOfRecording() {
         return squares;
     }
@@ -280,7 +311,6 @@ public class Recording {
         this.tracksTable = tracksTable;
     }
 
-    // --- Convenience methods ---
     public void addSquare(Square square) {
         this.squares.add(square);
     }
@@ -293,7 +323,6 @@ public class Recording {
         this.tracks.add(track);
     }
 
-    // --- Debug helpers ---
     private static Boolean checkBooleanValue(String string) {
         Set<String> yesValues = new HashSet<>(Arrays.asList("y", "ye", "yes", "ok", "true", "t"));
         return yesValues.contains(string.trim().toLowerCase());

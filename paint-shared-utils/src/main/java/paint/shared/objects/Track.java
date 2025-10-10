@@ -11,104 +11,31 @@ package paint.shared.objects;
  */
 public class Track {
 
-    /**
-     * Unique identifier for this track (often combines recording and track ID).
-     */
+    // @formatter:off
     private String uniqueKey;
-
-    /**
-     * Name of the recording this track belongs to.
-     */
     private String recordingName;
-
-    /**
-     * Numerical identifier of the track within the recording.
-     */
-    private int trackId;
-
-    /**
-     * Human-readable label assigned to the track.
-     */
+    private int    trackId;
     private String trackLabel;
-
-    /**
-     * Total number of spots detected in this track.
-     */
-    private int numberOfSpots;
-
-    /**
-     * Number of gaps detected between spots in the track.
-     */
-    private int numberOfGaps;
-
-    /**
-     * Longest continuous gap length in the track.
-     */
-    private int longestGap;
-
-    /**
-     * Total duration of the track, in time units (e.g., seconds or frames).
-     */
+    private int    numberOfSpots;
+    private int    numberOfGaps;
+    private int    longestGap;
     private double trackDuration;
-
-    /**
-     * X-coordinate of the track’s central or average position.
-     */
     private double trackXLocation;
-
-    /**
-     * Y-coordinate of the track’s central or average position.
-     */
     private double trackYLocation;
-
-    /**
-     * Net displacement of the track from start to end.
-     */
     private double trackDisplacement;
-
-    /**
-     * Maximum speed observed in this track.
-     */
     private double trackMaxSpeed;
-
-    /**
-     * Median speed observed across the track.
-     */
     private double trackMedianSpeed;
-
-    /**
-     * Estimated diffusion coefficient of the track.
-     */
     private double diffusionCoefficient;
-
-    /**
-     * Extended diffusion coefficient (alternative or refined calculation).
-     */
     private double diffusionCoefficientExt;
-
-    /**
-     * Total distance traveled along the track.
-     */
     private double totalDistance;
-
-    /**
-     * Confinement ratio, describing constrained vs. free motion.
-     */
     private double confinementRatio;
+    private int    squareNumber;
+    private int    labelNumber;
+    // @formatter:on
 
     /**
-     * Index of the square this track belongs to (for spatial partitioning).
-     */
-    private int squareNumber;
-
-    /**
-     * Label number used for annotation or classification.
-     */
-    private int labelNumber;
-
-    /**
-     * Default no-argument constructor.
-     * Initializes a {@code Track} with unset or zero values.
+     * Default no-argument constructor. Initializes unset values.
+     *
      */
     public Track() {
     }
@@ -155,30 +82,31 @@ public class Track {
                  double confinementRatio,
                  int squareNumber,
                  int labelNumber) {
-        this.uniqueKey = uniqueKey;
-        this.recordingName = recordingName;
-        this.trackId = trackId;
-        this.trackLabel = trackLabel;
-        this.numberOfSpots = numberOfSpots;
-        this.numberOfGaps = numberOfGaps;
-        this.longestGap = longestGap;
-        this.trackDuration = trackDuration;
-        this.trackXLocation = trackXLocation;
-        this.trackYLocation = trackYLocation;
-        this.trackDisplacement = trackDisplacement;
-        this.trackMaxSpeed = trackMaxSpeed;
-        this.trackMedianSpeed = trackMedianSpeed;
-        this.diffusionCoefficient = diffusionCoefficient;
+
+        // @formatter:off
+        this.uniqueKey               = uniqueKey;
+        this.recordingName           = recordingName;
+        this.trackId                 = trackId;
+        this.trackLabel              = trackLabel;
+        this.numberOfSpots           = numberOfSpots;
+        this.numberOfGaps            = numberOfGaps;
+        this.longestGap              = longestGap;
+        this.trackDuration           = trackDuration;
+        this.trackXLocation          = trackXLocation;
+        this.trackYLocation          = trackYLocation;
+        this.trackDisplacement       = trackDisplacement;
+        this.trackMaxSpeed           = trackMaxSpeed;
+        this.trackMedianSpeed        = trackMedianSpeed;
+        this.diffusionCoefficient    = diffusionCoefficient;
         this.diffusionCoefficientExt = diffusionCoefficientExt;
-        this.totalDistance = totalDistance;
-        this.confinementRatio = confinementRatio;
-        this.squareNumber = squareNumber;
-        this.labelNumber = labelNumber;
+        this.totalDistance           = totalDistance;
+        this.confinementRatio        = confinementRatio;
+        this.squareNumber            = squareNumber;
+        this.labelNumber             = labelNumber;
+        // @formatter:on
     }
 
     // --- Getters and Setters ---
-    // (JavaDoc for each omitted here for brevity, but you could add
-    //  short descriptions like "Gets the track label" or "Sets the max speed".)
 
     public String getUniqueKey() {
         return uniqueKey;
@@ -335,14 +263,20 @@ public class Track {
     /**
      * Returns a concise string representation of this track.
      *
-     * @return a summary including ID, label, recording name,
-     * number of spots, duration, displacement, and speed metrics.
+     * @return a formatted string containing key track metrics
      */
     @Override
     public String toString() {
         return String.format(
                 "Track[id=%d, label=%s, recording=%s, spots=%d, duration=%.2f, displacement=%.2f, maxSpeed=%.2f, medianSpeed=%.2f]",
-                trackId, trackLabel, recordingName, numberOfSpots, trackDuration, trackDisplacement, trackMaxSpeed, trackMedianSpeed
+                trackId,
+                trackLabel,
+                recordingName,
+                numberOfSpots,
+                trackDuration,
+                trackDisplacement,
+                trackMaxSpeed,
+                trackMedianSpeed
         );
     }
 }

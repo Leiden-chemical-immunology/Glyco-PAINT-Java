@@ -67,7 +67,7 @@ public class HistogramPdfExporter {
                 float pageHeight = page.getMediaBox().getHeight();
 
                 // Draw at your preferred Swing-like size
-                int plotWidth = 800;   // or 512 if you prefer 512×512
+                int plotWidth = 800;
                 int plotHeight = 600;
 
                 PdfBoxGraphics2D g2 = new PdfBoxGraphics2D(doc, plotWidth, plotHeight);

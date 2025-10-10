@@ -4,6 +4,10 @@ import paint.shared.objects.Project;
 import paint.shared.objects.Square;
 import paint.shared.utils.PaintLogger;
 
+import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_HEIGHT;
+import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH;
+
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -162,18 +166,6 @@ public class RecordingViewerFrame extends JFrame {
         JCheckBox showBordersCheckBox = new JCheckBox("Show borders", true);
         JCheckBox showShadingCheckBox = new JCheckBox("Show shading", true);
 
-//        showBordersCheckBox.addActionListener(e -> {
-//            boolean show = showBordersCheckBox.isSelected();
-//            leftGridPanel.setShowBorders(show);
-//            leftGridPanel.repaint();
-//        });
-//
-//        showShadingCheckBox.addActionListener(e -> {
-//            boolean show = showShadingCheckBox.isSelected();
-//            leftGridPanel.setShowShading(show);
-//            leftGridPanel.repaint();
-//        });
-
         showBordersCheckBox.addActionListener(e -> {
             leftGridPanel.setShowBorders(showBordersCheckBox.isSelected());
             leftGridPanel.repaint();
@@ -313,8 +305,12 @@ public class RecordingViewerFrame extends JFrame {
     }
 
     private JPanel createSquareImagePanel(JComponent comp) {
+
         JPanel panel = new JPanel(new BorderLayout()) {
-            public Dimension getPreferredSize() { return new Dimension(512, 512); }
+            public Dimension getPreferredSize() {
+                return new Dimension(NUMBER_PIXELS_WIDTH, NUMBER_PIXELS_HEIGHT);
+            }
+
             public void setBounds(int x, int y, int w, int h) {
                 int size = Math.min(w, h);
                 super.setBounds(x, y, size, size);
@@ -326,20 +322,24 @@ public class RecordingViewerFrame extends JFrame {
     }
 
     private ImageIcon scaleToFit(ImageIcon icon, int w, int h) {
-        if (icon == null || icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) return null;
+        if (icon == null || icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) {
+            return null;
+        }
         Image img = icon.getImage();
         Image scaled = img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
         return new ImageIcon(scaled);
     }
 
     private void showEntry(int index) {
-        if (index < 0 || index >= recordings.size()) return;
+        if (index < 0 || index >= recordings.size()) {
+            return;
+        }
         currentIndex = index;
         RecordingEntry entry = recordings.get(index);
         int expectNumberOfSquares = 400;
 
         leftGridPanel.setBackgroundImage(entry.getLeftImage());
-        rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), 512, 512));
+        rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), NUMBER_PIXELS_WIDTH, NUMBER_PIXELS_HEIGHT));
         leftGridPanel.setSquares(entry.getSquares(project, expectNumberOfSquares));
 
         experimentLabel.setText("Experiment: " + entry.getExperimentName() +
