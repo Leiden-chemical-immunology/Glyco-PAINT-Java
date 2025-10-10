@@ -52,6 +52,7 @@ public class ProjectSpecificationDialog {
     private JTextField minDensityRatioField;
     private JTextField maxVariabilityField;
     private JTextField imageDirectoryField = null;
+    private JComboBox<String> gridSizeCombo;
 
     private final JCheckBox saveExperimentsCheckBox;
     private final JPanel checkboxPanel = new JPanel();
@@ -102,21 +103,42 @@ public class ProjectSpecificationDialog {
             double minDensityRatio = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
             double maxVariability = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
 
-            nrSquaresField = createTightTextField(String.valueOf(nrSquares), new IntegerDocumentFilter());
-            minTracksField = createTightTextField(String.valueOf(minTracks), new IntegerDocumentFilter());
-            minRSquaredField = createTightTextField(String.valueOf(minRSquared), new FloatDocumentFilter());
-            minDensityRatioField = createTightTextField(String.valueOf(minDensityRatio), new FloatDocumentFilter());
-            maxVariabilityField = createTightTextField(String.valueOf(maxVariability), new FloatDocumentFilter());
-
             int row = 0;
             gbc.gridx = 0;
             gbc.gridy = row;
+
+            // === consistent sizing ===
+            Dimension wideFieldSize = new Dimension(100, 22); // text field width before reduction
+            Dimension narrowFieldSize = new Dimension((int)(wideFieldSize.width * 0.7), wideFieldSize.height);
+
+            // === Grid size dropdown ===
             JLabel lbl1 = new JLabel("Number of Squares in Row (and Column):", SwingConstants.LEFT);
             lbl1.setPreferredSize(labelSize);
             formPanel.add(lbl1, gbc);
-            gbc.gridx = 1;
-            formPanel.add(nrSquaresField, gbc);
 
+            gbc.gridx = 1;
+            String[] gridOptions = { "5x5", "10x10", "15x15", "20x20", "25x25", "30x30", "35x35", "40x40" };
+            gridSizeCombo = new JComboBox<>(gridOptions);
+            gridSizeCombo.setSelectedItem(nrSquares + "x" + nrSquares);
+
+            // --- Force the combo box width to match text fields exactly ---
+            gridSizeCombo.setPrototypeDisplayValue("000x000"); // ensures renderer is wide enough
+            gridSizeCombo.setPreferredSize(wideFieldSize);
+            gridSizeCombo.setMinimumSize(wideFieldSize);
+            gridSizeCombo.setMaximumSize(wideFieldSize);
+
+            // Wrap combo in a JPanel so GridBagLayout respects the width
+            JPanel comboWrapper = new JPanel(new BorderLayout());
+            comboWrapper.add(gridSizeCombo, BorderLayout.CENTER);
+            comboWrapper.setPreferredSize(wideFieldSize);
+            formPanel.add(comboWrapper, gbc);
+
+            // Dummy hidden field (for legacy use)
+            this.nrSquaresField = new JTextField();
+            this.nrSquaresField.setVisible(false);
+            formPanel.add(nrSquaresField);
+
+            // === Remaining numeric fields ===
             row++;
             gbc.gridx = 0;
             gbc.gridy = row;
@@ -124,6 +146,8 @@ public class ProjectSpecificationDialog {
             lbl2.setPreferredSize(labelSize);
             formPanel.add(lbl2, gbc);
             gbc.gridx = 1;
+            minTracksField = createTightTextField(String.valueOf(minTracks), new IntegerDocumentFilter());
+            minTracksField.setPreferredSize(narrowFieldSize);
             formPanel.add(minTracksField, gbc);
 
             row++;
@@ -133,6 +157,8 @@ public class ProjectSpecificationDialog {
             lbl3.setPreferredSize(labelSize);
             formPanel.add(lbl3, gbc);
             gbc.gridx = 1;
+            minRSquaredField = createTightTextField(String.valueOf(minRSquared), new FloatDocumentFilter());
+            minRSquaredField.setPreferredSize(narrowFieldSize);
             formPanel.add(minRSquaredField, gbc);
 
             row++;
@@ -142,6 +168,8 @@ public class ProjectSpecificationDialog {
             lbl4.setPreferredSize(labelSize);
             formPanel.add(lbl4, gbc);
             gbc.gridx = 1;
+            minDensityRatioField = createTightTextField(String.valueOf(minDensityRatio), new FloatDocumentFilter());
+            minDensityRatioField.setPreferredSize(narrowFieldSize);
             formPanel.add(minDensityRatioField, gbc);
 
             row++;
@@ -151,7 +179,21 @@ public class ProjectSpecificationDialog {
             lbl5.setPreferredSize(labelSize);
             formPanel.add(lbl5, gbc);
             gbc.gridx = 1;
+            maxVariabilityField = createTightTextField(String.valueOf(maxVariability), new FloatDocumentFilter());
+            maxVariabilityField.setPreferredSize(narrowFieldSize);
             formPanel.add(maxVariabilityField, gbc);
+
+            // --- Combo listener: update PaintConfig when changed ---
+            gridSizeCombo.addActionListener(e -> {
+                String selected = (String) gridSizeCombo.getSelectedItem();
+                if (selected != null && selected.contains("x")) {
+                    int n = Integer.parseInt(selected.split("x")[0].trim());
+                    int totalSquares = n * n;
+                    PaintConfig.setInt("Generate Squares", "Number of Squares in Row", n);
+                    PaintConfig.setInt("Generate Squares", "Number of Squares in Column", n);
+                    PaintConfig.setInt("Generate Squares", "Number of Squares in Recording", totalSquares);
+                }
+            });
         }
 
         if (mode == DialogMode.TRACKMATE) {
@@ -310,7 +352,14 @@ public class ProjectSpecificationDialog {
 
     private void saveConfig() {
         if (mode == DialogMode.GENERATE_SQUARES) {
-            PaintConfig.setInt("Generate Squares", "Number of Squares in Row", Integer.parseInt(nrSquaresField.getText()));
+            // Extract numeric part from the combo selection (e.g. "25x25" → 25)
+            String selected = (String) gridSizeCombo.getSelectedItem();
+            if (selected != null && selected.contains("x")) {
+                int n = Integer.parseInt(selected.split("x")[0].trim());
+                PaintConfig.setInt("Generate Squares", "Number of Squares in Row", n);
+                PaintConfig.setInt("Generate Squares", "Number of Squares in Column", n);
+                PaintConfig.setInt("Generate Squares", "Number of Squares in Recording", n * n);
+            }
             PaintConfig.setInt("Generate Squares", "Min Tracks to Calculate Tau", Integer.parseInt(minTracksField.getText()));
             PaintConfig.setDouble("Generate Squares", "Min Required R Squared", Double.parseDouble(minRSquaredField.getText()));
             PaintConfig.setDouble("Generate Squares", "Min Required Density Ratio", Double.parseDouble(minDensityRatioField.getText()));
