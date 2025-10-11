@@ -1,5 +1,6 @@
 package debug;
 
+/* IGNORE START
 import fiji.plugin.trackmate.Settings;
 import paint.shared.utils.PaintLogger;
 
@@ -57,3 +58,5 @@ public class TrackMateSettingsValidator {
         PaintLogger.debugf("  %s = %s (type=%s)", key, value, value.getClass().getSimpleName());
     }
 }
+
+IGNORE END*/

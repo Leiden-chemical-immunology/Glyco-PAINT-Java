@@ -1,5 +1,6 @@
 package debug;
 
+/* IGNORE START
 import fiji.plugin.trackmate.Settings;
 import paint.shared.utils.PaintLogger;
 
@@ -29,3 +30,5 @@ public class TrackMateSettingsDebugger {
         }
     }
 }
+
+IGNORE END */
