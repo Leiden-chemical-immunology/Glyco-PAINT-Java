@@ -57,36 +57,43 @@ public class TrackCsvWriter {
             for (Integer trackId : trackIDs) {
 
                 // ---- Built-in TrackMate features ----
-                Double duration = featureModel.getTrackFeature(trackId, "TRACK_DURATION");
-                Double nrSpots = featureModel.getTrackFeature(trackId, "NUMBER_SPOTS");
-                Double xLoc = featureModel.getTrackFeature(trackId, "TRACK_X_LOCATION");
-                Double yLoc = featureModel.getTrackFeature(trackId, "TRACK_Y_LOCATION");
-                Double maxSpeed = featureModel.getTrackFeature(trackId, "TRACK_MAX_SPEED");
-                Double medSpeed = featureModel.getTrackFeature(trackId, "TRACK_MEDIAN_SPEED");
-                Double nrGaps = featureModel.getTrackFeature(trackId, "NUMBER_GAPS");
-                Double longestGap = featureModel.getTrackFeature(trackId, "LONGEST_GAP");
-                Double displacement = featureModel.getTrackFeature(trackId, "TRACK_DISPLACEMENT");
+
+                // @formatter:off
+                Double duration      = featureModel.getTrackFeature(trackId, "TRACK_DURATION");
+                Double numberOfSpots = featureModel.getTrackFeature(trackId, "NUMBER_SPOTS");
+                Double xLoc          = featureModel.getTrackFeature(trackId, "TRACK_X_LOCATION");
+                Double yLoc          = featureModel.getTrackFeature(trackId, "TRACK_Y_LOCATION");
+                Double maxSpeed      = featureModel.getTrackFeature(trackId, "TRACK_MAX_SPEED");
+                Double medSpeed      = featureModel.getTrackFeature(trackId, "TRACK_MEDIAN_SPEED");
+                Double nrGaps        = featureModel.getTrackFeature(trackId, "NUMBER_GAPS");
+                Double longestGap    = featureModel.getTrackFeature(trackId, "LONGEST_GAP");
+                Double displacement  = featureModel.getTrackFeature(trackId, "TRACK_DISPLACEMENT");
+                // @formatter:on
 
                 // Normalize values (rounding and null defaults)
-                duration = roundOr(duration, 3, -1);
-                nrSpots = roundOr(nrSpots, 0, -1);
-                xLoc = roundOr(xLoc, 2, -1);
-                yLoc = roundOr(yLoc, 2, -1);
-                maxSpeed = roundOr(maxSpeed, 2, -1);
-                medSpeed = roundOr(medSpeed, 2, -1);
-                nrGaps = defaultIfNull(nrGaps, -1.0);
-                longestGap = defaultIfNull(longestGap, -1.0);
-                displacement = roundOr(displacement, 2, -1);
+
+                // @formatter:off
+                duration      = roundOr(duration, 3, -1);
+                numberOfSpots = roundOr(numberOfSpots, 0, -1);
+                xLoc          = roundOr(xLoc, 2, -1);
+                yLoc          = roundOr(yLoc, 2, -1);
+                maxSpeed      = roundOr(maxSpeed, 2, -1);
+                medSpeed      = roundOr(medSpeed, 2, -1);
+                nrGaps        = defaultIfNull(nrGaps, -1.0);
+                longestGap    = defaultIfNull(longestGap, -1.0);
+                displacement  = roundOr(displacement, 2, -1);
+                // @formatter:on
 
                 // ---- Custom calculated attributes ----
                 TrackAttributes ca = calculateTrackAttributes(trackModel, trackId, TIME_INTERVAL);
 
+                // @formatter:off
                 int numberOfSpotsInTrack = ca.numberOfSpotsInTracks;
-                double diffusionCoeff = ca.diffusionCoeff;
+                double diffusionCoeff    = ca.diffusionCoeff;
                 double diffusionCoeffExt = ca.diffusionCoeffExt;
-                double totalDistance = ca.totalDistance;
-                double confinementRatio = ca.confinementRatio;
-                // Note: ca.displacement not used here (we keep TrackMate’s displacement)
+                double totalDistance     = ca.totalDistance;
+                double confinementRatio  = ca.confinementRatio;
+                // @formatter:on
 
                 String uniqueKey = recordingName + "-" + trackId;
 
@@ -105,7 +112,7 @@ public class TrackCsvWriter {
                             recordingName,          // 1
                             trackId,                // 2
                             trackLabel,             // 3
-                            asInt(nrSpots),         // 4
+                            asInt(numberOfSpots),   // 4
                             asInt(nrGaps),          // 5
                             asInt(longestGap),      // 6
                             duration,               // 7

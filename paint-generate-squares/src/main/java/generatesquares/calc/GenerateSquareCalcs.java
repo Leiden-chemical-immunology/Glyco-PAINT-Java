@@ -150,7 +150,7 @@ public class GenerateSquareCalcs {
             recording.setRSquared(Double.NaN);
         }
 
-        // Calcukate the background trackcount
+        // Calculate the background track count
         SquareUtils.BackgroundEstimationResult result;
         result = estimateBackgroundDensity(recording.getSquaresOfRecording());
         double numberOfTracksInBackgroundSquares  = result.getBackgroundMean();

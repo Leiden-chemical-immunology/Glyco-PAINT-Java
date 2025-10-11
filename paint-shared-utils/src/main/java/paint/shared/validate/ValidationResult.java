@@ -6,10 +6,12 @@ import java.util.List;
 
 public class ValidationResult {
 
-    private final List<String> errors = new ArrayList<>();
+    // @formatter:off
+    private final List<String> errors   = new ArrayList<>();
     private final List<String> warnings = new ArrayList<>();
-    private final List<String> infos = new ArrayList<>();
-    private String report = null;   // <-- new
+    private final List<String> infos    = new ArrayList<>();
+    private String report               = null;   // <-- new
+    // @formatter:on
 
     // --- Adders ---
 

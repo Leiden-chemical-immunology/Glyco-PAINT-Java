@@ -41,35 +41,38 @@ public class ProjectSpecificationDialog {
         this.calculationCallback = callback;
     }
 
-    private final JDialog dialog;
-    private final Path projectPath;
-    private final Project project;
+    // @formatter:off
+    private final JDialog     dialog;
+    private final Path        projectPath;
+    private final Project     project;
     private final PaintConfig paintConfig;
 
-    private JTextField minTracksField;
-    private JTextField minRSquaredField;
-    private JTextField minDensityRatioField;
-    private JTextField maxVariabilityField;
-    private JTextField imageDirectoryField = null;
+    private JTextField        minTracksField;
+    private JTextField        minRSquaredField;
+    private JTextField        minDensityRatioField;
+    private JTextField        maxVariabilityField;
+    private JTextField        imageDirectoryField = null;
     private JComboBox<String> gridSizeCombo;
 
-    private final JCheckBox saveExperimentsCheckBox;
-    private final JPanel checkboxPanel = new JPanel();
-    private final java.util.List<JCheckBox> checkBoxes = new ArrayList<>();
-    private boolean okPressed = false;
+    private final JCheckBox       saveExperimentsCheckBox;
+    private final JPanel          checkboxPanel = new JPanel();
+    private final List<JCheckBox> checkBoxes = new ArrayList<>();
+    private       boolean         okPressed = false;
 
-    private final JButton okButton;
-    private final JButton cancelButton;
-    private volatile boolean cancelled = false;
-    private int cancelCount = 0;
-
-    private final DialogMode mode;
+    private final    JButton    okButton;
+    private final    JButton    cancelButton;
+    private volatile boolean    cancelled = false;
+    private          int        cancelCount = 0;
+    private final    DialogMode mode;
+    // @formatter:on
 
     public ProjectSpecificationDialog(Frame owner, Path projectPath, DialogMode mode) {
+        // @formatter:off
         this.projectPath = projectPath;
         this.paintConfig = PaintConfig.instance();
-        this.project = new Project(projectPath);
-        this.mode = mode;
+        this.project     = new Project(projectPath);
+        this.mode        = mode;
+        // @formatter:on
 
         String projectName = projectPath.getFileName().toString();
         String dialogTitle = (mode == DialogMode.TRACKMATE)
@@ -96,18 +99,21 @@ public class ProjectSpecificationDialog {
         Dimension labelSize = new Dimension(220, 20);
 
         if (mode == DialogMode.GENERATE_SQUARES) {
-            int nrSquares = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", 20);
-            int minTracks = PaintConfig.getInt("Generate Squares", "Min Tracks to Calculate Tau", 11);
-            double minRSquared = PaintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
-            double minDensityRatio = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
-            double maxVariability = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
 
-            int row = 0;
+            // @formatter:off
+            int nrOfSquaresInRecording = PaintConfig.getInt(   "Generate Squares", "Number of Squares in Recording", 400);
+            int minTracks              = PaintConfig.getInt(   "Generate Squares", "Min Tracks to Calculate Tau", 11);
+            double minRSquared         = PaintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
+            double minDensityRatio     = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
+            double maxVariability      = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
+
+            int row   = 0;
             gbc.gridx = 0;
             gbc.gridy = row;
+            // @formatter:on
 
             // === consistent sizing ===
-            Dimension wideFieldSize = new Dimension(100, 22); // text field width before reduction
+            Dimension wideFieldSize   = new Dimension(100, 22); // text field width before reduction
             Dimension narrowFieldSize = new Dimension((int)(wideFieldSize.width * 0.7), wideFieldSize.height);
 
             // === Grid size dropdown ===
@@ -118,7 +124,8 @@ public class ProjectSpecificationDialog {
             gbc.gridx = 1;
             String[] gridOptions = { "5x5", "10x10", "15x15", "20x20", "25x25", "30x30", "35x35", "40x40" };
             gridSizeCombo = new JComboBox<>(gridOptions);
-            gridSizeCombo.setSelectedItem(nrSquares + "x" + nrSquares);
+            int number = (int) Math.sqrt(nrOfSquaresInRecording);
+            gridSizeCombo.setSelectedItem(number + "x" + number);
 
             // --- Make combo box exactly as wide as text fields (OS-safe) ---
             gridSizeCombo.setPrototypeDisplayValue("000x000"); // ensure renderer computes properly
