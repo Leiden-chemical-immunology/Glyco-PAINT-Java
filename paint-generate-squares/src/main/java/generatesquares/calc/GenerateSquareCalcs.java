@@ -1,3 +1,26 @@
+/**
+ * ============================================================================
+ *  GenerateSquareCalcs.java
+ *  Part of the "Generate Squares" module.
+ *
+ *  Purpose:
+ *    Performs the computational workflow for square-based analysis of
+ *    TrackMate experiment data. Handles:
+ *      - Grid generation per recording
+ *      - Track-to-square assignment
+ *      - Tau, Variability, and Density calculations
+ *      - Aggregation and export of results
+ *
+ *  Notes:
+ *    All methods are static; this class acts as a calculation utility.
+ *    No GUI elements or user input handling are included here.
+ *
+ *  Author: Herr Doctor
+ *  Version: 1.0
+ *  Module: paint-generate-squares
+ * ============================================================================
+ */
+
 package generatesquares.calc;
 
 import paint.shared.config.GenerateSquaresConfig;

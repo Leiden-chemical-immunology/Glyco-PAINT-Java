@@ -1,3 +1,26 @@
+/**
+ * ============================================================================
+ *  GenerateSquares.java
+ *  Part of the "Generate Squares" module.
+ *
+ *  Purpose:
+ *    Acts as the main entry point for the Generate Squares workflow.
+ *    Provides a GUI-driven process to:
+ *      - Select a project directory
+ *      - Configure analysis parameters
+ *      - Run square-based calculations on TrackMate output
+ *      - Export histogram summaries and consolidated CSVs
+ *
+ *  Notes:
+ *    This class contains only orchestration logic and user interface flow.
+ *    All computational work is delegated to GenerateSquareCalcs.
+ *
+ *  Author: Herr Doctor
+ *  Version: 1.0
+ *  Module: paint-generate-squares
+ * ============================================================================
+ */
+
 package generatesquares;
 
 import paint.shared.config.PaintConfig;
