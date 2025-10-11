@@ -37,7 +37,7 @@ import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_TYPES;
  * <p>Validation ensures that column order, names, and types match the expected
  * schema, while allowing some flexibility (e.g. {@code INTEGER -> DOUBLE} upcasts).</p>
  */
-public class ExperimentTableIO extends BaseTableIO {
+public class ExperimentInfoTableIO extends BaseTableIO {
 
     /**
      * Creates an empty {@link Table} with the {@code Experiment Info} schema.
