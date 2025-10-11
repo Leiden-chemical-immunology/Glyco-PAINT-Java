@@ -1,7 +1,7 @@
 package paint.fiji.trackmate;
 
-import debug.TrackMateSettingsDebugger;
-import debug.TrackMateSettingsValidator;
+//import debug.TrackMateSettingsDebugger;
+//import debug.TrackMateSettingsValidator;
 import fiji.plugin.trackmate.*;
 import fiji.plugin.trackmate.action.CaptureOverlayAction;
 import fiji.plugin.trackmate.detection.LogDetectorFactory;
@@ -150,10 +150,10 @@ public class RunTrackMateOnRecording {
         settings.addTrackFilter(new FeatureFilter("NUMBER_SPOTS", trackMateConfig.getMinNrSpotsInTrack(), true));
 
         // Optional debug dump of settings
-        if (debug && verbose) {
-            TrackMateSettingsDebugger.logSettings(settings);
-            TrackMateSettingsValidator.validate(settings);
-        }
+//        if (debug && verbose) {
+//            TrackMateSettingsDebugger.logSettings(settings);
+//            TrackMateSettingsValidator.validate(settings);
+//        }
 
         // --- Step 4: Run TrackMate pipeline ---
         TrackMate trackmate = new TrackMate(model, settings);
