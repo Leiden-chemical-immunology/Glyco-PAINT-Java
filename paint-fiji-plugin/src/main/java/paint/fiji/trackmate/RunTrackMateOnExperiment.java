@@ -40,9 +40,9 @@ public class RunTrackMateOnExperiment {
         Thread t = new Thread(task, "TrackMateThread");
         t.start();
 
-        for (int i = 0; i < maxSeconds; i++) {      // TODO
+        for (int i = 0; i < maxSeconds; i++) {
             try {
-                t.join(3000);
+                t.join(2000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 PaintLogger.errorf("⚠️ Watchdog interrupted.");
@@ -87,8 +87,7 @@ public class RunTrackMateOnExperiment {
             trackMateConfigToFile(trackMateConfig, filePath);
         } catch (IOException ex) {
             PaintLogger.errorf("Could not write file '%s'");
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             PaintLogger.errorf("Could not write file '%s'");
         }
 
