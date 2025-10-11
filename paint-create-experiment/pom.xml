@@ -39,6 +39,14 @@
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
         </dependency>
+
+        <!-- Silence all SLF4J output -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+
     </dependencies>
 
     <build>
