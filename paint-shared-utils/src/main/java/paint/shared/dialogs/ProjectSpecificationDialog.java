@@ -111,7 +111,7 @@ public class ProjectSpecificationDialog {
             Dimension narrowFieldSize = new Dimension((int)(wideFieldSize.width * 0.7), wideFieldSize.height);
 
             // === Grid size dropdown ===
-            JLabel lbl1 = new JLabel("Number of Squares in Row (and Column):", SwingConstants.LEFT);
+            JLabel lbl1 = new JLabel("Number of Squares in Recording:", SwingConstants.LEFT);
             lbl1.setPreferredSize(labelSize);
             formPanel.add(lbl1, gbc);
 
@@ -120,16 +120,23 @@ public class ProjectSpecificationDialog {
             gridSizeCombo = new JComboBox<>(gridOptions);
             gridSizeCombo.setSelectedItem(nrSquares + "x" + nrSquares);
 
-            // --- Force the combo box width to match text fields exactly ---
-            gridSizeCombo.setPrototypeDisplayValue("000x000"); // ensures renderer is wide enough
-            gridSizeCombo.setPreferredSize(wideFieldSize);
-            gridSizeCombo.setMinimumSize(wideFieldSize);
-            gridSizeCombo.setMaximumSize(wideFieldSize);
+            // --- Make combo box exactly as wide as text fields (OS-safe) ---
+            gridSizeCombo.setPrototypeDisplayValue("000x000"); // ensure renderer computes properly
 
-            // Wrap combo in a JPanel so GridBagLayout respects the width
+            // Create a temporary text field to determine consistent sizing
+            JTextField sizeReference = new JTextField();
+            sizeReference.setColumns(10);
+            Dimension equalSize = sizeReference.getPreferredSize();
+
+            // Apply that width to the combo box
+            gridSizeCombo.setPreferredSize(equalSize);
+            gridSizeCombo.setMinimumSize(equalSize);
+            gridSizeCombo.setMaximumSize(equalSize);
+
+            // Wrapper to ensure GridBagLayout respects width
             JPanel comboWrapper = new JPanel(new BorderLayout());
             comboWrapper.add(gridSizeCombo, BorderLayout.CENTER);
-            comboWrapper.setPreferredSize(wideFieldSize);
+            comboWrapper.setPreferredSize(equalSize);
             formPanel.add(comboWrapper, gbc);
 
             // === Remaining numeric fields ===
