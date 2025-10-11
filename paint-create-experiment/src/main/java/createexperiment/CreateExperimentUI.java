@@ -1,3 +1,9 @@
+/**
+ * Part of the Paint project.
+ * Copyright (c) 2025 Herr Doctor.
+ * Licensed under the MIT License.
+ */
+
 package createexperiment;
 
 import javax.swing.*;
@@ -10,11 +16,32 @@ import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+/**
+ * Swing-based graphical user interface for creating new Paint experiments.
+ *
+ * <p>This class provides a small utility window that allows users to:</p>
+ * <ul>
+ *     <li>Select an <b>Images directory</b> containing ND2 files</li>
+ *     <li>Select a <b>Project directory</b> where experiment data will be saved</li>
+ *     <li>Filter ND2 files by regular expression</li>
+ *     <li>Generate a new <b>Experiment Info.csv</b> file using
+ *     {@link createexperiment.ExperimentInfoWriter}</li>
+ * </ul>
+ *
+ * <p>User preferences (last used directories and regex history) are stored in
+ * {@link java.util.prefs.Preferences} under the node {@code paint/create-experiment}.</p>
+ *
+ * <p>This tool is standalone and can be launched from the command line or invoked from
+ * other Paint tools.</p>
+ */
 public class CreateExperimentUI {
+
     // === Preferences keys ===
-    private static final String PREF_NODE = "paint/create-experiment";
-    private static final String KEY_IMAGES = "lastImagesDir";
+    // @formatter:off
+    private static final String PREF_NODE   = "paint/create-experiment";
+    private static final String KEY_IMAGES  = "lastImagesDir";
     private static final String KEY_PROJECT = "lastProjectDir";
+    // @formatter:on
 
     // Default baseline regexes (always included)
     private static final String[] DEFAULT_REGEXES = {
@@ -23,10 +50,19 @@ public class CreateExperimentUI {
             "^(?!.*BF).*\\.nd2$"
     };
 
+    /**
+     * Entry point. Launches the Swing UI on the event dispatch thread.
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(CreateExperimentUI::createAndShowGUI);
     }
 
+    /**
+     * Constructs and displays the Create Experiment GUI window.
+     *
+     * <p>Provides directory selection, regex filtering, and process execution for
+     * generating {@code Experiment Info.csv}.</p>
+     */
     private static void createAndShowGUI() {
         Preferences prefs = Preferences.userRoot().node(PREF_NODE);
 
@@ -34,7 +70,8 @@ public class CreateExperimentUI {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
-        Font smallFont = new JLabel().getFont().deriveFont(Font.PLAIN, 11f);
+        // Use a small clean font (not bold)
+        Font smallFont = new JLabel().getFont().deriveFont(Font.PLAIN, 12f);
 
         // === Regex filter controls ===
         JPanel topPanel = new JPanel(new BorderLayout(5, 5));
@@ -49,7 +86,7 @@ public class CreateExperimentUI {
             regexCombo.addItem(def);
         }
 
-        // Load regex history
+        // Load regex history from preferences
         boolean hasAnySaved = false;
         String lastRegex = "";
         for (int i = 0; ; i++) {
@@ -63,6 +100,7 @@ public class CreateExperimentUI {
                 lastRegex = rx.trim();
             }
         }
+
         // Select last used regex if any
         if (!lastRegex.isEmpty()) {
             regexCombo.setSelectedItem(lastRegex);
@@ -73,7 +111,7 @@ public class CreateExperimentUI {
             saveRegexHistory(regexCombo, prefs);
         }
 
-        // Right-click delete regex
+        // === Right-click delete regex ===
         JTextField regexEditor = (JTextField) regexCombo.getEditor().getEditorComponent();
         JPopupMenu regexMenu = new JPopupMenu();
         JMenuItem deleteItem = new JMenuItem("Delete this regex");
@@ -147,7 +185,7 @@ public class CreateExperimentUI {
         ioPanel.add(imagesRow);
         ioPanel.add(projectRow);
 
-        // Action buttons
+        // === Action buttons ===
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton processButton = new JButton("Process");
         JButton closeButton = new JButton("Close");
@@ -164,12 +202,12 @@ public class CreateExperimentUI {
         bottomPanel.add(ioPanel, BorderLayout.CENTER);
         bottomPanel.add(actionPanel, BorderLayout.SOUTH);
 
-        // Layout
+        // === Layout ===
         frame.add(topPanel, BorderLayout.NORTH);
         frame.add(scrollPane, BorderLayout.CENTER);
         frame.add(bottomPanel, BorderLayout.SOUTH);
 
-        // Refresh helper
+        // Refresh helper (reloads visible files)
         Runnable refresh = () -> {
             String regex = ((String) regexCombo.getEditor().getItem()).trim();
             if (!regex.isEmpty() && regex.length() <= 100 &&
@@ -180,12 +218,12 @@ public class CreateExperimentUI {
             refreshList(listModel, inputDir[0], regex, frame);
         };
 
-        // Images chooser
+        // === Button actions ===
+
+        // Image directory chooser
         imagesButton.addActionListener((ActionEvent e) -> {
             JFileChooser chooser = new JFileChooser(inputDir[0]);
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            chooser.setFileHidingEnabled(true);
-            chooser.setAcceptAllFileFilterUsed(false);
             chooser.setDialogTitle("Select Images Directory");
             chooser.setPreferredSize(new Dimension(600, 350));
             int result = chooser.showOpenDialog(frame);
@@ -200,12 +238,10 @@ public class CreateExperimentUI {
             }
         });
 
-        // Project chooser
+        // Project directory chooser
         projectButton.addActionListener((ActionEvent e) -> {
             JFileChooser chooser = new JFileChooser(outputDir[0]);
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            chooser.setFileHidingEnabled(true);
-            chooser.setAcceptAllFileFilterUsed(false);
             chooser.setDialogTitle("Select Project Directory");
             int result = chooser.showOpenDialog(frame);
             if (result == JFileChooser.APPROVE_OPTION) {
@@ -218,11 +254,11 @@ public class CreateExperimentUI {
             }
         });
 
-        // Regex combo + filter
+        // Regex combo + filter refresh
         regexCombo.addActionListener(e -> refresh.run());
         filterButton.addActionListener(e -> refresh.run());
 
-        // Process button
+        // Process button — generate Experiment Info CSV
         processButton.addActionListener((ActionEvent e) -> {
             if (outputDir[0] == null) {
                 JOptionPane.showMessageDialog(frame, "No project directory chosen.");
@@ -239,14 +275,13 @@ public class CreateExperimentUI {
             }
 
             try {
-                // 🔹 Use last component of Images dir to create experiment folder under Project dir
                 String experimentName = inputDir[0].getName();
                 File experimentDir = new File(outputDir[0], experimentName);
                 if (!experimentDir.exists() && !experimentDir.mkdirs()) {
                     throw new IOException("Failed to create experiment directory: " + experimentDir);
                 }
 
-                // 🔹 Write ExperimentInfo.csv (with versioned name if exists)
+                // Delegate to ExperimentInfoWriter
                 File createdFile = ExperimentInfoWriter.writeExperimentInfo(experimentDir, selectedFiles);
 
                 fileList.clearSelection();
@@ -261,8 +296,10 @@ public class CreateExperimentUI {
             }
         });
 
+        // Close button
         closeButton.addActionListener(e -> frame.dispose());
 
+        // Final setup
         frame.setSize(400, 500);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
@@ -272,6 +309,9 @@ public class CreateExperimentUI {
         }
     }
 
+    /**
+     * Saves all regex entries in the combo box to user preferences.
+     */
     private static void saveRegexHistory(JComboBox<String> combo, Preferences prefs) {
         try {
             for (int i = 0; ; i++) {
@@ -291,6 +331,9 @@ public class CreateExperimentUI {
         }
     }
 
+    /**
+     * Refreshes the visible list of ND2 files in the directory based on a regex filter.
+     */
     private static void refreshList(DefaultListModel<File> model, File dir, String regex, Component parent) {
         model.clear();
         if (dir == null) return;
