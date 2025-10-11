@@ -12,45 +12,16 @@ import java.time.Duration;
  */
 public class TrackMateResults {
 
-    /**
-     * Whether the TrackMate analysis finished successfully.
-     */
-    private final boolean success;
-
-    /**
-     * Whether the TrackMate analysis was performed
-     */
-    private final boolean calculationPerformed;
-
-    /**
-     * Number of detected spots in the analysis.
-     */
-    private final int numberOfSpots;
-
-    /**
-     * Number of tracks generated from detected spots.
-     */
-    private final int numberOfTracks;
-
-    /**
-     * Number of tracks remaining after filtering.
-     */
-    private final int numberOfFilteredTracks;
-
-    /**
-     * Number of frames analyzed.
-     */
-    private final int numberOFrames;
-
-    /**
-     * Total runtime of the analysis.
-     */
-    private final Duration duration;
-
-    /**
-     * Total number of spots contained in all tracks.
-     */
-    private final int numberOfSpotsInALlTracks;
+    // @formatter: off
+    private final boolean success;                  // Whether the TrackMate analysis finished successfully.
+    private final boolean calculationPerformed;     // Whether the TrackMate analysis was performed
+    private final int numberOfSpots;            // Number of detected spots in the analysis
+    private final int numberOfTracks;           // Number of tracks generated from detected spots
+    private final int numberOfFilteredTracks;   // Number of tracks remaining after filtering.
+    private final int numberOFrames;            // Number of frames analyzed.
+    private final Duration duration;                 // Total runtime of the analysis
+    private final int numberOfSpotsInALlTracks; // Total number of spots contained in all tracks
+    // @formatter: on
 
     /**
      * Constructs a {@code TrackMateResults} instance representing a failed run.
@@ -61,17 +32,22 @@ public class TrackMateResults {
      * @param success whether the analysis succeeded (typically {@code false})
      */
     public TrackMateResults(boolean success, boolean calculationPerformed) {
+
+        // @formatter: off
         this.success = success;
-        this.calculationPerformed = false;
+        this.calculationPerformed = calculationPerformed;
         this.numberOfSpots = 0;
         this.numberOfTracks = 0;
         this.numberOfFilteredTracks = 0;
         this.numberOFrames = 0;
         this.duration = null;
         this.numberOfSpotsInALlTracks = 0;
+        // @formatter: on
     }
 
     public TrackMateResults(boolean success) {
+
+        // @formatter: off
         this.success = success;
         this.calculationPerformed = false;
         this.numberOfSpots = 0;
@@ -80,6 +56,7 @@ public class TrackMateResults {
         this.numberOFrames = 0;
         this.duration = null;
         this.numberOfSpotsInALlTracks = 0;
+        // @formatter: on
     }
 
     /**
@@ -111,51 +88,30 @@ public class TrackMateResults {
         this.numberOfSpotsInALlTracks = numberOfSpotsInALlTracks;
     }
 
-    /**
-     * @return the number of detected spots
-     */
     public int getNumberOfSpots() {
         return numberOfSpots;
     }
 
-    /**
-     * @return the number of generated tracks
-     */
     public int getNumberOfTracks() {
         return numberOfTracks;
     }
 
-    /**
-     * @return the number of tracks after filtering
-     */
     public int getNumberOfFilteredTracks() {
         return numberOfFilteredTracks;
     }
 
-    /**
-     * @return the number of frames analyzed
-     */
     public int getNumberOfFrames() {
         return numberOFrames;
     }
 
-    /**
-     * @return the total runtime duration
-     */
     public Duration getDuration() {
         return duration;
     }
 
-    /**
-     * @return the number of spots contained in all tracks
-     */
     public int getNumberOfSpotsInALlTracks() {
         return numberOfSpotsInALlTracks;
     }
 
-    /**
-     * @return {@code true} if the analysis succeeded, otherwise {@code false}
-     */
     public boolean isSuccess() {
         return success;
     }
