@@ -216,9 +216,11 @@ public class RunTrackMateOnExperiment {
                         totalDuration = totalDuration.plus(trackMateResults[0].getDuration());
                         numberRecordings++;
 
-                        numberOfSpots  = trackMateResults[0].getNumberOfSpots();
-                        numberOfTracks = trackMateResults[0].getNumberOfTracks();
-                        numberOfFrames = trackMateResults[0].getNumberOfFrames();
+                        // @formatter:off
+                        numberOfSpots            = trackMateResults[0].getNumberOfSpots();
+                        numberOfTracks           = trackMateResults[0].getNumberOfTracks();
+                        numberOfFilteredTracks   = trackMateResults[0].getNumberOfFilteredTracks();
+                        numberOfFrames           = trackMateResults[0].getNumberOfFrames();
                         numberOfSpotsInAllTracks = trackMateResults[0].getNumberOfSpotsInALlTracks();
                         runTime = durationInSeconds;
                         timeStamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -232,7 +234,7 @@ public class RunTrackMateOnExperiment {
                     }
                     output.addAll(Arrays.asList(
                             String.valueOf(numberOfSpots),
-                            String.valueOf(numberOfTracks),
+                            String.valueOf(numberOfFilteredTracks),
                             "",
                             "",
                             "",
