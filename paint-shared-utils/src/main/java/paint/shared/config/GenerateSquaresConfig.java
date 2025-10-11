@@ -20,7 +20,7 @@ public class GenerateSquaresConfig {
     /*
      * Full constructor with all values retrieved from file
      */
-    private GenerateSquaresConfig(PaintConfig paintConfig) {
+    private GenerateSquaresConfig() {
 
         // @formatter:off
         this.numberOfSquaresInRecording  = getInt("Generate Squares",    "Number of Squares in Recording", 400);
@@ -34,7 +34,7 @@ public class GenerateSquaresConfig {
 
 
     public static GenerateSquaresConfig from(PaintConfig paintConfig) {
-        return new GenerateSquaresConfig(paintConfig);
+        return new GenerateSquaresConfig();
     }
 
     // Getters are not really needed as attributes are public
