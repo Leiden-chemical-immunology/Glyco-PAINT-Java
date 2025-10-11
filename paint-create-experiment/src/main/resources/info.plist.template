@@ -30,7 +30,11 @@
 
   <!-- Hide terminal window -->
   <key>LSUIElement</key>
-  <false/>
+  <true/>
+
+  <!-- Description -->
+  <key>CFBundleGetInfoString</key>
+  <string>Paint Create Experiment — Standalone Swing app for creating experiments.</string>
 
   <!-- Document types (optional) -->
   <key>CFBundleDocumentTypes</key>
