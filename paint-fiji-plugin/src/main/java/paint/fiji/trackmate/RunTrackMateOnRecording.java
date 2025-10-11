@@ -1,7 +1,5 @@
 package paint.fiji.trackmate;
 
-//import debug.TrackMateSettingsDebugger;
-//import debug.TrackMateSettingsValidator;
 import fiji.plugin.trackmate.*;
 import fiji.plugin.trackmate.action.CaptureOverlayAction;
 import fiji.plugin.trackmate.detection.LogDetectorFactory;
@@ -149,12 +147,6 @@ public class RunTrackMateOnRecording {
         settings.addAllAnalyzers();
         settings.addTrackFilter(new FeatureFilter("NUMBER_SPOTS", trackMateConfig.getMinNrSpotsInTrack(), true));
 
-        // Optional debug dump of settings
-//        if (debug && verbose) {
-//            TrackMateSettingsDebugger.logSettings(settings);
-//            TrackMateSettingsValidator.validate(settings);
-//        }
-
         // --- Step 4: Run TrackMate pipeline ---
         TrackMate trackmate = new TrackMate(model, settings);
 
@@ -174,7 +166,7 @@ public class RunTrackMateOnRecording {
         }
 
         int numberSpots = model.getSpots().getNSpots(false);
-        // Guardrail: stop if too many spots
+        // Stop if too many spots
         if (numberSpots > trackMateConfig.getMaxNrSpotsInImage()) {
             PaintLogger.warningf("   Too many spots detected (%d). Limit is %d.", numberSpots, trackMateConfig.getMaxNrSpotsInImage());
             PaintLogger.warningf("");
