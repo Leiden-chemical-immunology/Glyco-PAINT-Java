@@ -23,12 +23,12 @@ public abstract class BaseTableIO {
             throw new IllegalArgumentException("Names and types length mismatch: "
                                                        + colNames.length + " vs " + colTypes.length);
         }
-        Table t = Table.create(tableName);
+        Table table = Table.create(tableName);
         for (int i = 0; i < colNames.length; i++) {
             Column<?> c = colTypes[i].create(colNames[i]);
-            t.addColumns(c);
+            table.addColumns(c);
         }
-        return t;
+        return table;
     }
 
     /**

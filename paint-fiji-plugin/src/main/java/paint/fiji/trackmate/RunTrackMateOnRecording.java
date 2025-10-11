@@ -263,7 +263,9 @@ public class RunTrackMateOnRecording {
             }
         }
 
-        if (isCancelled(Thread.currentThread(), dialog)) return cancelEarly(imp);
+        if (isCancelled(Thread.currentThread(), dialog)) {
+            return cancelEarly(imp);
+        }
 
         // --- Step 7: Summarize results ---
 
