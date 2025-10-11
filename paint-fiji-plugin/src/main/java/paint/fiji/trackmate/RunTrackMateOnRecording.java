@@ -266,10 +266,13 @@ public class RunTrackMateOnRecording {
         if (isCancelled(Thread.currentThread(), dialog)) return cancelEarly(imp);
 
         // --- Step 7: Summarize results ---
-        int numberOfSpotsTotal = model.getSpots().getNSpots(true);
-        int numberOfTracks = model.getTrackModel().nTracks(false);
+
+        // @formatter:off
+        int numberOfSpotsTotal     = model.getSpots().getNSpots(true);
+        int numberOfTracks         = model.getTrackModel().nTracks(false);
         int numberOfFilteredTracks = model.getTrackModel().nTracks(true);
-        int numberOfFrames = imp.getNFrames();
+        int numberOfFrames         = imp.getNFrames();
+        // @formatter:on
 
         try {
             Thread.sleep(2000);

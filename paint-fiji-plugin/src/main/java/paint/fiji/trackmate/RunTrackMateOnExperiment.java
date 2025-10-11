@@ -164,9 +164,15 @@ public class RunTrackMateOnExperiment {
                     ExperimentInfo experimentInfo = new ExperimentInfo(row);
                     String recordingName = experimentInfo.getRecordingName();
 
-                    int numberOfSpots = 0, numberOfTracks = 0, numberOfSpotsInAllTracks = 0,
-                            numberOfFrames = 0, runTime = 0;
-                    String timeStamp = "";
+                    // @formatter:off
+                    int numberOfSpots            = 0;
+                    int numberOfTracks           = 0;
+                    int numberOfFilteredTracks   = 0;
+                    int numberOfSpotsInAllTracks = 0;
+                    int numberOfFrames           = 0;
+                    int runTime                  = 0;
+                    String timeStamp             = "";
+                    // @formatter:on
 
                     if (experimentInfo.isProcessFlag()) {
                         double threshold = experimentInfo.getThreshold();
@@ -222,8 +228,10 @@ public class RunTrackMateOnExperiment {
                         numberOfFilteredTracks   = trackMateResults[0].getNumberOfFilteredTracks();
                         numberOfFrames           = trackMateResults[0].getNumberOfFrames();
                         numberOfSpotsInAllTracks = trackMateResults[0].getNumberOfSpotsInALlTracks();
-                        runTime = durationInSeconds;
-                        timeStamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                        runTime                  = durationInSeconds;
+                        timeStamp                = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                        // @formatter:off
+
                     } else if (verbose) {
                         PaintLogger.infof("   Recording '%s' skipped.", recordingName);
                     }
@@ -264,7 +272,7 @@ public class RunTrackMateOnExperiment {
         }
 
         if (dialog != null && dialog.isCancelled()) {
-            PaintLogger.warningf("Cancellation processed. Skipping concatenation.");
+            PaintLogger.warningf("Cancellation processed.");
             PaintLogger.blankline();
             return false;
         }
