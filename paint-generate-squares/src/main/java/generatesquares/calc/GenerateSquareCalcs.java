@@ -30,6 +30,9 @@ import static paint.shared.utils.SquareUtils.*;
 
 public class GenerateSquareCalcs {
 
+    private static int numberOfSquaresInRecording;
+    private static int numberOfSquaresInOneDimension;
+
     public static boolean generateSquaresForExperiment(Project project, String experimentName) {
 
         GenerateSquaresConfig generateSquaresConfig = project.generateSquaresConfig;
@@ -84,15 +87,16 @@ public class GenerateSquareCalcs {
 
     public static List<Square> generateSquaresForRecording(GenerateSquaresConfig generateSquaresConfig, Recording recording) {
 
-        int n = generateSquaresConfig.getNumberOfSquaresInRow();
+        numberOfSquaresInRecording    = generateSquaresConfig.getNumberOfSquaresInRecording();
+        numberOfSquaresInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);
 
         List<Square> squares = new ArrayList<>();
-        double squareWidth = IMAGE_WIDTH / n;
-        double squareHeight = IMAGE_HEIGHT / n;
+        double squareWidth = IMAGE_WIDTH / numberOfSquaresInOneDimension;
+        double squareHeight = IMAGE_HEIGHT / numberOfSquaresInOneDimension;
 
         int squareNumber = 0;
-        for (int rowNumber = 0; rowNumber < n; rowNumber++) {
-            for (int columnNumber = 0; columnNumber < n; columnNumber++) {
+        for (int rowNumber = 0; rowNumber < numberOfSquaresInOneDimension; rowNumber++) {
+            for (int columnNumber = 0; columnNumber < numberOfSquaresInOneDimension; columnNumber++) {
                 double X0 = columnNumber * squareWidth;
                 double Y0 = rowNumber * squareHeight;
                 double X1 = (columnNumber + 1) * squareWidth;
@@ -121,7 +125,7 @@ public class GenerateSquareCalcs {
         Table tracksOfRecording = recording.getTracksTable();
         TrackTableIO trackTableIO = new TrackTableIO();
 
-        int lastRowCol = context.getNumberOfSquaresInRow() - 1;
+        int lastRowCol = numberOfSquaresInRecording - 1;
 
         for (Square square : recording.getSquaresOfRecording()) {
             Table squareTracksTable = filterTracksInSquare(tracksOfRecording, square, lastRowCol);
@@ -165,16 +169,14 @@ public class GenerateSquareCalcs {
     public static void calculateSquareAttributes(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
 
         // @formatter:off
-        double minRequiredRSquared     = generateSquaresConfig.getMinRequiredRSquared();
-        int    minTracksForTau         = generateSquaresConfig.getMinTracksToCalculateTau();
-        double maxAllowableVariability = generateSquaresConfig.getMaxAllowableVariability();
-        double minRequiredDensityRatio = generateSquaresConfig.getMinRequiredDensityRatio();
-        String neighbourMode           = generateSquaresConfig.getNeighbourMode();
-        int    numberOfSquaresInRow    = generateSquaresConfig.getNumberOfSquaresInRow();
-        int    numberOfSquaresInColum  = generateSquaresConfig.getNumberOfSquaresInColumn();
-        int    numberOfSquaresInImage  = numberOfSquaresInRow * numberOfSquaresInColum;
-        double area                    = calcSquareArea(numberOfSquaresInImage);
-        double concentration           = recording.getConcentration();
+        double minRequiredRSquared        = generateSquaresConfig.getMinRequiredRSquared();
+        int    minTracksForTau            = generateSquaresConfig.getMinTracksToCalculateTau();
+        double maxAllowableVariability    = generateSquaresConfig.getMaxAllowableVariability();
+        double minRequiredDensityRatio    = generateSquaresConfig.getMinRequiredDensityRatio();
+        String neighbourMode              = generateSquaresConfig.getNeighbourMode();
+        int    numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
+        double area                       = calcSquareArea(numberOfSquaresInRecording);
+        double concentration              = recording.getConcentration();
         // @formatter:on
 
         SquareUtils.BackgroundEstimationResult result;
@@ -219,7 +221,7 @@ public class GenerateSquareCalcs {
             square.setTotalTrackDuration(tracksInSquareTable.doubleColumn("Track Duration").sum());
             square.setMedianTrackDuration(tracksInSquareTable.doubleColumn("Track Duration").median());
 
-            double variability = calcVariability(tracksInSquareTable, squareNumber, numberOfSquaresInRow, 10);
+            double variability = calcVariability(tracksInSquareTable, squareNumber, numberOfSquaresInOneDimension, 10);    //TODO
             square.setVariability(variability);
 
             double density = calculateDensity(tracksInSquare.size(), area, RECORDING_DURATION, concentration);

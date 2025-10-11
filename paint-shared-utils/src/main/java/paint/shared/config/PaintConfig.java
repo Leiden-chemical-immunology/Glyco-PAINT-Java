@@ -158,26 +158,24 @@ public class PaintConfig {
     private void loadDefaults() {
         // === Generate Squares ===
         JsonObject generateSquares = new JsonObject();
-        generateSquares.addProperty("Plot to File", false);
+        //generateSquares.addProperty("Plot to File", false);
         generateSquares.addProperty("Min Tracks to Calculate Tau", 20);
-        generateSquares.addProperty("Max Track Duration", 2000000);
         generateSquares.addProperty("Min Required R Squared", 0.1);
-        generateSquares.addProperty("Min Track Duration", 0);
-        generateSquares.addProperty("Fraction of Squares to Determine Background", 0.1);
-        generateSquares.addProperty("Number of Squares in Row", 30);
-        generateSquares.addProperty("Exclude zero DC tracks from Tau Calculation", false);
         generateSquares.addProperty("Max Allowable Variability", 10.0);
         generateSquares.addProperty("Min Required Density Ratio", 2.0);
-        generateSquares.addProperty("Plot Max", 5);
+        generateSquares.addProperty("Min Track Duration", 0);
+        generateSquares.addProperty("Max Track Duration", 2000000);
+        generateSquares.addProperty("Fraction of Squares to Determine Background", 0.1);
+        generateSquares.addProperty("Exclude zero DC tracks from Tau Calculation", false);
         generateSquares.addProperty("Neighbour Mode", "Free");
-        generateSquares.addProperty("Last Used Directory", "");
+        generateSquares.addProperty("Number of Squares in Recording", 400);
         configData.add("Generate Squares", generateSquares);
 
         // === Paint ===
         JsonObject paint = new JsonObject();
         paint.addProperty("Version", "1.0");
         paint.addProperty("Image File Extension", ".nd2");
-        paint.addProperty("Fiji Path", "/Applications/Fiji.app");
+        //paint.addProperty("Fiji Path", "/Applications/Fiji.app");
         paint.addProperty("Log Level", "INFO");
         configData.add("Paint", paint);
 

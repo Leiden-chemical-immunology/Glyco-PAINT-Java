@@ -8,8 +8,7 @@ import static paint.shared.config.PaintConfig.*;
 public class GenerateSquaresConfig {
 
     // @formatter:off
-    private final int    numberOfSquaresInRow;
-    private final int    numberOfSquaresInColumn;
+    private final int    numberOfSquaresInRecording;
     private final int    minTracksToCalculateTau;
     private final double minRequiredRSquared;
     private final double minRequiredDensityRatio;
@@ -19,20 +18,17 @@ public class GenerateSquaresConfig {
 
 
     /*
-     * Full constructor with all values specified
+     * Full constructor with all values retrieved from file
      */
-
-
     private GenerateSquaresConfig(PaintConfig paintConfig) {
 
         // @formatter:off
-        this.numberOfSquaresInRow    = getInt("Generate Squares",    "Number of Squares in Row", 5);
-        this.numberOfSquaresInColumn = getInt("Generate Squares",    "Number of Squares in Column", 5);
-        this.minTracksToCalculateTau = getInt("Generate Squares",    "Min Tracks to Calculate Tau", 20);
-        this.minRequiredRSquared     = getDouble("Generate Squares", "Min Required R Squared", 0.1);
-        this.minRequiredDensityRatio = getDouble("Generate Squares", "Min Required Density Ratio", 0.1);
-        this.maxAllowableVariability = getDouble("Generate Squares", "Max Allowable Variability", 10.0);
-        this.neighbourMode           = getString("Generate Squares", "Neighbour Mode", "Free");
+        this.numberOfSquaresInRecording  = getInt("Generate Squares",    "Number of Squares in Recording", 400);
+        this.minTracksToCalculateTau     = getInt("Generate Squares",    "Min Tracks to Calculate Tau", 20);
+        this.minRequiredRSquared         = getDouble("Generate Squares", "Min Required R Squared", 0.1);
+        this.minRequiredDensityRatio     = getDouble("Generate Squares", "Min Required Density Ratio", 0.1);
+        this.maxAllowableVariability     = getDouble("Generate Squares", "Max Allowable Variability", 10.0);
+        this.neighbourMode               = getString("Generate Squares", "Neighbour Mode", "Free");
         // @formatter:on
     }
 
@@ -44,12 +40,8 @@ public class GenerateSquaresConfig {
     // Getters are not really needed as attributes are public
     // Setter methods are not needed either, as the attributes are final
 
-    public int getNumberOfSquaresInRow() {
-        return numberOfSquaresInRow;
-    }
-
-    public int getNumberOfSquaresInColumn() {
-        return numberOfSquaresInColumn;
+    public int getNumberOfSquaresInRecording() {
+        return numberOfSquaresInRecording;
     }
 
     public int getMinTracksToCalculateTau() {
@@ -75,8 +67,7 @@ public class GenerateSquaresConfig {
     @Override
     public String toString() {
         return "GenerateSquaresConfig{" +
-                "nrSquaresInRow=" + numberOfSquaresInRow +
-                ", nrSquaresInColumn=" + numberOfSquaresInColumn +
+                "nrSquaresInRow=" + numberOfSquaresInRecording +
                 ", minTracksToCalculateTau=" + minTracksToCalculateTau +
                 ", minRequiredRSquared=" + minRequiredRSquared +
                 ", minRequiredDensityRatio=" + minRequiredDensityRatio +
