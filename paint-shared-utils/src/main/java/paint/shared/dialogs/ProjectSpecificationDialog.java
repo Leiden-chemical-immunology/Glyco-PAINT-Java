@@ -97,7 +97,7 @@ public class ProjectSpecificationDialog {
         Dimension labelSize = new Dimension(220, 20);
 
         if (mode == DialogMode.GENERATE_SQUARES) {
-            int nrSquares = PaintConfig.getInt("Generate Squares", "Number of Squares in Row", 5);
+            int nrSquares = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", 20);
             int minTracks = PaintConfig.getInt("Generate Squares", "Min Tracks to Calculate Tau", 11);
             double minRSquared = PaintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
             double minDensityRatio = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
@@ -189,8 +189,7 @@ public class ProjectSpecificationDialog {
                 if (selected != null && selected.contains("x")) {
                     int n = Integer.parseInt(selected.split("x")[0].trim());
                     int totalSquares = n * n;
-                    PaintConfig.setInt("Generate Squares", "Number of Squares in Row", n);
-                    PaintConfig.setInt("Generate Squares", "Number of Squares in Column", n);
+
                     PaintConfig.setInt("Generate Squares", "Number of Squares in Recording", totalSquares);
                 }
             });
@@ -356,8 +355,6 @@ public class ProjectSpecificationDialog {
             String selected = (String) gridSizeCombo.getSelectedItem();
             if (selected != null && selected.contains("x")) {
                 int n = Integer.parseInt(selected.split("x")[0].trim());
-                PaintConfig.setInt("Generate Squares", "Number of Squares in Row", n);
-                PaintConfig.setInt("Generate Squares", "Number of Squares in Column", n);
                 PaintConfig.setInt("Generate Squares", "Number of Squares in Recording", n * n);
             }
             PaintConfig.setInt("Generate Squares", "Min Tracks to Calculate Tau", Integer.parseInt(minTracksField.getText()));
