@@ -160,8 +160,6 @@ public class SquareUtils {
         return new BackgroundEstimationResult(mean, current);
     }
 
-
-
     private static double getMedian(List<Double> values) {
         if (values.isEmpty()) return Double.NaN;
         int n = values.size();
@@ -169,10 +167,8 @@ public class SquareUtils {
         return 0.5 * (values.get(n / 2 - 1) + values.get(n / 2));
     }
 
-    /**
-     * Robust variant using median + MAD, with adaptive threshold tightening
-     * and fallback for sparse / zero-heavy data.
-     */
+
+    /* IGNORE START
     public static BackgroundEstimationResult estimateBackgroundDensityRobust(List<Square> squares) {
         if (squares == null || squares.isEmpty()) {
             return new BackgroundEstimationResult(Double.NaN, Collections.emptyList());
@@ -253,6 +249,7 @@ public class SquareUtils {
 
         return new BackgroundEstimationResult(finalMean, current);
     }
+     IGNORE END */
 
     /**
      * Common container for background estimation results.
@@ -276,7 +273,7 @@ public class SquareUtils {
     }
 
 
-
+    /* IGNORE START
     public static void showTrackCountDistribution(Recording recording) {
         List<Square> squares = recording.getSquaresOfRecording();
         if (squares == null || squares.isEmpty()) {
@@ -317,6 +314,7 @@ public class SquareUtils {
                               bins[i]);
         }
     }
+    IGNORE END */
 
     private static double getMedianInt(List<Integer> values) {
         if (values.isEmpty()) return Double.NaN;
@@ -331,6 +329,7 @@ public class SquareUtils {
         return sb.toString();
     }
 
+    /* IGNORE START
     public static void plotHybridTrackDistribution(Recording recording) {
         List<Square> squares = recording.getSquaresOfRecording();
         if (squares == null || squares.isEmpty()) {
@@ -415,8 +414,9 @@ public class SquareUtils {
         frame.add(panel);
         frame.setVisible(true);
     }
+    IGNORE END  */
 
-
+    /* IGNORE START
     public static void plotTrackCountHistogramWithBackground(
             Recording recording,
             SquareUtils.BackgroundEstimationResult backgroundResult) {
@@ -546,4 +546,5 @@ public class SquareUtils {
         frame.add(panel);
         frame.setVisible(true);
     }
+    IGNORE END    */
 }
