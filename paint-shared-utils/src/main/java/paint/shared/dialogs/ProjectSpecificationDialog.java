@@ -315,10 +315,6 @@ public class ProjectSpecificationDialog {
             cancelCount++;
             if (cancelCount == 1) {
                 cancelled = true;
-                JOptionPane.showMessageDialog(dialog,
-                                              "Processing will stop after the current recording finishes.",
-                                              "Cancellation Requested",
-                                              JOptionPane.INFORMATION_MESSAGE);
             } else {
                 dialog.dispose();
             }

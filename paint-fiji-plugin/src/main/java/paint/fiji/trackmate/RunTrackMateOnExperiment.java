@@ -28,34 +28,52 @@ import static paint.shared.utils.Miscellaneous.formatDuration;
 
 /**
  * Runs TrackMate analysis on all recordings in a single experiment.
- * <p>
- * This class writes results into the provided experiment path, which
- * may be the normal project directory or a sweep subdirectory.
  */
 public class RunTrackMateOnExperiment {
 
     static boolean verbose = false;
 
-    private static boolean runWithWatchdog(Runnable task, int maxSeconds) {
-        Thread t = new Thread(task, "TrackMateThread");
-        t.start();
+    /**
+     * Watchdog that joins in 2s slices and interrupts promptly on cancel or timeout.
+     */
+    private static boolean runWithWatchdog(Runnable task,
+                                           int maxSeconds,
+                                           ProjectSpecificationDialog dialog) {
+        Thread thread = new Thread(task, "TrackMateThread");
+        thread.start();
 
         for (int i = 0; i < maxSeconds; i++) {
             try {
-                t.join(2000);
+                thread.join(1000); // check every second
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                PaintLogger.errorf("⚠️ Watchdog interrupted.");
+                PaintLogger.errorf("Watchdog interrupted.");
                 return false;
             }
-            if (!t.isAlive()) {
+
+            if (!thread.isAlive()) {
                 return true;
             }
+
+            if (dialog != null && dialog.isCancelled()) {
+                PaintLogger.warningf("User requested cancellation, interrupting TrackMate thread...");
+                try {
+                    thread.interrupt();
+                } catch (Exception ex) {
+                    PaintLogger.warningf("Error while interrupting thread: %s", ex.getMessage());
+                }
+                return false;
+            }
+
             PaintLogger.raw(".");
         }
 
         PaintLogger.errorf("\n⏱ Task exceeded time limit, interrupting...");
-        t.interrupt();
+        try {
+            thread.interrupt();
+        } catch (Exception ex) {
+            PaintLogger.warningf("Error while interrupting thread: %s", ex.getMessage());
+        }
         return false;
     }
 
@@ -67,10 +85,8 @@ public class RunTrackMateOnExperiment {
         int numberRecordings = 0;
         boolean status = true;
 
-        // --- Load Paint/TrackMate config from the correct directory ---
         Path configPath = experimentPath.getParent().resolve(PAINT_CONFIGURATION_JSON);
         if (Files.exists(configPath)) {
-            // Re-initialise so PaintConfig points to the right directory
             PaintConfig.initialise(experimentPath.getParent());
         } else {
             PaintLogger.warningf("No PaintConfig.json found in %s, defaults will be used.",
@@ -80,21 +96,15 @@ public class RunTrackMateOnExperiment {
         TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
 
         try {
-            Path filePath = experimentPath
-                    .resolve("Output")
-                    .resolve("ParametersUsed.txt");
+            Path filePath = experimentPath.resolve("Output").resolve("ParametersUsed.txt");
             Files.createDirectories(filePath.getParent());
             trackMateConfigToFile(trackMateConfig, filePath);
-        } catch (IOException ex) {
-            PaintLogger.errorf("Could not write file '%s'");
         } catch (Exception ex) {
-            PaintLogger.errorf("Could not write file '%s'");
+            PaintLogger.errorf("Could not write file '%s'", "ParametersUsed.txt");
         }
 
-        // Input/output CSV paths (written under experimentPath, sweep-compatible)
-        Path experimentFilePath = experimentPath.resolve(EXPERIMENT_INFO_CSV);
+        Path experimentFilePath  = experimentPath.resolve(EXPERIMENT_INFO_CSV);
         Path allRecordingFilePath = experimentPath.resolve(RECORDING_CSV);
-
         if (!Files.exists(experimentFilePath)) {
             PaintLogger.errorf("Experiment info file does not exist in %s.", experimentFilePath);
             return false;
@@ -112,7 +122,6 @@ public class RunTrackMateOnExperiment {
                           projectName);
         PaintLogger.blankline();
 
-        // Try-with-resources for experiment_info.csv
         try (Reader reader = Files.newBufferedReader(experimentFilePath);
              CSVParser parser = new CSVParser(reader,
                                               CSVFormat.DEFAULT.builder()
@@ -120,11 +129,8 @@ public class RunTrackMateOnExperiment {
                                                       .setSkipHeaderRecord(true)
                                                       .build());
              BufferedWriter writer = Files.newBufferedWriter(allRecordingFilePath);
-             CSVPrinter printer = new CSVPrinter(writer,
-                                                 CSVFormat.DEFAULT.builder()
-                                                         .build())
+             CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.builder().build())
         ) {
-            // Output header
             List<String> header = new ArrayList<>(parser.getHeaderMap().keySet());
             header.addAll(Arrays.asList(
                     "Number of Spots",
@@ -150,7 +156,7 @@ public class RunTrackMateOnExperiment {
                 }
 
                 try {
-                    Map<String, String> row = new LinkedHashMap<>();
+                    Map<String, String> row = new LinkedHashMap<String, String>();
                     for (String key : parser.getHeaderMap().keySet()) {
                         row.put(key, record.get(key));
                     }
@@ -158,7 +164,6 @@ public class RunTrackMateOnExperiment {
                     ExperimentInfo experimentInfo = new ExperimentInfo(row);
                     String recordingName = experimentInfo.getRecordingName();
 
-                    // Defaults
                     int numberOfSpots = 0, numberOfTracks = 0, numberOfSpotsInAllTracks = 0,
                             numberOfFrames = 0, runTime = 0;
                     String timeStamp = "";
@@ -166,7 +171,6 @@ public class RunTrackMateOnExperiment {
                     if (experimentInfo.isProcessFlag()) {
                         double threshold = experimentInfo.getThreshold();
 
-                        // Ensure subdirs exist
                         Files.createDirectories(experimentPath.resolve(DIR_BRIGHTFIELD_IMAGES));
                         Files.createDirectories(experimentPath.resolve(DIR_TRACKMATE_IMAGES));
 
@@ -177,14 +181,25 @@ public class RunTrackMateOnExperiment {
                         boolean finished = runWithWatchdog(() -> {
                             try {
                                 trackMateResults[0] = RunTrackMateOnRecording.RunTrackMateOnRecording(
-                                        experimentPath, imagesPath, trackMateConfig, threshold, experimentInfo);
+                                        experimentPath, imagesPath, trackMateConfig, threshold, experimentInfo, dialog);
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
-                        }, 1500);
+                        }, 1500, dialog);
 
-                        if (!finished || trackMateResults[0] == null || !trackMateResults[0].isSuccess()) {
-                            PaintLogger.errorf("   TrackMate failed or timed out for '%s'.", recordingName);
+                        if (!finished) {
+                            if (dialog != null && dialog.isCancelled()) {
+                                PaintLogger.infof("Recording '%s' cancelled cleanly.", recordingName);
+                                break;
+                            } else {
+                                PaintLogger.errorf("   TrackMate failed or timed out for '%s'.", recordingName);
+                                status = false;
+                                continue;
+                            }
+                        }
+
+                        if (trackMateResults[0] == null || !trackMateResults[0].isSuccess()) {
+                            PaintLogger.errorf("   TrackMate failed for '%s'.", recordingName);
                             status = false;
                             continue;
                         }
@@ -194,7 +209,8 @@ public class RunTrackMateOnExperiment {
                         }
 
                         int durationInSeconds = (int) (trackMateResults[0].getDuration().toMillis() / 1000);
-                        PaintLogger.infof("   Recording '%s' processed in %s.", recordingName, formatDuration(durationInSeconds));
+                        PaintLogger.infof("   Recording '%s' processed in %s.",
+                                          recordingName, formatDuration(durationInSeconds));
                         PaintLogger.blankline();
 
                         totalDuration = totalDuration.plus(trackMateResults[0].getDuration());
@@ -206,16 +222,13 @@ public class RunTrackMateOnExperiment {
                         numberOfSpotsInAllTracks = trackMateResults[0].getNumberOfSpotsInALlTracks();
                         runTime = durationInSeconds;
                         timeStamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                    } else {
-                        if (verbose) {
-                            PaintLogger.infof("   Recording '%s' skipped.", recordingName);
-                        }
+                    } else if (verbose) {
+                        PaintLogger.infof("   Recording '%s' skipped.", recordingName);
                     }
 
-                    // Build row
-                    List<String> output = new ArrayList<>();
+                    List<String> output = new ArrayList<String>();
                     for (String key : parser.getHeaderMap().keySet()) {
-                        output.add(row.getOrDefault(key, ""));
+                        output.add(row.get(key));
                     }
                     output.addAll(Arrays.asList(
                             String.valueOf(numberOfSpots),
@@ -235,16 +248,25 @@ public class RunTrackMateOnExperiment {
                     printer.printRecord(output);
 
                 } catch (Exception e) {
-                    PaintLogger.errorf("Error processing recording: %s", e.getMessage());
+                    if (dialog == null || !dialog.isCancelled()) {
+                        PaintLogger.errorf("Error processing recording: %s", e.getMessage());
+                    }
                 }
             }
 
         } catch (IOException e) {
-            PaintLogger.errorf("Error reading Experiment Info: %s", e.getMessage());
+            if (dialog == null || !dialog.isCancelled()) {
+                PaintLogger.errorf("Error reading Experiment Info: %s", e.getMessage());
+            }
             status = false;
         }
 
-        // Concatenate tracks
+        if (dialog != null && dialog.isCancelled()) {
+            PaintLogger.warningf("Cancellation processed. Skipping concatenation.");
+            PaintLogger.blankline();
+            return false;
+        }
+
         Path tracksFilePath = experimentPath.resolve(TRACK_CSV);
         try {
             concatenateTracksFilesInDirectory(experimentPath, tracksFilePath);
@@ -253,10 +275,9 @@ public class RunTrackMateOnExperiment {
             status = false;
         }
 
-        PaintLogger.infof("Processed %d recordings in %s.", numberRecordings,
-                          formatDuration((int) (totalDuration.toMillis() / 1000)));
+        PaintLogger.infof("Processed %d recordings in %s.",
+                          numberRecordings, formatDuration((int) (totalDuration.toMillis() / 1000)));
         PaintLogger.blankline();
-
         return status;
     }
 }
