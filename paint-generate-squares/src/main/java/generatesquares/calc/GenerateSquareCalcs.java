@@ -28,11 +28,36 @@ import static paint.shared.objects.Square.calcSquareArea;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.utils.SquareUtils.*;
 
+/**
+ * Provides core calculations for the "Generate Squares" workflow.
+ * <p>
+ * This class handles all computational steps for processing experiments:
+ * <ul>
+ *     <li>Loading experiment and recording data</li>
+ *     <li>Generating square grids</li>
+ *     <li>Assigning tracks to squares</li>
+ *     <li>Calculating recording and square attributes (Tau, Variability, Density, etc.)</li>
+ *     <li>Exporting combined output tables</li>
+ * </ul>
+ * <p>
+ * All methods are static; this class is used as a calculation utility.
+ * </p>
+ */
 public class GenerateSquareCalcs {
 
+    /** Total number of squares per recording. */
     private static int numberOfSquaresInRecording;
+
+    /** Number of squares in one dimension (e.g. 20 for 20x20). */
     private static int numberOfSquaresInOneDimension;
 
+    /**
+     * Runs the "Generate Squares" process for a single experiment.
+     *
+     * @param project        the {@link Project} containing experiment data
+     * @param experimentName the name of the experiment
+     * @return {@code true} if successful, {@code false} otherwise
+     */
     public static boolean generateSquaresForExperiment(Project project, String experimentName) {
 
         GenerateSquaresConfig generateSquaresConfig = project.generateSquaresConfig;
@@ -85,6 +110,13 @@ public class GenerateSquareCalcs {
         }
     }
 
+    /**
+     * Generates all square regions for a given recording.
+     *
+     * @param generateSquaresConfig configuration defining number and layout of squares
+     * @param recording             the recording to segment into squares
+     * @return list of {@link Square} objects representing the grid
+     */
     public static List<Square> generateSquaresForRecording(GenerateSquaresConfig generateSquaresConfig, Recording recording) {
 
         numberOfSquaresInRecording    = generateSquaresConfig.getNumberOfSquaresInRecording();
@@ -119,7 +151,12 @@ public class GenerateSquareCalcs {
         return squares;
     }
 
-
+    /**
+     * Assigns track data to each square based on spatial coordinates.
+     *
+     * @param recording the recording containing track information
+     * @param context   the {@link GenerateSquaresConfig} defining grid layout
+     */
     public static void assignTracksToSquares(Recording recording, GenerateSquaresConfig context) {
 
         Table tracksOfRecording = recording.getTracksTable();
@@ -136,6 +173,12 @@ public class GenerateSquareCalcs {
         }
     }
 
+    /**
+     * Calculates aggregate metrics for an entire recording (Tau, background statistics, density).
+     *
+     * @param recording             the recording to analyze
+     * @param generateSquaresConfig the {@link GenerateSquaresConfig} parameters
+     */
     public static void calculateRecordingAttributes(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
 
         // Calculate the Tau
@@ -166,6 +209,12 @@ public class GenerateSquareCalcs {
         recording.setDensity(density);
     }
 
+    /**
+     * Calculates detailed metrics for each square (Tau, variability, density ratio, etc.).
+     *
+     * @param recording             the recording containing the squares
+     * @param generateSquaresConfig the {@link GenerateSquaresConfig} parameters
+     */
     public static void calculateSquareAttributes(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
 
         // @formatter:off
@@ -221,7 +270,8 @@ public class GenerateSquareCalcs {
             square.setTotalTrackDuration(tracksInSquareTable.doubleColumn("Track Duration").sum());
             square.setMedianTrackDuration(tracksInSquareTable.doubleColumn("Track Duration").median());
 
-            double variability = calcVariability(tracksInSquareTable, squareNumber, numberOfSquaresInOneDimension, 10);    //TODO
+            int numberOfSquaresInRow = (int) Math.sqrt(numberOfSquaresInRecording);
+            double variability = calcVariability(tracksInSquareTable, squareNumber, numberOfSquaresInRow, 10);    //TODO
             square.setVariability(variability);
 
             double density = calculateDensity(tracksInSquare.size(), area, RECORDING_DURATION, concentration);
@@ -249,6 +299,13 @@ public class GenerateSquareCalcs {
         }
     }
 
+    /**
+     * Calculates the median duration among the longest fraction of tracks.
+     *
+     * @param tracks   table containing tracks
+     * @param fraction fraction (0–1) of longest tracks to consider
+     * @return median of long-track durations
+     */
     public static double calculateMedianLongTrack(Table tracks, double fraction) {
         int nrOfTracks = tracks.rowCount();
         if (nrOfTracks == 0) {
@@ -265,6 +322,13 @@ public class GenerateSquareCalcs {
         return median(tail);
     }
 
+    /**
+     * Calculates the median duration among the shortest fraction of tracks.
+     *
+     * @param tracks   table containing tracks
+     * @param fraction fraction (0–1) of shortest tracks to consider
+     * @return median of short-track durations
+     */
     public static double calculateMedianShortTrack(Table tracks, double fraction) {
         int nrOfTracks = tracks.rowCount();
         if (nrOfTracks == 0) {
@@ -281,7 +345,12 @@ public class GenerateSquareCalcs {
         return median(head);
     }
 
-    // Utility function to calculate the median of a list of doubles
+    /**
+     * Calculates the median of a list of numeric values.
+     *
+     * @param values list of doubles
+     * @return median or 0 if list is empty
+     */
     private static double median(List<Double> values) {
         values.sort(Comparator.naturalOrder());
         int size = values.size();
@@ -295,6 +364,12 @@ public class GenerateSquareCalcs {
         }
     }
 
+    /**
+     * Compiles all squares of all recordings in an experiment into one combined table.
+     *
+     * @param experiment the {@link Experiment} containing multiple recordings
+     * @return a combined {@link Table} of all square data
+     */
     private static Table compileAllSquares(Experiment experiment) {
 
         SquareTableIO squaresTableIO = new SquareTableIO();

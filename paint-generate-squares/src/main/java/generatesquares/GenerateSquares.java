@@ -15,7 +15,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.List;
 
 import static generatesquares.calc.GenerateSquareCalcs.generateSquaresForExperiment;
 import static paint.shared.constants.PaintConstants.*;
@@ -25,15 +24,50 @@ import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.validate.ValidationHandler.validateExperiments;
 
+/**
+ * Entry point for the "Generate Squares" module.
+ * <p>
+ * This standalone application allows the user to:
+ * <ul>
+ *     <li>Select a project directory containing experimental data</li>
+ *     <li>Configure parameters for generating square grids over recordings</li>
+ *     <li>Run square-based calculations (Tau, Variability, Density, etc.)</li>
+ *     <li>Export histogram data to PDF summaries</li>
+ * </ul>
+ * The application uses a Swing-based GUI and logs detailed progress to
+ * {@code Generate Squares.log} in the selected project directory.
+ * </p>
+ *
+ * <p><b>Usage:</b></p>
+ * <pre>{@code
+ * java -jar paint-generate-squares.jar
+ * }</pre>
+ *
+ * <p>This application is typically launched via the Automator app
+ * {@code Generate Squares.app} on macOS.</p>
+ *
+ * @author  Paint Project
+ * @version 1.0.0
+ * @since   1.0.0
+ */
 public class GenerateSquares {
 
+    /**
+     * Main entry point for the Generate Squares module.
+     * <p>
+     * Initializes the Swing look and feel, opens project selection dialogs,
+     * and executes square-based analysis for selected experiments.
+     * </p>
+     *
+     * @param args not used
+     */
     public static void main(String[] args) {
 
         try {
-            // On macOS this will be Aqua, on Windows/Linux the native system L&F
+            // Use native OS look and feel (Aqua on macOS, system L&F elsewhere)
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-            // Extra hints for macOS integration
+            // macOS integration hints for menu bar and font rendering
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("swing.aatext", "true");
             System.setProperty("swing.useSystemFontSettings", "true");
@@ -43,20 +77,19 @@ public class GenerateSquares {
 
         SwingUtilities.invokeLater(() -> {
 
-            // Display the project directory selection dialog
+            // --- Step 1: Select project directory ---
             ProjectSelectionDialog projectSelectionDialog = new ProjectSelectionDialog(null);
             Path projectPath = projectSelectionDialog.showDialog();
 
-            // If the user selected Cancel, then return.
+            // User pressed Cancel
             if (projectPath == null) {
                 PaintLogger.infof("User cancelled project selection.");
                 return;
             }
 
-            // The user pushed OK: we should have a valid project directory
+            // --- Step 2: Initialize configuration and logging ---
             PaintConfig.initialise(projectPath);
             PaintLogger.initialise(projectPath, "Generate Squares.log");
-
             PaintLogger.debugf("Starting Generate Squares...");
 
             JarInfo info = getJarInfo(GenerateSquares.class);
@@ -67,35 +100,43 @@ public class GenerateSquares {
                 PaintLogger.errorf("No manifest information found.");
                 PaintLogger.infof();
             }
+
             PaintLogger.infof("Current time is: %s", LocalDateTime.now());
             PaintLogger.blankline();
             PaintLogger.blankline();
 
-            // Use the project directory to display the experiment selection dialog.
+            // --- Step 3: Open the experiment configuration dialog ---
             PaintLogger.debugf("User selected: " + projectPath);
-            ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(null, projectPath, ProjectSpecificationDialog.DialogMode.GENERATE_SQUARES);
+            ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(
+                    null,
+                    projectPath,
+                    ProjectSpecificationDialog.DialogMode.GENERATE_SQUARES
+            );
 
-            // Wire the callback to perform calculations while keeping the dialog open
+            // --- Step 4: Define what happens when user presses OK ---
             dialog.setCalculationCallback(project -> {
 
-                List<String> fileNames = Arrays.asList(
-                        EXPERIMENT_INFO_CSV,
-                        RECORDING_CSV
+                // Validate the input experiment data
+                ValidationResult validateResult = validateExperiments(
+                        projectPath,
+                        project.experimentNames,
+                        Arrays.asList(EXPERIMENT_INFO_CSV, RECORDING_CSV)
                 );
-                ValidationResult validateResult = validateExperiments(projectPath, project.experimentNames, fileNames);
 
                 if (!validateResult.isValid()) {
                     for (String line : validateResult.getReport().split("\n")) {
                         PaintLogger.errorf(line);
                     }
-                }
-                if (validateResult.hasErrors()) {
                     return false;
                 }
+
                 LocalDateTime start = LocalDateTime.now();
+
+                // --- Step 5: Process all selected experiments ---
                 for (String experimentName : project.experimentNames) {
                     generateSquaresForExperiment(project, experimentName);
-                    // Now export the histograms to a PDF
+
+                    // Export histograms to a PDF summary
                     try {
                         Experiment experiment = loadExperiment(project.projectRootPath, experimentName, true);
                         Path pdfOut = project.projectRootPath
@@ -103,7 +144,6 @@ public class GenerateSquares {
                                 .resolve("Output")
                                 .resolve("Background.pdf");
 
-                        // Ensure all parent directories exist
                         Files.createDirectories(pdfOut.getParent());
                         HistogramPdfExporter.exportExperimentHistogramsToPdf(experiment, pdfOut);
 
@@ -111,22 +151,23 @@ public class GenerateSquares {
                         PaintLogger.errorf("Failed to export histograms to PDF: %s", e.getMessage());
                     }
                 }
-                PaintLogger.debugf("\n\nFinished calculating");
 
-                // Write the projects squares file
+                PaintLogger.debugf("\n\nFinished calculating.");
+
+                // --- Step 6: Concatenate experiment CSVs into a project-level summary ---
                 try {
                     concatenateExperimentCsvFiles(projectPath, SQUARE_CSV, project.experimentNames);
                     Duration duration = Duration.between(start, LocalDateTime.now());
-                    PaintLogger.infof("Generated squares info for the selected experiments and for the project in %s", formatDuration(duration));
+                    PaintLogger.infof("Generated squares info for all selected experiments in %s", formatDuration(duration));
                 } catch (Exception e) {
                     PaintLogger.errorf("Could not concatenate squares file - %s", e.getMessage());
                 }
-                return true;   //ToDo
+
+                return true;
             });
 
-            // Show dialog (calculations will run after pressing OK)
+            // --- Step 7: Show the configuration dialog ---
             dialog.showDialog();
         });
     }
-
 }
