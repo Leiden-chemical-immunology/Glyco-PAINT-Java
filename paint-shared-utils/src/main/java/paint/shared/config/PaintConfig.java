@@ -298,6 +298,20 @@ public class PaintConfig {
     }
 
     // ============================================================================
+    // Static Removals (shortcuts)
+    // ============================================================================
+
+    /** Removes a single key (always saves). */
+    public static void remove(String section, String key) {
+        instance().removeValue(section, key, true);
+    }
+
+    /** Removes an entire section (always saves). */
+    public static void removeSection(String section) {
+        instance().removeSectionValue(section, true);
+    }
+
+    // ============================================================================
     // Removal and Listing
     // ============================================================================
 
