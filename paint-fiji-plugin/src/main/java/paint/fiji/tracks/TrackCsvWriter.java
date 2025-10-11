@@ -4,146 +4,88 @@ import fiji.plugin.trackmate.FeatureModel;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.TrackMate;
 import fiji.plugin.trackmate.TrackModel;
+import paint.shared.io.TrackTableIO;
+import paint.shared.objects.Track;
+import paint.shared.utils.PaintLogger;
+import tech.tablesaw.api.Table;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static paint.fiji.tracks.TrackAttributeCalculations.calculateTrackAttributes;
 import static paint.shared.constants.PaintConstants.TIME_INTERVAL;
-import static paint.shared.constants.PaintConstants.TRACK_COLS;
 
-/**
- * Utility class for exporting TrackMate tracks into a CSV file.
- * <p>
- * Uses the schema defined in {@link paint.shared.constants.PaintConstants#TRACK_COLS}.
- * This guarantees the CSV header is consistent across the project.
- * </p>
- */
 public class TrackCsvWriter {
 
-    /**
-     * Writes TrackMate track data to a CSV file.
-     *
-     * @param trackmate     the {@link TrackMate} instance containing the model and features
-     * @param recordingName the name of the recording; used for unique keys in the output
-     * @param csvFile       the target CSV file to write into (overwritten if it exists)
-     * @param visibleOnly   if {@code true}, exports only visible (filtered) tracks;
-     *                      if {@code false}, exports all tracks
-     * @return the total number of spots across all exported tracks
-     * @throws IOException if an I/O error occurs while writing
-     */
     public static int writeTracksCsv(final TrackMate trackmate,
                                      final String recordingName,
                                      final File csvFile,
                                      final boolean visibleOnly) throws IOException {
+
         final Model model = trackmate.getModel();
         final TrackModel trackModel = model.getTrackModel();
         final FeatureModel featureModel = model.getFeatureModel();
 
-        int nrSpotsInAllTracks = 0;
+        final Set<Integer> trackIDs = trackModel.trackIDs(visibleOnly);
+        final List<Track> tracks = new ArrayList<>();
+        int totalSpots = 0;
 
-        try (PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(
-                new FileOutputStream(csvFile, false), StandardCharsets.UTF_8))) {
+        for (Integer trackId : trackIDs) {
 
-            // Write header row from constants
-            writeCsvRow(printWriter, (Object[]) TRACK_COLS);
+            TrackAttributes ca = calculateTrackAttributes(trackModel, trackId, TIME_INTERVAL);
 
-            // Collect track IDs (filtered if visibleOnly == true)
-            final Set<Integer> trackIDs = trackModel.trackIDs(visibleOnly);
-            final int squareNumber = -1; // placeholder (not computed here)
-            final int labelNumber = -1;  // placeholder (not computed here)
+            Track t = new Track();
+            t.setUniqueKey(recordingName + "-" + trackId);
+            t.setRecordingName(recordingName);
+            t.setTrackId(trackId);
+            t.setTrackLabel(trackModel.name(trackId) != null
+                                    ? trackModel.name(trackId)
+                                    : "Track-" + trackId);
 
-            for (Integer trackId : trackIDs) {
+            t.setNumberOfSpots(asInt(featureModel.getTrackFeature(trackId, "NUMBER_SPOTS")));
+            t.setNumberOfGaps(asInt(featureModel.getTrackFeature(trackId, "NUMBER_GAPS")));
+            t.setLongestGap(asInt(featureModel.getTrackFeature(trackId, "LONGEST_GAP")));
+            t.setTrackDuration(roundOr(featureModel.getTrackFeature(trackId, "TRACK_DURATION"), 3, -1));
+            t.setTrackXLocation(roundOr(featureModel.getTrackFeature(trackId, "TRACK_X_LOCATION"), 2, -1));
+            t.setTrackYLocation(roundOr(featureModel.getTrackFeature(trackId, "TRACK_Y_LOCATION"), 2, -1));
+            t.setTrackDisplacement(roundOr(featureModel.getTrackFeature(trackId, "TRACK_DISPLACEMENT"), 2, -1));
+            t.setTrackMaxSpeed(roundOr(featureModel.getTrackFeature(trackId, "TRACK_MAX_SPEED"), 2, -1));
+            t.setTrackMedianSpeed(roundOr(featureModel.getTrackFeature(trackId, "TRACK_MEDIAN_SPEED"), 2, -1));
 
-                // ---- Built-in TrackMate features ----
+            // custom calculated attributes
+            t.setDiffusionCoefficient(ca.diffusionCoeff);
+            t.setDiffusionCoefficientExt(ca.diffusionCoeffExt);
+            t.setTotalDistance(ca.totalDistance);
+            t.setConfinementRatio(ca.confinementRatio);
+            t.setSquareNumber(-1);
+            t.setLabelNumber(-1);
 
-                // @formatter:off
-                Double duration      = featureModel.getTrackFeature(trackId, "TRACK_DURATION");
-                Double numberOfSpots = featureModel.getTrackFeature(trackId, "NUMBER_SPOTS");
-                Double xLoc          = featureModel.getTrackFeature(trackId, "TRACK_X_LOCATION");
-                Double yLoc          = featureModel.getTrackFeature(trackId, "TRACK_Y_LOCATION");
-                Double maxSpeed      = featureModel.getTrackFeature(trackId, "TRACK_MAX_SPEED");
-                Double medSpeed      = featureModel.getTrackFeature(trackId, "TRACK_MEDIAN_SPEED");
-                Double nrGaps        = featureModel.getTrackFeature(trackId, "NUMBER_GAPS");
-                Double longestGap    = featureModel.getTrackFeature(trackId, "LONGEST_GAP");
-                Double displacement  = featureModel.getTrackFeature(trackId, "TRACK_DISPLACEMENT");
-                // @formatter:on
-
-                // Normalize values (rounding and null defaults)
-
-                // @formatter:off
-                duration      = roundOr(duration, 3, -1);
-                numberOfSpots = roundOr(numberOfSpots, 0, -1);
-                xLoc          = roundOr(xLoc, 2, -1);
-                yLoc          = roundOr(yLoc, 2, -1);
-                maxSpeed      = roundOr(maxSpeed, 2, -1);
-                medSpeed      = roundOr(medSpeed, 2, -1);
-                nrGaps        = defaultIfNull(nrGaps, -1.0);
-                longestGap    = defaultIfNull(longestGap, -1.0);
-                displacement  = roundOr(displacement, 2, -1);
-                // @formatter:on
-
-                // ---- Custom calculated attributes ----
-                TrackAttributes ca = calculateTrackAttributes(trackModel, trackId, TIME_INTERVAL);
-
-                // @formatter:off
-                int numberOfSpotsInTrack = ca.numberOfSpotsInTracks;
-                double diffusionCoeff    = ca.diffusionCoeff;
-                double diffusionCoeffExt = ca.diffusionCoeffExt;
-                double totalDistance     = ca.totalDistance;
-                double confinementRatio  = ca.confinementRatio;
-                // @formatter:on
-
-                String uniqueKey = recordingName + "-" + trackId;
-
-                // Update total spots count
-                nrSpotsInAllTracks += numberOfSpotsInTrack;
-
-                // Track label or fallback
-                String trackLabel = trackModel.name(trackId);
-                if (trackLabel == null) {
-                    trackLabel = "Track-" + trackId;
-                }
-
-                // Write one CSV row (aligned with TRACK_COLS)
-                writeCsvRow(printWriter,
-                            uniqueKey,              // 0
-                            recordingName,          // 1
-                            trackId,                // 2
-                            trackLabel,             // 3
-                            asInt(numberOfSpots),   // 4
-                            asInt(nrGaps),          // 5
-                            asInt(longestGap),      // 6
-                            duration,               // 7
-                            xLoc,                   // 8
-                            yLoc,                   // 9
-                            displacement,           // 10 (from TrackMate)
-                            maxSpeed,               // 11
-                            medSpeed,               // 12
-                            diffusionCoeff,         // 13 (calculated)
-                            diffusionCoeffExt,      // 14 (calculated)
-                            totalDistance,          // 15 (calculated)
-                            confinementRatio,       // 16 (calculated)
-                            squareNumber,           // 17
-                            labelNumber             // 18
-                );
-            }
+            totalSpots += ca.numberOfSpotsInTracks;
+            tracks.add(t);
         }
 
-        return nrSpotsInAllTracks;
-    }
 
-    // --------- helper methods ----------
+        // delegate CSV writing to your schema-aware IO
 
-    private static Double defaultIfNull(Double v, Double defaultValue) {
-        return v == null ? defaultValue : v;
+        try {
+            // TrackTableIO trackTableIO = new TrackTableIO();
+            TrackTableIO trackTableIO = new paint.shared.io.TrackTableIO();
+            Table tracksTable = trackTableIO.toTable(tracks);
+            trackTableIO.writeCsv(tracksTable, csvFile.toPath());
+        }
+        catch (Exception e) {
+            PaintLogger.errorf("Whoopsie");
+            e.printStackTrace();
+        }
+
+        return totalSpots;
     }
 
     private static double roundTo(Double v, int places) {
-        if (v == null) {
-            return Double.NaN;
-        }
+        if (v == null) return Double.NaN;
         double scale = Math.pow(10, places);
         return Math.round(v * scale) / scale;
     }
@@ -153,32 +95,7 @@ public class TrackCsvWriter {
     }
 
     private static int asInt(Double v) {
-        if (v == null || v.isNaN()) {
-            return -1;
-        }
+        if (v == null || v.isNaN()) return -1;
         return (int) Math.round(v);
-    }
-
-    private static void writeCsvRow(PrintWriter pw, Object... values) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < values.length; i++) {
-            if (i > 0) {
-                sb.append(',');
-            }
-            sb.append(escapeCsv(values[i]));
-        }
-        pw.println(sb);
-    }
-
-    private static String escapeCsv(Object o) {
-        if (o == null) {
-            return "";
-        }
-        String s = String.valueOf(o);
-        boolean needsQuotes = s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r");
-        if (s.contains("\"")) {
-            s = s.replace("\"", "\"\"");
-        }
-        return needsQuotes ? ("\"" + s + "\"") : s;
     }
 }
