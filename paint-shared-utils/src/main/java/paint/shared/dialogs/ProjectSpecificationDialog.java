@@ -46,7 +46,6 @@ public class ProjectSpecificationDialog {
     private final Project project;
     private final PaintConfig paintConfig;
 
-    private JTextField nrSquaresField;
     private JTextField minTracksField;
     private JTextField minRSquaredField;
     private JTextField minDensityRatioField;
@@ -132,11 +131,6 @@ public class ProjectSpecificationDialog {
             comboWrapper.add(gridSizeCombo, BorderLayout.CENTER);
             comboWrapper.setPreferredSize(wideFieldSize);
             formPanel.add(comboWrapper, gbc);
-
-            // Dummy hidden field (for legacy use)
-            this.nrSquaresField = new JTextField();
-            this.nrSquaresField.setVisible(false);
-            formPanel.add(nrSquaresField);
 
             // === Remaining numeric fields ===
             row++;
@@ -397,9 +391,6 @@ public class ProjectSpecificationDialog {
 
     private void setInputsEnabled(boolean enabled) {
         if (mode == DialogMode.GENERATE_SQUARES) {
-            if (nrSquaresField != null) {
-                nrSquaresField.setEnabled(enabled);
-            }
             if (minTracksField != null) {
                 minTracksField.setEnabled(enabled);
             }
