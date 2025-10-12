@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>${app.name}</string>
+
+    <key>CFBundleDisplayName</key>
+    <string>${app.name}</string>
+
+    <key>CFBundleExecutable</key>
+    <string>launch</string>
+
+    <key>CFBundleIdentifier</key>
+    <string>com.github.jjabakker.${app.name}</string>
+
+    <key>CFBundleVersion</key>
+    <string>${project.version}</string>
+
+    <key>CFBundleShortVersionString</key>
+    <string>${project.version}</string>
+
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+
+    <key>CFBundleSignature</key>
+    <string>GOMO</string>
+
+    <key>CFBundleIconFile</key>
+    <string>get-omero.icns</string>
+
+    <key>LSMinimumSystemVersion</key>
+    <string>10.10</string>
+
+    <key>NSHighResolutionCapable</key>
+    <true/>
+</dict>
+</plist>

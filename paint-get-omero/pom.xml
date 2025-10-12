@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
 
     <name>Paint Get Omero</name>
-    <description>Standalone app for loading Omero data</description>
+    <description>Standalone Swing app for loading Omero data</description>
 
     <properties>
         <!-- UTC timestamp for reproducible builds -->
@@ -38,7 +38,144 @@
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
         </dependency>
+
+        <!-- Silence SLF4J logs -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>1.7.36</version>
+        </dependency>
     </dependencies>
 
-    
+    <build>
+        <plugins>
+            <!-- Compiler plugin -->
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+            <!-- Fat JAR creation -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>getomero.GetOmeroUI</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Filter Info.plist -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>filter-plist</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <includes>
+                                        <include>info.plist.template</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${project.build.directory}/filtered-resources</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Build .app bundle for macOS -->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>build-mac-app</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <target>
+                                <mkdir dir="${app.dir}/Contents/MacOS"/>
+                                <mkdir dir="${app.dir}/Contents/Resources"/>
+
+                                <!-- Copy fat JAR -->
+                                <copy file="${fat.jar}" todir="${app.dir}/Contents/Resources"/>
+
+                                <!-- Optional icon -->
+                                <copy file="src/main/resources/icon.icns"
+                                      todir="${app.dir}/Contents/Resources"
+                                      failonerror="false"/>
+
+                                <!-- Create launch script -->
+                                <echo file="${app.dir}/Contents/MacOS/launch"><![CDATA[
+#!/bin/bash
+DIR="$( cd "$( dirname "$0" )" && cd ../Resources && pwd )"
+
+LOG="$HOME/Library/Logs/GetOmero.log"
+mkdir -p "$(dirname "$LOG")"
+echo "=== Launching GetOmero at $(date) ===" >> "$LOG" 2>&1
+
+JAR="$(ls "$DIR"/*.jar | head -n 1)"
+
+if [ -z "$JAR" ]; then
+  echo "No JAR found in $DIR" >> "$LOG" 2>&1
+  exit 1
+fi
+
+exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$JAR" >> "$LOG" 2>&1
+]]></echo>
+                                <chmod file="${app.dir}/Contents/MacOS/launch" perm="755"/>
+
+                                <!-- Copy filtered Info.plist -->
+                                <copy file="${project.build.directory}/filtered-resources/Info.plist.template"
+                                      tofile="${app.dir}/Contents/Info.plist"
+                                      overwrite="true"/>
+
+                                <!-- Zip app bundle -->
+                                <zip destfile="${project.build.directory}/${app.name}.zip"
+                                     basedir="${project.build.directory}"
+                                     includes="${app.name}.app/**"/>
+
+                                <!-- ✅ Deploy .app to ~/Applications/Glyco-PAINT -->
+                                <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
+                                <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
+                                <copy todir="${user.home}/Applications/Glyco-PAINT" overwrite="true">
+                                    <fileset dir="${project.build.directory}">
+                                        <include name="${app.name}.app/**"/>
+                                    </fileset>
+                                </copy>
+
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
