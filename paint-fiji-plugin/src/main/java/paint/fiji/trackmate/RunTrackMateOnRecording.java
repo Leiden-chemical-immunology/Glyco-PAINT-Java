@@ -188,7 +188,7 @@ public class RunTrackMateOnRecording {
         int numberSpots = model.getSpots().getNSpots(false);
         if (numberSpots > trackMateConfig.getMaxNrSpotsInImage()) {
             if (!isCancelled(Thread.currentThread(), dialog)) {
-                PaintLogger.warningf("Too many spots detected (%d). Limit is %d.",
+                PaintLogger.warningf("   Trackmate - Too many spots detected (%d). Limit is %d.",
                                      numberSpots, trackMateConfig.getMaxNrSpotsInImage());
             }
             return cancelEarly(imp);
