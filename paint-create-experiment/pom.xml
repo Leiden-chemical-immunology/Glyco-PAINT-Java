@@ -162,6 +162,16 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$JAR" >> "$LOG" 2>&1
                                 <zip destfile="${project.build.directory}/${app.name}.zip"
                                      basedir="${project.build.directory}"
                                      includes="${app.name}.app/**"/>
+
+                                <!-- ✅ Deploy .app to ~/Applications/Glyco-PAINT -->
+                                <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
+                                <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
+                                <copy todir="${user.home}/Applications/Glyco-PAINT" overwrite="true">
+                                    <fileset dir="${project.build.directory}">
+                                        <include name="${app.name}.app/**"/>
+                                    </fileset>
+                                </copy>
+
                             </target>
                         </configuration>
                         <goals>
