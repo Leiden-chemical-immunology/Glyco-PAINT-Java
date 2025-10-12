@@ -37,7 +37,7 @@ public class RunTrackMateOnProject implements Command {
 
         // Prevent noisy AWT exception messages
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
-            PaintLogger.warningf("   AWT is complaining - ignore");
+            PaintLogger.debugf("   AWT is complaining - ignore");
         });
 
         if (running) {
