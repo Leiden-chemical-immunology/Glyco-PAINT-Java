@@ -6,6 +6,7 @@ import ij.measure.Calibration;
 import ij.process.ImageProcessor;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
@@ -26,12 +27,11 @@ public class TiffMoviePlayer {
     private final int baseDelayMs;
 
     public TiffMoviePlayer(String tiffPath) {
-        // Prevent ImageJ window
         System.setProperty("apple.awt.UIElement", "true");
         IJ.redirectErrorMessages();
         IJ.showStatus("");
 
-        // Suppress console spam
+        // Silence ImageJ output
         PrintStream originalOut = System.out;
         System.setOut(new PrintStream(new OutputStream() {
             @Override public void write(int b) {}
@@ -40,47 +40,51 @@ public class TiffMoviePlayer {
         this.imagePlus = IJ.openImage(tiffPath);
         System.setOut(originalOut);
 
-        this.imageLabel = new JLabel();
+        this.imageLabel = new JLabel("", SwingConstants.CENTER);
+        this.imageLabel.setBackground(Color.DARK_GRAY);
+        this.imageLabel.setOpaque(true);
+        this.imageLabel.setBorder(null);
+
         this.frameSlider = new JSlider();
         this.frameLabel = new JLabel("Frame: 0");
         this.playPauseButton = new JButton("⏸ Pause");
-        this.speedSlider = new JSlider(25, 400, 100); // 25%–400%
+        this.speedSlider = new JSlider(50, 400, 100);
         this.speedLabel = new JLabel("Speed: 1.0×");
 
-        int delay = 50; // default
+        int delay = 50;
         if (imagePlus != null) {
             IJ.run(imagePlus, "Enhance Contrast", "saturated=0.35");
             Calibration cal = imagePlus.getCalibration();
             if (cal != null && cal.frameInterval > 0) {
                 delay = (int) Math.round(cal.frameInterval * 1000);
-                System.out.printf("Detected frame interval: %.1f ms%n", cal.frameInterval * 1000);
-            } else {
-                System.out.println("No frame interval found — using default 50 ms.");
             }
-        } else {
-            System.err.println("Failed to open TIFF: " + tiffPath);
         }
         this.baseDelayMs = delay;
     }
 
     public void show() {
         if (imagePlus == null) {
-            JOptionPane.showMessageDialog(null, "Failed to open TIFF file.");
+            JOptionPane.showMessageDialog(null, "Failed to open image file.");
             return;
         }
 
-        JFrame frame = new JFrame("TIFF Movie Player - " + imagePlus.getTitle());
+        JFrame frame = new JFrame("Movie Player - " + imagePlus.getTitle());
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.getContentPane().setLayout(new BorderLayout());
 
-        frame.getContentPane().add(new JScrollPane(imageLabel), BorderLayout.CENTER);
+        // Tight 4px gray frame, no layout expansion
+        JPanel imagePanel = new JPanel(new BorderLayout());
+        imagePanel.setBackground(Color.DARK_GRAY);
+        imagePanel.setBorder(new EmptyBorder(4, 4, 4, 4));
+        imagePanel.add(imageLabel, BorderLayout.CENTER);
+        frame.getContentPane().add(imagePanel, BorderLayout.CENTER);
+
         frame.getContentPane().add(buildControls(), BorderLayout.SOUTH);
 
-        // Auto-size to image dimensions
         int imgWidth = imagePlus.getWidth();
         int imgHeight = imagePlus.getHeight();
-        int width = Math.min(imgWidth + 100, 1200);
-        int height = Math.min(imgHeight + 180, 900);
+        int width = Math.min(imgWidth + 40, 1000);
+        int height = Math.min(imgHeight + 140, 850);
         frame.setSize(width, height);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
@@ -89,12 +93,15 @@ public class TiffMoviePlayer {
     }
 
     private JPanel buildControls() {
-        JPanel panel = new JPanel(new BorderLayout());
+        JPanel panel = new JPanel(new GridLayout(2, 1, 0, 3));
+        panel.setBorder(new EmptyBorder(6, 6, 6, 6));
+        panel.setBackground(new Color(245, 245, 245));
 
         int totalFrames = imagePlus.getStackSize();
         frameSlider.setMinimum(1);
         frameSlider.setMaximum(totalFrames);
         frameSlider.setValue(1);
+        frameSlider.setPreferredSize(new Dimension(260, 25));
         frameSlider.addChangeListener(e -> {
             if (!frameSlider.getValueIsAdjusting() && !playing) {
                 int frame = frameSlider.getValue();
@@ -105,25 +112,28 @@ public class TiffMoviePlayer {
 
         playPauseButton.addActionListener((ActionEvent e) -> togglePlayPause());
 
-        // Speed control slider
+        // Speed control slider (0.5× increments)
+        speedSlider.setPreferredSize(new Dimension(100, 25));
+        speedSlider.setMajorTickSpacing(50);
+        speedSlider.setPaintTicks(true);
         speedSlider.addChangeListener(e -> {
-            double speed = speedSlider.getValue() / 100.0;
-            speedLabel.setText(String.format("Speed: %.2fx", speed));
+            double speed = Math.round(speedSlider.getValue() / 50.0) * 0.5;
+            speedLabel.setText(String.format("Speed: %.1fx", speed));
         });
 
-        JPanel topRow = new JPanel(new BorderLayout());
-        JPanel left = new JPanel();
-        left.add(playPauseButton);
-        topRow.add(left, BorderLayout.WEST);
-        topRow.add(frameSlider, BorderLayout.CENTER);
-        topRow.add(frameLabel, BorderLayout.EAST);
+        JPanel topRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
+        topRow.setBackground(panel.getBackground());
+        topRow.add(playPauseButton);
+        topRow.add(frameSlider);
+        topRow.add(frameLabel);
 
-        JPanel bottomRow = new JPanel(new BorderLayout());
-        bottomRow.add(speedLabel, BorderLayout.WEST);
-        bottomRow.add(speedSlider, BorderLayout.CENTER);
+        JPanel bottomRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
+        bottomRow.setBackground(panel.getBackground());
+        bottomRow.add(speedLabel);
+        bottomRow.add(speedSlider);
 
-        panel.add(topRow, BorderLayout.NORTH);
-        panel.add(bottomRow, BorderLayout.SOUTH);
+        panel.add(topRow);
+        panel.add(bottomRow);
         return panel;
     }
 
@@ -148,7 +158,7 @@ public class TiffMoviePlayer {
                 });
 
                 try {
-                    double speedFactor = speedSlider.getValue() / 100.0;
+                    double speedFactor = Math.round(speedSlider.getValue() / 50.0) * 0.5;
                     long delay = Math.max(1, Math.round(baseDelayMs / speedFactor));
                     Thread.sleep(delay);
                 } catch (InterruptedException e) {
@@ -156,7 +166,7 @@ public class TiffMoviePlayer {
                     return;
                 }
             }
-            frameSlider.setValue(1); // loop
+            frameSlider.setValue(1);
         }
     }
 
@@ -167,10 +177,9 @@ public class TiffMoviePlayer {
         SwingUtilities.invokeLater(() -> imageLabel.setIcon(new ImageIcon(img)));
     }
 
-    /** Test entry point **/
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            String path = "/Volumes/Extreme Pro/Omero/221012/221012-Exp-3-A4-3.nd2"; // ← your TIFF path
+            String path = "/Volumes/Extreme Pro/Omero/221012/221012-Exp-3-A4-3.nd2";
             TiffMoviePlayer player = new TiffMoviePlayer(path);
             player.show();
         });
