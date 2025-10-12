@@ -20,6 +20,7 @@
 
     <properties>
         <fiji.dir>/Applications/Fiji.app</fiji.dir>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
     </properties>
 
     <dependencies>
@@ -99,7 +100,27 @@
                 </configuration>
             </plugin>
 
-            <!-- Build one fat JAR (with all dependencies included) -->
+            <!-- Inject manifest metadata (Compilation-Data) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Built-By>${user.name}</Built-By>
+                            <Build-Jdk>${java.version}</Build-Jdk>
+                            <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- Shade all dependencies into one JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -107,9 +128,7 @@
                 <executions>
                     <execution>
                         <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
+                        <goals><goal>shade</goal></goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
@@ -132,6 +151,9 @@
                                         <Specification-Title>${project.name}</Specification-Title>
                                         <Specification-Version>${project.version}</Specification-Version>
                                         <Specification-Vendor>${project.organization.name}</Specification-Vendor>
+                                        <Built-By>${user.name}</Built-By>
+                                        <Build-Jdk>${java.version}</Build-Jdk>
+                                        <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
                                     </manifestEntries>
                                 </transformer>
                             </transformers>
@@ -140,7 +162,7 @@
                 </executions>
             </plugin>
 
-            <!-- Delete old paint*.jar and copy new fat jar to Fiji -->
+            <!-- Cleanup and copy JAR into Fiji -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>

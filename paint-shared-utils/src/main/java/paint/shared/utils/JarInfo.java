@@ -10,16 +10,24 @@ public class JarInfo {
     public final String specificationVersion;
     public final String specificationVendor;
 
-    public JarInfo(String implTitle, String implVersion, String implVendor, String implDate,
-                   String specTitle, String specVersion, String specVendor) {
-        this.implementationTitle = implTitle;
-        this.implementationVersion = implVersion;
-        this.implementationVendor = implVendor;
-        this.implementationDate = implDate;
+    public JarInfo(String implTitle,
+                   String implVersion,
+                   String implVendor,
+                   String implDate,
+                   String specTitle,
+                   String specVersion,
+                   String specVendor) {
 
-        this.specificationTitle = specTitle;
-        this.specificationVersion = specVersion;
-        this.specificationVendor = specVendor;
+        // @formatter:off
+        this.implementationTitle   = implTitle;
+        this.implementationVersion = implVersion;
+        this.implementationVendor  = implVendor;
+        this.implementationDate    = implDate;
+
+        this.specificationTitle    = specTitle;
+        this.specificationVersion  = specVersion;
+        this.specificationVendor   = specVendor;
+        // @formatter:on
     }
 
     @Override

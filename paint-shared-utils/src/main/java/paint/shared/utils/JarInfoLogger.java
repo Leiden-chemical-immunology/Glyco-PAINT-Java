@@ -27,7 +27,7 @@ public class JarInfoLogger {
                         attrs.getValue("Implementation-Title"),
                         attrs.getValue("Implementation-Version"),
                         attrs.getValue("Implementation-Vendor"),
-                        attrs.getValue("Implementation-Date"),
+                        attrs.getValue("Build-Timestamp"),
                         attrs.getValue("Specification-Title"),
                         attrs.getValue("Specification-Version"),
                         attrs.getValue("Specification-Vendor")
