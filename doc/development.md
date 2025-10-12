@@ -14,3 +14,4 @@
 `caffeinate -di`
 `Close terminal window to restore normal setting`
 
+find /Users/Hans/Paint Test Project/" -type f -name "All Recordings.csv" -exec rm -v {} \;

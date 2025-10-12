@@ -16,6 +16,7 @@ import viewer.panels.RecordingControlsPanel;
 import viewer.panels.SquareGridPanel;
 import viewer.shared.SquareControlParams;
 import viewer.utils.RecordingEntry;
+import viewer.utils.TiffMoviePlayer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -246,5 +247,51 @@ public class RecordingViewerFrame extends JFrame
         controlHandler.apply(params, leftGridPanel);
         overrideWriter.applyAndWrite(scope, params, recordings, currentIndex, project);
         leftGridPanel.repaint();
+    }
+
+    @Override
+    public void onPlayRecordingRequested() {
+        // Get the current recording entry
+        if (recordings.isEmpty() || currentIndex < 0 || currentIndex >= recordings.size()) {
+            PaintLogger.warningf("No recording selected to play.");
+            JOptionPane.showMessageDialog(this,
+                                          "No recording selected to play.",
+                                          "No Selection",
+                                          JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        RecordingEntry entry = recordings.get(currentIndex);
+        String experimentName = entry.getExperimentName();
+        String recordingName = entry.getRecordingName();
+
+        // Build file path (temporary static root)
+        String rootPath = "/Volumes/Extreme Pro/Omero";
+        java.nio.file.Path imagePath = java.nio.file.Paths.get(rootPath, experimentName, recordingName + ".nd2");
+
+        if (!java.nio.file.Files.exists(imagePath)) {
+            PaintLogger.errorf("Recording file not found: %s", imagePath);
+            JOptionPane.showMessageDialog(this,
+                                          "Recording file not found:\n" + imagePath,
+                                          "File Missing",
+                                          JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Run MoviePlayer in a separate thread (no feedback)
+        Thread movieThread = new Thread(() -> {
+            try {
+                TiffMoviePlayer player = new TiffMoviePlayer();
+                player.playMovie(imagePath.toString());
+            } catch (Exception ex) {
+                PaintLogger.errorf("Error playing recording: %s", ex.getMessage());
+                ex.printStackTrace();
+            }
+        }, "MoviePlayerThread");
+
+        movieThread.setDaemon(true);
+        movieThread.start();
+
+        PaintLogger.infof("Playing recording: %s / %s", experimentName, recordingName);
     }
 }
