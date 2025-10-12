@@ -56,14 +56,23 @@ public class RecordingViewerFrame extends JFrame
         setLayout(new BorderLayout());
         setResizable(false);
 
-        int nRow = PaintConfig.getInt("Generate Squares", "Number of Squares in Row", -1);
-        int nCol = PaintConfig.getInt("Generate Squares", "Number of Squares in Column", -1);
-        if (nRow <= 0 || nCol <= 0 || nRow != nCol) {
-            PaintLogger.errorf("Invalid square layout (%d x %d)", nRow, nCol);
+        int numberOfSquaresInRecording = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
+        int[] validLayouts             = {25, 100, 225, 400, 900};
+        boolean isValid                = false;
+
+        for (int valid : validLayouts) {
+            if (numberOfSquaresInRecording == valid) {
+                isValid = true;
+                break;
+            }
+        }
+        if (!isValid) {
+            PaintLogger.errorf("Invalid square layout (d x d)");
             return;
         }
+        int numberOfSquareInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);
 
-        leftGridPanel = new SquareGridPanel(nRow, nCol);
+        leftGridPanel = new SquareGridPanel(numberOfSquareInOneDimension, numberOfSquareInOneDimension);
         controlHandler.attach(leftGridPanel);
 
         attributesPanel = new RecordingAttributesPanel();
