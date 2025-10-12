@@ -200,6 +200,7 @@ public class PaintConfig {
         trackMate.addProperty("ALLOW_TRACK_SPLITTING", false);
         trackMate.addProperty("ALLOW_TRACK_MERGING", false);
         trackMate.addProperty("MERGING_MAX_DISTANCE", 15.0);
+        trackMate.addProperty("Max Seconds Per Recording", 2000);
         configData.add(SECTION_TRACKMATE, trackMate);
     }
 

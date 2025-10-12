@@ -34,46 +34,55 @@ public class RunTrackMateOnExperiment {
     static boolean verbose = false;
 
     /**
-     * Watchdog that joins in 2s slices and interrupts promptly on cancel or timeout.
+     * Watchdog that joins in 1s slices and interrupts promptly on cancel or timeout.
      */
     private static boolean runWithWatchdog(Runnable task,
-                                           int maxSeconds,
+                                           int maxSecondsPerRecording,
                                            ProjectSpecificationDialog dialog) {
         Thread thread = new Thread(task, "TrackMateThread");
         thread.start();
 
-        for (int i = 0; i < maxSeconds; i++) {
+        int numberOfInterrupts = 0;
+        int numberOfDotsOnline = 0;
+
+        for (int i = 0; i < maxSecondsPerRecording; i++) {
             try {
                 thread.join(1000); // check every second
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                PaintLogger.errorf("Watchdog interrupted.");
+                PaintLogger.errorf("Watchdog thread itself was interrupted.");
                 return false;
             }
 
+            // ✅ TrackMate finished normally
             if (!thread.isAlive()) {
                 return true;
             }
 
+            // ✅ User pressed cancel
             if (dialog != null && dialog.isCancelled()) {
-                PaintLogger.warningf("User requested cancellation, interrupting TrackMate thread...");
-                try {
-                    thread.interrupt();
-                } catch (Exception ex) {
-                    PaintLogger.warningf("Error while interrupting thread: %s", ex.getMessage());
-                }
+                PaintLogger.warningf("User requested cancellation — stopping TrackMate gracefully...");
+                // ⚠️ Do NOT call thread.interrupt(), just mark as finished
                 return false;
             }
 
-            PaintLogger.raw(".");
+            // progress dots
+            numberOfInterrupts++;
+            if (numberOfInterrupts >= 1) {
+                PaintLogger.raw(".");
+                numberOfDotsOnline++;
+                numberOfInterrupts = 0;
+            }
+            if (numberOfDotsOnline >= 80) {
+                PaintLogger.raw("\n                                                    ")     ;
+                numberOfDotsOnline = 0;
+            }
         }
 
-        PaintLogger.errorf("\n⏱ Task exceeded time limit, interrupting...");
-        try {
-            thread.interrupt();
-        } catch (Exception ex) {
-            PaintLogger.warningf("Error while interrupting thread: %s", ex.getMessage());
-        }
+        // ⏱ Timeout reached
+        PaintLogger.errorf("   TrackMate - exceeded time limit of %d seconds.", maxSecondsPerRecording);
+        // ⚠️ Instead of thread.interrupt(), just log and exit cleanly
+        // PaintLogger.warningf("Not interrupting TrackMate threads to avoid InterruptedException.");
         return false;
     }
 
@@ -95,6 +104,7 @@ public class RunTrackMateOnExperiment {
         PaintConfig paintConfig = PaintConfig.instance();
         TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
 
+        int maxSecondsPerRecording = paintConfig.getIntValue("TrackMate", "Max Seconds Per Recording", 2000);
         try {
             Path filePath = experimentPath.resolve("Output").resolve("ParametersUsed.txt");
             Files.createDirectories(filePath.getParent());
@@ -191,7 +201,7 @@ public class RunTrackMateOnExperiment {
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
-                        }, 1500, dialog);
+                        }, maxSecondsPerRecording, dialog);
 
                         if (!finished) {
                             if (dialog != null && dialog.isCancelled()) {
@@ -199,6 +209,7 @@ public class RunTrackMateOnExperiment {
                                 break;
                             } else {
                                 PaintLogger.errorf("   TrackMate failed or timed out for '%s'.", recordingName);
+                                PaintLogger.infof();
                                 status = false;
                                 continue;
                             }

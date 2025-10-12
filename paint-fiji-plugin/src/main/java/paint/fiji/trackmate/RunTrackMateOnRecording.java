@@ -63,7 +63,7 @@ public class RunTrackMateOnRecording {
         DebugTools.setRootLevel("OFF");
 
         // --- Step 1: Load ND2 image ---
-        PaintLogger.raw("                       TrackMate - Image Loading: ");
+        PaintLogger.raw("                       TrackMate - Image Loading:   ");
         if (isCancelled(Thread.currentThread(), dialog)) {
             return new TrackMateResults(false);
         }
@@ -167,7 +167,7 @@ public class RunTrackMateOnRecording {
             return cancelEarly(imp);
         }
 
-        PaintLogger.raw("\n                       TrackMate - spot detection: ");
+        PaintLogger.raw("\n                       TrackMate - spot detection:  ");
         try {
             if (!trackmate.execDetection()) {
                 if (!isCancelled(Thread.currentThread(), dialog)) {
