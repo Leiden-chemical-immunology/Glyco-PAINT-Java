@@ -18,22 +18,17 @@ public class TiffMoviePlayer {
     public void playMovie(String tiffPath) {
         final String fileName = new File(tiffPath).getName();
 
-        // --- Simple loading dialog ---
+        // --- Simple static loading dialog (no progress bar) ---
         final JDialog loadingDialog = new JDialog((Frame) null, "Loading Recording", false);
         loadingDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-        loadingDialog.setLayout(new BorderLayout(10, 10));
+        loadingDialog.setLayout(new BorderLayout());
 
         JLabel label = new JLabel("Loading " + fileName + "…", SwingConstants.CENTER);
         label.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        label.setBorder(new EmptyBorder(15, 15, 15, 15));
-
-        JProgressBar progress = new JProgressBar();
-        progress.setIndeterminate(true);
-        progress.setBorder(new EmptyBorder(0, 15, 15, 15));
+        label.setBorder(new EmptyBorder(25, 20, 25, 20));
 
         loadingDialog.add(label, BorderLayout.CENTER);
-        loadingDialog.add(progress, BorderLayout.SOUTH);
-        loadingDialog.setSize(320, 120);
+        loadingDialog.setSize(300, 120);
         loadingDialog.setResizable(false);
         loadingDialog.setLocationRelativeTo(null);
 
@@ -45,13 +40,13 @@ public class TiffMoviePlayer {
             IJ.redirectErrorMessages();
             IJ.showStatus("");
 
-            // Silence ImageJ console output
+            // Silence ImageJ console
             PrintStream originalOut = System.out;
             System.setOut(new PrintStream(new OutputStream() { @Override public void write(int b) {} }));
 
             final ImagePlus imp = IJ.openImage(tiffPath);
-            System.setOut(originalOut);
 
+            System.setOut(originalOut);
             SwingUtilities.invokeLater(loadingDialog::dispose);
 
             if (imp == null) {
