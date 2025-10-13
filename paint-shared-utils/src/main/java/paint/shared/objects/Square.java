@@ -6,6 +6,7 @@ import java.util.List;
 
 import static paint.shared.constants.PaintConstants.IMAGE_HEIGHT;
 import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
+import static paint.shared.utils.Miscellaneous.round;
 
 /**
  * Represents a square region within a recording image.
@@ -102,10 +103,10 @@ public class Square {
         this.squareNumber = squareNumber;
         this.rowNumber = rowNumber;
         this.colNumber = colNumber;
-        this.x0 = x0;
-        this.y0 = y0;
-        this.x1 = x1;
-        this.y1 = y1;
+        this.x0 = round(x0, 2);
+        this.y0 = round(y0, 2);
+        this.x1 = round(x1, 2);
+        this.y1 = round(y1, 2);
     }
 
     /**
@@ -123,10 +124,10 @@ public class Square {
         colNumber = squareNumber % numberSquaresInRow;
         rowNumber = squareNumber / numberSquaresInRow;
 
-        x0 = colNumber * width;
-        x1 = (colNumber + 1) * width;
-        y0 = rowNumber * height;
-        y1 = (rowNumber + 1) * width;
+        x0 = round(colNumber * width, 2);
+        x1 = round((colNumber + 1) * width, 2);
+        y0 = round(rowNumber * height, 2);
+        y1 = round((rowNumber + 1) * width, 2);
 
         this.squareNumber = squareNumber;
     }
@@ -218,7 +219,7 @@ public class Square {
     }
 
     public void setX0(double x0) {
-        this.x0 = x0;
+        this.x0 = round(x0, 2);
     }
 
     public double getY0() {
@@ -226,7 +227,7 @@ public class Square {
     }
 
     public void setY0(double y0) {
-        this.y0 = y0;
+        this.y0 = round (y0, 2);
     }
 
     public double getX1() {
@@ -234,7 +235,7 @@ public class Square {
     }
 
     public void setX1(double x1) {
-        this.x1 = x1;
+        this.x1 = round(x1, 2);
     }
 
     public double getY1() {
@@ -242,7 +243,7 @@ public class Square {
     }
 
     public void setY1(double y1) {
-        this.y1 = y1;
+        this.y1 = round(y1, 2);
     }
 
     public int getNumberOfTracks() {
