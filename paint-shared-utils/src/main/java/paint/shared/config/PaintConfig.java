@@ -57,17 +57,14 @@ public class PaintConfig {
     // Section Name Constants
     // ============================================================================
 
-    /** Section name for Generate Squares configuration. */
-    public static final String SECTION_GENERATE_SQUARES = "Generate Squares";
 
-    /** Section name for general Paint application settings. */
-    public static final String SECTION_PAINT = "Paint";
+    public static final String SECTION_GENERATE_SQUARES = "Generate Squares"; // Section name for Generate Squares configuration
+    public static final String SECTION_PAINT            = "Paint";            // Section name for general Paint application settings.
+    public static final String SECTION_RECORDING_VIEWER = "Recording Viewer"; // Section name for the Recording Viewer configuration.
+    public static final String SECTION_TRACKMATE        = "TrackMate";        // Section name for TrackMate configuration.
+    public static final String SECTION_DEBUG            = "Debug";            // Section name for Debug configuration.
+    public static final String SECTION_PATHS            = "Paths";            // Section name for Path configuration.
 
-    /** Section name for the Recording Viewer configuration. */
-    public static final String SECTION_RECORDING_VIEWER = "Recording Viewer";
-
-    /** Section name for TrackMate configuration. */
-    public static final String SECTION_TRACKMATE = "TrackMate";
 
     // ============================================================================
     // Singleton + Shared Resources
@@ -202,6 +199,14 @@ public class PaintConfig {
         trackMate.addProperty("MERGING_MAX_DISTANCE", 15.0);
         trackMate.addProperty("Max Seconds Per Recording", 2000);
         configData.add(SECTION_TRACKMATE, trackMate);
+
+        trackMate.addProperty("Debug RunTrackMateOnProject", false);
+        trackMate.addProperty("Debug RunTrackMateOnRecordsing", false);
+        configData.add(SECTION_DEBUG, trackMate);
+
+        trackMate.addProperty("Project Root", "");
+        trackMate.addProperty("Images Root", "");
+        configData.add(SECTION_PATHS, trackMate);
     }
 
     /** Saves the current configuration to disk. */
