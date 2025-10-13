@@ -5,7 +5,6 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Inherit groupId, version, and metadata -->
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
@@ -20,19 +19,19 @@
     <description>Paint desktop application</description>
 
     <properties>
-        <!-- 🕒 Reproducible builds -->
         <project.build.outputTimestamp>2025-09-23T08:55:00Z</project.build.outputTimestamp>
+        <app.name>Generate Squares</app.name>
+        <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
+        <fat.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</fat.jar>
     </properties>
 
     <dependencies>
-        <!-- Internal shared module -->
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
-        <!-- ImageJ / Fiji stack -->
         <dependency>
             <groupId>net.imagej</groupId>
             <artifactId>ij</artifactId>
@@ -57,14 +56,12 @@
             <version>7.1.5</version>
         </dependency>
 
-        <!-- Logging Suppores SLF4J errors-->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.2.13</version>
         </dependency>
 
-        <!-- Bio-Formats stack -->
         <dependency>
             <groupId>ome</groupId>
             <artifactId>bio-formats_plugins</artifactId>
@@ -83,7 +80,6 @@
             <version>6.13.0</version>
         </dependency>
 
-        <!-- Tabular + CSV + JSON -->
         <dependency>
             <groupId>tech.tablesaw</groupId>
             <artifactId>tablesaw-core</artifactId>
@@ -101,7 +97,6 @@
             <artifactId>gson</artifactId>
             <version>2.11.0</version>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -118,18 +113,7 @@
                     <archive>
                         <manifest>
                             <mainClass>generatesquares.GenerateSquares</mainClass>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
-                        <manifestEntries>
-                            <Implementation-Title>${project.name}</Implementation-Title>
-                            <Implementation-Version>${project.version}</Implementation-Version>
-                            <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
-                            <Implementation-Date>${maven.build.timestamp}</Implementation-Date>
-                            <Specification-Title>${project.name}</Specification-Title>
-                            <Specification-Version>${project.version}</Specification-Version>
-                            <Specification-Vendor>${project.organization.name}</Specification-Vendor>
-                        </manifestEntries>
                     </archive>
                 </configuration>
                 <executions>
@@ -140,10 +124,89 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Create macOS .app bundle and ZIP -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+
+                    <execution>
+                        <id>create-app-bundle</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <target name="create-app-bundle">
+                                <echo message="🍎 Creating macOS app bundle at ${app.bundle}"/>
+
+                                <!-- Clean previous build -->
+                                <delete dir="${app.bundle}" failonerror="false"/>
+                                <delete file="${project.build.directory}/${app.name}.app.zip" failonerror="false"/>
+
+                                <!-- Create bundle structure -->
+                                <mkdir dir="${app.bundle}/Contents/MacOS"/>
+                                <mkdir dir="${app.bundle}/Contents/Java"/>
+                                <mkdir dir="${app.bundle}/Contents/Resources"/>
+
+                                <!-- Copy JAR -->
+                                <copy file="${fat.jar}" todir="${app.bundle}/Contents/Java" overwrite="true"/>
+
+                                <!-- Info.plist -->
+                                <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key>
+  <string>${app.name}</string>
+  <key>CFBundleExecutable</key>
+  <string>${app.name}</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.github.jjabakker.${app.name}</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleVersion</key>
+  <string>${project.version}</string>
+</dict>
+</plist>
+                    ]]></echo>
+
+                                <!-- Launcher -->
+                                <echo file="${app.bundle}/Contents/MacOS/${app.name}"><![CDATA[
+#!/bin/bash
+cd "$(dirname "$0")/../Java"
+exec java -jar "${project.build.finalName}-jar-with-dependencies.jar"
+                    ]]></echo>
+                                <chmod file="${app.bundle}/Contents/MacOS/${app.name}" perm="755"/>
+
+                                <!-- Create ZIP archive -->
+                                <exec executable="zip">
+                                    <arg value="-r"/>
+                                    <arg value="${project.build.directory}/${app.name}.app.zip"/>
+                                    <arg value="${app.bundle}"/>
+                                </exec>
+
+                                <!-- Copy to Applications -->
+                                <mkdir dir="/Applications"/>
+                                <copy todir="/Applications" overwrite="true">
+                                    <fileset dir="${app.bundle}" includes="**/*"/>
+                                </copy>
+
+                                <echo message="✅ Created: ${project.build.directory}/${app.name}.app.zip"/>
+                                <echo message="✅ Installed to /Applications/${app.name}.app"/>
+                            </target>
+                        </configuration>
+                        <goals><goal>run</goal></goals>
+                    </execution>
+
+                </executions>
+
+            </plugin>
+
         </plugins>
+
     </build>
 
-    <!-- Maven repositories for Fiji/ImageJ/Bio-Formats -->
     <repositories>
         <repository>
             <id>scijava.public</id>
@@ -154,4 +217,5 @@
             <url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
         </repository>
     </repositories>
+
 </project>
