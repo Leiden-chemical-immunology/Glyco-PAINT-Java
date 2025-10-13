@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import static paint.shared.utils.Miscellaneous.round;
+
 /**
  * Utility class for computing custom attributes of a track in TrackMate.
  * <p>
@@ -91,10 +93,10 @@ public final class TrackAttributeCalculations {
 
         return new TrackAttributes(
                 numberSpotsInTrack,
-                totalDistance,
+                round(totalDistance, 2),
                 diffusionCoeff,
                 diffusionCoeffExt,
-                confinementRatio,
+                round(confinementRatio, 2),
                 displacement
         );
     }

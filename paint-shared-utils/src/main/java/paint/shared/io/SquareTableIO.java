@@ -13,6 +13,7 @@ import java.util.List;
 
 import static paint.shared.constants.PaintConstants.SQUARE_COLS;
 import static paint.shared.constants.PaintConstants.SQUARE_TYPES;
+import static paint.shared.utils.Miscellaneous.round;
 
 /**
  * Table IO for Square entities.
@@ -43,7 +44,7 @@ public class SquareTableIO extends BaseTableIO {
             row.setDouble("Y0",                               square.getY0());
             row.setDouble("X1",                               square.getX1());
             row.setDouble("Y1",                               square.getY1());
-            row.setInt("Number of Tracks",                    square.getNumberOfTracks());
+            row.setInt(   "Number of Tracks",                 square.getNumberOfTracks());
             row.setDouble("Variability",                      square.getVariability());
             row.setDouble("Density",                          square.getDensity());
             row.setDouble("Density Ratio",                    square.getDensityRatio());
@@ -85,10 +86,10 @@ public class SquareTableIO extends BaseTableIO {
             square.setSelected(                      row.getBoolean( "Selected"));
             square.setSquareManuallyExcluded(        row.getBoolean( "Square Manually Excluded"));
             square.setImageExcluded(                 row.getBoolean( "Image Excluded"));
-            square.setX0(                            row.getDouble(  "X0"));
-            square.setY0(                            row.getDouble(  "Y0"));
-            square.setX1(                            row.getDouble(  "X1"));
-            square.setY1(                            row.getDouble(  "Y1"));
+            square.setX0(                            round(row.getDouble(  "X0"), 2));
+            square.setY0(                            round(row.getDouble(  "Y0"), 2));
+            square.setX1(                            round(row.getDouble(  "X1"), 2));
+            square.setY1(                            round(row.getDouble(  "Y1"), 2));
             square.setNumberOfTracks(                row.getInt(     "Number of Tracks"));
             square.setVariability(                   row.getDouble(  "Variability"));
             square.setDensity(                       row.getDouble(  "Density"));

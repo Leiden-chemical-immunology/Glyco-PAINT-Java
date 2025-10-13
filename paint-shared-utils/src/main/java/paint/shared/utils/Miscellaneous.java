@@ -123,4 +123,14 @@ public class Miscellaneous {
 
     }
 
+    public static double round(double value, int decimals) {
+        if (decimals < 0) {
+            return  value;
+        }
+        else {
+            double scale = Math.pow(10, decimals);
+            return Math.round(value * scale) / scale;
+        }
+    }
+
 }

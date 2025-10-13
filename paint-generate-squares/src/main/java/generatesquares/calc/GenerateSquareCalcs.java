@@ -49,6 +49,7 @@ import static paint.shared.io.ProjectDataLoader.filterTracksInSquare;
 import static paint.shared.io.ProjectDataLoader.loadExperiment;
 import static paint.shared.objects.Square.calcSquareArea;
 import static paint.shared.utils.Miscellaneous.formatDuration;
+import static paint.shared.utils.Miscellaneous.round;
 import static paint.shared.utils.SquareUtils.*;
 
 /**
@@ -210,8 +211,8 @@ public class GenerateSquareCalcs {
         int minTracksForTau        = generateSquaresConfig.getMinTracksToCalculateTau();
         CalculateTau.CalculateTauResult results = calcTau(recording.getTracks(), minTracksForTau, minRequiredRSquared);
         if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
-            recording.setTau(results.getTau());
-            recording.setRSquared(results.getRSquared());
+            recording.setTau(round(results.getTau(), 1));
+            recording.setRSquared(round(results.getRSquared(), 4));
         } else {
             recording.setTau(Double.NaN);
             recording.setRSquared(Double.NaN);
@@ -226,7 +227,7 @@ public class GenerateSquareCalcs {
 
         recording.setNumberOfSquaresInBackground(result.getBackgroundSquares().size());
         recording.setNumberOfTracksInBackground(backgroundTracks);
-        recording.setAverageTracksInBackGround(result.getBackgroundMean());
+        recording.setAverageTracksInBackGround(round(result.getBackgroundMean(), 3));
 
         // Calculate the density
         double density = calculateDensity(recording.getNumberOfTracks(), calcSquareArea(1), RECORDING_DURATION, recording.getConcentration());
@@ -270,39 +271,39 @@ public class GenerateSquareCalcs {
             // Calculate Tau
             CalculateTau.CalculateTauResult results = calcTau(tracksInSquare, minTracksForTau, minRequiredRSquared);
             if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
-                square.setTau(results.getTau());
-                square.setRSquared(results.getRSquared());
+                square.setTau(round(results.getTau(), 1));
+                square.setRSquared(round(results.getRSquared(), 4));
             } else {
                 square.setTau(Double.NaN);
                 square.setRSquared(Double.NaN);
             }
 
-            square.setMedianDiffusionCoefficient(tracksInSquareTable.doubleColumn("Diffusion Coefficient").median());
-            square.setMedianDiffusionCoefficientExt(tracksInSquareTable.doubleColumn("Diffusion Coefficient Ext").median());
+            square.setMedianDiffusionCoefficient(round(tracksInSquareTable.doubleColumn("Diffusion Coefficient").median(), 3));
+            square.setMedianDiffusionCoefficientExt(round(tracksInSquareTable.doubleColumn("Diffusion Coefficient Ext").median(), 3));
 
-            square.setMedianLongTrackDuration(calculateMedianLongTrack(tracksInSquareTable, 0.1));
-            square.setMedianShortTrackDuration(calculateMedianShortTrack(tracksInSquareTable, 0.1));
+            square.setMedianLongTrackDuration(round(calculateMedianLongTrack(tracksInSquareTable, 0.1), 1));
+            square.setMedianShortTrackDuration(round(calculateMedianShortTrack(tracksInSquareTable, 0.1), 1));
 
-            square.setMedianDisplacement(tracksInSquareTable.doubleColumn("Track Displacement").mean());
-            square.setMaxDisplacement(tracksInSquareTable.doubleColumn("Track Displacement").max());
-            square.setTotalDisplacement(tracksInSquareTable.doubleColumn("Track Displacement").sum());
+            square.setMedianDisplacement(round(tracksInSquareTable.doubleColumn("Track Displacement").mean(), 3));
+            square.setMaxDisplacement(round(tracksInSquareTable.doubleColumn("Track Displacement").max(), 3));
+            square.setTotalDisplacement(round(tracksInSquareTable.doubleColumn("Track Displacement").sum(), 3));
 
-            square.setMedianMaxSpeed(tracksInSquareTable.doubleColumn("Track Max Speed").median());
-            square.setMaxMaxSpeed(tracksInSquareTable.doubleColumn("Track Max Speed").max());
+            square.setMedianMaxSpeed(round(tracksInSquareTable.doubleColumn("Track Max Speed").median(), 3));
+            square.setMaxMaxSpeed(round(tracksInSquareTable.doubleColumn("Track Max Speed").max(), 3));
 
-            square.setMaxTrackDuration(tracksInSquareTable.doubleColumn("Track Duration").max());
-            square.setTotalTrackDuration(tracksInSquareTable.doubleColumn("Track Duration").sum());
-            square.setMedianTrackDuration(tracksInSquareTable.doubleColumn("Track Duration").median());
+            square.setMaxTrackDuration(round(tracksInSquareTable.doubleColumn("Track Duration").max(), 3));
+            square.setTotalTrackDuration(round(tracksInSquareTable.doubleColumn("Track Duration").sum(), 3));
+            square.setMedianTrackDuration(round(tracksInSquareTable.doubleColumn("Track Duration").median(), 3));
 
             int numberOfSquaresInRow = (int) Math.sqrt(numberOfSquaresInRecording);
             double variability = calcVariability(tracksInSquareTable, squareNumber, numberOfSquaresInRow, 10);    //TODO
-            square.setVariability(variability);
+            square.setVariability(round(variability, 1));
 
             double density = calculateDensity(tracksInSquare.size(), area, RECORDING_DURATION, concentration);
-            square.setDensity(density);
+            square.setDensity(round(density, 1));
 
             double densityRatio = tracksInSquare.size() / numberOfTracksInBackgroundSquares;
-            square.setDensityRatio(densityRatio);
+            square.setDensityRatio(round(densityRatio, 1));
 
             // Apply the shared visibility filter logic
             SquareUtils.applyVisibilityFilter(
