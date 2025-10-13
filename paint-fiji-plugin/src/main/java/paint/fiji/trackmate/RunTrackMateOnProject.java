@@ -101,7 +101,7 @@ public class RunTrackMateOnProject implements Command {
             dialog.setOkEnabled(false);
 
             try {
-                boolean debug = getBoolean("Debug", "RunTrackMateOnProject", false);
+                boolean debug = getBoolean("Debug", "Debug RunTrackMateOnProject", false);
                 String imagesRoot = getString("Paths", "Images Root", "");  //ToDo
                 Path imagesPath = Paths.get(imagesRoot);
 

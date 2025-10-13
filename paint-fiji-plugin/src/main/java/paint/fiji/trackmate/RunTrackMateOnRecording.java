@@ -58,7 +58,7 @@ public class RunTrackMateOnRecording {
                                                            ExperimentInfo experimentInfoRecord,
                                                            ProjectSpecificationDialog dialog) throws IOException {
 
-        final boolean debugFlag = getBoolean("Debug", "RunTrackMateOnRecording", false);
+        final boolean debugFlag = getBoolean("Debug", "Debug RunTrackMateOnRecording", false);
         LocalDateTime start = LocalDateTime.now();
         DebugTools.setRootLevel("OFF");
 
