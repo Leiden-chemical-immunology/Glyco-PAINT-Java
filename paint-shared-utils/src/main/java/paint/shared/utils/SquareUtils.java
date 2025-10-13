@@ -1,7 +1,9 @@
 package paint.shared.utils;
 
-import paint.shared.objects.Square;
 import paint.shared.objects.Recording;
+import paint.shared.objects.Square;
+import paint.shared.objects.Track;
+
 
 
 import java.util.*;
@@ -158,6 +160,31 @@ public class SquareUtils {
         }
 
         return new BackgroundEstimationResult(mean, current);
+    }
+
+
+    public List<Track> getTracksFromSelectedSquares(Recording recording) {
+        List<Track> selectedTracks = new ArrayList<>();
+
+        for (Square square : recording.getSquaresOfRecording()) {
+            if (square.isSelected() && square.getTracks() != null) {
+                selectedTracks.addAll(square.getTracks());
+            }
+        }
+
+        return selectedTracks;
+    }
+
+    public int getNumberOfSelectedSquares(Recording recording) {
+        int count = 0;
+
+        for (Square square : recording.getSquaresOfRecording()) {
+            if (square.isSelected()) {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     private static double getMedian(List<Double> values) {
