@@ -37,13 +37,13 @@ public class SquareUtils {
         int visibleBasic = 0;
 
         // --- First pass: basic visibility based on numerical criteria ---
-        for (Square sq : squares) {
-            boolean passes = sq.getDensityRatio() >= minDensityRatio
-                    && sq.getVariability() <= maxVariability
-                    && sq.getRSquared() >= minRSquared
-                    && !Double.isNaN(sq.getRSquared());
+        for (Square square : squares) {
+            boolean passes = square.getDensityRatio() >= minDensityRatio
+                    && square.getVariability() <= maxVariability
+                    && square.getRSquared() >= minRSquared
+                    && !Double.isNaN(square.getRSquared());
 
-            sq.setSelected(passes);
+            square.setSelected(passes);
             if (passes) {
                 visibleBasic++;
             }
@@ -61,17 +61,17 @@ public class SquareUtils {
         Set<Square> keep = new HashSet<>();
         int keptCount = 0;
 
-        for (Square sq : squares) {
-            if (!sq.isSelected()) {
+        for (Square square : squares) {
+            if (!square.isSelected()) {
                 continue;
             }
 
             boolean hasNeighbour = false;
-            int r = sq.getRowNumber();
-            int c = sq.getColNumber();
+            int r = square.getRowNumber();
+            int c = square.getColNumber();
 
             for (Square other : squares) {
-                if (other == sq || !other.isSelected()) {
+                if (other == square || !other.isSelected()) {
                     continue;
                 }
                 int dr = Math.abs(other.getRowNumber() - r);
@@ -93,7 +93,7 @@ public class SquareUtils {
             }
 
             if (hasNeighbour) {
-                keep.add(sq);
+                keep.add(square);
                 keptCount++;
             }
         }
@@ -165,7 +165,7 @@ public class SquareUtils {
     }
 
 
-    public List<Track> getTracksFromSelectedSquares(Recording recording) {
+    public static List<Track> getTracksFromSelectedSquares(Recording recording) {
         List<Track> selectedTracks = new ArrayList<>();
 
         for (Square square : recording.getSquaresOfRecording()) {
@@ -177,7 +177,7 @@ public class SquareUtils {
         return selectedTracks;
     }
 
-    public int getNumberOfSelectedSquares(Recording recording) {
+    public static int getNumberOfSelectedSquares(Recording recording) {
         int count = 0;
 
         for (Square square : recording.getSquaresOfRecording()) {
@@ -346,15 +346,21 @@ public class SquareUtils {
     IGNORE END */
 
     private static double getMedianInt(List<Integer> values) {
-        if (values.isEmpty()) return Double.NaN;
+        if (values.isEmpty()) {
+            return Double.NaN;
+        }
         int n = values.size();
-        if (n % 2 == 1) return values.get(n / 2);
+        if (n % 2 == 1) {
+            return values.get(n / 2);
+        }
         return 0.5 * (values.get(n / 2 - 1) + values.get(n / 2));
     }
 
     private static String repeat(char c, int n) {
         StringBuilder sb = new StringBuilder(n);
-        for (int i = 0; i < n; i++) sb.append(c);
+        for (int i = 0; i < n; i++) {
+            sb.append(c);
+        }
         return sb.toString();
     }
 

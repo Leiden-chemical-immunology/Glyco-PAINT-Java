@@ -230,8 +230,8 @@ public class GenerateSquareCalcs {
         recording.setAverageTracksInBackGround(round(result.getBackgroundMean(), 3));
 
         // Calculate the density
-        double density = calculateDensity(recording.getNumberOfTracks(), calcSquareArea(1), RECORDING_DURATION, recording.getConcentration());
-        recording.setDensity(density);
+        double density = calculateDensity(tracksFromSelectedSquares.size(), calcSquareArea(numberOfSelectedSquares), RECORDING_DURATION, recording.getConcentration());
+        recording.setDensity(round(density, 2));
     }
 
     /**
