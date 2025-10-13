@@ -1,6 +1,7 @@
 package viewer;
 
 import paint.shared.config.PaintConfig;
+import paint.shared.dialogs.RootSelectionDialog;
 import paint.shared.objects.Project;
 import paint.shared.utils.PaintLogger;
 
@@ -21,6 +22,9 @@ import viewer.utils.TiffMoviePlayer;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static paint.shared.config.PaintConfig.getString;
@@ -59,8 +63,8 @@ public class RecordingViewerFrame extends JFrame
         setResizable(false);
 
         int numberOfSquaresInRecording = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
-        int[] validLayouts             = {25, 100, 225, 400, 900};
-        boolean isValid                = false;
+        int[] validLayouts = {25, 100, 225, 400, 900};
+        boolean isValid = false;
 
         for (int valid : validLayouts) {
             if (numberOfSquaresInRecording == valid) {
@@ -117,6 +121,7 @@ public class RecordingViewerFrame extends JFrame
             public Dimension getPreferredSize() {
                 return new Dimension(NUMBER_PIXELS_WIDTH, NUMBER_PIXELS_HEIGHT);
             }
+
             public void setBounds(int x, int y, int w, int h) {
                 int size = Math.min(w, h);
                 super.setBounds(x, y, size, size);
@@ -142,19 +147,17 @@ public class RecordingViewerFrame extends JFrame
         currentIndex = index;
         RecordingEntry entry = recordings.get(index);
 
-        int nRow = PaintConfig.getInt("Generate Squares", "Number of Squares in Row", -1);
-        int nCol = PaintConfig.getInt("Generate Squares", "Number of Squares in Column", -1);
-        int nSquares = nRow * nCol;
+        int numberOfSquaresinRecording = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
 
         leftGridPanel.setBackgroundImage(entry.getLeftImage());
         rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), NUMBER_PIXELS_WIDTH, NUMBER_PIXELS_HEIGHT));
-        leftGridPanel.setSquares(entry.getSquares(project, nSquares));
+        leftGridPanel.setSquares(entry.getSquares(project, numberOfSquaresinRecording));
 
         experimentLabel.setText("Experiment: " + entry.getExperimentName() +
                                         "   [Overall: " + (currentIndex + 1) + "/" + recordings.size() + "]");
         recordingLabel.setText("Recording: " + entry.getRecordingName());
 
-        attributesPanel.updateFromEntry(entry, nSquares);
+        attributesPanel.updateFromEntry(entry, numberOfSquaresinRecording);
         updateNavButtons();
         leftGridPanel.repaint();
     }
@@ -185,7 +188,10 @@ public class RecordingViewerFrame extends JFrame
         dialog.setVisible(true);
         if (!dialog.isCancelled()) {
             List<RecordingEntry> filtered = dialog.getFilteredRecordings();
-            if (!filtered.isEmpty()) { currentIndex = 0; showEntry(0); }
+            if (!filtered.isEmpty()) {
+                currentIndex = 0;
+                showEntry(0);
+            }
         }
     }
 
@@ -213,9 +219,18 @@ public class RecordingViewerFrame extends JFrame
         leftGridPanel.setSelectionEnabled(true);
         final JFrame owner = this;
         CellAssignmentDialog dialog = new CellAssignmentDialog(owner, new CellAssignmentDialog.Listener() {
-            public void onAssign(int cellId) { assignmentManager.assignSelectedSquares(cellId, leftGridPanel); }
-            public void onUndo() { assignmentManager.undo(leftGridPanel); }
-            public void onCancelSelection() { leftGridPanel.clearSelection(); leftGridPanel.repaint(); }
+            public void onAssign(int cellId) {
+                assignmentManager.assignSelectedSquares(cellId, leftGridPanel);
+            }
+
+            public void onUndo() {
+                assignmentManager.undo(leftGridPanel);
+            }
+
+            public void onCancelSelection() {
+                leftGridPanel.clearSelection();
+                leftGridPanel.repaint();
+            }
         });
         dialog.addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent e) {
@@ -252,7 +267,6 @@ public class RecordingViewerFrame extends JFrame
 
     @Override
     public void onPlayRecordingRequested() {
-        // Get the current recording entry
         if (recordings.isEmpty() || currentIndex < 0 || currentIndex >= recordings.size()) {
             PaintLogger.warningf("No recording selected to play.");
             JOptionPane.showMessageDialog(this,
@@ -263,27 +277,60 @@ public class RecordingViewerFrame extends JFrame
         }
 
         RecordingEntry entry = recordings.get(currentIndex);
-        String experimentName = entry.getExperimentName();
-        String recordingName = entry.getRecordingName();
+        final String experimentName = entry.getExperimentName();
+        final String recordingName = entry.getRecordingName();
 
-        // Build file path
-        String imagesRootPath = getString("Paths", "/Volumes/Extreme Pro/Omero", "");
-        java.nio.file.Path imagePath = java.nio.file.Paths.get(imagesRootPath, experimentName, recordingName + ".nd2");
+        final String[] imagesRootPathRef = {
+                getString("Paths", "Images Root", "/Volumes/Extreme Pro/Omero")
+        };
+        final Path[] imagePathRef = {
+                Paths.get(imagesRootPathRef[0], experimentName, recordingName + ".nd2")
+        };
 
-        if (!java.nio.file.Files.exists(imagePath)) {
-            PaintLogger.errorf("Recording file not found: %s", imagePath);
-            JOptionPane.showMessageDialog(this,
-                                          "Recording file not found:\n" + imagePath,
-                                          "File Missing",
-                                          JOptionPane.ERROR_MESSAGE);
-            return;
+        if (!Files.exists(imagePathRef[0])) {
+            int choice = JOptionPane.showConfirmDialog(
+                    this,
+                    "Recording file not found:\n" + imagePathRef[0] +
+                            "\n\nSelect a new image root directory and try again?",
+                    "File Missing",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            if (choice == JOptionPane.YES_OPTION) {
+                RootSelectionDialog dlg =
+                        new RootSelectionDialog(this, RootSelectionDialog.Mode.IMAGES);
+                Path newRoot = dlg.showDialog();
+
+                if (dlg.isCancelled() || newRoot == null) {
+                    JOptionPane.showMessageDialog(this,
+                                                  "No directory selected. Playback cancelled.",
+                                                  "Cancelled",
+                                                  JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+
+                imagesRootPathRef[0] = newRoot.toString();
+                imagePathRef[0] = newRoot.resolve(experimentName).resolve(recordingName + ".nd2");
+
+                if (!Files.exists(imagePathRef[0])) {
+                    JOptionPane.showMessageDialog(this,
+                                                  "Still could not find the recording file:\n" + imagePathRef[0],
+                                                  "File Missing",
+                                                  JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                PaintConfig.setString("Paths", "Images Root", imagesRootPathRef[0]);
+                PaintConfig.instance().save();
+            } else {
+                return;
+            }
         }
 
-        // Run MoviePlayer in a separate thread (no feedback)
         Thread movieThread = new Thread(() -> {
             try {
                 TiffMoviePlayer player = new TiffMoviePlayer();
-                player.playMovie(imagePath.toString());
+                player.playMovie(imagePathRef[0].toString());
             } catch (Exception ex) {
                 PaintLogger.errorf("Error playing recording: %s", ex.getMessage());
                 ex.printStackTrace();
