@@ -11,35 +11,12 @@ package paint.fiji.tracks;
  */
 public class TrackAttributes {
 
-    /**
-     * Number of spots (detections) in the track.
-     */
-    public final int numberOfSpotsInTracks;
-
-    /**
-     * Total path length traveled by the track (in spatial units of the dataset).
-     */
-    public final double totalDistance;
-
-    /**
-     * Diffusion coefficient (based on mean squared displacement relative to first spot).
-     */
-    public final double diffusionCoeff;
-
-    /**
-     * Extended diffusion coefficient (based on step-wise mean squared displacement).
-     */
-    public final double diffusionCoeffExt;
-
-    /**
-     * Confinement ratio = net displacement / total distance traveled.
-     */
-    public final double confinementRatio;
-
-    /**
-     * Net displacement between the first and last spot in the track.
-     */
-    public final double displacement;
+    public final int numberOfSpotsInTracks; // Number of spots (detections) in the track.
+    public final double totalDistance;      // Total path length traveled by the track (in spatial units of the dataset).
+    public final double diffusionCoeff;     // Diffusion coefficient (based on mean squared displacement relative to first spot).
+    public final double diffusionCoeffExt;  // Extended diffusion coefficient (based on step-wise mean squared displacement).
+    public final double confinementRatio;   // Confinement ratio = net displacement / total distance traveled.
+    public final double displacement;       // Net displacement between the first and last spot in the track.
 
     /**
      * Creates a populated {@code TrackAttributes} object with the specified values.

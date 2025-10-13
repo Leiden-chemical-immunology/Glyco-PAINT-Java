@@ -76,7 +76,7 @@ public class TrackTableIO extends BaseTableIO {
             track.setDiffusionCoefficient(   row.getDouble( "Diffusion Coefficient"));
             track.setDiffusionCoefficientExt(row.getDouble( "Diffusion Coefficient Ext"));
             track.setTotalDistance(          row.getDouble( "Total Distance"));
-            track.setConfinementRatio(       row.getDouble("Confinement Ratio"));
+            track.setConfinementRatio(       row.getDouble( "Confinement Ratio"));
             track.setSquareNumber(           row.getInt(    "Square Number"));
             track.setLabelNumber(            row.getInt(    "Label Number"));
             // @formatter:on

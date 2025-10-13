@@ -35,36 +35,38 @@ public class TrackCsvWriter {
 
         for (Integer trackId : trackIDs) {
 
-            TrackAttributes ca = calculateTrackAttributes(trackModel, trackId, TIME_INTERVAL);
+            TrackAttributes trackAttributes = calculateTrackAttributes(trackModel, trackId, TIME_INTERVAL);
 
-            Track t = new Track();
-            t.setUniqueKey(recordingName + "-" + trackId);
-            t.setRecordingName(recordingName);
-            t.setTrackId(trackId);
-            t.setTrackLabel(trackModel.name(trackId) != null
+            Track track = new Track();
+            track.setUniqueKey(recordingName + "-" + trackId);
+            track.setRecordingName(recordingName);
+            track.setTrackId(trackId);
+            track.setTrackLabel(trackModel.name(trackId) != null
                                     ? trackModel.name(trackId)
                                     : "Track-" + trackId);
 
-            t.setNumberOfSpots(asInt(featureModel.getTrackFeature(trackId, "NUMBER_SPOTS")));
-            t.setNumberOfGaps(asInt(featureModel.getTrackFeature(trackId, "NUMBER_GAPS")));
-            t.setLongestGap(asInt(featureModel.getTrackFeature(trackId, "LONGEST_GAP")));
-            t.setTrackDuration(roundOr(featureModel.getTrackFeature(trackId, "TRACK_DURATION"), 3, -1));
-            t.setTrackXLocation(roundOr(featureModel.getTrackFeature(trackId, "TRACK_X_LOCATION"), 2, -1));
-            t.setTrackYLocation(roundOr(featureModel.getTrackFeature(trackId, "TRACK_Y_LOCATION"), 2, -1));
-            t.setTrackDisplacement(roundOr(featureModel.getTrackFeature(trackId, "TRACK_DISPLACEMENT"), 2, -1));
-            t.setTrackMaxSpeed(roundOr(featureModel.getTrackFeature(trackId, "TRACK_MAX_SPEED"), 2, -1));
-            t.setTrackMedianSpeed(roundOr(featureModel.getTrackFeature(trackId, "TRACK_MEDIAN_SPEED"), 2, -1));
+            // @formatter:off
+            track.setNumberOfSpots(       asInt(featureModel.getTrackFeature(trackId,  "NUMBER_SPOTS")));
+            track.setNumberOfGaps(        asInt(featureModel.getTrackFeature(trackId,  "NUMBER_GAPS")));
+            track.setLongestGap(          asInt(featureModel.getTrackFeature(trackId,  "LONGEST_GAP")));
+            track.setTrackDuration(     roundOr(featureModel.getTrackFeature(trackId,  "TRACK_DURATION"), 3, -1));
+            track.setTrackXLocation(    roundOr(featureModel.getTrackFeature(trackId,  "TRACK_X_LOCATION"), 2, -1));
+            track.setTrackYLocation(    roundOr(featureModel.getTrackFeature(trackId,  "TRACK_Y_LOCATION"), 2, -1));
+            track.setTrackDisplacement( roundOr(featureModel.getTrackFeature(trackId,  "TRACK_DISPLACEMENT"), 2, -1));
+            track.setTrackMaxSpeed(      roundOr(featureModel.getTrackFeature(trackId, "TRACK_MAX_SPEED"), 2, -1));
+            track.setTrackMedianSpeed(   roundOr(featureModel.getTrackFeature(trackId, "TRACK_MEDIAN_SPEED"), 2, -1));
+            // @formatter:on
 
             // custom calculated attributes
-            t.setDiffusionCoefficient(ca.diffusionCoeff);
-            t.setDiffusionCoefficientExt(ca.diffusionCoeffExt);
-            t.setTotalDistance(ca.totalDistance);
-            t.setConfinementRatio(ca.confinementRatio);
-            t.setSquareNumber(-1);
-            t.setLabelNumber(-1);
+            track.setDiffusionCoefficient(trackAttributes.diffusionCoeff);
+            track.setDiffusionCoefficientExt(trackAttributes.diffusionCoeffExt);
+            track.setTotalDistance(trackAttributes.totalDistance);
+            track.setConfinementRatio(trackAttributes.confinementRatio);
+            track.setSquareNumber(-1);
+            track.setLabelNumber(-1);
 
-            totalSpots += ca.numberOfSpotsInTracks;
-            tracks.add(t);
+            totalSpots += trackAttributes.numberOfSpotsInTracks;
+            tracks.add(track);
         }
 
 
@@ -85,7 +87,9 @@ public class TrackCsvWriter {
     }
 
     private static double roundTo(Double v, int places) {
-        if (v == null) return Double.NaN;
+        if (v == null) {
+            return Double.NaN;
+        }
         double scale = Math.pow(10, places);
         return Math.round(v * scale) / scale;
     }
