@@ -24,8 +24,8 @@
 package generatesquares;
 
 import paint.shared.config.PaintConfig;
-import paint.shared.dialogs.ProjectSelectionDialog;
 import paint.shared.dialogs.ProjectSpecificationDialog;
+import paint.shared.dialogs.RootSelectionDialog;
 import paint.shared.objects.Experiment;
 import paint.shared.utils.HistogramPdfExporter;
 import paint.shared.utils.JarInfo;
@@ -101,8 +101,9 @@ public class GenerateSquares {
         SwingUtilities.invokeLater(() -> {
 
             // --- Step 1: Select project directory ---
-            ProjectSelectionDialog projectSelectionDialog = new ProjectSelectionDialog(null);
-            Path projectPath = projectSelectionDialog.showDialog();
+            RootSelectionDialog selectionDialog = new RootSelectionDialog(null, RootSelectionDialog.Mode.PROJECT);
+
+            Path projectPath = selectionDialog.showDialog();
 
             // User pressed Cancel
             if (projectPath == null) {

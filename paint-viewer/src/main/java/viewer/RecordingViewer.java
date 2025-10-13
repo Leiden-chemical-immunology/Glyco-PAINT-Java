@@ -1,7 +1,7 @@
 package viewer;
 
 import paint.shared.config.PaintConfig;
-import paint.shared.dialogs.ProjectSelectionDialog;
+import paint.shared.dialogs.RootSelectionDialog;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.ProjectSpecificationDialog.DialogMode;
 import paint.shared.objects.Project;
@@ -10,7 +10,6 @@ import viewer.utils.RecordingEntry;
 import viewer.utils.RecordingLoader;
 
 import javax.swing.*;
-import java.awt.Frame;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -19,7 +18,7 @@ public class RecordingViewer {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             // --- Step 1: Project selection ---
-            ProjectSelectionDialog selectionDialog = new ProjectSelectionDialog((Frame) null);
+            RootSelectionDialog selectionDialog = new RootSelectionDialog(null, RootSelectionDialog.Mode.PROJECT);
             Path projectPath = selectionDialog.showDialog();
 
             if (projectPath == null || selectionDialog.isCancelled()) {

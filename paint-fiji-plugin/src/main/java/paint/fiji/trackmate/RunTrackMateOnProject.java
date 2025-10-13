@@ -3,8 +3,8 @@ package paint.fiji.trackmate;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 import paint.shared.config.PaintConfig;
-import paint.shared.dialogs.ProjectSelectionDialog;
 import paint.shared.dialogs.ProjectSpecificationDialog;
+import paint.shared.dialogs.RootSelectionDialog;
 import paint.shared.utils.JarInfo;
 import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
@@ -52,8 +52,8 @@ public class RunTrackMateOnProject implements Command {
         }
 
         // Project selection dialog
-        ProjectSelectionDialog projDlg = new ProjectSelectionDialog(null);
-        Path projectPath = projDlg.showDialog();
+        RootSelectionDialog selectionDialog = new RootSelectionDialog(null, RootSelectionDialog.Mode.PROJECT);
+        Path projectPath = selectionDialog.showDialog();
 
         if (projectPath == null) {
             PaintLogger.infof("User cancelled project selection.");

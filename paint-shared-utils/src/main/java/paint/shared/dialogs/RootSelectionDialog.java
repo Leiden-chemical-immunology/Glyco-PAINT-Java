@@ -8,10 +8,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.prefs.Preferences;
 
-public class ProjectSelectionDialog extends JDialog {
+public class RootSelectionDialog extends JDialog {
 
-    private static final String PREF_NODE = "Glyco-PAINT.GenerateSquares";
+    public enum Mode { PROJECT, IMAGES }
+
+    private static final String PREF_NODE = "Glyco-PAINT.RootSelection";
     private static final String KEY_PROJECT = "projectDir";
+    private static final String KEY_IMAGES = "imagesDir";
 
     private final JTextField directoryField;
     private final JButton okButton;
@@ -19,22 +22,30 @@ public class ProjectSelectionDialog extends JDialog {
     private boolean okPressed = false;
     private volatile boolean cancelled = false;
 
-    public ProjectSelectionDialog(Frame owner) {
-        super(owner, "Select Project Directory", true); // modal dialog
+    private final Mode mode;
+
+    public RootSelectionDialog(Frame owner, Mode mode) {
+        super(owner,
+              mode == Mode.PROJECT ? "Select Project Directory"
+                      : "Select Image Root Directory",
+              true); // modal dialog
+        this.mode = mode;
+
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-        // --- global font override for this dialog ---
+        // --- Font setup ---
         Font baseFont = new Font("Dialog", Font.PLAIN, 12);
         UIManager.put("Label.font", baseFont);
         UIManager.put("CheckBox.font", baseFont);
         UIManager.put("TextField.font", baseFont);
         UIManager.put("Button.font", baseFont);
 
-        // Load last project dir from prefs or fallback to home
+        // --- Load last used path ---
         final Preferences prefs = Preferences.userRoot().node(PREF_NODE);
-        String lastProjectDirectory = prefs.get(KEY_PROJECT, System.getProperty("user.home"));
+        String key = (mode == Mode.PROJECT) ? KEY_PROJECT : KEY_IMAGES;
+        String lastDir = prefs.get(key, System.getProperty("user.home"));
 
-        directoryField = new JTextField(lastProjectDirectory, 40);
+        directoryField = new JTextField(lastDir, 40);
 
         JButton browseButton = new JButton("Browse...");
         okButton = new JButton("OK");
@@ -43,9 +54,8 @@ public class ProjectSelectionDialog extends JDialog {
         // === Browse button ===
         browseButton.addActionListener(e -> {
             File defaultDir = new File(directoryField.getText().trim());
-            if (!defaultDir.exists()) {
-                defaultDir = new File(System.getProperty("user.home"));
-            }
+            if (!defaultDir.exists()) defaultDir = new File(System.getProperty("user.home"));
+
             JFileChooser chooser = new JFileChooser(defaultDir);
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
@@ -55,9 +65,8 @@ public class ProjectSelectionDialog extends JDialog {
 
         // === OK button ===
         okButton.addActionListener(e -> {
-
-            String projectDirectory = directoryField.getText().trim();
-            if (projectDirectory.isEmpty()) {
+            String dir = directoryField.getText().trim();
+            if (dir.isEmpty()) {
                 JOptionPane.showMessageDialog(this,
                                               "A directory needs to be specified",
                                               "Specify a directory",
@@ -65,28 +74,25 @@ public class ProjectSelectionDialog extends JDialog {
                 return;
             }
 
-            // Check if directory exists
-            Path path = Paths.get(projectDirectory);
+            Path path = Paths.get(dir);
             if (Files.isRegularFile(path)) {
                 JOptionPane.showMessageDialog(this,
                                               "Please specify a directory, not a file",
                                               "Specify a directory",
                                               JOptionPane.ERROR_MESSAGE);
-
                 return;
             }
             if (!Files.isDirectory(path)) {
                 JOptionPane.showMessageDialog(this,
-                                              "The directory does no longer exist",
+                                              "The directory does not exist",
                                               "Specify a directory",
                                               JOptionPane.ERROR_MESSAGE);
-
                 return;
             }
-            okPressed = true;
-            cancelled = false; // reset cancelled flag
-            prefs.put(KEY_PROJECT, projectDirectory);
 
+            okPressed = true;
+            cancelled = false;
+            prefs.put(key, dir); // ✅ remember last selection
             dispose();
         });
 
