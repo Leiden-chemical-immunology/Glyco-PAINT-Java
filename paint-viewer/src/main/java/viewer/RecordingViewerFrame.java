@@ -110,6 +110,26 @@ public class RecordingViewerFrame extends JFrame
         mainPanel.add(controlsPanel.getComponent(), BorderLayout.EAST);
         add(mainPanel, BorderLayout.CENTER);
 
+        // --- Close button ---
+        JButton closeButton = new JButton("Close Viewer");
+        closeButton.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        closeButton.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(
+                    this,
+                    "Are you sure you want to close the Recording Viewer?",
+                    "Confirm Close",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE
+            );
+            if (confirm == JOptionPane.YES_OPTION) {
+                dispose(); // close this window
+            }
+        });
+
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        bottomPanel.add(closeButton);
+        add(bottomPanel, BorderLayout.SOUTH);
+
         setSize(1500, 700);
         setLocationRelativeTo(null);
 
