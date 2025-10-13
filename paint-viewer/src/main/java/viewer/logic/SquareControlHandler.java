@@ -11,8 +11,12 @@ public class SquareControlHandler {
     }
 
     public void apply(SquareControlParams params, SquareGridPanel panel) {
-        if (panel != null) this.grid = panel;
-        if (grid == null) return;
+        if (panel != null) {
+            this.grid = panel;
+        }
+        if (grid == null) {
+            return;
+        }
 
         grid.setControlParameters(
                 params.densityRatio,

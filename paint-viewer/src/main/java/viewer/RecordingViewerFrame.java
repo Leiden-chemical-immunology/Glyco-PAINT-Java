@@ -165,6 +165,7 @@ public class RecordingViewerFrame extends JFrame
     }
 
     private void showEntry(int index) {
+
         if (index < 0 || index >= recordings.size()) {
             return;
         }

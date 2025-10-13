@@ -36,14 +36,15 @@ import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH;
  */
 public class SquareGridPanel extends JPanel {
 
-    private final int rows;
-    private final int cols;
+    // @formatter:off
+    private       Recording    recording;
+    private final int          rows;
+    private final int          cols;
 
-    private Image backgroundImage;
-    private List<Square> squares = new ArrayList<>();
+    private       Image        backgroundImage;
+    private       List<Square> squares         = new ArrayList<>();
     private final Set<Integer> selectedSquares = new HashSet<>();
 
-    // @formatter:off
     private boolean   showBorders   = true;
     private boolean   showShading   = true;
     private Rectangle selectionRect = null;
@@ -474,7 +475,12 @@ public class SquareGridPanel extends JPanel {
 
     /** Re-applies square visibility filtering using the current control parameters. */
     public void applyVisibilityFilter() {
-        SquareUtils.applyVisibilityFilter(squares, ctrlMinDensityRatio, ctrlMaxVariability, ctrlMinRSquared, ctrlNeighbourMode);
+        SquareUtils.applyVisibilityFilter(
+                squares,
+                ctrlMinDensityRatio,
+                ctrlMaxVariability,
+                ctrlMinRSquared,
+                ctrlNeighbourMode);
         repaint();
     }
 
