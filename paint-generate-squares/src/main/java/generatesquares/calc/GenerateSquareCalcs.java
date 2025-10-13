@@ -51,6 +51,7 @@ import static paint.shared.objects.Square.calcSquareArea;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.utils.Miscellaneous.round;
 import static paint.shared.utils.SquareUtils.*;
+import static paint.shared.utils.SquareUtils.getTracksFromSelectedSquares;
 
 /**
  * Provides core calculations for the "Generate Squares" workflow.
@@ -102,17 +103,17 @@ public class GenerateSquareCalcs {
                 PaintLogger.debugf(recording.toString());
 
                 // Create the squares with basic geometric information
-                List<Square> squares = generateSquaresForRecording(generateSquaresConfig, recording);
+                List<Square> squares = generateSquaresForRecording(recording, generateSquaresConfig);
                 recording.setSquaresOfRecording(squares);
 
                 // Assign the recording tracks to the squares
                 assignTracksToSquares(recording, generateSquaresConfig);
 
-                // Calculate recording attributes
-                calculateRecordingAttributes(recording, generateSquaresConfig);  //TODO
-
                 // Calculate squares attributes
                 calculateSquareAttributes(recording, generateSquaresConfig);
+
+                // Calculate recording attributes
+                calculateRecordingAttributes(recording, generateSquaresConfig);  //TODO
             }
 
             Duration duration = Duration.between(start, LocalDateTime.now());
@@ -142,7 +143,7 @@ public class GenerateSquareCalcs {
      * @param recording             the recording to segment into squares
      * @return list of {@link Square} objects representing the grid
      */
-    public static List<Square> generateSquaresForRecording(GenerateSquaresConfig generateSquaresConfig, Recording recording) {
+    public static List<Square> generateSquaresForRecording(Recording recording, GenerateSquaresConfig generateSquaresConfig ) {
 
         numberOfSquaresInRecording    = generateSquaresConfig.getNumberOfSquaresInRecording();
         numberOfSquaresInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);
@@ -207,16 +208,10 @@ public class GenerateSquareCalcs {
     public static void calculateRecordingAttributes(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
 
         // Calculate the Tau
-        double minRequiredRSquared = generateSquaresConfig.getMinRequiredRSquared();
-        int minTracksForTau        = generateSquaresConfig.getMinTracksToCalculateTau();
-        CalculateTau.CalculateTauResult results = calcTau(recording.getTracks(), minTracksForTau, minRequiredRSquared);
-        if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
-            recording.setTau(round(results.getTau(), 1));
-            recording.setRSquared(round(results.getRSquared(), 4));
-        } else {
-            recording.setTau(Double.NaN);
-            recording.setRSquared(Double.NaN);
-        }
+        double minRequiredRSquared            = generateSquaresConfig.getMinRequiredRSquared();
+        int minTracksForTau                   = generateSquaresConfig.getMinTracksToCalculateTau();
+
+
 
         // Calculate the background track count
         SquareUtils.BackgroundEstimationResult result;
@@ -228,6 +223,18 @@ public class GenerateSquareCalcs {
         recording.setNumberOfSquaresInBackground(result.getBackgroundSquares().size());
         recording.setNumberOfTracksInBackground(backgroundTracks);
         recording.setAverageTracksInBackGround(round(result.getBackgroundMean(), 3));
+
+        List<Track> tracksFromSelectedSquares = SquareUtils.getTracksFromSelectedSquares(recording);
+        int numberOfSelectedSquares           = SquareUtils.getNumberOfSelectedSquares(recording);
+
+        CalculateTau.CalculateTauResult results = calcTau(tracksFromSelectedSquares, minTracksForTau, minRequiredRSquared);
+        if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
+            recording.setTau(round(results.getTau(), 1));
+            recording.setRSquared(round(results.getRSquared(), 4));
+        } else {
+            recording.setTau(Double.NaN);
+            recording.setRSquared(Double.NaN);
+        }
 
         // Calculate the density
         double density = calculateDensity(tracksFromSelectedSquares.size(), calcSquareArea(numberOfSelectedSquares), RECORDING_DURATION, recording.getConcentration());
