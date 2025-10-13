@@ -23,6 +23,7 @@ import java.awt.*;
 import java.io.File;
 import java.util.List;
 
+import static paint.shared.config.PaintConfig.getString;
 import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_HEIGHT;
 import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH;
 
@@ -265,9 +266,9 @@ public class RecordingViewerFrame extends JFrame
         String experimentName = entry.getExperimentName();
         String recordingName = entry.getRecordingName();
 
-        // Build file path (temporary static root)
-        String rootPath = "/Volumes/Extreme Pro/Omero";
-        java.nio.file.Path imagePath = java.nio.file.Paths.get(rootPath, experimentName, recordingName + ".nd2");
+        // Build file path
+        String imagesRootPath = getString("Paths", "/Volumes/Extreme Pro/Omero", "");
+        java.nio.file.Path imagePath = java.nio.file.Paths.get(imagesRootPath, experimentName, recordingName + ".nd2");
 
         if (!java.nio.file.Files.exists(imagePath)) {
             PaintLogger.errorf("Recording file not found: %s", imagePath);
