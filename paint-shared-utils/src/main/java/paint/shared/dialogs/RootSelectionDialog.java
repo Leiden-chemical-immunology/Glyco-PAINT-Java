@@ -16,11 +16,13 @@ public class RootSelectionDialog extends JDialog {
     private static final String KEY_PROJECT = "projectDir";
     private static final String KEY_IMAGES = "imagesDir";
 
-    private final JTextField directoryField;
-    private final JButton okButton;
-    private final JButton cancelButton;
-    private boolean okPressed = false;
-    private volatile boolean cancelled = false;
+    // @formqtter:off
+    private final    JTextField directoryField;
+    private final    JButton    okButton;
+    private final    JButton    cancelButton;
+    private          boolean    okPressed = false;
+    private volatile boolean    cancelled = false;
+    // @formatter:on
 
     private final Mode mode;
 

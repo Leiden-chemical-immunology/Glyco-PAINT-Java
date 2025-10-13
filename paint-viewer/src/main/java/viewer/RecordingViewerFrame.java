@@ -153,7 +153,9 @@ public class RecordingViewerFrame extends JFrame
     }
 
     private static ImageIcon scaleToFit(ImageIcon icon, int w, int h) {
-        if (icon == null || icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) return null;
+        if (icon == null || icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) {
+            return null;
+        }
         Image scaled = icon.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
         return new ImageIcon(scaled);
     }
@@ -163,7 +165,9 @@ public class RecordingViewerFrame extends JFrame
     }
 
     private void showEntry(int index) {
-        if (index < 0 || index >= recordings.size()) return;
+        if (index < 0 || index >= recordings.size()) {
+            return;
+        }
         currentIndex = index;
         RecordingEntry entry = recordings.get(index);
 

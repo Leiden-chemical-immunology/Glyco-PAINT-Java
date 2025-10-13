@@ -42,7 +42,11 @@ public class TiffMoviePlayer {
 
             // Silence ImageJ console
             PrintStream originalOut = System.out;
-            System.setOut(new PrintStream(new OutputStream() { @Override public void write(int b) {} }));
+            System.setOut(new PrintStream(new OutputStream() {
+                @Override
+                public void write(int b) {
+                }
+            }));
 
             final ImagePlus imp = IJ.openImage(tiffPath);
 
@@ -50,10 +54,9 @@ public class TiffMoviePlayer {
             SwingUtilities.invokeLater(loadingDialog::dispose);
 
             if (imp == null) {
-                SwingUtilities.invokeLater(() ->
-                                                   JOptionPane.showMessageDialog(null,
-                                                                                 "Failed to open image file:\n" + tiffPath,
-                                                                                 "Error", JOptionPane.ERROR_MESSAGE));
+                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null,
+                                                                               "Failed to open image file:\n" + tiffPath,
+                                                                               "Error", JOptionPane.ERROR_MESSAGE));
                 return;
             }
 
@@ -81,12 +84,14 @@ public class TiffMoviePlayer {
                 imagePanel.add(imageLabel, BorderLayout.CENTER);
                 frame.add(imagePanel, BorderLayout.CENTER);
 
-                final int totalFrames = imp.getStackSize();
-                final JSlider frameSlider = new JSlider(1, totalFrames, 1);
-                final JLabel frameLabel = new JLabel("Frame: 1");
+                // @formatter:off
+                final int totalFrames         = imp.getStackSize();
+                final JSlider frameSlider     = new JSlider(1, totalFrames, 1);
+                final JLabel frameLabel       = new JLabel("Frame: 1");
                 final JButton playPauseButton = new JButton("⏸ Pause");
-                final JSlider speedSlider = new JSlider(50, 400, 100);
-                final JLabel speedLabel = new JLabel("Speed: 1.0×");
+                final JSlider speedSlider     = new JSlider(50, 400, 100);
+                final JLabel speedLabel       = new JLabel("Speed: 1.0×");
+                // @formatter:on
 
                 JPanel controls = new JPanel(new GridLayout(2, 1, 0, 3));
                 controls.setBorder(new EmptyBorder(6, 6, 6, 6));
@@ -162,18 +167,28 @@ public class TiffMoviePlayer {
 
                             double raw = speedSlider.getValue() / 100.0;
                             double speed = Math.round(raw * 2) / 2.0;
-                            if (speed <= 0.0) speed = 0.5;
+                            if (speed <= 0.0) {
+                                speed = 0.5;
+                            }
                             long sleepTime = (long) (baseDelayMs / speed);
-                            if (sleepTime < 5) sleepTime = 5;
+                            if (sleepTime < 5) {
+                                sleepTime = 5;
+                            }
 
-                            try { Thread.sleep(sleepTime); }
-                            catch (InterruptedException ignored) {}
+                            try {
+                                Thread.sleep(sleepTime);
+                            } catch (InterruptedException ignored) {
+                            }
 
                             currentFrame[0]++;
-                            if (currentFrame[0] > totalFrames) currentFrame[0] = 1;
+                            if (currentFrame[0] > totalFrames) {
+                                currentFrame[0] = 1;
+                            }
                         } else {
-                            try { Thread.sleep(100); }
-                            catch (InterruptedException ignored) {}
+                            try {
+                                Thread.sleep(100);
+                            } catch (InterruptedException ignored) {
+                            }
                         }
                     }
                 }, "TiffMoviePlaybackThread").start();
@@ -182,7 +197,6 @@ public class TiffMoviePlayer {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() ->
-                                           new TiffMoviePlayer().playMovie("/Volumes/Extreme Pro/Omero/221012/221012-Exp-3-A4-3.tif"));
+        SwingUtilities.invokeLater(() -> new TiffMoviePlayer().playMovie("/Volumes/Extreme Pro/Omero/221012/221012-Exp-3-A4-3.tif"));
     }
 }

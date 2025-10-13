@@ -175,13 +175,12 @@ public class RunTrackMateOnExperiment {
                     String recordingName = experimentInfo.getRecordingName();
 
                     // @formatter:off
-                    int numberOfSpots            = 0;
-                    int numberOfTracks           = 0;
-                    int numberOfFilteredTracks   = 0;
-                    int numberOfSpotsInAllTracks = 0;
-                    int numberOfFrames           = 0;
-                    int runTime                  = 0;
-                    String timeStamp             = "";
+                    int    numberOfSpots            = 0;
+                    int    numberOfFilteredTracks   = 0;
+                    int    numberOfSpotsInAllTracks = 0;
+                    int    numberOfFrames           = 0;
+                    int    runTime                  = 0;
+                    String timeStamp                = "";
                     // @formatter:on
 
                     if (experimentInfo.isProcessFlag()) {

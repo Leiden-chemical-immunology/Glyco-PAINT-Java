@@ -29,25 +29,25 @@ public class TrackTableIO extends BaseTableIO {
             Row row = table.appendRow();
 
             // @formatter:off
-            row.setString("Unique Key",                track.getUniqueKey());
-            row.setString("Recording Name",            track.getRecordingName());
-            row.setInt(   "Track Id",                  track.getTrackId());
-            row.setString("Track Label",               track.getTrackLabel());
-            row.setInt(   "Number of Spots",           track.getNumberOfSpots());
-            row.setInt(   "Number of Gaps",            track.getNumberOfGaps());
-            row.setInt(   "Longest Gap",               track.getLongestGap());
-            row.setDouble("Track Duration",            track.getTrackDuration());
-            row.setDouble("Track X Location",          track.getTrackXLocation());
-            row.setDouble("Track Y Location",          track.getTrackYLocation());
-            row.setDouble("Track Displacement",        track.getTrackDisplacement());
-            row.setDouble("Track Max Speed",           track.getTrackMaxSpeed());
-            row.setDouble("Track Median Speed",        track.getTrackMedianSpeed());
-            row.setDouble("Diffusion Coefficient",     track.getDiffusionCoefficient());
-            row.setDouble("Diffusion Coefficient Ext", track.getDiffusionCoefficientExt());
-            row.setDouble("Total Distance",            track.getTotalDistance());
-            row.setDouble("Confinement Ratio",         track.getConfinementRatio());
-            row.setInt(   "Square Number",             track.getSquareNumber());
-            row.setInt(   "Label Number",              track.getLabelNumber());
+            row.setString( "Unique Key",                track.getUniqueKey());
+            row.setString( "Recording Name",            track.getRecordingName());
+            row.setInt(    "Track Id",                  track.getTrackId());
+            row.setString( "Track Label",               track.getTrackLabel());
+            row.setInt(    "Number of Spots",           track.getNumberOfSpots());
+            row.setInt(    "Number of Gaps",            track.getNumberOfGaps());
+            row.setInt(    "Longest Gap",               track.getLongestGap());
+            row.setDouble( "Track Duration",            track.getTrackDuration());
+            row.setDouble( "Track X Location",          track.getTrackXLocation());
+            row.setDouble( "Track Y Location",          track.getTrackYLocation());
+            row.setDouble( "Track Displacement",        track.getTrackDisplacement());
+            row.setDouble( "Track Max Speed",           track.getTrackMaxSpeed());
+            row.setDouble( "Track Median Speed",        track.getTrackMedianSpeed());
+            row.setDouble( "Diffusion Coefficient",     track.getDiffusionCoefficient());
+            row.setDouble( "Diffusion Coefficient Ext", track.getDiffusionCoefficientExt());
+            row.setDouble( "Total Distance",            track.getTotalDistance());
+            row.setDouble( "Confinement Ratio",         track.getConfinementRatio());
+            row.setInt(    "Square Number",             track.getSquareNumber());
+            row.setInt(    "Label Number",              track.getLabelNumber());
             // @formatter:on
 
         }
@@ -115,25 +115,27 @@ public class TrackTableIO extends BaseTableIO {
         Track track = new Track();
 
         // Adapt column names to match your CSV/table headers
-        track.setUniqueKey(row.getString("Unique Key"));
-        track.setRecordingName(row.getString("Recording Name"));
-        track.setTrackId(row.getInt("Track ID"));
-        track.setTrackLabel(row.getString("Track Label"));
-        track.setNumberOfSpots(row.getInt("Number of Spots"));
-        track.setNumberOfGaps(row.getInt("Number of Gaps"));
-        track.setLongestGap(row.getInt("Longest Gap"));
-        track.setTrackDuration(row.getDouble("Track Duration"));
-        track.setTrackXLocation(row.getDouble("Track X Location"));
-        track.setTrackYLocation(row.getDouble("Track Y Location"));
-        track.setTrackDisplacement(row.getDouble("Track Displacement"));
-        track.setTrackMaxSpeed(row.getDouble("Track Max Speed"));
-        track.setTrackMedianSpeed(row.getDouble("Track Median Speed"));
-        track.setDiffusionCoefficient(row.getDouble("Diffusion Coefficient"));
-        track.setDiffusionCoefficientExt(row.getDouble("Diffusion Coefficient Ext"));
-        track.setTotalDistance(row.getDouble("Total Distance"));
-        track.setConfinementRatio(row.getDouble("Confinement Ratio"));
-        track.setSquareNumber(row.getInt("Square Number"));
-        track.setLabelNumber(row.getInt("Label Number"));
+        // @formatter:off
+        track.setUniqueKey(                row.getString(  "Unique Key"));
+        track.setRecordingName(            row.getString(  "Recording Name"));
+        track.setTrackId(                  row.getInt(     "Track ID"));
+        track.setTrackLabel(               row.getString(  "Track Label"));
+        track.setNumberOfSpots(            row.getInt(     "Number of Spots"));
+        track.setNumberOfGaps(             row.getInt(     "Number of Gaps"));
+        track.setLongestGap(               row.getInt(     "Longest Gap"));
+        track.setTrackDuration(            row.getDouble(  "Track Duration"));
+        track.setTrackXLocation(           row.getDouble(  "Track X Location"));
+        track.setTrackYLocation(           row.getDouble(  "Track Y Location"));
+        track.setTrackDisplacement(        row.getDouble(  "Track Displacement"));
+        track.setTrackMaxSpeed(            row.getDouble(  "Track Max Speed"));
+        track.setTrackMedianSpeed(         row.getDouble(  "Track Median Speed"));
+        track.setDiffusionCoefficient(     row.getDouble(  "Diffusion Coefficient"));
+        track.setDiffusionCoefficientExt(  row.getDouble(  "Diffusion Coefficient Ext"));
+        track.setTotalDistance(            row.getDouble(  "Total Distance"));
+        track.setConfinementRatio(         row.getDouble(  "Confinement Ratio"));
+        track.setSquareNumber(             row.getInt(     "Square Number"));
+        track.setLabelNumber(              row.getInt(     "Label Number"));
+        // @formatter:on
 
         return track;
     }

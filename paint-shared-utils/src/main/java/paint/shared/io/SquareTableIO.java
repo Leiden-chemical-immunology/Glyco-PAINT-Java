@@ -25,42 +25,46 @@ public class SquareTableIO extends BaseTableIO {
 
     public Table toTable(List<Square> squares) {
         Table table = emptyTable();
-        for (Square sq : squares) {
+        for (Square square : squares) {
             Row row = table.appendRow();
-            row.setString("Unique Key", sq.getUniqueKey());
-            row.setString("Recording Name", sq.getRecordingName());
-            row.setInt("Square Number", sq.getSquareNumber());
-            row.setInt("Row Number", sq.getRowNumber());
-            row.setInt("Column Number", sq.getColNumber());
-            row.setInt("Label Number", sq.getLabelNumber());
-            row.setInt("Cell ID", sq.getCellId());
-            row.setBoolean("Selected", sq.isSelected());
-            row.setBoolean("Square Manually Excluded", sq.isSquareManuallyExcluded());
-            row.setBoolean("Image Excluded", sq.isImageExcluded());
-            row.setDouble("X0", sq.getX0());
-            row.setDouble("Y0", sq.getY0());
-            row.setDouble("X1", sq.getX1());
-            row.setDouble("Y1", sq.getY1());
-            row.setInt("Number of Tracks", sq.getNumberOfTracks());
-            row.setDouble("Variability", sq.getVariability());
-            row.setDouble("Density", sq.getDensity());
-            row.setDouble("Density Ratio", sq.getDensityRatio());
-            row.setDouble("Tau", sq.getTau());
-            row.setDouble("R Squared", sq.getRSquared());
-            row.setDouble("Median Diffusion Coefficient", sq.getMedianDiffusionCoefficient());
-            row.setDouble("Median Diffusion Coefficient Ext", sq.getMedianDiffusionCoefficientExt());
-            row.setDouble("Median Long Track Duration", sq.getMedianLongTrackDuration());
-            row.setDouble("Median Short Track Duration", sq.getMedianShortTrackDuration());
-            row.setDouble("Median Displacement", sq.getMedianDisplacement());
-            row.setDouble("Max Displacement", sq.getMaxDisplacement());
-            row.setDouble("Total Displacement", sq.getTotalDisplacement());
-            row.setDouble("Median Max Speed", sq.getMedianMaxSpeed());
-            row.setDouble("Max Max Speed", sq.getMaxMaxSpeed());
-            row.setDouble("Median Mean Speed", sq.getMedianMeanSpeed());
-            row.setDouble("Max Mean Speed", sq.getMaxMeanSpeed());
-            row.setDouble("Max Track Duration", sq.getMaxTrackDuration());
-            row.setDouble("Total Track Duration", sq.getTotalTrackDuration());
-            row.setDouble("Median Track Duration", sq.getMedianTrackDuration());
+
+            // @formatter:off
+            row.setString("Unique Key",                       square.getUniqueKey());
+            row.setString("Recording Name",                   square.getRecordingName());
+            row.setInt("Square Number",                       square.getSquareNumber());
+            row.setInt("Row Number",                          square.getRowNumber());
+            row.setInt("Column Number",                       square.getColNumber());
+            row.setInt("Label Number",                        square.getLabelNumber());
+            row.setInt("Cell ID",                             square.getCellId());
+            row.setBoolean("Selected",                        square.isSelected());
+            row.setBoolean("Square Manually Excluded",        square.isSquareManuallyExcluded());
+            row.setBoolean("Image Excluded",                  square.isImageExcluded());
+            row.setDouble("X0",                               square.getX0());
+            row.setDouble("Y0",                               square.getY0());
+            row.setDouble("X1",                               square.getX1());
+            row.setDouble("Y1",                               square.getY1());
+            row.setInt("Number of Tracks",                    square.getNumberOfTracks());
+            row.setDouble("Variability",                      square.getVariability());
+            row.setDouble("Density",                          square.getDensity());
+            row.setDouble("Density Ratio",                    square.getDensityRatio());
+            row.setDouble("Tau",                              square.getTau());
+            row.setDouble("R Squared",                        square.getRSquared());
+            row.setDouble("Median Diffusion Coefficient",     square.getMedianDiffusionCoefficient());
+            row.setDouble("Median Diffusion Coefficient Ext", square.getMedianDiffusionCoefficientExt());
+            row.setDouble("Median Long Track Duration",       square.getMedianLongTrackDuration());
+            row.setDouble("Median Short Track Duration",      square.getMedianShortTrackDuration());
+            row.setDouble("Median Displacement",              square.getMedianDisplacement());
+            row.setDouble("Max Displacement",                 square.getMaxDisplacement());
+            row.setDouble("Total Displacement",               square.getTotalDisplacement());
+            row.setDouble("Median Max Speed",                 square.getMedianMaxSpeed());
+            row.setDouble("Max Max Speed",                    square.getMaxMaxSpeed());
+            row.setDouble("Median Mean Speed",                square.getMedianMeanSpeed());
+            row.setDouble("Max Mean Speed",                   square.getMaxMeanSpeed());
+            row.setDouble("Max Track Duration",               square.getMaxTrackDuration());
+            row.setDouble("Total Track Duration",             square.getTotalTrackDuration());
+            row.setDouble("Median Track Duration",            square.getMedianTrackDuration());
+            // @formatter:on
+
         }
         return table;
     }
@@ -68,42 +72,46 @@ public class SquareTableIO extends BaseTableIO {
     public List<Square> toEntities(Table table) {
         List<Square> squares = new ArrayList<>();
         for (Row row : table) {
-            Square sq = new Square();
-            sq.setUniqueKey(row.getString("Unique Key"));
-            sq.setRecordingName(row.getString("Recording Name"));
-            sq.setSquareNumber(row.getInt("Square Number"));
-            sq.setRowNumber(row.getInt("Row Number"));
-            sq.setColNumber(row.getInt("Column Number"));
-            sq.setLabelNumber(row.getInt("Label Number"));
-            sq.setCellId(row.getInt("Cell ID"));
-            sq.setSelected(row.getBoolean("Selected"));
-            sq.setSquareManuallyExcluded(row.getBoolean("Square Manually Excluded"));
-            sq.setImageExcluded(row.getBoolean("Image Excluded"));
-            sq.setX0(row.getDouble("X0"));
-            sq.setY0(row.getDouble("Y0"));
-            sq.setX1(row.getDouble("X1"));
-            sq.setY1(row.getDouble("Y1"));
-            sq.setNumberOfTracks(row.getInt("Number of Tracks"));
-            sq.setVariability(row.getDouble("Variability"));
-            sq.setDensity(row.getDouble("Density"));
-            sq.setDensityRatio(row.getDouble("Density Ratio"));
-            sq.setTau(row.getDouble("Tau"));
-            sq.setRSquared(row.getDouble("R Squared"));
-            sq.setMedianDiffusionCoefficient(row.getDouble("Median Diffusion Coefficient"));
-            sq.setMedianDiffusionCoefficientExt(row.getDouble("Median Diffusion Coefficient Ext"));
-            sq.setMedianLongTrackDuration(row.getDouble("Median Long Track Duration"));
-            sq.setMedianShortTrackDuration(row.getDouble("Median Short Track Duration"));
-            sq.setMedianDisplacement(row.getDouble("Median Displacement"));
-            sq.setMaxDisplacement(row.getDouble("Max Displacement"));
-            sq.setTotalDisplacement(row.getDouble("Total Displacement"));
-            sq.setMedianMaxSpeed(row.getDouble("Median Max Speed"));
-            sq.setMaxMaxSpeed(row.getDouble("Max Max Speed"));
-            sq.setMedianMeanSpeed(row.getDouble("Median Mean Speed"));
-            sq.setMaxMeanSpeed(row.getDouble("Max Mean Speed"));
-            sq.setMaxTrackDuration(row.getDouble("Max Track Duration"));
-            sq.setTotalTrackDuration(row.getDouble("Total Track Duration"));
-            sq.setMedianTrackDuration(row.getDouble("Median Track Duration"));
-            squares.add(sq);
+            Square square = new Square();
+
+            // @formatter:off
+            square.setUniqueKey(                     row.getString(  "Unique Key"));
+            square.setRecordingName(                 row.getString(  "Recording Name"));
+            square.setSquareNumber(                  row.getInt(     "Square Number"));
+            square.setRowNumber(                     row.getInt(     "Row Number"));
+            square.setColNumber(                     row.getInt(     "Column Number"));
+            square.setLabelNumber(                   row.getInt(     "Label Number"));
+            square.setCellId(                        row.getInt(     "Cell ID"));
+            square.setSelected(                      row.getBoolean( "Selected"));
+            square.setSquareManuallyExcluded(        row.getBoolean( "Square Manually Excluded"));
+            square.setImageExcluded(                 row.getBoolean( "Image Excluded"));
+            square.setX0(                            row.getDouble(  "X0"));
+            square.setY0(                            row.getDouble(  "Y0"));
+            square.setX1(                            row.getDouble(  "X1"));
+            square.setY1(                            row.getDouble(  "Y1"));
+            square.setNumberOfTracks(                row.getInt(     "Number of Tracks"));
+            square.setVariability(                   row.getDouble(  "Variability"));
+            square.setDensity(                       row.getDouble(  "Density"));
+            square.setDensityRatio(                  row.getDouble(  "Density Ratio"));
+            square.setTau(                           row.getDouble(  "Tau"));
+            square.setRSquared(                      row.getDouble(  "R Squared"));
+            square.setMedianDiffusionCoefficient(    row.getDouble(  "Median Diffusion Coefficient"));
+            square.setMedianDiffusionCoefficientExt( row.getDouble(  "Median Diffusion Coefficient Ext"));
+            square.setMedianLongTrackDuration(       row.getDouble(  "Median Long Track Duration"));
+            square.setMedianShortTrackDuration(      row.getDouble(  "Median Short Track Duration"));
+            square.setMedianDisplacement(            row.getDouble(  "Median Displacement"));
+            square.setMaxDisplacement(               row.getDouble(  "Max Displacement"));
+            square.setTotalDisplacement(             row.getDouble(  "Total Displacement"));
+            square.setMedianMaxSpeed(                row.getDouble(  "Median Max Speed"));
+            square.setMaxMaxSpeed(                   row.getDouble(  "Max Max Speed"));
+            square.setMedianMeanSpeed(               row.getDouble(  "Median Mean Speed"));
+            square.setMaxMeanSpeed(                  row.getDouble(  "Max Mean Speed"));
+            square.setMaxTrackDuration(              row.getDouble(  "Max Track Duration"));
+            square.setTotalTrackDuration(            row.getDouble(  "Total Track Duration"));
+            square.setMedianTrackDuration(           row.getDouble(  "Median Track Duration"));
+            // @formatter:on
+
+            squares.add(square);
         }
         return squares;
     }

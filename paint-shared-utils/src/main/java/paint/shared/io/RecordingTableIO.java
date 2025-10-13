@@ -25,31 +25,34 @@ public class RecordingTableIO extends BaseTableIO {
 
     public Table toTable(List<Recording> recordings) {
         Table table = emptyTable();
-        for (Recording rec : recordings) {
+        for (Recording recording : recordings) {
             Row row = table.appendRow();
-            row.setString("Recording Name", rec.getRecordingName());
-            row.setInt("Condition Number", rec.getConditionNumber());
-            row.setInt("Replicate Number", rec.getReplicateNumber());
-            row.setString("Probe Name", rec.getProbeName());
-            row.setString("Probe Type", rec.getProbeType());
-            row.setString("Cell Type", rec.getCellType());
-            row.setString("Adjuvant", rec.getAdjuvant());
-            row.setDouble("Concentration", rec.getConcentration());
-            row.setBoolean("Process Flag", rec.isProcessFlag());
-            row.setDouble("Threshold", rec.getThreshold());
-            row.setInt("Number of Spots", rec.getNumberOfSpots());
-            row.setInt("Number of Tracks", rec.getNumberOfTracks());
-            row.setInt("Number of Squares in Background", rec.getNumberOfSquaresInBackground());
-            row.setInt("Number of Tracks in Background", rec.getNumberOfTracksInBackground());
-            row.setDouble("Average Tracks in Background", rec.getAverageTracksInBackGround());
-            row.setInt("Number of Spots in All Tracks", rec.getNumberOfSpotsInAllTracks());
-            row.setInt("Number of Frames", rec.getNumberOfFrames());
-            row.setDouble("Run Time", rec.getRunTime());
-            row.setDateTime("Time Stamp", rec.getTimeStamp());
-            row.setBoolean("Exclude", rec.isExclude());
-            row.setDouble("Tau", rec.getTau());
-            row.setDouble("R Squared", rec.getRSquared());
-            row.setDouble("Density", rec.getDensity());
+
+            // @formatter:off
+            row.setString(  "Recording Name",                    recording.getRecordingName());
+            row.setInt(     "Condition Number",                  recording.getConditionNumber());
+            row.setInt(     "Replicate Number",                  recording.getReplicateNumber());
+            row.setString(  "Probe Name",                        recording.getProbeName());
+            row.setString(  "Probe Type",                        recording.getProbeType());
+            row.setString(  "Cell Type",                         recording.getCellType());
+            row.setString(  "Adjuvant",                          recording.getAdjuvant());
+            row.setDouble(  "Concentration",                     recording.getConcentration());
+            row.setBoolean( "Process Flag",                      recording.isProcessFlag());
+            row.setDouble(  "Threshold",                         recording.getThreshold());
+            row.setInt(     "Number of Spots",                   recording.getNumberOfSpots());
+            row.setInt(     "Number of Tracks",                  recording.getNumberOfTracks());
+            row.setInt(     "Number of Squares in Background",   recording.getNumberOfSquaresInBackground());
+            row.setInt(     "Number of Tracks in Background",    recording.getNumberOfTracksInBackground());
+            row.setDouble(  "Average Tracks in Background",      recording.getAverageTracksInBackGround());
+            row.setInt(     "Number of Spots in All Tracks",     recording.getNumberOfSpotsInAllTracks());
+            row.setInt(     "Number of Frames",                  recording.getNumberOfFrames());
+            row.setDouble(  "Run Time",                          recording.getRunTime());
+            row.setDateTime("Time Stamp",                        recording.getTimeStamp());
+            row.setBoolean( "Exclude",                           recording.isExclude());
+            row.setDouble(  "Tau",                               recording.getTau());
+            row.setDouble(  "R Squared",                         recording.getRSquared());
+            row.setDouble(  "Density",                           recording.getDensity());
+            // @formatter:on
         }
         return table;
     }
@@ -57,31 +60,35 @@ public class RecordingTableIO extends BaseTableIO {
     public List<Recording> toEntities(Table table) {
         List<Recording> recordings = new ArrayList<>();
         for (Row row : table) {
-            Recording rec = new Recording();
-            rec.setRecordingName(row.getString("Recording Name"));
-            rec.setConditionNumber(row.getInt("Condition Number"));
-            rec.setReplicateNumber(row.getInt("Replicate Number"));
-            rec.setProbeName(row.getString("Probe Name"));
-            rec.setProbeType(row.getString("Probe Type"));
-            rec.setCellType(row.getString("Cell Type"));
-            rec.setAdjuvant(row.getString("Adjuvant"));
-            rec.setConcentration(row.getDouble("Concentration"));
-            rec.setProcessFlag(row.getBoolean("Process Flag"));
-            rec.setThreshold(row.getDouble("Threshold"));
-            rec.setNumberOfSpots(row.getInt("Number of Spots"));
-            rec.setNumberOfTracks(row.getInt("Number of Tracks"));
-            rec.setNumberOfSquaresInBackground(row.getInt("Number of Squares in Background"));
-            rec.setNumberOfTracksInBackground(row.getInt("Number of Tracks in Background"));
-            rec.setAverageTracksInBackGround(row.getDouble("Average Tracks in Background"));
-            rec.setNumberOfSpotsInAllTracks(row.getInt("Number of Spots in All Tracks"));
-            rec.setNumberOfFrames(row.getInt("Number of Frames"));
-            rec.setRunTime(row.getDouble("Run Time"));
-            rec.setTimeStamp(row.getDateTime("Time Stamp"));
-            rec.setExclude(row.getBoolean("Exclude"));
-            rec.setTau(row.getDouble("Tau"));
-            rec.setRSquared(row.getDouble("R Squared"));
-            rec.setDensity(row.getDouble("Density"));
-            recordings.add(rec);
+            Recording recording = new Recording();
+
+            // @formatter:off
+            recording.setRecordingName(               row.getString(  "Recording Name"));
+            recording.setConditionNumber(             row.getInt(     "Condition Number"));
+            recording.setReplicateNumber(             row.getInt(     "Replicate Number"));
+            recording.setProbeName(                   row.getString(  "Probe Name"));
+            recording.setProbeType(                   row.getString(  "Probe Type"));
+            recording.setCellType(                    row.getString(  "Cell Type"));
+            recording.setAdjuvant(                    row.getString(  "Adjuvant"));
+            recording.setConcentration(               row.getDouble(  "Concentration"));
+            recording.setProcessFlag(                 row.getBoolean( "Process Flag"));
+            recording.setThreshold(                   row.getDouble(  "Threshold"));
+            recording.setNumberOfSpots(               row.getInt(     "Number of Spots"));
+            recording.setNumberOfTracks(              row.getInt(     "Number of Tracks"));
+            recording.setNumberOfSquaresInBackground( row.getInt(     "Number of Squares in Background"));
+            recording.setNumberOfTracksInBackground(  row.getInt(     "Number of Tracks in Background"));
+            recording.setAverageTracksInBackGround(   row.getDouble(  "Average Tracks in Background"));
+            recording.setNumberOfSpotsInAllTracks(    row.getInt(     "Number of Spots in All Tracks"));
+            recording.setNumberOfFrames(              row.getInt(     "Number of Frames"));
+            recording.setRunTime(                     row.getDouble(  "Run Time"));
+            recording.setTimeStamp(                   row.getDateTime("Time Stamp"));
+            recording.setExclude(                     row.getBoolean( "Exclude"));
+            recording.setTau(                         row.getDouble(  "Tau"));
+            recording.setRSquared(                    row.getDouble(  "R Squared"));
+            recording.setDensity(                     row.getDouble("Density"));
+            // @formatter:on
+
+            recordings.add(recording);
         }
         return recordings;
     }

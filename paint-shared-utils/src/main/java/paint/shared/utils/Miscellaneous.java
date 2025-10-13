@@ -62,6 +62,7 @@ public class Miscellaneous {
         return sb.toString().trim();
     }
 
+    /* START IGNORE
     public static List<String[]> readTableAsStrings(Path csvPath) throws IOException {
         List<String[]> rows = new ArrayList<>();
 
@@ -87,6 +88,7 @@ public class Miscellaneous {
         }
         return rows;
     }
+    END IGNORE*/
 
     public static String friendlyMessage(Throwable t) {
         if (t == null) {
@@ -121,16 +123,4 @@ public class Miscellaneous {
 
     }
 
-    private static void deleteIfExists(Path path) {
-        try {
-            if (Files.exists(path)) {
-                Files.delete(path);
-                System.out.println("🗑️ Deleted: " + path);
-            } else {
-                System.out.println("ℹ️ File not found (no deletion needed): " + path);
-            }
-        } catch (IOException e) {
-            System.err.println("❌ Failed to delete " + path + ": " + e.getMessage());
-        }
-    }
 }

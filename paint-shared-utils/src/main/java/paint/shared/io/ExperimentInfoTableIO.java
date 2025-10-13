@@ -82,16 +82,19 @@ public class ExperimentInfoTableIO extends BaseTableIO {
         Table table = emptyTable();
         for (ExperimentInfo info : infos) {
             Row row = table.appendRow();
-            row.setString("Recording Name", info.getRecordingName());
-            row.setInt("Condition Number", info.getConditionNumber());
-            row.setInt("Replicate Number", info.getReplicateNumber());
-            row.setString("Probe Name", info.getProbeName());
-            row.setString("Probe Type", info.getProbeType());
-            row.setString("Cell Type", info.getCellType());
-            row.setString("Adjuvant", info.getAdjuvant());
-            row.setDouble("Concentration", info.getConcentration());
-            row.setBoolean("Process Flag", info.isProcessFlag());
-            row.setDouble("Threshold", info.getThreshold());
+
+            // @formatter:off
+            row.setString("Recording Name",   info.getRecordingName());
+            row.setInt(   "Condition Number", info.getConditionNumber());
+            row.setInt(   "Replicate Number", info.getReplicateNumber());
+            row.setString("Probe Name",       info.getProbeName());
+            row.setString("Probe Type",       info.getProbeType());
+            row.setString("Cell Type",        info.getCellType());
+            row.setString("Adjuvant",         info.getAdjuvant());
+            row.setDouble("Concentration",    info.getConcentration());
+            row.setBoolean("Process Flag",    info.isProcessFlag());
+            row.setDouble("Threshold",        info.getThreshold());
+            // @formatter:on
         }
         return table;
     }
@@ -121,18 +124,22 @@ public class ExperimentInfoTableIO extends BaseTableIO {
     public List<ExperimentInfo> toEntities(Table table) {
         List<ExperimentInfo> infos = new ArrayList<>();
         for (Row row : table) {
-            ExperimentInfo info = new ExperimentInfo();
-            info.setRecordingName(row.getString("Recording Name"));
-            info.setConditionNumber(row.getInt("Condition Number"));
-            info.setReplicateNumber(row.getInt("Replicate Number"));
-            info.setProbeName(row.getString("Probe Name"));
-            info.setProbeType(row.getString("Probe Type"));
-            info.setCellType(row.getString("Cell Type"));
-            info.setAdjuvant(row.getString("Adjuvant"));
-            info.setConcentration(row.getDouble("Concentration"));
-            info.setProcessFlag(row.getBoolean("Process Flag"));
-            info.setThreshold(row.getDouble("Threshold"));
-            infos.add(info);
+            ExperimentInfo experimentInfo = new ExperimentInfo();
+
+            // @formatter:off
+            experimentInfo.setRecordingName(   row.getString( "Recording Name"));
+            experimentInfo.setConditionNumber( row.getInt(    "Condition Number"));
+            experimentInfo.setReplicateNumber( row.getInt(    "Replicate Number"));
+            experimentInfo.setProbeName(       row.getString( "Probe Name"));
+            experimentInfo.setProbeType(       row.getString( "Probe Type"));
+            experimentInfo.setCellType(        row.getString( "Cell Type"));
+            experimentInfo.setAdjuvant(        row.getString( "Adjuvant"));
+            experimentInfo.setConcentration(   row.getDouble( "Concentration"));
+            experimentInfo.setProcessFlag(     row.getBoolean("Process Flag"));
+            experimentInfo.setThreshold(       row.getDouble( "Threshold"));
+            // @formatter:off
+
+            infos.add(experimentInfo);
         }
         return infos;
     }
