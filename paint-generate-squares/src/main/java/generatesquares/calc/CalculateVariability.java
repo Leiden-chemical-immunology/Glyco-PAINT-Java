@@ -36,7 +36,7 @@ public class CalculateVariability {
             int yi = indices[1];
 
             if (xi >= 0 && xi < granularity && yi >= 0 && yi < granularity) {
-                matrix[yi][xi] += 1;
+                matrix[yi][xi]++;
             }
         }
 
@@ -51,9 +51,10 @@ public class CalculateVariability {
         }
 
         double mean = mean(values);
-        double std = std(values, mean);
+        if (mean == 0) return 0.0;
 
-        return (mean != 0) ? std / mean : 0.0;
+        double std = std(values, mean);
+        return std / mean; // coefficient of variation
     }
 
     // Utility: compute mean
@@ -83,8 +84,8 @@ public class CalculateVariability {
                                     int nrOfSquaresInRow,
                                     int granularity) {
         // Calculate the top-left corner (x0, y0) of the square
-        double x0 = (squareSeqNr % nrOfSquaresInRow) * width;
-        double y0 = (squareSeqNr / nrOfSquaresInRow) * height;
+        double x0 = ((double)  squareSeqNr % nrOfSquaresInRow) * width;
+        double y0 = ((double) squareSeqNr / nrOfSquaresInRow) * height;
 
         // Calculate the grid indices (xi, yi) for the track
         int xi = (int) (((x1 - x0) / width) * granularity);
