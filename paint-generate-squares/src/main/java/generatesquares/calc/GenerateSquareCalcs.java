@@ -94,6 +94,7 @@ public class GenerateSquareCalcs {
             PaintLogger.errorf("Failed to load Experiment '%s'", experimentName);  // vTODO
         }
         if (experiment != null) {
+            PaintLogger.infof("Starting processing experiment '%s'", experimentName);
 
             for (Recording recording : experiment.getRecordings()) {
                 PaintLogger.infof("   Processing: %s", recording.getRecordingName());
