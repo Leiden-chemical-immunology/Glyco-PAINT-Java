@@ -310,7 +310,7 @@ public class GenerateSquareCalcs {
 
             // Apply the shared visibility filter logic
             SquareUtils.applyVisibilityFilter(
-                    recording.getSquaresOfRecording(),
+                    recording,
                     minRequiredDensityRatio,
                     maxAllowableVariability,
                     minRequiredRSquared,

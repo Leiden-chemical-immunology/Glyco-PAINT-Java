@@ -22,11 +22,13 @@ public class SquareUtils {
      * Apply visibility/selection rules to a list of squares.
      * Marks each square as selected if all filter criteria are met and numeric values are valid.
      */
-    public static void applyVisibilityFilter(List<Square> squares,
+    public static void applyVisibilityFilter(Recording recording,
                                              double minDensityRatio,
                                              double maxVariability,
                                              double minRSquared,
                                              String neighbourMode) {
+
+        List<Square> squares = recording.getSquaresOfRecording();
         if (squares == null || squares.isEmpty()) {
             return;
         }
