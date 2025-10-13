@@ -234,7 +234,6 @@ public class RunTrackMateOnExperiment {
 
                         // @formatter:off
                         numberOfSpots            = trackMateResults[0].getNumberOfSpots();
-                        numberOfTracks           = trackMateResults[0].getNumberOfTracks();
                         numberOfFilteredTracks   = trackMateResults[0].getNumberOfFilteredTracks();
                         numberOfFrames           = trackMateResults[0].getNumberOfFrames();
                         numberOfSpotsInAllTracks = trackMateResults[0].getNumberOfSpotsInALlTracks();
