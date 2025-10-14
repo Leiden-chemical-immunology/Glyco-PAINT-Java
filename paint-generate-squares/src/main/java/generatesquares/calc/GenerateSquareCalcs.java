@@ -42,7 +42,9 @@ import java.util.List;
 
 import static generatesquares.calc.CalculateDensity.calculateDensity;
 import static generatesquares.calc.CalculateTau.calcTau;
+import static generatesquares.calc.CalculateTauExpDecayFitter.plotProblemFitting;
 import static generatesquares.calc.CalculateVariability.calcVariability;
+import static paint.shared.config.PaintConfig.getBoolean;
 import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.io.HelperIO.*;
 import static paint.shared.io.ProjectDataLoader.filterTracksInSquare;
@@ -69,11 +71,12 @@ import static paint.shared.utils.SquareUtils.*;
  */
 public class GenerateSquareCalcs {
 
-    /** Total number of squares per recording. */
-    private static int numberOfSquaresInRecording;
-
-    /** Number of squares in one dimension (e.g. 20 for 20x20). */
-    private static int numberOfSquaresInOneDimension;
+    // @formatter:off
+    private static int     numberOfSquaresInRecording;      // Total number of squares per recording.
+    private static int     numberOfSquaresInOneDimension;   // Number of squares in one dimension (e.g. 20 for 20x20).
+    private static Path    projectPath;
+    private static boolean plotFittingCurves;
+    // @formatter:on
 
     /**
      * Runs the "Generate Squares" process for a single experiment.
@@ -85,7 +88,9 @@ public class GenerateSquareCalcs {
     public static boolean generateSquaresForExperiment(Project project, String experimentName) {
 
         GenerateSquaresConfig generateSquaresConfig = project.generateSquaresConfig;
-        Experiment experiment = null;
+        projectPath                                 = project.projectRootPath;
+        plotFittingCurves                           = getBoolean("Generate Squares", "Plot Curve Fitting", false);
+        Experiment experiment                       = null;
 
         LocalDateTime start = LocalDateTime.now();
         PaintLogger.debugf("Loading Experiment '%s'", experimentName);
@@ -109,7 +114,7 @@ public class GenerateSquareCalcs {
                 assignTracksToSquares(recording, generateSquaresConfig);
 
                 // Calculate squares attributes
-                calculateSquareAttributes(recording, generateSquaresConfig);
+                calculateSquareAttributes(experimentName, recording, generateSquaresConfig);
 
                 // Calculate recording attributes
                 calculateRecordingAttributes(recording, generateSquaresConfig);  //TODO
@@ -235,12 +240,12 @@ public class GenerateSquareCalcs {
         // Update the recording table
         recording.setTracksTable(recordingTrackTable);
 
-        PaintLogger.infof("✅ Total %d tracks assigned to %d squares.",
+        PaintLogger.debugf("✅ Total %d tracks assigned to %d squares.",
                           recordingTrackTable.rowCount(), recording.getSquaresOfRecording().size());
     }
 
     /**
-     * Calculates aggregate metrics for an entire recording (Tau, background statistics, density).
+     * Calculates aggregate metrics for an entire recording (Tau, background sau_fatistics, density).
      *
      * @param recording             the recording to analyze
      * @param generateSquaresConfig the {@link GenerateSquaresConfig} parameters
@@ -285,7 +290,7 @@ public class GenerateSquareCalcs {
      * @param recording             the recording containing the squares
      * @param generateSquaresConfig the {@link GenerateSquaresConfig} parameters
      */
-    public static void calculateSquareAttributes(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
+    public static void calculateSquareAttributes(String experimentName, Recording recording, GenerateSquaresConfig generateSquaresConfig) {
 
         // @formatter:off
         double minRequiredRSquared        = generateSquaresConfig.getMinRequiredRSquared();
@@ -317,7 +322,23 @@ public class GenerateSquareCalcs {
             }
 
             // Calculate Tau
+
             CalculateTau.CalculateTauResult results = calcTau(tracksInSquare, minTracksForTau, minRequiredRSquared);
+
+
+            if (plotFittingCurves) {
+                if (tracksInSquare.size() >= minTracksForTau) {
+                    Path experimentPath = projectPath.resolve(experimentName);
+                    TauPlotCollector.saveFitPlot(
+                            tracksInSquare,
+                            results,
+                            experimentPath,
+                            recording.getRecordingName(),
+                            squareNumber
+                    );
+                }
+            }
+
             if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
                 square.setTau(round(results.getTau(), 0));
                 square.setRSquared(round(results.getRSquared(), 3));

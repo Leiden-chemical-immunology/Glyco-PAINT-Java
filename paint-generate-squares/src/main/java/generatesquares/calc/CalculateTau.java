@@ -4,13 +4,13 @@ import org.apache.commons.math3.fitting.leastsquares.*;
 import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.util.FastMath;
 import paint.shared.objects.Track;
+import javax.swing.*;
+import java.awt.*;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-//import static generatesquares.calc.CalculateTauResult.Status.*;
 
 public class CalculateTau {
 
@@ -66,19 +66,19 @@ public class CalculateTau {
         }
 
         // 4) Fit and evaluate quality
-        CalculateTauExpDecayFitterNew.FitResult fr = CalculateTauExpDecayFitterNew.fit(x, y);
+        CalculateTauExpDecayFitter.FitResult fitResult = CalculateTauExpDecayFitter.fit(x, y);
 
         // 5) Reject non-finite results
-        if (!Double.isFinite(fr.rSquared) || !Double.isFinite(fr.tauMs)) {
-            return new CalculateTauResult(fr.tauMs, fr.rSquared, CalculateTauResult.Status.TAU_NO_FIT);
+        if (!Double.isFinite(fitResult.rSquared) || !Double.isFinite(fitResult.tauMs)) {
+            return new CalculateTauResult(fitResult.tauMs, fitResult.rSquared, CalculateTauResult.Status.TAU_NO_FIT);
         }
 
         // 6) Apply threshold
-        if (fr.rSquared < minRequiredRSquared) {
-            return new CalculateTauResult(fr.tauMs, fr.rSquared, CalculateTauResult.Status.TAU_RSQUARED_TOO_LOW);
+        if (fitResult.rSquared < minRequiredRSquared) {
+            return new CalculateTauResult(fitResult.tauMs, fitResult.rSquared, CalculateTauResult.Status.TAU_RSQUARED_TOO_LOW);
         }
 
-        return new CalculateTauResult(fr.tauMs, fr.rSquared, CalculateTauResult.Status.TAU_SUCCESS);
+        return new CalculateTauResult(fitResult.tauMs, fitResult.rSquared, CalculateTauResult.Status.TAU_SUCCESS);
     }
 
 
@@ -136,9 +136,9 @@ public class CalculateTau {
  * Fits y = m * exp(-t * x) + b to (x, y) and returns tau (ms) and R^2.
  * Unified single-class version: no AbstractCurveFitter subclassing needed.
  */
-class CalculateTauExpDecayFitterNew {
+class CalculateTauExpDecayFitter {
 
-    private CalculateTauExpDecayFitterNew() {
+    private CalculateTauExpDecayFitter() {
     }
 
     /**
@@ -315,11 +315,165 @@ class CalculateTauExpDecayFitterNew {
         double[] freq = {2000, 1200, 750, 500, 300, 200, 150, 100, 70, 50};
 
         // Fit exponential decay directly
-        CalculateTauExpDecayFitterNew.FitResult result = CalculateTauExpDecayFitterNew.fit(durations, freq);
+        CalculateTauExpDecayFitter.FitResult result = CalculateTauExpDecayFitter.fit(durations, freq);
 
         System.out.printf("Tau (ms): %.3f%n", result.tauMs);
         System.out.printf("R²: %.6f%n", result.rSquared);
+        System.out.printf("Comparison with Python: Tau diff = %f and R² diff = %f%n",
+                          result.tauMs - 997.0878843268896,
+                          result.rSquared - 0.9995441821230724);
+        plotFitting(durations, freq, result);
 
-        System.out.printf("Comparison with Python: Tau diff = %f and R² diff = %f", result.tauMs - 997.0878843268896, result.rSquared -  0.9995441821230724);
+        durations = new double[] {0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.65, 0.8, 1.1, 1.951, 2.251, 3.101, 5.702};
+        freq = new double[] {2.0, 2.0, 1.0, 4.0, 2.0, 1.0, 4.0, 1.0, 1.0, 2.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+        result = CalculateTauExpDecayFitter.fit(durations, freq);
+
+        plotFitting(durations, freq, result);
+    }
+
+
+    /**
+     * Simple wrapper: plots the raw data and, if valid, overlays the fitted exponential curve.
+     */
+    public static void plotFitting(double[] x, double[] y, FitResult result) {
+        double[] fitX = null;
+        double[] fitY = null;
+
+        boolean validFit = (result != null &&
+                Double.isFinite(result.tauMs) &&
+                Double.isFinite(result.rSquared) &&
+                result.rSquared > 0.0);
+
+        if (validFit) {
+            double t = 1000.0 / result.tauMs;
+            double m = Arrays.stream(y).max().orElse(1);
+            double b = Arrays.stream(y).min().orElse(0);
+
+            int n = 100;
+            fitX = new double[n];
+            fitY = new double[n];
+            double maxX = Arrays.stream(x).max().orElse(1);
+
+            for (int i = 0; i < n; i++) {
+                fitX[i] = i * maxX / (n - 1);
+                fitY[i] = m * Math.exp(-t * fitX[i]) + b;
+            }
+
+            System.out.printf("✅ Fit succeeded: τ = %.3f ms, R² = %.6f%n", result.tauMs, result.rSquared);
+        } else {
+            System.out.println("⚠️ Fit failed — showing data only.");
+            if (result != null) {
+                System.out.printf("Reason: tau=%s, R²=%s%n",
+                                  Double.toString(result.tauMs), Double.toString(result.rSquared));
+            }
+        }
+
+        plotFit(x, y, fitX, fitY);
+    }
+
+    /**
+     * Plots raw data and optional fitted curve.
+     */
+    private static void plotFit(double[] x, double[] y, double[] fitX, double[] fitY) {
+        JFrame frame = new JFrame("Tau Fit Visualization");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(900, 600);
+
+        JPanel panel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                int w = getWidth();
+                int h = getHeight();
+                int marginLeft = 70, marginRight = 40, marginTop = 40, marginBottom = 60;
+
+                double minX = Arrays.stream(x).min().orElse(0);
+                double maxX = Arrays.stream(x).max().orElse(1);
+                double minY = Arrays.stream(y).min().orElse(0);
+                double maxY = Arrays.stream(y).max().orElse(1);
+
+                double xScale = (w - marginLeft - marginRight) / (maxX - minX);
+                double yScale = (h - marginTop - marginBottom) / (maxY - minY);
+
+                int x0 = marginLeft;
+                int y0 = h - marginBottom;
+                g2.setColor(Color.GRAY);
+                g2.drawLine(x0, y0, w - marginRight, y0);
+                g2.drawLine(x0, y0, x0, marginTop);
+
+                // Raw data points
+                g2.setColor(new Color(30, 100, 200));
+                for (int i = 0; i < x.length; i++) {
+                    int px = (int) (marginLeft + (x[i] - minX) * xScale);
+                    int py = (int) (y0 - (y[i] - minY) * yScale);
+                    g2.fillOval(px - 4, py - 4, 8, 8);
+                }
+
+                // Fitted curve (if any)
+                if (fitX != null && fitY != null) {
+                    g2.setColor(Color.RED);
+                    for (int i = 1; i < fitX.length; i++) {
+                        int x1 = (int) (marginLeft + (fitX[i - 1] - minX) * xScale);
+                        int y1 = (int) (y0 - (fitY[i - 1] - minY) * yScale);
+                        int x2 = (int) (marginLeft + (fitX[i] - minX) * xScale);
+                        int y2 = (int) (y0 - (fitY[i] - minY) * yScale);
+                        g2.drawLine(x1, y1, x2, y2);
+                    }
+                } else {
+                    // Optional message for failed fit
+                    g2.setColor(Color.RED);
+                    g2.setFont(g2.getFont().deriveFont(Font.BOLD, 16f));
+                    g2.drawString("Fit failed — showing data only", w / 2 - 130, marginTop + 20);
+                }
+
+                // Labels
+                g2.setColor(Color.BLACK);
+                g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 12f));
+                g2.drawString("Duration", w / 2 - 30, h - 20);
+                g2.rotate(-Math.PI / 2);
+                g2.drawString("Frequency", -h / 2 - 30, 25);
+                g2.rotate(Math.PI / 2);
+            }
+        };
+
+        frame.add(panel);
+        frame.setVisible(true);
+    }
+
+    public static void plotProblemFitting(List<Track> tracks) {
+        if (tracks == null || tracks.isEmpty()) {
+            System.out.println("⚠️ No tracks to visualize.");
+            return;
+        }
+
+        // 1️⃣ Extract durations
+        double[] durations = new double[tracks.size()];
+        for (int i = 0; i < tracks.size(); i++) {
+            durations[i] = tracks.get(i).getTrackDuration();
+        }
+
+        // 2️⃣ Build frequency distribution
+        Map<Double, Integer> freqMap = new TreeMap<>();
+        for (double d : durations) {
+            freqMap.put(d, freqMap.getOrDefault(d, 0) + 1);
+        }
+
+        double[] x = new double[freqMap.size()];
+        double[] y = new double[freqMap.size()];
+        int k = 0;
+        for (Map.Entry<Double, Integer> e : freqMap.entrySet()) {
+            x[k] = e.getKey();
+            y[k] = e.getValue();
+            k++;
+        }
+
+        // 3️⃣ Use a dummy FitResult so plotFitting() shows only data
+        FitResult dummy = new FitResult(Double.NaN, Double.NaN);
+
+        System.out.println("⚠️ Plotting failed fit — raw frequency distribution only.");
+        plotFitting(x, y, dummy);
     }
 }

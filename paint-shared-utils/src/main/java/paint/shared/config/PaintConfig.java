@@ -168,6 +168,7 @@ public class PaintConfig {
         generateSquares.addProperty("Exclude zero DC tracks from Tau Calculation", false);
         generateSquares.addProperty("Neighbour Mode", "Free");
         generateSquares.addProperty("Number of Squares in Recording", 400);
+        generateSquares.addProperty("Plot Curve Fitting", false);
         configData.add(SECTION_GENERATE_SQUARES, generateSquares);
 
         JsonObject paint = new JsonObject();
