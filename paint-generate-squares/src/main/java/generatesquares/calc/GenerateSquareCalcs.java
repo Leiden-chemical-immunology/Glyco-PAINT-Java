@@ -42,7 +42,6 @@ import java.util.List;
 
 import static generatesquares.calc.CalculateDensity.calculateDensity;
 import static generatesquares.calc.CalculateTau.calcTau;
-import static generatesquares.calc.CalculateTauExpDecayFitter.plotProblemFitting;
 import static generatesquares.calc.CalculateVariability.calcVariability;
 import static paint.shared.config.PaintConfig.getBoolean;
 import static paint.shared.constants.PaintConstants.*;

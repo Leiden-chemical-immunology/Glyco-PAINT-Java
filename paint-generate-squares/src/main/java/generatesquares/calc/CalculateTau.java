@@ -309,28 +309,6 @@ class CalculateTauExpDecayFitter {
         return Math.max(lo, Math.min(hi, v));
     }
 
-    public static void main(String[] args) {
-        // Python-like test data
-        double[] durations = {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5};
-        double[] freq = {2000, 1200, 750, 500, 300, 200, 150, 100, 70, 50};
-
-        // Fit exponential decay directly
-        CalculateTauExpDecayFitter.FitResult result = CalculateTauExpDecayFitter.fit(durations, freq);
-
-        System.out.printf("Tau (ms): %.3f%n", result.tauMs);
-        System.out.printf("R²: %.6f%n", result.rSquared);
-        System.out.printf("Comparison with Python: Tau diff = %f and R² diff = %f%n",
-                          result.tauMs - 997.0878843268896,
-                          result.rSquared - 0.9995441821230724);
-        plotFitting(durations, freq, result);
-
-        durations = new double[] {0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.65, 0.8, 1.1, 1.951, 2.251, 3.101, 5.702};
-        freq = new double[] {2.0, 2.0, 1.0, 4.0, 2.0, 1.0, 4.0, 1.0, 1.0, 2.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-        result = CalculateTauExpDecayFitter.fit(durations, freq);
-
-        plotFitting(durations, freq, result);
-    }
-
 
     /**
      * Simple wrapper: plots the raw data and, if valid, overlays the fitted exponential curve.
@@ -363,8 +341,7 @@ class CalculateTauExpDecayFitter {
         } else {
             System.out.println("⚠️ Fit failed — showing data only.");
             if (result != null) {
-                System.out.printf("Reason: tau=%s, R²=%s%n",
-                                  Double.toString(result.tauMs), Double.toString(result.rSquared));
+                System.out.printf("Reason: tau=%s, R²=%s%n", result.tauMs, result.rSquared);
             }
         }
 
@@ -443,37 +420,25 @@ class CalculateTauExpDecayFitter {
         frame.setVisible(true);
     }
 
-    public static void plotProblemFitting(List<Track> tracks) {
-        if (tracks == null || tracks.isEmpty()) {
-            System.out.println("⚠️ No tracks to visualize.");
-            return;
-        }
+    public static void main(String[] args) {
+        // Python-like test data
+        double[] durations = {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5};
+        double[] freq = {2000, 1200, 750, 500, 300, 200, 150, 100, 70, 50};
 
-        // 1️⃣ Extract durations
-        double[] durations = new double[tracks.size()];
-        for (int i = 0; i < tracks.size(); i++) {
-            durations[i] = tracks.get(i).getTrackDuration();
-        }
+        // Fit exponential decay directly
+        CalculateTauExpDecayFitter.FitResult result = CalculateTauExpDecayFitter.fit(durations, freq);
 
-        // 2️⃣ Build frequency distribution
-        Map<Double, Integer> freqMap = new TreeMap<>();
-        for (double d : durations) {
-            freqMap.put(d, freqMap.getOrDefault(d, 0) + 1);
-        }
+        System.out.printf("Tau (ms): %.3f%n", result.tauMs);
+        System.out.printf("R²: %.6f%n", result.rSquared);
+        System.out.printf("Comparison with Python: Tau diff = %f and R² diff = %f%n",
+                          result.tauMs - 997.0878843268896,
+                          result.rSquared - 0.9995441821230724);
+        plotFitting(durations, freq, result);
 
-        double[] x = new double[freqMap.size()];
-        double[] y = new double[freqMap.size()];
-        int k = 0;
-        for (Map.Entry<Double, Integer> e : freqMap.entrySet()) {
-            x[k] = e.getKey();
-            y[k] = e.getValue();
-            k++;
-        }
+        durations = new double[] {0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.65, 0.8, 1.1, 1.951, 2.251, 3.101, 5.702};
+        freq = new double[] {2.0, 2.0, 1.0, 4.0, 2.0, 1.0, 4.0, 1.0, 1.0, 2.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+        result = CalculateTauExpDecayFitter.fit(durations, freq);
 
-        // 3️⃣ Use a dummy FitResult so plotFitting() shows only data
-        FitResult dummy = new FitResult(Double.NaN, Double.NaN);
-
-        System.out.println("⚠️ Plotting failed fit — raw frequency distribution only.");
-        plotFitting(x, y, dummy);
+        plotFitting(durations, freq, result);
     }
 }
