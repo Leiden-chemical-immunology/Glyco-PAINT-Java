@@ -408,10 +408,16 @@ public class GenerateSquareCalcs {
         SquareTableIO squaresTableIO = new SquareTableIO();
         Table allSquaresTable = squaresTableIO.emptyTable();
 
+
         for (Recording recording : experiment.getRecordings()) {
-            Table table = squaresTableIO.toTable(recording.getSquaresOfRecording());
-            squaresTableIO.appendInPlace(allSquaresTable, table);
             PaintLogger.debugf("Processing squares for experiment '%s'  - recording '%s'", experiment.getExperimentName(), recording.getRecordingName());
+            Table table = squaresTableIO.toTable(recording.getSquaresOfRecording());
+            if  (table != null) {
+                squaresTableIO.appendInPlace(allSquaresTable, table);
+            }
+            else {
+                PaintLogger.errorf("compileAllSquares - squares table does not exist for '%s'", recording.getRecordingName());
+            }
         }
         return allSquaresTable;
     }
