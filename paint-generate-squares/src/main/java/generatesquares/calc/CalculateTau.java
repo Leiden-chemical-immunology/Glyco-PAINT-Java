@@ -15,7 +15,6 @@ import java.util.TreeMap;
 public class CalculateTau {
 
     private CalculateTau() {
-
     }
 
     /**
@@ -308,5 +307,19 @@ class CalculateTauExpDecayFitterNew {
 
     private static double clamp(double v, double lo, double hi) {
         return Math.max(lo, Math.min(hi, v));
+    }
+
+    public static void main(String[] args) {
+        // Python-like test data
+        double[] durations = {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5};
+        double[] freq = {2000, 1200, 750, 500, 300, 200, 150, 100, 70, 50};
+
+        // Fit exponential decay directly
+        CalculateTauExpDecayFitterNew.FitResult result = CalculateTauExpDecayFitterNew.fit(durations, freq);
+
+        System.out.printf("Tau (ms): %.3f%n", result.tauMs);
+        System.out.printf("R²: %.6f%n", result.rSquared);
+
+        System.out.printf("Comparison with Python: Tau diff = %f and R² diff = %f", result.tauMs - 997.0878843268896, result.rSquared -  0.9995441821230724);
     }
 }
