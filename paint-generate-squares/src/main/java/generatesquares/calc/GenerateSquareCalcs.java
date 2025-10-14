@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -43,15 +44,13 @@ import static generatesquares.calc.CalculateDensity.calculateDensity;
 import static generatesquares.calc.CalculateTau.calcTau;
 import static generatesquares.calc.CalculateVariability.calcVariability;
 import static paint.shared.constants.PaintConstants.*;
-import static paint.shared.io.HelperIO.writeAllRecordings;
-import static paint.shared.io.HelperIO.writeAllSquares;
+import static paint.shared.io.HelperIO.*;
 import static paint.shared.io.ProjectDataLoader.filterTracksInSquare;
 import static paint.shared.io.ProjectDataLoader.loadExperiment;
 import static paint.shared.objects.Square.calcSquareArea;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.utils.Miscellaneous.round;
 import static paint.shared.utils.SquareUtils.*;
-import static paint.shared.utils.SquareUtils.getTracksFromSelectedSquares;
 
 /**
  * Provides core calculations for the "Generate Squares" workflow.
@@ -122,12 +121,15 @@ public class GenerateSquareCalcs {
 
             // Compile all squares and write
             Table allSquaresTable = compileAllSquares(experiment);
-            Path allSquaresFilePath = project.projectRootPath.resolve(experiment.getExperimentName());
-            writeAllSquares(allSquaresFilePath, allSquaresTable);
+            Path experimentPath = project.projectRootPath.resolve(experiment.getExperimentName());
+            writeAllSquares(experimentPath, allSquaresTable);
 
             // Write recordings
-            Path allRecordingsFilePath = project.projectRootPath.resolve(experiment.getExperimentName());
-            writeAllRecordings(allRecordingsFilePath, experiment.getRecordings());
+            writeAllRecordings(experimentPath, experiment.getRecordings());
+
+            // All Tracks
+            Table allTracksTable = compileAllTracks(experiment);
+            writeAllTracks(experimentPath, allTracksTable);
 
             return true;
         } else {
@@ -187,16 +189,54 @@ public class GenerateSquareCalcs {
 
         Table tracksOfRecording = recording.getTracksTable();
         TrackTableIO trackTableIO = new TrackTableIO();
+        Table recordingTrackTable = trackTableIO.emptyTable();
 
         int lastRowCol = numberOfSquaresInRecording - 1;
+        int labelNumber = 0;
 
         for (Square square : recording.getSquaresOfRecording()) {
+
             Table squareTracksTable = filterTracksInSquare(tracksOfRecording, square, lastRowCol);
+
+            if (squareTracksTable.rowCount() == 0) {
+                square.setTracks(Collections.emptyList());
+                square.setTracksTable(squareTracksTable);
+                square.setNumberOfTracks(0);
+                continue;
+            }
+
+            // Convert rows to Track entities
             List<Track> tracks = trackTableIO.toEntities(squareTracksTable);
+
+            // Update the fields on each Track
+            for (Track track : tracks) {
+                track.setSquareNumber(square.getSquareNumber());
+                track.setLabelNumber(labelNumber);
+            }
+
+            // Rebuild the table from the modified tracks (ensures table reflects the updates)
+            Table updatedSquareTracks = trackTableIO.toTable(tracks);
+
+            // Append updated tracks into the global recording table
+            recordingTrackTable.append(updatedSquareTracks);
+
+            // Update the square
             square.setTracks(tracks);
-            square.setTracksTable(squareTracksTable);
+            square.setTracksTable(updatedSquareTracks);
             square.setNumberOfTracks(tracks.size());
+
+            // Log info
+            PaintLogger.debugf("Square %d: %d tracks assigned (label %d)",
+                              square.getSquareNumber(), tracks.size(), labelNumber);
+
+            labelNumber++;
         }
+
+        // Update the recording table
+        recording.setTracksTable(recordingTrackTable);
+
+        PaintLogger.infof("✅ Total %d tracks assigned to %d squares.",
+                          recordingTrackTable.rowCount(), recording.getSquaresOfRecording().size());
     }
 
     /**
@@ -303,8 +343,7 @@ public class GenerateSquareCalcs {
             square.setTotalTrackDuration(round(tracksInSquareTable.doubleColumn("Track Duration").sum(), 1));
             square.setMedianTrackDuration(round(tracksInSquareTable.doubleColumn("Track Duration").median(), 1));
 
-            int numberOfSquaresInRow = (int) Math.sqrt(numberOfSquaresInRecording);
-            double variability = calcVariability(tracksInSquareTable, squareNumber, numberOfSquaresInRow, 10);    //TODO
+            double variability = calcVariability(tracksInSquareTable, squareNumber, numberOfSquaresInRecording, 10);    //TODO
             square.setVariability(round(variability, 1));
 
             double density = calculateDensity(tracksInSquare.size(), area, RECORDING_DURATION, concentration);
@@ -420,6 +459,30 @@ public class GenerateSquareCalcs {
             }
         }
         return allSquaresTable;
+    }
+
+    /**
+     * Compiles all squares of all recordings in an experiment into one combined table.
+     *
+     * @param experiment the {@link Experiment} containing multiple recordings
+     * @return a combined {@link Table} of all square data
+     */
+    private static Table compileAllTracks(Experiment experiment) {
+
+        TrackTableIO trackTableIO = new TrackTableIO();
+        Table allTracksTable = trackTableIO.emptyTable();
+
+        for (Recording recording : experiment.getRecordings()) {
+            PaintLogger.debugf("Processing squares for experiment '%s'  - recording '%s'", experiment.getExperimentName(), recording.getRecordingName());
+            Table table = recording.getTracksTable();
+            if  (table != null) {
+                trackTableIO.appendInPlace(allTracksTable, table);
+            }
+            else {
+                PaintLogger.errorf("compileAllSquares - squares table does not exist for '%s'", recording.getRecordingName());
+            }
+        }
+        return allTracksTable;
     }
 
 }
