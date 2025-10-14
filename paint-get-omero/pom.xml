@@ -1,6 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>com.github.jjabakker</groupId>
@@ -9,7 +12,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <modelVersion>4.0.0</modelVersion>
     <artifactId>paint-get-omero</artifactId>
     <packaging>jar</packaging>
 
@@ -17,26 +19,22 @@
     <description>Standalone Swing app for loading Omero data</description>
 
     <properties>
-        <!-- UTC timestamp for reproducible builds -->
         <project.build.outputTimestamp>2025-09-23T08:55:00Z</project.build.outputTimestamp>
-
-        <!-- App bundle name and locations -->
         <app.name>GetOmero</app.name>
-        <app.dir>${project.build.directory}/${app.name}.app</app.dir>
-
-        <!-- Fat JAR target -->
+        <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <fat.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</fat.jar>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-shared-utils</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>com.github.jjabakker</groupId>
-            <artifactId>paint-shared-utils</artifactId>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
         </dependency>
 
         <!-- Silence SLF4J logs -->
@@ -49,133 +47,116 @@
 
     <build>
         <plugins>
-            <!-- Compiler plugin -->
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
 
-            <!-- Fat JAR creation -->
+            <!-- Fat JAR -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.6.0</version>
                 <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
                     <archive>
                         <manifest>
                             <mainClass>getomero.GetOmeroUI</mainClass>
                         </manifest>
                     </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
                 </configuration>
                 <executions>
                     <execution>
                         <id>make-assembly</id>
                         <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
+                        <goals><goal>single</goal></goals>
                     </execution>
                 </executions>
             </plugin>
 
-            <!-- Filter Info.plist -->
+            <!-- Create macOS .app bundle, ZIP it, and copy to ~/Applications/Glyco-PAINT -->
             <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.3.1</version>
-                <executions>
-                    <execution>
-                        <id>filter-plist</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>resources</goal>
-                        </goals>
-                        <configuration>
-                            <resources>
-                                <resource>
-                                    <directory>src/main/resources</directory>
-                                    <includes>
-                                        <include>info.plist.template</include>
-                                    </includes>
-                                    <filtering>true</filtering>
-                                </resource>
-                            </resources>
-                            <outputDirectory>${project.build.directory}/filtered-resources</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Build .app bundle for macOS -->
-            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
-                        <id>build-mac-app</id>
+                        <id>create-app-bundle</id>
                         <phase>package</phase>
                         <configuration>
-                            <target>
-                                <mkdir dir="${app.dir}/Contents/MacOS"/>
-                                <mkdir dir="${app.dir}/Contents/Resources"/>
+                            <target name="create-app-bundle">
+                                <echo message="🍎 Creating macOS app bundle at ${app.bundle}"/>
 
-                                <!-- Copy fat JAR -->
-                                <copy file="${fat.jar}" todir="${app.dir}/Contents/Resources"/>
+                                <!-- Clean previous build -->
+                                <delete dir="${app.bundle}" failonerror="false"/>
+                                <delete file="${project.build.directory}/${app.name}.app.zip" failonerror="false"/>
+
+                                <!-- Create bundle structure -->
+                                <mkdir dir="${app.bundle}/Contents/MacOS"/>
+                                <mkdir dir="${app.bundle}/Contents/Java"/>
+                                <mkdir dir="${app.bundle}/Contents/Resources"/>
+
+                                <!-- Copy JAR -->
+                                <copy file="${fat.jar}" todir="${app.bundle}/Contents/Java" overwrite="true"/>
 
                                 <!-- Optional icon -->
                                 <copy file="src/main/resources/icon.icns"
-                                      todir="${app.dir}/Contents/Resources"
+                                      todir="${app.bundle}/Contents/Resources"
                                       failonerror="false"/>
 
-                                <!-- Create launch script -->
-                                <echo file="${app.dir}/Contents/MacOS/launch"><![CDATA[
+                                <!-- Info.plist -->
+                                <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key>
+  <string>${app.name}</string>
+  <key>CFBundleExecutable</key>
+  <string>launch</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.github.jjabakker.${app.name}</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleVersion</key>
+  <string>${project.version}</string>
+  <key>CFBundleIconFile</key>
+  <string>icon.icns</string>
+</dict>
+</plist>
+                                ]]></echo>
+
+                                <!-- Launcher -->
+                                <echo file="${app.bundle}/Contents/MacOS/launch"><![CDATA[
 #!/bin/bash
-DIR="$( cd "$( dirname "$0" )" && cd ../Resources && pwd )"
+DIR="$( cd "$( dirname "$0" )" && cd ../Java && pwd )"
+exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-jar-with-dependencies.jar"
+                                ]]></echo>
 
-LOG="$HOME/Library/Logs/GetOmero.log"
-mkdir -p "$(dirname "$LOG")"
-echo "=== Launching GetOmero at $(date) ===" >> "$LOG" 2>&1
+                                <!-- ✅ Ensure Unix line endings + executable permission -->
+                                <fixcrlf file="${app.bundle}/Contents/MacOS/launch" eol="unix"/>
+                                <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
 
-JAR="$(ls "$DIR"/*.jar | head -n 1)"
+                                <!-- Create ZIP archive -->
+                                <exec executable="zip">
+                                    <arg value="-r"/>
+                                    <arg value="${project.build.directory}/${app.name}.app.zip"/>
+                                    <arg value="${app.bundle}"/>
+                                </exec>
 
-if [ -z "$JAR" ]; then
-  echo "No JAR found in $DIR" >> "$LOG" 2>&1
-  exit 1
-fi
-
-exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$JAR" >> "$LOG" 2>&1
-]]></echo>
-                                <chmod file="${app.dir}/Contents/MacOS/launch" perm="755"/>
-
-                                <!-- Copy filtered Info.plist -->
-                                <copy file="${project.build.directory}/filtered-resources/Info.plist.template"
-                                      tofile="${app.dir}/Contents/Info.plist"
-                                      overwrite="true"/>
-
-                                <!-- Zip app bundle -->
-                                <zip destfile="${project.build.directory}/${app.name}.zip"
-                                     basedir="${project.build.directory}"
-                                     includes="${app.name}.app/**"/>
-
-                                <!-- ✅ Deploy .app to ~/Applications/Glyco-PAINT -->
+                                <!-- Copy to ~/Applications/Glyco-PAINT -->
                                 <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
-                                <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
                                 <copy todir="${user.home}/Applications/Glyco-PAINT" overwrite="true">
-                                    <fileset dir="${project.build.directory}">
-                                        <include name="${app.name}.app/**"/>
-                                    </fileset>
+                                    <fileset dir="${app.bundle}" includes="**/*"/>
                                 </copy>
 
+                                <echo message="✅ Created: ${project.build.directory}/${app.name}.app.zip"/>
+                                <echo message="✅ Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
                             </target>
                         </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
+                        <goals><goal>run</goal></goals>
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
 </project>
