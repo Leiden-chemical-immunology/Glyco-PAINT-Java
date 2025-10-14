@@ -11,15 +11,16 @@ public class CalculateVariability {
     // Main variability calculation
     public static double calcVariability(Table tracks,
                                          int squareNumber,
-                                         int nrOfSquaresInRow,
+                                         int numberOfSquaresInRecording,
                                          int granularity) {
 
         // Matrix for variability analysis
         int[][] matrix = new int[granularity][granularity];
 
         // Width and height of a square
-        double width = IMAGE_WIDTH / nrOfSquaresInRow;
-        double height = width;
+        int dimension = (int) Math.sqrt(numberOfSquaresInRecording);
+        double width  = IMAGE_WIDTH / dimension;
+        double height = IMAGE_WIDTH / dimension;
 
         // Access the columns once
         DoubleColumn xCol = tracks.doubleColumn("Track X Location");
@@ -31,7 +32,7 @@ public class CalculateVariability {
             double y = yCol.get(i);  // The y-coordinate of the track
 
             // Get grid indices
-            int[] indices = getIndices(x, y, width, height, squareNumber, nrOfSquaresInRow, granularity);
+            int[] indices = getIndices(x, y, width, height, squareNumber, dimension, granularity);
             int xi = indices[0];
             int yi = indices[1];
 
@@ -51,7 +52,9 @@ public class CalculateVariability {
         }
 
         double mean = mean(values);
-        if (mean == 0) return 0.0;
+        if (mean == 0) {
+            return 0.0;
+        }
 
         double std = std(values, mean);
         return std / mean; // coefficient of variation
