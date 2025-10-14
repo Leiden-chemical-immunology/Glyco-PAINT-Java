@@ -72,12 +72,13 @@
                 </executions>
             </plugin>
 
-            <!-- Create macOS .app bundle, ZIP it, and copy to ~/Applications/Glyco-PAINT -->
+            <!-- Create macOS .app bundle and install -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
+
                     <execution>
                         <id>create-app-bundle</id>
                         <phase>package</phase>
@@ -97,11 +98,6 @@
                                 <!-- Copy JAR -->
                                 <copy file="${fat.jar}" todir="${app.bundle}/Contents/Java" overwrite="true"/>
 
-                                <!-- Optional icon -->
-                                <copy file="src/main/resources/icon.icns"
-                                      todir="${app.bundle}/Contents/Resources"
-                                      failonerror="false"/>
-
                                 <!-- Info.plist -->
                                 <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
 <?xml version="1.0" encoding="UTF-8"?>
@@ -118,20 +114,18 @@
   <string>APPL</string>
   <key>CFBundleVersion</key>
   <string>${project.version}</string>
-  <key>CFBundleIconFile</key>
-  <string>icon.icns</string>
 </dict>
 </plist>
                                 ]]></echo>
 
-                                <!-- Launcher -->
+                                <!-- Launcher script -->
                                 <echo file="${app.bundle}/Contents/MacOS/launch"><![CDATA[
 #!/bin/bash
 DIR="$( cd "$( dirname "$0" )" && cd ../Java && pwd )"
 exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-jar-with-dependencies.jar"
                                 ]]></echo>
 
-                                <!-- Ensure Unix line endings + executable permission -->
+                                <!-- Fix permissions before zip -->
                                 <fixcrlf file="${app.bundle}/Contents/MacOS/launch" eol="unix"/>
                                 <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
 
@@ -142,13 +136,21 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                                     <arg value="${app.bundle}"/>
                                 </exec>
 
-                                <!-- Copy to ~/Applications/Glyco-PAINT -->
+                                <!-- Copy full .app bundle to Applications -->
                                 <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
+                                <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
                                 <copy todir="${user.home}/Applications/Glyco-PAINT" overwrite="true">
-                                    <fileset dir="${app.bundle}" includes="**/*"/>
+                                    <fileset dir="${project.build.directory}">
+                                        <include name="${app.name}.app/**"/>
+                                    </fileset>
                                 </copy>
 
-                                <echo message="✅ Created: ${project.build.directory}/${app.name}.app.zip"/>
+                                <!-- ✅ Fix permissions after copy -->
+                                <exec executable="chmod">
+                                    <arg value="755"/>
+                                    <arg value="${user.home}/Applications/Glyco-PAINT/${app.name}.app/Contents/MacOS/launch"/>
+                                </exec>
+
                                 <echo message="✅ Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
                             </target>
                         </configuration>
@@ -157,46 +159,35 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                 </executions>
             </plugin>
 
-            <!-- Create Windows .exe launcher using Launch4j -->
+            <!-- Create Windows .exe launcher -->
             <plugin>
                 <groupId>com.akathist.maven.plugins.launch4j</groupId>
                 <artifactId>launch4j-maven-plugin</artifactId>
                 <version>2.5.0</version>
-
                 <executions>
                     <execution>
-                        <id>l4j-clui</id>
+                        <id>l4j-get-omero</id>
                         <phase>package</phase>
-                        <goals>
-                            <goal>launch4j</goal>
-                        </goals>
+                        <goals><goal>launch4j</goal></goals>
                     </execution>
                 </executions>
-
                 <configuration>
                     <outfile>${project.build.directory}/${app.name}.exe</outfile>
                     <jar>${fat.jar}</jar>
                     <dontWrapJar>false</dontWrapJar>
-
-                    <!-- Require Java 8+ -->
                     <jre>
                         <minVersion>1.8.0</minVersion>
                     </jre>
-
                     <classPath>
                         <mainClass>getomero.GetOmeroUI</mainClass>
                     </classPath>
-
                     <headerType>gui</headerType>
                     <errTitle>${app.name}</errTitle>
-
                     <versionInfo>
-                        <!-- These must be numeric for Windows -->
                         <fileVersion>1.0.0.0</fileVersion>
                         <txtFileVersion>${project.version}</txtFileVersion>
                         <productVersion>1.0.0.0</productVersion>
                         <txtProductVersion>${project.version}</txtProductVersion>
-
                         <fileDescription>${project.description}</fileDescription>
                         <productName>${app.name}</productName>
                         <companyName>Glyco-PAINT</companyName>

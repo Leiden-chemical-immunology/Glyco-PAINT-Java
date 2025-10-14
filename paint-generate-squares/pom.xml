@@ -125,7 +125,7 @@
                 </executions>
             </plugin>
 
-            <!-- macOS .app bundle and ZIP -->
+            <!-- Create macOS .app bundle and install -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -139,15 +139,19 @@
                             <target name="create-app-bundle">
                                 <echo message="🍎 Creating macOS app bundle at ${app.bundle}"/>
 
+                                <!-- Clean previous build -->
                                 <delete dir="${app.bundle}" failonerror="false"/>
                                 <delete file="${project.build.directory}/${app.name}.app.zip" failonerror="false"/>
 
+                                <!-- Create bundle structure -->
                                 <mkdir dir="${app.bundle}/Contents/MacOS"/>
                                 <mkdir dir="${app.bundle}/Contents/Java"/>
                                 <mkdir dir="${app.bundle}/Contents/Resources"/>
 
+                                <!-- Copy JAR -->
                                 <copy file="${fat.jar}" todir="${app.bundle}/Contents/Java" overwrite="true"/>
 
+                                <!-- Info.plist -->
                                 <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -156,7 +160,7 @@
   <key>CFBundleName</key>
   <string>${app.name}</string>
   <key>CFBundleExecutable</key>
-  <string>${app.name}</string>
+  <string>launch</string>
   <key>CFBundleIdentifier</key>
   <string>com.github.jjabakker.${app.name}</string>
   <key>CFBundlePackageType</key>
@@ -165,33 +169,46 @@
   <string>${project.version}</string>
 </dict>
 </plist>
-                    ]]></echo>
+                                ]]></echo>
 
-                                <echo file="${app.bundle}/Contents/MacOS/${app.name}"><![CDATA[
+                                <!-- Launcher script -->
+                                <echo file="${app.bundle}/Contents/MacOS/launch"><![CDATA[
 #!/bin/bash
-cd "$(dirname "$0")/../Java"
-exec java -jar "${project.build.finalName}-jar-with-dependencies.jar"
-                    ]]></echo>
-                                <chmod file="${app.bundle}/Contents/MacOS/${app.name}" perm="755"/>
+DIR="$( cd "$( dirname "$0" )" && cd ../Java && pwd )"
+exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-jar-with-dependencies.jar"
+                                ]]></echo>
 
+                                <!-- Fix permissions before zip -->
+                                <fixcrlf file="${app.bundle}/Contents/MacOS/launch" eol="unix"/>
+                                <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
+
+                                <!-- Create ZIP archive -->
                                 <exec executable="zip">
                                     <arg value="-r"/>
                                     <arg value="${project.build.directory}/${app.name}.app.zip"/>
                                     <arg value="${app.bundle}"/>
                                 </exec>
 
-                                <mkdir dir="/Applications"/>
-                                <copy todir="/Applications" overwrite="true">
-                                    <fileset dir="${app.bundle}" includes="**/*"/>
+                                <!-- Copy full .app bundle to Applications -->
+                                <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
+                                <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
+                                <copy todir="${user.home}/Applications/Glyco-PAINT" overwrite="true">
+                                    <fileset dir="${project.build.directory}">
+                                        <include name="${app.name}.app/**"/>
+                                    </fileset>
                                 </copy>
 
-                                <echo message="✅ Created: ${project.build.directory}/${app.name}.app.zip"/>
-                                <echo message="✅ Installed to /Applications/${app.name}.app"/>
+                                <!-- ✅ Fix permissions after copy -->
+                                <exec executable="chmod">
+                                    <arg value="755"/>
+                                    <arg value="${user.home}/Applications/Glyco-PAINT/${app.name}.app/Contents/MacOS/launch"/>
+                                </exec>
+
+                                <echo message="✅ Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
                             </target>
                         </configuration>
                         <goals><goal>run</goal></goals>
                     </execution>
-
                 </executions>
             </plugin>
 
@@ -200,33 +217,25 @@ exec java -jar "${project.build.finalName}-jar-with-dependencies.jar"
                 <groupId>com.akathist.maven.plugins.launch4j</groupId>
                 <artifactId>launch4j-maven-plugin</artifactId>
                 <version>2.5.0</version>
-
                 <executions>
                     <execution>
-                        <id>l4j-clui</id>
+                        <id>l4j-generate-squares</id>
                         <phase>package</phase>
-                        <goals>
-                            <goal>launch4j</goal>
-                        </goals>
+                        <goals><goal>launch4j</goal></goals>
                     </execution>
                 </executions>
-
                 <configuration>
                     <outfile>${project.build.directory}/${app.name}.exe</outfile>
                     <jar>${fat.jar}</jar>
                     <dontWrapJar>false</dontWrapJar>
-
                     <jre>
                         <minVersion>1.8.0</minVersion>
                     </jre>
-
                     <classPath>
                         <mainClass>generatesquares.GenerateSquares</mainClass>
                     </classPath>
-
                     <headerType>gui</headerType>
                     <errTitle>${app.name}</errTitle>
-
                     <versionInfo>
                         <fileVersion>1.0.0.0</fileVersion>
                         <txtFileVersion>${project.version}</txtFileVersion>

@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Implementation-Title: Paint Fiji Plugin
+Implementation-Version: 1.0.0-SNAPSHOT
+Build-Timestamp: 2025-10-12 09:26:23
+Built-By: hans
+Specification-Vendor: jjabakker
+Specification-Title: Paint Fiji Plugin
+Build-Jdk-Spec: 1.8
+Created-By: Maven JAR Plugin 3.3.0
+Specification-Version: 1.0.0-SNAPSHOT
+Build-Jdk: 1.8.0_391
+Implementation-Vendor: jjabakker
+
