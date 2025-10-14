@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static paint.shared.config.PaintConfig.getBoolean;
 import static paint.shared.config.PaintConfig.getString;
@@ -73,7 +74,11 @@ public class RunTrackMateOnProject implements Command {
         } else {
             PaintLogger.errorf("No manifest information found.");
         }
-        PaintLogger.infof("Current time is: %s", LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedTime = now.format(fmt);
+        PaintLogger.infof("Current time is: %s", formattedTime);
+
         PaintLogger.blankline();
         PaintLogger.blankline();
 

@@ -19,13 +19,15 @@
     <description>Paint desktop application</description>
 
     <properties>
-        <project.build.outputTimestamp>2025-09-23T08:55:00Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>${maven.build.timestamp}</project.build.outputTimestamp>
+        <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss'Z'</maven.build.timestamp.format>
         <app.name>Generate Squares</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <fat.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</fat.jar>
     </properties>
 
     <dependencies>
+
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
@@ -97,10 +99,13 @@
             <artifactId>gson</artifactId>
             <version>2.11.0</version>
         </dependency>
+
     </dependencies>
 
     <build>
+
         <plugins>
+
             <!-- Fat JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -112,15 +117,30 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
+                            <addClasspath>true</addClasspath>
                             <mainClass>generatesquares.GenerateSquares</mainClass>
                         </manifest>
+
+                        <manifestEntries>
+                            <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
+                            <Implementation-Title>${project.name}</Implementation-Title>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                            <Implementation-Vendor>Glyco-PAINT</Implementation-Vendor>
+                            <Specification-Title>${project.artifactId}</Specification-Title>
+                            <Specification-Version>${project.version}</Specification-Version>
+                            <Specification-Vendor>Glyco-PAINT</Specification-Vendor>
+                        </manifestEntries>
+
                     </archive>
+                    <finalName>${project.build.finalName}</finalName>
                 </configuration>
                 <executions>
                     <execution>
                         <id>make-assembly</id>
                         <phase>package</phase>
-                        <goals><goal>single</goal></goals>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

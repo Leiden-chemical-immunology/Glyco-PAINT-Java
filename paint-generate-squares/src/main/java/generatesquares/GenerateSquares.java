@@ -37,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
 import static generatesquares.calc.GenerateSquareCalcs.generateSquaresForExperiment;
@@ -125,7 +126,10 @@ public class GenerateSquares {
                 PaintLogger.infof();
             }
 
-            PaintLogger.infof("Current time is: %s", LocalDateTime.now());
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedTime = now.format(fmt);
+            PaintLogger.infof("Current time is: %s", formattedTime);
             PaintLogger.blankline();
             PaintLogger.blankline();
 
