@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -18,14 +19,9 @@
     <url>https://github.com/jjabakker/paint-create-experiment</url>
 
     <properties>
-        <!-- UTC timestamp for reproducible builds -->
         <project.build.outputTimestamp>2025-09-23T08:55:00Z</project.build.outputTimestamp>
-
-        <!-- App bundle name and locations -->
         <app.name>CreateExperiment</app.name>
         <app.dir>${project.build.directory}/${app.name}.app</app.dir>
-
-        <!-- Fat JAR target -->
         <fat.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</fat.jar>
     </properties>
 
@@ -40,13 +36,11 @@
             <artifactId>paint-shared-utils</artifactId>
         </dependency>
 
-        <!-- Silence all SLF4J output -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
             <version>1.7.36</version>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -60,9 +54,10 @@
                 </configuration>
             </plugin>
 
-            <!-- Assembly plugin for fat JAR -->
+            <!-- Fat JAR -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.6.0</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -84,7 +79,7 @@
                 </executions>
             </plugin>
 
-            <!-- Filter Info.plist from template -->
+            <!-- Filter Info.plist -->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.3.1</version>
@@ -111,9 +106,10 @@
                 </executions>
             </plugin>
 
-            <!-- Build macOS .app bundle -->
+            <!-- macOS .app bundle -->
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>build-mac-app</id>
@@ -123,27 +119,20 @@
                                 <mkdir dir="${app.dir}/Contents/MacOS"/>
                                 <mkdir dir="${app.dir}/Contents/Resources"/>
 
-                                <!-- Copy JAR -->
                                 <copy file="${fat.jar}" todir="${app.dir}/Contents/Resources"/>
-
-                                <!-- Copy icon if present -->
                                 <copy file="src/main/resources/icon.icns"
                                       todir="${app.dir}/Contents/Resources"
                                       failonerror="false"/>
 
-                                <!-- Launch script -->
                                 <echo file="${app.dir}/Contents/MacOS/launch"><![CDATA[
 #!/bin/bash
 DIR="$( cd "$( dirname "$0" )" && cd ../Resources && pwd )"
 
-# Log file
 LOG="$HOME/Library/Logs/CreateExperiment.log"
 mkdir -p "$(dirname "$LOG")"
 echo "=== Launching CreateExperiment at $(date) ===" >> "$LOG" 2>&1
 
-# Find the fat jar
 JAR="$(ls "$DIR"/*.jar | head -n 1)"
-
 if [ -z "$JAR" ]; then
   echo "No JAR found in $DIR" >> "$LOG" 2>&1
   exit 1
@@ -153,17 +142,14 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$JAR" >> "$LOG" 2>&1
 ]]></echo>
                                 <chmod file="${app.dir}/Contents/MacOS/launch" perm="755"/>
 
-                                <!-- Copy filtered Info.plist -->
                                 <copy file="${project.build.directory}/filtered-resources/Info.plist.template"
                                       tofile="${app.dir}/Contents/Info.plist"
                                       overwrite="true"/>
 
-                                <!-- Zip the app bundle -->
                                 <zip destfile="${project.build.directory}/${app.name}.zip"
                                      basedir="${project.build.directory}"
                                      includes="${app.name}.app/**"/>
 
-                                <!-- ✅ Deploy .app to ~/Applications/Glyco-PAINT -->
                                 <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
                                 <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
                                 <copy todir="${user.home}/Applications/Glyco-PAINT" overwrite="true">
@@ -171,7 +157,6 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$JAR" >> "$LOG" 2>&1
                                         <include name="${app.name}.app/**"/>
                                     </fileset>
                                 </copy>
-
                             </target>
                         </configuration>
                         <goals>
@@ -179,6 +164,50 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$JAR" >> "$LOG" 2>&1
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- Windows .exe launcher using Launch4j -->
+            <plugin>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <version>2.5.0</version>
+
+                <executions>
+                    <execution>
+                        <id>l4j-create-experiment</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <outfile>${project.build.directory}/${app.name}.exe</outfile>
+                    <jar>${fat.jar}</jar>
+                    <dontWrapJar>false</dontWrapJar>
+
+                    <jre>
+                        <minVersion>1.8.0</minVersion>
+                    </jre>
+
+                    <classPath>
+                        <mainClass>createexperiment.CreateExperimentUI</mainClass>
+                    </classPath>
+
+                    <headerType>gui</headerType>
+                    <errTitle>${app.name}</errTitle>
+
+                    <versionInfo>
+                        <fileVersion>1.0.0.0</fileVersion>
+                        <txtFileVersion>${project.version}</txtFileVersion>
+                        <productVersion>1.0.0.0</productVersion>
+                        <txtProductVersion>${project.version}</txtProductVersion>
+                        <fileDescription>${project.description}</fileDescription>
+                        <productName>${app.name}</productName>
+                        <companyName>Glyco-PAINT</companyName>
+                    </versionInfo>
+                </configuration>
             </plugin>
 
         </plugins>

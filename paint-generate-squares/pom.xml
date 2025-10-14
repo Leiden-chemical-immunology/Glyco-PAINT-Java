@@ -125,7 +125,7 @@
                 </executions>
             </plugin>
 
-            <!-- Create macOS .app bundle and ZIP -->
+            <!-- macOS .app bundle and ZIP -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -139,19 +139,15 @@
                             <target name="create-app-bundle">
                                 <echo message="🍎 Creating macOS app bundle at ${app.bundle}"/>
 
-                                <!-- Clean previous build -->
                                 <delete dir="${app.bundle}" failonerror="false"/>
                                 <delete file="${project.build.directory}/${app.name}.app.zip" failonerror="false"/>
 
-                                <!-- Create bundle structure -->
                                 <mkdir dir="${app.bundle}/Contents/MacOS"/>
                                 <mkdir dir="${app.bundle}/Contents/Java"/>
                                 <mkdir dir="${app.bundle}/Contents/Resources"/>
 
-                                <!-- Copy JAR -->
                                 <copy file="${fat.jar}" todir="${app.bundle}/Contents/Java" overwrite="true"/>
 
-                                <!-- Info.plist -->
                                 <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -171,7 +167,6 @@
 </plist>
                     ]]></echo>
 
-                                <!-- Launcher -->
                                 <echo file="${app.bundle}/Contents/MacOS/${app.name}"><![CDATA[
 #!/bin/bash
 cd "$(dirname "$0")/../Java"
@@ -179,14 +174,12 @@ exec java -jar "${project.build.finalName}-jar-with-dependencies.jar"
                     ]]></echo>
                                 <chmod file="${app.bundle}/Contents/MacOS/${app.name}" perm="755"/>
 
-                                <!-- Create ZIP archive -->
                                 <exec executable="zip">
                                     <arg value="-r"/>
                                     <arg value="${project.build.directory}/${app.name}.app.zip"/>
                                     <arg value="${app.bundle}"/>
                                 </exec>
 
-                                <!-- Copy to Applications -->
                                 <mkdir dir="/Applications"/>
                                 <copy todir="/Applications" overwrite="true">
                                     <fileset dir="${app.bundle}" includes="**/*"/>
@@ -200,11 +193,53 @@ exec java -jar "${project.build.finalName}-jar-with-dependencies.jar"
                     </execution>
 
                 </executions>
+            </plugin>
 
+            <!-- Windows .exe launcher using Launch4j -->
+            <plugin>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <version>2.5.0</version>
+
+                <executions>
+                    <execution>
+                        <id>l4j-clui</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <outfile>${project.build.directory}/${app.name}.exe</outfile>
+                    <jar>${fat.jar}</jar>
+                    <dontWrapJar>false</dontWrapJar>
+
+                    <jre>
+                        <minVersion>1.8.0</minVersion>
+                    </jre>
+
+                    <classPath>
+                        <mainClass>generatesquares.GenerateSquares</mainClass>
+                    </classPath>
+
+                    <headerType>gui</headerType>
+                    <errTitle>${app.name}</errTitle>
+
+                    <versionInfo>
+                        <fileVersion>1.0.0.0</fileVersion>
+                        <txtFileVersion>${project.version}</txtFileVersion>
+                        <productVersion>1.0.0.0</productVersion>
+                        <txtProductVersion>${project.version}</txtProductVersion>
+                        <fileDescription>${project.description}</fileDescription>
+                        <productName>${app.name}</productName>
+                        <companyName>Glyco-PAINT</companyName>
+                    </versionInfo>
+                </configuration>
             </plugin>
 
         </plugins>
-
     </build>
 
     <repositories>

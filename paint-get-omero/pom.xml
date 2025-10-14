@@ -131,7 +131,7 @@ DIR="$( cd "$( dirname "$0" )" && cd ../Java && pwd )"
 exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-jar-with-dependencies.jar"
                                 ]]></echo>
 
-                                <!-- ✅ Ensure Unix line endings + executable permission -->
+                                <!-- Ensure Unix line endings + executable permission -->
                                 <fixcrlf file="${app.bundle}/Contents/MacOS/launch" eol="unix"/>
                                 <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
 
@@ -155,6 +155,53 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                         <goals><goal>run</goal></goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- Create Windows .exe launcher using Launch4j -->
+            <plugin>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <version>2.5.0</version>
+
+                <executions>
+                    <execution>
+                        <id>l4j-clui</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <outfile>${project.build.directory}/${app.name}.exe</outfile>
+                    <jar>${fat.jar}</jar>
+                    <dontWrapJar>false</dontWrapJar>
+
+                    <!-- Require Java 8+ -->
+                    <jre>
+                        <minVersion>1.8.0</minVersion>
+                    </jre>
+
+                    <classPath>
+                        <mainClass>getomero.GetOmeroUI</mainClass>
+                    </classPath>
+
+                    <headerType>gui</headerType>
+                    <errTitle>${app.name}</errTitle>
+
+                    <versionInfo>
+                        <!-- These must be numeric for Windows -->
+                        <fileVersion>1.0.0.0</fileVersion>
+                        <txtFileVersion>${project.version}</txtFileVersion>
+                        <productVersion>1.0.0.0</productVersion>
+                        <txtProductVersion>${project.version}</txtProductVersion>
+
+                        <fileDescription>${project.description}</fileDescription>
+                        <productName>${app.name}</productName>
+                        <companyName>Glyco-PAINT</companyName>
+                    </versionInfo>
+                </configuration>
             </plugin>
 
         </plugins>
