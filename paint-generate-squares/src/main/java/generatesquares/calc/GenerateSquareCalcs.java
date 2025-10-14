@@ -211,8 +211,6 @@ public class GenerateSquareCalcs {
         double minRequiredRSquared            = generateSquaresConfig.getMinRequiredRSquared();
         int minTracksForTau                   = generateSquaresConfig.getMinTracksToCalculateTau();
 
-
-
         // Calculate the background track count
         SquareUtils.BackgroundEstimationResult result;
         result = estimateBackgroundDensity(recording.getSquaresOfRecording());
@@ -229,8 +227,8 @@ public class GenerateSquareCalcs {
 
         CalculateTau.CalculateTauResult results = calcTau(tracksFromSelectedSquares, minTracksForTau, minRequiredRSquared);
         if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
-            recording.setTau(round(results.getTau(), 1));
-            recording.setRSquared(round(results.getRSquared(), 4));
+            recording.setTau(round(results.getTau(), 0));
+            recording.setRSquared(round(results.getRSquared(), 3));
         } else {
             recording.setTau(Double.NaN);
             recording.setRSquared(Double.NaN);
@@ -281,8 +279,8 @@ public class GenerateSquareCalcs {
             // Calculate Tau
             CalculateTau.CalculateTauResult results = calcTau(tracksInSquare, minTracksForTau, minRequiredRSquared);
             if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
-                square.setTau(round(results.getTau(), 1));
-                square.setRSquared(round(results.getRSquared(), 4));
+                square.setTau(round(results.getTau(), 0));
+                square.setRSquared(round(results.getRSquared(), 3));
             } else {
                 square.setTau(Double.NaN);
                 square.setRSquared(Double.NaN);
