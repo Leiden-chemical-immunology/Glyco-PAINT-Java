@@ -65,7 +65,7 @@ public class Project {
         this.projectRootPath       = projectRootPath;
         this.imagesRootPath        = null;
         this.projectName           = projectRootPath.getFileName().toString();
-        this.experimentNames       = experimentNames;
+        this.experimentNames       = null;
         this.paintConfig           = null;
         this.generateSquaresConfig = null;
         this.trackMateConfig       = null;

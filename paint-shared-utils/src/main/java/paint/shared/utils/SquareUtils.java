@@ -4,15 +4,7 @@ import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
 import paint.shared.objects.Track;
 
-
-
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.IntSummaryStatistics;
-import javax.swing.*;
-import java.awt.*;
-import java.util.*;
-import java.util.List;
 
 public class SquareUtils {
 

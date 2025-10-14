@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class GetOmeroUI extends JFrame {
 
-    private JTextField directoryField;
+    private final JTextField directoryField;
 
     public GetOmeroUI() {
         super("Get Omero");

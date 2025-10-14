@@ -11,7 +11,6 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import static paint.shared.constants.PaintConstants.*;
-import static paint.shared.constants.PaintConstants.RECORDING_CSV;
 import static paint.shared.utils.Miscellaneous.friendlyMessage;
 
 public class HelperIO {

@@ -35,10 +35,10 @@ public class SquareControlDialog extends JDialog {
     private final RecordingControlsPanel.Listener listener;
     private final SquareGridPanel gridPanel;
 
-    private double origDensityRatio;
-    private double origVariability;
-    private double origRSquared;
-    private String origNeighbourMode;
+    private final double origDensityRatio;
+    private final double origVariability;
+    private final double origRSquared;
+    private final String origNeighbourMode;
 
     private static final DecimalFormat ONE_DEC = new DecimalFormat("0.0");
 

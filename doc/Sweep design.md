@@ -1,4 +1,4 @@
-##### Perform a parameter sweep on  Experiment 'SweepExperiment' in Project 'SweepProject 
+##### Perform a parameter sweep on  Experiment 'SweepExperiment' in Project 'SweepProject' 
 
 
 

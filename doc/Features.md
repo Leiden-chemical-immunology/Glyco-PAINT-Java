@@ -123,5 +123,5 @@
 #### Sweep support - under development
 
 - Support for parameter sweeps is implemented allowing TrackMate and Generate Squares calculations to be performed over a range of parameters.
-- A Sweep Config.csv filke in the project directory specifies the sweeo parameters and range.
+- A Sweep Config.csv file in the project directory specifies the sweep parameters and range.
 

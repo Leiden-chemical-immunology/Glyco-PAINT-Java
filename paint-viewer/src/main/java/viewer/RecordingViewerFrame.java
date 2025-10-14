@@ -172,11 +172,11 @@ public class RecordingViewerFrame extends JFrame
         currentIndex = index;
         RecordingEntry entry = recordings.get(index);
 
-        int numberOfSquaresinRecording = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
+        int numberOfSquaresInRecording = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
 
         leftGridPanel.setRecording(entry.getRecording());
         leftGridPanel.setBackgroundImage(entry.getLeftImage());
-        leftGridPanel.setSquares(entry.getSquares(project, numberOfSquaresinRecording));
+        leftGridPanel.setSquares(entry.getSquares(project, numberOfSquaresInRecording));
 
         rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), NUMBER_PIXELS_WIDTH, NUMBER_PIXELS_HEIGHT));
 
@@ -184,7 +184,7 @@ public class RecordingViewerFrame extends JFrame
                                         "   [Overall: " + (currentIndex + 1) + "/" + recordings.size() + "]");
         recordingLabel.setText("Recording: " + entry.getRecordingName());
 
-        attributesPanel.updateFromEntry(entry, numberOfSquaresinRecording);
+        attributesPanel.updateFromEntry(entry, numberOfSquaresInRecording);
         updateNavButtons();
         leftGridPanel.repaint();
     }

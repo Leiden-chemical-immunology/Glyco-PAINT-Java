@@ -88,9 +88,9 @@ public class RecordingLoader {
 
                 try {
                     for (Path p : (Iterable<Path>) Files.list(brightfieldDirPath)::iterator) {
-                        String fname = p.getFileName().toString();
-                        if ((fname.startsWith(recordingName + "-BF") || fname.startsWith(recordingName))
-                                && fname.endsWith(".jpg")) {
+                        String fileName = p.getFileName().toString();
+                        if ((fileName.startsWith(recordingName + "-BF") || fileName.startsWith(recordingName))
+                                && fileName.endsWith(".jpg")) {
                             brightfieldImagePath = p;
                             break;
                         }

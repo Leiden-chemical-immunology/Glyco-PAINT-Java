@@ -92,14 +92,19 @@ public class CleanupUtility {
 
         for (int i = 2; i < args.length; i++) {
             String opt = normalizeOption(args[i]);
-            if ("--dry-run".equals(opt)) {
-                dryRun = true;
-            } else if ("--old".equals(opt)) {
-                old = true;
-            } else if ("--all".equals(opt)) {
-                all = true;
-            } else {
-                System.err.println("Warning: Ignoring unknown option '" + args[i] + "'");
+            switch (opt) {
+                case "--dry-run":
+                    dryRun = true;
+                    break;
+                case "--old":
+                    old = true;
+                    break;
+                case "--all":
+                    all = true;
+                    break;
+                default:
+                    System.err.println("Warning: Ignoring unknown option '" + args[i] + "'");
+                    break;
             }
         }
 
@@ -241,9 +246,14 @@ public class CleanupUtility {
                 .replace('\u2014', '-')
                 .trim()
                 .toLowerCase();
-        if ("--dry-run".equals(o)) return "--dry-run";
-        if ("--old".equals(o)) return "--old";
-        if ("--all".equals(o)) return "--all";
+        switch (o) {
+            case "--dry-run":
+                return "--dry-run";
+            case "--old":
+                return "--old";
+            case "--all":
+                return "--all";
+        }
         return o;
     }
 

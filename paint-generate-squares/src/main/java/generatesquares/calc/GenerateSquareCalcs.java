@@ -3,21 +3,26 @@
  *  GenerateSquareCalcs.java
  *  Part of the "Generate Squares" module.
  *
- *  Purpose:
- *    Performs the computational workflow for square-based analysis of
- *    TrackMate experiment data. Handles:
- *      - Grid generation per recording
- *      - Track-to-square assignment
- *      - Tau, Variability, and Density calculations
- *      - Aggregation and export of results
+ *  <p><b>Purpose:</b><br>
+ *  Performs the computational workflow for square-based analysis of
+ *  TrackMate experiment data. Handles:
+ *  <ul>
+ *      <li>Grid generation per recording</li>
+ *      <li>Track-to-square assignment</li>
+ *      <li>Tau, Variability, and Density calculations</li>
+ *      <li>Aggregation and export of results</li>
+ *  </ul>
+ *  </p>
  *
- *  Notes:
- *    All methods are static; this class acts as a calculation utility.
- *    No GUI elements or user input handling are included here.
+ *  <p><b>Notes:</b><br>
+ *  All methods are static; this class acts as a calculation utility.
+ *  No GUI elements or user input handling are included here.
+ *  </p>
  *
- *  Author: Herr Doctor
- *  Version: 1.0
- *  Module: paint-generate-squares
+ *  <p><b>Author:</b> Herr Doctor<br>
+ *  <b>Version:</b> 1.0<br>
+ *  <b>Module:</b> paint-generate-squares
+ *  </p>
  * ============================================================================
  */
 
@@ -110,7 +115,7 @@ public class GenerateSquareCalcs {
                 recording.setSquaresOfRecording(squares);
 
                 // Assign the recording tracks to the squares
-                assignTracksToSquares(recording, generateSquaresConfig);
+                assignTracksToSquares(recording);
 
                 // Calculate squares attributes
                 calculateSquareAttributes(experimentName, recording, generateSquaresConfig);
@@ -187,9 +192,8 @@ public class GenerateSquareCalcs {
      * Assigns track data to each square based on spatial coordinates.
      *
      * @param recording the recording containing track information
-     * @param context   the {@link GenerateSquaresConfig} defining grid layout
      */
-    public static void assignTracksToSquares(Recording recording, GenerateSquaresConfig context) {
+    public static void assignTracksToSquares(Recording recording) {
 
         Table tracksOfRecording = recording.getTracksTable();
         TrackTableIO trackTableIO = new TrackTableIO();
@@ -244,7 +248,7 @@ public class GenerateSquareCalcs {
     }
 
     /**
-     * Calculates aggregate metrics for an entire recording (Tau, background sau_fatistics, density).
+     * Calculates aggregate metrics for an entire recording (Tau, background, density).
      *
      * @param recording             the recording to analyze
      * @param generateSquaresConfig the {@link GenerateSquaresConfig} parameters
@@ -307,7 +311,6 @@ public class GenerateSquareCalcs {
         double numberOfTracksInBackgroundSquares  = result.getBackgroundMean();
         PaintLogger.debugf("Estimated Background track count = %.2f, n = %d%n", numberOfTracksInBackgroundSquares, result.getBackgroundSquares().size());
 
-        int labelNumber = 0;
         for (Square square : recording.getSquaresOfRecording()) {
 
             // @formatter:off
@@ -382,7 +385,7 @@ public class GenerateSquareCalcs {
             );
 
             // Re-assign label numbers to selected squares
-            labelNumber = 0;
+            int labelNumber = 0;
             for (Square sq : recording.getSquaresOfRecording()) {
                 if (sq.isSelected()) {
                     sq.setLabelNumber(labelNumber++);

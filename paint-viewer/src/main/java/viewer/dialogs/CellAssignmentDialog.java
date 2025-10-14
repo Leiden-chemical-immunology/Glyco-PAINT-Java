@@ -74,7 +74,7 @@ public class CellAssignmentDialog extends JDialog {
 
         JRadioButton radio = new JRadioButton(label);
         radio.setForeground(Color.BLACK);
-        radio.putClientProperty("cellId", Integer.valueOf(cellId));
+        radio.putClientProperty("cellId", cellId);
         if (selected) {
             radio.setSelected(true);
         }
@@ -121,7 +121,9 @@ public class CellAssignmentDialog extends JDialog {
         for (JRadioButton rb : squareByRadio.keySet()) {
             if (rb.isSelected()) {
                 Object v = rb.getClientProperty("cellId");
-                if (v instanceof Integer) return ((Integer) v).intValue();
+                if (v instanceof Integer) {
+                    return ((Integer) v);
+                }
             }
         }
         return 0;
@@ -130,9 +132,8 @@ public class CellAssignmentDialog extends JDialog {
     private void updateVisualSelection() {
         for (Map.Entry<JRadioButton, JPanel> e : squareByRadio.entrySet()) {
             JRadioButton rb = e.getKey();
-            JPanel sq = e.getValue();
 
-            int id = ((Integer) rb.getClientProperty("cellId")).intValue();
+            int id = ((Integer) rb.getClientProperty("cellId"));
             Color base = (id == 0) ? Color.GRAY : SquareGridPanel.getColorForCell(id);
         }
         repaint();

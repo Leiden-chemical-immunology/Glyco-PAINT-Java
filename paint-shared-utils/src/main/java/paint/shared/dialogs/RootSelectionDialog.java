@@ -16,7 +16,7 @@ public class RootSelectionDialog extends JDialog {
     private static final String KEY_PROJECT = "projectDir";
     private static final String KEY_IMAGES = "imagesDir";
 
-    // @formqtter:off
+    // @formatter:off
     private final    JTextField directoryField;
     private final    JButton    okButton;
     private final    JButton    cancelButton;

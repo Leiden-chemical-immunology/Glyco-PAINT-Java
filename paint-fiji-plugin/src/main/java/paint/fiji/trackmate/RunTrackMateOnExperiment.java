@@ -68,7 +68,8 @@ public class RunTrackMateOnExperiment {
 
             // progress dots
             numberOfInterrupts++;
-            if (numberOfInterrupts >= 1) {
+            int dotsAfterSecond = 1;
+            if (numberOfInterrupts >= dotsAfterSecond) {
                 PaintLogger.raw(".");
                 numberOfDotsOnline++;
                 numberOfInterrupts = 0;
@@ -195,7 +196,7 @@ public class RunTrackMateOnExperiment {
 
                         boolean finished = runWithWatchdog(() -> {
                             try {
-                                trackMateResults[0] = RunTrackMateOnRecording.RunTrackMateOnRecording(
+                                trackMateResults[0] = RunTrackMateOnRecording.runTrackMateOnRecording(
                                         experimentPath, imagesPath, trackMateConfig, threshold, experimentInfo, dialog);
                             } catch (IOException e) {
                                 throw new RuntimeException(e);

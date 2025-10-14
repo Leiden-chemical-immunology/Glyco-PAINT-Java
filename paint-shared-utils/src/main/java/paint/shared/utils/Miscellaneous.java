@@ -1,16 +1,8 @@
 package paint.shared.utils;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-
-import java.io.IOException;
-import java.io.Reader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
+
 
 public class Miscellaneous {
 
@@ -44,22 +36,7 @@ public class Miscellaneous {
     public static String formatDuration(Duration duration) {
 
         int totalSeconds = (int) duration.getSeconds();
-        int hours = totalSeconds / 3600;
-        int minutes = (totalSeconds % 3600) / 60;
-        int secs = totalSeconds % 60;
-
-        StringBuilder sb = new StringBuilder();
-        if (hours > 0) {
-            sb.append(hours).append(" hour").append(hours == 1 ? "" : "s").append(" ");
-        }
-        if (minutes > 0) {
-            sb.append(minutes).append(" minute").append(minutes == 1 ? "" : "s").append(" ");
-        }
-        if (secs > 0 || sb.length() == 0) {
-            sb.append(secs).append(" second").append(secs == 1 ? "" : "s");
-        }
-
-        return sb.toString().trim();
+        return formatDuration(totalSeconds);
     }
 
     /* START IGNORE

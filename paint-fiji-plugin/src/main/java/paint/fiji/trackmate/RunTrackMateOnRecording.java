@@ -51,7 +51,7 @@ public class RunTrackMateOnRecording {
         return new TrackMateResults(false);
     }
 
-    public static TrackMateResults RunTrackMateOnRecording(Path experimentPath,
+    public static TrackMateResults runTrackMateOnRecording(Path experimentPath,
                                                            Path imagesPath,
                                                            TrackMateConfig trackMateConfig,
                                                            double threshold,
@@ -76,7 +76,7 @@ public class RunTrackMateOnRecording {
             return new TrackMateResults(false);
         }
 
-        ImagePlus imp = null;
+        ImagePlus imp;
         try {
             imp = IJ.openImage(nd2File.getAbsolutePath());
         } catch (Exception e) {
@@ -178,11 +178,10 @@ public class RunTrackMateOnRecording {
         } catch (Exception e) {
             if (e instanceof InterruptedException || isCancelled(Thread.currentThread(), dialog)) {
                 PaintLogger.warningf("TrackMate detection interrupted by user cancel.");
-                return cancelEarly(imp);
             } else {
                 PaintLogger.errorf("Unexpected error during detection: %s", e.getMessage());
-                return cancelEarly(imp);
             }
+            return cancelEarly(imp);
         }
 
         int numberSpots = model.getSpots().getNSpots(false);
@@ -213,11 +212,10 @@ public class RunTrackMateOnRecording {
                     isCancelled(Thread.currentThread(), dialog)) {
                 PaintLogger.warningf("TrackMate processing interrupted by user cancel.");
                 Thread.currentThread().interrupt(); // restore flag
-                return cancelEarly(imp);
             } else {
                 PaintLogger.errorf("Unexpected error during TrackMate process: %s", e.getMessage());
-                return cancelEarly(imp);
             }
+            return cancelEarly(imp);
         }
 
         if (isCancelled(Thread.currentThread(), dialog)) {

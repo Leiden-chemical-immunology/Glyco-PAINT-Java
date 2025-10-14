@@ -202,7 +202,7 @@ public class PaintConfig {
         configData.add(SECTION_TRACKMATE, trackMate);
 
         trackMate.addProperty("Debug RunTrackMateOnProject", false);
-        trackMate.addProperty("Debug RunTrackMateOnRecordsing", false);
+        trackMate.addProperty("Debug RunTrackMateOnRecording", false);
         configData.add(SECTION_DEBUG, trackMate);
 
         trackMate.addProperty("Project Root", "");

@@ -54,8 +54,12 @@ public class RecordingAttributesPanel {
     }
 
     private static String format(double v, int p) {
-        if (Double.isNaN(v)) return "NaN";
-        if (Double.isInfinite(v)) return v > 0 ? "∞" : "-∞";
+        if (Double.isNaN(v)) {
+            return "NaN";
+        }
+        if (Double.isInfinite(v)) {
+            return v > 0 ? "∞" : "-∞";
+        }
         return String.format("%." + p + "f", v);
     }
 }

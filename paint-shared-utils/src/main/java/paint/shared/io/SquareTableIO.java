@@ -13,7 +13,6 @@ import java.util.List;
 
 import static paint.shared.constants.PaintConstants.SQUARE_COLS;
 import static paint.shared.constants.PaintConstants.SQUARE_TYPES;
-import static paint.shared.utils.Miscellaneous.round;
 
 /**
  * Table IO for Square entities.
