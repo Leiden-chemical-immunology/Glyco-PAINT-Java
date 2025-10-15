@@ -98,15 +98,34 @@ public class Square {
                   double y0,
                   double x1,
                   double y1) {
-        this.uniqueKey = uniqueKey;
-        this.recordingName = recordingName;
-        this.squareNumber = squareNumber;
-        this.rowNumber = rowNumber;
-        this.colNumber = colNumber;
-        this.x0 = round(x0, 2);
-        this.y0 = round(y0, 2);
-        this.x1 = round(x1, 2);
-        this.y1 = round(y1, 2);
+
+        this.uniqueKey                     = uniqueKey;
+        this.recordingName                 = recordingName;
+        this.squareNumber                  = squareNumber;
+        this.rowNumber                     = rowNumber;
+        this.colNumber                     = colNumber;
+        this.x0                            = round(x0, 2);
+        this.y0                            = round(y0, 2);
+        this.x1                            = round(x1, 2);
+        this.y1                            = round(y1, 2);
+        this.variability                   = Double.NaN;
+        this.density                       = Double.NaN;
+        this.densityRatio                  = Double.NaN;
+        this.tau                           = Double.NaN;
+        this.rSquared                      = Double.NaN;
+        this.medianDiffusionCoefficient    = Double.NaN;
+        this.medianDiffusionCoefficientExt = Double.NaN;
+        this.medianLongTrackDuration       = Double.NaN;
+        this.medianShortTrackDuration      = Double.NaN;
+        this.medianDisplacement            = Double.NaN;
+        this.maxDisplacement               = Double.NaN;
+        this.totalDisplacement             = Double.NaN;
+        this.medianMaxSpeed                = Double.NaN;
+        this.maxMaxSpeed                   = Double.NaN;
+        this.medianMeanSpeed               = Double.NaN;
+        this.maxMeanSpeed                  = Double.NaN;
+        this.totalTrackDuration            = Double.NaN;
+        this.medianTrackDuration           = Double.NaN;
     }
 
     /**
