@@ -159,9 +159,11 @@ public class GenerateSquareCalcs {
         numberOfSquaresInRecording    = generateSquaresConfig.getNumberOfSquaresInRecording();
         numberOfSquaresInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);
 
+        // @formatter:off
         List<Square> squares = new ArrayList<>();
-        double squareWidth = IMAGE_WIDTH / numberOfSquaresInOneDimension;
-        double squareHeight = IMAGE_HEIGHT / numberOfSquaresInOneDimension;
+        double squareWidth   = IMAGE_WIDTH / numberOfSquaresInOneDimension;
+        double squareHeight  = IMAGE_HEIGHT / numberOfSquaresInOneDimension;
+        // @formatter:on
 
         int squareNumber = 0;
         for (int rowNumber = 0; rowNumber < numberOfSquaresInOneDimension; rowNumber++) {
@@ -195,7 +197,7 @@ public class GenerateSquareCalcs {
      */
     public static void assignTracksToSquares(Recording recording) {
 
-        Table tracksOfRecording = recording.getTracksTable();
+        Table tracksOfRecording   = recording.getTracksTable();
         TrackTableIO trackTableIO = new TrackTableIO();
         Table recordingTrackTable = trackTableIO.emptyTable();
 
