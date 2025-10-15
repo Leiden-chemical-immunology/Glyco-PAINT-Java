@@ -15,6 +15,9 @@ public class PaintLauncher {
     // Map: Button label → jar filename
     private static final Map<String, String> APP_MAP = new LinkedHashMap<>();
 
+    // Directory containing the runnable jars (relative to launcher)
+    private static final String JAR_DIR = "jars";
+
     static {
         APP_MAP.put("Get Omero", "paint-get-omero.jar");
         APP_MAP.put("Create Experiment", "paint-create-experiment.jar");
@@ -100,11 +103,13 @@ public class PaintLauncher {
     }
 
     private static void launchApp(String jarName, Component parent) {
-        File jarFile = new File(jarName);
+        // Determine full path to jars/<jarName>
+        File jarFile = new File(System.getProperty("user.dir"), JAR_DIR + File.separator + jarName);
+
         if (!jarFile.exists()) {
             JOptionPane.showMessageDialog(parent,
-                    "JAR not found:\n" + jarFile.getAbsolutePath(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
+                                          "JAR not found:\n" + jarFile.getAbsolutePath(),
+                                          "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -114,8 +119,8 @@ public class PaintLauncher {
                     .start();
         } catch (IOException e) {
             JOptionPane.showMessageDialog(parent,
-                    "Failed to launch:\n" + jarName + "\n\n" + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
+                                          "Failed to launch:\n" + jarName + "\n\n" + e.getMessage(),
+                                          "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
