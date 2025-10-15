@@ -24,9 +24,6 @@ public class PaintLauncher {
         APP_MAP.put("Analyse Results", null); // visual only
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(PaintLauncher::createAndShowGUI);
-    }
 
     private static void createAndShowGUI() {
         JFrame frame = new JFrame("PAINT Launcher");
@@ -196,5 +193,9 @@ public class PaintLauncher {
                                           "Failed to launch:\n" + jarFile.getName() + "\n\n" + e.getMessage(),
                                           "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(PaintLauncher::createAndShowGUI);
     }
 }
