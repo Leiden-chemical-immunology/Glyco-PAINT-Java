@@ -1,0 +1,51 @@
+Manifest-Version: 1.0
+Class-Path: paint-shared-utils-1.0.0-SNAPSHOT.jar commons-csv-1.10.0.j
+ ar imageio-tiff-3.10.1.jar imageio-core-3.10.1.jar imageio-metadata-3
+ .10.1.jar common-lang-3.10.1.jar common-io-3.10.1.jar common-image-3.
+ 10.1.jar pdfbox-2.0.30.jar fontbox-2.0.30.jar commons-logging-1.2.jar
+  graphics2d-0.37.jar ij-1.54h.jar TrackMate-7.14.0.jar imagej-common-
+ 2.1.0.jar scijava-table-1.0.2.jar scijava-optional-1.0.1.jar udunits-
+ 4.3.18.jar imglib2-algorithm-0.15.3.jar imglib2-cache-1.0.0-beta-18.j
+ ar caffeine-2.9.3.jar ojalgo-45.1.1.jar imglib2-algorithm-gpl-0.3.1.j
+ ar imglib2-algorithm-fft-0.2.1.jar mpicbg-1.5.0.jar mines-jtk-2015112
+ 5.jar imglib2-ij-2.0.2.jar imglib2-realtransform-4.0.3.jar jitk-tps-3
+ .0.3.jar ejml-0.25.jar imglib2-roi-0.15.0.jar scijava-common-2.94.1.j
+ ar parsington-3.1.0.jar scijava-listeners-1.0.0-beta-3.jar jgraphx-4.
+ 2.2.jar itextpdf-5.5.13.3.jar jama-1.0.3.jar trove4j-3.0.3.jar batik-
+ dom-1.17.jar batik-css-1.17.jar xmlgraphics-commons-2.9.jar batik-ext
+ -1.17.jar batik-shared-resources-1.17.jar batik-util-1.17.jar batik-c
+ onstants-1.17.jar batik-i18n-1.17.jar batik-xml-1.17.jar xml-apis-1.4
+ .01.jar xml-apis-ext-1.3.04.jar batik-svggen-1.17.jar batik-awt-util-
+ 1.17.jar jdom2-2.0.6.1.jar jfreechart-1.5.4.jar jgrapht-core-1.4.0.ja
+ r jheaps-0.11.jar commons-math3-3.6.1.jar javaGeom-0.11.1.jar fontcho
+ oser-2.5.2.jar fiji-lib-2.1.3.jar ij1-patcher-1.2.1.jar javassist-3.2
+ 7.0-GA.jar imglib2-7.1.5.jar logback-classic-1.2.13.jar logback-core-
+ 1.2.13.jar slf4j-api-1.7.32.jar bio-formats_plugins-6.13.0.jar ome-co
+ mmon-6.0.16.jar minio-5.0.2.jar google-http-client-xml-1.20.0.jar goo
+ gle-http-client-1.20.0.jar xpp3-1.1.4c.jar okhttp-3.7.0.jar okio-1.12
+ .0.jar jackson-databind-2.14.2.jar jackson-core-2.14.2.jar jackson-an
+ notations-2.14.2.jar joda-time-2.12.2.jar ome-xml-6.3.3.jar specifica
+ tion-6.3.3.jar formats-bsd-6.13.0.jar turbojpeg-6.13.0.jar native-lib
+ -loader-2.1.4.jar commons-lang-2.6.jar perf4j-0.9.16.jar jhdf5-19.04.
+ 0.jar base-18.09.0.jar commons-io-2.7.jar metadata-extractor-2.18.0.j
+ ar xmpcore-6.1.11.jar jxrlib-all-0.2.4.jar xercesImpl-2.12.2.jar snak
+ eyaml-2.0.jar jgoodies-forms-1.7.2.jar jgoodies-common-1.7.0.jar form
+ ats-gpl-6.13.0.jar ome-mdbtools-5.3.2.jar metakit-5.3.5.jar ome-poi-5
+ .3.7.jar cdm-core-5.3.3.jar httpservices-5.3.3.jar httpclient-4.5.9.j
+ ar commons-codec-1.11.jar httpmime-4.5.9.jar jsr305-3.0.2.jar re2j-1.
+ 3.jar JWlz-1.4.0.jar kryo-5.4.0.jar reflectasm-1.11.9.jar objenesis-3
+ .3.jar minlog-1.3.1.jar json-20230227.jar sqlite-jdbc-3.28.0.jar form
+ ats-api-6.13.0.jar ome-codecs-0.4.5.jar ome-jai-0.1.3.jar aircompress
+ or-0.21.jar serializer-2.7.2.jar xalan-2.7.2.jar tablesaw-core-0.43.1
+ .jar guava-30.0-jre.jar failureaccess-1.0.1.jar listenablefuture-9999
+ .0-empty-to-avoid-conflict-with-guava.jar checker-qual-3.5.0.jar j2ob
+ jc-annotations-1.3.jar fastutil-8.3.0.jar RoaringBitmap-0.9.25.jar sh
+ ims-0.9.25.jar univocity-parsers-2.8.4.jar icu4j-65.1.jar classgraph-
+ 4.8.60.jar opencsv-5.9.jar commons-lang3-3.13.0.jar commons-text-1.11
+ .0.jar commons-beanutils-1.9.4.jar commons-collections-3.2.2.jar comm
+ ons-collections4-4.4.jar gson-2.11.0.jar error_prone_annotations-2.27
+ .0.jar
+Build-Jdk-Spec: 1.8
+Created-By: Maven Archiver 3.6.0
+Main-Class: generatesquares.GenerateSquares
+
