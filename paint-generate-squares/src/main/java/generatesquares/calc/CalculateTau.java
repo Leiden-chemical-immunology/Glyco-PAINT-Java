@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static java.lang.Double.NaN;
+
 public class CalculateTau {
 
     private CalculateTau() {
@@ -37,7 +39,7 @@ public class CalculateTau {
                                              int minTracksForTau,
                                              double minRequiredRSquared) {
         if (tracks == null || tracks.size() < minTracksForTau) {
-            return new CalculateTauResult(0.0, 0.0, CalculateTauResult.Status.TAU_INSUFFICIENT_POINTS);
+            return new CalculateTauResult(NaN, NaN, CalculateTauResult.Status.TAU_INSUFFICIENT_POINTS);
         }
 
         // 1) Extract durations
@@ -162,7 +164,7 @@ class CalculateTauExpDecayFitter {
      */
     public static FitResult fit(double[] x, double[] y) {
         if (x == null || y == null || x.length != y.length || x.length < 2) {
-            return new FitResult(Double.NaN, Double.NaN);
+            return new FitResult(NaN, NaN);
         }
 
         // Build model + Jacobian: y = m * exp(-t * x) + b, params p = [m, t, b]
@@ -214,14 +216,14 @@ class CalculateTauExpDecayFitter {
         try {
             optimum = optimizer.optimize(problem);
         } catch (Throwable t) {
-            return new FitResult(Double.NaN, Double.NaN);
+            return new FitResult(NaN, NaN);
         }
 
         final double[] p = optimum.getPoint().toArray();
         final double m = p[0], t = p[1], b = p[2];
 
         // tau (ms) = 1000 / t  (guard t>0)
-        final double tauMs = (t > 0.0) ? (1000.0 / t) : Double.NaN;
+        final double tauMs = (t > 0.0) ? (1000.0 / t) : NaN;
 
         // R^2 on original data
         final double r2 = computeRSquared(x, y, m, t, b);
@@ -302,7 +304,7 @@ class CalculateTauExpDecayFitter {
             double dy = y[i] - meanY;
             ssTot += dy * dy;
         }
-        return (ssTot == 0.0) ? Double.NaN : 1.0 - (ssRes / ssTot);
+        return (ssTot == 0.0) ? NaN : 1.0 - (ssRes / ssTot);
     }
 
     private static double clamp(double v, double lo, double hi) {
