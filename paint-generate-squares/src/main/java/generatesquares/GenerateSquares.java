@@ -115,6 +115,8 @@ public class GenerateSquares {
             // --- Step 2: Initialize configuration and logging ---
             PaintConfig.initialise(projectPath);
             PaintLogger.initialise(projectPath, "Generate Squares.log");
+            String debugLevel = PaintConfig.getString("Paint", "Log Level", "INFO");
+            PaintLogger.setLevel(debugLevel);
             PaintLogger.debugf("Starting Generate Squares...");
 
             JarInfo info = getJarInfo(GenerateSquares.class);
