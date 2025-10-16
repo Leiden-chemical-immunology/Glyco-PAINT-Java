@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 public abstract class BaseTableIO {
 
@@ -93,24 +94,31 @@ public abstract class BaseTableIO {
 
     protected List<String> validateHeader(Table t, String[] expectedCols, boolean allowSuperset) {
         List<String> errors = new ArrayList<>();
-        String[] actual = t.columnNames().toArray(new String[0]);
-
-        if (!allowSuperset && actual.length != expectedCols.length) {
-            errors.add("Column count mismatch: expected " + expectedCols.length + " but found " + actual.length);
-        }
-        if (actual.length < expectedCols.length) {
-            errors.add("CSV has fewer columns (" + actual.length + ") than expected (" + expectedCols.length + ").");
+        List<String> actualCols = new ArrayList<>();
+        for (String col : t.columnNames()) {
+            actualCols.add(col.toLowerCase(Locale.ROOT));
         }
 
-        int upto = Math.min(expectedCols.length, actual.length);
+        String[] expectedLower = Arrays.stream(expectedCols)
+                .map(s -> s.toLowerCase(Locale.ROOT))
+                .toArray(String[]::new);
+
+        if (!allowSuperset && actualCols.size() != expectedCols.length) {
+            errors.add("Column count mismatch: expected " + expectedCols.length + " but found " + actualCols.size());
+        }
+        if (actualCols.size() < expectedCols.length) {
+            errors.add("CSV has fewer columns (" + actualCols.size() + ") than expected (" + expectedCols.length + ").");
+        }
+
+        int upto = Math.min(expectedLower.length, actualCols.size());
         for (int i = 0; i < upto; i++) {
-            if (!expectedCols[i].equals(actual[i])) {
-                errors.add("At index " + i + ": expected '" + expectedCols[i] + "' but found '" + actual[i] + "'");
+            if (!expectedLower[i].equals(actualCols.get(i))) {
+                errors.add("At index " + i + ": expected '" + expectedCols[i] + "' but found '" + t.columnNames().get(i) + "'");
             }
         }
 
-        for (String name : expectedCols) {
-            if (!t.columnNames().contains(name)) {
+        for (String name : expectedLower) {
+            if (!actualCols.contains(name)) {
                 errors.add("Missing expected column: '" + name + "'");
             }
         }
