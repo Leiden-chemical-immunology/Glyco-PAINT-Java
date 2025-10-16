@@ -42,20 +42,17 @@ public class TrackCsvWriter {
             track.setUniqueKey(recordingName + "-" + trackId);
             track.setRecordingName(recordingName);
             track.setTrackId(trackId);
-            track.setTrackLabel(trackModel.name(trackId) != null
-                                    ? trackModel.name(trackId)
-                                    : "Track-" + trackId);
 
             // @formatter:off
-            track.setNumberOfSpots(       asInt(featureModel.getTrackFeature(trackId,  "NUMBER_SPOTS")));
-            track.setNumberOfGaps(        asInt(featureModel.getTrackFeature(trackId,  "NUMBER_GAPS")));
-            track.setLongestGap(          asInt(featureModel.getTrackFeature(trackId,  "LONGEST_GAP")));
-            track.setTrackDuration(     roundOr(featureModel.getTrackFeature(trackId,  "TRACK_DURATION"), 3, -1));
-            track.setTrackXLocation(    roundOr(featureModel.getTrackFeature(trackId,  "TRACK_X_LOCATION"), 2, -1));
-            track.setTrackYLocation(    roundOr(featureModel.getTrackFeature(trackId,  "TRACK_Y_LOCATION"), 2, -1));
-            track.setTrackDisplacement( roundOr(featureModel.getTrackFeature(trackId,  "TRACK_DISPLACEMENT"), 2, -1));
-            track.setTrackMaxSpeed(      roundOr(featureModel.getTrackFeature(trackId, "TRACK_MAX_SPEED"), 2, -1));
-            track.setTrackMedianSpeed(   roundOr(featureModel.getTrackFeature(trackId, "TRACK_MEDIAN_SPEED"), 2, -1));
+            track.setNumberOfSpots(     asInt( featureModel.getTrackFeature(trackId,  "NUMBER_SPOTS")));
+            track.setNumberOfGaps(      asInt( featureModel.getTrackFeature(trackId,  "NUMBER_GAPS")));
+            track.setLongestGap(        asInt( featureModel.getTrackFeature(trackId,  "LONGEST_GAP")));
+            track.setTrackDuration(     roundOr(featureModel.getTrackFeature(trackId, "TRACK_DURATION"),     3, -1));
+            track.setTrackXLocation(    roundOr(featureModel.getTrackFeature(trackId, "TRACK_X_LOCATION"),   2, -1));
+            track.setTrackYLocation(    roundOr(featureModel.getTrackFeature(trackId, "TRACK_Y_LOCATION"),   2, -1));
+            track.setTrackDisplacement( roundOr(featureModel.getTrackFeature(trackId, "TRACK_DISPLACEMENT"), 2, -1));
+            track.setTrackMaxSpeed(     roundOr(featureModel.getTrackFeature(trackId, "TRACK_MAX_SPEED"),    2, -1));
+            track.setTrackMedianSpeed(  roundOr(featureModel.getTrackFeature(trackId, "TRACK_MEDIAN_SPEED"), 2, -1));
             // @formatter:on
 
             // custom calculated attributes
