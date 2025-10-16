@@ -197,16 +197,21 @@ public class GenerateSquareCalcs {
      */
     public static void assignTracksToSquares(Recording recording) {
 
+        // @formatter:off
         Table tracksOfRecording   = recording.getTracksTable();
         TrackTableIO trackTableIO = new TrackTableIO();
         Table recordingTrackTable = trackTableIO.emptyTable();
+        // @formatter:on
 
         int lastRowCol = numberOfSquaresInRecording - 1;
         int labelNumber = 0;
+        int incrementalTrackCount = 0;
 
+        PaintLogger.debugf("assignTracksToSquare - The numbers of tracks in the recording is %s", tracksOfRecording.rowCount());
         for (Square square : recording.getSquaresOfRecording()) {
 
             Table squareTracksTable = filterTracksInSquare(tracksOfRecording, square, lastRowCol);
+            incrementalTrackCount += squareTracksTable.rowCount();
 
             if (squareTracksTable.rowCount() == 0) {
                 square.setTracks(Collections.emptyList());
@@ -241,6 +246,7 @@ public class GenerateSquareCalcs {
 
             labelNumber++;
         }
+        PaintLogger.debugf("assignTracksToSquare - The numbers of tracks assigned is %d  the recording is %s", incrementalTrackCount, tracksOfRecording.rowCount());
 
         // Update the recording table
         recording.setTracksTable(recordingTrackTable);
@@ -329,7 +335,6 @@ public class GenerateSquareCalcs {
 
             CalculateTau.CalculateTauResult results = calcTau(tracksInSquare, minTracksForTau, minRequiredRSquared);
 
-
             if (plotFittingCurves) {
                 if (tracksInSquare.size() >= minTracksForTau) {
                     Path experimentPath = projectPath.resolve(experimentName);
@@ -351,31 +356,38 @@ public class GenerateSquareCalcs {
                 square.setRSquared(Double.NaN);
             }
 
-            square.setMedianDiffusionCoefficient(round(tracksInSquareTable.doubleColumn("Diffusion Coefficient").median(), 3));
-            square.setMedianDiffusionCoefficientExt(round(tracksInSquareTable.doubleColumn("Diffusion Coefficient Ext").median(), 3));
+            //TODO
+            int lowPrecision = 3;
+            int medPrecision = 3;
+            int highPrecision = 3;
+            int veryHighPrecison = 4;
+            if (tracksInSquareTable.rowCount() != 0) {
+                square.setMedianDiffusionCoefficient(round(tracksInSquareTable.doubleColumn("Diffusion Coefficient").median(), highPrecision));
+                square.setMedianDiffusionCoefficientExt(round(tracksInSquareTable.doubleColumn("Diffusion Coefficient Ext").median(), highPrecision));
 
-            square.setMedianLongTrackDuration(round(calculateMedianLongTrack(tracksInSquareTable, 0.1), 1));
-            square.setMedianShortTrackDuration(round(calculateMedianShortTrack(tracksInSquareTable, 0.1), 1));
+                square.setMedianLongTrackDuration(round(calculateMedianLongTrack(tracksInSquareTable, 0.1), lowPrecision));
+                square.setMedianShortTrackDuration(round(calculateMedianShortTrack(tracksInSquareTable, 0.1), lowPrecision));
 
-            square.setMedianDisplacement(round(tracksInSquareTable.doubleColumn("Track Displacement").mean(), 1));
-            square.setMaxDisplacement(round(tracksInSquareTable.doubleColumn("Track Displacement").max(), 1));
-            square.setTotalDisplacement(round(tracksInSquareTable.doubleColumn("Track Displacement").sum(), 1));
+                square.setMedianDisplacement(round(tracksInSquareTable.doubleColumn("Track Displacement").mean(), lowPrecision));
+                square.setMaxDisplacement(round(tracksInSquareTable.doubleColumn("Track Displacement").max(), lowPrecision));
+                square.setTotalDisplacement(round(tracksInSquareTable.doubleColumn("Track Displacement").sum(), lowPrecision));
 
-            square.setMedianMaxSpeed(round(tracksInSquareTable.doubleColumn("Track Max Speed").median(), 1));
-            square.setMaxMaxSpeed(round(tracksInSquareTable.doubleColumn("Track Max Speed").max(), 1));
+                square.setMedianMaxSpeed(round(tracksInSquareTable.doubleColumn("Track Max Speed").median(), lowPrecision));
+                square.setMaxMaxSpeed(round(tracksInSquareTable.doubleColumn("Track Max Speed").max(), lowPrecision));
 
-            square.setMaxTrackDuration(round(tracksInSquareTable.doubleColumn("Track Duration").max(), 1));
-            square.setTotalTrackDuration(round(tracksInSquareTable.doubleColumn("Track Duration").sum(), 1));
-            square.setMedianTrackDuration(round(tracksInSquareTable.doubleColumn("Track Duration").median(), 1));
+                square.setMaxTrackDuration(round(tracksInSquareTable.doubleColumn("Track Duration").max(), lowPrecision));
+                square.setTotalTrackDuration(round(tracksInSquareTable.doubleColumn("Track Duration").sum(), lowPrecision));
+                square.setMedianTrackDuration(round(tracksInSquareTable.doubleColumn("Track Duration").median(), lowPrecision));
 
-            double variability = calcVariability(tracksInSquareTable, squareNumber, numberOfSquaresInRecording, 10);    //TODO
-            square.setVariability(round(variability, 1));
+                double variability = calcVariability(tracksInSquareTable, squareNumber, numberOfSquaresInRecording, 10);    //TODO
+                square.setVariability(round(variability, lowPrecision));
 
-            double density = calculateDensity(tracksInSquare.size(), area, RECORDING_DURATION, concentration);
-            square.setDensity(round(density, 4));
+                double density = calculateDensity(tracksInSquare.size(), area, RECORDING_DURATION, concentration);
+                square.setDensity(round(density, veryHighPrecison));
 
-            double densityRatio = tracksInSquare.size() / numberOfTracksInBackgroundSquares;
-            square.setDensityRatio(round(densityRatio, 1));
+                double densityRatio = tracksInSquare.size() / numberOfTracksInBackgroundSquares;
+                square.setDensityRatio(round(densityRatio, lowPrecision));
+            }
 
             // Apply the shared visibility filter logic
             SquareUtils.applyVisibilityFilter(
