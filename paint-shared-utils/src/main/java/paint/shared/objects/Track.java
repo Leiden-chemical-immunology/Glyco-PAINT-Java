@@ -1,5 +1,7 @@
 package paint.shared.objects;
 
+import java.lang.reflect.Field;
+
 /**
  * Represents a single tracked trajectory (track) within a recording.
  * <p>
@@ -45,7 +47,6 @@ public class Track {
      * @param uniqueKey               unique identifier for the track
      * @param recordingName           name of the recording the track belongs to
      * @param trackId                 numerical track identifier
-     * @param trackLabel              descriptive label for the track
      * @param numberOfSpots           number of spots in the track
      * @param numberOfGaps            number of gaps in the track
      * @param longestGap              longest gap between spots
@@ -62,13 +63,14 @@ public class Track {
      * @param squareNumber            square index containing this track
      * @param labelNumber             label index used for annotation
      */
+
+    // @formatter:off
     public Track(String uniqueKey,
                  String recordingName,
-                 int trackId,
-                 String trackLabel,
-                 int numberOfSpots,
-                 int numberOfGaps,
-                 int longestGap,
+                 int    trackId,
+                 int    numberOfSpots,
+                 int    numberOfGaps,
+                 int    longestGap,
                  double trackDuration,
                  double trackXLocation,
                  double trackYLocation,
@@ -79,10 +81,11 @@ public class Track {
                  double diffusionCoefficientExt,
                  double totalDistance,
                  double confinementRatio,
-                 int squareNumber,
-                 int labelNumber) {
+                 int    squareNumber,
+                 int    labelNumber) {
 
-        // @formatter:off
+        initialiseDoublesToNaN();
+
         this.uniqueKey               = uniqueKey;
         this.recordingName           = recordingName;
         this.trackId                 = trackId;
@@ -248,6 +251,18 @@ public class Track {
 
     public void setLabelNumber(int labelNumber) {
         this.labelNumber = labelNumber;
+    }
+
+    private void initialiseDoublesToNaN() {
+        for (Field f : getClass().getDeclaredFields()) {
+            if (f.getType() == double.class) {
+                try {
+                    f.setDouble(this, Double.NaN);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 
     /**
