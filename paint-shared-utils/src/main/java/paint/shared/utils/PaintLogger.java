@@ -36,10 +36,12 @@ public class PaintLogger {
         }
     }
 
-    private static BufferedWriter writer;
-    private static boolean initialised = false;
-    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
-    private static boolean justPrintedRaw = false;
+    // @formatter:off
+    private static       BufferedWriter    writer;
+    private static       boolean           initialised    = false;
+    private static final DateTimeFormatter TIME_FMT       = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private static       boolean           justPrintedRaw = false;
+    // @formatter:on
 
     private static volatile Level currentLevel = Level.INFO;
 
@@ -49,6 +51,33 @@ public class PaintLogger {
         currentLevel = level;
         log(Level.INFO, "Log level set to: " + level);
     }
+
+    public static void setLevel(String level) {
+        if (level == null) {
+            setLevel(Level.INFO);
+            return;
+        }
+
+        switch (level) {
+            case "DEBUG":
+                setLevel(Level.DEBUG);
+                break;
+            case "INFO":
+                setLevel(Level.INFO);
+                break;
+            case "WARNING":
+            case "WARN":
+                setLevel(Level.WARN);
+                break;
+            case "ERROR":
+                setLevel(Level.ERROR);
+                break;
+            default:
+                setLevel(Level.INFO);
+                break;
+        }
+    }
+
 
     public static Level getLevel() {
         return currentLevel;
