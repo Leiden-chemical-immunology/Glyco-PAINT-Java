@@ -1,7 +1,11 @@
 package validation;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -14,31 +18,34 @@ public class CompareAllTracksCSV {
 
     // === Configuration toggles ===
     private static final class MatchConfig {
-        boolean useDuration      = false;
-        boolean useDisplacement  = false;
-        boolean useSpeed         = false;  // both max and median
+
+        // @formatter:off
+        boolean useDuration      = true;
+        boolean useDisplacement  = true;
+        boolean useSpeed         = true;  // both max and median
         boolean useDistance      = true;
         boolean useXY            = true;
-        boolean useConfinement   = false;
+        boolean useConfinement   = true;
+        // @formatter:on
     }
 
     // === Tolerances ===
-    private static final double XY_TOLERANCE = 0.5;
-    private static final double DURATION_TOLERANCE = 0.1;
-    private static final double SPEED_TOLERANCE = 0.5;
+
+    // @formatter:off
+    private static final double XY_TOLERANCE           = 0.5;
+    private static final double DURATION_TOLERANCE     = 0.1;
+    private static final double SPEED_TOLERANCE        = 0.5;
     private static final double DISPLACEMENT_TOLERANCE = 0.5;
-    private static final double DIST_TOLERANCE = 0.5;
-    private static final double CONFINEMENT_TOLERANCE = 0.5;
+    private static final double DIST_TOLERANCE         = 0.5;
+    private static final double CONFINEMENT_TOLERANCE  = 0.5;
+    // @formatter:on
 
     public static void main(String[] args) {
-        Path oldCsv = Paths.get("/Users/hans/Paint/Paint Data - v39/Regular Probes/Paint Regular Probes - 20 Squares/221012/All Tracks.csv");
+        Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Tracks.csv");
         Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/All Tracks Java.csv");
         Path outCsv = Paths.get("/Users/hans/Desktop/AllTracksComparison.csv");
 
         MatchConfig cfg = new MatchConfig(); // toggle tests here
-
-        // Example: disable confinement test
-        // cfg.useConfinement = false;
 
         System.out.println("=== Matching Configuration ===");
         System.out.println("Duration:      " + cfg.useDuration);
@@ -71,12 +78,19 @@ public class CompareAllTracksCSV {
                 // Header
                 bw.write(String.join(",", Arrays.asList(
                         "Ext Recording Name",
-                        "Track Id", "Track Id Java",
+                        "Track Id",
+                        "Track Id Java",
                         "Square Nr",
-                        "Nr Spots", "Nr Gaps", "Longest Gap",
-                        "Track Duration", "Track Displacement",
-                        "Track Max Speed", "Track Median Speed",
-                        "Total Distance", "Track X Location", "Track Y Location",
+                        "Nr Spots",
+                        "Nr Gaps",
+                        "Longest Gap",
+                        "Track Duration",
+                        "Track Displacement",
+                        "Track Max Speed",
+                        "Track Median Speed",
+                        "Total Distance",
+                        "Track X Location",
+                        "Track Y Location",
                         "Confinement Ratio",
                         "Matches Found"
                 )));
@@ -90,42 +104,52 @@ public class CompareAllTracksCSV {
                     List<Map<String, String>> candidates = newByRecording.getOrDefault(bestRec, Collections.emptyList());
 
                     // Old numeric values
-                    int square = parseIntSafe(old.get("Square Nr"));
-                    int nSpots = parseIntSafe(old.get("Nr Spots"));
-                    int nGaps = parseIntSafe(old.get("Nr Gaps"));
-                    int longest = parseIntSafe(old.get("Longest Gap"));
-                    double durOld = parseDoubleSafe(old.get("Track Duration"));
-                    double dispOld = parseDoubleSafe(old.get("Track Displacement"));
-                    double maxOld = parseDoubleSafe(old.get("Track Max Speed"));
-                    double medOld = parseDoubleSafe(old.get("Track Median Speed"));
-                    double distOld = parseDoubleSafe(old.get("Total Distance"));
-                    double xOld = parseDoubleSafe(old.get("Track X Location"));
-                    double yOld = parseDoubleSafe(old.get("Track Y Location"));
-                    double confOld = parseDoubleSafe(old.get("Confinement Ratio"));
-                    String oldId = old.getOrDefault("Track Id", "");
+
+                    // @formatter:off
+                    int square     = parseIntSafe(old.get(    "Square Nr"));
+                    int nSpots     = parseIntSafe(old.get(    "Nr Spots"));
+                    int nGaps      = parseIntSafe(old.get(    "Nr Gaps"));
+                    int longest    = parseIntSafe(old.get(    "Longest Gap"));
+                    double durOld  = parseDoubleSafe(old.get( "Track Duration"));
+                    double dispOld = parseDoubleSafe(old.get( "Track Displacement"));
+                    double maxOld  = parseDoubleSafe(old.get( "Track Max Speed"));
+                    double medOld  = parseDoubleSafe(old.get( "Track Median Speed"));
+                    double distOld = parseDoubleSafe(old.get( "Total Distance"));
+                    double xOld    = parseDoubleSafe(old.get( "Track X Location"));
+                    double yOld    = parseDoubleSafe(old.get( "Track Y Location"));
+                    double confOld = parseDoubleSafe(old.get( "Confinement Ratio"));
+                    String oldId   = old.getOrDefault(   "Track Id", "");
+                    // @formatter:on
 
                     List<Map<String, String>> matches = new ArrayList<>();
 
                     for (Map<String, String> cand : candidates) {
                         String newId = cand.getOrDefault("Track Id", "");
-                        if (usedNewTrackIds.contains(newId)) continue;
-
-                        int squareNew = parseIntSafe(cand.get("Square Number"));
-                        int nSpotsNew = parseIntSafe(cand.get("Number of Spots"));
-                        int nGapsNew = parseIntSafe(cand.get("Number of Gaps"));
-                        int longestNew = parseIntSafe(cand.get("Longest Gap"));
-
-                        if (square != squareNew || nSpots != nSpotsNew || nGaps != nGapsNew || longest != longestNew)
+                        if (usedNewTrackIds.contains(newId)) {
                             continue;
+                        }
 
-                        double durNew = parseDoubleSafe(cand.get("Track Duration"));
+                        // @formatter:off
+                        int squareNew  = parseIntSafe(cand.get("Square Number"));
+                        int nSpotsNew  = parseIntSafe(cand.get("Number of Spots"));
+                        int nGapsNew   = parseIntSafe(cand.get("Number of Gaps"));
+                        int longestNew = parseIntSafe(cand.get("Longest Gap"));
+                        // @formatter:on
+
+                        if (square != squareNew || nSpots != nSpotsNew || nGaps != nGapsNew || longest != longestNew) {
+                            continue;
+                        }
+
+                        // @formatter:off
+                        double durNew  = parseDoubleSafe(cand.get("Track Duration"));
                         double dispNew = parseDoubleSafe(cand.get("Track Displacement"));
-                        double maxNew = parseDoubleSafe(cand.get("Track Max Speed"));
-                        double medNew = parseDoubleSafe(cand.get("Track Median Speed"));
+                        double maxNew  = parseDoubleSafe(cand.get("Track Max Speed"));
+                        double medNew  = parseDoubleSafe(cand.get("Track Median Speed"));
                         double distNew = parseDoubleSafe(cand.get("Total Distance"));
-                        double xNew = parseDoubleSafe(cand.get("Track X Location"));
-                        double yNew = parseDoubleSafe(cand.get("Track Y Location"));
+                        double xNew    = parseDoubleSafe(cand.get("Track X Location"));
+                        double yNew    = parseDoubleSafe(cand.get("Track Y Location"));
                         double confNew = parseDoubleSafe(cand.get("Confinement Ratio"));
+                        // @formatter:on
 
                         boolean ok = true;
                         if (cfg.useDuration)
@@ -153,7 +177,9 @@ public class CompareAllTracksCSV {
                     } else if (matchCount > 1) {
                         multiple++;
                     }
-                    if (matchCount > 0) matched++;
+                    if (matchCount > 0) {
+                        matched++;
+                    }
 
                     Map<String, String> match = (matchCount == 1) ? matches.get(0) : null;
 
@@ -162,25 +188,26 @@ public class CompareAllTracksCSV {
                     row.add(escapeCsv(oldRec));
                     row.add(escapeCsv(oldId));
                     row.add(match != null ? escapeCsv(match.get("Track Id")) : "");
-                    row.add(old.getOrDefault("Square Nr", ""));
-                    row.add(old.getOrDefault("Nr Spots", ""));
-                    row.add(old.getOrDefault("Nr Gaps", ""));
-                    row.add(old.getOrDefault("Longest Gap", ""));
-                    row.add(old.getOrDefault("Track Duration", ""));
+                    row.add(old.getOrDefault("Square Nr",          ""));
+                    row.add(old.getOrDefault("Nr Spots",           ""));
+                    row.add(old.getOrDefault("Nr Gaps",            ""));
+                    row.add(old.getOrDefault("Longest Gap",        ""));
+                    row.add(old.getOrDefault("Track Duration",     ""));
                     row.add(old.getOrDefault("Track Displacement", ""));
-                    row.add(old.getOrDefault("Track Max Speed", ""));
+                    row.add(old.getOrDefault("Track Max Speed",    ""));
                     row.add(old.getOrDefault("Track Median Speed", ""));
-                    row.add(old.getOrDefault("Total Distance", ""));
-                    row.add(old.getOrDefault("Track X Location", ""));
-                    row.add(old.getOrDefault("Track Y Location", ""));
-                    row.add(old.getOrDefault("Confinement Ratio", ""));
+                    row.add(old.getOrDefault("Total Distance",     ""));
+                    row.add(old.getOrDefault("Track X Location",   ""));
+                    row.add(old.getOrDefault("Track Y Location",   ""));
+                    row.add(old.getOrDefault("Confinement Ratio",  ""));
                     row.add(String.valueOf(matchCount));
 
                     bw.write(String.join(",", row));
                     bw.newLine();
 
-                    if ((i + 1) % 1000 == 0)
+                    if ((i + 1) % 1000 == 0) {
                         System.out.printf("Processed %,d / %,d%n", i + 1, total);
+                    }
                 }
 
                 // Summary
@@ -194,7 +221,6 @@ public class CompareAllTracksCSV {
 
                 System.out.println("\n📄 Output written to: " + outCsv.toAbsolutePath());
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -210,7 +236,9 @@ public class CompareAllTracksCSV {
     }
 
     private static int parseIntSafe(String s) {
-        if (s == null || s.isEmpty()) return -1;
+        if (s == null || s.isEmpty()) {
+            return -1;
+        }
         try {
             double d = Double.parseDouble(s.trim());
             return (int) Math.round(d);
@@ -220,7 +248,9 @@ public class CompareAllTracksCSV {
     }
 
     private static double parseDoubleSafe(String s) {
-        if (s == null || s.isEmpty()) return Double.NaN;
+        if (s == null || s.isEmpty()) {
+            return Double.NaN;
+        }
         try {
             return Double.parseDouble(s.trim());
         } catch (Exception e) {
@@ -232,7 +262,9 @@ public class CompareAllTracksCSV {
         List<Map<String, String>> rows = new ArrayList<>();
         try (BufferedReader br = Files.newBufferedReader(path)) {
             String headerLine = br.readLine();
-            if (headerLine == null) return rows;
+            if (headerLine == null) {
+                return rows;
+            }
             String[] headers = headerLine.split(",", -1);
 
             String line;
@@ -249,9 +281,12 @@ public class CompareAllTracksCSV {
     }
 
     private static String escapeCsv(String s) {
-        if (s == null) return "";
-        if (s.contains(",") || s.contains("\""))
+        if (s == null) {
+            return "";
+        }
+        if (s.contains(",") || s.contains("\"")) {
             return "\"" + s.replace("\"", "\"\"") + "\"";
+        }
         return s;
     }
 }
