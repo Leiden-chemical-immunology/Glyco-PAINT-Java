@@ -15,7 +15,6 @@ public class Track {
     private String uniqueKey;
     private String recordingName;
     private int    trackId;
-    private String trackLabel;
     private int    numberOfSpots;
     private int    numberOfGaps;
     private int    longestGap;
@@ -87,7 +86,6 @@ public class Track {
         this.uniqueKey               = uniqueKey;
         this.recordingName           = recordingName;
         this.trackId                 = trackId;
-        this.trackLabel              = trackLabel;
         this.numberOfSpots           = numberOfSpots;
         this.numberOfGaps            = numberOfGaps;
         this.longestGap              = longestGap;
@@ -130,14 +128,6 @@ public class Track {
 
     public void setTrackId(int trackId) {
         this.trackId = trackId;
-    }
-
-    public String getTrackLabel() {
-        return trackLabel;
-    }
-
-    public void setTrackLabel(String trackLabel) {
-        this.trackLabel = trackLabel;
     }
 
     public int getNumberOfSpots() {
@@ -268,9 +258,8 @@ public class Track {
     @Override
     public String toString() {
         return String.format(
-                "Track[id=%d, label=%s, recording=%s, spots=%d, duration=%.2f, displacement=%.2f, maxSpeed=%.2f, medianSpeed=%.2f]",
+                "Track[id=%d, recording=%s, spots=%d, duration=%.2f, displacement=%.2f, maxSpeed=%.2f, medianSpeed=%.2f]",
                 trackId,
-                trackLabel,
                 recordingName,
                 numberOfSpots,
                 trackDuration,

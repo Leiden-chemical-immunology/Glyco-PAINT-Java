@@ -76,7 +76,6 @@ public final class PaintConstants {
             "Unique Key",
             "Recording Name",
             "Track Id",
-            "Track Label",
             "Number of Spots",
             "Number of Gaps",
             "Longest Gap",
@@ -98,7 +97,6 @@ public final class PaintConstants {
             ColumnType.STRING,  // Unique Key
             ColumnType.STRING,  // Recording Name
             ColumnType.INTEGER, // Track Id
-            ColumnType.STRING,  // Track Label
             ColumnType.INTEGER, // Number of Spots
             ColumnType.INTEGER, // Number of Gaps
             ColumnType.INTEGER, // Longest Gap

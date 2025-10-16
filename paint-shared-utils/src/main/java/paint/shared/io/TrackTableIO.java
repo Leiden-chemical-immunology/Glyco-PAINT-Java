@@ -32,7 +32,6 @@ public class TrackTableIO extends BaseTableIO {
             row.setString( "Unique Key",                track.getUniqueKey());
             row.setString( "Recording Name",            track.getRecordingName());
             row.setInt(    "Track Id",                  track.getTrackId());
-            row.setString( "Track Label",               track.getTrackLabel());
             row.setInt(    "Number of Spots",           track.getNumberOfSpots());
             row.setInt(    "Number of Gaps",            track.getNumberOfGaps());
             row.setInt(    "Longest Gap",               track.getLongestGap());
@@ -63,7 +62,6 @@ public class TrackTableIO extends BaseTableIO {
             track.setUniqueKey(              row.getString( "Unique Key"));
             track.setRecordingName(          row.getString( "Recording Name"));
             track.setTrackId(                row.getInt(    "Track Id"));
-            track.setTrackLabel(             row.getString( "Track Label"));
             track.setNumberOfSpots(          row.getInt(    "Number of Spots"));
             track.setNumberOfGaps(           row.getInt(    "Number of Gaps"));
             track.setLongestGap(             row.getInt(    "Longest Gap"));
@@ -119,7 +117,6 @@ public class TrackTableIO extends BaseTableIO {
         track.setUniqueKey(                row.getString(  "Unique Key"));
         track.setRecordingName(            row.getString(  "Recording Name"));
         track.setTrackId(                  row.getInt(     "Track ID"));
-        track.setTrackLabel(               row.getString(  "Track Label"));
         track.setNumberOfSpots(            row.getInt(     "Number of Spots"));
         track.setNumberOfGaps(             row.getInt(     "Number of Gaps"));
         track.setLongestGap(               row.getInt(     "Longest Gap"));
