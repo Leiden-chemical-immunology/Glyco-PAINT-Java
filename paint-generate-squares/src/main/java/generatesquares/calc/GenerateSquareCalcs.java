@@ -91,10 +91,12 @@ public class GenerateSquareCalcs {
      */
     public static boolean generateSquaresForExperiment(Project project, String experimentName) {
 
+        // @formatter:off
         GenerateSquaresConfig generateSquaresConfig = project.generateSquaresConfig;
         projectPath                                 = project.projectRootPath;
         plotFittingCurves                           = getBoolean("Generate Squares", "Plot Curve Fitting", false);
         Experiment experiment                       = null;
+        // @formatter:on
 
         LocalDateTime start = LocalDateTime.now();
         PaintLogger.debugf("Loading Experiment '%s'", experimentName);
@@ -362,10 +364,14 @@ public class GenerateSquareCalcs {
             }
 
             //TODO
-            int lowPrecision = 3;
-            int medPrecision = 3;
-            int highPrecision = 3;
+
+            // @format:off
+            int lowPrecision     = 3;
+            int medPrecision     = 3;
+            int highPrecision    = 3;
             int veryHighPrecison = 4;
+            // @format:on
+
             if (tracksInSquareTable.rowCount() != 0) {
                 square.setMedianDiffusionCoefficient(round(tracksInSquareTable.doubleColumn("Diffusion Coefficient").median(), highPrecision));
                 square.setMedianDiffusionCoefficientExt(round(tracksInSquareTable.doubleColumn("Diffusion Coefficient Ext").median(), highPrecision));
@@ -379,6 +385,9 @@ public class GenerateSquareCalcs {
 
                 square.setMedianMaxSpeed(round(tracksInSquareTable.doubleColumn("Track Max Speed").median(), lowPrecision));
                 square.setMaxMaxSpeed(round(tracksInSquareTable.doubleColumn("Track Max Speed").max(), lowPrecision));
+
+                square.setMedianMeanSpeed(round(tracksInSquareTable.doubleColumn("Track Mean Speed").median(), lowPrecision));
+                square.setMaxMeanSpeed(round(tracksInSquareTable.doubleColumn("Track Mean Speed").max(), lowPrecision));
 
                 square.setMaxTrackDuration(round(tracksInSquareTable.doubleColumn("Track Duration").max(), lowPrecision));
                 square.setTotalTrackDuration(round(tracksInSquareTable.doubleColumn("Track Duration").sum(), lowPrecision));

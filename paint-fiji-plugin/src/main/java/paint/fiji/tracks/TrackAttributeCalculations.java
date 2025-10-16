@@ -42,13 +42,15 @@ public final class TrackAttributeCalculations {
         }
         spots.sort(Comparator.comparingInt(s -> (int) Math.round(s.getFeature(Spot.FRAME))));
 
-        double totalDistance = 0.0;
-        double cumMsd = 0.0;
-        double cumMsdExt = 0.0;
-        double diffusionCoeff = Double.NaN;
+        // @formatter:off
+        double totalDistance     = 0.0;
+        double cumMsd            = 0.0;
+        double cumMsdExt         = 0.0;
+        double diffusionCoeff    = Double.NaN;
         double diffusionCoeffExt = Double.NaN;
-        double confinementRatio = Double.NaN;
-        int numberSpotsInTrack = spots.size();
+        double confinementRatio  = Double.NaN;
+        int numberSpotsInTrack   = spots.size();
+        // @formatter:on
 
         // Reference first point (x0, y0)
         final double x0 = get(spots.get(0), Spot.POSITION_X);
