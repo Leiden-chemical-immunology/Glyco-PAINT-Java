@@ -7,6 +7,7 @@ import fiji.plugin.trackmate.TrackModel;
 import paint.shared.io.TrackTableIO;
 import paint.shared.objects.Track;
 import paint.shared.utils.PaintLogger;
+import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Table;
 
 import java.io.File;
@@ -69,13 +70,32 @@ public class TrackCsvWriter {
             tracks.add(track);
         }
 
-
-        // delegate CSV writing to your schema-aware IO
-
         try {
             // TrackTableIO trackTableIO = new TrackTableIO();
             TrackTableIO trackTableIO = new paint.shared.io.TrackTableIO();
             Table tracksTable = trackTableIO.toTable(tracks);
+            tracksTable = tracksTable.sortOn("Recording Name",
+                                             "Number of Spots",
+                                             "Number of Gaps",
+                                             "Longest Gap",
+                                             "Track Duration",
+                                             "Track X Location",
+                                             "Track Y Location",
+                                             "Track Displacement",
+                                             "Track Max Speed",
+                                             "Track Median Speed",
+                                             "Diffusion Coefficient",
+                                             "Diffusion Coefficient Ext",
+                                             "Total Distance",
+                                             "Confinement Ratio");
+
+
+            IntColumn newIds = IntColumn.create("Track ID");
+            for (int i = 0; i < tracksTable.rowCount(); i++) {
+                newIds.append(i);
+            }
+            tracksTable.replaceColumn("Track ID", newIds);
+
             trackTableIO.writeCsv(tracksTable, csvFile.toPath());
         }
         catch (Exception e) {
