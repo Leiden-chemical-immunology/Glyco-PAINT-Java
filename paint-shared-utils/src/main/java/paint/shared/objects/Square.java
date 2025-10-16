@@ -1,6 +1,8 @@
 package paint.shared.objects;
 
 import tech.tablesaw.api.Table;
+
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,6 +101,15 @@ public class Square {
                   double x1,
                   double y1) {
 
+        for (Field f : this.getClass().getDeclaredFields()) {
+            if (f.getType() == double.class) {
+                try {
+                    f.setDouble(this, Double.NaN);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
         this.uniqueKey                     = uniqueKey;
         this.recordingName                 = recordingName;
         this.squareNumber                  = squareNumber;
@@ -108,24 +119,6 @@ public class Square {
         this.y0                            = round(y0, 2);
         this.x1                            = round(x1, 2);
         this.y1                            = round(y1, 2);
-        this.variability                   = Double.NaN;
-        this.density                       = Double.NaN;
-        this.densityRatio                  = Double.NaN;
-        this.tau                           = Double.NaN;
-        this.rSquared                      = Double.NaN;
-        this.medianDiffusionCoefficient    = Double.NaN;
-        this.medianDiffusionCoefficientExt = Double.NaN;
-        this.medianLongTrackDuration       = Double.NaN;
-        this.medianShortTrackDuration      = Double.NaN;
-        this.medianDisplacement            = Double.NaN;
-        this.maxDisplacement               = Double.NaN;
-        this.totalDisplacement             = Double.NaN;
-        this.medianMaxSpeed                = Double.NaN;
-        this.maxMaxSpeed                   = Double.NaN;
-        this.medianMeanSpeed               = Double.NaN;
-        this.maxMeanSpeed                  = Double.NaN;
-        this.totalTrackDuration            = Double.NaN;
-        this.medianTrackDuration           = Double.NaN;
     }
 
     /**
@@ -140,6 +133,16 @@ public class Square {
         double width           = IMAGE_WIDTH / numberSquaresInRow;
         double height          = IMAGE_HEIGHT / numberSquaresInRow;
 
+        for (Field f : this.getClass().getDeclaredFields()) {
+            if (f.getType() == double.class) {
+                try {
+                    f.setDouble(this, Double.NaN);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
         colNumber = squareNumber % numberSquaresInRow;
         rowNumber = squareNumber / numberSquaresInRow;
 
@@ -148,7 +151,6 @@ public class Square {
         y0 = round(rowNumber * height, 2);
         y1 = round((rowNumber + 1) * width, 2);
 
-        this.squareNumber = squareNumber;
     }
 
     // --- Getters and Setters ---
