@@ -102,15 +102,7 @@ public class Square {
                   double x1,
                   double y1) {
 
-        for (Field f : this.getClass().getDeclaredFields()) {
-            if (f.getType() == double.class) {
-                try {
-                    f.setDouble(this, Double.NaN);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
+        initialiseDoublesToNaN();
         this.uniqueKey                     = uniqueKey;
         this.recordingName                 = recordingName;
         this.squareNumber                  = squareNumber;
@@ -134,15 +126,7 @@ public class Square {
         double width           = IMAGE_WIDTH / numberSquaresInRow;
         double height          = IMAGE_HEIGHT / numberSquaresInRow;
 
-        for (Field f : this.getClass().getDeclaredFields()) {
-            if (f.getType() == double.class) {
-                try {
-                    f.setDouble(this, Double.NaN);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
+        initialiseDoublesToNaN();
 
         colNumber = squareNumber % numberSquaresInRow;
         rowNumber = squareNumber / numberSquaresInRow;
@@ -508,6 +492,18 @@ public class Square {
         }
 
         return sb.toString();
+    }
+
+    private void initialiseDoublesToNaN() {
+        for (Field f : getClass().getDeclaredFields()) {
+            if (f.getType() == double.class) {
+                try {
+                    f.setDouble(this, Double.NaN);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 
     /**
