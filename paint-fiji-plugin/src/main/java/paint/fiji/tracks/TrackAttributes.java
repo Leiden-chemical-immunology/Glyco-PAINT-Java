@@ -35,12 +35,14 @@ public class TrackAttributes {
                            double confinementRatio,
                            double displacement) {
 
+        // @formatter:off
         this.numberOfSpotsInTracks = numberOfSpotsInTracks;
-        this.totalDistance = totalDistance;
-        this.diffusionCoeff = diffusionCoeff;
-        this.diffusionCoeffExt = diffusionCoeffExt;
-        this.confinementRatio = confinementRatio;
-        this.displacement = displacement;
+        this.totalDistance         = totalDistance;
+        this.diffusionCoeff        = diffusionCoeff;
+        this.diffusionCoeffExt     = diffusionCoeffExt;
+        this.confinementRatio      = confinementRatio;
+        this.displacement          = displacement;
+        // @formatter:on
     }
 
     /**
@@ -50,6 +52,11 @@ public class TrackAttributes {
      * </p>
      */
     public TrackAttributes() {
-        this(0, 0, 0, 0, 0, 0);
+        this(0,
+             Double.NaN,
+             Double.NaN,
+             Double.NaN,
+             Double.NaN,
+             Double.NaN);
     }
 }
