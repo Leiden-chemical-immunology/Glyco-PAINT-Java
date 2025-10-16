@@ -29,6 +29,7 @@ import paint.shared.dialogs.RootSelectionDialog;
 import paint.shared.objects.Experiment;
 import paint.shared.utils.HistogramPdfExporter;
 import paint.shared.utils.JarInfo;
+import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
 import paint.shared.validate.ValidationResult;
 
@@ -142,6 +143,10 @@ public class GenerateSquares {
                     projectPath,
                     ProjectSpecificationDialog.DialogMode.GENERATE_SQUARES
             );
+
+            // --- Step 3.5: Create console and tie its lifecycle to the dialog ---
+            PaintConsoleWindow.createConsoleFor("Generate Squares");
+            PaintConsoleWindow.closeOnDialogDispose(dialog.getDialog());
 
             // --- Step 4: Define what happens when user presses OK ---
             dialog.setCalculationCallback(project -> {

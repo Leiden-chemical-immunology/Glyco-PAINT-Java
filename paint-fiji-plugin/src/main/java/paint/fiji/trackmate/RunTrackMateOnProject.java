@@ -62,6 +62,7 @@ public class RunTrackMateOnProject implements Command {
         }
 
         // Initialise config + logger
+        PaintConsoleWindow.createConsoleFor("TrackMate");
         PaintConfig.initialise(projectPath);
         String debugLevel = PaintConfig.getString("Paint", "Log Level", "INFO");
         PaintLogger.setLevel(debugLevel);

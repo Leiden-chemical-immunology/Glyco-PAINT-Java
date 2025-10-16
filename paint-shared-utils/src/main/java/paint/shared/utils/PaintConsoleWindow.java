@@ -66,6 +66,22 @@ public class PaintConsoleWindow {
         });
     }
 
+    // --- Added public API for title handling ---
+
+    public static synchronized void setConsoleTitle(String title) {
+        if (frame != null) {
+            SwingUtilities.invokeLater(() -> frame.setTitle(title != null ? title : "Paint Console"));
+        }
+    }
+
+    public static synchronized void createConsoleFor(String creatorName) {
+        if (frame == null) {
+            createConsole("Paint Console – " + (creatorName != null ? creatorName : "Unknown"));
+        } else {
+            setConsoleTitle("Paint Console – " + (creatorName != null ? creatorName : "Unknown"));
+        }
+    }
+
     // --- Internal helpers ---
 
     private static void ensureConsoleCreated() {
@@ -75,7 +91,11 @@ public class PaintConsoleWindow {
     }
 
     private static void createConsole() {
-        frame = new JFrame("Paint Console");
+        createConsole("Paint Console");
+    }
+
+    private static void createConsole(String title) {
+        frame = new JFrame(title != null ? title : "Paint Console");
         frame.setSize(1200, 400);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setLayout(new BorderLayout());
@@ -85,15 +105,12 @@ public class PaintConsoleWindow {
         textPane.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         doc = textPane.getStyledDocument();
 
-        // Prevent auto-scroll unless we explicitly do it
         DefaultCaret caret = (DefaultCaret) textPane.getCaret();
         caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
 
         JScrollPane scrollPane = new JScrollPane(textPane);
 
-        // Control panel: scroll lock (left), save & close (right)
         JPanel controlPanel = new JPanel(new BorderLayout());
-
         scrollLock = new JCheckBox("Scroll Lock");
         controlPanel.add(scrollLock, BorderLayout.WEST);
 
