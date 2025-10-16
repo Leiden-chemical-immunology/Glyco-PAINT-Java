@@ -41,12 +41,11 @@ public class SquareUtils {
             }
         }
 
-        PaintLogger.debugf("VisibilityFilter [%s] basic pass: %d / %d squares visible",
-                           neighbourMode, visibleBasic, total);
+         //PaintLogger.debugf("VisibilityFilter [%s] basic pass: %d / %d squares visible", neighbourMode, visibleBasic, total);
 
         // --- Second pass: neighbour filtering ---
         if ("Free".equalsIgnoreCase(neighbourMode)) {
-            PaintLogger.debugf("NeighbourMode = Free → skipping neighbour constraints");
+            // PaintLogger.debugf("NeighbourMode = Free → skipping neighbour constraints");
             return;
         }
 
