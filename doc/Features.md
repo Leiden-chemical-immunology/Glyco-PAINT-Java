@@ -30,8 +30,10 @@
 
    The user workflow has been significantly simplified and now follows three straightforward steps:
 
+   - Organise downloaded Omero data with the 'Get Omero' app.
+   - Generate an Experinent info file with the 'Get Experiment' app.
    - Run the TrackMate plugin
-   - Generate Squares
+   - Generate squares and calculate attaributes with the 'Generate Squares' app.
    - Analyze data in R (or another statistical environment)
 
 8. **Unified, Simplified User Interface**
@@ -67,61 +69,99 @@
 
 - All Paint Apps are standalone and can be started as any macOS application. 
 - The standard Apple app package structure is used.
+- For Windows, 
 
 
 
 #### Paint Config file sits in the project directory
 
-- Each project has its own configuration file. 
-- When no file is print, one is created with default parameters
+Each project now has its own configuration file. When no file is print, one is created with default parameters
 
 
 
 #### Logs file sits in the project directory
 
-- Log file are no longer kept in a central place, but stored project specifically.
-- In the project directory a Logs directory  will be created if it does not exist.
-- With each run a sequence number for the log will be increased. 
+Log file are no longer kept in a central place, but stored project specifically. In the project directory a Logs directory  will be created if it does not exist. With each run a sequence number for the log will be increased. 
 
  
 
 #### PaintLogger uses a console window dedicated to Paint
 
-- The Paint plugin and apps use its dedicated Console window (previously the Fiji plugin used Fiji's console and Generate Squares did not have a console).
-- The Fiji console is blocked. The heavy dump of Fiji messages and AWT stack dumps are now hidden: considerably less distraction.
-- All messages are shown in the console and additionally stored in the log file.
-- The Logger supports four levels of messages: debug, info, warning and error, The logging level be set so that only 'equal and higher' message are displayed.
-- Info and debug messages are coloured in black, warning and error messages are amber and red. 
-- Console can be closed, saved and auto scrolling can be (to allow the user to inspect a section higher up).
+The Paint plugin and apps use its dedicated Console window (previously the Fiji plugin used Fiji's console and Generate Squares did not have a console). The Fiji console is no longet used and the heavy dump of Fiji messages and AWT stack dumps are now hidden: considerably less distraction.
+
+All messages are shown in the console and additionally stored in the log file. The Logger supports four levels of messages: debug, info, warning and error, The logging level be set so that only 'equal and higher' message are displayed. Info and debug messages are coloured in black, warning and error messages are amber and red.  The console can be closed, saved and auto scrolling can be (to allow the user to inspect a section higher up).
+
 
 
 
 #### Upfront validation
 
-- Before TrackMate or Generate Squares start, input file correctness is validated.
+Before TrackMate or Generate Squares start, input file correctness is validated.
+
 - Presence of the expected headers is validated.
+
 - Presence of incorrect datatypes in columns is detected.
+
 - Inconsistency in Condition parameters is detected.
+
 - Absence of necessary image files is detected.
+
 - Clear, specific indications of the error help quick corrections.
 
+  
 
 
 #### Version information
 
-- Version information and generation data of jars are reported in the PaintLog to help detect version problems.
-
+Version information and generation data of jars are reported in the PaintLog to help detect version problems.
 
 
 
 #### TrackMate progress
 
-- TrackMate now runs in a separate thread and is given time slices of 3 seconds allowing the printing of progress dots (in the Console). User has visual conformation that TrackMate is still alive.
+TrackMate now runs in a separate thread and is given time slices of 1 second allowing the printing of progress dots (in the Console). User has visual conformation that TrackMate is still alive.
+
 
 
 
 #### Sweep support - under development
 
-- Support for parameter sweeps is implemented allowing TrackMate and Generate Squares calculations to be performed over a range of parameters.
-- A Sweep Config.csv file in the project directory specifies the sweep parameters and range.
+Support for parameter sweeps is implemented allowing TrackMate and Generate Squares calculations to be performed over a range of parameters. A Sweep Config.csv file in the project directory specifies the sweep parameters and range.
 
+
+
+#### Background determination
+
+A new statistical method has been introduced to determibe which squares are considered to be background and which squares represent cell suface. An histogram of cell/background allocation is prepared.
+
+
+
+#### Curvefitting
+
+A new more sophisticated curvefitting methodology has been introduced, leading to generaly better curve fitting and better rejection of distributions that can not be relaibly fitted. Curve fit plots are generated for visual confirmation. 
+
+
+
+#### Assigning tracks to squares
+
+An imperfection in the original code has been addressed, where tracks on the square boundaries were assigned to two squares, leading to minor double counting.  
+
+
+
+#### New Get Omero app
+
+A simple app has been introduced to transform the downloaded Omero structure into an Glycol-PAint image directory.
+
+
+
+#### Updated viewer
+
+Operation of the Viewer app has been sreamlined. The need to remember (undocumented) key shortcuts has been eliminated. A new mode has been added to watch the original movies (provided that the images root directory is reachable).
+
+
+
+#### New Glyco-PAINT launcher
+
+A simple GlycoPaint launcer allows the user to start the Glycol-PAINT apps.
+
+ 
