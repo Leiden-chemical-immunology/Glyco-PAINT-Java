@@ -175,7 +175,7 @@ public class CompareAllSquares {
         list.add(new Mapping("Median Track Duration",           "Median Track Duration"));
         list.add(new Mapping("Total Track Duration",            "Total Track Duration"));
         list.add(new Mapping("Median Displacement",             "Median Displacement"));
-        list.add(new Mapping("Density Ratio",                   "Density Ratio"));
+        list.add(new Mapping("Density Ratio",                   "Density Ratio Ori"));
         list.add(new Mapping("Variability",                     "Variability"));
         list.add(new Mapping("Density",                         "Density"));
         list.add(new Mapping("Median Max Speed",                "Median Max Speed"));
@@ -204,6 +204,7 @@ public class CompareAllSquares {
                 "Total Track Duration",
                 "Median Displacement",
                 "Density Ratio",
+                "Density Ratio Ori",
                 "Variability",
                 "Density",
                 "Median Max Speed",
