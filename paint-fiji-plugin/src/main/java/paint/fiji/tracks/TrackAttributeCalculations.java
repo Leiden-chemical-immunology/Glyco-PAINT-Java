@@ -45,7 +45,9 @@ public final class TrackAttributeCalculations {
         double totalDistance = 0.0;
         double cumMsd = 0.0;
         double cumMsdExt = 0.0;
-        double confinementRatio = 0.0;
+        double diffusionCoeff = Double.NaN;
+        double diffusionCoeffExt = Double.NaN;
+        double confinementRatio = Double.NaN;
         int numberSpotsInTrack = spots.size();
 
         // Reference first point (x0, y0)
@@ -74,29 +76,35 @@ public final class TrackAttributeCalculations {
             cumMsdExt += dx * dx + dy * dy;
         }
 
-        // Diffusion coefficients
+        // Diffusion coefficients (remain NaN if insufficient data or dtSeconds <= 0)
         final int nSteps = spots.size() - 1;
-        final double msd = nSteps > 0 ? (cumMsd / nSteps) : 0.0;
-        final double msdExt = nSteps > 0 ? (cumMsdExt / nSteps) : 0.0;
+        if (nSteps > 0 && dtSeconds > 0.0) {
+            final double msd = cumMsd / nSteps;
+            final double msdExt = cumMsdExt / nSteps;
 
-        // In 2D: D = MSD / (4 * dt)
-        final double diffusionCoeff = round2(dtSeconds > 0 ? (msd / (4.0 * dtSeconds)) : 0.0);
-        final double diffusionCoeffExt = round2(dtSeconds > 0 ? (msdExt / (4.0 * dtSeconds)) : 0.0);
+            diffusionCoeff = round(msd / (4.0 * dtSeconds), 2);
+            diffusionCoeffExt = round(msdExt / (4.0 * dtSeconds), 2);
+        }
 
         // Displacement between first and last spot
         double displacement = Math.hypot(xLast - x0, yLast - y0);
 
         // Confinement ratio = displacement / total distance
-        if (totalDistance != 0) {
-            confinementRatio = displacement / totalDistance;
+        if (totalDistance > 0.0) {
+            confinementRatio = round(displacement / totalDistance, 2);
+        }
+
+        // If totalDistance is zero, keep it as NaN for downstream consistency
+        if (totalDistance == 0.0) {
+            totalDistance = Double.NaN;
         }
 
         return new TrackAttributes(
                 numberSpotsInTrack,
-                round(totalDistance, 2),
+                totalDistance,
                 diffusionCoeff,
                 diffusionCoeffExt,
-                round(confinementRatio, 2),
+                confinementRatio,
                 displacement
         );
     }
@@ -115,13 +123,4 @@ public final class TrackAttributeCalculations {
         return v == null ? 0.0 : v;
     }
 
-    /**
-     * Rounds a number to two decimal places.
-     *
-     * @param v the value to round
-     * @return the rounded value
-     */
-    private static double round2(double v) {
-        return Math.round(v * 100.0) / 100.0;
-    }
 }
