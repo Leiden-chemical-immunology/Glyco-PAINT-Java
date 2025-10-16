@@ -368,7 +368,7 @@ public class GenerateSquareCalcs {
                 square.setMedianLongTrackDuration(round(calculateMedianLongTrack(tracksInSquareTable, 0.1), lowPrecision));
                 square.setMedianShortTrackDuration(round(calculateMedianShortTrack(tracksInSquareTable, 0.1), lowPrecision));
 
-                square.setMedianDisplacement(round(tracksInSquareTable.doubleColumn("Track Displacement").mean(), lowPrecision));
+                square.setMedianDisplacement(round(tracksInSquareTable.doubleColumn("Track Displacement").median(), lowPrecision));
                 square.setMaxDisplacement(round(tracksInSquareTable.doubleColumn("Track Displacement").max(), lowPrecision));
                 square.setTotalDisplacement(round(tracksInSquareTable.doubleColumn("Track Displacement").sum(), lowPrecision));
 
