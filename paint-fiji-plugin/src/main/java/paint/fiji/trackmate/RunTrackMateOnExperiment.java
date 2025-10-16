@@ -105,6 +105,8 @@ public class RunTrackMateOnExperiment {
         PaintConfig paintConfig = PaintConfig.instance();
         TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
 
+        PaintLogger.debugf(trackMateConfig.toString());
+
         int maxSecondsPerRecording = paintConfig.getIntValue("TrackMate", "Max Seconds Per Recording", 2000);
         try {
             Path filePath = experimentPath.resolve("Output").resolve("ParametersUsed.txt");
