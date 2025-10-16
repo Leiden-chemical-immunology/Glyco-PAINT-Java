@@ -62,7 +62,7 @@ public class ProjectSpecificationDialog {
     private final    JButton    okButton;
     private final    JButton    cancelButton;
     private volatile boolean    cancelled = false;
-    private          int        cancelCount = 0;
+
     private final    DialogMode mode;
     // @formatter:on
 
@@ -113,10 +113,9 @@ public class ProjectSpecificationDialog {
             // @formatter:on
 
             // === consistent sizing ===
-            Dimension wideFieldSize   = new Dimension(100, 22); // text field width before reduction
+            Dimension wideFieldSize   = new Dimension(100, 22);
             Dimension narrowFieldSize = new Dimension((int)(wideFieldSize.width * 0.7), wideFieldSize.height);
 
-            // === Grid size dropdown ===
             JLabel lbl1 = new JLabel("Number of Squares in Recording:", SwingConstants.LEFT);
             lbl1.setPreferredSize(labelSize);
             formPanel.add(lbl1, gbc);
@@ -126,27 +125,21 @@ public class ProjectSpecificationDialog {
             gridSizeCombo = new JComboBox<>(gridOptions);
             int number = (int) Math.sqrt(nrOfSquaresInRecording);
             gridSizeCombo.setSelectedItem(number + "x" + number);
+            gridSizeCombo.setPrototypeDisplayValue("000x000");
 
-            // --- Make combo box exactly as wide as text fields (OS-safe) ---
-            gridSizeCombo.setPrototypeDisplayValue("000x000"); // ensure renderer computes properly
-
-            // Create a temporary text field to determine consistent sizing
             JTextField sizeReference = new JTextField();
             sizeReference.setColumns(10);
             Dimension equalSize = sizeReference.getPreferredSize();
 
-            // Apply that width to the combo box
             gridSizeCombo.setPreferredSize(equalSize);
             gridSizeCombo.setMinimumSize(equalSize);
             gridSizeCombo.setMaximumSize(equalSize);
 
-            // Wrapper to ensure GridBagLayout respects width
             JPanel comboWrapper = new JPanel(new BorderLayout());
             comboWrapper.add(gridSizeCombo, BorderLayout.CENTER);
             comboWrapper.setPreferredSize(equalSize);
             formPanel.add(comboWrapper, gbc);
 
-            // === Remaining numeric fields ===
             row++;
             gbc.gridx = 0;
             gbc.gridy = row;
@@ -191,14 +184,11 @@ public class ProjectSpecificationDialog {
             maxVariabilityField.setPreferredSize(narrowFieldSize);
             formPanel.add(maxVariabilityField, gbc);
 
-            // --- Combo listener: update PaintConfig when changed ---
             gridSizeCombo.addActionListener(e -> {
                 String selected = (String) gridSizeCombo.getSelectedItem();
                 if (selected != null && selected.contains("x")) {
                     int n = Integer.parseInt(selected.split("x")[0].trim());
-                    int totalSquares = n * n;
-
-                    PaintConfig.setInt("Generate Squares", "Number of Squares in Recording", totalSquares);
+                    PaintConfig.setInt("Generate Squares", "Number of Squares in Recording", n * n);
                 }
             });
         }
@@ -239,7 +229,6 @@ public class ProjectSpecificationDialog {
 
         dialog.add(formPanel, BorderLayout.NORTH);
 
-        // --- experiment checkboxes ---
         checkboxPanel.setLayout(new BoxLayout(checkboxPanel, BoxLayout.Y_AXIS));
         populateCheckboxes();
 
@@ -247,7 +236,6 @@ public class ProjectSpecificationDialog {
         scrollPane.setPreferredSize(new Dimension(600, 200));
         scrollPane.setBorder(BorderFactory.createEtchedBorder());
 
-        // --- auto-scroll to first experiment ---
         SwingUtilities.invokeLater(() -> {
             if (!checkBoxes.isEmpty()) {
                 JCheckBox firstBox = checkBoxes.get(0);
@@ -276,7 +264,6 @@ public class ProjectSpecificationDialog {
         centerPanel.add(scrollPane, BorderLayout.CENTER);
         dialog.add(centerPanel, BorderLayout.CENTER);
 
-        // --- bottom panel ---
         JPanel buttonPanel = new JPanel(new BorderLayout());
 
         saveExperimentsCheckBox = new JCheckBox("Save Experiments", false);
@@ -288,7 +275,6 @@ public class ProjectSpecificationDialog {
         okButton = new JButton("OK");
         cancelButton = new JButton("Cancel");
 
-        // --- only enable OK if at least one experiment selected ---
         okButton.setEnabled(checkBoxes.stream().anyMatch(JCheckBox::isSelected));
         for (JCheckBox cb : checkBoxes) {
             cb.addActionListener(e -> updateOkButtonState());
@@ -297,7 +283,6 @@ public class ProjectSpecificationDialog {
         okButton.addActionListener(e -> {
             okPressed = true;
             cancelled = false;
-            cancelCount = 0;
             saveConfig();
 
             if (mode == DialogMode.VIEWER) {
@@ -333,12 +318,8 @@ public class ProjectSpecificationDialog {
         });
 
         cancelButton.addActionListener(e -> {
-            cancelCount++;
-            if (cancelCount == 1) {
-                cancelled = true;
-            } else {
-                dialog.dispose();
-            }
+            cancelled = true;
+            dialog.dispose();
         });
 
         rightPanel.add(okButton);
@@ -366,9 +347,7 @@ public class ProjectSpecificationDialog {
             for (File sub : subs) {
                 if (sub.isDirectory()) {
                     File file = new File(sub, EXPERIMENT_INFO_CSV);
-                    if (!file.isFile()) {
-                        continue;
-                    }
+                    if (!file.isFile()) continue;
                     JCheckBox cb = new JCheckBox(sub.getName());
                     boolean savedState = PaintConfig.getBoolean("Experiments", sub.getName(), false);
                     cb.setSelected(savedState);
@@ -381,7 +360,6 @@ public class ProjectSpecificationDialog {
 
     private void saveConfig() {
         if (mode == DialogMode.GENERATE_SQUARES) {
-            // Extract numeric part from the combo selection (e.g. "25x25" → 25)
             String selected = (String) gridSizeCombo.getSelectedItem();
             if (selected != null && selected.contains("x")) {
                 int n = Integer.parseInt(selected.split("x")[0].trim());
@@ -412,9 +390,7 @@ public class ProjectSpecificationDialog {
         GenerateSquaresConfig generateSquaresConfig = GenerateSquaresConfig.from(paintConfig);
         List<String> experimentNames = new ArrayList<>();
         for (JCheckBox cb : checkBoxes) {
-            if (cb.isSelected()) {
-                experimentNames.add(cb.getText());
-            }
+            if (cb.isSelected()) experimentNames.add(cb.getText());
         }
         return new Project(okPressed, projectPath, null, experimentNames,
                            paintConfig, generateSquaresConfig, trackMateConfig, null);
@@ -427,35 +403,21 @@ public class ProjectSpecificationDialog {
 
     private void setInputsEnabled(boolean enabled) {
         if (mode == DialogMode.GENERATE_SQUARES) {
-            if (minTracksField != null) {
-                minTracksField.setEnabled(enabled);
-            }
-            if (minRSquaredField != null) {
-                minRSquaredField.setEnabled(enabled);
-            }
-            if (minDensityRatioField != null) {
-                minDensityRatioField.setEnabled(enabled);
-            }
-            if (maxVariabilityField != null) {
-                maxVariabilityField.setEnabled(enabled);
-            }
+            if (minTracksField != null) minTracksField.setEnabled(enabled);
+            if (minRSquaredField != null) minRSquaredField.setEnabled(enabled);
+            if (minDensityRatioField != null) minDensityRatioField.setEnabled(enabled);
+            if (maxVariabilityField != null) maxVariabilityField.setEnabled(enabled);
         }
-        if (mode == DialogMode.TRACKMATE && imageDirectoryField != null) {
-            imageDirectoryField.setEnabled(enabled);
-        }
-        for (JCheckBox cb : checkBoxes) {
-            cb.setEnabled(enabled);
-        }
+        if (mode == DialogMode.TRACKMATE && imageDirectoryField != null) imageDirectoryField.setEnabled(enabled);
+        for (JCheckBox cb : checkBoxes) cb.setEnabled(enabled);
         saveExperimentsCheckBox.setEnabled(enabled);
     }
 
     private JTextField createTightTextField(String value, DocumentFilter filter) {
         JTextField field = new JTextField(value);
-        field.setColumns(10); // wider than before
-        field.setPreferredSize(new Dimension(80, 22)); // consistent width
-        if (filter != null) {
-            ((AbstractDocument) field.getDocument()).setDocumentFilter(filter);
-        }
+        field.setColumns(10);
+        field.setPreferredSize(new Dimension(80, 22));
+        if (filter != null) ((AbstractDocument) field.getDocument()).setDocumentFilter(filter);
         return field;
     }
 
@@ -463,17 +425,13 @@ public class ProjectSpecificationDialog {
         @Override
         public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
                 throws BadLocationException {
-            if (string != null && string.matches("\\d*")) {
-                super.insertString(fb, offset, string, attr);
-            }
+            if (string != null && string.matches("\\d*")) super.insertString(fb, offset, string, attr);
         }
 
         @Override
         public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
                 throws BadLocationException {
-            if (text != null && text.matches("\\d*")) {
-                super.replace(fb, offset, length, text, attrs);
-            }
+            if (text != null && text.matches("\\d*")) super.replace(fb, offset, length, text, attrs);
         }
     }
 
@@ -481,24 +439,18 @@ public class ProjectSpecificationDialog {
         @Override
         public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
                 throws BadLocationException {
-            if (string != null && string.matches("\\d*(\\.\\d*)?")) {
-                super.insertString(fb, offset, string, attr);
-            }
+            if (string != null && string.matches("\\d*(\\.\\d*)?")) super.insertString(fb, offset, string, attr);
         }
 
         @Override
         public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
                 throws BadLocationException {
-            if (text != null && text.matches("\\d*(\\.\\d*)?")) {
-                super.replace(fb, offset, length, text, attrs);
-            }
+            if (text != null && text.matches("\\d*(\\.\\d*)?")) super.replace(fb, offset, length, text, attrs);
         }
     }
 
     public void setOkEnabled(boolean enabled) {
-        if (okButton != null) {
-            okButton.setEnabled(enabled);
-        }
+        if (okButton != null) okButton.setEnabled(enabled);
     }
 
     public boolean isCancelled() {
