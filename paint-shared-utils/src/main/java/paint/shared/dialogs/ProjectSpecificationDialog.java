@@ -247,11 +247,26 @@ public class ProjectSpecificationDialog {
         scrollPane.setPreferredSize(new Dimension(600, 200));
         scrollPane.setBorder(BorderFactory.createEtchedBorder());
 
+        // --- auto-scroll to first experiment ---
+        SwingUtilities.invokeLater(() -> {
+            if (!checkBoxes.isEmpty()) {
+                JCheckBox firstBox = checkBoxes.get(0);
+                Rectangle bounds = firstBox.getBounds();
+                scrollPane.getViewport().scrollRectToVisible(bounds);
+            }
+        });
+
         JPanel checkboxControlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton selectAllButton = new JButton("Select All");
         JButton clearAllButton = new JButton("Clear All");
-        selectAllButton.addActionListener(e -> checkBoxes.forEach(cb -> cb.setSelected(true)));
-        clearAllButton.addActionListener(e -> checkBoxes.forEach(cb -> cb.setSelected(false)));
+        selectAllButton.addActionListener(e -> {
+            checkBoxes.forEach(cb -> cb.setSelected(true));
+            updateOkButtonState();
+        });
+        clearAllButton.addActionListener(e -> {
+            checkBoxes.forEach(cb -> cb.setSelected(false));
+            updateOkButtonState();
+        });
 
         checkboxControlPanel.add(selectAllButton);
         checkboxControlPanel.add(clearAllButton);
@@ -272,6 +287,12 @@ public class ProjectSpecificationDialog {
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         okButton = new JButton("OK");
         cancelButton = new JButton("Cancel");
+
+        // --- only enable OK if at least one experiment selected ---
+        okButton.setEnabled(checkBoxes.stream().anyMatch(JCheckBox::isSelected));
+        for (JCheckBox cb : checkBoxes) {
+            cb.addActionListener(e -> updateOkButtonState());
+        }
 
         okButton.addActionListener(e -> {
             okPressed = true;
@@ -294,7 +315,7 @@ public class ProjectSpecificationDialog {
 
                         SwingUtilities.invokeLater(() -> {
                             setInputsEnabled(true);
-                            okButton.setEnabled(true);
+                            updateOkButtonState();
                             if (!cancelled) {
                                 JOptionPane.showMessageDialog(dialog,
                                                               success
@@ -329,6 +350,11 @@ public class ProjectSpecificationDialog {
         dialog.pack();
         dialog.setSize(mode == DialogMode.GENERATE_SQUARES ? 600 : 500, 600);
         dialog.setLocationRelativeTo(owner);
+    }
+
+    private void updateOkButtonState() {
+        boolean anySelected = checkBoxes.stream().anyMatch(JCheckBox::isSelected);
+        okButton.setEnabled(anySelected);
     }
 
     private void populateCheckboxes() {
