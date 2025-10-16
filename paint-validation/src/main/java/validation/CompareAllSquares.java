@@ -25,7 +25,8 @@ public class CompareAllSquares {
 
     public static void main(String[] args) {
         // --- Adjust these paths for your system ---
-        Path oldCsv = Paths.get("/Users/hans/Paint/Paint Data - v39/Regular Probes/Paint Regular Probes - 20 Squares/221012/All Squares.csv");
+        // Path oldCsv = Paths.get("/Users/hans/Paint/Paint Data - v39/Regular Probes/Paint Regular Probes - 20 Squares/221012/All Squares.csv");
+        Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 Pythn/All Squares.csv");
         Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/All Squares Java.csv");
         Path outCsv = Paths.get("/Users/hans/Desktop/AllSquaresComparison.csv");
 

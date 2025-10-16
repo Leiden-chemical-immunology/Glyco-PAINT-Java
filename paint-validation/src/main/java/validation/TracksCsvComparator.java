@@ -28,7 +28,7 @@ import java.util.*;
  *  Version: 2.1
  * ============================================================================
  */
-public class CsvComparator {
+public class TracksCsvComparator {
 
     private static final Map<String, String> FIELD_MAP = new LinkedHashMap<>();
 
@@ -74,12 +74,12 @@ public class CsvComparator {
 
     static {
         ROUNDING_MAP.put("Track Duration", 1);
-        ROUNDING_MAP.put("Track X Location", 2);
-        ROUNDING_MAP.put("Track Y Location", 2);
+        ROUNDING_MAP.put("Track X Location", 1);
+        ROUNDING_MAP.put("Track Y Location", 1);
         ROUNDING_MAP.put("Track Displacement", 1);
         ROUNDING_MAP.put("Track Max Speed", 1);
         ROUNDING_MAP.put("Track Median Speed", 1);
-        ROUNDING_MAP.put("Diffusion Coefficient", 21);
+        ROUNDING_MAP.put("Diffusion Coefficient", 1);
         ROUNDING_MAP.put("Diffusion Coefficient Ext", 1);
         ROUNDING_MAP.put("Total Distance", 2);
         ROUNDING_MAP.put("Confinement Ratio", 1);
@@ -114,7 +114,7 @@ public class CsvComparator {
         int missing = 0;
         int extra = 0;
 
-        Path reportFile = Paths.get("/Users/Hans/Desktop/comparison_report.csv");
+        Path reportFile = Paths.get("/Users/Hans/Desktop/Tracks Comparison Report.csv");
         try (java.io.PrintWriter report = new java.io.PrintWriter(reportFile.toFile())) {
             // Write CSV header
             report.println("Track ID,Field,Old Value,New Value,Status");
