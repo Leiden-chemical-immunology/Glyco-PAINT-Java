@@ -78,7 +78,7 @@ public class TrackMateConfig {
         this.doSubpixelLocalization       = getBoolean("TrackMate", "DO_SUBPIXEL_LOCALIZATION", true);
         this.minNrSpotsInTrack            = getInt("TrackMate", "MIN_NR_SPOTS_IN_TRACK", 3);
         this.linkingMaxDistance           = getDouble("TrackMate", "LINKING_MAX_DISTANCE", 0.6);
-        this.maxNrSpotsInImage            = getInt("TrackMate", "MAX_NR_SPOTS_IN_IMAGE", 10000);
+        this.maxNrSpotsInImage            = getInt("TrackMate", "MAX_NR_SPOTS_IN_IMAGE", 2000000);
         this.gapClosingMaxDistance        = getDouble("TrackMate", "GAP_CLOSING_MAX_DISTANCE", 1.2);
         this.targetChannel                = getInt("TrackMate", "TARGET_CHANNEL", 1);
         this.splittingMaxDistance         = getDouble("TrackMate", "SPLITTING_MAX_DISTANCE", 1.0);
