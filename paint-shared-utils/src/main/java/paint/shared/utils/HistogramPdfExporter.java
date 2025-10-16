@@ -120,7 +120,6 @@ public class HistogramPdfExporter {
             doc.save(outputFile.toFile());
         }
 
-        PaintLogger.debugf("✅ Saved combined experiment PDF → %s%n", outputFile);
     }
 
     private static void drawHistogram(Graphics2D g2,
