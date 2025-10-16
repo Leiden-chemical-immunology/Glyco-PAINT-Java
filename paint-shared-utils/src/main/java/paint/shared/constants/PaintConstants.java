@@ -139,6 +139,7 @@ public final class PaintConstants {
             "Variability",
             "Density",
             "Density Ratio",
+            "Density Ratio Ori",
             "Tau",
             "R Squared",
             "Median Diffusion Coefficient",
@@ -176,6 +177,7 @@ public final class PaintConstants {
             ColumnType.DOUBLE,   // Variability
             ColumnType.DOUBLE,   // Density
             ColumnType.DOUBLE,   // Density Ratio
+            ColumnType.DOUBLE,   // Densoty Ratio Ori
             ColumnType.DOUBLE,   // Tau
             ColumnType.DOUBLE,   // R Squared
             ColumnType.DOUBLE,   // Median Diffusion Coefficient

@@ -50,22 +50,23 @@ public class Square {
     private double  variability;                     // 15
     private double  density;                         // 16
     private double  densityRatio;                    // 17
-    private double  tau;                             // 18
-    private double  rSquared;                        // 19
-    private double  medianDiffusionCoefficient;      // 20
-    private double  medianDiffusionCoefficientExt;   // 21
-    private double  medianLongTrackDuration;         // 22
-    private double  medianShortTrackDuration;        // 23
-    private double  medianDisplacement;              // 24
-    private double  maxDisplacement;                 // 25
-    private double  totalDisplacement;               // 26
-    private double  medianMaxSpeed;                  // 27
-    private double  maxMaxSpeed;                     // 28
-    private double  medianMeanSpeed;                 // 29
-    private double  maxMeanSpeed;                    // 30
-    private double  maxTrackDuration;                // 31
-    private double  totalTrackDuration;              // 32
-    private double  medianTrackDuration;             // 33
+    private double  densityRatioOri;                 // 18
+    private double  tau;                             // 19
+    private double  rSquared;                        // 20
+    private double  medianDiffusionCoefficient;      // 21
+    private double  medianDiffusionCoefficientExt;   // 22
+    private double  medianLongTrackDuration;         // 23
+    private double  medianShortTrackDuration;        // 24
+    private double  medianDisplacement;              // 25
+    private double  maxDisplacement;                 // 26
+    private double  totalDisplacement;               // 27
+    private double  medianMaxSpeed;                  // 28
+    private double  maxMaxSpeed;                     // 29
+    private double  medianMeanSpeed;                 // 30
+    private double  maxMeanSpeed;                    // 31
+    private double  maxTrackDuration;                // 32
+    private double  totalTrackDuration;              // 33
+    private double  medianTrackDuration;             // 34
 
     private List<Track> tracks = new ArrayList<>();
     private Table tracksTable = null;
@@ -297,6 +298,14 @@ public class Square {
 
     public void setDensityRatio(double densityRatio) {
         this.densityRatio = densityRatio;
+    }
+
+    public double getDensityRatioOri() {
+        return densityRatioOri;
+    }
+
+    public void setDensityRatioOri(double densityRatioOri) {
+        this.densityRatioOri = densityRatioOri;
     }
 
     public double getTau() {

@@ -47,6 +47,7 @@ public class SquareTableIO extends BaseTableIO {
             row.setDouble( "Variability",                      square.getVariability());
             row.setDouble( "Density",                          square.getDensity());
             row.setDouble( "Density Ratio",                    square.getDensityRatio());
+            row.setDouble( "Density Ratio Ori",                square.getDensityRatioOri());
             row.setDouble( "Tau",                              square.getTau());
             row.setDouble( "R Squared",                        square.getRSquared());
             row.setDouble( "Median Diffusion Coefficient",     square.getMedianDiffusionCoefficient());
@@ -93,6 +94,7 @@ public class SquareTableIO extends BaseTableIO {
             square.setVariability(                   row.getDouble(  "Variability"));
             square.setDensity(                       row.getDouble(  "Density"));
             square.setDensityRatio(                  row.getDouble(  "Density Ratio"));
+            square.setDensityRatioOri(               row.getDouble(  "Density Ratio Ori"));
             square.setTau(                           row.getDouble(  "Tau"));
             square.setRSquared(                      row.getDouble(  "R Squared"));
             square.setMedianDiffusionCoefficient(    row.getDouble(  "Median Diffusion Coefficient"));
