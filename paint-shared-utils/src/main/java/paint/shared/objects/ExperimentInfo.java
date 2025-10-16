@@ -218,21 +218,22 @@ public class ExperimentInfo {
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(String.format("\tRecording Name                : %s%n", recordingName));
-        sb.append(String.format("\tCondition Nr                  : %d%n", conditionNumber));
-        sb.append(String.format("\tReplicate Nr                  : %d%n", replicateNumber));
-        sb.append(String.format("\tProbe Name                    : %s%n", probeName));
-        sb.append(String.format("\tProbe Type                    : %s%n", probeType));
-        sb.append(String.format("\tCell Type                     : %s%n", cellType));
-        sb.append(String.format("\tAdjuvant                      : %s%n", adjuvant));
-        sb.append(String.format("\tConcentration                 : %.2f%n", concentration));
-        sb.append(String.format("\tThreshold                     : %.2f%n", threshold));
+        sb.append(String.format("\tExperment Info"));
+        sb.append(String.format("\t              Recording Name                : %s%n", recordingName));
+        sb.append(String.format("\t              Condition Nr                  : %d%n", conditionNumber));
+        sb.append(String.format("\t              Replicate Nr                  : %d%n", replicateNumber));
+        sb.append(String.format("\t              Probe Name                    : %s%n", probeName));
+        sb.append(String.format("\t              Probe Type                    : %s%n", probeType));
+        sb.append(String.format("\t              Cell Type                     : %s%n", cellType));
+        sb.append(String.format("\t              Adjuvant                      : %s%n", adjuvant));
+        sb.append(String.format("\t              Concentration                 : %.2f%n", concentration));
+        sb.append(String.format("\t              Threshold                     : %.2f%n", threshold));
 
         if (tracks != null) {
-            sb.append(String.format("\tNumber of tracks              : %d%n", tracks.size()));
+            sb.append(String.format("\t              Number of tracks              : %d%n", tracks.size()));
         }
         if (squares != null) {
-            sb.append(String.format("\tNumber of squares             : %d%n", squares.size()));
+            sb.append(String.format("\t              Number of squares             : %d%n", squares.size()));
         }
 
         int numberOfSquaresWithTracks = 0;
