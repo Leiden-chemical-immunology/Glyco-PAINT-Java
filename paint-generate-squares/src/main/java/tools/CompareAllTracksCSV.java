@@ -7,32 +7,54 @@ import java.util.*;
 /**
  * Compare two "All Tracks" CSV files (old vs new/Java).
  *
- * Same logic as CompareAllTracksTest, but writes results to CSV.
- * For each of the first 100 OLD tracks:
- *   - find matching NEW tracks within the same recording (prefix rule)
- *   - match based on Square, Nr Spots, Nr Gaps, Longest Gap, and numeric tolerances
- *   - record number of matches (0, 1, >1) instead of just true/false
+ * Now configurable: you can enable/disable individual numeric comparison tests
+ * via the MatchConfig section.
  */
 public class CompareAllTracksCSV {
 
+    // === Configuration toggles ===
+    private static final class MatchConfig {
+        boolean useDuration      = false;
+        boolean useDisplacement  = false;
+        boolean useSpeed         = false;  // both max and median
+        boolean useDistance      = true;
+        boolean useXY            = true;
+        boolean useConfinement   = false;
+    }
+
+    // === Tolerances ===
     private static final double XY_TOLERANCE = 0.5;
     private static final double DURATION_TOLERANCE = 0.1;
     private static final double SPEED_TOLERANCE = 0.5;
     private static final double DISPLACEMENT_TOLERANCE = 0.5;
     private static final double DIST_TOLERANCE = 0.5;
+    private static final double CONFINEMENT_TOLERANCE = 0.5;
 
     public static void main(String[] args) {
         Path oldCsv = Paths.get("/Users/hans/Paint/Paint Data - v39/Regular Probes/Paint Regular Probes - 20 Squares/221012/All Tracks.csv");
         Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/All Tracks Java.csv");
-        Path outCsv = Paths.get("/Users/hans/Desktop/AllTracksComparison_100.csv");
+        Path outCsv = Paths.get("/Users/hans/Desktop/AllTracksComparison.csv");
+
+        MatchConfig cfg = new MatchConfig(); // toggle tests here
+
+        // Example: disable confinement test
+        // cfg.useConfinement = false;
+
+        System.out.println("=== Matching Configuration ===");
+        System.out.println("Duration:      " + cfg.useDuration);
+        System.out.println("Displacement:  " + cfg.useDisplacement);
+        System.out.println("Speed:         " + cfg.useSpeed);
+        System.out.println("Distance:      " + cfg.useDistance);
+        System.out.println("XY Location:   " + cfg.useXY);
+        System.out.println("Confinement:   " + cfg.useConfinement);
+        System.out.println("==============================\n");
 
         try {
             List<Map<String, String>> oldRows = readCsv(oldCsv);
             List<Map<String, String>> newRows = readCsv(newCsv);
-
             System.out.printf("Loaded %,d OLD tracks and %,d NEW tracks%n", oldRows.size(), newRows.size());
 
-            // Group new tracks by Recording Name
+            // Group new tracks by recording name
             Map<String, List<Map<String, String>>> newByRecording = new HashMap<>();
             for (Map<String, String> r : newRows) {
                 String rec = r.getOrDefault("Recording Name", "").trim();
@@ -41,33 +63,33 @@ public class CompareAllTracksCSV {
 
             Set<String> usedNewTrackIds = new HashSet<>();
 
+            int total = oldRows.size();
+            int matched = 0, unique = 0, multiple = 0;
+
             try (BufferedWriter bw = Files.newBufferedWriter(outCsv)) {
 
-                // Write header
+                // Header
                 bw.write(String.join(",", Arrays.asList(
-                        "Ext Recording Name", "Recording Name",
+                        "Ext Recording Name",
                         "Track Id", "Track Id Java",
                         "Square Nr",
                         "Nr Spots", "Nr Gaps", "Longest Gap",
                         "Track Duration", "Track Displacement",
                         "Track Max Speed", "Track Median Speed",
                         "Total Distance", "Track X Location", "Track Y Location",
+                        "Confinement Ratio",
                         "Matches Found"
                 )));
                 bw.newLine();
 
-                int limit = Math.min(100, oldRows.size());
-                int matched = 0;
-
-                for (int i = 0; i < limit; i++) {
+                for (int i = 0; i < total; i++) {
                     Map<String, String> old = oldRows.get(i);
                     String oldRec = old.getOrDefault("Ext Recording Name", "").trim();
 
-                    // Find base recording prefix match
                     String bestRec = findMatchingRecordingPrefix(oldRec, newByRecording.keySet());
                     List<Map<String, String>> candidates = newByRecording.getOrDefault(bestRec, Collections.emptyList());
 
-                    // Extract old numeric fields
+                    // Old numeric values
                     int square = parseIntSafe(old.get("Square Nr"));
                     int nSpots = parseIntSafe(old.get("Nr Spots"));
                     int nGaps = parseIntSafe(old.get("Nr Gaps"));
@@ -79,6 +101,7 @@ public class CompareAllTracksCSV {
                     double distOld = parseDoubleSafe(old.get("Total Distance"));
                     double xOld = parseDoubleSafe(old.get("Track X Location"));
                     double yOld = parseDoubleSafe(old.get("Track Y Location"));
+                    double confOld = parseDoubleSafe(old.get("Confinement Ratio"));
                     String oldId = old.getOrDefault("Track Id", "");
 
                     List<Map<String, String>> matches = new ArrayList<>();
@@ -102,32 +125,43 @@ public class CompareAllTracksCSV {
                         double distNew = parseDoubleSafe(cand.get("Total Distance"));
                         double xNew = parseDoubleSafe(cand.get("Track X Location"));
                         double yNew = parseDoubleSafe(cand.get("Track Y Location"));
+                        double confNew = parseDoubleSafe(cand.get("Confinement Ratio"));
 
-                        if (Math.abs(durOld - durNew) <= DURATION_TOLERANCE &&
-                                Math.abs(dispOld - dispNew) <= DISPLACEMENT_TOLERANCE &&
-                                Math.abs(maxOld - maxNew) <= SPEED_TOLERANCE &&
-                                Math.abs(medOld - medNew) <= SPEED_TOLERANCE &&
-                                Math.abs(distOld - distNew) <= DIST_TOLERANCE &&
-                                Math.abs(xOld - xNew) <= XY_TOLERANCE &&
-                                Math.abs(yOld - yNew) <= XY_TOLERANCE) {
-                            matches.add(cand);
-                        }
+                        boolean ok = true;
+                        if (cfg.useDuration)
+                            ok &= Math.abs(durOld - durNew) <= DURATION_TOLERANCE;
+                        if (cfg.useDisplacement)
+                            ok &= Math.abs(dispOld - dispNew) <= DISPLACEMENT_TOLERANCE;
+                        if (cfg.useSpeed)
+                            ok &= Math.abs(maxOld - maxNew) <= SPEED_TOLERANCE &&
+                                    Math.abs(medOld - medNew) <= SPEED_TOLERANCE;
+                        if (cfg.useDistance)
+                            ok &= Math.abs(distOld - distNew) <= DIST_TOLERANCE;
+                        if (cfg.useXY)
+                            ok &= Math.abs(xOld - xNew) <= XY_TOLERANCE &&
+                                    Math.abs(yOld - yNew) <= XY_TOLERANCE;
+                        if (cfg.useConfinement)
+                            ok &= Math.abs(confOld - confNew) <= CONFINEMENT_TOLERANCE;
+
+                        if (ok) matches.add(cand);
                     }
 
                     int matchCount = matches.size();
-                    if (matchCount == 1)
+                    if (matchCount == 1) {
+                        unique++;
                         usedNewTrackIds.add(matches.get(0).get("Track Id"));
-                    if (matchCount > 0)
-                        matched++;
+                    } else if (matchCount > 1) {
+                        multiple++;
+                    }
+                    if (matchCount > 0) matched++;
 
                     Map<String, String> match = (matchCount == 1) ? matches.get(0) : null;
 
-                    // Write row
+                    // Write output row
                     List<String> row = new ArrayList<>();
-                    row.add(escapeCsv(oldRec));                                      // Ext Recording Name
-                    row.add(match != null ? escapeCsv(bestRec) : "");                // Recording Name (new)
-                    row.add(escapeCsv(oldId));                                       // Track Id (old)
-                    row.add(match != null ? escapeCsv(match.get("Track Id")) : "");  // Track Id Java (new)
+                    row.add(escapeCsv(oldRec));
+                    row.add(escapeCsv(oldId));
+                    row.add(match != null ? escapeCsv(match.get("Track Id")) : "");
                     row.add(old.getOrDefault("Square Nr", ""));
                     row.add(old.getOrDefault("Nr Spots", ""));
                     row.add(old.getOrDefault("Nr Gaps", ""));
@@ -139,17 +173,26 @@ public class CompareAllTracksCSV {
                     row.add(old.getOrDefault("Total Distance", ""));
                     row.add(old.getOrDefault("Track X Location", ""));
                     row.add(old.getOrDefault("Track Y Location", ""));
+                    row.add(old.getOrDefault("Confinement Ratio", ""));
                     row.add(String.valueOf(matchCount));
 
                     bw.write(String.join(",", row));
                     bw.newLine();
 
-                    if ((i + 1) % 10 == 0)
-                        System.out.printf("Processed %,d / %,d%n", i + 1, limit);
+                    if ((i + 1) % 1000 == 0)
+                        System.out.printf("Processed %,d / %,d%n", i + 1, total);
                 }
 
-                System.out.printf("%n✅ Finished: %d matched (≥1) of %,d%n", matched, limit);
-                System.out.println("📄 Output written to: " + outCsv.toAbsolutePath());
+                // Summary
+                int unmatched = total - matched;
+                System.out.println("\n===== SUMMARY =====");
+                System.out.printf("Total old tracks: %,d%n", total);
+                System.out.printf("Matched (≥1):     %,d%n", matched);
+                System.out.printf("Unique matches:   %,d%n", unique);
+                System.out.printf("Multiple matches: %,d%n", multiple);
+                System.out.printf("Unmatched:        %,d%n", unmatched);
+
+                System.out.println("\n📄 Output written to: " + outCsv.toAbsolutePath());
             }
 
         } catch (Exception e) {
@@ -157,7 +200,7 @@ public class CompareAllTracksCSV {
         }
     }
 
-    // --- Helper functions ---
+    // --- Helpers ---
 
     private static String findMatchingRecordingPrefix(String oldRec, Set<String> newNames) {
         for (String newRec : newNames) {
