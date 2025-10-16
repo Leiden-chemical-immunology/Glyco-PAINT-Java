@@ -573,4 +573,28 @@ public class SquareUtils {
         frame.setVisible(true);
     }
     IGNORE END    */
+
+    public static double calcAverageTrackCountInBackgroundSquares(List<Integer> trackCounts, int nrOfAverageCountSquares) {
+        // Defensive copy to avoid mutating the input list
+        List<Integer> sortedCounts = new ArrayList<>(trackCounts);
+        // Sort descending
+        sortedCounts.sort(Comparator.reverseOrder());
+
+        double total = 0.0;
+        int n = 0;
+
+        // Traverse backward (from smallest to largest), ignoring zeros
+        for (int i = sortedCounts.size() - 1; i >= 0; i--) {
+            int value = sortedCounts.get(i);
+            if (value > 0) {
+                total += value;
+                n++;
+                if (n >= nrOfAverageCountSquares) {
+                    break;
+                }
+            }
+        }
+
+        return n == 0 ? 0.0 : total / n;
+    }
 }
