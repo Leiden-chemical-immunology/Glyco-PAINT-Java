@@ -54,7 +54,6 @@ public class TrackCsvWriter {
             track.setTrackMaxSpeed(     roundOr(featureModel.getTrackFeature(trackId, "TRACK_MAX_SPEED"),    2, -1));
             track.setTrackMedianSpeed(  roundOr(featureModel.getTrackFeature(trackId, "TRACK_MEDIAN_SPEED"), 2, -1));
 
-
             // custom calculated attributes
             track.setDiffusionCoefficient(    roundOr(trackAttributes.diffusionCoeff,    2, -1));
             track.setDiffusionCoefficientExt( roundOr(trackAttributes.diffusionCoeffExt, 2, -1));
