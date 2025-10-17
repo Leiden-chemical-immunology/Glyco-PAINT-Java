@@ -66,7 +66,12 @@ public class SquaresCsvComparatorUnified {
             "Median Long Track Duration",
             "Median Short Track Duration"
     );
+
     private static final Set<String> NUMERIC_FIELDS = new HashSet<>(NUMERIC_FIELDS_LIST);
+
+    List<String[]> diffs = new ArrayList<>();
+    int total = 0, diffCount = 0;
+    Set<String> squaresWithDiffs = new HashSet<>();
 
     /** Default rounding precision if nothing better is detected */
     private static final Map<String, Integer> ROUNDING_MAP = new HashMap<>();
@@ -297,8 +302,15 @@ public class SquaresCsvComparatorUnified {
 
     private static void compareStatus(List<Map<String, String>> oldN, List<Map<String, String>> newN, Path outDir) throws IOException {
         Path out = outDir.resolve("Squares Validation - Comparison.csv");
+
         List<String[]> diffs = new ArrayList<>();
         int total = 0, diffCount = 0;
+
+        // ✅ add this here (inside the method)
+        Set<String> squaresWithDiffs = new HashSet<>();
+
+        Map<String, Integer> diffByField = new HashMap<>();
+        Map<String, Integer> missingByField = new HashMap<>();
 
         Map<String, Map<String, String>> newMap = new HashMap<>();
         for (Map<String, String> n : newN) newMap.put(key(n), n);
@@ -313,15 +325,11 @@ public class SquaresCsvComparatorUnified {
                 String ov = o.getOrDefault(f, "");
                 String nv = n.getOrDefault(f, "");
 
-                // Treat 0 ↔ "" as equivalent for sparse numeric fields
                 if (isOptionalZeroField(f) && (isZeroOrEmpty(ov) || isZeroOrEmpty(nv))) {
                     boolean ovEmpty = isZeroOrEmpty(ov);
                     boolean nvEmpty = isZeroOrEmpty(nv);
-
-                    // If both are effectively empty → no difference, skip entirely
                     if (ovEmpty && nvEmpty) continue;
 
-                    // Otherwise normalize display (avoid showing 0/NaN)
                     if (ovEmpty) ov = "";
                     if (nvEmpty) nv = "";
 
@@ -335,6 +343,8 @@ public class SquaresCsvComparatorUnified {
                             "",
                             "MISSING"
                     });
+                    missingByField.merge(f, 1, Integer::sum);
+                    squaresWithDiffs.add(k); // ✅ record square with difference
                     continue;
                 }
 
@@ -342,12 +352,8 @@ public class SquaresCsvComparatorUnified {
                     Double da = parseDouble(ov);
                     Double db = parseDouble(nv);
 
-                    // If both empty or zero-equivalent → skip
-                    if ((da == null || isZeroOrEmpty(ov)) && (db == null || isZeroOrEmpty(nv))) {
-                        continue;
-                    }
+                    if ((da == null || isZeroOrEmpty(ov)) && (db == null || isZeroOrEmpty(nv))) continue;
 
-                    // If one empty and one not → mark missing
                     if ((da == null || isZeroOrEmpty(ov)) || (db == null || isZeroOrEmpty(nv))) {
                         if (isZeroOrEmpty(ov)) ov = "";
                         if (isZeroOrEmpty(nv)) nv = "";
@@ -361,24 +367,27 @@ public class SquaresCsvComparatorUnified {
                                 "",
                                 "MISSING"
                         });
+                        missingByField.merge(f, 1, Integer::sum);
+                        squaresWithDiffs.add(k);
                         continue;
                     }
 
-                    // Both numeric → compute deviation
                     double dev = relativeDeviation(ov, nv);
                     double tol = TOLERANCE_MAP.getOrDefault(f, 5.0);
                     int prec = EFFECTIVE_PRECISION_MAP.getOrDefault(f, ROUNDING_MAP.getOrDefault(f, 3));
 
+                    if (Double.isNaN(dev)) continue;
+
                     String status;
-                    if (Double.isNaN(dev)) {
-                        continue; // skip NaN
-                    } else if (Math.abs(da - db) < 1e-12) {
+                    if (Math.abs(da - db) < 1e-12) {
                         status = "EQUAL";
                     } else if (dev <= tol) {
                         status = "WITHIN " + tol + "%";
                     } else {
                         status = "DIFFERENT";
                         diffCount++;
+                        diffByField.merge(f, 1, Integer::sum);
+                        squaresWithDiffs.add(k); // ✅ record differing square
                     }
 
                     diffs.add(new String[]{
@@ -394,7 +403,6 @@ public class SquaresCsvComparatorUnified {
                 }
             }
 
-            // Compare "Selected"
             String sOld = o.get("Selected");
             String sNew = n.get("Selected");
             if (!Objects.equals(sOld, sNew)) {
@@ -409,6 +417,8 @@ public class SquaresCsvComparatorUnified {
                         "DIFFERENT"
                 });
                 diffCount++;
+                diffByField.merge("Selected", 1, Integer::sum);
+                squaresWithDiffs.add(k); // ✅ also track this
             }
 
             if (total % 1000 == 0) System.out.printf("   ...processed %,d%n", total);
@@ -419,8 +429,27 @@ public class SquaresCsvComparatorUnified {
             for (String[] r : diffs) pw.println(String.join(",", r));
             pw.println();
             pw.printf("SUMMARY,,,,,,,%nDifferences,%d%n", diffCount);
+
+            if (!diffByField.isEmpty()) {
+                pw.println();
+                pw.println("Field Difference Overview (Status=DIFFERENT):");
+                pw.println("Field,Count");
+                diffByField.entrySet().stream()
+                        .sorted(Map.Entry.<String,Integer>comparingByValue().reversed())
+                        .forEach(e -> pw.printf("%s,%d%n", e.getKey(), e.getValue()));
+            }
+            if (!missingByField.isEmpty()) {
+                pw.println();
+                pw.println("Field Missing Overview (one side empty):");
+                pw.println("Field,Count");
+                missingByField.entrySet().stream()
+                        .sorted(Map.Entry.<String,Integer>comparingByValue().reversed())
+                        .forEach(e -> pw.printf("%s,%d%n", e.getKey(), e.getValue()));
+            }
         }
-        System.out.printf("✅ Compared %,d squares — %d differences%n", total, diffCount);
+
+        System.out.printf("✅ Compared %,d squares — %d differences in %d squares%n",
+                          total, diffCount, squaresWithDiffs.size());
     }
 
     // ---------------------------- Detailed numeric diff ----------------------------
