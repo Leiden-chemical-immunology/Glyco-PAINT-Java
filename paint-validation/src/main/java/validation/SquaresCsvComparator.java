@@ -153,6 +153,16 @@ public class SquaresCsvComparator {
         compare(normOld, normNew, outDir);
         writeSelectedOverview(normOld, normNew, outDir);
 
+        Path comparisonCsv = outDir.resolve("Squares Validation - Comparison.csv");
+        Path tolCsv = outDir.resolve("Squares Validation - Tolerance Optimization.csv");
+
+        // 🔹 Ensure comparison file is fully flushed before optimization
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException ignored) {}
+
+        optimizeTolerances(comparisonCsv, tolCsv);
+
         System.out.println("\n🎯 All tasks complete.");
     }
 
@@ -322,26 +332,54 @@ public class SquaresCsvComparator {
             Map<String,String> n=newMap.get(k);
             if (n==null) continue;
 
-            for (String f: FIELD_MAP.keySet()){
-                String ov=o.getOrDefault(f,"");
-                String nv=n.getOrDefault(f,"");
-                if (NUMERIC_FIELDS.contains(f)){
-                    if (!numericEqual(f,ov,nv)){
-                        double dev=relativeDeviation(ov,nv);
-                        double tol=TOLERANCE_MAP.getOrDefault(f,1.0);
-                        if (Double.isNaN(dev) || dev>tol){
-                            diffs.add(new String[]{o.get("Recording Name"),o.get("Square Nr"),f,ov,nv,
-                                    String.valueOf(EFFECTIVE_PRECISION_MAP.getOrDefault(f,ROUNDING_MAP.get(f))),
-                                    String.format(Locale.US,"%.3f",dev),"DIFFERENT"});
-                            diffCount++;
-                        }
+            for (String f : FIELD_MAP.keySet()) {
+                String ov = o.getOrDefault(f, "");
+                String nv = n.getOrDefault(f, "");
+
+                if (NUMERIC_FIELDS.contains(f)) {
+                    Double da = parseDouble(ov);
+                    Double db = parseDouble(nv);
+                    double dev = relativeDeviation(ov, nv);
+                    double tol = TOLERANCE_MAP.getOrDefault(f, 5.0);
+                    int prec = EFFECTIVE_PRECISION_MAP.getOrDefault(f, ROUNDING_MAP.get(f));
+
+                    String status;
+                    if (da == null && db == null) {
+                        status = "BOTH EMPTY";
+                    } else if (Double.isNaN(dev)) {
+                        status = "NaN";
+                    } else if (dev <= tol) {
+                        status = "WITHIN " + tol + "%";
+                    } else {
+                        status = "DIFFERENT";
+                        diffCount++;
                     }
-                } else if (!Objects.equals(ov,nv)){
-                    diffs.add(new String[]{o.get("Recording Name"),o.get("Square Nr"),f,ov,nv,"","","TEXT DIFFERENCE"});
+
+                    diffs.add(new String[]{
+                            o.get("Recording Name"),
+                            o.get("Square Nr"),
+                            f,
+                            ov,
+                            nv,
+                            String.valueOf(prec),
+                            String.format(Locale.US, "%.3f", dev),
+                            status
+                    });
+
+                } else if (!Objects.equals(ov, nv)) {
+                    diffs.add(new String[]{
+                            o.get("Recording Name"),
+                            o.get("Square Nr"),
+                            f,
+                            ov,
+                            nv,
+                            "",
+                            "",
+                            "TEXT DIFFERENCE"
+                    });
                     diffCount++;
                 }
             }
-
             String sOld=o.get("Selected");
             String sNew=n.get("Selected");
             if (!Objects.equals(sOld,sNew)){
@@ -439,5 +477,83 @@ public class SquaresCsvComparator {
 
     private static String val(Map<String,String> m,String k){
         return m==null?"":m.getOrDefault(k,"");
+    }
+
+    /**
+     * Evaluate how many values fall within various relative tolerance levels
+     * to identify optimal per-field thresholds.
+     */
+    private static void optimizeTolerances(Path comparisonCsv, Path outCsv) throws IOException {
+        if (!Files.exists(comparisonCsv)) {
+            System.out.println("⚠️ No comparison file found for tolerance optimization.");
+            return;
+        }
+
+        System.out.println("🔬 Analyzing tolerance levels across numeric fields...");
+
+        Map<String, List<Double>> diffsByField = new LinkedHashMap<>();
+
+        // --- Read comparison CSV and extract relative differences ---
+        try (BufferedReader br = Files.newBufferedReader(comparisonCsv, java.nio.charset.StandardCharsets.UTF_8)) {
+            String header = br.readLine(); // skip header
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.trim().isEmpty() || line.startsWith("SUMMARY")) continue;
+                String[] parts = line.split(",", -1);
+                if (parts.length < 7) continue;
+                String field = parts[2].trim();
+                String rel = parts[6].trim();
+                if (rel.isEmpty() || rel.equalsIgnoreCase("NaN")) continue;
+                try {
+                    double d = Double.parseDouble(rel);
+                    diffsByField.computeIfAbsent(field, k -> new ArrayList<>()).add(d);
+                } catch (Exception ignored) {}
+            }
+        }
+
+        if (diffsByField.isEmpty()) {
+            System.out.println("ℹ️ No numeric deviations detected — skipping optimization.");
+            return;
+        }
+
+        double[] testLevels = {5.0, 4.0, 3.0, 2.0, 1.0, 0.5};
+        double targetKeep = 98.0; // target: retain at least this % of matches
+
+        // --- Write optimization summary in UTF-8 ---
+        try (PrintWriter pw = new PrintWriter(
+                Files.newBufferedWriter(outCsv, java.nio.charset.StandardCharsets.UTF_8))) {
+
+            pw.println("Field,Total,Equal@5%,OptimalTolerance(%),Equal@Optimal(%)");
+
+            for (Map.Entry<String, List<Double>> e : diffsByField.entrySet()) {
+                String field = e.getKey();
+                List<Double> diffs = e.getValue();
+                diffs.removeIf(d -> !Double.isFinite(d));
+                if (diffs.isEmpty()) continue;
+
+                int total = diffs.size();
+                double equalAt5 = percentWithin(diffs, 5.0);
+                double bestTol = 5.0;
+                double bestKeep = equalAt5;
+
+                for (double tol : testLevels) {
+                    double keep = percentWithin(diffs, tol);
+                    if (keep < targetKeep) break;
+                    bestTol = tol;
+                    bestKeep = keep;
+                }
+
+                pw.printf(Locale.US, "%s,%d,%.2f,%.2f,%.2f%n",
+                          field, total, equalAt5, bestTol, bestKeep);
+            }
+        }
+
+        System.out.println("📈 Tolerance optimization summary written: " + outCsv.toAbsolutePath());
+    }
+
+    /** Helper: compute fraction of deviations within given tolerance. */
+    private static double percentWithin(List<Double> vals, double tol) {
+        long ok = vals.stream().filter(v -> Math.abs(v) <= tol).count();
+        return 100.0 * ok / vals.size();
     }
 }
