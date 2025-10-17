@@ -41,13 +41,23 @@ public class TracksCsvComparator {
     private static final double MAX_ACCEPTABLE_SCORE   = 40;
 
     public static void main(String[] args) {
+
+        Path downloadsPath = Paths.get(System.getProperty("user.home"), "Downloads");
+        Path validatePath  = downloadsPath.resolve("Validate").resolve(Paths.get("Tracks"));
+
+        try {
+            Files.createDirectories(validatePath);
+        } catch (IOException ignored) {
+        }
+
         Path oldCsv     = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Tracks.csv");
         Path newCsv     = Paths.get("/Users/hans/Paint Test Project/221012/All Tracks Java.csv");
-        Path outCsv     = Paths.get("/Users/hans/Desktop/All Tracks - Comparison.csv");
-        Path diagCsv    = Paths.get("/Users/hans/Desktop/All Tracks - Comparison Diagnostics.csv");
-        Path summaryCsv = Paths.get("/Users/hans/Desktop/All Tracks - Comparison Summary.csv");
-        Path oldNormCsv = Paths.get("/Users/hans/Desktop/All Tracks - Old Normalized.csv");
-        Path newNormCsv = Paths.get("/Users/hans/Desktop/All Tracks - New Normalized.csv");
+
+        Path outCsv     = validatePath.resolve("Tracks Validation - Comparison.csv");
+        Path diagCsv    = validatePath.resolve("Tracks Validation - Comparison Diagnostics.csv");
+        Path summaryCsv = validatePath.resolve("Tracks Validation - Comparison Summary.csv");
+        Path oldNormCsv = validatePath.resolve("Tracks Validation - Old Normalised.csv");
+        Path newNormCsv = validatePath.resolve("Tracks Validation - New Normalised.csv");
 
         MatchConfig cfg = new MatchConfig();
 

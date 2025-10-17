@@ -618,6 +618,15 @@ public class SquaresCsvComparator {
 
     // ----------------------------------------------------------------------
     public static void main(String[] args) throws IOException {
+
+        Path downloadsPath = Paths.get(System.getProperty("user.home"), "Downloads");
+        Path validatePath  = downloadsPath.resolve("Validate").resolve("Squares");
+
+        try {
+            Files.createDirectories(validatePath);
+        } catch (IOException ignored) {
+        }
+
         Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Squares.csv");
         Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/All Squares Java.csv");
 
@@ -627,8 +636,8 @@ public class SquaresCsvComparator {
         List<Map<String, String>> normOld = normalizeOld(oldRows);
         List<Map<String, String>> normNew = normalizeNew(newRows);
 
-        Path normOldPath = Paths.get("/Users/Hans/Desktop/Squares Validation - All Squares Python Normalized.csv");
-        Path normNewPath = Paths.get("/Users/Hans/Desktop/Squares Validation - All Squares Java Normalized.csv");
+        Path normOldPath = validatePath.resolve("Squares Validation - Old normalized.csv");
+        Path normNewPath = validatePath.resolve("Squares Validation - New Normalized.csv");
 
         // Effective precision must be computed BEFORE writing normalized CSVs (so rounding matches)
         EFFECTIVE_PRECISION_MAP.putAll(computeEffectivePrecisions(normOld, normNew, DOUBLE_FIELDS));
