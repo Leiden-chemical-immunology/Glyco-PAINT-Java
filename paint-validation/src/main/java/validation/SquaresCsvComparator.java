@@ -7,89 +7,35 @@ import java.util.*;
 /**
  * ============================================================================
  *  SquaresCsvComparator.java
- *  Version: 3.3
+ *  Version: 4.0 — Precision & Tolerance-Aligned Edition
  *  Author: Herr Doctor
  *
  *  PURPOSE
  *  ---------------------------------------------------------------------------
- *  Compare two "All Squares" CSV files (Python vs Java) by:
- *    1. Normalizing both files to a common schema
- *    2. Sorting by Recording Name + Square Nr
- *    3. Writing normalized CSVs for inspection
- *    4. Generating a detailed, precision-aware difference report
+ *  Compare two “All Squares” CSVs (Python vs Java) with:
+ *   • Automatic normalization
+ *   • Effective precision alignment
+ *   • Percentage-based tolerance per numeric field
+ *   • “Selected” logic consistency
+ *   • Detailed CSV reporting
  *
- *  NORMALIZATION RULES
+ *  OUTPUT FILES
  *  ---------------------------------------------------------------------------
- *  - Remove trailing "-threshold-<number>" from Recording Name in OLD file
- *  - Convert Row Nr and Col Nr in OLD file to 0-based indexing
- *  - Tau < 0 in OLD file → set to empty
- *  - Zero values converted to empty ("") in fields:
- *        R Squared, Median Long/Short Track Duration, Total Track Duration,
- *        Density, Density Ratio, Total Displacement
- *  - Columns aligned via FIELD_MAP so OLD and NEW use identical schema
- *  - Add computed boolean column "Selected" (see criteria below) to BOTH normalized files
- *
- *  "SELECTED" FLAG
- *  ---------------------------------------------------------------------------
- *  Selected := (Density Ratio >= 2) AND (Variability < 10) AND (R Squared > 0.1)
- *  - The "Selected" column is added to both normalized outputs ("true"/"false")
- *  - The comparison report also includes a row when Selected differs between OLD/NEW
- *
- *  PRECISION HANDLING
- *  ---------------------------------------------------------------------------
- *  - Detects decimal precision separately in OLD and NEW
- *  - Uses the lowest shared precision for comparison:
- *        effective_precision = min(old_precision, new_precision)
- *  - Rounds all numeric values to effective precision in both:
- *        • Normalized CSV output
- *        • Equality checks during comparison
- *
- *  COMPARISON LOGIC
- *  ---------------------------------------------------------------------------
- *  - Two values are considered equal if:
- *        • Both are empty / NaN / 0.0
- *        • (Tau rule) OLD Tau < 0 and NEW Tau is empty or NaN
- *  - Otherwise, both numeric → compared after rounding to effective precision
- *  - If mismatch:
- *        Relative Difference (%) = 100 * |new - old| / |old|
- *        (shown to 2 decimals, blank if old = 0 or non-numeric)
- *  - Additionally, if "Selected" differs, a row with Field="Selected" is added
- *
- *  REPORT OUTPUT
- *  ---------------------------------------------------------------------------
- *  - File: "/Users/Hans/Desktop/Squares Validation - Comparison.csv"
- *  - Columns:
- *        Recording Name, Square Nr, Field,
- *        Old Value, New Value, Precision Used,
- *        Relative Difference (%), Status
- *  - Status values:
- *        DIFFERENT        → Field mismatch detected (incl. Selected mismatches)
- *        Missing in NEW   → Row exists only in OLD file
- *        Extra in NEW     → Row exists only in NEW file
- *  - Rows sorted by:
- *        1) Recording Name (alphabetical)
- *        2) Square Nr (numeric)
- *  - Summary (tail of file + console):
- *        Matched, Mismatched, Missing, Extra, Selected mismatches
- *
- *  NORMALIZED OUTPUTS
- *  ---------------------------------------------------------------------------
- *  For reference and manual inspection:
- *        • Squares Validation - All Squares Python Normalized.csv
- *        • Squares Validation - All Squares Java Normalized.csv
- *    (contain the computed "Selected" column)
- *
- *  CONSOLE SUMMARY
- *  ---------------------------------------------------------------------------
- *  Prints:
- *        - Detected effective precision per field
- *        - Summary counts of Matched, Mismatched, Missing, Extra, Selected mismatches
+ *  ~/Downloads/Validate/Squares/
+ *    ├── Squares Validation - Comparison.csv
+ *    ├── Squares Validation - Old Normalized.csv
+ *    ├── Squares Validation - New Normalized.csv
+ *    └── Squares Validation - Selected Overview.csv
  * ============================================================================
  */
 public class SquaresCsvComparator {
 
-    private static final Map<String, String> FIELD_MAP = new LinkedHashMap<>();
+    // ----------------------------------------------------------------------
+    // FIELD DEFINITIONS
+    // ----------------------------------------------------------------------
 
+    /** Mapping of old→new column names (for normalization). */
+    private static final Map<String, String> FIELD_MAP = new LinkedHashMap<>();
     static {
         FIELD_MAP.put("Row Nr", "Row Number");
         FIELD_MAP.put("Col Nr", "Column Number");
@@ -116,546 +62,382 @@ public class SquaresCsvComparator {
         FIELD_MAP.put("Total Track Duration", "Total Track Duration");
         FIELD_MAP.put("Median Track Duration", "Median Track Duration");
         FIELD_MAP.put("Square Nr", "Square Number");
-        // "Selected" is computed; not part of FIELD_MAP on purpose
     }
 
-    private static final Set<String> DOUBLE_FIELDS = new HashSet<>(Arrays.asList(
-            "X0", "Y0", "X1", "Y1",
-            "Variability", "Density", "Density Ratio",
-            "Tau", "R Squared",
-            "Median Diffusion Coefficient", "Median Diffusion Coefficient Ext",
-            "Median Long Track Duration", "Median Short Track Duration",
-            "Median Displacement", "Max Displacement", "Total Displacement",
-            "Median Max Speed", "Max Max Speed",
-            "Max Track Duration", "Total Track Duration", "Median Track Duration"
+    /** Numeric fields eligible for tolerance and precision handling. */
+    private static final Set<String> NUMERIC_FIELDS = new HashSet<>(Arrays.asList(
+            "X0","Y0","X1","Y1","Variability","Density","Density Ratio","Tau","R Squared",
+            "Median Diffusion Coefficient","Median Diffusion Coefficient Ext",
+            "Median Long Track Duration","Median Short Track Duration",
+            "Median Displacement","Max Displacement","Total Displacement",
+            "Median Max Speed","Max Max Speed","Max Track Duration",
+            "Total Track Duration","Median Track Duration"
     ));
 
+    /** Default rounding precision if no better info is found. */
     private static final Map<String, Integer> ROUNDING_MAP = new HashMap<>();
     static {
-        ROUNDING_MAP.put("X0", 4);
-        ROUNDING_MAP.put("Y0", 4);
-        ROUNDING_MAP.put("X1", 4);
-        ROUNDING_MAP.put("Y1", 4);
+        for (String f : NUMERIC_FIELDS) ROUNDING_MAP.put(f, 3);
         ROUNDING_MAP.put("Variability", 1);
-        ROUNDING_MAP.put("Density", 3);
-        ROUNDING_MAP.put("Density Ratio", 2);
         ROUNDING_MAP.put("Tau", 2);
+        ROUNDING_MAP.put("Density Ratio", 2);
         ROUNDING_MAP.put("R Squared", 2);
-        ROUNDING_MAP.put("Median Diffusion Coefficient", 1);
-        ROUNDING_MAP.put("Median Diffusion Coefficient Ext", 1);
-        ROUNDING_MAP.put("Median Long Track Duration", 0);
-        ROUNDING_MAP.put("Median Short Track Duration", 0);
-        ROUNDING_MAP.put("Median Displacement", 0);
-        ROUNDING_MAP.put("Max Displacement", 0);
-        ROUNDING_MAP.put("Total Displacement", 0);
-        ROUNDING_MAP.put("Median Max Speed", 0);
-        ROUNDING_MAP.put("Max Max Speed", 0);
-        ROUNDING_MAP.put("Max Track Duration", 0);
-        ROUNDING_MAP.put("Total Track Duration", 0);
-        ROUNDING_MAP.put("Median Track Duration", 0);
     }
 
+    /** Percentage-based tolerances per field (relative deviation in %). */
+    private static final Map<String, Double> TOLERANCE_MAP = new HashMap<>();
+    static {
+
+        // @format:off
+        TOLERANCE_MAP.put("Variability",                      5.0);
+        TOLERANCE_MAP.put("Density",                          5.0);
+        TOLERANCE_MAP.put("Density Ratio",                    5.0);
+        TOLERANCE_MAP.put("Tau",                              5.0);
+        TOLERANCE_MAP.put("R Squared",                        5.0);
+        TOLERANCE_MAP.put("Median Diffusion Coefficient",     5.0);
+        TOLERANCE_MAP.put("Median Diffusion Coefficient Ext", 5.0);
+        TOLERANCE_MAP.put("Median Long Track Duration",       5.0);
+        TOLERANCE_MAP.put("Median Short Track Duration",      5.0);
+        TOLERANCE_MAP.put("Total Track Duration",             5.0);
+        TOLERANCE_MAP.put("Median Displacement",              5.0);
+        TOLERANCE_MAP.put("Max Displacement",                 5.0);
+        TOLERANCE_MAP.put("Total Displacement",               5.0);
+        TOLERANCE_MAP.put("Median Max Speed",                 5.0);
+        TOLERANCE_MAP.put("Max Max Speed",                    5.0);
+        TOLERANCE_MAP.put("Max Track Duration",               5.0);
+        TOLERANCE_MAP.put("Total Track Duration",             5.0);
+        TOLERANCE_MAP.put("Median Track Duration",            5.0);
+        // @format:on
+    }
+
+    /** Computed effective precision per numeric field. */
     private static final Map<String, Integer> EFFECTIVE_PRECISION_MAP = new HashMap<>();
 
     // ----------------------------------------------------------------------
-    private static List<Map<String, String>> readCsv(Path path) throws IOException {
-        List<Map<String, String>> rows = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(path.toFile()))) {
-            String headerLine = reader.readLine();
-            if (headerLine == null) return rows;
-            String[] headers = headerLine.split(",", -1);
+    // MAIN ENTRY
+    // ----------------------------------------------------------------------
+
+    public static void main(String[] args) throws IOException {
+        Path outDir = Paths.get(System.getProperty("user.home"), "Downloads", "Validate", "Squares");
+        Files.createDirectories(outDir);
+
+        Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Squares.csv");
+        Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/All Squares Java.csv");
+
+        System.out.println("🔍 Reading CSVs...");
+        List<Map<String,String>> oldRows = readCsv(oldCsv);
+        List<Map<String,String>> newRows = readCsv(newCsv);
+        System.out.printf("   OLD: %d rows%n   NEW: %d rows%n", oldRows.size(), newRows.size());
+
+        System.out.println("🧩 Normalizing...");
+        List<Map<String,String>> normOld = normalizeOld(oldRows);
+        List<Map<String,String>> normNew = normalizeNew(newRows);
+
+        // 🔹 Compute shared effective precision for all numeric fields
+        EFFECTIVE_PRECISION_MAP.clear();
+        EFFECTIVE_PRECISION_MAP.putAll(computeEffectivePrecisions(normOld, normNew, NUMERIC_FIELDS));
+
+        System.out.println("🔢 Effective numeric precision (shared):");
+        EFFECTIVE_PRECISION_MAP.forEach((k,v)->System.out.printf("   %-35s → %d%n", k,v));
+
+        // 🔹 Write normalized files using shared precision
+        Path normOldPath = outDir.resolve("Squares Validation - Old Normalized.csv");
+        Path normNewPath = outDir.resolve("Squares Validation - New Normalized.csv");
+        System.out.println("💾 Writing normalized outputs (aligned precision)...");
+        writeCsv(normOld, normOldPath);
+        writeCsv(normNew, normNewPath);
+        System.out.println("   → " + normOldPath);
+        System.out.println("   → " + normNewPath);
+
+        // 🔹 Continue with comparison
+        compare(normOld, normNew, outDir);
+        writeSelectedOverview(normOld, normNew, outDir);
+
+        System.out.println("\n🎯 All tasks complete.");
+    }
+
+    // ----------------------------------------------------------------------
+    // CSV I/O
+    // ----------------------------------------------------------------------
+
+    private static List<Map<String,String>> readCsv(Path p) throws IOException {
+        List<Map<String,String>> rows = new ArrayList<>();
+        try (BufferedReader br = Files.newBufferedReader(p)) {
+            String header = br.readLine();
+            if (header == null) return rows;
+            String[] h = header.split(",",-1);
             String line;
-            while ((line = reader.readLine()) != null) {
-                String[] values = line.split(",", -1);
-                Map<String, String> row = new LinkedHashMap<>();
-                for (int i = 0; i < Math.min(headers.length, values.length); i++) {
-                    row.put(headers[i].trim(), values[i].trim());
-                }
-                rows.add(row);
+            while ((line = br.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
+                String[] parts = line.split(",",-1);
+                Map<String,String> m = new LinkedHashMap<>();
+                for (int i=0;i<h.length;i++) m.put(h[i].trim(), i<parts.length?parts[i].trim():"");
+                rows.add(m);
             }
         }
         return rows;
     }
 
-    // ----------------------------------------------------------------------
-    private static List<Map<String, String>> normalizeOld(List<Map<String, String>> oldRows) {
-        List<Map<String, String>> norm = new ArrayList<>();
-        for (Map<String, String> row : oldRows) {
-            Map<String, String> n = new LinkedHashMap<>();
-            n.put("Recording Name", row.getOrDefault("Ext Recording Name", ""));
-
-            // Remove trailing "-threshold-<number>"
-            String recName = n.get("Recording Name");
-            if (recName != null) {
-                recName = recName.replaceAll("-threshold-\\d+$", "").trim();
-                n.put("Recording Name", recName);
-            }
-
-            for (String oldCol : FIELD_MAP.keySet()) {
-                String val = row.getOrDefault(oldCol, "").trim();
-
-                // Tau normalization
-                if (oldCol.equalsIgnoreCase("Tau")) {
-                    try {
-                        if (!val.isEmpty() && Double.parseDouble(val) < 0)
-                            val = "";
-                    } catch (NumberFormatException ignored) {}
-                }
-
-                // 0-to-empty normalization
-                if (oldCol.equalsIgnoreCase("R Squared")
-                        || oldCol.equalsIgnoreCase("Median Long Track Duration")
-                        || oldCol.equalsIgnoreCase("Median Short Track Duration")
-                        || oldCol.equalsIgnoreCase("Total Track Duration")
-                        || oldCol.equalsIgnoreCase("Density")
-                        || oldCol.equalsIgnoreCase("Density Ratio")
-                        || oldCol.equalsIgnoreCase("Variability")
-                        || oldCol.equalsIgnoreCase("Total Displacement")) {
-                    try {
-                        if (!val.isEmpty() && Double.parseDouble(val) == 0.0)
-                            val = "";
-                    } catch (NumberFormatException ignored) {}
-                }
-
-                n.put(oldCol, val);
-            }
-
-            // Normalize Row/Col to 0-based
-            try {
-                String rowVal = n.get("Row Nr");
-                if (rowVal != null && !rowVal.isEmpty()) {
-                    int rowNum = (int) Double.parseDouble(rowVal);
-                    n.put("Row Nr", String.valueOf(rowNum - 1));
-                }
-            } catch (NumberFormatException ignored) {}
-            try {
-                String colVal = n.get("Col Nr");
-                if (colVal != null && !colVal.isEmpty()) {
-                    int colNum = (int) Double.parseDouble(colVal);
-                    n.put("Col Nr", String.valueOf(colNum - 1));
-                }
-            } catch (NumberFormatException ignored) {}
-
-            // Compute Selected
-            n.put("Selected", String.valueOf(isSelected(n)));
-
-            norm.add(n);
-        }
-        return norm;
-    }
-
-    private static List<Map<String, String>> normalizeNew(List<Map<String, String>> newRows) {
-        List<Map<String, String>> norm = new ArrayList<>();
-        for (Map<String, String> row : newRows) {
-            Map<String, String> n = new LinkedHashMap<>();
-            n.put("Recording Name", row.getOrDefault("Recording Name", ""));
-            for (Map.Entry<String, String> entry : FIELD_MAP.entrySet()) {
-                String oldCol = entry.getKey();
-                String newCol = entry.getValue();
-                n.put(oldCol, row.getOrDefault(newCol, ""));
-            }
-            // NEW is already 0-based; nothing to adjust for row/col
-            // Compute Selected
-            n.put("Selected", String.valueOf(isSelected(n)));
-
-            norm.add(n);
-        }
-        return norm;
-    }
-
-    // ----------------------------------------------------------------------
-    private static Map<String, Integer> computeEffectivePrecisions(
-            List<Map<String, String>> oldRows,
-            List<Map<String, String>> newRows,
-            Set<String> numericFields) {
-
-        Map<String, Integer> precisionMap = new HashMap<>();
-        for (String field : numericFields) {
-            int oldPrec = detectPrecision(oldRows, field);
-            int newPrec = detectPrecision(newRows, field);
-            precisionMap.put(field, Math.min(oldPrec, newPrec));
-        }
-        return precisionMap;
-    }
-
-    private static int detectPrecision(List<Map<String, String>> rows, String field) {
-        int best = 0;
-        for (Map<String, String> row : rows) {
-            String s = row.get(field);
-            if (s != null) {
-                s = s.trim();
-                if (s.matches("^-?\\d+\\.\\d+$")) {
-                    int p = s.length() - s.indexOf('.') - 1;
-                    if (p > best) best = p;
-                }
-            }
-        }
-        return best;
-    }
-
-    // ----------------------------------------------------------------------
-    private static String compositeKey(Map<String, String> row) {
-        return row.getOrDefault("Recording Name", "").trim() + " - " +
-                row.getOrDefault("Square Nr", "").trim();
-    }
-
+    /** Write normalized CSV using shared precision and zero→empty logic for old file. */
     private static void writeCsv(List<Map<String, String>> rows, Path file) throws IOException {
         if (rows.isEmpty()) return;
         Files.createDirectories(file.getParent());
+
+        boolean isOldFile = file.getFileName().toString().toLowerCase(Locale.ROOT).contains("old");
+
         try (PrintWriter pw = new PrintWriter(file.toFile())) {
-            // Ensure "Selected" exists and appears last in header (after FIELD_MAP)
             List<String> header = new ArrayList<>();
             header.add("Recording Name");
             header.addAll(FIELD_MAP.keySet());
-            if (!header.contains("Selected")) header.add("Selected");
+            header.add("Selected");
             pw.println(String.join(",", header));
 
             for (Map<String, String> r : rows) {
                 List<String> vals = new ArrayList<>();
-                for (String c : header) {
-                    String val = r.get(c);
-                    if (val == null) val = "";
-                    String out = val;
+                for (String col : header) {
+                    String val = r.getOrDefault(col, "");
 
-                    if (DOUBLE_FIELDS.contains(c)) {
+                    // ---- Handle numeric formatting ----
+                    if (NUMERIC_FIELDS.contains(col)) {
                         Double num = parseDouble(val);
                         if (num != null) {
-                            int digits = EFFECTIVE_PRECISION_MAP.getOrDefault(
-                                    c, ROUNDING_MAP.getOrDefault(c, 3));
-                            double factor = Math.pow(10, digits);
-                            double rounded = Math.round(num * factor) / factor;
-                            out = String.format(Locale.US, "%." + digits + "f", rounded);
+                            // 🔹 OLD FILES: apply "0 → empty" rule for specific fields
+                            if (isOldFile && num == 0.0 && Arrays.asList(
+                                    "R Squared",
+                                    "Median Short Track Duration",
+                                    "Median Long Track Duration",
+                                    "Total Displacement",
+                                    "Total Track Duration"
+                            ).contains(col)) {
+                                val = "";
+                            } else {
+                                int prec = EFFECTIVE_PRECISION_MAP.getOrDefault(
+                                        col, ROUNDING_MAP.getOrDefault(col, 3));
+                                double f = Math.pow(10, prec);
+                                double rounded = Math.round(num * f) / f;
+                                val = String.format(Locale.US, "%." + prec + "f", rounded);
+                            }
                         }
                     }
-                    vals.add(escapeCsv(out));
+
+                    vals.add(escapeCsv(val));
                 }
                 pw.println(String.join(",", vals));
             }
         }
     }
 
-    // ----------------------------------------------------------------------
-    private static boolean compareDoubles(String field, String a, String b) {
-        String ta = (a == null) ? "" : a.trim();
-        String tb = (b == null) ? "" : b.trim();
-
-        boolean aSpecial = isZeroNaNOrEmpty(ta);
-        boolean bSpecial = isZeroNaNOrEmpty(tb);
-        if (aSpecial && bSpecial) return true;
-
-        if (field.equalsIgnoreCase("Tau")) {
-            try {
-                if (!ta.isEmpty() && Double.parseDouble(ta) < 0 && isZeroNaNOrEmpty(tb))
-                    return true;
-            } catch (NumberFormatException ignored) {}
-        }
-
-        Double dx = parseDouble(ta);
-        Double dy = parseDouble(tb);
-        if (dx != null && dy != null) {
-            int d = EFFECTIVE_PRECISION_MAP.getOrDefault(field, ROUNDING_MAP.getOrDefault(field, 3));
-            double f = Math.pow(10, d);
-            double rx = Math.round(dx * f) / f;
-            double ry = Math.round(dy * f) / f;
-            return Double.compare(rx, ry) == 0;
-        }
-        return false;
-    }
-
-    private static boolean isZeroNaNOrEmpty(String s) {
-        if (s == null) return true;
-        String t = s.trim();
-        if (t.isEmpty()) return true;
-        if (t.equalsIgnoreCase("NaN")) return true;
-        try {
-            double v = Double.parseDouble(t);
-            return Math.abs(v) < 1e-12 || Double.isNaN(v);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private static Double parseDouble(String s) {
-        if (s == null || s.isEmpty() || s.equalsIgnoreCase("NaN")) return null;
-        try {
-            double v = Double.parseDouble(s);
-            return Double.isNaN(v) ? null : v;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    /** Selected := (Density Ratio >= 2) AND (Variability < 10) AND (R Squared > 0.1) */
-    private static boolean isSelected(Map<String, String> row) {
-        Double densityRatio = parseDouble(row.get("Density Ratio"));
-        Double variability  = parseDouble(row.get("Variability"));
-        Double rSquared     = parseDouble(row.get("R Squared"));
-        if (densityRatio == null || variability == null || rSquared == null) return false;
-        return densityRatio >= 2.0 && variability < 10.0 && rSquared > 0.1;
-    }
-
-    private static String quote(String s) {
-        if (s == null) return "";
-        String t = s.replace("\"", "\"\"");
-        if (t.contains(",") || t.contains("\"") || t.contains(" ")) return "\"" + t + "\"";
-        return t;
-    }
-
     private static String escapeCsv(String s) {
-        if (s == null) return "";
-        if (s.contains(",") || s.contains("\"")) return "\"" + s.replace("\"", "\"\"") + "\"";
+        if (s==null) return "";
+        if (s.contains(",")||s.contains("\"")) return "\"" + s.replace("\"","\"\"") + "\"";
         return s;
     }
 
+    // ----------------------------------------------------------------------
+    // NORMALIZATION + PRECISION
+    // ----------------------------------------------------------------------
+
+    private static List<Map<String,String>> normalizeOld(List<Map<String,String>> oldRows){
+        List<Map<String,String>> out = new ArrayList<>();
+        for (Map<String,String> r: oldRows){
+            Map<String,String> n = new LinkedHashMap<>();
+            String rec = r.getOrDefault("Ext Recording Name","");
+            n.put("Recording Name", rec.replaceAll("-threshold-\\d+$","").trim());
+            for (String f: FIELD_MAP.keySet()) {
+                String v = r.getOrDefault(f,"").trim();
+                if (f.equals("Tau")) {
+                    try { if (!v.isEmpty() && Double.parseDouble(v)<0) v=""; } catch(Exception ignored){}
+                }
+                n.put(f,v);
+            }
+            adjustIndex(n,"Row Nr");
+            adjustIndex(n,"Col Nr");
+            n.put("Selected", String.valueOf(isSelected(n)));
+            out.add(n);
+        }
+        return out;
+    }
+
+    private static List<Map<String,String>> normalizeNew(List<Map<String,String>> newRows){
+        List<Map<String,String>> out = new ArrayList<>();
+        for (Map<String,String> r: newRows){
+            Map<String,String> n = new LinkedHashMap<>();
+            n.put("Recording Name", r.getOrDefault("Recording Name",""));
+            for (Map.Entry<String,String> e: FIELD_MAP.entrySet())
+                n.put(e.getKey(), r.getOrDefault(e.getValue(),""));
+            n.put("Selected", String.valueOf(isSelected(n)));
+            out.add(n);
+        }
+        return out;
+    }
+
+    private static void adjustIndex(Map<String,String> m, String k){
+        try {
+            String v=m.get(k);
+            if (v!=null&&!v.isEmpty()) {
+                int i=(int)Double.parseDouble(v);
+                m.put(k,String.valueOf(i-1));
+            }
+        } catch(Exception ignored){}
+    }
+
+    private static Map<String,Integer> computeEffectivePrecisions(
+            List<Map<String,String>> a,List<Map<String,String>> b,Set<String> numeric){
+        Map<String,Integer> res=new HashMap<>();
+        for (String f:numeric){
+            int pa=detectPrecision(a,f);
+            int pb=detectPrecision(b,f);
+            res.put(f,Math.min(pa,pb));
+        }
+        return res;
+    }
+
+    private static int detectPrecision(List<Map<String,String>> rows,String f){
+        int best=0;
+        for (Map<String,String> r: rows){
+            String s=r.get(f);
+            if (s!=null&&s.matches("^-?\\d+\\.\\d+$")){
+                int p=s.length()-s.indexOf('.')-1;
+                best=Math.max(best,p);
+            }
+        }
+        return best;
+    }
 
     // ----------------------------------------------------------------------
-    private static void compare(List<Map<String, String>> oldNorm, List<Map<String, String>> newNorm) throws IOException {
-        Path reportFile = Paths.get("/Users/Hans/Desktop/Squares Validation - Comparison.csv");
+    // COMPARISON
+    // ----------------------------------------------------------------------
 
-        // Sort inputs
-        Comparator<Map<String, String>> sorter = Comparator
-                .comparing((Map<String, String> r) -> r.get("Recording Name"))
-                .thenComparing(r -> {
-                    String s = r.get("Square Nr");
-                    try { return Integer.parseInt(s); } catch (Exception e) { return 0; }
-                });
-        oldNorm.sort(sorter);
-        newNorm.sort(sorter);
+    private static void compare(List<Map<String,String>> oldN,List<Map<String,String>> newN,Path outDir) throws IOException {
+        Path out=outDir.resolve("Squares Validation - Comparison.csv");
+        List<String[]> diffs=new ArrayList<>();
+        int total=0,diffCount=0;
 
-        Map<String, Map<String, String>> newMap = new HashMap<>();
-        for (Map<String, String> n : newNorm) newMap.put(compositeKey(n), n);
+        Map<String,Map<String,String>> newMap=new HashMap<>();
+        for (Map<String,String> n:newN) newMap.put(key(n),n);
 
-        List<String[]> reportRows = new ArrayList<>();
+        for (Map<String,String> o: oldN){
+            total++;
+            String k=key(o);
+            Map<String,String> n=newMap.get(k);
+            if (n==null) continue;
 
-        int matched = 0, mismatched = 0, missing = 0, extra = 0, selectedMismatches = 0;
-
-        for (Map<String, String> oldRow : oldNorm) {
-            String key = compositeKey(oldRow);
-            Map<String, String> newRow = newMap.get(key);
-
-            if (newRow == null) {
-                reportRows.add(new String[]{ oldRow.get("Recording Name"), oldRow.get("Square Nr"),
-                        "", "", "", "", "", "Missing in NEW" });
-                missing++;
-                continue;
-            }
-
-            boolean diff = false;
-
-            // Compare numeric & mapped fields
-            for (String field : FIELD_MAP.keySet()) {
-                String oldVal = oldRow.getOrDefault(field, "");
-                String newVal = newRow.getOrDefault(field, "");
-
-                boolean equal = DOUBLE_FIELDS.contains(field)
-                        ? compareDoubles(field, oldVal, newVal)
-                        : Objects.equals(oldVal, newVal);
-
-                if (!equal) {
-                    diff = true;
-                    int prec = EFFECTIVE_PRECISION_MAP.getOrDefault(field, ROUNDING_MAP.getOrDefault(field, -1));
-
-                    // Relative difference
-                    String relDiffStr = "";
-                    Double dx = parseDouble(oldVal);
-                    Double dy = parseDouble(newVal);
-                    if (dx != null && dy != null && Math.abs(dx) > 1e-12) {
-                        double relDiff = Math.abs((dy - dx) / dx) * 100.0;
-                        relDiffStr = String.format(Locale.US, "%.2f", relDiff);
+            for (String f: FIELD_MAP.keySet()){
+                String ov=o.getOrDefault(f,"");
+                String nv=n.getOrDefault(f,"");
+                if (NUMERIC_FIELDS.contains(f)){
+                    if (!numericEqual(f,ov,nv)){
+                        double dev=relativeDeviation(ov,nv);
+                        double tol=TOLERANCE_MAP.getOrDefault(f,1.0);
+                        if (Double.isNaN(dev) || dev>tol){
+                            diffs.add(new String[]{o.get("Recording Name"),o.get("Square Nr"),f,ov,nv,
+                                    String.valueOf(EFFECTIVE_PRECISION_MAP.getOrDefault(f,ROUNDING_MAP.get(f))),
+                                    String.format(Locale.US,"%.3f",dev),"DIFFERENT"});
+                            diffCount++;
+                        }
                     }
-
-                    reportRows.add(new String[]{
-                            oldRow.get("Recording Name"),
-                            oldRow.get("Square Nr"),
-                            field,
-                            oldVal,
-                            newVal,
-                            String.valueOf(prec),
-                            relDiffStr,
-                            "DIFFERENT"
-                    });
+                } else if (!Objects.equals(ov,nv)){
+                    diffs.add(new String[]{o.get("Recording Name"),o.get("Square Nr"),f,ov,nv,"","","TEXT DIFFERENCE"});
+                    diffCount++;
                 }
             }
 
-            // Compare Selected flag
-            String selOld = String.valueOf(isSelected(oldRow));
-            String selNew = String.valueOf(isSelected(newRow));
-            if (!selOld.equalsIgnoreCase(selNew)) {
-                diff = true;
-                selectedMismatches++;
-                reportRows.add(new String[]{
-                        oldRow.get("Recording Name"),
-                        oldRow.get("Square Nr"),
-                        "Selected",
-                        selOld,
-                        selNew,
-                        "",         // precision N/A
-                        "",         // relative diff N/A
-                        "DIFFERENT"
-                });
+            String sOld=o.get("Selected");
+            String sNew=n.get("Selected");
+            if (!Objects.equals(sOld,sNew)){
+                diffs.add(new String[]{o.get("Recording Name"),o.get("Square Nr"),"Selected",sOld,sNew,"","","DIFFERENT"});
+                diffCount++;
             }
 
-            if (diff) mismatched++; else matched++;
+            if (total%1000==0) System.out.printf("   ...processed %,d%n",total);
         }
 
-        // Extra rows in NEW
-        Set<String> oldKeys = new HashSet<>();
-        for (Map<String, String> o : oldNorm) oldKeys.add(compositeKey(o));
-        for (Map<String, String> n : newNorm) {
-            if (!oldKeys.contains(compositeKey(n))) {
-                reportRows.add(new String[]{
-                        n.get("Recording Name"), n.get("Square Nr"),
-                        "", "", "", "", "", "Extra in NEW"
-                });
-                extra++;
-            }
+        try(PrintWriter pw=new PrintWriter(out.toFile())){
+            pw.println("Recording Name,Square Nr,Field,Old Value,New Value,Precision Used,Relative Diff (%),Status");
+            for(String[] r:diffs) pw.println(String.join(",",r));
+            pw.println();
+            pw.printf("SUMMARY,,,,,,,%nDifferences,%d%n",diffCount);
         }
-
-        // Sort report rows by key
-        reportRows.sort(Comparator
-                                .comparing((String[] r) -> r[0] == null ? "" : r[0])
-                                .thenComparing(r -> {
-                                    try { return Integer.parseInt(r[1]); } catch (Exception e) { return 0; }
-                                }));
-
-        // Write report
-        try (PrintWriter report = new PrintWriter(reportFile.toFile())) {
-            report.println("Recording Name,Square Nr,Field,Old Value,New Value,Precision Used,Relative Difference (%),Status");
-            for (String[] row : reportRows) {
-                List<String> escaped = new ArrayList<>();
-                for (String v : row) escaped.add(quote(v));
-                report.println(String.join(",", escaped));
-            }
-            report.println();
-            report.println("SUMMARY,,,,,,,");
-            report.printf("Matched,%d,,,,,,%n", matched);
-            report.printf("Mismatched,%d,,,,,,%n", mismatched);
-            report.printf("Missing,%d,,,,,,%n", missing);
-            report.printf("Extra,%d,,,,,,%n", extra);
-            report.printf("Selected mismatches,%d,,,,,,%n", selectedMismatches);
-            report.flush();
-        }
-
-        // Console summary
-        System.out.printf("✅ Comparison complete. Report: %s%n", reportFile);
-        System.out.printf("Matched: %d, Mismatched: %d, Missing: %d, Extra: %d, Selected mismatches: %d%n",
-                          matched, mismatched, missing, extra, selectedMismatches);
+        System.out.printf("✅ Compared %,d squares — %d differences%n",total,diffCount);
     }
 
-    // ADD at the bottom of the file, before the final closing brace of the class:
+    private static String key(Map<String,String> r){
+        return r.getOrDefault("Recording Name","")+" - "+r.getOrDefault("Square Nr","");
+    }
+
+    private static boolean numericEqual(String f,String a,String b){
+        Double da=parseDouble(a), db=parseDouble(b);
+        if (da==null && db==null) return true;
+        if (da==null || db==null) return false;
+        int prec=EFFECTIVE_PRECISION_MAP.getOrDefault(f,ROUNDING_MAP.getOrDefault(f,3));
+        double fac=Math.pow(10,prec);
+        return Math.round(da*fac)==Math.round(db*fac);
+    }
+
+    private static double relativeDeviation(String a, String b) {
+        Double da = parseDouble(a);
+        Double db = parseDouble(b);
+
+        // Both missing or equivalent to zero → no deviation
+        if ((da == null || da == 0.0) && (db == null || db == 0.0)) return 0.0;
+
+        // One side empty → treat as absolute deviation
+        if (da == null || db == null) return 100.0; // arbitrary high deviation
+
+        double absA = Math.abs(da);
+        double absDiff = Math.abs(db - da);
+
+        // Avoid division by zero, use absolute diff if old value is near zero
+        if (absA < 1e-12) return absDiff * 100.0;
+
+        return absDiff / absA * 100.0;
+    }
 
     // ----------------------------------------------------------------------
-    /**
-     * Write an overview CSV listing for each square:
-     * Selected (old/new), Tau, Density Ratio, and Variability,
-     * plus combined selection state (Both/OnlyOld/OnlyNew).
-     */
-    private static void writeSelectedOverview(List<Map<String, String>> oldNorm,
-                                              List<Map<String, String>> newNorm) throws IOException {
-        Path overviewFile = Paths.get("/Users/Hans/Desktop/Squares Validation - Selected Overview.csv");
+    // UTILITIES
+    // ----------------------------------------------------------------------
 
-        Comparator<Map<String, String>> sorter = Comparator
-                .comparing((Map<String, String> r) -> r.get("Recording Name"))
-                .thenComparing(r -> {
-                    String s = r.get("Square Nr");
-                    try { return Integer.parseInt(s); } catch (Exception e) { return 0; }
-                });
-        oldNorm.sort(sorter);
-        newNorm.sort(sorter);
+    private static Double parseDouble(String s){
+        if (s==null||s.isEmpty()||s.equalsIgnoreCase("NaN")) return null;
+        try { double v=Double.parseDouble(s); return Double.isNaN(v)?null:v; }
+        catch(Exception e){return null;}
+    }
 
-        Map<String, Map<String, String>> newMap = new HashMap<>();
-        for (Map<String, String> n : newNorm) newMap.put(compositeKey(n), n);
+    private static boolean isSelected(Map<String,String> r){
+        Double dr=parseDouble(r.get("Density Ratio"));
+        Double var=parseDouble(r.get("Variability"));
+        Double r2=parseDouble(r.get("R Squared"));
+        return dr!=null&&var!=null&&r2!=null&&dr>=2.0&&var<10.0&&r2>0.1;
+    }
 
-        Set<String> allKeys = new TreeSet<>();
-        for (Map<String, String> o : oldNorm) allKeys.add(compositeKey(o));
-        for (Map<String, String> n : newNorm) allKeys.add(compositeKey(n));
+    private static void writeSelectedOverview(List<Map<String,String>> oldN,List<Map<String,String>> newN,Path outDir) throws IOException {
+        Path f=outDir.resolve("Squares Validation - Selected Overview.csv");
+        Map<String,Map<String,String>> newMap=new HashMap<>();
+        for(Map<String,String> n:newN) newMap.put(key(n),n);
 
-        try (PrintWriter pw = new PrintWriter(overviewFile.toFile())) {
-            pw.println("Recording Name,Square Nr,"
-                               + "Selected (Old),Selected (New),Both Selected,Only Old Selected,Only New Selected,"
-                               + "Tau (Old),Tau (New),Density Ratio (Old),Density Ratio (New),Variability (Old),Variability (New)");
+        Set<String> allKeys=new TreeSet<>();
+        for(Map<String,String> o:oldN) allKeys.add(key(o));
+        for(Map<String,String> n:newN) allKeys.add(key(n));
 
-            for (String key : allKeys) {
-                String rec = key.split(" - ")[0];
-                String sq  = key.split(" - ").length > 1 ? key.split(" - ")[1] : "";
-
-                Map<String, String> oldRow = oldNorm.stream()
-                        .filter(r -> compositeKey(r).equals(key)).findFirst().orElse(null);
-                Map<String, String> newRow = newMap.get(key);
-
-                boolean selOldBool = oldRow != null && isSelected(oldRow);
-                boolean selNewBool = newRow != null && isSelected(newRow);
-
-                String selOld = oldRow != null ? String.valueOf(selOldBool) : "";
-                String selNew = newRow != null ? String.valueOf(selNewBool) : "";
-
-                // Combined flags
-                String bothSelected = (selOldBool && selNewBool) ? "true" : "";
-                String onlyOldSelected = (selOldBool && !selNewBool) ? "true" : "";
-                String onlyNewSelected = (!selOldBool && selNewBool) ? "true" : "";
-
-                String tauOld = oldRow != null ? oldRow.getOrDefault("Tau", "") : "";
-                String tauNew = newRow != null ? newRow.getOrDefault("Tau", "") : "";
-
-                String drOld = oldRow != null ? oldRow.getOrDefault("Density Ratio", "") : "";
-                String drNew = newRow != null ? newRow.getOrDefault("Density Ratio", "") : "";
-
-                String varOld = oldRow != null ? oldRow.getOrDefault("Variability", "") : "";
-                String varNew = newRow != null ? newRow.getOrDefault("Variability", "") : "";
-
+        try(PrintWriter pw=new PrintWriter(f.toFile())){
+            pw.println("Recording Name,Square Nr,Selected(Old),Selected(New),Both,Only Old,Only New,Tau(Old),Tau(New),DensityRatio(Old),DensityRatio(New),Variability(Old),Variability(New)");
+            for(String k:allKeys){
+                String[] parts=k.split(" - ",2);
+                String rec=parts[0], sq=parts.length>1?parts[1]:"";
+                Map<String,String> o=oldN.stream().filter(r->key(r).equals(k)).findFirst().orElse(null);
+                Map<String,String> n=newMap.get(k);
+                boolean so=o!=null&&isSelected(o);
+                boolean sn=n!=null&&isSelected(n);
                 pw.printf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s%n",
-                          quote(rec), quote(sq),
-                          quote(selOld), quote(selNew),
-                          quote(bothSelected), quote(onlyOldSelected), quote(onlyNewSelected),
-                          quote(tauOld), quote(tauNew),
-                          quote(drOld), quote(drNew),
-                          quote(varOld), quote(varNew));
+                          rec,sq,so,sn,
+                          (so&&sn)?"true":"",(so&&!sn)?"true":"",(!so&&sn)?"true":"",
+                          val(o,"Tau"),val(n,"Tau"),val(o,"Density Ratio"),val(n,"Density Ratio"),val(o,"Variability"),val(n,"Variability"));
             }
         }
-
-        System.out.printf("📊 Selected overview written: %s%n", overviewFile);
+        System.out.println("📊 Selected overview written: "+f);
     }
 
-    // ----------------------------------------------------------------------
-    public static void main(String[] args) throws IOException {
-
-        Path downloadsPath = Paths.get(System.getProperty("user.home"), "Downloads");
-        Path validatePath  = downloadsPath.resolve("Validate").resolve("Squares");
-
-        try {
-            Files.createDirectories(validatePath);
-        } catch (IOException ignored) {
-        }
-
-        Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Squares.csv");
-        Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/All Squares Java.csv");
-
-        List<Map<String, String>> oldRows = readCsv(oldCsv);
-        List<Map<String, String>> newRows = readCsv(newCsv);
-
-        List<Map<String, String>> normOld = normalizeOld(oldRows);
-        List<Map<String, String>> normNew = normalizeNew(newRows);
-
-        Path normOldPath = validatePath.resolve("Squares Validation - Old normalized.csv");
-        Path normNewPath = validatePath.resolve("Squares Validation - New Normalized.csv");
-
-        // Effective precision must be computed BEFORE writing normalized CSVs (so rounding matches)
-        EFFECTIVE_PRECISION_MAP.putAll(computeEffectivePrecisions(normOld, normNew, DOUBLE_FIELDS));
-
-        System.out.println("🔍 Effective precisions per field:");
-        for (Map.Entry<String, Integer> e : EFFECTIVE_PRECISION_MAP.entrySet()) {
-            System.out.printf("   %-35s → %d%n", e.getKey(), e.getValue());
-        }
-
-        writeCsv(normOld, normOldPath);
-        writeCsv(normNew, normNewPath);
-
-        System.out.println("🧩 Normalized files written:");
-        System.out.println("   - " + normOldPath);
-        System.out.println("   - " + normNewPath);
-
-        compare(normOld, normNew);
-        writeSelectedOverview(normOld, normNew);
+    private static String val(Map<String,String> m,String k){
+        return m==null?"":m.getOrDefault(k,"");
     }
-
 }
