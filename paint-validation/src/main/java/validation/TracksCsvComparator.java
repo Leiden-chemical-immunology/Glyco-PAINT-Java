@@ -257,7 +257,24 @@ public class TracksCsvComparator {
                     }
                 }
                 System.out.println("📊 Diagnostics written: " + diagCsv.toAbsolutePath());
+
             }
+
+            // 🔹 Ensure diagnostic file is fully flushed before optimization
+            try {
+                Thread.sleep(200); // short wait for filesystem sync
+            } catch (InterruptedException ignored) {}
+
+            // === Step 4b: Iterative tolerance optimization (impact analysis) ===
+            Path tolCsv = validatePath.resolve("Tracks Validation - Tolerance Optimization.csv");
+            if (Files.exists(diagCsv)) {
+                System.out.println("\n🔬 Running tolerance impact analysis (5% baseline → tighter thresholds)...");
+                optimizeTolerances(diagCsv, tolCsv);
+                System.out.println("📈 Tolerance optimization summary written: " + tolCsv.toAbsolutePath());
+            } else {
+                System.out.println("ℹ️ Skipping tolerance optimization — no diagnostic file found.");
+            }
+
 
             // === Step 5: Global summary ===
             summarize(perfectIds, reasonableIds, unmatchedIds, diagCsv, summaryCsv, total);
@@ -655,5 +672,67 @@ public class TracksCsvComparator {
         if (o == null) return "";
         if (o instanceof Double) return String.format(Locale.US, "%.3f", (Double) o);
         return o.toString();
+    }
+
+    /** Evaluate how much count changes when tightening per-field tolerance thresholds. */
+    private static void optimizeTolerances(Path diagCsv, Path outCsv) throws IOException {
+        if (!Files.exists(diagCsv)) {
+            System.out.println("⚠️ No diagnostics available for optimization step.");
+            return;
+        }
+
+        Map<String, List<Double>> deviationsByField = new LinkedHashMap<>();
+
+        try (BufferedReader br = Files.newBufferedReader(diagCsv)) {
+            String header = br.readLine();
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",", -1);
+                if (parts.length < 12) continue;
+                deviationsByField.computeIfAbsent("Duration Δ", k -> new ArrayList<>()).add(parseDoubleSafe(parts[3]));
+                deviationsByField.computeIfAbsent("Displacement Δ", k -> new ArrayList<>()).add(parseDoubleSafe(parts[4]));
+                deviationsByField.computeIfAbsent("Max Speed Δ", k -> new ArrayList<>()).add(parseDoubleSafe(parts[5]));
+                deviationsByField.computeIfAbsent("Median Speed Δ", k -> new ArrayList<>()).add(parseDoubleSafe(parts[6]));
+                deviationsByField.computeIfAbsent("Total Distance Δ", k -> new ArrayList<>()).add(parseDoubleSafe(parts[7]));
+                deviationsByField.computeIfAbsent("X Δ", k -> new ArrayList<>()).add(parseDoubleSafe(parts[8]));
+                deviationsByField.computeIfAbsent("Y Δ", k -> new ArrayList<>()).add(parseDoubleSafe(parts[9]));
+                deviationsByField.computeIfAbsent("Confinement Δ", k -> new ArrayList<>()).add(parseDoubleSafe(parts[10]));
+            }
+        }
+
+        double[] testLevels = {5.0, 4.0, 3.0, 2.0, 1.0, 0.5};
+        double targetKeep = 98.0; // percent of matches to retain
+
+        try (PrintWriter pw = new PrintWriter(outCsv.toFile())) {
+            pw.println("Field,Total,Equal@5%,OptimalTolerance(%),Equal@Optimal(%)");
+
+            for (Map.Entry<String, List<Double>> e : deviationsByField.entrySet()) {
+                String field = e.getKey();
+                List<Double> devs = e.getValue();
+                devs.removeIf(d -> !Double.isFinite(d));
+                if (devs.isEmpty()) continue;
+                int total = devs.size();
+
+                double equalAt5 = percentWithin(devs, 5.0);
+                double bestTol = 5.0;
+                double bestKeep = equalAt5;
+
+                for (double tol : testLevels) {
+                    double keep = percentWithin(devs, tol);
+                    if (keep < targetKeep) break;
+                    bestTol = tol;
+                    bestKeep = keep;
+                }
+
+                pw.printf(Locale.US, "%s,%d,%.2f,%.2f,%.2f%n",
+                          field, total, equalAt5, bestTol, bestKeep);
+            }
+        }
+    }
+
+    /** Helper: compute fraction of deviations within tolerance. */
+    private static double percentWithin(List<Double> devs, double tol) {
+        long ok = devs.stream().filter(d -> Math.abs(d) <= tol).count();
+        return 100.0 * ok / devs.size();
     }
 }
