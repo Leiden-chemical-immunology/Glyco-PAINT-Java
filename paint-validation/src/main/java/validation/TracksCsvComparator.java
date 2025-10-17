@@ -5,23 +5,49 @@ import java.nio.file.*;
 import java.util.*;
 
 /**
- * Compare two "All Tracks" CSV files (old vs new/Java).
+ * ============================================================================
+ *  TracksCsvComparator.java
+ *  Version: 3.0 — Documented Edition
  *
- * Steps:
- *  1. Normalize both tables (remove "-threshold" suffix, sort by Recording + Track Id).
- *  2. Phase 1: match tracks per recording.
- *  3. Phase 2: find best match for remaining unmatched tracks (per recording).
- *  4. Phase 3: produce summary report.
+ *  PURPOSE
+ *  ---------------------------------------------------------------------------
+ *  Compare and validate two "All Tracks" CSV exports (e.g., Python vs Java)
+ *  produced by the PAINT/TrackMate pipeline.
  *
- * Output files:
- *   • AllTracks-Python-Normalized.csv
- *   • AllTracks-Java-Normalized.csv
- *   • AllTracksComparison.csv
- *   • AllTracksComparison-Diagnostics.csv
- *   • AllTracksComparison-Summary.csv
+ *  The comparator:
+ *    1. Normalizes both CSVs (unifies headers, trims values, aligns naming)
+ *    2. Sorts by Recording Name + Track Id
+ *    3. Performs multi-phase matching:
+ *         - Phase 1: strict per-field tolerance-based matching
+ *         - Phase 2: diagnostic best-fit analysis for remaining unmatched tracks
+ *         - Phase 3: summary report with matched/unmatched IDs
+ *    4. Writes detailed comparison, diagnostics, normalized, and summary CSVs
+ *
+ *  OUTPUT FILES
+ *  ---------------------------------------------------------------------------
+ *  ~/Downloads/Validate/Tracks/
+ *    ├── Tracks Validation - Comparison.csv
+ *    ├── Tracks Validation - Comparison Diagnostics.csv
+ *    ├── Tracks Validation - Comparison Summary.csv
+ *    ├── Tracks Validation - Old Normalised.csv
+ *    └── Tracks Validation - New Normalised.csv
+ *
+ *  COMPARISON LOGIC
+ *  ---------------------------------------------------------------------------
+ *  Matching is done per Recording Name (threshold suffix removed).
+ *  Each old track is compared to potential new tracks using a configurable
+ *  set of numerical tolerances. If only one new track matches → unique match.
+ *  Multiple matches are recorded and scored in diagnostics.
+ *
+ *  Phase 2 diagnostics rank unmatched tracks using a root-mean-square
+ *  deviation metric across selected columns, limited by MAX_ACCEPTABLE_SCORE.
+ * ============================================================================
  */
 public class TracksCsvComparator {
 
+    /**
+     * Configuration for which comparison features are active.
+     */
     private static final class MatchConfig {
         boolean useDuration = true;
         boolean useDisplacement = true;
@@ -31,15 +57,21 @@ public class TracksCsvComparator {
         boolean useConfinement = true;
     }
 
-    // --- tolerances ---
+    // --- Field-level tolerances (units correspond to column meaning) ---
     private static final double XY_TOLERANCE           = 0.5;
     private static final double DURATION_TOLERANCE     = 0.1;
     private static final double SPEED_TOLERANCE        = 0.5;
     private static final double DISPLACEMENT_TOLERANCE = 0.5;
     private static final double DIST_TOLERANCE         = 0.5;
     private static final double CONFINEMENT_TOLERANCE  = 0.5;
+
+    /** Maximum allowed RMS score for a diagnostic match to be considered acceptable. */
     private static final double MAX_ACCEPTABLE_SCORE   = 40;
 
+    // ---------------------------------------------------------------------
+    /**
+     * Main entry point. Reads both CSVs, runs all phases, and writes output files.
+     */
     public static void main(String[] args) {
 
         Path downloadsPath = Paths.get(System.getProperty("user.home"), "Downloads");
@@ -50,6 +82,7 @@ public class TracksCsvComparator {
         } catch (IOException ignored) {
         }
 
+        // Define input and output file locations
         Path oldCsv     = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Tracks.csv");
         Path newCsv     = Paths.get("/Users/hans/Paint Test Project/221012/All Tracks Java.csv");
 
@@ -71,11 +104,11 @@ public class TracksCsvComparator {
             writeNormalizedCsv(oldNorm, oldNormCsv);
             writeNormalizedCsv(newNorm, newNormCsv);
 
-            // === Step 2: Group by recording ===
+            // === Step 2: Group by recording name ===
             Map<String, List<Map<String, String>>> oldByRec = groupBy(oldNorm, "Ext Recording Name");
             Map<String, List<Map<String, String>>> newByRec = groupBy(newNorm, "Recording Name");
 
-            // Match recording names ignoring threshold suffix
+            // Build a recording name mapping ignoring threshold suffixes
             Map<String, String> recMapping = new LinkedHashMap<>();
             for (String oldRec : oldByRec.keySet()) {
                 String oldNormName = normalizeRecordingName(oldRec);
@@ -93,7 +126,7 @@ public class TracksCsvComparator {
                 System.out.println("  " + e.getKey() + "  →  " + e.getValue());
             System.out.println();
 
-            // === Step 3: Phase 1 – direct matching ===
+            // === Step 3: Phase 1 — strict direct matching ===
             Set<String> usedNewIds = new HashSet<>();
             List<Map<String, String>> unmatched = new ArrayList<>();
             List<Map<String, String>> multipleMatches = new ArrayList<>();
@@ -105,6 +138,7 @@ public class TracksCsvComparator {
             int total = 0, matched = 0, unique = 0, multiple = 0;
 
             try (BufferedWriter bw = Files.newBufferedWriter(outCsv)) {
+                // Write header row for comparison file
                 bw.write(String.join(",", Arrays.asList(
                         "Ext Recording Name","Track Id","Track Id Java","Square Nr","Nr Spots","Nr Gaps","Longest Gap",
                         "Track Duration","Track Displacement","Track Max Speed","Track Median Speed","Total Distance",
@@ -112,6 +146,7 @@ public class TracksCsvComparator {
                 )));
                 bw.newLine();
 
+                // Process per recording mapping
                 for (Map.Entry<String, String> entry : recMapping.entrySet()) {
                     String oldRec = entry.getKey();
                     String newRec = entry.getValue();
@@ -123,6 +158,7 @@ public class TracksCsvComparator {
                     for (int i = 0; i < oldSubset.size(); i++) {
                         Map<String, String> old = oldSubset.get(i);
                         total++;
+
                         List<Map<String, String>> matches = findMatches(cfg, old, newSubset, usedNewIds);
                         int count = matches.size();
 
@@ -162,10 +198,18 @@ public class TracksCsvComparator {
                         row.add(String.valueOf(count));
                         bw.write(String.join(",", row));
                         bw.newLine();
+
+                        // 👇 periodic progress reporting every 1000 tracks
+                        if ((i + 1) % 1000 == 0) {
+                            System.out.printf("   ...processed %,d / %,d tracks in %s%n",
+                                              i + 1, oldSubset.size(), oldRec);
+                        }
                     }
+                    System.out.printf("   ✓ Finished %s%n", oldRec);
                 }
             }
 
+            // Phase 1 summary
             System.out.println("\n=== Phase 1 Summary ===");
             System.out.printf("Total old tracks: %,d%n", total);
             System.out.printf("Matched (≥1):     %,d%n", matched);
@@ -174,7 +218,7 @@ public class TracksCsvComparator {
             System.out.printf("Unmatched:        %,d%n", unmatched.size());
             System.out.println("📄 Written: " + outCsv.toAbsolutePath());
 
-            // === Step 4: Phase 2 diagnostics (per recording) ===
+            // === Step 4: Phase 2 — diagnostic scoring for remaining unmatched ===
             if (!unmatched.isEmpty()) {
                 System.out.println("\nRunning diagnostics for unmatched tracks...");
                 try (BufferedWriter bw = Files.newBufferedWriter(diagCsv)) {
@@ -215,7 +259,7 @@ public class TracksCsvComparator {
                 System.out.println("📊 Diagnostics written: " + diagCsv.toAbsolutePath());
             }
 
-            // === Step 5: Phase 3 summary ===
+            // === Step 5: Global summary ===
             summarize(perfectIds, reasonableIds, unmatchedIds, diagCsv, summaryCsv, total);
 
             System.out.println("\n✅ All done!");
@@ -229,6 +273,7 @@ public class TracksCsvComparator {
     }
 
     // ---------------------------------------------------------------------
+    /** Strip threshold suffix ("-threshold-N") from recording name. */
     private static String normalizeRecordingName(String name) {
         if (name == null) return "";
         name = name.trim();
@@ -237,6 +282,7 @@ public class TracksCsvComparator {
         return name;
     }
 
+    /** Find best matching recording name among candidates (ignoring threshold). */
     private static String findClosestRecording(String oldRecNorm, Set<String> candidates) {
         for (String cand : candidates) {
             String normCand = normalizeRecordingName(cand);
@@ -249,7 +295,7 @@ public class TracksCsvComparator {
     }
 
     // ---------------------------------------------------------------------
-    // Standardized comparison columns (shared between old & new)
+    /** Standard column order used in normalized CSVs. */
     private static final List<String> COMPARE_COLUMNS = Arrays.asList(
             "Recording Name",
             "Track Id",
@@ -267,40 +313,43 @@ public class TracksCsvComparator {
             "Confinement Ratio"
     );
 
-    // Mapping from Java-style column names → standardized names
+    /** Mappings from alternative column names → standard column names. */
     private static final Map<String, String> COLUMN_MAP = new HashMap<>();
     static {
         COLUMN_MAP.put("Square Number", "Square Nr");
         COLUMN_MAP.put("Number of Spots", "Nr Spots");
         COLUMN_MAP.put("Number of Gaps", "Nr Gaps");
-        // We keep "Longest Gap" identical
     }
 
     // ---------------------------------------------------------------------
+    /**
+     * Normalize column names, recording names, and track IDs.
+     * Then sort by Recording Name + Track Id.
+     */
     private static List<Map<String, String>> normalizeAndSort(List<Map<String, String>> rows,
                                                               String recordingColumn) {
         if (rows.isEmpty()) return rows;
 
         for (Map<String, String> row : rows) {
-            // unify to "Recording Name"
+            // unify recording name
             String recName = row.getOrDefault(recordingColumn, "").trim().replace('\u00A0', ' ');
             int idx = recName.toLowerCase(Locale.ROOT).indexOf("-threshold");
             if (idx > 0) recName = recName.substring(0, idx);
             row.put("Recording Name", recName);
 
-            // normalize column names according to map
+            // normalize alternate column names
             for (Map.Entry<String, String> e : COLUMN_MAP.entrySet()) {
                 if (row.containsKey(e.getKey()) && !row.containsKey(e.getValue())) {
                     row.put(e.getValue(), row.get(e.getKey()));
                 }
             }
 
-            // normalize Track Id
+            // ensure Track Id field exists
             String id = row.getOrDefault("Track Id", "").trim();
             row.put("Track Id", id);
         }
 
-        // sort by Recording Name + numeric Track Id
+        // sort deterministically
         rows.sort((a, b) -> {
             String ra = a.getOrDefault("Recording Name", "").toLowerCase(Locale.ROOT);
             String rb = b.getOrDefault("Recording Name", "").toLowerCase(Locale.ROOT);
@@ -318,6 +367,7 @@ public class TracksCsvComparator {
     }
 
     // ---------------------------------------------------------------------
+    /** Write normalized CSV to disk for verification and inspection. */
     private static void writeNormalizedCsv(List<Map<String, String>> sortedRows, Path out) throws IOException {
         if (sortedRows.isEmpty()) return;
 
@@ -351,68 +401,96 @@ public class TracksCsvComparator {
     private static List<Map<String, String>> findMatches(MatchConfig cfg, Map<String, String> old,
                                                          List<Map<String, String>> candidates, Set<String> used) {
         List<Map<String, String>> matches = new ArrayList<>();
-        int square = parseIntSafe(old.get("Square Nr"));
-        int nSpots = parseIntSafe(old.get("Nr Spots"));
-        int nGaps = parseIntSafe(old.get("Nr Gaps"));
-        int longest = parseIntSafe(old.get("Longest Gap"));
-        double durOld = parseDoubleSafe(old.get("Track Duration"));
+
+        // Extract numerical fields from "old" track
+        int square     = parseIntSafe(old.get("Square Nr"));
+        int nSpots     = parseIntSafe(old.get("Nr Spots"));
+        int nGaps      = parseIntSafe(old.get("Nr Gaps"));
+        int longest    = parseIntSafe(old.get("Longest Gap"));
+        double durOld  = parseDoubleSafe(old.get("Track Duration"));
         double dispOld = parseDoubleSafe(old.get("Track Displacement"));
-        double maxOld = parseDoubleSafe(old.get("Track Max Speed"));
-        double medOld = parseDoubleSafe(old.get("Track Median Speed"));
+        double maxOld  = parseDoubleSafe(old.get("Track Max Speed"));
+        double medOld  = parseDoubleSafe(old.get("Track Median Speed"));
         double distOld = parseDoubleSafe(old.get("Total Distance"));
-        double xOld = parseDoubleSafe(old.get("Track X Location"));
-        double yOld = parseDoubleSafe(old.get("Track Y Location"));
+        double xOld    = parseDoubleSafe(old.get("Track X Location"));
+        double yOld    = parseDoubleSafe(old.get("Track Y Location"));
         double confOld = parseDoubleSafe(old.get("Confinement Ratio"));
 
+        // Iterate over all potential candidates in the same recording
         for (Map<String, String> cand : candidates) {
             String newId = cand.getOrDefault("Track Id", "");
-            if (used.contains(newId)) continue;
+            if (used.contains(newId)) continue;  // Skip if already assigned
 
-            int squareNew = parseIntSafe(cand.get("Square Number"));
-            int nSpotsNew = parseIntSafe(cand.get("Number of Spots"));
-            int nGapsNew = parseIntSafe(cand.get("Number of Gaps"));
-            int longestNew = parseIntSafe(cand.get("Longest Gap"));
-            if (square != squareNew || nSpots != nSpotsNew || nGaps != nGapsNew || longest != longestNew) continue;
+            // Compare integer-like columns exactly
+            int squareNew   = parseIntSafe(cand.get("Square Number"));
+            int nSpotsNew   = parseIntSafe(cand.get("Number of Spots"));
+            int nGapsNew    = parseIntSafe(cand.get("Number of Gaps"));
+            int longestNew  = parseIntSafe(cand.get("Longest Gap"));
+            if (square != squareNew || nSpots != nSpotsNew || nGaps != nGapsNew || longest != longestNew)
+                continue; // Not comparable structure
 
-            double durNew = parseDoubleSafe(cand.get("Track Duration"));
+            // Compare numeric columns within tolerance
+            double durNew  = parseDoubleSafe(cand.get("Track Duration"));
             double dispNew = parseDoubleSafe(cand.get("Track Displacement"));
-            double maxNew = parseDoubleSafe(cand.get("Track Max Speed"));
-            double medNew = parseDoubleSafe(cand.get("Track Median Speed"));
+            double maxNew  = parseDoubleSafe(cand.get("Track Max Speed"));
+            double medNew  = parseDoubleSafe(cand.get("Track Median Speed"));
             double distNew = parseDoubleSafe(cand.get("Total Distance"));
-            double xNew = parseDoubleSafe(cand.get("Track X Location"));
-            double yNew = parseDoubleSafe(cand.get("Track Y Location"));
+            double xNew    = parseDoubleSafe(cand.get("Track X Location"));
+            double yNew    = parseDoubleSafe(cand.get("Track Y Location"));
             double confNew = parseDoubleSafe(cand.get("Confinement Ratio"));
 
             boolean ok = true;
-            if (cfg.useDuration)    ok &= Math.abs(durOld - durNew) <= DURATION_TOLERANCE;
-            if (cfg.useDisplacement) ok &= Math.abs(dispOld - dispNew) <= DISPLACEMENT_TOLERANCE;
-            if (cfg.useSpeed)       ok &= Math.abs(maxOld - maxNew) <= SPEED_TOLERANCE &&
-                    Math.abs(medOld - medNew) <= SPEED_TOLERANCE;
-            if (cfg.useDistance)    ok &= Math.abs(distOld - distNew) <= DIST_TOLERANCE;
-            if (cfg.useXY)          ok &= Math.abs(xOld - xNew) <= XY_TOLERANCE &&
-                    Math.abs(yOld - yNew) <= XY_TOLERANCE;
-            if (cfg.useConfinement) ok &= Math.abs(confOld - confNew) <= CONFINEMENT_TOLERANCE;
+            if (cfg.useDuration)
+                ok &= Math.abs(durOld - durNew) <= DURATION_TOLERANCE;
+            if (cfg.useDisplacement)
+                ok &= Math.abs(dispOld - dispNew) <= DISPLACEMENT_TOLERANCE;
+            if (cfg.useSpeed)
+                ok &= Math.abs(maxOld - maxNew) <= SPEED_TOLERANCE &&
+                        Math.abs(medOld - medNew) <= SPEED_TOLERANCE;
+            if (cfg.useDistance)
+                ok &= Math.abs(distOld - distNew) <= DIST_TOLERANCE;
+            if (cfg.useXY)
+                ok &= Math.abs(xOld - xNew) <= XY_TOLERANCE &&
+                        Math.abs(yOld - yNew) <= XY_TOLERANCE;
+            if (cfg.useConfinement)
+                ok &= Math.abs(confOld - confNew) <= CONFINEMENT_TOLERANCE;
 
             if (ok) matches.add(cand);
         }
         return matches;
     }
 
-    private static Map<String, Object> findBestCandidate(Map<String, String> old, List<Map<String, String>> candidates) {
+    // ---------------------------------------------------------------------
+    /**
+     * Compute the best possible match (lowest RMS score) between an unmatched
+     * "old" track and a set of "new" candidates, based on relative deviation
+     * weighted by field tolerances.
+     *
+     * @param old        reference track
+     * @param candidates candidate new tracks
+     * @return map containing best candidate ID, per-field deviations, and score
+     */
+    private static Map<String, Object> findBestCandidate(
+            Map<String, String> old, List<Map<String, String>> candidates) {
+
         double bestScore = Double.POSITIVE_INFINITY;
         Map<String, String> bestCand = null;
         double durD=0, dispD=0, maxD=0, medD=0, distD=0, xD=0, yD=0, confD=0;
 
         for (Map<String, String> cand : candidates) {
-            double dur = diff(old, cand, "Track Duration", DURATION_TOLERANCE);
+            // Normalized differences divided by their respective tolerance
+            double dur  = diff(old, cand, "Track Duration", DURATION_TOLERANCE);
             double disp = diff(old, cand, "Track Displacement", DISPLACEMENT_TOLERANCE);
-            double max = diff(old, cand, "Track Max Speed", SPEED_TOLERANCE);
-            double med = diff(old, cand, "Track Median Speed", SPEED_TOLERANCE);
+            double max  = diff(old, cand, "Track Max Speed", SPEED_TOLERANCE);
+            double med  = diff(old, cand, "Track Median Speed", SPEED_TOLERANCE);
             double dist = diff(old, cand, "Total Distance", DIST_TOLERANCE);
-            double x = diff(old, cand, "Track X Location", XY_TOLERANCE);
-            double y = diff(old, cand, "Track Y Location", XY_TOLERANCE);
+            double x    = diff(old, cand, "Track X Location", XY_TOLERANCE);
+            double y    = diff(old, cand, "Track Y Location", XY_TOLERANCE);
             double conf = diff(old, cand, "Confinement Ratio", CONFINEMENT_TOLERANCE);
-            double score = Math.sqrt((dur*dur + disp*disp + max*max + med*med + dist*dist + x*x + y*y + conf*conf) / 8.0);
+
+            // RMS score across all differences
+            double score = Math.sqrt((dur*dur + disp*disp + max*max + med*med +
+                    dist*dist + x*x + y*y + conf*conf) / 8.0);
 
             if (Double.isFinite(score) && score < bestScore && score <= MAX_ACCEPTABLE_SCORE) {
                 bestScore = score;
@@ -421,6 +499,7 @@ public class TracksCsvComparator {
             }
         }
 
+        // Prepare result summary
         Map<String, Object> out = new LinkedHashMap<>();
         if (bestCand != null) {
             out.put("BestId", bestCand.get("Track Id"));
@@ -441,11 +520,24 @@ public class TracksCsvComparator {
     }
 
     // ---------------------------------------------------------------------
-    private static void summarize(List<String> perfectIds, List<String> reasonableIds, List<String> unmatchedIds,
-                                  Path diagCsv, Path summaryCsv, int total) throws IOException {
+    /**
+     * Generate global summary CSV after all comparison phases.
+     *
+     * @param perfectIds     list of perfect matches (phase 1)
+     * @param reasonableIds  list of reasonable matches (phase 2)
+     * @param unmatchedIds   list of unmatched IDs
+     * @param diagCsv        path to diagnostic CSV
+     * @param summaryCsv     output summary file
+     * @param total          total number of old tracks
+     */
+    private static void summarize(List<String> perfectIds, List<String> reasonableIds,
+                                  List<String> unmatchedIds, Path diagCsv,
+                                  Path summaryCsv, int total) throws IOException {
+
         int phase1Perfect = perfectIds.size();
         int phase2Reasonable = 0;
 
+        // Scan diagnostic file for acceptable RMS scores
         if (Files.exists(diagCsv)) {
             try (BufferedReader br = Files.newBufferedReader(diagCsv)) {
                 String header = br.readLine();
@@ -470,24 +562,28 @@ public class TracksCsvComparator {
             }
         }
 
+        // Print to console
         System.out.println("\n===== GLOBAL SUMMARY =====");
         System.out.printf("Total old tracks:                %,d%n", total);
         System.out.printf("Perfect matches (Phase 1):       %,d%n", phase1Perfect);
-        System.out.printf("Reasonable matches (Phase 2 ≤ %.1f): %,d%n", MAX_ACCEPTABLE_SCORE, phase2Reasonable);
+        System.out.printf("Reasonable matches (Phase 2 ≤ %.1f): %,d%n",
+                          MAX_ACCEPTABLE_SCORE, phase2Reasonable);
         System.out.printf("Still unmatched:                 %,d%n", unmatchedIds.size());
         System.out.println("=========================================");
 
+        // Write summary CSV with category per Track ID
         try (BufferedWriter bw = Files.newBufferedWriter(summaryCsv)) {
             bw.write("Category,Track ID");
             bw.newLine();
-            for (String id : perfectIds) bw.write("Perfect," + id + "\n");
+            for (String id : perfectIds)   bw.write("Perfect," + id + "\n");
             for (String id : reasonableIds) bw.write("Reasonable," + id + "\n");
-            for (String id : unmatchedIds) bw.write("Unmatched," + id + "\n");
+            for (String id : unmatchedIds)  bw.write("Unmatched," + id + "\n");
         }
         System.out.println("📄 Detailed ID list written: " + summaryCsv.toAbsolutePath());
     }
 
     // ---------------------------------------------------------------------
+    /** Compute normalized difference divided by tolerance (used in RMS scoring). */
     private static double diff(Map<String, String> a, Map<String, String> b, String field, double tol) {
         double va = parseDoubleSafe(a.get(field));
         double vb = parseDoubleSafe(b.get(field));
@@ -495,18 +591,25 @@ public class TracksCsvComparator {
         return Math.abs(va - vb) / tol;
     }
 
+    /** Safe numeric parsing — returns NaN for empty or invalid input. */
     private static double parseDoubleSafe(String s) {
         if (s == null || s.isEmpty()) return Double.NaN;
         try { return Double.parseDouble(s.trim()); }
         catch (Exception e) { return Double.NaN; }
     }
 
+    /** Safe integer parsing with fallback to -1. */
     private static int parseIntSafe(String s) {
         if (s == null || s.isEmpty()) return -1;
         try { return (int) Math.round(Double.parseDouble(s.trim())); }
         catch (Exception e) { return -1; }
     }
 
+    // ---------------------------------------------------------------------
+    /**
+     * Generic CSV reader returning list of maps (columnName → value).
+     * No quoting is processed beyond trimming — suitable for standard CSVs.
+     */
     private static List<Map<String, String>> readCsv(Path path) throws IOException {
         List<Map<String, String>> rows = new ArrayList<>();
         try (BufferedReader br = Files.newBufferedReader(path)) {
@@ -527,6 +630,7 @@ public class TracksCsvComparator {
         return rows;
     }
 
+    /** Escape CSV fields containing commas or quotes. */
     private static String escapeCsv(String s) {
         if (s == null) return "";
         if (s.contains(",") || s.contains("\"")) {
@@ -536,6 +640,7 @@ public class TracksCsvComparator {
         return s;
     }
 
+    /** Group list of maps by the value in a given column. */
     private static Map<String, List<Map<String, String>>> groupBy(List<Map<String, String>> rows, String col) {
         Map<String, List<Map<String, String>>> grouped = new LinkedHashMap<>();
         for (Map<String, String> r : rows) {
@@ -545,6 +650,7 @@ public class TracksCsvComparator {
         return grouped;
     }
 
+    /** Format numbers to 3 decimals (US locale) for diagnostic CSVs. */
     private static String fmt(Object o) {
         if (o == null) return "";
         if (o instanceof Double) return String.format(Locale.US, "%.3f", (Double) o);
