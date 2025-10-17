@@ -53,15 +53,16 @@ public class TrackCsvWriter {
             track.setTrackDisplacement( roundOr(featureModel.getTrackFeature(trackId, "TRACK_DISPLACEMENT"), 2, -1));
             track.setTrackMaxSpeed(     roundOr(featureModel.getTrackFeature(trackId, "TRACK_MAX_SPEED"),    2, -1));
             track.setTrackMedianSpeed(  roundOr(featureModel.getTrackFeature(trackId, "TRACK_MEDIAN_SPEED"), 2, -1));
-            // @formatter:on
+
 
             // custom calculated attributes
-            track.setDiffusionCoefficient(trackAttributes.diffusionCoeff);
-            track.setDiffusionCoefficientExt(trackAttributes.diffusionCoeffExt);
-            track.setTotalDistance(trackAttributes.totalDistance);
-            track.setConfinementRatio(trackAttributes.confinementRatio);
+            track.setDiffusionCoefficient(    roundOr(trackAttributes.diffusionCoeff,    2, -1));
+            track.setDiffusionCoefficientExt( roundOr(trackAttributes.diffusionCoeffExt, 2, -1));
+            track.setTotalDistance(           roundOr(trackAttributes.totalDistance,     2, -1));
+            track.setConfinementRatio(        roundOr(trackAttributes.confinementRatio,  2, -1));
             track.setSquareNumber(-1);
             track.setLabelNumber(-1);
+            // @formatter:on
 
             totalSpots += trackAttributes.numberOfSpotsInTracks;
             tracks.add(track);
