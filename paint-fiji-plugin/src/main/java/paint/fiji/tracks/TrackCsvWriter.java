@@ -88,11 +88,11 @@ public class TrackCsvWriter {
                                              "Confinement Ratio");
 
 
-            IntColumn newIds = IntColumn.create("Track ID");
+            IntColumn newIds = IntColumn.create("Track Id");
             for (int i = 0; i < tracksTable.rowCount(); i++) {
                 newIds.append(i);
             }
-            tracksTable.replaceColumn("Track ID", newIds);
+            tracksTable.replaceColumn("Track Id", newIds);
 
             trackTableIO.writeCsv(tracksTable, csvFile.toPath());
         }
