@@ -140,6 +140,7 @@ public class GenerateSquareCalcs {
 
             // All Tracks
             Table allTracksTable = compileAllTracks(experiment);
+            allTracksTable = allTracksTable.sortOn("Recording Name", "Track Id");
             writeAllTracks(experimentPath, allTracksTable);
 
             return true;
@@ -385,9 +386,6 @@ public class GenerateSquareCalcs {
 
                 square.setMedianMaxSpeed(round(tracksInSquareTable.doubleColumn("Track Max Speed").median(), lowPrecision));
                 square.setMaxMaxSpeed(round(tracksInSquareTable.doubleColumn("Track Max Speed").max(), lowPrecision));
-
-//                square.setMedianMeanSpeed(round(tracksInSquareTable.doubleColumn("Track Mean Speed").median(), lowPrecision));
-//                square.setMaxMeanSpeed(round(tracksInSquareTable.doubleColumn("Track Mean Speed").max(), lowPrecision));
 
                 square.setMaxTrackDuration(round(tracksInSquareTable.doubleColumn("Track Duration").max(), lowPrecision));
                 square.setTotalTrackDuration(round(tracksInSquareTable.doubleColumn("Track Duration").sum(), lowPrecision));
