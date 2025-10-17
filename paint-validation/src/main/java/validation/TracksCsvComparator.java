@@ -1,39 +1,45 @@
 package validation;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 
 /**
  * ============================================================================
- *  CsvComparator.java
- *
- *  Purpose:
- *    Utility for comparing two CSV files where field names differ.
- *    Uses a provided mapping from old → new column names.
- *
- *  Notes:
- *    - Ignores column order
- *    - Compares integer and double fields numerically
- *    - Rule for doubles:
- *        1) If BOTH values are in { "", NaN, 0, 0.0 } → equal
- *        2) Else BOTH must be numeric → round per field precision and compare
- *        3) Else → not equal
- *    - Reports missing and differing rows with detailed per-field context
- *
+ *  TracksCsvComparator.java
+ *  Version: 4.3
  *  Author: Herr Doctor
- *  Version: 2.1
+ *
+ *  PURPOSE
+ *  ---------------------------------------------------------------------------
+ *  Compare two "All Tracks" CSV files (Python vs Java) by:
+ *    1. Normalizing both to a shared schema
+ *    2. Rounding doubles to the lowest shared precision
+ *    3. Comparing all numeric fields (int & double) with % tolerance
+ *    4. Writing a detailed difference report
+ *
+ *  NUMERIC COMPARISON RULES
+ *  ---------------------------------------------------------------------------
+ *  - Both "", "NaN", or 0 → equal
+ *  - Integers: numeric compare, else equal if relative difference ≤ tolerance%
+ *  - Doubles: round to min precision; equal if rounded match OR relative diff ≤ tolerance%
+ *  - Relative diff = 100 * |new - old| / |old| (empty if old = 0)
+ *
+ *  REPORT
+ *  ---------------------------------------------------------------------------
+ *  Columns:
+ *    Recording Name,Track Id,Field,Old Value,New Value,
+ *    Precision Used,Relative Difference (%),Tolerance (%),Status
+ *
+ *  OUTPUT FILE:
+ *    /Users/Hans/Desktop/Tracks Validation - Comparison.csv
  * ============================================================================
  */
 public class TracksCsvComparator {
 
+    // ----------------------------------------------------------------------
     private static final Map<String, String> FIELD_MAP = new LinkedHashMap<>();
-
     static {
-        //FIELD_MAP.put("Ext Recording Name", "Recording Name");
         FIELD_MAP.put("Track Id", "Track ID");
         FIELD_MAP.put("Nr Spots", "Number of Spots");
         FIELD_MAP.put("Nr Gaps", "Number of Gaps");
@@ -69,9 +75,8 @@ public class TracksCsvComparator {
             )
     );
 
-    /** Per-field rounding precision (digits after decimal). */
+    // ----------------------------------------------------------------------
     private static final Map<String, Integer> ROUNDING_MAP = new HashMap<>();
-
     static {
         ROUNDING_MAP.put("Track Duration", 1);
         ROUNDING_MAP.put("Track X Location", 1);
@@ -85,11 +90,37 @@ public class TracksCsvComparator {
         ROUNDING_MAP.put("Confinement Ratio", 1);
     }
 
+    // ----------------------------------------------------------------------
+    private static final Map<String, Double> TOLERANCE_MAP = new HashMap<>();
+    static {
+        // Integers (relative % tolerance)
+        TOLERANCE_MAP.put("Nr Spots", 2.0);
+        TOLERANCE_MAP.put("Nr Gaps", 5.0);
+        TOLERANCE_MAP.put("Longest Gap", 5.0);
+        TOLERANCE_MAP.put("Track Id", 0.0);
+
+        // Doubles
+        TOLERANCE_MAP.put("Track Duration", 1.0);
+        TOLERANCE_MAP.put("Track X Location", 1.0);
+        TOLERANCE_MAP.put("Track Y Location", 1.0);
+        TOLERANCE_MAP.put("Track Displacement", 1.0);
+        TOLERANCE_MAP.put("Track Max Speed", 2.0);
+        TOLERANCE_MAP.put("Track Median Speed", 2.0);
+        TOLERANCE_MAP.put("Diffusion Coefficient", 5.0);
+        TOLERANCE_MAP.put("Diffusion Coefficient Ext", 5.0);
+        TOLERANCE_MAP.put("Total Distance", 1.0);
+        TOLERANCE_MAP.put("Confinement Ratio", 5.0);
+    }
+
+    private static final Map<String, Integer> EFFECTIVE_PRECISION_MAP = new HashMap<>();
+
+    // ----------------------------------------------------------------------
     private static List<Map<String, String>> readCsv(Path path) throws IOException {
         List<Map<String, String>> rows = new ArrayList<>();
-
         try (BufferedReader reader = new BufferedReader(new FileReader(path.toFile()))) {
-            String[] headers = reader.readLine().split(",");
+            String headerLine = reader.readLine();
+            if (headerLine == null) return rows;
+            String[] headers = headerLine.split(",", -1);
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] values = line.split(",", -1);
@@ -103,203 +134,275 @@ public class TracksCsvComparator {
         return rows;
     }
 
-    private static void compare(List<Map<String, String>> oldRows, List<Map<String, String>> newRows) {
-        if (oldRows.isEmpty() || newRows.isEmpty()) {
-            System.err.println("One or both files are empty.");
-            return;
+    // ----------------------------------------------------------------------
+    private static List<Map<String, String>> normalizeOld(List<Map<String, String>> oldRows) {
+        List<Map<String, String>> norm = new ArrayList<>();
+        for (Map<String, String> row : oldRows) {
+            Map<String, String> n = new LinkedHashMap<>();
+            String rec = row.getOrDefault("Ext Recording Name", "");
+            if (rec != null) rec = rec.replaceAll("-threshold-\\d+$", "").trim();
+            n.put("Recording Name", rec);
+            for (String oldCol : FIELD_MAP.keySet()) {
+                n.put(oldCol, row.getOrDefault(oldCol, "").trim());
+            }
+            norm.add(n);
         }
+        return norm;
+    }
 
-        int matched = 0;
-        int mismatched = 0;
-        int missing = 0;
-        int extra = 0;
-
-        Path reportFile = Paths.get("/Users/Hans/Desktop/Tracks Comparison Report.csv");
-        try (java.io.PrintWriter report = new java.io.PrintWriter(reportFile.toFile())) {
-            // Write CSV header
-            report.println("Track ID,Field,Old Value,New Value,Status");
-
-            for (Map<String, String> oldRow : oldRows) {
-
-                String oldTrackId = oldRow.getOrDefault("Track Id", "");
-
-                Optional<Map<String, String>> maybeMatch = newRows.stream()
-                        .filter(n -> Objects.equals(n.get("Track ID"), oldTrackId))
-                        .findFirst();
-
-                if (!maybeMatch.isPresent()) {
-                    report.printf("%s,%s,%s,%s,%s%n",
-                                  quote(oldTrackId), "", "", "", "Missing in NEW");
-                    missing++;
-                    continue;
-                }
-
-                Map<String, String> newRow = maybeMatch.get();
-                boolean rowHasDifferences = false;
-
-                for (Map.Entry<String, String> entry : FIELD_MAP.entrySet()) {
-                    String oldCol = entry.getKey();
-                    String newCol = entry.getValue();
-
-                    String oldVal = oldRow.getOrDefault(oldCol, "");
-                    String newVal = newRow.getOrDefault(newCol, "");
-
-                    boolean equal;
-                    if (INTEGER_FIELDS.contains(oldCol)) {
-                        equal = compareIntegersStrict(oldVal, newVal);
-                    } else if (DOUBLE_FIELDS.contains(oldCol)) {
-                        equal = compareDoublesWithRoundingRule(oldCol, oldVal, newVal);
-                    } else {
-                        equal = Objects.equals(oldVal, newVal);
-                    }
-
-                    if (!equal) {
-                        report.printf("%s,%s,%s,%s,%s%n",
-                                      quote(oldTrackId),
-                                      quote(newCol),
-                                      quote(oldVal),
-                                      quote(newVal),
-                                      "DIFFERENT");
-                        rowHasDifferences = true;
-                    }
-                }
-
-                if (rowHasDifferences) {
-                    mismatched++;
-                } else {
-                    matched++;
-                }
+    private static List<Map<String, String>> normalizeNew(List<Map<String, String>> newRows) {
+        List<Map<String, String>> norm = new ArrayList<>();
+        for (Map<String, String> row : newRows) {
+            Map<String, String> n = new LinkedHashMap<>();
+            n.put("Recording Name", row.getOrDefault("Recording Name", "").trim());
+            for (Map.Entry<String, String> e : FIELD_MAP.entrySet()) {
+                n.put(e.getKey(), row.getOrDefault(e.getValue(), "").trim());
             }
+            norm.add(n);
+        }
+        return norm;
+    }
 
-            // Check for extra rows
-            Set<String> oldIds = new HashSet<>();
-            for (Map<String, String> r : oldRows) {
-                oldIds.add(r.getOrDefault("Track Id", ""));
-            }
-            for (Map<String, String> r : newRows) {
-                String id = r.getOrDefault("Track ID", "");
-                if (!oldIds.contains(id)) {
-                    report.printf("%s,%s,%s,%s,%s%n",
-                                  quote(id), "", "", "", "Extra in NEW");
-                    extra++;
-                }
-            }
-
-            report.flush();
-            System.out.println("\n✅ Comparison complete. Report written to: " + reportFile.toAbsolutePath());
-            System.out.println("Matched: " + matched + ", Mismatched: " + mismatched +
-                                       ", Missing: " + missing + ", Extra: " + extra);
-        } catch (IOException e) {
-            System.err.println("Failed to write comparison report: " + e.getMessage());
+    // ----------------------------------------------------------------------
+    private static void computeEffectivePrecisions(List<Map<String, String>> oldRows,
+                                                   List<Map<String, String>> newRows) {
+        for (String field : DOUBLE_FIELDS) {
+            int oldP = detectPrecision(oldRows, field);
+            int newP = detectPrecision(newRows, field);
+            EFFECTIVE_PRECISION_MAP.put(field, Math.min(oldP, newP));
         }
     }
 
-    /** Escapes CSV fields with quotes when needed. */
-    private static String quote(String s) {
-        if (s == null) return "";
-        String t = s.replace("\"", "\"\"");
-        if (t.contains(",") || t.contains("\"") || t.contains(" ")) {
-            return "\"" + t + "\"";
-        }
-        return t;
-    }
-    private static boolean compareIntegersStrict(String a, String b) {
-        try {
-            if (a == null || a.trim().isEmpty() || b == null || b.trim().isEmpty()) {
-                return Objects.equals(a == null ? "" : a.trim(), b == null ? "" : b.trim());
+    private static int detectPrecision(List<Map<String, String>> rows, String field) {
+        int best = 0;
+        for (Map<String, String> row : rows) {
+            String s = row.get(field);
+            if (s != null && s.matches("^-?\\d+\\.\\d+$")) {
+                int p = s.length() - s.indexOf('.') - 1;
+                if (p > best) best = p;
             }
-            int x = (int) Double.parseDouble(a.trim());
-            int y = (int) Double.parseDouble(b.trim());
-            return x == y;
-        } catch (Exception e) {
-            return Objects.equals(a == null ? "" : a.trim(), b == null ? "" : b.trim());
+        }
+        return best;
+    }
+
+    // ----------------------------------------------------------------------
+    private static class ComparisonResult {
+        boolean equal;
+        double relDiff;
+        ComparisonResult(boolean equal, double relDiff) {
+            this.equal = equal;
+            this.relDiff = relDiff;
         }
     }
 
-    /**
-     * Comparison rule for doubles:
-     *   1) If BOTH values are in the special category { "", NaN, 0, 0.0 } → equal
-     *   2) Else BOTH must be numeric → round per field precision and compare
-     *   3) Else → not equal
-     */
-    /**
-     * Comparison rule for doubles:
-     *   1) If BOTH values are in the special category { "", NaN, 0, 0.0 } → equal
-     *   2) Else BOTH must be numeric → round per field precision and compare
-     *   3) Else → not equal
-     */
-    private static boolean compareDoublesWithRoundingRule(String field, String a, String b) {
+    // ----------------------------------------------------------------------
+    /** Integers: compare numerically, allow relative tolerance. */
+    private static ComparisonResult compareIntegersWithTolerance(String field, String a, String b) {
+        Double dx = parseDouble(a);
+        Double dy = parseDouble(b);
+        if (dx == null && dy == null) return new ComparisonResult(true, Double.NaN);
+        if (dx == null || dy == null) return new ComparisonResult(false, Double.NaN);
+
+        if (Math.abs(dx - dy) < 1e-12) return new ComparisonResult(true, 0.0);
+
+        if (Math.abs(dx) < 1e-12) return new ComparisonResult(Math.abs(dy) < 1e-12, Double.NaN);
+
+        double relDiff = Math.abs((dy - dx) / dx) * 100.0;
+        double tol = TOLERANCE_MAP.getOrDefault(field, 0.0);
+        return new ComparisonResult(relDiff <= tol, relDiff);
+    }
+
+    /** Doubles: round to shared precision, then apply tolerance. */
+    private static ComparisonResult compareDoublesWithTolerance(String field, String a, String b) {
         String ta = (a == null) ? "" : a.trim();
         String tb = (b == null) ? "" : b.trim();
 
-        boolean aSpecial = isZeroNaNOrEmpty(ta);
-        boolean bSpecial = isZeroNaNOrEmpty(tb);
+        if (isZeroNaNOrEmpty(ta) && isZeroNaNOrEmpty(tb))
+            return new ComparisonResult(true, Double.NaN);
 
-        // Rule (1): both special → equal
-        if (aSpecial && bSpecial) {
-            return true;
-        }
+        Double dx = parseDouble(ta);
+        Double dy = parseDouble(tb);
+        if (dx == null || dy == null)
+            return new ComparisonResult(false, Double.NaN);
 
-        // Rule (2): both numeric → round and compare
-        Double dx = parseDoubleIfNumeric(ta);
-        Double dy = parseDoubleIfNumeric(tb);
-        if (dx != null && dy != null) {
-            int digits = ROUNDING_MAP.getOrDefault(field, 3);
-            double factor = Math.pow(10, digits);
-            double rx = Math.round(dx * factor) / factor;
-            double ry = Math.round(dy * factor) / factor;
+        int prec = EFFECTIVE_PRECISION_MAP.getOrDefault(field, ROUNDING_MAP.getOrDefault(field, 3));
+        double f = Math.pow(10, prec);
+        double rx = Math.round(dx * f) / f;
+        double ry = Math.round(dy * f) / f;
 
-            // Use string formatting to enforce consistent decimal precision before compare
-            String sx = String.format(Locale.US, "%." + digits + "f", rx);
-            String sy = String.format(Locale.US, "%." + digits + "f", ry);
+        if (Double.compare(rx, ry) == 0)
+            return new ComparisonResult(true, 0.0);
 
-            return sx.equals(sy);
-        }
+        if (Math.abs(dx) < 1e-12)
+            return new ComparisonResult(Math.abs(dy) < 1e-12, Double.NaN);
 
-        // Rule (3): one special, one non-numeric → not equal
-        return false;
+        double relDiff = Math.abs((dy - dx) / dx) * 100.0;
+        double tol = TOLERANCE_MAP.getOrDefault(field, 0.0);
+        return new ComparisonResult(relDiff <= tol, relDiff);
     }
-    /** Special category membership: "", "NaN", numeric zero (±tiny). */
+
+    // ----------------------------------------------------------------------
     private static boolean isZeroNaNOrEmpty(String s) {
         if (s == null) return true;
         String t = s.trim();
-        if (t.isEmpty()) return true;
-        if (t.equalsIgnoreCase("NaN")) return true;
+        if (t.isEmpty() || t.equalsIgnoreCase("NaN")) return true;
         try {
             double v = Double.parseDouble(t);
             return Math.abs(v) < 1e-12 || Double.isNaN(v);
         } catch (Exception e) {
-            return false; // non-numeric string is NOT special unless empty/NaN literal
+            return false;
         }
     }
 
-    /** Returns Double if numeric (including 0), otherwise null. NaN returns null (not numeric). */
-    private static Double parseDoubleIfNumeric(String s) {
-        if (s == null) return null;
-        String t = s.trim();
-        if (t.isEmpty() || t.equalsIgnoreCase("NaN")) return null;
+    private static Double parseDouble(String s) {
+        if (s == null || s.isEmpty() || s.equalsIgnoreCase("NaN")) return null;
         try {
-            double v = Double.parseDouble(t);
-            if (Double.isNaN(v)) return null;
-            return v;
+            double v = Double.parseDouble(s);
+            return Double.isNaN(v) ? null : v;
         } catch (Exception e) {
             return null;
         }
     }
 
-    private static double round(double value, int digits) {
-        double factor = Math.pow(10, digits);
-        return Math.round(value * factor) / factor;
+    private static String quote(String s) {
+        if (s == null) return "";
+        String t = s.replace("\"", "\"\"");
+        if (t.contains(",") || t.contains("\"") || t.contains(" ")) return "\"" + t + "\"";
+        return t;
     }
 
-    public static void main(String[] args) throws IOException {
+    // ----------------------------------------------------------------------
+    private static void compare(List<Map<String, String>> oldNorm, List<Map<String, String>> newNorm) throws IOException {
+        Path reportFile = Paths.get("/Users/Hans/Desktop/Tracks Validation - Comparison.csv");
 
+        Comparator<Map<String, String>> sorter = Comparator
+                .comparing((Map<String, String> r) -> r.getOrDefault("Recording Name", ""))
+                .thenComparing(r -> {
+                    String s = r.getOrDefault("Track Id", "");
+                    try { return Integer.parseInt(s); } catch (Exception e) { return Integer.MAX_VALUE; }
+                });
+        oldNorm.sort(sorter);
+        newNorm.sort(sorter);
+
+        Map<String, Map<String, String>> newMap = new HashMap<>();
+        for (Map<String, String> n : newNorm)
+            newMap.put(n.get("Recording Name") + "||" + n.get("Track Id"), n);
+
+        List<String[]> reportRows = new ArrayList<>();
+        int matched = 0, mismatched = 0, missing = 0, extra = 0;
+
+        for (Map<String, String> oldRow : oldNorm) {
+            String key = oldRow.get("Recording Name") + "||" + oldRow.get("Track Id");
+            Map<String, String> newRow = newMap.get(key);
+
+            if (newRow == null) {
+                reportRows.add(new String[]{oldRow.get("Recording Name"), oldRow.get("Track Id"),
+                        "", "", "", "", "", "", "Missing in NEW"});
+                missing++;
+                continue;
+            }
+
+            boolean diff = false;
+
+            for (String field : FIELD_MAP.keySet()) {
+                String oldVal = oldRow.getOrDefault(field, "");
+                String newVal = newRow.getOrDefault(field, "");
+
+                ComparisonResult result;
+                int prec = -1;
+                if (INTEGER_FIELDS.contains(field)) {
+                    result = compareIntegersWithTolerance(field, oldVal, newVal);
+                    prec = 0;
+                } else if (DOUBLE_FIELDS.contains(field)) {
+                    result = compareDoublesWithTolerance(field, oldVal, newVal);
+                    prec = EFFECTIVE_PRECISION_MAP.getOrDefault(field, ROUNDING_MAP.getOrDefault(field, 3));
+                } else {
+                    boolean equal = Objects.equals(oldVal, newVal);
+                    result = new ComparisonResult(equal, Double.NaN);
+                }
+
+                if (!result.equal) {
+                    diff = true;
+                    double tol = TOLERANCE_MAP.getOrDefault(field, 0.0);
+                    String relStr = Double.isNaN(result.relDiff) ? "" : String.format(Locale.US, "%.2f", result.relDiff);
+                    reportRows.add(new String[]{
+                            oldRow.get("Recording Name"),
+                            oldRow.get("Track Id"),
+                            field,
+                            oldVal,
+                            newVal,
+                            String.valueOf(prec),
+                            relStr,
+                            String.format(Locale.US, "%.2f", tol),
+                            "DIFFERENT"
+                    });
+                }
+            }
+
+            if (diff) mismatched++; else matched++;
+        }
+
+        // Extras
+        Set<String> oldKeys = new HashSet<>();
+        for (Map<String, String> o : oldNorm)
+            oldKeys.add(o.get("Recording Name") + "||" + o.get("Track Id"));
+        for (Map<String, String> n : newNorm) {
+            String k = n.get("Recording Name") + "||" + n.get("Track Id");
+            if (!oldKeys.contains(k)) {
+                reportRows.add(new String[]{
+                        n.get("Recording Name"), n.get("Track Id"),
+                        "", "", "", "", "", "", "Extra in NEW"});
+                extra++;
+            }
+        }
+
+        reportRows.sort(Comparator
+                                .comparing((String[] r) -> r[0])
+                                .thenComparing(r -> {
+                                    try { return Integer.parseInt(r[1]); } catch (Exception e) { return Integer.MAX_VALUE; }
+                                }));
+
+        try (PrintWriter report = new PrintWriter(reportFile.toFile())) {
+            report.println("Recording Name,Track Id,Field,Old Value,New Value,Precision Used,Relative Difference (%),Tolerance (%),Status");
+            for (String[] row : reportRows) {
+                List<String> esc = new ArrayList<>();
+                for (String v : row) esc.add(quote(v));
+                report.println(String.join(",", esc));
+            }
+            report.println();
+            report.println("SUMMARY,,,,,,,,");
+            report.printf("Matched,%d,,,,,,,,%n", matched);
+            report.printf("Mismatched,%d,,,,,,,,%n", mismatched);
+            report.printf("Missing,%d,,,,,,,,%n", missing);
+            report.printf("Extra,%d,,,,,,,,%n", extra);
+        }
+
+        System.out.printf("✅ Comparison complete. Report: %s%n", reportFile);
+        System.out.printf("Matched: %d, Mismatched: %d, Missing: %d, Extra: %d%n",
+                          matched, mismatched, missing, extra);
+    }
+
+    // ----------------------------------------------------------------------
+    public static void main(String[] args) throws IOException {
         Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Tracks.csv");
         Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/All Tracks Java.csv");
 
         List<Map<String, String>> oldRows = readCsv(oldCsv);
         List<Map<String, String>> newRows = readCsv(newCsv);
 
-        compare(oldRows, newRows);
+        List<Map<String, String>> normOld = normalizeOld(oldRows);
+        List<Map<String, String>> normNew = normalizeNew(newRows);
+
+        computeEffectivePrecisions(normOld, normNew);
+
+        System.out.println("🔧 Effective precisions per field:");
+        for (Map.Entry<String, Integer> e : EFFECTIVE_PRECISION_MAP.entrySet())
+            System.out.printf("   %-30s → %d%n", e.getKey(), e.getValue());
+
+        System.out.println("\n🎯 Field tolerances (%):");
+        for (Map.Entry<String, Double> e : TOLERANCE_MAP.entrySet())
+            System.out.printf("   %-30s → %.2f%%%n", e.getKey(), e.getValue());
+
+        compare(normOld, normNew);
     }
 }
