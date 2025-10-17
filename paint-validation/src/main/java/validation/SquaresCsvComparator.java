@@ -407,38 +407,6 @@ public class SquaresCsvComparator {
         return s;
     }
 
-    // ----------------------------------------------------------------------
-    public static void main(String[] args) throws IOException {
-        Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Squares.csv");
-        Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/All Squares Java.csv");
-
-        List<Map<String, String>> oldRows = readCsv(oldCsv);
-        List<Map<String, String>> newRows = readCsv(newCsv);
-
-        List<Map<String, String>> normOld = normalizeOld(oldRows);
-        List<Map<String, String>> normNew = normalizeNew(newRows);
-
-        Path normOldPath = Paths.get("/Users/Hans/Desktop/Squares Validation - All Squares Python Normalized.csv");
-        Path normNewPath = Paths.get("/Users/Hans/Desktop/Squares Validation - All Squares Java Normalized.csv");
-
-        // Effective precision must be computed BEFORE writing normalized CSVs (so rounding matches)
-        EFFECTIVE_PRECISION_MAP.putAll(computeEffectivePrecisions(normOld, normNew, DOUBLE_FIELDS));
-
-        System.out.println("🔍 Effective precisions per field:");
-        for (Map.Entry<String, Integer> e : EFFECTIVE_PRECISION_MAP.entrySet()) {
-            System.out.printf("   %-35s → %d%n", e.getKey(), e.getValue());
-        }
-
-        writeCsv(normOld, normOldPath);
-        writeCsv(normNew, normNewPath);
-
-        System.out.println("🧩 Normalized files written:");
-        System.out.println("   - " + normOldPath);
-        System.out.println("   - " + normNewPath);
-
-        compare(normOld, normNew);
-        writeSelectedOverview(normOld, normNew);
-    }
 
     // ----------------------------------------------------------------------
     private static void compare(List<Map<String, String>> oldNorm, List<Map<String, String>> newNorm) throws IOException {
@@ -647,4 +615,38 @@ public class SquaresCsvComparator {
 
         System.out.printf("📊 Selected overview written: %s%n", overviewFile);
     }
+
+    // ----------------------------------------------------------------------
+    public static void main(String[] args) throws IOException {
+        Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Squares.csv");
+        Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/All Squares Java.csv");
+
+        List<Map<String, String>> oldRows = readCsv(oldCsv);
+        List<Map<String, String>> newRows = readCsv(newCsv);
+
+        List<Map<String, String>> normOld = normalizeOld(oldRows);
+        List<Map<String, String>> normNew = normalizeNew(newRows);
+
+        Path normOldPath = Paths.get("/Users/Hans/Desktop/Squares Validation - All Squares Python Normalized.csv");
+        Path normNewPath = Paths.get("/Users/Hans/Desktop/Squares Validation - All Squares Java Normalized.csv");
+
+        // Effective precision must be computed BEFORE writing normalized CSVs (so rounding matches)
+        EFFECTIVE_PRECISION_MAP.putAll(computeEffectivePrecisions(normOld, normNew, DOUBLE_FIELDS));
+
+        System.out.println("🔍 Effective precisions per field:");
+        for (Map.Entry<String, Integer> e : EFFECTIVE_PRECISION_MAP.entrySet()) {
+            System.out.printf("   %-35s → %d%n", e.getKey(), e.getValue());
+        }
+
+        writeCsv(normOld, normOldPath);
+        writeCsv(normNew, normNewPath);
+
+        System.out.println("🧩 Normalized files written:");
+        System.out.println("   - " + normOldPath);
+        System.out.println("   - " + normNewPath);
+
+        compare(normOld, normNew);
+        writeSelectedOverview(normOld, normNew);
+    }
+
 }
