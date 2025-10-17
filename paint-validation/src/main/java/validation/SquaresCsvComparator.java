@@ -247,7 +247,7 @@ public class SquaresCsvComparator {
     // NORMALIZATION + PRECISION
     // ----------------------------------------------------------------------
 
-    private static List<Map<String,String>> normalizeOld(List<Map<String,String>> oldRows){
+    public static List<Map<String,String>> normalizeOld(List<Map<String,String>> oldRows){
         List<Map<String,String>> out = new ArrayList<>();
         for (Map<String,String> r: oldRows){
             Map<String,String> n = new LinkedHashMap<>();
@@ -268,7 +268,7 @@ public class SquaresCsvComparator {
         return out;
     }
 
-    private static List<Map<String,String>> normalizeNew(List<Map<String,String>> newRows){
+    public static List<Map<String,String>> normalizeNew(List<Map<String,String>> newRows){
         List<Map<String,String>> out = new ArrayList<>();
         for (Map<String,String> r: newRows){
             Map<String,String> n = new LinkedHashMap<>();
