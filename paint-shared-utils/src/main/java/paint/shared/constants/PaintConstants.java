@@ -65,6 +65,7 @@ public final class PaintConstants {
     public static final double TIME_INTERVAL            = 0.05;                    // The time between images (in seconds)
     public static final double FRAMES                   = 2000;                    // The number of images in a recording
     public static final double RECORDING_DURATION       = FRAMES * TIME_INTERVAL;  // The timespan of a recording
+    // TODO These should ge json parameters
 
     // @formatter:on
 

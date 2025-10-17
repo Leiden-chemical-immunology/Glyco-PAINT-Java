@@ -394,6 +394,7 @@ public class GenerateSquareCalcs {
                 double variability = calcVariability(tracksInSquareTable, squareNumber, numberOfSquaresInRecording, 10);    //TODO
                 square.setVariability(round(variability, lowPrecision));
 
+                // TODO Need to have this parameterised
                 double density = calculateDensity(tracksInSquare.size(), area, RECORDING_DURATION, concentration);
                 square.setDensity(round(density, veryHighPrecison));
 
