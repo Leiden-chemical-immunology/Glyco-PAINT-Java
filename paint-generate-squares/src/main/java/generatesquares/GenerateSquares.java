@@ -155,7 +155,9 @@ public class GenerateSquares {
                 ValidationResult validateResult = validateExperiments(
                         projectPath,
                         project.experimentNames,
-                        Arrays.asList(EXPERIMENT_INFO_CSV, RECORDING_CSV)
+                        Arrays.asList(EXPERIMENT_INFO_CSV,
+                                      RECORDING_CSV,
+                                      TRACK_CSV)
                 );
 
                 if (!validateResult.isValid()) {
