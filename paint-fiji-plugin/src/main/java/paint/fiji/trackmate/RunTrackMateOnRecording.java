@@ -19,6 +19,7 @@ import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.objects.ExperimentInfo;
 import paint.shared.utils.PaintLogger;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -184,13 +185,17 @@ public class RunTrackMateOnRecording {
             return cancelEarly(imp);
         }
 
-        int numberSpots = model.getSpots().getNSpots(false);
-        if (numberSpots > trackMateConfig.getMaxNrSpotsInImage()) {
+        int numberOfSpots = model.getSpots().getNSpots(false);
+        if (numberOfSpots > trackMateConfig.getMaxNrSpotsInImage()) {
             if (!isCancelled(Thread.currentThread(), dialog)) {
                 PaintLogger.warningf("   Trackmate - Too many spots detected (%d). Limit is %d.",
-                                     numberSpots, trackMateConfig.getMaxNrSpotsInImage());
+                                     numberOfSpots, trackMateConfig.getMaxNrSpotsInImage());
             }
             return cancelEarly(imp);
+        }
+        else {
+            String numberOfSpotsString = " (" +  numberOfSpots + " spots detected)";
+            PaintLogger.raw(numberOfSpotsString);
         }
 
         if (isCancelled(Thread.currentThread(), dialog)) {
