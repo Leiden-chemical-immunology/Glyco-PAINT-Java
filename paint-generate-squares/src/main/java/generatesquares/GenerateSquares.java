@@ -193,10 +193,18 @@ public class GenerateSquares {
 
                 // --- Step 6: Concatenate experiment CSVs into a project-level summary ---
                 try {
-                    // TODO Check
+                    PaintLogger.infof("Creating project level All Squares");
                     concatenateNamedCsvFiles(projectPath, SQUARE_CSV, project.experimentNames);
+
+                    PaintLogger.infof("Creating project level All Recordings");
                     concatenateNamedCsvFiles(projectPath, RECORDING_CSV, project.experimentNames);
+
+                    PaintLogger.infof("Creating project level Experiment Info");
                     concatenateNamedCsvFiles(projectPath, EXPERIMENT_INFO_CSV, project.experimentNames);
+
+                    PaintLogger.infof("Creating project level All Tracks");
+                    concatenateNamedCsvFiles(projectPath, TRACK_CSV, project.experimentNames);
+
                     Duration duration = Duration.between(start, LocalDateTime.now());
                     PaintLogger.infof("Generated squares info for all selected experiments in %s", formatDuration(duration));
                 } catch (Exception e) {
