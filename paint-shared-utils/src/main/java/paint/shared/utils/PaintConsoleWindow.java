@@ -8,6 +8,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PaintConsoleWindow {
 
@@ -15,6 +17,9 @@ public class PaintConsoleWindow {
     private static JTextPane textPane;
     private static StyledDocument doc;
     private static JCheckBox scrollLock;
+
+    private static final List<Integer> problemPositions = new ArrayList<>();
+    private static int currentProblemIndex = -1;
 
     // --- Public API ---
 
@@ -53,6 +58,8 @@ public class PaintConsoleWindow {
                 textPane = null;
                 doc = null;
                 scrollLock = null;
+                problemPositions.clear();
+                currentProblemIndex = -1;
             });
         }
     }
@@ -112,14 +119,18 @@ public class PaintConsoleWindow {
 
         JPanel controlPanel = new JPanel(new BorderLayout());
         scrollLock = new JCheckBox("Scroll Lock");
+        scrollLock.addActionListener(e -> updateTitleForScrollLock(scrollLock.isSelected()));
         controlPanel.add(scrollLock, BorderLayout.WEST);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton highlightButton = new JButton("Highlight Problems");
+        highlightButton.addActionListener(e -> highlightProblemsOrNext());
         JButton saveButton = new JButton("Save");
         JButton closeButton = new JButton("Close");
         saveButton.addActionListener(PaintConsoleWindow::saveConsoleContent);
         closeButton.addActionListener(e -> close());
 
+        buttonPanel.add(highlightButton);
         buttonPanel.add(saveButton);
         buttonPanel.add(closeButton);
         controlPanel.add(buttonPanel, BorderLayout.EAST);
@@ -154,8 +165,92 @@ public class PaintConsoleWindow {
                 writer.write(textPane.getText());
                 JOptionPane.showMessageDialog(frame, "Console saved to " + file.getAbsolutePath());
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(frame, "Failed to save file:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Failed to save file:\n" + ex.getMessage(),
+                                              "Error", JOptionPane.ERROR_MESSAGE);
             }
+        }
+    }
+
+    // --- Problem highlighting and navigation ---
+
+    private static void highlightProblemsOrNext() {
+        if (scrollLock != null && !scrollLock.isSelected()) {
+            scrollLock.setSelected(true);
+            updateTitleForScrollLock(true);
+        }
+
+        if (problemPositions.isEmpty()) {
+            // First click: find and highlight
+            highlightProblems();
+            if (!problemPositions.isEmpty()) {
+                currentProblemIndex = 0;
+                selectProblem(problemPositions.get(currentProblemIndex));
+            } else {
+                JOptionPane.showMessageDialog(frame, "No problems found (error, warning, exception).");
+            }
+        } else {
+            // Subsequent clicks: move to next match
+            currentProblemIndex++;
+            if (currentProblemIndex >= problemPositions.size()) {
+                currentProblemIndex = 0; // wrap around
+            }
+            selectProblem(problemPositions.get(currentProblemIndex));
+        }
+    }
+
+    private static void highlightProblems() {
+        Highlighter highlighter = textPane.getHighlighter();
+        highlighter.removeAllHighlights();
+        problemPositions.clear();
+        currentProblemIndex = -1;
+
+        String text = textPane.getText().toLowerCase();
+
+        highlightPattern(text, "ERROR", Color.PINK);
+        highlightPattern(text, "WARN", Color.ORANGE);
+        // highlightPattern(text, "exception", Color.RED);
+    }
+
+    private static void highlightPattern(String fullText, String keyword, Color color) {
+        int index = fullText.indexOf(keyword);
+        while (index >= 0) {
+            try {
+                textPane.getHighlighter().addHighlight(
+                        index,
+                        index + keyword.length(),
+                        new DefaultHighlighter.DefaultHighlightPainter(color)
+                );
+                problemPositions.add(index);
+                index = fullText.indexOf(keyword, index + keyword.length());
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+                break;
+            }
+        }
+    }
+
+    private static void selectProblem(int pos) {
+        textPane.requestFocus();
+        textPane.setCaretPosition(pos);
+        textPane.select(pos, pos + 1);
+
+        // Ensure the selected problem is visible
+        try {
+            Rectangle viewRect = textPane.modelToView(pos);
+            if (viewRect != null) textPane.scrollRectToVisible(viewRect);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void updateTitleForScrollLock(boolean locked) {
+        if (frame == null) return;
+        String baseTitle = frame.getTitle();
+        baseTitle = baseTitle.replace(" [Scroll Locked]", "");
+        if (locked) {
+            frame.setTitle(baseTitle + " [Scroll Locked]");
+        } else {
+            frame.setTitle(baseTitle);
         }
     }
 }
