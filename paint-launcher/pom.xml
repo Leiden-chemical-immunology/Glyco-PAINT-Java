@@ -13,7 +13,7 @@
     </parent>
 
     <artifactId>paint-launcher</artifactId>
-    <name>PAINT Launcher</name>
+    <name>Paint Launcher</name>
     <description>Central launcher for all PAINT desktop modules</description>
     <packaging>jar</packaging>
 
