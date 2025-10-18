@@ -3,6 +3,7 @@ package paint.shared.validate;
 import paint.shared.utils.PaintLogger;
 
 import java.io.File;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -100,10 +101,92 @@ public class ValidationHandler {
     }
 
     public static void main(String[] args) {
-        Path projectPath = Paths.get("/Users/hans/JavaPaintProjects/paint-shared-utils/src/test/resources/Paint Test Experiment Error");
+
+        Path projectPath = Paths.get("/Users/hans/Paint Test Project");
+        //validateAll(projectPath);
+
+        testCase2(projectPath);
+    }
+
+    public static void validateExperiment(Path projectPath, List<String> experimentNames) {
+
+        List<String> fileNames = Arrays.asList(
+                "Experiment Info.csv",
+                "All Recordings Java.csv",
+                "All Squares Java.csv");
+
+        validate(projectPath, experimentNames, fileNames);
+
+    }
+
+    public static void validateAll(Path projectPath) {
+
+        PaintLogger.initialise(projectPath, "Validate");
+
+        List<String> experimentNames = new ArrayList<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(projectPath)) {
+            for (Path p : stream) {
+                if (Files.isDirectory(p)) {
+                    experimentNames.add(p.getFileName().toString());
+                }
+            }
+        } catch (Exception e) {
+            return;
+        }
+        experimentNames.sort(String::compareTo);
+
+        List<String> fileNames = Arrays.asList(
+                "Experiment Info.csv",
+                "All Recordings Java.csv",
+                "All Squares Java.csv");
+
+        validate(projectPath, experimentNames, fileNames);
+    }
+
+
+    public static void validate(Path projectPath, List<String> experimentNames, List<String> fileNames) {
+
+        PaintLogger.infof("Validating experiments: %s", experimentNames);
+        PaintLogger.infof();
+        PaintLogger.infof("Validating files: %s", fileNames);
+        PaintLogger.infof();
+        ValidationResult validateResult = validateExperiments(projectPath, experimentNames, fileNames);
+        if (!validateResult.isValid()) {
+            for (String line : validateResult.getReport().split("\n")) {
+                PaintLogger.errorf(line);
+            }
+        } else {
+            PaintLogger.infof("No errors");
+        }
+
+    }
+
+
+
+    public static void testCase2(Path projectPath) {
 
         PaintLogger.initialise(projectPath, "Test");
-        List<String> experiments = Arrays.asList(
+        List<String> experimentNames = Arrays.asList(
+                "221012",
+                "221101",
+                "221108"
+                );
+
+        List<String> fileNames = Arrays.asList(
+                "Experiment Info.csv",
+                "All Recordings Java.csv",
+                "All Squares Java.csv",
+                "All Tracks Java.csv"
+        );
+        validate(projectPath, experimentNames, fileNames);
+    }
+
+
+    public static void testCase1(Path projectPath) {
+
+        PaintLogger.initialise(projectPath, "Test");
+
+        List<String> experimentNames = Arrays.asList(
                 "221012 Experiment Info Test 0",
                 "221012 Experiment Info Test 1",
                 "221012 Experiment Info Test 2",
@@ -114,27 +197,10 @@ public class ValidationHandler {
 
         List<String> fileNames = Arrays.asList(
                 "Experiment Info.csv",
-                "All Recordings Java.csv"
+                "All Recordings Java.csv",
+                "All Squares Java.csv",
+                "All Tracks Java.csv"
         );
-
-        ValidationResult validateResult = validateExperiments(projectPath, experiments, fileNames);
-        for (String line : validateResult.getReport().split("\n")) {
-            PaintLogger.errorf(line);
-        }
-
-        System.out.println();
-        System.out.println();
-
-        // A Set of experiments without errors
-        experiments = Arrays.asList(
-                "221012 Experiment Info Test 0",
-                "221012 Experiment Info Test 0",
-                "221012 Experiment Info Test 0"
-        );
-
-        validateResult = validateExperiments(projectPath, experiments, fileNames);
-        for (String line : validateResult.getReport().split("\n")) {
-            PaintLogger.errorf(line);
-        }
+        validate(projectPath, experimentNames, fileNames);
     }
 }
