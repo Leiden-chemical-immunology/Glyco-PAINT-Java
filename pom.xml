@@ -75,6 +75,7 @@
         <module>paint-get-omero</module>
         <module>paint-launcher</module>
         <module>paint-validation</module>
+        <module>paint-regression</module>
     </modules>
 
     <properties>

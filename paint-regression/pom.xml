@@ -12,9 +12,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>paint-validation</artifactId>
-    <name>PAINT Validation</name>
-    <description>Central validation for all PAINT desktop modules</description>
+    <artifactId>paint-regression</artifactId>
+    <name>PAINT Regression</name>
+    <description>Regression for all Squares and Tracks</description>
     <packaging>jar</packaging>
 
     <dependencies>

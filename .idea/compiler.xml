@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="paint-launcher" />
+        <module name="paint-regression" />
         <module name="paint-integrated-fiji" />
         <module name="paint-fiji-plugin" />
         <module name="paint-shared-utils" />
