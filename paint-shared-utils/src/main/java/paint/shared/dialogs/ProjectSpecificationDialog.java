@@ -300,14 +300,15 @@ public class ProjectSpecificationDialog {
 
                         SwingUtilities.invokeLater(() -> {
                             setInputsEnabled(true);
-                            if (success && !cancelled) {
-                                okButton.setEnabled(false);
-                                JOptionPane.showMessageDialog(dialog,
-                                                              "Calculations finished successfully!");
-                            } else if (!cancelled) {
-                                updateOkButtonState();
-                                JOptionPane.showMessageDialog(dialog,
-                                                              "Calculations finished with errors. Please check the log.");
+                            if (!cancelled) {
+                                okButton.setEnabled(false);  // disable always, success or failure
+                                if (success) {
+                                    JOptionPane.showMessageDialog(dialog,
+                                                                  "Calculations finished successfully!");
+                                } else {
+                                    JOptionPane.showMessageDialog(dialog,
+                                                                  "Calculations finished with errors. Please check the log.");
+                                }
                             }
                         });
                     } catch (Exception ex1) {
