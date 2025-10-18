@@ -26,7 +26,7 @@ public class PaintLauncher {
 
 
     private static void createAndShowGUI() {
-        JFrame frame = new JFrame("PAINT Launcher");
+        JFrame frame = new JFrame("Glyco-PAINT Launcher");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(420, 600);
         frame.setResizable(false);
@@ -44,7 +44,7 @@ public class PaintLauncher {
         root.setBackground(bg);
         root.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        JLabel title = new JLabel("PAINT Launcher", SwingConstants.CENTER);
+        JLabel title = new JLabel("Glyco-PAINT Launcher", SwingConstants.CENTER);
         title.setForeground(fg);
         title.setFont(new Font("SansSerif", Font.BOLD, 20));
         title.setBorder(new EmptyBorder(0, 0, 20, 0));
