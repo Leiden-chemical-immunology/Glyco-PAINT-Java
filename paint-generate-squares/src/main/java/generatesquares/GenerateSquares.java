@@ -44,7 +44,7 @@ import java.util.Arrays;
 import static generatesquares.calc.GenerateSquareCalcs.generateSquaresForExperiment;
 import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.io.ProjectDataLoader.loadExperiment;
-import static paint.shared.utils.CsvConcatenator.concatenateExperimentCsvFiles;
+import static paint.shared.utils.CsvConcatenator.concatenateNamedCsvFiles;
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.validate.ValidationHandler.validateExperiments;
@@ -191,7 +191,10 @@ public class GenerateSquares {
 
                 // --- Step 6: Concatenate experiment CSVs into a project-level summary ---
                 try {
-                    concatenateExperimentCsvFiles(projectPath, SQUARE_CSV, project.experimentNames);
+                    // TODO Check
+                    concatenateNamedCsvFiles(projectPath, SQUARE_CSV, project.experimentNames);
+                    concatenateNamedCsvFiles(projectPath, RECORDING_CSV, project.experimentNames);
+                    concatenateNamedCsvFiles(projectPath, EXPERIMENT_INFO_CSV, project.experimentNames);
                     Duration duration = Duration.between(start, LocalDateTime.now());
                     PaintLogger.infof("Generated squares info for all selected experiments in %s", formatDuration(duration));
                 } catch (Exception e) {
