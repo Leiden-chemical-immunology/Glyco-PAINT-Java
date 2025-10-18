@@ -12,10 +12,10 @@
         <module name="paint-fiji-plugin" />
         <module name="paint-shared-utils" />
         <module name="paint-viewer" />
-        <module name="paint-validation" />
         <module name="paint-generate-squares" />
         <module name="paint-create-experiment" />
         <module name="paint-get-omero" />
+        <module name="paint-development-utils" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
