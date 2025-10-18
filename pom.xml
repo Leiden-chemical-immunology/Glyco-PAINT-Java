@@ -74,8 +74,8 @@
         <module>paint-viewer</module>
         <module>paint-get-omero</module>
         <module>paint-launcher</module>
-        <module>paint-validation</module>
         <module>paint-regression</module>
+        <module>paint-development-utils</module>
     </modules>
 
     <properties>
