@@ -126,7 +126,8 @@ public final class ProjectDataLoader {
             recordings = recIO.toEntities(recTable);
             recordings.forEach(experiment::addRecording);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s in %s: %s", RECORDING_CSV, experimentName, friendlyMessage(e));
+            // PaintLogger.errorf("Failed to read %s in %s: %s", RECORDING_CSV, experimentName, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s in %s", RECORDING_CSV, experimentName);
             return null;
         }
 
@@ -142,7 +143,8 @@ public final class ProjectDataLoader {
                     false
             );
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s in %s: %s", TRACK_CSV, experimentName, friendlyMessage(e));
+            //PaintLogger.errorf("Failed to read %s in %s: %s", TRACK_CSV, experimentName, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s in %s", TRACK_CSV, experimentName);
             return null;
         }
 
@@ -168,7 +170,8 @@ public final class ProjectDataLoader {
                         false
                 );
             } catch (Exception e) {
-                PaintLogger.errorf("Failed to read %s in %s: %s", SQUARE_CSV, experimentName, friendlyMessage(e));
+                //PaintLogger.errorf("Failed to read %s in %s: %s", SQUARE_CSV, experimentName, friendlyMessage(e));
+                PaintLogger.errorf("Failed to read %s in %s", SQUARE_CSV, experimentName);
                 return null;
             }
 
