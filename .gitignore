@@ -53,3 +53,4 @@ $RECYCLE.BIN/
 *.env
 *.local
 *.prefsjects/paint-shared-utils/.idea/workspace.xml
+.Rproj.user
