@@ -238,9 +238,15 @@ public class ProjectSpecificationDialog {
 
         SwingUtilities.invokeLater(() -> {
             if (!checkBoxes.isEmpty()) {
-                JCheckBox firstBox = checkBoxes.get(0);
-                Rectangle bounds = firstBox.getBounds();
-                scrollPane.getViewport().scrollRectToVisible(bounds);
+                JCheckBox targetBox = checkBoxes.stream()
+                        .filter(JCheckBox::isSelected)
+                        .findFirst()
+                        .orElse(checkBoxes.get(0)); // fallback if none selected
+
+                Rectangle bounds = targetBox.getBounds();
+                if (bounds != null) {
+                    scrollPane.getViewport().scrollRectToVisible(bounds);
+                }
             }
         });
 
@@ -332,6 +338,26 @@ public class ProjectSpecificationDialog {
         dialog.add(buttonPanel, BorderLayout.SOUTH);
 
         dialog.pack();
+
+        // ✅ Ensure the first selected experiment is visible after the dialog is shown
+        dialog.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent e) {
+                SwingUtilities.invokeLater(() -> {
+                    if (!checkBoxes.isEmpty()) {
+                        JCheckBox targetBox = checkBoxes.stream()
+                                .filter(JCheckBox::isSelected)
+                                .reduce((first, second) -> second) // last selected
+                                .orElse(checkBoxes.get(0));        // fallback to first
+                        Rectangle bounds = targetBox.getBounds();
+                        if (bounds != null) {
+                            checkboxPanel.scrollRectToVisible(bounds);
+                        }
+                    }
+                });
+            }
+        });
+
         dialog.setSize(mode == DialogMode.GENERATE_SQUARES ? 600 : 500, 600);
         dialog.setLocationRelativeTo(owner);
     }
