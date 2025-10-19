@@ -206,9 +206,8 @@ public class PaintConsoleWindow {
 
         String text = textPane.getText().toLowerCase();
 
-        highlightPattern(text, "ERROR", Color.PINK);
-        highlightPattern(text, "WARN", Color.ORANGE);
-        // highlightPattern(text, "exception", Color.RED);
+        highlightPattern(text, "error", Color.PINK);
+        highlightPattern(text, "warn", Color.ORANGE);
     }
 
     private static void highlightPattern(String fullText, String keyword, Color color) {
