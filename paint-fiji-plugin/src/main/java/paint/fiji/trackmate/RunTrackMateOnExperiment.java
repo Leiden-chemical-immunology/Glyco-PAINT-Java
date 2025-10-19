@@ -22,7 +22,7 @@ import java.util.*;
 
 import static paint.shared.config.TrackMateConfig.trackMateConfigToFile;
 import static paint.shared.constants.PaintConstants.*;
-import static paint.shared.utils.CsvConcatenator.concatenateTracksFilesInDirectory;
+import static paint.shared.utils.CsvConcatenator.*;
 import static paint.shared.utils.CsvUtils.countProcessed;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 
@@ -91,9 +91,13 @@ public class RunTrackMateOnExperiment {
                                                    Path imagesPath,
                                                    ProjectSpecificationDialog dialog) {
 
-        Duration totalDuration = Duration.ZERO;
-        int numberRecordings   = 0;
-        boolean status         = true;
+        // @formatter:off
+        Duration totalDuration           = Duration.ZERO;
+        int numberRecordings             = 0;
+        boolean status                   = true;
+        List<Path> processedTrackFiles = new ArrayList<>();
+        // @formatter:on
+
 
         // Read the Paint Config Info file and initialise trackMateConfig
         Path configPath = experimentPath.getParent().resolve(PAINT_CONFIGURATION_JSON);
@@ -119,7 +123,7 @@ public class RunTrackMateOnExperiment {
         }
 
 
-        Path experimentFilePath  = experimentPath.resolve(EXPERIMENT_INFO_CSV);
+        Path experimentFilePath   = experimentPath.resolve(EXPERIMENT_INFO_CSV);
         Path allRecordingFilePath = experimentPath.resolve(RECORDING_CSV);
         if (!Files.exists(experimentFilePath)) {
             PaintLogger.errorf("Experiment info file does not exist in %s.", experimentFilePath);
@@ -243,6 +247,8 @@ public class RunTrackMateOnExperiment {
                         PaintLogger.infof("   Recording '%s' processed in %s.", recordingName, formatDuration(durationInSeconds));
                         PaintLogger.blankline();
 
+                        Path trackFilePath = experimentPath.resolve(recordingName + "-tracks.csv");
+                        processedTrackFiles.add(trackFilePath);
                         totalDuration = totalDuration.plus(trackMateResults[0].getDuration());
                         numberRecordings++;
 
@@ -300,9 +306,10 @@ public class RunTrackMateOnExperiment {
             return false;
         }
 
+        // Concatenmate all tacks files that were just created into an All Tracks file
         Path tracksFilePath = experimentPath.resolve(TRACK_CSV);
         try {
-            concatenateTracksFilesInDirectory(experimentPath, tracksFilePath);
+            concatenateCsvFiles(processedTrackFiles, tracksFilePath, true);
         } catch (IOException e) {
             PaintLogger.errorf("Error concatenating tracks: %s", e.getMessage());
             status = false;
