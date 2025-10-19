@@ -33,6 +33,7 @@ public class Square {
 
     // @formatter:off
     private String  uniqueKey;                       // 0
+    private String  experimentName;
     private String  recordingName;                   // 1
     private int     squareNumber;                    // 2
     private int     rowNumber;                       // 3
@@ -82,17 +83,19 @@ public class Square {
     /**
      * Creates a {@code Square} with explicit coordinate and recording information.
      *
-     * @param uniqueKey     a unique identifier for this square
-     * @param recordingName the recording this square belongs to
-     * @param squareNumber  sequential number of this square
-     * @param rowNumber     row index within the grid
-     * @param colNumber     column index within the grid
-     * @param x0            left coordinate in pixels
-     * @param y0            top coordinate in pixels
-     * @param x1            right coordinate in pixels
-     * @param y1            bottom coordinate in pixels
+     * @param uniqueKey      a unique identifier for this square
+     * @param experimentName the experiment this square belongs to
+     * @param recordingName  the recording this square belongs to
+     * @param squareNumber   sequential number of this square
+     * @param rowNumber      row index within the grid
+     * @param colNumber      column index within the grid
+     * @param x0             left coordinate in pixels
+     * @param y0             top coordinate in pixels
+     * @param x1             right coordinate in pixels
+     * @param y1             bottom coordinate in pixels
      */
     public Square(String uniqueKey,
+                  String experimentName,
                   String recordingName,
                   int squareNumber,
                   int rowNumber,
@@ -104,6 +107,7 @@ public class Square {
 
         initialiseDoublesToNaN();
         this.uniqueKey                     = uniqueKey;
+        this.experimentName                = experimentName;
         this.recordingName                 = recordingName;
         this.squareNumber                  = squareNumber;
         this.rowNumber                     = rowNumber;
@@ -146,6 +150,14 @@ public class Square {
 
     public void setUniqueKey(String uniqueKey) {
         this.uniqueKey = uniqueKey;
+    }
+
+    public String getExperimentName() {
+        return experimentName;
+    }
+
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
     }
 
     public String getRecordingName() {
@@ -447,6 +459,7 @@ public class Square {
 
         sb.append("\n----------------------------------------------------------------------\n")
                 .append("Square ").append(squareNumber)
+                .append(" (Experiment: ").append(experimentName != null ? experimentName : "N/A").append(")\n")
                 .append(" (Recording: ").append(recordingName != null ? recordingName : "N/A").append(")\n")
                 .append("----------------------------------------------------------------------\n");
 

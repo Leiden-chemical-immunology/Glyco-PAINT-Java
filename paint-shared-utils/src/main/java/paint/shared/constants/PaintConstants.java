@@ -75,6 +75,7 @@ public final class PaintConstants {
 
     public static final String[] TRACK_COLS = {
             "Unique Key",
+            "Experiment Name",
             "Recording Name",
             "Track Id",
             "Number of Spots",
@@ -96,6 +97,7 @@ public final class PaintConstants {
 
     public static final ColumnType[] TRACK_TYPES = {
             ColumnType.STRING,  // Unique Key
+            ColumnType.STRING,  // Experiment Name
             ColumnType.STRING,  // Recording Name
             ColumnType.INTEGER, // Track Id
             ColumnType.INTEGER, // Number of Spots
@@ -121,6 +123,7 @@ public final class PaintConstants {
 
     public static final String[] SQUARE_COLS = {
             "Unique Key",
+            "Experiment Name",
             "Recording Name",
             "Square Number",
             "Row Number",
@@ -159,6 +162,7 @@ public final class PaintConstants {
 
     public static final ColumnType[] SQUARE_TYPES = {
             ColumnType.STRING,   // Unique Key
+            ColumnType.STRING,   // Experiment Name
             ColumnType.STRING,   // Recording Name
             ColumnType.INTEGER,  // Square Number
             ColumnType.INTEGER,  // Row Number
@@ -200,6 +204,7 @@ public final class PaintConstants {
     // =====================
 
     public static final String[] RECORDING_COLS = {
+            "Experiment Name",
             "Recording Name",
             "Condition Number",
             "Replicate Number",
@@ -226,6 +231,7 @@ public final class PaintConstants {
     };
 
     public static final ColumnType[] RECORDING_TYPES = {
+            ColumnType.STRING,            // Recording Name
             ColumnType.STRING,            // Recording Name
             ColumnType.INTEGER,           // Condition Number
             ColumnType.INTEGER,           // Replicate Number
@@ -256,6 +262,7 @@ public final class PaintConstants {
     // =====================
 
     public static final String[] EXPERIMENT_INFO_COLS = {
+            "Experiment Name",
             "Recording Name",
             "Condition Number",
             "Replicate Number",
@@ -269,6 +276,7 @@ public final class PaintConstants {
     };
 
     public static final ColumnType[] EXPERIMENT_INFO_TYPES = {
+            ColumnType.STRING,   // Experiment Name
             ColumnType.STRING,   // Recording Name
             ColumnType.INTEGER,  // Condition Number
             ColumnType.INTEGER,  // Replicate Number

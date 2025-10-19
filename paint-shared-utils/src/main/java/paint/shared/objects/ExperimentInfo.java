@@ -18,6 +18,7 @@ public class ExperimentInfo {
 
     // --- Core fields (columns in All Recordings/Experiment Info) ---
     // @formatter:off
+    private String  experimentName;
     private String  recordingName;
     private int     conditionNumber;
     private int     replicateNumber;
@@ -39,7 +40,8 @@ public class ExperimentInfo {
     public ExperimentInfo() {
     }
 
-    public ExperimentInfo(String recordingName,
+    public ExperimentInfo(String experimentName,
+                          String recordingName,
                           int conditionNumber,
                           int replicateNumber,
                           String probeName,
@@ -49,16 +51,20 @@ public class ExperimentInfo {
                           double concentration,
                           boolean processFlag,
                           double threshold) {
-        this.recordingName = recordingName;
+
+        // @formatter:off
+        this.experimentName  = experimentName;
+        this.recordingName   = recordingName;
         this.conditionNumber = conditionNumber;
         this.replicateNumber = replicateNumber;
-        this.probeName = probeName;
-        this.probeType = probeType;
-        this.cellType = cellType;
-        this.adjuvant = adjuvant;
-        this.concentration = concentration;
-        this.processFlag = processFlag;
-        this.threshold = threshold;
+        this.probeName       = probeName;
+        this.probeType       = probeType;
+        this.cellType        = cellType;
+        this.adjuvant        = adjuvant;
+        this.concentration   = concentration;
+        this.processFlag     = processFlag;
+        this.threshold      = threshold;
+        // @formatter:on
     }
 
     /**
@@ -70,6 +76,7 @@ public class ExperimentInfo {
     public ExperimentInfo(Map<String, String> row) {
         try {
             // @formatter:off
+            this.experimentName  = row.get("experiment");
             this.recordingName   = row.get("Recording Name");
             this.conditionNumber = parseInt(row.get("Condition Number"));
             this.replicateNumber = parseInt(row.get("Replicate Number"));
@@ -91,6 +98,13 @@ public class ExperimentInfo {
     }
 
     // --- Getters and Setters ---
+    public String getExperimentName() {
+        return experimentName;
+    }
+
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
+    }
     public String getRecordingName() {
         return recordingName;
     }
@@ -219,6 +233,7 @@ public class ExperimentInfo {
         StringBuilder sb = new StringBuilder();
 
         sb.append(String.format("\tExperment Info"));
+        sb.append(String.format("\t              Experiment Name               : %s\n", experimentName));
         sb.append(String.format("\t              Recording Name                : %s%n", recordingName));
         sb.append(String.format("\t              Condition Nr                  : %d%n", conditionNumber));
         sb.append(String.format("\t              Replicate Nr                  : %d%n", replicateNumber));

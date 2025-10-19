@@ -30,6 +30,7 @@ public class SquareTableIO extends BaseTableIO {
 
             // @formatter:off
             row.setString( "Unique Key",                       square.getUniqueKey());
+            row.setString( "Experiment Name",                  square.getExperimentName());
             row.setString( "Recording Name",                   square.getRecordingName());
             row.setInt(    "Square Number",                    square.getSquareNumber());
             row.setInt(    "Row Number",                       square.getRowNumber());
@@ -77,6 +78,7 @@ public class SquareTableIO extends BaseTableIO {
 
             // @formatter:off
             square.setUniqueKey(                     row.getString(  "Unique Key"));
+            square.setExperimentName(                row.getString(  "Experiment Name"));
             square.setRecordingName(                 row.getString(  "Recording Name"));
             square.setSquareNumber(                  row.getInt(     "Square Number"));
             square.setRowNumber(                     row.getInt(     "Row Number"));

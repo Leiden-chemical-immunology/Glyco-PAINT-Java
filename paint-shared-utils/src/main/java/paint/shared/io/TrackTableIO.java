@@ -30,6 +30,7 @@ public class TrackTableIO extends BaseTableIO {
 
             // @formatter:off
             row.setString( "Unique Key",                track.getUniqueKey());
+            row.setString( "Experiment Name",           track.getExperimentName());
             row.setString( "Recording Name",            track.getRecordingName());
             row.setInt(    "Track Id",                  track.getTrackId());
             row.setInt(    "Number of Spots",           track.getNumberOfSpots());
@@ -60,6 +61,7 @@ public class TrackTableIO extends BaseTableIO {
 
             // @formatter:off
             track.setUniqueKey(              row.getString( "Unique Key"));
+            track.setExperimentName(         row.getString( "Experiment Name"));
             track.setRecordingName(          row.getString( "Recording Name"));
             track.setTrackId(                row.getInt(    "Track Id"));
             track.setNumberOfSpots(          row.getInt(    "Number of Spots"));
@@ -115,6 +117,7 @@ public class TrackTableIO extends BaseTableIO {
         // Adapt column names to match your CSV/table headers
         // @formatter:off
         track.setUniqueKey(                row.getString(  "Unique Key"));
+        track.setExperimentName(           row.getString( "Experiment Name"));
         track.setRecordingName(            row.getString(  "Recording Name"));
         track.setTrackId(                  row.getInt(     "Track ID"));
         track.setNumberOfSpots(            row.getInt(     "Number of Spots"));

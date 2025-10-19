@@ -32,6 +32,7 @@ public class Recording {
 
     // --- Core fields (columns in All Recordings/Experiment Info) ---
     // @formatter:off
+    private String        experimentName;
     private String        recordingName;
     private int           conditionNumber;
     private int           replicateNumber;
@@ -70,6 +71,7 @@ public class Recording {
     /**
      * Creates a {@code Recording} initialized with its basic metadata.
      *
+     * @param experimentName  the name of the experiment
      * @param recordingName   the name or identifier of the recording
      * @param conditionNumber the associated experimental condition number
      * @param replicateNumber the replicate number within the experiment
@@ -81,7 +83,8 @@ public class Recording {
      * @param processFlag     whether this recording should be processed
      * @param threshold       the detection or filtering threshold
      */
-    public Recording(String recordingName,
+    public Recording(String experimentName,
+                     String recordingName,
                      int conditionNumber,
                      int replicateNumber,
                      String probeName,
@@ -91,6 +94,7 @@ public class Recording {
                      double concentration,
                      boolean processFlag,
                      double threshold) {
+        this.experimentName = experimentName;
         this.recordingName = recordingName;
         this.conditionNumber = conditionNumber;
         this.replicateNumber = replicateNumber;
@@ -101,6 +105,14 @@ public class Recording {
         this.concentration = concentration;
         this.processFlag = processFlag;
         this.threshold = threshold;
+    }
+
+    public String getExperimentName() {
+        return experimentName;
+    }
+
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
     }
 
     public String getRecordingName() {
@@ -333,6 +345,7 @@ public class Recording {
         StringBuilder sb = new StringBuilder();
 
         sb.append(String.format("\tRecording Information"));
+        sb.append(String.format("\t                Experiment Name               : %s%n", experimentName));
         sb.append(String.format("\t                Recording Name                : %s%n", recordingName));
         sb.append(String.format("\t                Condition Nr                  : %d%n", conditionNumber));
         sb.append(String.format("\t                Replicate Nr                  : %d%n", replicateNumber));

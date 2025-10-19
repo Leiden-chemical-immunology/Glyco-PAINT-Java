@@ -29,6 +29,7 @@ public class RecordingTableIO extends BaseTableIO {
             Row row = table.appendRow();
 
             // @formatter:off
+            row.setString(  "Experiment Name",                   recording.getExperimentName());
             row.setString(  "Recording Name",                    recording.getRecordingName());
             row.setInt(     "Condition Number",                  recording.getConditionNumber());
             row.setInt(     "Replicate Number",                  recording.getReplicateNumber());
@@ -63,6 +64,7 @@ public class RecordingTableIO extends BaseTableIO {
             Recording recording = new Recording();
 
             // @formatter:off
+            recording.setExperimentName(              row.getString( "Experiment Name"));
             recording.setRecordingName(               row.getString(  "Recording Name"));
             recording.setConditionNumber(             row.getInt(     "Condition Number"));
             recording.setReplicateNumber(             row.getInt(     "Replicate Number"));

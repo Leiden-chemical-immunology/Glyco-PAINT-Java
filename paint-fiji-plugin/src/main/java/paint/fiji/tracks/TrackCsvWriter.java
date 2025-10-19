@@ -22,6 +22,7 @@ import static paint.shared.constants.PaintConstants.TIME_INTERVAL;
 public class TrackCsvWriter {
 
     public static int writeTracksCsv(final TrackMate trackmate,
+                                     final String experimentName,
                                      final String recordingName,
                                      final File csvFile,
                                      final boolean visibleOnly) throws IOException {
@@ -40,6 +41,7 @@ public class TrackCsvWriter {
 
             Track track = new Track();
             track.setUniqueKey(recordingName + "-" + trackId);
+            track.setExperimentName(experimentName);
             track.setRecordingName(recordingName);
             track.setTrackId(trackId);
 

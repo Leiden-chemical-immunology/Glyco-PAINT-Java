@@ -84,6 +84,7 @@ public class ExperimentInfoTableIO extends BaseTableIO {
             Row row = table.appendRow();
 
             // @formatter:off
+            row.setString("Experiment Name",  info.getExperimentName());
             row.setString("Recording Name",   info.getRecordingName());
             row.setInt(   "Condition Number", info.getConditionNumber());
             row.setInt(   "Replicate Number", info.getReplicateNumber());
@@ -127,6 +128,7 @@ public class ExperimentInfoTableIO extends BaseTableIO {
             ExperimentInfo experimentInfo = new ExperimentInfo();
 
             // @formatter:off
+            experimentInfo.setExperimentName(  row.getString( "Experiment Name"));
             experimentInfo.setRecordingName(   row.getString( "Recording Name"));
             experimentInfo.setConditionNumber( row.getInt(    "Condition Number"));
             experimentInfo.setReplicateNumber( row.getInt(    "Replicate Number"));

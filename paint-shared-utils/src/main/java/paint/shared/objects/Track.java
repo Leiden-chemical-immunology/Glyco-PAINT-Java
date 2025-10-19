@@ -15,6 +15,7 @@ public class Track {
 
     // @formatter:off
     private String uniqueKey;
+    private String experimentName;
     private String recordingName;
     private int    trackId;
     private int    numberOfSpots;
@@ -45,6 +46,7 @@ public class Track {
      * Full constructor to initialize all fields of a {@code Track}.
      *
      * @param uniqueKey               unique identifier for the track
+     * @param experimentName          name of the experiment the track belongs to
      * @param recordingName           name of the recording the track belongs to
      * @param trackId                 numerical track identifier
      * @param numberOfSpots           number of spots in the track
@@ -66,6 +68,7 @@ public class Track {
 
     // @formatter:off
     public Track(String uniqueKey,
+                 String experimentName,
                  String recordingName,
                  int    trackId,
                  int    numberOfSpots,
@@ -87,6 +90,7 @@ public class Track {
         initialiseDoublesToNaN();
 
         this.uniqueKey               = uniqueKey;
+        this.experimentName          = experimentName;
         this.recordingName           = recordingName;
         this.trackId                 = trackId;
         this.numberOfSpots           = numberOfSpots;
@@ -115,6 +119,14 @@ public class Track {
 
     public void setUniqueKey(String uniqueKey) {
         this.uniqueKey = uniqueKey;
+    }
+
+    public String getExperimentName() {
+        return this.experimentName;
+    }
+
+    public void setExperimentName(String ExperimentName) {
+        this.experimentName = ExperimentName;
     }
 
     public String getRecordingName() {
@@ -273,8 +285,9 @@ public class Track {
     @Override
     public String toString() {
         return String.format(
-                "Track[id=%d, recording=%s, spots=%d, duration=%.2f, displacement=%.2f, maxSpeed=%.2f, medianSpeed=%.2f]",
+                "Track[id=%d, experiment=%s, recording=%s, spots=%d, duration=%.2f, displacement=%.2f, maxSpeed=%.2f, medianSpeed=%.2f]",
                 trackId,
+                experimentName,
                 recordingName,
                 numberOfSpots,
                 trackDuration,
