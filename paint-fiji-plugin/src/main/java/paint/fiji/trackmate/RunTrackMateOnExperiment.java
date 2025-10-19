@@ -145,8 +145,9 @@ public class RunTrackMateOnExperiment {
                                                       .setHeader()
                                                       .setSkipHeaderRecord(true)
                                                       .build());
-             BufferedWriter writer = Files.newBufferedWriter(allRecordingFilePath);
-             CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.builder().build())) {
+
+             BufferedWriter allRecordingsWriter = Files.newBufferedWriter(allRecordingFilePath);
+             CSVPrinter allRecordingsPrinter = new CSVPrinter(allRecordingsWriter, CSVFormat.DEFAULT.builder().build())) {
 
             // Extend the Experiment Info header for the All Recording file
             List<String> header = new ArrayList<>(experimentInfoParser.getHeaderMap().keySet());
@@ -165,9 +166,11 @@ public class RunTrackMateOnExperiment {
                     "R Squared",
                     "Density"
             ));
-            printer.printRecord(header);
+            allRecordingsPrinter.printRecord(header);
 
+            // Cycle through the Experiment Info file
             for (CSVRecord experientInfoRecord : experimentInfoParser) {
+
                 if (dialog != null && dialog.isCancelled()) {
                     PaintLogger.warningf("User requested cancellation. Stopping.");
                     break;
@@ -180,7 +183,7 @@ public class RunTrackMateOnExperiment {
                     }
 
                     ExperimentInfo experimentInfo = new ExperimentInfo(row);
-                    String recordingName = experimentInfo.getRecordingName();
+                    String recordingName          = experimentInfo.getRecordingName();
 
                     // @formatter:off
                     int    numberOfSpots            = 0;
@@ -199,8 +202,12 @@ public class RunTrackMateOnExperiment {
 
                         PaintLogger.infof("   Recording '%s' started TrackMate processing.", recordingName);
 
+                        // The following is necessary because of how Java handles variable capture inside lambdas or inner classes.
+                        // We are not changing the variable trackMateResults itself (the reference to the array never changes),
+                        // We pass the address of the array that does not change, but the contents can change.
                         final TrackMateResults[] trackMateResults = new TrackMateResults[1];
 
+                        // Hare we start the processing of the recording in a separate thread
                         boolean finished = runWithWatchdog(() -> {
                             try {
                                 trackMateResults[0] = RunTrackMateOnRecording.runTrackMateOnRecording(
@@ -233,8 +240,7 @@ public class RunTrackMateOnExperiment {
                         }
 
                         int durationInSeconds = (int) (trackMateResults[0].getDuration().toMillis() / 1000);
-                        PaintLogger.infof("   Recording '%s' processed in %s.",
-                                          recordingName, formatDuration(durationInSeconds));
+                        PaintLogger.infof("   Recording '%s' processed in %s.", recordingName, formatDuration(durationInSeconds));
                         PaintLogger.blankline();
 
                         totalDuration = totalDuration.plus(trackMateResults[0].getDuration());
@@ -272,7 +278,7 @@ public class RunTrackMateOnExperiment {
                             "",
                             ""
                     ));
-                    printer.printRecord(output);
+                    allRecordingsPrinter.printRecord(output);
 
                 } catch (Exception e) {
                     if (dialog == null || !dialog.isCancelled()) {
