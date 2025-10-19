@@ -204,23 +204,26 @@ public class PaintConsoleWindow {
         problemPositions.clear();
         currentProblemIndex = -1;
 
-        String text = textPane.getText().toLowerCase();
+        String text = textPane.getText();
 
-        highlightPattern(text, "error", Color.PINK);
-        highlightPattern(text, "warn", Color.ORANGE);
+        highlightPattern(text, "(?i)error", Color.PINK); // (?i) = case-insensitive
+        highlightPattern(text, "(?i)warn", Color.ORANGE);
+        highlightPattern(text, "(?i)exception", Color.RED);
     }
 
-    private static void highlightPattern(String fullText, String keyword, Color color) {
-        int index = fullText.indexOf(keyword);
-        while (index >= 0) {
+    private static void highlightPattern(String fullText, String regex, Color color) {
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
+        java.util.regex.Matcher matcher = pattern.matcher(fullText);
+
+        while (matcher.find()) {
+            int start = matcher.start();
+            int end = matcher.end();
             try {
                 textPane.getHighlighter().addHighlight(
-                        index,
-                        index + keyword.length(),
+                        start, end,
                         new DefaultHighlighter.DefaultHighlightPainter(color)
                 );
-                problemPositions.add(index);
-                index = fullText.indexOf(keyword, index + keyword.length());
+                problemPositions.add(start);
             } catch (BadLocationException e) {
                 e.printStackTrace();
                 break;
@@ -229,14 +232,30 @@ public class PaintConsoleWindow {
     }
 
     private static void selectProblem(int pos) {
-        textPane.requestFocus();
-        textPane.setCaretPosition(pos);
-        textPane.select(pos, pos + 1);
-
-        // Ensure the selected problem is visible
         try {
-            Rectangle viewRect = textPane.modelToView(pos);
-            if (viewRect != null) textPane.scrollRectToVisible(viewRect);
+            Highlighter highlighter = textPane.getHighlighter();
+            Highlighter.HighlightPainter focusPainter =
+                    new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
+
+            // Clear the previous yellow focus
+            for (Highlighter.Highlight h : highlighter.getHighlights()) {
+                if (h.getPainter() instanceof DefaultHighlighter.DefaultHighlightPainter) {
+                    // reset pink/orange/red remains; do not remove those
+                }
+            }
+
+            // Apply focus highlight
+            for (Highlighter.Highlight h : highlighter.getHighlights()) {
+                if (h.getStartOffset() == pos) {
+                    textPane.requestFocus();
+                    textPane.setCaretPosition(h.getEndOffset());
+                    textPane.select(h.getStartOffset(), h.getEndOffset());
+                    highlighter.addHighlight(h.getStartOffset(), h.getEndOffset(), focusPainter);
+                    textPane.scrollRectToVisible(textPane.modelToView(h.getStartOffset()));
+                    return;
+                }
+            }
+
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
