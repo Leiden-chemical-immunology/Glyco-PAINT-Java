@@ -63,7 +63,7 @@ public class ExperimentInfo {
         this.adjuvant        = adjuvant;
         this.concentration   = concentration;
         this.processFlag     = processFlag;
-        this.threshold      = threshold;
+        this.threshold       = threshold;
         // @formatter:on
     }
 
@@ -76,7 +76,7 @@ public class ExperimentInfo {
     public ExperimentInfo(Map<String, String> row) {
         try {
             // @formatter:off
-            this.experimentName  = row.get("experiment");
+            this.experimentName  = row.get("Experiment Name");
             this.recordingName   = row.get("Recording Name");
             this.conditionNumber = parseInt(row.get("Condition Number"));
             this.replicateNumber = parseInt(row.get("Replicate Number"));
@@ -105,6 +105,7 @@ public class ExperimentInfo {
     public void setExperimentName(String experimentName) {
         this.experimentName = experimentName;
     }
+
     public String getRecordingName() {
         return recordingName;
     }

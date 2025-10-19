@@ -178,6 +178,7 @@ public class GenerateSquareCalcs {
 
                 squares.add(new Square(
                         recording.getRecordingName() + '-' + squareNumber,
+                        recording.getExperimentName(),
                         recording.getRecordingName(),
                         squareNumber,
                         rowNumber,

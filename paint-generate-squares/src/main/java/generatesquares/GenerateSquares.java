@@ -205,8 +205,11 @@ public class GenerateSquares {
                     PaintLogger.infof("Creating project level All Tracks");
                     concatenateNamedCsvFiles(projectPath, TRACK_CSV, project.experimentNames);
 
+                    PaintLogger.infof();
+
                     Duration duration = Duration.between(start, LocalDateTime.now());
                     PaintLogger.infof("Generated squares info for all selected experiments in %s", formatDuration(duration));
+                    PaintLogger.infof();
                 } catch (Exception e) {
                     PaintLogger.errorf("Could not concatenate squares file - %s", e.getMessage());
                 }

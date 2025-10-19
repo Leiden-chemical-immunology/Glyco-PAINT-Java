@@ -92,9 +92,10 @@ public class RunTrackMateOnExperiment {
                                                    ProjectSpecificationDialog dialog) {
 
         Duration totalDuration = Duration.ZERO;
-        int numberRecordings = 0;
-        boolean status = true;
+        int numberRecordings   = 0;
+        boolean status         = true;
 
+        // Read the Paint Config Info file and initialise trackMateConfig
         Path configPath = experimentPath.getParent().resolve(PAINT_CONFIGURATION_JSON);
         if (Files.exists(configPath)) {
             PaintConfig.initialise(experimentPath.getParent());
@@ -102,12 +103,13 @@ public class RunTrackMateOnExperiment {
             PaintLogger.warningf("No PaintConfig.json found in %s, defaults will be used.",
                                  experimentPath.getParent());
         }
-        PaintConfig paintConfig = PaintConfig.instance();
+        PaintConfig paintConfig         = PaintConfig.instance();
         TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
+        int maxSecondsPerRecording      = paintConfig.getIntValue("TrackMate", "Max Seconds Per Recording", 2000);
 
         PaintLogger.debugf(trackMateConfig.toString());
 
-        int maxSecondsPerRecording = paintConfig.getIntValue("TrackMate", "Max Seconds Per Recording", 2000);
+        // Write the parameters used file, so that we know for sure what paramters have been used
         try {
             Path filePath = experimentPath.resolve("Output").resolve("ParametersUsed.txt");
             Files.createDirectories(filePath.getParent());
@@ -115,6 +117,7 @@ public class RunTrackMateOnExperiment {
         } catch (Exception ex) {
             PaintLogger.errorf("Could not write file '%s'", "ParametersUsed.txt");
         }
+
 
         Path experimentFilePath  = experimentPath.resolve(EXPERIMENT_INFO_CSV);
         Path allRecordingFilePath = experimentPath.resolve(RECORDING_CSV);
@@ -124,8 +127,8 @@ public class RunTrackMateOnExperiment {
         }
 
         int numberRecordingsToProcess = countProcessed(experimentFilePath);
-        String experimentName = experimentPath.getFileName().toString();
-        String projectName = experimentPath.getParent().getFileName().toString();
+        String experimentName         = experimentPath.getFileName().toString();             // TODO Dangerous?
+        String projectName            = experimentPath.getParent().getFileName().toString();
 
         PaintLogger.blankline();
         PaintLogger.infof("Processing %d %s in experiment '%s' in project '%s'.",
@@ -135,16 +138,18 @@ public class RunTrackMateOnExperiment {
                           projectName);
         PaintLogger.blankline();
 
-        try (Reader reader = Files.newBufferedReader(experimentFilePath);
-             CSVParser parser = new CSVParser(reader,
+        // Read the Experiment Info file
+        try (Reader experimentInfoReader = Files.newBufferedReader(experimentFilePath);
+             CSVParser experimentInfoParser = new CSVParser(experimentInfoReader,
                                               CSVFormat.DEFAULT.builder()
                                                       .setHeader()
                                                       .setSkipHeaderRecord(true)
                                                       .build());
              BufferedWriter writer = Files.newBufferedWriter(allRecordingFilePath);
-             CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.builder().build())
-        ) {
-            List<String> header = new ArrayList<>(parser.getHeaderMap().keySet());
+             CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.builder().build())) {
+
+            // Extend the Experiment Info header for the All Recording file
+            List<String> header = new ArrayList<>(experimentInfoParser.getHeaderMap().keySet());
             header.addAll(Arrays.asList(
                     "Number of Spots",
                     "Number of Tracks",
@@ -162,7 +167,7 @@ public class RunTrackMateOnExperiment {
             ));
             printer.printRecord(header);
 
-            for (CSVRecord record : parser) {
+            for (CSVRecord experientInfoRecord : experimentInfoParser) {
                 if (dialog != null && dialog.isCancelled()) {
                     PaintLogger.warningf("User requested cancellation. Stopping.");
                     break;
@@ -170,8 +175,8 @@ public class RunTrackMateOnExperiment {
 
                 try {
                     Map<String, String> row = new LinkedHashMap<String, String>();
-                    for (String key : parser.getHeaderMap().keySet()) {
-                        row.put(key, record.get(key));
+                    for (String key : experimentInfoParser.getHeaderMap().keySet()) {
+                        row.put(key, experientInfoRecord.get(key));
                     }
 
                     ExperimentInfo experimentInfo = new ExperimentInfo(row);
@@ -249,7 +254,7 @@ public class RunTrackMateOnExperiment {
                     }
 
                     List<String> output = new ArrayList<String>();
-                    for (String key : parser.getHeaderMap().keySet()) {
+                    for (String key : experimentInfoParser.getHeaderMap().keySet()) {
                         output.add(row.get(key));
                     }
                     output.addAll(Arrays.asList(

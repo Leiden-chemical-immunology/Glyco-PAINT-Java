@@ -194,7 +194,7 @@ public class RunTrackMateOnRecording {
             return cancelEarly(imp);
         }
         else {
-            String numberOfSpotsString = " (" +  numberOfSpots + " spots detected)";
+            String numberOfSpotsString = " (" +  numberOfSpots + " spots detected).";
             PaintLogger.raw(numberOfSpotsString);
         }
 
@@ -259,7 +259,11 @@ public class RunTrackMateOnRecording {
         int numberOfSpotsInALlTracks = 0;
         try {
             numberOfSpotsInALlTracks = TrackCsvWriter.writeTracksCsv(
-                    trackmate, experimentInfoRecord.getRecordingName(), tracksPath.toFile(), true);
+                    trackmate,
+                    experimentInfoRecord.getExperimentName(),
+                    experimentInfoRecord.getRecordingName(),
+                    tracksPath.toFile(),
+                    true);
         } catch (IOException e) {
             if (!isCancelled(Thread.currentThread(), dialog)) {
                 PaintLogger.errorf("Failed to write tracks to '%s'", tracksPath);
