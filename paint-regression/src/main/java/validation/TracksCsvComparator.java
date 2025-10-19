@@ -49,12 +49,15 @@ public class TracksCsvComparator {
      * Configuration for which comparison features are active.
      */
     private static final class MatchConfig {
-        boolean useDuration = true;
-        boolean useDisplacement = true;
-        boolean useSpeed = true;
-        boolean useDistance = true;
-        boolean useXY = true;
-        boolean useConfinement = true;
+
+        // @formatter:off
+        final boolean useDuration     = true;
+        final boolean useDisplacement = true;
+        final boolean useSpeed        = true;
+        final boolean useDistance     = true;
+        final boolean useXY           = true;
+        final boolean useConfinement  = true;
+        // @formatter:on
     }
 
     // --- Field-level tolerances (units correspond to column meaning) ---

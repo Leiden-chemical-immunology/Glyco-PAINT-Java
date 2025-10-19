@@ -45,7 +45,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import static paint.shared.utils.SquareUtils.calculateDensity;
 import static generatesquares.calc.CalculateTau.calcTau;
 import static generatesquares.calc.CalculateVariability.calcVariability;
 import static paint.shared.config.PaintConfig.getBoolean;
@@ -324,7 +323,7 @@ public class GenerateSquareCalcs {
         double numberOfTracksInBackgroundSquares  = result.getBackgroundMean();
 
         // Calculate according to the original method
-        double numberOfTracksInBackgroundSquaresOri = calcAverageTrackCountInBackgroundSquares(recording.getSquaresOfRecording(), (int) 0.1 * numberOfSquaresInRecording );
+        double numberOfTracksInBackgroundSquaresOri = calcAverageTrackCountInBackgroundSquares(recording.getSquaresOfRecording(), (int) (0.1 * numberOfSquaresInRecording) );
 
         PaintLogger.debugf("Estimated Background track count = %.2f, n = %d%n", numberOfTracksInBackgroundSquares, result.getBackgroundSquares().size());
 

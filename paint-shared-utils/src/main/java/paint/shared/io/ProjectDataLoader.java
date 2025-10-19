@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static paint.shared.constants.PaintConstants.*;
-import static paint.shared.utils.Miscellaneous.friendlyMessage;
 
 public final class ProjectDataLoader {
 

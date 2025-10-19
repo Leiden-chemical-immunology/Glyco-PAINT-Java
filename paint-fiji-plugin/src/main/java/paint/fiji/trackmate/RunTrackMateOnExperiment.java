@@ -31,7 +31,7 @@ import static paint.shared.utils.Miscellaneous.formatDuration;
  */
 public class RunTrackMateOnExperiment {
 
-    static boolean verbose = false;
+    static final boolean verbose = false;
 
     /**
      * Watchdog that joins in 1s slices and interrupts promptly on cancel or timeout.

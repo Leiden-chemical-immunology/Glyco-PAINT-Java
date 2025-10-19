@@ -96,9 +96,7 @@ public class AddExperimentNameColumn {
                 for (CSVRecord record : parser) {
                     List<String> row = new ArrayList<>();
 
-                    for (int i = 0; i < headers.size(); i++) {
-                        String header = headers.get(i);
-
+                    for (String header : headers) {
                         if (header.equals("Experiment Name")) {
                             row.add(experimentName);
                         } else {
