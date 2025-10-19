@@ -138,20 +138,6 @@ public class CsvConcatenator {
         concatenateCsvFiles(files, outputFile, deleteInputs);
     }
 
-    /**
-     * Convenience method to concatenate all TrackMate track CSV files in a directory.
-     * <p>
-     * The method automatically matches files with the pattern {@code \\d{6}-Exp-.*-tracks\\.csv}.
-     * Input files are deleted after concatenation.
-     *
-     * @param inputDir   directory containing track CSV files
-     * @param outputFile path to the output CSV file
-     * @throws IOException if reading or writing fails
-     */
-    public static void concatenateTracksFilesInDirectory(Path inputDir, Path outputFile) throws IOException {
-        String defaultRegex = "\\d{6}-Exp-.*-tracks\\.csv";
-        concatenateCsvFilesInDirectory(inputDir, outputFile, defaultRegex, true);
-    }
 
     /**
      * Concatenates the same-named CSV file from multiple experiment subdirectories into one file
@@ -175,28 +161,5 @@ public class CsvConcatenator {
         // Output file is written to the project root
         Path outputFile = projectPath.resolve(fileName);
         concatenateCsvFiles(inputFiles, outputFile, false);
-    }
-
-    /**
-     * Example main method demonstrating usage of this utility class.
-     * <p>
-     * Adjust file paths as needed before execution.
-     *
-     * @param args unused
-     * @throws IOException if file operations fail
-     */
-    public static void main(String[] args) throws IOException {
-        // Example 1: Concatenate track CSV files in a single experiment directory
-        Path inputDir = Paths.get("/Users/hans/Paint Test Project/221012");
-        Path outputFile = inputDir.resolve("All Tracks Java.csv");
-        concatenateTracksFilesInDirectory(inputDir, outputFile);
-        System.out.println("✔ Concatenated directory files to: " + outputFile);
-
-        // Example 2: Concatenate "All Tracks Java.csv" from multiple experiment subfolders
-        Path projectPath = Paths.get("/Users/hans/Paint Test Project");
-        List<String> experimentNames = Arrays.asList("230417", "230418", "230419");
-        String fileName = "All Tracks Java.csv";
-        concatenateNamedCsvFiles(projectPath, fileName, experimentNames);
-        System.out.println("✔ Concatenated experiment files to: " + projectPath.resolve(fileName));
     }
 }
