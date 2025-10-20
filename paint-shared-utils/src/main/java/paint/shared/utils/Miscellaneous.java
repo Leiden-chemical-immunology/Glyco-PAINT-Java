@@ -1,11 +1,6 @@
 package paint.shared.utils;
 
-import java.nio.file.Path;
 import java.time.Duration;
-
-import static paint.shared.constants.PaintConstants.RECORDINGS_CSV;
-import static paint.shared.constants.PaintConstants.TRACKS_CSV;
-
 
 public class Miscellaneous {
 

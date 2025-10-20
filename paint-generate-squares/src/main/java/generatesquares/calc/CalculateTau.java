@@ -91,9 +91,12 @@ public class CalculateTau {
         private final Status status;
 
         public CalculateTauResult(double tau, double rsquared, Status status) {
-            this.tau = tau;
+
+            // @formatter:off
+            this.tau      = tau;
             this.rsquared = rsquared;
-            this.status = status;
+            this.status   = status;
+            // @formatter:on
         }
 
         public enum Status {

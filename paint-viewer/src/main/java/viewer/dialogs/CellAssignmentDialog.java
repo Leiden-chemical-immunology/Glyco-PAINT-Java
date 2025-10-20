@@ -19,11 +19,11 @@ public class CellAssignmentDialog extends JDialog {
 
     private final ButtonGroup group = new ButtonGroup();
     private final Map<JRadioButton, JPanel> squareByRadio = new LinkedHashMap<>();
-    private final Listener listener;
+    // private final Listener listener;
 
     public CellAssignmentDialog(Frame owner, Listener listener) {
         super(owner, "Assign Cells", false); // 🔹 modeless now
-        this.listener = listener;
+        //this.listener = listener;
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 

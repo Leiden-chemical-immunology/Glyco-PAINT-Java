@@ -3,7 +3,6 @@ package paint.shared.validate;
 import paint.shared.utils.PaintLogger;
 
 import java.io.File;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
