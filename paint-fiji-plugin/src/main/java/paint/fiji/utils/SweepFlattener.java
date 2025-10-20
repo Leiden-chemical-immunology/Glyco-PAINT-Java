@@ -1,126 +1,100 @@
 package paint.fiji.utils;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.CSVRecord;
+import paint.shared.utils.CsvConcatenator;
+import static generatesquares.GenerateSquaresRunner.run;
+import static paint.shared.utils.CsvCaseAdder.addCase;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.Reader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static paint.shared.constants.PaintConstants.*;
-
+/**
+ * Flattens sweep result directories by concatenating experiment-level CSV files
+ * ("All Squares Java.csv", "All Tracks Java.csv", "All Recordings Java.csv", "Experiment Info Java.csv")
+ * from all subdirectories into the corresponding files in the parameter-level directory.
+ */
 public class SweepFlattener {
 
     /**
-     * Flattens a sweep parameter directory by concatenating CSVs,
-     * merging image directories, and saving ParameterUsed.txt files.
+     * Scans all sweep parameter directories (those starting with '[')
+     * and flattens their subdirectories by concatenating CSV files.
      *
-     * @param sweepParamDir the sweep parameter directory (e.g. Sweep/[MAX_FRAME_GAP]-[4])
-     * @param deleteSubdirs if true, numeric subdirectories are deleted afterwards
+     * After flattening, it calls GenerateSquaresRunner.run(sweepRoot, paramDirsFound)
+     * to process all parameter directories.
+     *
+     * @param sweepRoot     Path to the root Sweep directory
+     * @param deleteSubdirs Whether to delete the subdirectories after flattening
+     * @throws IOException if reading or writing fails
      */
-    public static void flattenSweep(Path sweepParamDir, boolean deleteSubdirs) throws IOException {
-        Path allRecordingsOut = sweepParamDir.resolve(RECORDING_CSV);
-        Path allTracksOut = sweepParamDir.resolve(TRACK_CSV);
-        Path brightfieldOut = sweepParamDir.resolve(DIR_BRIGHTFIELD_IMAGES);
-        Path trackmateOut = sweepParamDir.resolve(DIR_TRACKMATE_IMAGES);
+    public static void flattenSweep(Path sweepRoot, List<String> experimentNames, boolean deleteSubdirs) throws IOException {
+        if (!Files.isDirectory(sweepRoot)) {
+            throw new IOException("Not a directory: " + sweepRoot);
+        }
 
-        Files.createDirectories(brightfieldOut);
-        Files.createDirectories(trackmateOut);
+        // List to collect all parameter directories
+        List<String> paramDirsFound = new ArrayList<>();
 
-        // Prepare CSV writers
-        try (
-                BufferedWriter recWriter = Files.newBufferedWriter(allRecordingsOut);
-                CSVPrinter recPrinter = new CSVPrinter(recWriter, CSVFormat.DEFAULT);
-                BufferedWriter tracksWriter = Files.newBufferedWriter(allTracksOut);
-                CSVPrinter tracksPrinter = new CSVPrinter(tracksWriter, CSVFormat.DEFAULT)
-        ) {
-            boolean headerWrittenRecordings = false;
-            boolean headerWrittenTracks = false;
+        // Look for directories starting with '['
+        try (DirectoryStream<Path> paramDirs = Files.newDirectoryStream(sweepRoot, "[[]*")) {
+            for (Path paramDir : paramDirs) {
+                if (!Files.isDirectory(paramDir)) continue;
 
-            // iterate over numeric subdirs
-            try (DirectoryStream<Path> dirs = Files.newDirectoryStream(sweepParamDir)) {
-                for (Path sub : dirs) {
-                    if (!Files.isDirectory(sub)) {
-                        continue;
-                    }
-                    String name = sub.getFileName().toString();
-                    if (!name.matches("\\d+")) {
-                        continue; // only numeric dirs like 221012
-                    }
+                System.out.println("Flattening: " + paramDir.getFileName());
+                paramDirsFound.add(paramDir.getFileName().toString());
 
-                    Path recCsv = sub.resolve("All Recordings.csv");
-                    Path tracksCsv = sub.resolve("All Tracks.csv");
-                    Path brightfield = sub.resolve("Brightfield Images");
-                    Path trackmate = sub.resolve("TrackMate Images");
-                    Path paramFile = sub.resolve("ParameterUsed.txt");
 
-                    // concat All Recordings
-                    if (Files.exists(recCsv)) {
-                        try (Reader in = Files.newBufferedReader(recCsv);
-                             CSVParser parser = new CSVParser(in, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
+                if (experimentNames.isEmpty()) {
+                    System.out.println("  (no subdirectories found)");
+                    continue;
+                }
 
-                            if (!headerWrittenRecordings) {
-                                recPrinter.printRecord(parser.getHeaderMap().keySet());
-                                headerWrittenRecordings = true;
-                            }
-                            for (CSVRecord r : parser) {
-                                recPrinter.printRecord(r);
-                            }
-                        }
-                    }
+                // Run Generate Squares
+                try {
+                    run(paramDir, experimentNames);
+                } catch (Exception e) {
+                }
 
-                    // concat All Tracks
-                    if (Files.exists(tracksCsv)) {
-                        try (Reader in = Files.newBufferedReader(tracksCsv);
-                             CSVParser parser = new CSVParser(in, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
+                // Add the case field to all files
+                try {
+                    String caseName = paramDir.getFileName().toString();
 
-                            if (!headerWrittenTracks) {
-                                tracksPrinter.printRecord(parser.getHeaderMap().keySet());
-                                headerWrittenTracks = true;
-                            }
-                            for (CSVRecord r : parser) {
-                                tracksPrinter.printRecord(r);
-                            }
-                        }
-                    }
+                    addCase(paramDir, "All Squares Java.csv", experimentNames, caseName);
+                    addCase(paramDir, "All Tracks Java.csv", experimentNames, caseName);
+                    addCase(paramDir, "All Recordings Java.csv", experimentNames, caseName);
+                    addCase(paramDir, "Experiment Info.csv", experimentNames, caseName);
+                } catch (IOException e) {
+                    System.err.println("  Error concatenating files in " + paramDir + ": " + e.getMessage());
+                }
 
-                    // merge Brightfield Images
-                    if (Files.exists(brightfield)) {
-                        try (DirectoryStream<Path> imgs = Files.newDirectoryStream(brightfield)) {
-                            for (Path img : imgs) {
-                                Files.copy(img, brightfieldOut.resolve(img.getFileName()), REPLACE_EXISTING);
-                            }
-                        }
-                    }
+                // Concatenate the four CSVs
+                try {
+                    CsvConcatenator.concatenateNamedCsvFiles(paramDir, "All Squares Java.csv", experimentNames);
+                    CsvConcatenator.concatenateNamedCsvFiles(paramDir, "All Tracks Java.csv", experimentNames);
+                    CsvConcatenator.concatenateNamedCsvFiles(paramDir, "All Recordings Java.csv", experimentNames);
+                    CsvConcatenator.concatenateNamedCsvFiles(paramDir, "Experiment Info.csv", experimentNames);
+                } catch (IOException e) {
+                    System.err.println("  Error concatenating files in " + paramDir + ": " + e.getMessage());
+                }
 
-                    // merge TrackMate Images
-                    if (Files.exists(trackmate)) {
-                        try (DirectoryStream<Path> imgs = Files.newDirectoryStream(trackmate)) {
-                            for (Path img : imgs) {
-                                Files.copy(img, trackmateOut.resolve(img.getFileName()), REPLACE_EXISTING);
-                            }
-                        }
-                    }
-
-                    // save ParameterUsed.txt with suffix
-                    if (Files.exists(paramFile)) {
-                        Path target = sweepParamDir.resolve("ParameterUsed-" + name + ".txt");
-                        Files.copy(paramFile, target, REPLACE_EXISTING);
-                    }
-
-                    // optionally delete numeric subdir
-                    if (deleteSubdirs) {
-                        deleteRecursively(sub);
+                // Optionally delete experiment subdirectories
+                if (deleteSubdirs) {
+                    for (String sub : experimentNames) {
+                        deleteRecursively(paramDir.resolve(sub));
                     }
                 }
             }
         }
+
+        CsvConcatenator.concatenateNamedCsvFiles(sweepRoot, "All Squares Java.csv", paramDirsFound);
+        CsvConcatenator.concatenateNamedCsvFiles(sweepRoot, "All Tracks Java.csv", paramDirsFound);
+        CsvConcatenator.concatenateNamedCsvFiles(sweepRoot, "All Recordings Java.csv", paramDirsFound);
+        CsvConcatenator.concatenateNamedCsvFiles(sweepRoot, "Experiment Info.csv", paramDirsFound);
+
     }
 
     private static void deleteRecursively(Path path) throws IOException {
@@ -131,6 +105,11 @@ public class SweepFlattener {
                 }
             }
         }
-        Files.delete(path);
+        Files.deleteIfExists(path);
+    }
+
+    public static void main(String[] args) throws IOException {
+        Path sweepPath = Paths.get("/Users/hans/Paint Test Project/Sweep");
+        flattenSweep(sweepPath, Arrays.asList("221012", "AnyName"),false);
     }
 }
