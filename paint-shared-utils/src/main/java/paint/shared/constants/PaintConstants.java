@@ -288,5 +288,4 @@ public final class PaintConstants {
             ColumnType.BOOLEAN,  // Process Flag
             ColumnType.DOUBLE    // Threshold
     };
-
 }

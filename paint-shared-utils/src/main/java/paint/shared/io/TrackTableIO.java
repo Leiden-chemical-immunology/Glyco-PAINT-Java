@@ -117,7 +117,7 @@ public class TrackTableIO extends BaseTableIO {
         // Adapt column names to match your CSV/table headers
         // @formatter:off
         track.setUniqueKey(                row.getString(  "Unique Key"));
-        track.setExperimentName(           row.getString( "Experiment Name"));
+        track.setExperimentName(           row.getString(  "Experiment Name"));
         track.setRecordingName(            row.getString(  "Recording Name"));
         track.setTrackId(                  row.getInt(     "Track ID"));
         track.setNumberOfSpots(            row.getInt(     "Number of Spots"));

@@ -159,11 +159,4 @@ public abstract class BaseTableIO {
         table.write().usingOptions(opts);
     }
 
-    protected static String schemaToString(String[] names, ColumnType[] types) {
-        List<String> parts = new ArrayList<>();
-        for (int i = 0; i < names.length; i++) {
-            parts.add(names[i] + ":" + types[i].name());
-        }
-        return Arrays.toString(parts.toArray(new String[0]));
-    }
 }

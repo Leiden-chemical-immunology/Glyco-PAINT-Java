@@ -223,17 +223,12 @@ public class ExperimentInfo {
         this.tracks.add(track);
     }
 
-    // --- Debug helpers ---
-    private static Boolean checkBooleanValue(String string) {
-        Set<String> yesValues = new HashSet<>(Arrays.asList("y", "ye", "yes", "ok", "true", "t"));
-        return yesValues.contains(string.trim().toLowerCase());
-    }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("\tExperment Info");
+        sb.append("\tExperiment Info");
         sb.append(String.format("\t              Experiment Name               : %s\n", experimentName));
         sb.append(String.format("\t              Recording Name                : %s%n", recordingName));
         sb.append(String.format("\t              Condition Nr                  : %d%n", conditionNumber));

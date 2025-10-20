@@ -23,8 +23,8 @@ public class GenerateSquaresConfig {
     private GenerateSquaresConfig() {
 
         // @formatter:off
-        this.numberOfSquaresInRecording  = getInt("Generate Squares",    "Number of Squares in Recording", 400);
-        this.minTracksToCalculateTau     = getInt("Generate Squares",    "Min Tracks to Calculate Tau", 20);
+        this.numberOfSquaresInRecording  = getInt(   "Generate Squares", "Number of Squares in Recording", 400);
+        this.minTracksToCalculateTau     = getInt(   "Generate Squares", "Min Tracks to Calculate Tau", 20);
         this.minRequiredRSquared         = getDouble("Generate Squares", "Min Required R Squared", 0.1);
         this.minRequiredDensityRatio     = getDouble("Generate Squares", "Min Required Density Ratio", 0.1);
         this.maxAllowableVariability     = getDouble("Generate Squares", "Max Allowable Variability", 10.0);
@@ -32,13 +32,9 @@ public class GenerateSquaresConfig {
         // @formatter:on
     }
 
-
     public static GenerateSquaresConfig from(PaintConfig paintConfig) {
         return new GenerateSquaresConfig();
     }
-
-    // Getters are not really needed as attributes are public
-    // Setter methods are not needed either, as the attributes are final
 
     public int getNumberOfSquaresInRecording() {
         return numberOfSquaresInRecording;
@@ -66,13 +62,16 @@ public class GenerateSquaresConfig {
 
     @Override
     public String toString() {
+
+        // @formatter:off
         return "GenerateSquaresConfig{" +
-                "nrSquaresInRow=" + numberOfSquaresInRecording +
+                "nrSquaresInRow="            + numberOfSquaresInRecording +
                 ", minTracksToCalculateTau=" + minTracksToCalculateTau +
-                ", minRequiredRSquared=" + minRequiredRSquared +
+                ", minRequiredRSquared="     + minRequiredRSquared +
                 ", minRequiredDensityRatio=" + minRequiredDensityRatio +
                 ", maxAllowableVariability=" + maxAllowableVariability +
-                ", neighbourMode='" + neighbourMode + '\'' +
+                ", neighbourMode='"          + neighbourMode + '\'' +
                 '}';
+        // @formatter:on
     }
 }

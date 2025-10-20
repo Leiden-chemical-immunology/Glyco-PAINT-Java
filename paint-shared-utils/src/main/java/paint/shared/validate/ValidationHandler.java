@@ -75,6 +75,7 @@ public class ValidationHandler {
         return overall;
     }
 
+
     private static String getString(String expName, String fileName, String err) {
         String flattened = err.replace("\n", " ").replaceAll("\\s+", " ").trim();
 
@@ -88,6 +89,7 @@ public class ValidationHandler {
         }
         return msg;
     }
+
 
     private static ValidationResult runValidator(String fileName, File file, String experimentName) {
         String lower = fileName.toLowerCase();
@@ -104,49 +106,6 @@ public class ValidationHandler {
             res.addError("Unknown file: " + fileName);
             return res;
         }
-    }
-
-    public static void main(String[] args) {
-
-        Path projectPath = Paths.get("/Users/hans/Paint Test Project");
-        //validateAll(projectPath);
-
-        testCase2(projectPath);
-    }
-
-    public static void validateExperiment(Path projectPath, List<String> experimentNames) {
-
-        List<String> fileNames = Arrays.asList(
-                "Experiment Info.csv",
-                RECORDINGS_CSV,
-                SQUARES_CSV);
-
-        validate(projectPath, experimentNames, fileNames);
-
-    }
-
-    public static void validateAll(Path projectPath) {
-
-        PaintLogger.initialise(projectPath, "Validate");
-
-        List<String> experimentNames = new ArrayList<>();
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(projectPath)) {
-            for (Path p : stream) {
-                if (Files.isDirectory(p)) {
-                    experimentNames.add(p.getFileName().toString());
-                }
-            }
-        } catch (Exception e) {
-            return;
-        }
-        experimentNames.sort(String::compareTo);
-
-        List<String> fileNames = Arrays.asList(
-                "Experiment Info.csv",
-                RECORDINGS_CSV,
-                SQUARES_CSV);
-
-        validate(projectPath, experimentNames, fileNames);
     }
 
 
@@ -167,6 +126,14 @@ public class ValidationHandler {
 
     }
 
+
+    public static void main(String[] args) {
+
+        Path projectPath = Paths.get("/Users/hans/Paint Test Project");
+        //validateAll(projectPath);
+
+        testCase2(projectPath);
+    }
 
 
     public static void testCase2(Path projectPath) {

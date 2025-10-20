@@ -57,14 +57,14 @@ public class PaintConfig {
     // Section Name Constants
     // ============================================================================
 
-
+    // @ formatter:off
     public static final String SECTION_GENERATE_SQUARES = "Generate Squares"; // Section name for Generate Squares configuration
     public static final String SECTION_PAINT            = "Paint";            // Section name for general Paint application settings.
     public static final String SECTION_RECORDING_VIEWER = "Recording Viewer"; // Section name for the Recording Viewer configuration.
     public static final String SECTION_TRACKMATE        = "TrackMate";        // Section name for TrackMate configuration.
     public static final String SECTION_DEBUG            = "Debug";            // Section name for Debug configuration.
     public static final String SECTION_PATHS            = "Paths";            // Section name for Path configuration.
-
+    // @ formatter:on
 
     // ============================================================================
     // Singleton + Shared Resources
@@ -157,57 +157,61 @@ public class PaintConfig {
 
     /** Loads default configuration values (called if no file exists). */
     private void loadDefaults() {
+
+        // @formatter:off
         JsonObject generateSquares = new JsonObject();
-        generateSquares.addProperty("Min Tracks to Calculate Tau", 20);
-        generateSquares.addProperty("Min Required R Squared", 0.1);
-        generateSquares.addProperty("Max Allowable Variability", 10.0);
-        generateSquares.addProperty("Min Required Density Ratio", 2.0);
-        generateSquares.addProperty("Min Track Duration", 0);
-        generateSquares.addProperty("Max Track Duration", 2000000);
+        generateSquares.addProperty("Min Tracks to Calculate Tau",                 20);
+        generateSquares.addProperty("Min Required R Squared",                      0.1);
+        generateSquares.addProperty("Max Allowable Variability",                   10.0);
+        generateSquares.addProperty("Min Required Density Ratio",                  2.0);
+        generateSquares.addProperty("Min Track Duration",                          0);
+        generateSquares.addProperty("Max Track Duration",                          2000000);
         generateSquares.addProperty("Fraction of Squares to Determine Background", 0.1);
         generateSquares.addProperty("Exclude zero DC tracks from Tau Calculation", false);
-        generateSquares.addProperty("Neighbour Mode", "Free");
-        generateSquares.addProperty("Number of Squares in Recording", 400);
-        generateSquares.addProperty("Plot Curve Fitting", false);
+        generateSquares.addProperty("Neighbour Mode",                              "Free");
+        generateSquares.addProperty("Number of Squares in Recording",              400);
+        generateSquares.addProperty("Plot Curve Fitting",                          false);
         configData.add(SECTION_GENERATE_SQUARES, generateSquares);
 
         JsonObject paint = new JsonObject();
-        paint.addProperty("Version", "1.0");
-        paint.addProperty("Image File Extension", ".nd2");
-        paint.addProperty("Log Level", "INFO");
+        paint.addProperty("Version",                                               "1.0");
+        paint.addProperty("Image File Extension",                                  ".nd2");
+        paint.addProperty("Log Level",                                             "INFO");
         configData.add(SECTION_PAINT, paint);
 
         JsonObject recordingViewer = new JsonObject();
-        recordingViewer.addProperty("Save Mode", "Ask");
+        recordingViewer.addProperty("Save Mode",                                   "Ask");
         configData.add(SECTION_RECORDING_VIEWER, recordingViewer);
 
         JsonObject trackMate = new JsonObject();
-        trackMate.addProperty("MAX_FRAME_GAP", 3);
-        trackMate.addProperty("ALTERNATIVE_LINKING_COST_FACTOR", 1.05);
-        trackMate.addProperty("DO_SUBPIXEL_LOCALIZATION", false);
-        trackMate.addProperty("MIN_NR_SPOTS_IN_TRACK", 3);
-        trackMate.addProperty("LINKING_MAX_DISTANCE", 0.6);
-        trackMate.addProperty("MAX_NR_SPOTS_IN_IMAGE", 2000000);
-        trackMate.addProperty("GAP_CLOSING_MAX_DISTANCE", 1.2);
-        trackMate.addProperty("TARGET_CHANNEL", 1);
-        trackMate.addProperty("SPLITTING_MAX_DISTANCE", 15.0);
-        trackMate.addProperty("TRACK_COLOURING", "TRACK_DURATION");
-        trackMate.addProperty("RADIUS", 0.5);
-        trackMate.addProperty("ALLOW_GAP_CLOSING", true);
-        trackMate.addProperty("DO_MEDIAN_FILTERING", false);
-        trackMate.addProperty("ALLOW_TRACK_SPLITTING", false);
-        trackMate.addProperty("ALLOW_TRACK_MERGING", false);
-        trackMate.addProperty("MERGING_MAX_DISTANCE", 15.0);
-        trackMate.addProperty("Max Seconds Per Recording", 2000);
+        trackMate.addProperty("MAX_FRAME_GAP",                                     3);
+        trackMate.addProperty("ALTERNATIVE_LINKING_COST_FACTOR",                   1.05);
+        trackMate.addProperty("DO_SUBPIXEL_LOCALIZATION",                          false);
+        trackMate.addProperty("MIN_NR_SPOTS_IN_TRACK",                             3);
+        trackMate.addProperty("LINKING_MAX_DISTANCE",                              0.6);
+        trackMate.addProperty("MAX_NR_SPOTS_IN_IMAGE",                             2000000);
+        trackMate.addProperty("GAP_CLOSING_MAX_DISTANCE",                          1.2);
+        trackMate.addProperty("TARGET_CHANNEL",                                    1);
+        trackMate.addProperty("SPLITTING_MAX_DISTANCE",                            15.0);
+        trackMate.addProperty("TRACK_COLOURING",                                   "TRACK_DURATION");
+        trackMate.addProperty("RADIUS",                                            0.5);
+        trackMate.addProperty("ALLOW_GAP_CLOSING",                                 true);
+        trackMate.addProperty("DO_MEDIAN_FILTERING",                               false);
+        trackMate.addProperty("ALLOW_TRACK_SPLITTING",                             false);
+        trackMate.addProperty("ALLOW_TRACK_MERGING",                               false);
+        trackMate.addProperty("MERGING_MAX_DISTANCE",                              15.0);
+        trackMate.addProperty("Max Seconds Per Recording",                         2000);
         configData.add(SECTION_TRACKMATE, trackMate);
 
-        trackMate.addProperty("Debug RunTrackMateOnProject", false);
-        trackMate.addProperty("Debug RunTrackMateOnRecording", false);
+        trackMate.addProperty("Debug RunTrackMateOnProject",                       false);
+        trackMate.addProperty("Debug RunTrackMateOnRecording",                     false);
         configData.add(SECTION_DEBUG, trackMate);
 
-        trackMate.addProperty("Project Root", "");
-        trackMate.addProperty("Images Root", "");
+        trackMate.addProperty("Project Root",                                      "");
+        trackMate.addProperty("Images Root",                                       "");
         configData.add(SECTION_PATHS, trackMate);
+
+        // @formatter:on
     }
 
     /** Saves the current configuration to disk. */

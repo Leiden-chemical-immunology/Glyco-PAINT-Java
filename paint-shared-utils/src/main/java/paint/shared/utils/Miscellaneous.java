@@ -37,38 +37,9 @@ public class Miscellaneous {
     }
 
     public static String formatDuration(Duration duration) {
-
         int totalSeconds = (int) duration.getSeconds();
         return formatDuration(totalSeconds);
     }
-
-    /* START IGNORE
-    public static List<String[]> readTableAsStrings(Path csvPath) throws IOException {
-        List<String[]> rows = new ArrayList<>();
-
-        CSVFormat format = CSVFormat.DEFAULT.builder()
-                .setHeader()                 // use first row as header
-                .setSkipHeaderRecord(true)   // don’t return the header as a record
-                .build();
-
-        try (Reader reader = Files.newBufferedReader(csvPath);
-             CSVParser csvParser = new CSVParser(reader, format)) {
-
-            // Add header row
-            List<String> header = new ArrayList<>(csvParser.getHeaderMap().keySet());
-            rows.add(header.toArray(new String[0]));
-
-            for (CSVRecord record : csvParser) {
-                String[] row = new String[record.size()];
-                for (int i = 0; i < record.size(); i++) {
-                    row[i] = record.get(i);
-                }
-                rows.add(row);
-            }
-        }
-        return rows;
-    }
-    END IGNORE*/
 
     public static String friendlyMessage(Throwable t) {
         if (t == null) {
@@ -79,17 +50,6 @@ public class Miscellaneous {
         return (colon != -1) ? m.substring(colon + 1).trim() : m;
     }
 
-    public static String rootCauseFriendlyMessage(Throwable t) {
-        if (t == null) {
-            return "";
-        }
-        Throwable cur = t;
-        while (cur.getCause() != null) {
-            cur = cur.getCause();
-        }
-        return friendlyMessage(cur);
-    }
-
     public static void deleteAssociatedFiles(Path experimentInfoFile) {
         Path parentDir = experimentInfoFile.getParent();
 
@@ -97,10 +57,8 @@ public class Miscellaneous {
             System.err.println("❌ experimentInfoFile has no parent directory.");
             return;
         }
-
         Path allTracks = parentDir.resolve(TRACKS_CSV);
         Path allRecordings = parentDir.resolve(RECORDINGS_CSV);
-
     }
 
     public static double round(double value, int decimals) {

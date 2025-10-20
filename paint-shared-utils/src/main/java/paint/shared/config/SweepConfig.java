@@ -112,22 +112,26 @@ public class SweepConfig {
         if (!root.has(section) || !root.get(section).isJsonObject()) {
             return defaultValue;
         }
-        JsonObject sec = root.getAsJsonObject(section);
-        if (!sec.has(key)) return defaultValue;
-
-        JsonElement el = sec.get(key);
-        if (!el.isJsonPrimitive()) return defaultValue;
-
-        if (el.getAsJsonPrimitive().isBoolean()) {
-            return el.getAsBoolean();
+        JsonObject jsonObject = root.getAsJsonObject(section);
+        if (!jsonObject.has(key)) {
+            return defaultValue;
         }
-        if (el.getAsJsonPrimitive().isString()) {
-            String s = el.getAsString().trim();
+
+        JsonElement jsonElement = jsonObject.get(key);
+        if (!jsonElement.isJsonPrimitive()) {
+            return defaultValue;
+        }
+
+        if (jsonElement.getAsJsonPrimitive().isBoolean()) {
+            return jsonElement.getAsBoolean();
+        }
+        if (jsonElement.getAsJsonPrimitive().isString()) {
+            String s = jsonElement.getAsString().trim();
             if ("true".equalsIgnoreCase(s)) return true;
             if ("false".equalsIgnoreCase(s)) return false;
         }
-        if (el.getAsJsonPrimitive().isNumber()) {
-            return el.getAsInt() != 0;
+        if (jsonElement.getAsJsonPrimitive().isNumber()) {
+            return jsonElement.getAsInt() != 0;
         }
         return defaultValue;
     }
