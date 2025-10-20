@@ -32,13 +32,15 @@ public class PaintLauncher {
         frame.setResizable(false);
         frame.setLocationRelativeTo(null);
 
-        Color bg = new Color(35, 39, 42);
-        Color fg = new Color(240, 240, 240);
-        Color accent = new Color(0x4E9AF1);
-        Color runColor = new Color(0xBFD7F8);      // "Run TrackMate"
+        // @formatter:off
+        Color bg           = new Color(35, 39, 42);
+        Color fg           = new Color(240, 240, 240);
+        Color accent       = new Color(0x4E9AF1);
+        Color runColor     = new Color(0xBFD7F8);      // "Run TrackMate"
         Color analyseColor = new Color(0xD8E7FB);  // "Analyse Results"
-        Color arrowMain = new Color(210, 210, 210);
-        Color arrowShadow = new Color(80, 80, 80);
+        Color arrowMain    = new Color(210, 210, 210);
+        Color arrowShadow  = new Color(80, 80, 80);
+        // @formatter:on
 
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(bg);
@@ -173,8 +175,7 @@ public class PaintLauncher {
             return;
         }
 
-        File[] matches = jarDir.listFiles(f ->
-                                                  f.getName().startsWith(jarPrefix) && f.getName().endsWith(".jar"));
+        File[] matches = jarDir.listFiles(f -> f.getName().startsWith(jarPrefix) && f.getName().endsWith(".jar"));
 
         if (matches == null || matches.length == 0) {
             JOptionPane.showMessageDialog(parent,

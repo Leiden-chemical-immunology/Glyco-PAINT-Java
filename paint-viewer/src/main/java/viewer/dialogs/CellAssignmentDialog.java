@@ -142,7 +142,7 @@ public class CellAssignmentDialog extends JDialog {
         repaint();
     }
 
-//  Above is the workinng version, but it does not do anything. Maybe this was meant?
+//  Above is the working version, but it does not do anything. Maybe this was meant?
 //    private void updateVisualSelection() {
 //        for (Map.Entry<JRadioButton, JPanel> e : squareByRadio.entrySet()) {
 //            JRadioButton rb = e.getKey();
