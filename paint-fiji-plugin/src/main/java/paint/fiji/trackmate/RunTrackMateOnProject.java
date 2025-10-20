@@ -5,7 +5,7 @@ import org.scijava.plugin.Plugin;
 import paint.shared.config.PaintConfig;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.RootSelectionDialog;
-import paint.shared.utils.JarInfo;
+import paint.shared.utils.JarInfoLogger;
 import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
 
@@ -70,7 +70,7 @@ public class RunTrackMateOnProject implements Command {
         PaintLogger.debugf("TrackMate plugin started");
 
         // Log JAR info
-        JarInfo info = getJarInfo(RunTrackMateOnProject.class);
+        JarInfoLogger.JarInfo info = getJarInfo(RunTrackMateOnProject.class);
         if (info != null) {
             PaintLogger.infof("Compilation date: %s", info.implementationDate);
             PaintLogger.infof("Version: %s", info.implementationVersion);

@@ -12,58 +12,85 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+/**
+ * Utility for extracting and displaying build metadata from a JAR’s MANIFEST.MF.
+ * <p>
+ * Reads entries such as:
+ * <ul>
+ *   <li>Implementation-Title</li>
+ *   <li>Implementation-Version</li>
+ *   <li>Implementation-Vendor</li>
+ *   <li>Build-Timestamp</li>
+ * </ul>
+ * Converts UTC timestamps to Europe/Amsterdam local time for display.
+ * <p>
+ * Works for both IDE (classpath) and fat-JAR executions.
+ */
 public class JarInfoLogger {
 
     private static final ZoneId AMS = ZoneId.of("Europe/Amsterdam");
-    private static final DateTimeFormatter OUT_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z").withZone(AMS);
+    private static final DateTimeFormatter OUT_FMT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z").withZone(AMS);
 
+    private JarInfoLogger() {
+        // static utility
+    }
+
+    /**
+     * Reads JAR manifest information for the given class.
+     *
+     * @param clazz any class from the JAR whose manifest you want to read
+     * @return a {@link JarInfo} record containing manifest data, or {@code null} if none found
+     */
     public static JarInfo getJarInfo(Class<?> clazz) {
         try {
-            // 1) Try reading MANIFEST from the jar that loaded this class (works in fat jar)
+            // Try to load from the JAR that defined this class
             Manifest manifest = manifestFromCodeSource(clazz);
             if (manifest == null) {
-                // 2) Fall back: read first MANIFEST on the classpath (works in IDE)
+                // Fallback: first MANIFEST.MF on classpath
                 manifest = manifestFromClasspath(clazz);
             }
             if (manifest == null) {
                 return null;
             }
 
-            Attributes a = manifest.getMainAttributes();
-
-            String ts = a.getValue("Build-Timestamp"); // optional
-            String formattedTs = formatAmsterdam(ts);   // returns null if absent/unparseable
+            Attributes attribute = manifest.getMainAttributes();
+            String ts = attribute.getValue("Build-Timestamp"); // optional
+            String formattedTs = formatAmsterdam(ts);
 
             return new JarInfo(
-                    a.getValue("Implementation-Title"),
-                    a.getValue("Implementation-Version"),
-                    a.getValue("Implementation-Vendor"),
+                    attribute.getValue("Implementation-Title"),
+                    attribute.getValue("Implementation-Version"),
+                    attribute.getValue("Implementation-Vendor"),
                     formattedTs,
-                    a.getValue("Specification-Title"),
-                    a.getValue("Specification-Version"),
-                    a.getValue("Specification-Vendor")
+                    attribute.getValue("Specification-Title"),
+                    attribute.getValue("Specification-Version"),
+                    attribute.getValue("Specification-Vendor")
             );
         } catch (Exception e) {
-            PaintLogger.errorf("JarInfo: %s", e);
+            PaintLogger.errorf("JarInfoLogger.getJarInfo(): %s", e);
             return null;
         }
     }
 
+    // ---------------------------------------------------------------------
+    // Internal helpers
+    // ---------------------------------------------------------------------
+
     private static Manifest manifestFromCodeSource(Class<?> clazz) {
         try {
             CodeSource cs = clazz.getProtectionDomain().getCodeSource();
-            if (cs == null) {
-                return null;
-            }
+            if (cs == null) return null;
+
             URL loc = cs.getLocation(); // jar:file:/.../app.jar or file:/.../classes/
             String path = loc.toString();
+
             if (path.endsWith(".jar") || path.contains(".jar!")) {
-                // Open the jar directly
                 try (JarFile jf = new JarFile(loc.getPath().replace("file:", ""))) {
                     return jf.getManifest();
                 } catch (Exception ignored) {
-                    // If that fails (e.g., shaded jar path nuances), try jar URL to MANIFEST
-                    String jarUrl = (path.endsWith(".jar") ? "jar:" + path + "!/META-INF/MANIFEST.MF"
+                    String jarUrl = (path.endsWith(".jar")
+                            ? "jar:" + path + "!/META-INF/MANIFEST.MF"
                             : path.substring(0, path.indexOf("!")) + "!/META-INF/MANIFEST.MF");
                     try (InputStream is = new URL(jarUrl).openStream()) {
                         return new Manifest(is);
@@ -82,7 +109,6 @@ public class JarInfoLogger {
             Enumeration<URL> en = cl.getResources("META-INF/MANIFEST.MF");
             while (en.hasMoreElements()) {
                 URL u = en.nextElement();
-                // Pick the first one; optionally filter by package/jar name if you have many
                 try (InputStream is = u.openStream()) {
                     return new Manifest(is);
                 }
@@ -91,12 +117,16 @@ public class JarInfoLogger {
         return null;
     }
 
+    /**
+     * Converts a UTC timestamp string to Amsterdam time, trying several formats.
+     *
+     * @param utcString raw string from manifest
+     * @return formatted string (e.g., "2025-10-14 08:39:16 CET"), or {@code null} if invalid
+     */
     public static String formatAmsterdam(String utcString) {
-        if (utcString == null || utcString.trim().isEmpty()) {
-            return null;
-        }
+        if (utcString == null || utcString.trim().isEmpty()) return null;
 
-        // Try strict ISO-8601 first (e.g. 2025-10-14T06:39:16Z)
+        // Try ISO 8601 (e.g. 2025-10-14T06:39:16Z)
         try {
             Instant ins = Instant.parse(utcString.trim());
             return OUT_FMT.format(ins);
@@ -109,19 +139,85 @@ public class JarInfoLogger {
             return OUT_FMT.format(ldt.toInstant(ZoneOffset.UTC));
         } catch (DateTimeParseException ignored) {}
 
-        // "yyyy-MM-dd'T'HH:mm:ssXX" (e.g. +02:00)
+        // Try "yyyy-MM-dd'T'HH:mm:ssXXX"
         try {
             OffsetDateTime odt = OffsetDateTime.parse(utcString.trim(),
                                                       DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"));
             return OUT_FMT.format(odt.toInstant());
         } catch (DateTimeParseException ignored) {}
 
-        // Give up gracefully
         return null;
     }
 
+    /**
+     * Prints manifest info for the given class (for manual CLI testing).
+     */
     public static void main(String[] args) {
         JarInfo info = getJarInfo(JarInfoLogger.class);
         System.out.println(Objects.toString(info, "No manifest information found."));
+    }
+
+    // ---------------------------------------------------------------------
+    // Nested data record
+    // ---------------------------------------------------------------------
+
+    /**
+     * Immutable data container for JAR manifest metadata.
+     */
+    public static class JarInfo {
+        public final String implementationTitle;
+        public final String implementationVersion;
+        public final String implementationVendor;
+        public final String implementationDate;
+
+        public final String specificationTitle;
+        public final String specificationVersion;
+        public final String specificationVendor;
+
+        public JarInfo(String implTitle,
+                       String implVersion,
+                       String implVendor,
+                       String implDate,
+                       String specTitle,
+                       String specVersion,
+                       String specVendor) {
+
+            // @formatter:off
+            this.implementationTitle   = implTitle;
+            this.implementationVersion = implVersion;
+            this.implementationVendor  = implVendor;
+            this.implementationDate    = implDate;
+
+            this.specificationTitle    = specTitle;
+            this.specificationVersion  = specVersion;
+            this.specificationVendor   = specVendor;
+            // @formatter:on
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "Implementation Title  : %s%n" +
+                            "Implementation Version: %s%n" +
+                            "Implementation Vendor : %s%n" +
+                            "Implementation Date   : %s%n",
+                    implementationTitle, implementationVersion,
+                    implementationVendor, implementationDate
+            );
+        }
+
+        public String toStringLONG() {
+            return String.format(
+                    "Implementation Title  : %s%n" +
+                            "Implementation Version: %s%n" +
+                            "Implementation Vendor : %s%n" +
+                            "Implementation Date   : %s%n" +
+                            "Specification Title   : %s%n" +
+                            "Specification Version : %s%n" +
+                            "Specification Vendor  : %s",
+                    implementationTitle, implementationVersion, implementationVendor,
+                    implementationDate, specificationTitle, specificationVersion, specificationVendor
+            );
+        }
     }
 }

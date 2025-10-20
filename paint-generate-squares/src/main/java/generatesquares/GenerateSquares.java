@@ -26,7 +26,7 @@ package generatesquares;
 import paint.shared.config.PaintConfig;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.RootSelectionDialog;
-import paint.shared.utils.JarInfo;
+import paint.shared.utils.JarInfoLogger;
 import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
 
@@ -108,7 +108,7 @@ public class GenerateSquares {
             PaintLogger.setLevel(debugLevel);
             PaintLogger.debugf("Starting Generate Squares...");
 
-            JarInfo info = getJarInfo(GenerateSquares.class);
+            JarInfoLogger.JarInfo info = getJarInfo(GenerateSquares.class);
             if (info != null) {
                 PaintLogger.infof("Compilation date: %s", info.implementationDate);
                 PaintLogger.infof("Version: %s", info.implementationVersion);
