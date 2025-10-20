@@ -17,7 +17,7 @@ import java.util.List;
 import static generatesquares.calc.GenerateSquareCalcs.generateSquaresForExperiment;
 import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.io.ExperimentDataLoader.loadExperiment;
-import static paint.shared.utils.CsvConcatenator.concatenateNamedCsvFiles;
+import static paint.shared.utils.CsvUtils.concatenateNamedCsvFiles;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.validate.ValidationHandler.validateExperiments;
 

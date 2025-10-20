@@ -1,9 +1,9 @@
 package paint.fiji.utils;
 
-import paint.shared.utils.CsvConcatenator;
 import static generatesquares.GenerateSquaresRunner.run;
 import static paint.shared.constants.PaintConstants.*;
-import static paint.shared.utils.CsvCaseAdder.addCase;
+import static paint.shared.utils.CsvUtils.addCase;
+import static paint.shared.utils.CsvUtils.concatenateNamedCsvFiles;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -24,7 +24,7 @@ public class SweepFlattener {
     /**
      * Scans all sweep parameter directories (those starting with '[')
      * and flattens their subdirectories by concatenating CSV files.
-     *
+     * <p></p>
      * After flattening, it calls GenerateSquaresRunner.run(sweepRoot, paramDirsFound)
      * to process all parameter directories.
      *
@@ -74,10 +74,10 @@ public class SweepFlattener {
 
                 // Concatenate the four CSVs
                 try {
-                    CsvConcatenator.concatenateNamedCsvFiles(paramDir, SQUARES_CSV, experimentNames);
-                    CsvConcatenator.concatenateNamedCsvFiles(paramDir, TRACKS_CSV, experimentNames);
-                    CsvConcatenator.concatenateNamedCsvFiles(paramDir, RECORDINGS_CSV, experimentNames);
-                    CsvConcatenator.concatenateNamedCsvFiles(paramDir, EXPERIMENT_INFO_CSV, experimentNames);
+                    concatenateNamedCsvFiles(paramDir, SQUARES_CSV, experimentNames);
+                    concatenateNamedCsvFiles(paramDir, TRACKS_CSV, experimentNames);
+                    concatenateNamedCsvFiles(paramDir, RECORDINGS_CSV, experimentNames);
+                    concatenateNamedCsvFiles(paramDir, EXPERIMENT_INFO_CSV, experimentNames);
                 } catch (IOException e) {
                     System.err.println("  Error concatenating files in " + paramDir + ": " + e.getMessage());
                 }
@@ -91,10 +91,10 @@ public class SweepFlattener {
             }
         }
 
-        CsvConcatenator.concatenateNamedCsvFiles(sweepRoot, SQUARES_CSV, paramDirsFound);
-        CsvConcatenator.concatenateNamedCsvFiles(sweepRoot, TRACKS_CSV, paramDirsFound);
-        CsvConcatenator.concatenateNamedCsvFiles(sweepRoot, RECORDINGS_CSV, paramDirsFound);
-        CsvConcatenator.concatenateNamedCsvFiles(sweepRoot, EXPERIMENT_INFO_CSV, paramDirsFound);
+        concatenateNamedCsvFiles(sweepRoot, SQUARES_CSV, paramDirsFound);
+        concatenateNamedCsvFiles(sweepRoot, TRACKS_CSV, paramDirsFound);
+        concatenateNamedCsvFiles(sweepRoot, RECORDINGS_CSV, paramDirsFound);
+        concatenateNamedCsvFiles(sweepRoot, EXPERIMENT_INFO_CSV, paramDirsFound);
 
     }
 

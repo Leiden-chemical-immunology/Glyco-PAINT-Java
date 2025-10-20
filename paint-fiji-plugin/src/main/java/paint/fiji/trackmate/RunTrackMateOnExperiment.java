@@ -22,7 +22,7 @@ import java.util.*;
 
 import static paint.shared.config.TrackMateConfig.trackMateConfigToFile;
 import static paint.shared.constants.PaintConstants.*;
-import static paint.shared.utils.CsvConcatenator.*;
+import static paint.shared.utils.CsvUtils.concatenateCsvFiles;
 import static paint.shared.utils.CsvUtils.countProcessed;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 
