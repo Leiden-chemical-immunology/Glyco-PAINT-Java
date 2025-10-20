@@ -32,8 +32,11 @@ public final class PaintConstants {
     // Filenames
     // =====================
 
+    public static final String RECORDINGS              = "Recordings.csv";
     public static final String RECORDINGS_CSV           = "Recordings.csv";
+    public static final String TRACKS                   = "Tracks.csv";
     public static final String TRACKS_CSV               = "Tracks.csv";
+    public static final String SQUARES                  = "Squares.csv";
     public static final String SQUARES_CSV              = "Squares.csv";
     public static final String EXPERIMENT_INFO_CSV      = "Experiment Info.csv";
     public static final String PAINT_CONFIGURATION_JSON = "Paint Configuration.json";
@@ -73,7 +76,7 @@ public final class PaintConstants {
     // Track schema
     // =====================
 
-    public static final String[] TRACK_COLS = {
+    public static final String[] TRACKS_COLS = {
             "Unique Key",
             "Experiment Name",
             "Recording Name",
@@ -95,7 +98,7 @@ public final class PaintConstants {
             "Label Number"
     };
 
-    public static final ColumnType[] TRACK_TYPES = {
+    public static final ColumnType[] TRACKS_TYPES = {
             ColumnType.STRING,  // Unique Key
             ColumnType.STRING,  // Experiment Name
             ColumnType.STRING,  // Recording Name
@@ -121,7 +124,7 @@ public final class PaintConstants {
     // Square schema
     // =====================
 
-    public static final String[] SQUARE_COLS = {
+    public static final String[] SQUARES_COLS = {
             "Unique Key",
             "Experiment Name",
             "Recording Name",
@@ -160,7 +163,7 @@ public final class PaintConstants {
             "Median Track Duration"
     };
 
-    public static final ColumnType[] SQUARE_TYPES = {
+    public static final ColumnType[] SQUARES_TYPES = {
             ColumnType.STRING,   // Unique Key
             ColumnType.STRING,   // Experiment Name
             ColumnType.STRING,   // Recording Name
@@ -203,7 +206,7 @@ public final class PaintConstants {
     // Recording schema
     // =====================
 
-    public static final String[] RECORDING_COLS = {
+    public static final String[] RECORDINGS_COLS = {
             "Experiment Name",
             "Recording Name",
             "Condition Number",
@@ -230,7 +233,7 @@ public final class PaintConstants {
             "Density"
     };
 
-    public static final ColumnType[] RECORDING_TYPES = {
+    public static final ColumnType[] RECORDINGS_TYPES = {
             ColumnType.STRING,            // Recording Name
             ColumnType.STRING,            // Recording Name
             ColumnType.INTEGER,           // Condition Number

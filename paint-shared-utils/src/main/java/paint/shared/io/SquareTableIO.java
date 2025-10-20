@@ -11,8 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.SQUARE_COLS;
-import static paint.shared.constants.PaintConstants.SQUARE_TYPES;
+import static paint.shared.constants.PaintConstants.*;
 
 /**
  * Table IO for Square entities.
@@ -20,7 +19,7 @@ import static paint.shared.constants.PaintConstants.SQUARE_TYPES;
 public class SquareTableIO extends BaseTableIO {
 
     public Table emptyTable() {
-        return newEmptyTable("Squares", SQUARE_COLS, SQUARE_TYPES);
+        return newEmptyTable("Squares", SQUARES_COLS, SQUARES_TYPES);
     }
 
     public Table toTable(List<Square> squares) {
@@ -121,13 +120,13 @@ public class SquareTableIO extends BaseTableIO {
     }
 
     public Table readCsv(Path csvPath) throws IOException {
-        return readCsvWithSchema(csvPath, "Squares", SQUARE_COLS, SQUARE_TYPES, false);
+        return readCsvWithSchema(csvPath, SQUARES, SQUARES_COLS, SQUARES_TYPES, false);
     }
 
     public void appendInPlace(Table target, Table source) {
         for (Row row : source) {
             Row newRow = target.appendRow();
-            for (String col : SQUARE_COLS) {
+            for (String col : SQUARES_COLS) {
                 Column<?> targetCol = target.column(col);
                 if (targetCol.type() == ColumnType.STRING) {
                     newRow.setString(col, row.getString(col));

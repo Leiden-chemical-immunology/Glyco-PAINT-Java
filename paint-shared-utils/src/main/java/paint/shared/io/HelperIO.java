@@ -24,8 +24,8 @@ public class HelperIO {
             Table recTable = recIO.readCsvWithSchema(
                     experimentPath.resolve(RECORDINGS_CSV),
                     "Recordings",
-                    RECORDING_COLS,
-                    RECORDING_TYPES,
+                    RECORDINGS_COLS,
+                    RECORDINGS_TYPES,
                     false
             );
             recordings = recIO.toEntities(recTable);
@@ -83,8 +83,8 @@ public class HelperIO {
             squaresTable = squareIO.readCsvWithSchema(
                     experimentPath.resolve(SQUARES_CSV),
                     "Squares",
-                    SQUARE_COLS,
-                    SQUARE_TYPES,
+                    SQUARES_COLS,
+                    SQUARES_TYPES,
                     false
             );
         } catch (Exception e) {
@@ -150,8 +150,8 @@ public class HelperIO {
             tracksTable = trackIO.readCsvWithSchema(
                     experimentPath.resolve(TRACKS_CSV),
                     "Tracks",
-                    TRACK_COLS,
-                    TRACK_TYPES,
+                    TRACKS_COLS,
+                    TRACKS_TYPES,
                     false
             );
         } catch (Exception e) {

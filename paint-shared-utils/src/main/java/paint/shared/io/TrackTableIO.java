@@ -11,8 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.TRACK_COLS;
-import static paint.shared.constants.PaintConstants.TRACK_TYPES;
+import static paint.shared.constants.PaintConstants.*;
 
 /**
  * Table IO for Track entities.
@@ -20,7 +19,7 @@ import static paint.shared.constants.PaintConstants.TRACK_TYPES;
 public class TrackTableIO extends BaseTableIO {
 
     public Table emptyTable() {
-        return newEmptyTable("Tracks", TRACK_COLS, TRACK_TYPES);
+        return newEmptyTable("Tracks", TRACKS_COLS, TRACKS_TYPES);
     }
 
     public Table toTable(List<Track> tracks) {
@@ -87,13 +86,13 @@ public class TrackTableIO extends BaseTableIO {
     }
 
     public Table readCsv(Path csvPath) throws IOException {
-        return readCsvWithSchema(csvPath, "Tracks", TRACK_COLS, TRACK_TYPES, false);
+        return readCsvWithSchema(csvPath, TRACKS, TRACKS_COLS, TRACKS_TYPES, false);
     }
 
     public void appendInPlace(Table target, Table source) {
         for (Row row : source) {
             Row newRow = target.appendRow();
-            for (String col : TRACK_COLS) {
+            for (String col : TRACKS_COLS) {
                 Column<?> targetCol = target.column(col);
                 if (targetCol.type() == ColumnType.STRING) {
                     newRow.setString(col, row.getString(col));

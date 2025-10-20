@@ -11,8 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.RECORDING_COLS;
-import static paint.shared.constants.PaintConstants.RECORDING_TYPES;
+import static paint.shared.constants.PaintConstants.*;
 
 /**
  * Table IO for Recording entities.
@@ -20,7 +19,7 @@ import static paint.shared.constants.PaintConstants.RECORDING_TYPES;
 public class RecordingTableIO extends BaseTableIO {
 
     public Table emptyTable() {
-        return newEmptyTable("Recordings", RECORDING_COLS, RECORDING_TYPES);
+        return newEmptyTable("Recordings", RECORDINGS_COLS, RECORDINGS_TYPES);
     }
 
     public Table toTable(List<Recording> recordings) {
@@ -96,13 +95,13 @@ public class RecordingTableIO extends BaseTableIO {
     }
 
     public Table readCsv(Path csvPath) throws IOException {
-        return readCsvWithSchema(csvPath, "Recordings", RECORDING_COLS, RECORDING_TYPES, false);
+        return readCsvWithSchema(csvPath, RECORDINGS, RECORDINGS_COLS, RECORDINGS_TYPES, false);
     }
 
     public void appendInPlace(Table target, Table source) {
         for (Row row : source) {
             Row newRow = target.appendRow();
-            for (String col : RECORDING_COLS) {
+            for (String col : RECORDINGS_COLS) {
                 Column<?> targetCol = target.column(col);
                 if (targetCol.type() == ColumnType.STRING) {
                     newRow.setString(col, row.getString(col));
