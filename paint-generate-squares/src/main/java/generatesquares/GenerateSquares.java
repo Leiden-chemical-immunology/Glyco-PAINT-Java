@@ -150,74 +150,16 @@ public class GenerateSquares {
 
             // --- Step 4: Define what happens when user presses OK ---
             dialog.setCalculationCallback(project -> {
-
-                // Validate the input experiment data
-                ValidationResult validateResult = validateExperiments(
-                        projectPath,
-                        project.experimentNames,
-                        Arrays.asList(EXPERIMENT_INFO_CSV,
-                                      RECORDING_CSV,
-                                      TRACK_CSV)
-                );
-
-                if (!validateResult.isValid()) {
-                    for (String line : validateResult.getReport().split("\n")) {
-                        PaintLogger.errorf(line);
-                    }
+                try {
+                    GenerateSquaresRunner.run(projectPath, project.experimentNames);
+                    return true;
+                } catch (Exception e) {
+                    PaintLogger.errorf("Generate Squares failed: %s", e.getMessage());
                     return false;
                 }
-
-                LocalDateTime start = LocalDateTime.now();
-
-                // --- Step 5: Process all selected experiments ---
-                for (String experimentName : project.experimentNames) {
-                    generateSquaresForExperiment(project, experimentName);
-
-                    // Export histograms to a PDF summary
-                    try {
-                        Experiment experiment = loadExperiment(project.projectRootPath, experimentName, true);
-                        Path pdfOut = project.projectRootPath
-                                .resolve(experimentName)
-                                .resolve("Output")
-                                .resolve("Background.pdf");
-
-                        Files.createDirectories(pdfOut.getParent());
-                        HistogramPdfExporter.exportExperimentHistogramsToPdf(experiment, pdfOut);
-
-                    } catch (Exception e) {
-                        PaintLogger.errorf("Failed to export histograms to PDF: %s", e.getMessage());
-                    }
-                }
-
-                PaintLogger.debugf("\n\nFinished calculating.");
-
-                // --- Step 6: Concatenate experiment CSVs into a project-level summary ---
-                try {
-                    PaintLogger.infof("Creating project level All Squares");
-                    concatenateNamedCsvFiles(projectPath, SQUARE_CSV, project.experimentNames);
-
-                    PaintLogger.infof("Creating project level All Recordings");
-                    concatenateNamedCsvFiles(projectPath, RECORDING_CSV, project.experimentNames);
-
-                    PaintLogger.infof("Creating project level Experiment Info");
-                    concatenateNamedCsvFiles(projectPath, EXPERIMENT_INFO_CSV, project.experimentNames);
-
-                    PaintLogger.infof("Creating project level All Tracks");
-                    concatenateNamedCsvFiles(projectPath, TRACK_CSV, project.experimentNames);
-
-                    PaintLogger.infof();
-
-                    Duration duration = Duration.between(start, LocalDateTime.now());
-                    PaintLogger.infof("Generated squares info for all selected experiments in %s", formatDuration(duration));
-                    PaintLogger.infof();
-                } catch (Exception e) {
-                    PaintLogger.errorf("Could not concatenate squares file - %s", e.getMessage());
-                }
-
-                return true;
             });
 
-            // --- Step 7: Show the configuration dialog ---
+            // --- Step 5: Show the configuration dialog ---
             dialog.showDialog();
         });
     }
