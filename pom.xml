@@ -69,7 +69,6 @@
         <module>paint-shared-utils</module>
         <module>paint-fiji-plugin</module>
         <module>paint-generate-squares</module>
-        <module>paint-integrated-fiji</module>
         <module>paint-create-experiment</module>
         <module>paint-viewer</module>
         <module>paint-get-omero</module>

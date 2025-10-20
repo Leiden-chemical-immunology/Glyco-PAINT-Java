@@ -8,7 +8,6 @@
         <outputRelativeToContentRoot value="true" />
         <module name="paint-launcher" />
         <module name="paint-regression" />
-        <module name="paint-integrated-fiji" />
         <module name="paint-fiji-plugin" />
         <module name="paint-shared-utils" />
         <module name="paint-viewer" />
@@ -20,6 +19,7 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="paint-app" target="1.8" />
+      <module name="paint-integrated-fiji" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
