@@ -151,6 +151,7 @@ public class GenerateSquares {
             // --- Step 4: Define what happens when user presses OK ---
             dialog.setCalculationCallback(project -> {
                 try {
+                    // --- Initialize configuration and logging ---
                     GenerateSquaresRunner.run(projectPath, project.experimentNames);
                     return true;
                 } catch (Exception e) {

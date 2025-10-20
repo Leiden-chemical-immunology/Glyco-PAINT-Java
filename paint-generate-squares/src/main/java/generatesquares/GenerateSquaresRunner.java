@@ -33,17 +33,7 @@ public class GenerateSquaresRunner {
      * @param experimentNames  list of experiment subdirectories to process
      * @throws Exception if any part of the workflow fails
      */
-    public static void run(Path projectPath, List<String> experimentNames) throws Exception {
-        // --- Initialize configuration and logging ---
-        PaintConfig.initialise(projectPath);
-        PaintLogger.initialise(projectPath, "Generate Squares.log");
-
-        String debugLevel = PaintConfig.getString("Paint", "Log Level", "INFO");
-        PaintLogger.setLevel(debugLevel);
-
-        PaintLogger.infof("Starting Generate Squares (headless mode)");
-        PaintLogger.infof("Project: %s", projectPath);
-        PaintLogger.infof("Experiments: %s", experimentNames);
+    public static void run(Path projectPath, List<String> experimentNames ) throws Exception {
 
         // --- Validate input data ---
         ValidationResult validateResult = validateExperiments(
