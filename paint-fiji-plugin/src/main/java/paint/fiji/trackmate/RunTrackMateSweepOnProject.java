@@ -154,7 +154,7 @@ public class RunTrackMateSweepOnProject {
         }
 
         // Write summary CSV
-        Path summaryFile = projectPath.resolve("sweep_summary.csv");
+        Path summaryFile = projectPath.resolve("Out").resolve("Sweep Summary.csv");
         try (CSVPrinter printer = new CSVPrinter(
                 new FileWriter(summaryFile.toFile()),
                 CSVFormat.DEFAULT.builder()

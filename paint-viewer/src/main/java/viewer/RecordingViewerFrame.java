@@ -56,7 +56,7 @@ public class RecordingViewerFrame extends JFrame
         this.project = project;
         this.recordings = recordings;
         this.overrideWriter = new ViewerOverrideWriter(
-                new File(project.getProjectRootPath().toFile(), "Viewer Override.csv"));
+                new File(new File(project.getProjectRootPath().toFile(), "Out"), "Viewer Override.csv"));
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
