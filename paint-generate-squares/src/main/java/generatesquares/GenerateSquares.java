@@ -26,28 +26,16 @@ package generatesquares;
 import paint.shared.config.PaintConfig;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.RootSelectionDialog;
-import paint.shared.objects.Experiment;
-import paint.shared.utils.HistogramPdfExporter;
 import paint.shared.utils.JarInfo;
 import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
-import paint.shared.validate.ValidationResult;
 
 import javax.swing.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 
-import static generatesquares.calc.GenerateSquareCalcs.generateSquaresForExperiment;
-import static paint.shared.constants.PaintConstants.*;
-import static paint.shared.io.ProjectDataLoader.loadExperiment;
-import static paint.shared.utils.CsvConcatenator.concatenateNamedCsvFiles;
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
-import static paint.shared.utils.Miscellaneous.formatDuration;
-import static paint.shared.validate.ValidationHandler.validateExperiments;
 
 /**
  * Entry point for the "Generate Squares" module.
