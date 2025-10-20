@@ -50,17 +50,6 @@ public class Miscellaneous {
         return (colon != -1) ? m.substring(colon + 1).trim() : m;
     }
 
-    public static void deleteAssociatedFiles(Path experimentInfoFile) {
-        Path parentDir = experimentInfoFile.getParent();
-
-        if (parentDir == null) {
-            System.err.println("❌ experimentInfoFile has no parent directory.");
-            return;
-        }
-        Path allTracks = parentDir.resolve(TRACKS_CSV);
-        Path allRecordings = parentDir.resolve(RECORDINGS_CSV);
-    }
-
     public static double round(double value, int decimals) {
         if (decimals < 0) {
             return  value;
