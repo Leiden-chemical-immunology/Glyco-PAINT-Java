@@ -25,6 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 import static paint.shared.config.PaintConfig.getBoolean;
 
@@ -118,9 +120,47 @@ public class RunTrackMateOnRecording {
         if (isCancelled(Thread.currentThread(), dialog)) {
             return cancelEarly(imp);
         }
-        if (!Files.exists(jpgPath)) {
+
+        // Find The brightfield file
+        ImagePlus impBrightfield;
+
+        Path brightFieldPath = null;
+        String baseName      = experimentInfoRecord.getRecordingName();
+
+        List<String> candidates = Arrays.asList(
+                baseName + "-BF.nd2",
+                baseName + "-BF1.nd2",
+                baseName + "-BF2.nd2");
+        try {
+            brightFieldPath = candidates.stream()
+                    .map(imagesPath::resolve)
+                    .filter(Files::exists)
+                    .findFirst()
+                    .orElse(null);
+        }
+        catch (Exception e) {
+            PaintLogger.errorf("Could not find Brightfield image file: %s", candidates);
+        }
+
+        if (brightFieldPath == null || Files.notExists(brightFieldPath)) {
+            PaintLogger.warningf("      Could not open brightfield file: %s",
+                                 brightFieldPath == null ? "none found" : brightFieldPath.toString());
+        }
+        else {
             try {
-                IJ.saveAs(imp, "Jpeg", jpgPath.toString());
+                impBrightfield = IJ.openImage(brightFieldPath.toString());
+                IJ.run(impBrightfield, "Enhance Contrast", "saturated=0.35");
+            } catch (Exception e) {
+                if (!isCancelled(Thread.currentThread(), dialog)) {
+                    PaintLogger.errorf("Could not open brightfield file: %s", brightFieldPath.toString());
+                }
+                impBrightfield = null;
+            }
+
+            try {
+                if (impBrightfield != null) {
+                    IJ.saveAs(impBrightfield, "Jpeg", jpgPath.toString());
+                }
             } catch (Exception e) {
                 if (!isCancelled(Thread.currentThread(), dialog))
                     PaintLogger.errorf("Failed to save Brightfield image: %s", jpgPath);
