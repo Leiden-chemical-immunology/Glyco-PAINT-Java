@@ -11,8 +11,11 @@ import java.io.Reader;
 import java.nio.file.*;
 import java.util.*;
 
+import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
+import static paint.shared.constants.PaintConstants.RECORDINGS_CSV;
+
 /**
- * Utility to traverse subdirectories, locate "All Recordings Java.csv" and "Experiment Info.csv" files,
+ * Utility to traverse subdirectories, locate RECORDINGS_CSV and EXPERIMENT_INFO)_CSV" files,
  * and add an "Experiment Name" column directly *before* "Recording Name".
  * The value is derived from the recording name (e.g., "230417-Exp-1-A1-1" → "230417").
  */
@@ -22,8 +25,8 @@ public class AddExperimentNameBeforeRecordingName {
     private static final Path ROOT = Paths.get("/Users/hans/Paint Test Project");
 
     private static final List<String> TARGET_FILENAMES = Arrays.asList(
-            "All Recordings Java.csv",
-            "Experiment Info.csv"
+            RECORDINGS_CSV,
+            EXPERIMENT_INFO_CSV
     );
 
     public static void main(String[] args) throws IOException {

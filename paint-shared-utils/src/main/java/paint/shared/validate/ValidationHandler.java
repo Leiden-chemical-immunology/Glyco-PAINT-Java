@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static paint.shared.constants.PaintConstants.*;
+
 /**
  * Batch validator that checks one or more specific CSV files across multiple experiments in a project.
  * <p>
@@ -112,8 +114,8 @@ public class ValidationHandler {
 
         List<String> fileNames = Arrays.asList(
                 "Experiment Info.csv",
-                "All Recordings Java.csv",
-                "All Squares Java.csv");
+                RECORDINGS_CSV,
+                SQUARES_CSV);
 
         validate(projectPath, experimentNames, fileNames);
 
@@ -137,8 +139,8 @@ public class ValidationHandler {
 
         List<String> fileNames = Arrays.asList(
                 "Experiment Info.csv",
-                "All Recordings Java.csv",
-                "All Squares Java.csv");
+                RECORDINGS_CSV,
+                SQUARES_CSV);
 
         validate(projectPath, experimentNames, fileNames);
     }
@@ -174,9 +176,9 @@ public class ValidationHandler {
 
         List<String> fileNames = Arrays.asList(
                 "Experiment Info.csv",
-                "All Recordings Java.csv",
-                "All Squares Java.csv",
-                "All Tracks Java.csv"
+                RECORDINGS_CSV,
+                SQUARES_CSV,
+                TRACKS_CSV
         );
         validate(projectPath, experimentNames, fileNames);
     }
@@ -196,10 +198,10 @@ public class ValidationHandler {
         );
 
         List<String> fileNames = Arrays.asList(
-                "Experiment Info.csv",
-                "All Recordings Java.csv",
-                "All Squares Java.csv",
-                "All Tracks Java.csv"
+                EXPERIMENT_INFO_CSV,
+                RECORDINGS_CSV,
+                SQUARES_CSV,
+                TRACKS_CSV
         );
         validate(projectPath, experimentNames, fileNames);
     }

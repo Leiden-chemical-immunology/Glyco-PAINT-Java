@@ -12,7 +12,7 @@ import java.util.*;
  *
  *  PURPOSE
  *  ---------------------------------------------------------------------------
- *  Compare two “All Squares” CSVs (Python vs Java) with:
+ *  Compare two “Squares” CSVs (Python vs Java) with:
  *   • Automatic normalization
  *   • Effective precision alignment
  *   • Percentage-based tolerance per numeric field
@@ -122,7 +122,7 @@ public class SquaresCsvComparator {
         Files.createDirectories(outDir);
 
         Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Squares.csv");
-        Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/All Squares Java.csv");
+        Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/Squares.csv");
 
         System.out.println("🔍 Reading CSVs...");
         List<Map<String,String>> oldRows = readCsv(oldCsv);

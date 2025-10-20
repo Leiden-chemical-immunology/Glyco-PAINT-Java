@@ -21,10 +21,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * <h4>Modes</h4>
  * <ul>
- *   <li>{@code TRACKMATE} – deletes {@code All Recordings*}, {@code All Tracks*},
- *       and {@code All Squares*} CSV files, plus the directories
+ *   <li>{@code TRACKMATE} – deletes {@code Recordings*}, {@code All Tracks*},
+ *       and {@code SQUARES_CSV*}  files, plus the directories
  *       {@code Brightfield Images} and {@code TrackMate Images}.</li>
- *   <li>{@code GENERATE_SQUARES} – deletes only {@code All Squares*} CSV files.</li>
+ *   <li>{@code GENERATE_SQUARES} – deletes only {@code SQUARES_CSV*} files.</li>
  * </ul>
  *
  * <h4>Options</h4>
@@ -45,9 +45,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class CleanupUtility {
 
     // --- Constants for file names ---
-    private static final String RECORDINGS_CSV = "All Recordings Java.csv";
-    private static final String TRACKS_CSV = "All Tracks Java.csv";
-    private static final String SQUARES_CSV = "All Squares Java.csv";
+    private static final String RECORDINGS_CSV = "Recordings.csv";
+    private static final String TRACKS_CSV = "Tracks.csv";
+    private static final String SQUARES_CSV = "Squares.csv";
 
     private static final String RECORDINGS_OLD = "All Recordings.csv";
     private static final String TRACKS_OLD = "All Tracks.csv";

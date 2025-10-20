@@ -145,7 +145,7 @@ public class CsvConcatenator {
      * This is typically used to merge CSV results from multiple experiments into a single dataset in the root
      *
      * @param projectPath     root directory of the project containing experiment subfolders
-     * @param fileName        name of the CSV file to concatenate (e.g., {@code "All Tracks Java.csv"})
+     * @param fileName        name of the CSV file to concatenate (e.g., {@code TRACKS_CSV})
      * @param experimentNames list of experiment subfolder names
      * @throws IOException if any file cannot be read or written
      */

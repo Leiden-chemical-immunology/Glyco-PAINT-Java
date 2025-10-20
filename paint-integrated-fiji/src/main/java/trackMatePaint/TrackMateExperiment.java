@@ -17,7 +17,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
-import static paint.shared.constants.PaintConstants.RECORDING_CSV;
+import static paint.shared.constants.PaintConstants.RECORDINGS_CSV;
 import static paint.shared.utils.Miscellaneous.deleteAssociatedFiles;
 
 public class TrackMateExperiment {
@@ -119,13 +119,13 @@ public class TrackMateExperiment {
             // System.out.println("");
         }
 
-        // Delete All Recordings.csv and All Tracks.csv if they exist
+        // Delete RECORDINGS_CSV and TRACKS_CSV if they exist
         deleteAssociatedFiles(experimentInfoFile);
 
         // Then do the actual processing
         Instant start = Instant.now();
 
-        // Extend the Experiment Info file with new columns to bring it into All Recordings format
+        // Extend the Experiment Info file with new columns to bring it into RECORDINGS_CSV format
         recordings = addOrderedColumns(recordings);
 
         // Now cycle through again and fand do the work
@@ -138,8 +138,8 @@ public class TrackMateExperiment {
             }
         }
 
-        // Now write the All Recordings.csv file
-        Path outputFile = experimentInfoFile.getParent().resolve(RECORDING_CSV);
+        // Now write the RECORDINGS_CSV file
+        Path outputFile = experimentInfoFile.getParent().resolve(RECORDINGS_CSV);
         try (CSVWriter writer = new CSVWriter(new FileWriter(outputFile.toFile()))) {
             // Use headers from the first row (original plus new)
             Set<String> headers = recordings.get(0).keySet();
@@ -153,10 +153,10 @@ public class TrackMateExperiment {
                 writer.writeNext(values.toArray(new String[0]));
             }
 
-            // System.out.println("✅ All Recordings.csv written to: " + outputFile);
+            // System.out.println("✅ Recordings.csv written to: " + outputFile);
 
         } catch (IOException e) {
-            System.out.println("🚫 Failed to write All Recordings.csv: " + e.getMessage());
+            System.out.println("🚫 Failed to write Recordings.csv: " + e.getMessage());
         }
         Instant end = Instant.now();
         Duration duration = Duration.between(start, end);

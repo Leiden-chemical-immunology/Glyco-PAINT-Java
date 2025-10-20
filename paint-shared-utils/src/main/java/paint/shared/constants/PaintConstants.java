@@ -32,9 +32,9 @@ public final class PaintConstants {
     // Filenames
     // =====================
 
-    public static final String RECORDING_CSV            = "All Recordings Java.csv";
-    public static final String TRACK_CSV                = "All Tracks Java.csv";
-    public static final String SQUARE_CSV               = "All Squares Java.csv";
+    public static final String RECORDINGS_CSV           = "Recordings.csv";
+    public static final String TRACKS_CSV               = "Tracks.csv";
+    public static final String SQUARES_CSV              = "Squares.csv";
     public static final String EXPERIMENT_INFO_CSV      = "Experiment Info.csv";
     public static final String PAINT_CONFIGURATION_JSON = "Paint Configuration.json";
 
@@ -180,7 +180,7 @@ public final class PaintConstants {
             ColumnType.DOUBLE,   // Variability
             ColumnType.DOUBLE,   // Density
             ColumnType.DOUBLE,   // Density Ratio
-            ColumnType.DOUBLE,   // Densoty Ratio Ori
+            ColumnType.DOUBLE,   // Density Ratio Ori
             ColumnType.DOUBLE,   // Tau
             ColumnType.DOUBLE,   // R Squared
             ColumnType.DOUBLE,   // Median Diffusion Coefficient

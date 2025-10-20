@@ -4,6 +4,8 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
+import static paint.shared.constants.PaintConstants.SQUARES_CSV;
+
 /**
  * ============================================================================
  *  SquaresCsvComparator.java
@@ -12,7 +14,7 @@ import java.util.*;
  *
  *  PURPOSE
  *  ---------------------------------------------------------------------------
- *  Compare two "All Squares" CSV files (Python vs Java) by:
+ *  Compare two "Squares" CSV files (Python vs Java) by:
  *    1. Normalizing both files to a common schema
  *    2. Sorting by Recording Name + Square Nr
  *    3. Writing normalized CSVs for inspection
@@ -627,8 +629,8 @@ public class SquaresSidebySideComparator {
         } catch (IOException ignored) {
         }
 
-        Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Squares.csv");
-        Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/All Squares Java.csv");
+        Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/" + SQUARES_CSV);
+        Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/" + SQUARES_CSV);
 
         List<Map<String, String>> oldRows = readCsv(oldCsv);
         List<Map<String, String>> newRows = readCsv(newCsv);

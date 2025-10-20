@@ -8,7 +8,7 @@ import java.util.*;
  * ============================================================================
  *  SquaresCsvComparatorUnified.java
  *  --------------------------------------------------------------------------
- *  Compares two "All Squares" CSV files (old Python vs new Java versions)
+ *  Compares two SQUARES_CSV files (old Python vs new Java versions)
  *  by normalizing, rounding, and numerically comparing corresponding values.
  *
  *  Output directory: ~/Downloads/Validate/Squares/
@@ -115,7 +115,7 @@ public class SquaresCsvComparatorUnified {
 
             // Define file paths for old/new CSVs
             Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Squares.csv");
-            Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/All Squares Java.csv");
+            Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/Squares Java.csv");
 
             // Step 1: Read both CSVs
             System.out.println("Reading CSVs...");

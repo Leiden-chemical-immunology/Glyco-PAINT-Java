@@ -16,7 +16,7 @@ import static java.lang.Integer.parseInt;
  */
 public class ExperimentInfo {
 
-    // --- Core fields (columns in All Recordings/Experiment Info) ---
+    // --- Core fields (columns in Recordings/Experiment Info) ---
     // @formatter:off
     private String  experimentName;
     private String  recordingName;

@@ -5,6 +5,8 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
+import static paint.shared.constants.PaintConstants.RECORDINGS_CSV;
+
 /**
  * Adds or updates a "Case" column with a fixed value in one or more CSV files.
  */
@@ -84,6 +86,6 @@ public class CsvCaseAdder {
     public static void main(String[] args) throws IOException {
         Path root = Paths.get("/Users/hans/Paint Test Project/Sweep");
         List<String> exps = Arrays.asList("221012", "AnyName");
-        addCase(root, "All Recordings Java.csv", exps, "Case 1");
+        addCase(root, RECORDINGS_CSV, exps, "Case 1");
     }
 }

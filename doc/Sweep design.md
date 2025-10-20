@@ -16,7 +16,7 @@ Software
 - For each parameter cycle through the values lsited in the sweep file section 
 - Update the JSON file with the current paramneter
 - Perform the TrackMate calculations 
-- Write the All Recordings and Tracks file into seperate directories for each case
+- Write the Recordings and Tracks file into seperate directories for each case
 - Add a Case field to the files describing the case 'Threshold 5', 'Threshold 6' 
 
 
@@ -34,7 +34,7 @@ Software
  
 
 - Run Generate Squares on all the Sweep directories (requires a small change in Generate Squares)
-- Compile All Recordings, All Squares
+- Compile Recordings, Squares
 
 
 

@@ -32,7 +32,7 @@ public class AllSquaresDetailedComparator {
         Files.createDirectories(outDir);
 
         Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Squares.csv");
-        Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/All Squares Java.csv");
+        Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/Squares.csv");
         Path outCsv = outDir.resolve("AllSquaresComparison.csv");
 
         System.out.println("🔍 Reading CSVs...");

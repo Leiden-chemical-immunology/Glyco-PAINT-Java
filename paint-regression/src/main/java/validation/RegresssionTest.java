@@ -48,15 +48,15 @@ public class RegressionTest {
 
     @Test
     public void testAllRecordingsRegression() throws Exception {
-        Path generated = OUTPUT_DIR.resolve("All Recordings.csv");
-        Path reference = REFERENCE_DIR.resolve("All Recordings.csv");
-        assertTrue("All Recordings regression mismatch", compareCsv(generated, reference));
+        Path generated = OUTPUT_DIR.resolve("Recordings.csv");
+        Path reference = REFERENCE_DIR.resolve("Recordings.csv");
+        assertTrue("Recordings regression mismatch", compareCsv(generated, reference));
     }
 
     @Test
     public void testAllTracksRegression() throws Exception {
-        Path generated = OUTPUT_DIR.resolve("All Tracks.csv");
-        Path reference = REFERENCE_DIR.resolve("All Tracks.csv");
+        Path generated = OUTPUT_DIR.resolve("Tracks.csv");
+        Path reference = REFERENCE_DIR.resolve("Tracks.csv");
         assertTrue("All Tracks regression mismatch", compareCsv(generated, reference));
     }
 }

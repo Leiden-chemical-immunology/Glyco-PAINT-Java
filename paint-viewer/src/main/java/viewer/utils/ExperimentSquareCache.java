@@ -14,7 +14,7 @@ import static paint.shared.io.HelperIO.readAllSquares;
 
 /**
  * Maintains a per-experiment cache of squares loaded from disk,
- * to avoid reading the same All Squares CSV multiple times.
+ * to avoid reading the same SQUARES_CSV  multiple times.
  */
 public final class ExperimentSquareCache {
 

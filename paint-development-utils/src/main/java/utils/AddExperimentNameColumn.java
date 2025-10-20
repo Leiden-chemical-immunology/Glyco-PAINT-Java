@@ -11,8 +11,10 @@ import java.io.Reader;
 import java.nio.file.*;
 import java.util.*;
 
+import static paint.shared.constants.PaintConstants.TRACKS_CSV;
+
 /**
- * Utility to traverse subdirectories, locate "All Tracks Java.csv" files,
+ * Utility to traverse subdirectories, locate TRACKS_CSV files,
  * and add an "Experiment Name" column directly after "Unique Key".
  * The value is derived from the recording name (e.g., "230417-Exp-1-A1-1" → "230417").
  */
@@ -25,9 +27,9 @@ public class AddExperimentNameColumn {
         System.out.println("🔍 Scanning for CSV files under: " + ROOT);
         List<Path> csvFiles = new ArrayList<>();
 
-        // Recursively collect all files named "All Tracks Java.csv"
+        // Recursively collect all files named TRACKS_CSV
         Files.walk(ROOT)
-                .filter(p -> Files.isRegularFile(p) && p.getFileName().toString().equals("All Tracks Java.csv"))
+                .filter(p -> Files.isRegularFile(p) && p.getFileName().toString().equals(TRACKS_CSV))
                 .forEach(csvFiles::add);
 
         if (csvFiles.isEmpty()) {

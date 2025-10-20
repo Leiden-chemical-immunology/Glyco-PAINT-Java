@@ -22,7 +22,7 @@ public class HelperIO {
 
         try {
             Table recTable = recIO.readCsvWithSchema(
-                    experimentPath.resolve(RECORDING_CSV),
+                    experimentPath.resolve(RECORDINGS_CSV),
                     "Recordings",
                     RECORDING_COLS,
                     RECORDING_TYPES,
@@ -30,7 +30,7 @@ public class HelperIO {
             );
             recordings = recIO.toEntities(recTable);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s : %s", RECORDING_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s : %s", RECORDINGS_CSV, friendlyMessage(e));
             return null;
         }
         return recordings;
@@ -45,16 +45,16 @@ public class HelperIO {
             table = recordingTableIO.toTable(recordings);
         }
         catch (Exception e) {
-            PaintLogger.errorf("Failed to create table %s : %s", RECORDING_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to create table %s : %s", RECORDINGS_CSV, friendlyMessage(e));
             return;
         }
 
         try {
-            Path path = experimentPath.resolve(RECORDING_CSV);
+            Path path = experimentPath.resolve(RECORDINGS_CSV);
             recordingTableIO.writeCsv(table, path);
         }
         catch (Exception e) {
-            PaintLogger.errorf("Failed to write %s : %s", RECORDING_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to write %s : %s", RECORDINGS_CSV, friendlyMessage(e));
         }
     }
 
@@ -67,7 +67,7 @@ public class HelperIO {
             Table squareTable = readAllSquaresTable(experimentPath);
             squares = squareIO.toEntities(squareTable);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s: %s", SQUARE_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s: %s", SQUARES_CSV, friendlyMessage(e));
             return null;
         }
         return squares;
@@ -81,14 +81,14 @@ public class HelperIO {
 
         try {
             squaresTable = squareIO.readCsvWithSchema(
-                    experimentPath.resolve(SQUARE_CSV),
+                    experimentPath.resolve(SQUARES_CSV),
                     "Squares",
                     SQUARE_COLS,
                     SQUARE_TYPES,
                     false
             );
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s: %s", SQUARE_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s: %s", SQUARES_CSV, friendlyMessage(e));
             return null;
         }
         return squaresTable;
@@ -104,7 +104,7 @@ public class HelperIO {
             squaresTable = squareTableIO.toTable(squares);
         }
         catch (Exception e) {
-            PaintLogger.errorf("Failed to create table %s : %s", SQUARE_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to create table %s : %s", SQUARES_CSV, friendlyMessage(e));
             return;
         }
         writeAllSquares(experimentPath, squaresTable);
@@ -116,11 +116,11 @@ public class HelperIO {
         SquareTableIO squareTableIO = new SquareTableIO();
 
         try {
-            Path path = experimentPath.resolve(SQUARE_CSV);
+            Path path = experimentPath.resolve(SQUARES_CSV);
             squareTableIO.writeCsv(squaresTable, path);
         }
         catch (Exception e) {
-            PaintLogger.errorf("Failed to write %s : %s", SQUARE_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to write %s : %s", SQUARES_CSV, friendlyMessage(e));
         }
     }
 
@@ -134,7 +134,7 @@ public class HelperIO {
             tracksTable = readAllTracksTable(experimentPath);
             tracks = trackIO.toEntities(tracksTable);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s: %s", TRACK_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s: %s", TRACKS_CSV, friendlyMessage(e));
             return null;
         }
         return tracks;
@@ -148,14 +148,14 @@ public class HelperIO {
 
         try {
             tracksTable = trackIO.readCsvWithSchema(
-                    experimentPath.resolve(TRACK_CSV),
+                    experimentPath.resolve(TRACKS_CSV),
                     "Tracks",
                     TRACK_COLS,
                     TRACK_TYPES,
                     false
             );
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s: %s", TRACK_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s: %s", TRACKS_CSV, friendlyMessage(e));
             return null;
         }
         return tracksTable;
@@ -171,7 +171,7 @@ public class HelperIO {
             tracksTable = trackTableIO.toTable(tracks);
         }
         catch (Exception e) {
-            PaintLogger.errorf("Failed to create table %s : %s", TRACK_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to create table %s : %s", TRACKS_CSV, friendlyMessage(e));
             return;
         }
         writeAllTracks(experimentPath, tracksTable);
@@ -182,11 +182,11 @@ public class HelperIO {
         TrackTableIO trackTableIO = new TrackTableIO();
 
         try {
-            Path path = experimentPath.resolve(TRACK_CSV);
+            Path path = experimentPath.resolve(TRACKS_CSV);
             trackTableIO.writeCsv(tracksTable, path);
         }
         catch (Exception e) {
-            PaintLogger.errorf("Failed to write %s : %s", TRACK_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to write %s : %s", TRACKS_CSV, friendlyMessage(e));
         }
     }
 

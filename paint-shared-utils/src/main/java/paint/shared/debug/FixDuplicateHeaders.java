@@ -7,12 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static paint.shared.constants.PaintConstants.RECORDINGS_CSV;
+
 public class FixDuplicateHeaders {
 
     public static void main(String[] args) throws IOException {
         Path startDir = Paths.get("/Users/hans/Paint Test Project");
         try (Stream<Path> paths = Files.walk(startDir)) {
-            paths.filter(p -> p.getFileName().toString().equals("All Recordings Java.csv"))
+            paths.filter(p -> p.getFileName().toString().equals(RECORDINGS_CSV))
                     .forEach(FixDuplicateHeaders::processFile);
         }
     }

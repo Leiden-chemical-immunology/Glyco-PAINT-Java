@@ -11,7 +11,7 @@ import java.util.*;
  *
  *  PURPOSE
  *  ---------------------------------------------------------------------------
- *  Compare two already-normalized CSV files (e.g. "All Squares" or "All Tracks")
+ *  Compare two already-normalized CSV files (e.g. "Squares" or "Tracks")
  *  to detect regressions between a baseline (reference) and a test file.
  *
  *  This tool performs a deterministic, row-by-row comparison and reports

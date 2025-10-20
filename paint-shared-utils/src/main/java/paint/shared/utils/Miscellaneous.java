@@ -3,6 +3,9 @@ package paint.shared.utils;
 import java.nio.file.Path;
 import java.time.Duration;
 
+import static paint.shared.constants.PaintConstants.RECORDINGS_CSV;
+import static paint.shared.constants.PaintConstants.TRACKS_CSV;
+
 
 public class Miscellaneous {
 
@@ -95,8 +98,8 @@ public class Miscellaneous {
             return;
         }
 
-        Path allTracks = parentDir.resolve("All Tracks.csv");
-        Path allRecordings = parentDir.resolve("All Recordings.csv");
+        Path allTracks = parentDir.resolve(TRACKS_CSV);
+        Path allRecordings = parentDir.resolve(RECORDINGS_CSV);
 
     }
 

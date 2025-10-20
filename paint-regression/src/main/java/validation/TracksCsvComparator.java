@@ -86,8 +86,8 @@ public class TracksCsvComparator {
         }
 
         // Define input and output file locations
-        Path oldCsv     = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Tracks.csv");
-        Path newCsv     = Paths.get("/Users/hans/Paint Test Project/221012/All Tracks Java.csv");
+        Path oldCsv     = Paths.get("/Users/hans/Paint Test Project/221012 - Python/Tracks.csv");
+        Path newCsv     = Paths.get("/Users/hans/Paint Test Project/221012/Tracks Java.csv");
 
         Path outCsv     = validatePath.resolve("Tracks Validation - Comparison.csv");
         Path diagCsv    = validatePath.resolve("Tracks Validation - Comparison Diagnostics.csv");

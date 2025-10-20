@@ -116,7 +116,7 @@ public final class ProjectDataLoader {
         List<Recording> recordings;
         try {
             Table recTable = recIO.readCsvWithSchema(
-                    experimentPath.resolve(RECORDING_CSV),
+                    experimentPath.resolve(RECORDINGS_CSV),
                     "Recordings",
                     RECORDING_COLS,
                     RECORDING_TYPES,
@@ -126,7 +126,7 @@ public final class ProjectDataLoader {
             recordings.forEach(experiment::addRecording);
         } catch (Exception e) {
             // PaintLogger.errorf("Failed to read %s in %s: %s", RECORDING_CSV, experimentName, friendlyMessage(e));
-            PaintLogger.errorf("Failed to read %s in %s", RECORDING_CSV, experimentName);
+            PaintLogger.errorf("Failed to read %s in %s", RECORDINGS_CSV, experimentName);
             return null;
         }
 
@@ -135,15 +135,15 @@ public final class ProjectDataLoader {
         Table tracksTable;
         try {
             tracksTable = trackIO.readCsvWithSchema(
-                    experimentPath.resolve(TRACK_CSV),
+                    experimentPath.resolve(TRACKS_CSV),
                     "Tracks",
                     TRACK_COLS,
                     TRACK_TYPES,
                     false
             );
         } catch (Exception e) {
-            //PaintLogger.errorf("Failed to read %s in %s: %s", TRACK_CSV, experimentName, friendlyMessage(e));
-            PaintLogger.errorf("Failed to read %s in %s", TRACK_CSV, experimentName);
+            //PaintLogger.errorf("Failed to read %s in %s: %s", TRACKS_CSV, experimentName, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s in %s", TRACKS_CSV, experimentName);
             return null;
         }
 
@@ -162,15 +162,15 @@ public final class ProjectDataLoader {
             Table squaresTable;
             try {
                 squaresTable = squareIO.readCsvWithSchema(
-                        experimentPath.resolve(SQUARE_CSV),
+                        experimentPath.resolve(SQUARES_CSV),
                         "Squares",
                         SQUARE_COLS,
                         SQUARE_TYPES,
                         false
                 );
             } catch (Exception e) {
-                //PaintLogger.errorf("Failed to read %s in %s: %s", SQUARE_CSV, experimentName, friendlyMessage(e));
-                PaintLogger.errorf("Failed to read %s in %s", SQUARE_CSV, experimentName);
+                //PaintLogger.errorf("Failed to read %s in %s: %s", SQUARES_CSV, experimentName, friendlyMessage(e));
+                PaintLogger.errorf("Failed to read %s in %s", SQUARES_CSV, experimentName);
                 return null;
             }
 
@@ -213,9 +213,9 @@ public final class ProjectDataLoader {
 
     private static boolean experimentSeemsValid(Path experimentPath, boolean matureProject) {
         return (Files.isDirectory(experimentPath) &&
-                Files.isRegularFile(experimentPath.resolve(RECORDING_CSV)) &&
-                Files.isRegularFile(experimentPath.resolve(TRACK_CSV)) &&
-                (!matureProject || Files.isRegularFile(experimentPath.resolve(SQUARE_CSV))));
+                Files.isRegularFile(experimentPath.resolve(RECORDINGS_CSV)) &&
+                Files.isRegularFile(experimentPath.resolve(TRACKS_CSV)) &&
+                (!matureProject || Files.isRegularFile(experimentPath.resolve(SQUARES_CSV))));
     }
 
     private static String reasonForExperimentProblem(Path experimentPath, boolean matureProject) {
@@ -225,14 +225,14 @@ public final class ProjectDataLoader {
             sb.append("\tExperiment directory does not exist: ").append(experimentPath).append("\n");
             return sb.toString();
         }
-        if (!Files.isRegularFile(experimentPath.resolve(RECORDING_CSV))) {
-            sb.append("\tMissing ").append(RECORDING_CSV).append("\n");
+        if (!Files.isRegularFile(experimentPath.resolve(RECORDINGS_CSV))) {
+            sb.append("\tMissing ").append(RECORDINGS_CSV).append("\n");
         }
-        if (!Files.isRegularFile(experimentPath.resolve(TRACK_CSV))) {
-            sb.append("\tMissing ").append(TRACK_CSV).append("\n");
+        if (!Files.isRegularFile(experimentPath.resolve(TRACKS_CSV))) {
+            sb.append("\tMissing ").append(TRACKS_CSV).append("\n");
         }
-        if (matureProject && !Files.isRegularFile(experimentPath.resolve(SQUARE_CSV))) {
-            sb.append("\tMissing ").append(SQUARE_CSV).append("\n");
+        if (matureProject && !Files.isRegularFile(experimentPath.resolve(SQUARES_CSV))) {
+            sb.append("\tMissing ").append(SQUARES_CSV).append("\n");
         }
         return sb.toString();
     }

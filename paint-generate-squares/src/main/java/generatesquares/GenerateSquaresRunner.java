@@ -49,7 +49,7 @@ public class GenerateSquaresRunner {
         ValidationResult validateResult = validateExperiments(
                 projectPath,
                 experimentNames,
-                java.util.Arrays.asList(EXPERIMENT_INFO_CSV, RECORDING_CSV, TRACK_CSV)
+                java.util.Arrays.asList(EXPERIMENT_INFO_CSV, RECORDINGS_CSV, TRACKS_CSV)
         );
 
         if (!validateResult.isValid()) {
@@ -96,10 +96,10 @@ public class GenerateSquaresRunner {
         try {
             PaintLogger.infof("Creating project-level summary files...");
 
-            concatenateNamedCsvFiles(projectPath, SQUARE_CSV, experimentNames);
-            concatenateNamedCsvFiles(projectPath, RECORDING_CSV, experimentNames);
+            concatenateNamedCsvFiles(projectPath, SQUARES_CSV, experimentNames);
+            concatenateNamedCsvFiles(projectPath, RECORDINGS_CSV, experimentNames);
             concatenateNamedCsvFiles(projectPath, EXPERIMENT_INFO_CSV, experimentNames);
-            concatenateNamedCsvFiles(projectPath, TRACK_CSV, experimentNames);
+            concatenateNamedCsvFiles(projectPath, TRACKS_CSV, experimentNames);
 
             Duration duration = Duration.between(start, LocalDateTime.now());
             PaintLogger.infof("Finished Generate Squares for all experiments in %s", formatDuration(duration));

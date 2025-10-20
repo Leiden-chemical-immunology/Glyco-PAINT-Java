@@ -124,7 +124,7 @@ public class RunTrackMateOnExperiment {
 
 
         Path experimentFilePath   = experimentPath.resolve(EXPERIMENT_INFO_CSV);
-        Path allRecordingFilePath = experimentPath.resolve(RECORDING_CSV);
+        Path allRecordingFilePath = experimentPath.resolve(RECORDINGS_CSV);
         if (!Files.exists(experimentFilePath)) {
             PaintLogger.errorf("Experiment info file does not exist in %s.", experimentFilePath);
             return false;
@@ -153,7 +153,7 @@ public class RunTrackMateOnExperiment {
              BufferedWriter allRecordingsWriter = Files.newBufferedWriter(allRecordingFilePath);
              CSVPrinter allRecordingsPrinter = new CSVPrinter(allRecordingsWriter, CSVFormat.DEFAULT.builder().build())) {
 
-            // Extend the Experiment Info header for the All Recording file
+            // Extend the Experiment Info header for the RECORDINGS_CSV file
             List<String> header = new ArrayList<>(experimentInfoParser.getHeaderMap().keySet());
             header.addAll(Arrays.asList(
                     "Number of Spots",
@@ -307,7 +307,7 @@ public class RunTrackMateOnExperiment {
         }
 
         // Concatenmate all tacks files that were just created into an All Tracks file
-        Path tracksFilePath = experimentPath.resolve(TRACK_CSV);
+        Path tracksFilePath = experimentPath.resolve(TRACKS_CSV);
         try {
             concatenateCsvFiles(processedTrackFiles, tracksFilePath, true);
         } catch (IOException e) {
