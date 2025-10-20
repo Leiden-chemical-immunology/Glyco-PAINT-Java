@@ -10,6 +10,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PaintConsoleWindow {
 
@@ -204,11 +206,31 @@ public class PaintConsoleWindow {
         problemPositions.clear();
         currentProblemIndex = -1;
 
-        String text = textPane.getText();
+        // Get full text as-is
+        String fullText = textPane.getText();
 
-        highlightPattern(text, "(?i)error", Color.PINK); // (?i) = case-insensitive
-        highlightPattern(text, "(?i)warn", Color.ORANGE);
-        highlightPattern(text, "(?i)exception", Color.RED);
+        // Unified regex to catch most variants: ERROR, Error, WARN, Warning, etc.
+        // Also tolerates ANSI color codes (\u001B[...]m) and leading/trailing spaces.
+        Pattern pattern = Pattern.compile(
+                "(?i)(?:\\u001B\\[[;\\d]*m)?\\b(?:error|warn|warning|exception)\\b(?:\\u001B\\[[;\\d]*m)?"
+        );
+
+        Matcher matcher = pattern.matcher(fullText);
+        while (matcher.find()) {
+            try {
+                String match = matcher.group().toLowerCase();
+                Color color = match.contains("error") || match.contains("exception") ? Color.PINK : Color.ORANGE;
+
+                highlighter.addHighlight(
+                        matcher.start(),
+                        matcher.end(),
+                        new DefaultHighlighter.DefaultHighlightPainter(color)
+                );
+                problemPositions.add(matcher.start());
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private static void highlightPattern(String fullText, String regex, Color color) {
