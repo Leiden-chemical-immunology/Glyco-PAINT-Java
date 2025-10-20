@@ -97,15 +97,6 @@ public class GetOmeroUI extends JFrame {
             return;
         }
 
-//        int confirm = JOptionPane.showConfirmDialog(
-//                this,
-//                "This will move files out of Fileset directories\nand delete those directories.\n\nContinue?",
-//                "Confirm Processing",
-//                JOptionPane.OK_CANCEL_OPTION,
-//                JOptionPane.WARNING_MESSAGE
-//        );
-//        if (confirm != JOptionPane.OK_OPTION) return;
-
         try {
             ProcessOmeroFiles.process(rootDir);
 

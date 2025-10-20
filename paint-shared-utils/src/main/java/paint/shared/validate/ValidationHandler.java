@@ -60,17 +60,7 @@ public class ValidationHandler {
 
                 if (!res.isValid()) {
                     for (String err : res.getErrors()) {
-                        String flattened = err.replace("\n", " ").replaceAll("\\s+", " ").trim();
-
-                        String msg;
-                        if (flattened.startsWith("[" + expName + "]")) {
-                            // Inner validator already added experiment name
-                            msg = "[" + expName + "] - " + fileName + " - " +
-                                    flattened.substring(flattened.indexOf("]") + 1).trim();
-                        } else {
-                            msg = "[" + expName + "] - " + fileName + " - " + flattened;
-                        }
-
+                        String msg = getString(expName, fileName, err);
                         overall.addError(msg);
                         report.add(msg);
                     }
@@ -83,6 +73,20 @@ public class ValidationHandler {
         }
 
         return overall;
+    }
+
+    private static String getString(String expName, String fileName, String err) {
+        String flattened = err.replace("\n", " ").replaceAll("\\s+", " ").trim();
+
+        String msg;
+        if (flattened.startsWith("[" + expName + "]")) {
+            // Inner validator already added experiment name
+            msg = "[" + expName + "] - " + fileName + " - " +
+                    flattened.substring(flattened.indexOf("]") + 1).trim();
+        } else {
+            msg = "[" + expName + "] - " + fileName + " - " + flattened;
+        }
+        return msg;
     }
 
     private static ValidationResult runValidator(String fileName, File file, String experimentName) {

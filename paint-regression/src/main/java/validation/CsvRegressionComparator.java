@@ -8,16 +8,16 @@ import java.util.*;
  * ============================================================================
  *  CsvRegressionComparator.java
  *  Version: 2.4 (documented)
- *
+ * <p>
  *  PURPOSE
  *  ---------------------------------------------------------------------------
  *  Compare two already-normalized CSV files (e.g. "Squares" or "Tracks")
  *  to detect regressions between a baseline (reference) and a test file.
- *
+ * <p>
  *  This tool performs a deterministic, row-by-row comparison and reports
  *  any textual or numeric differences.  It is especially useful for validating
  *  output stability across code changes or environments.
- *
+ * <p>
  *  KEY FEATURES
  *  ---------------------------------------------------------------------------
  *   • No short-circuit — both files are fully read and compared even if identical.

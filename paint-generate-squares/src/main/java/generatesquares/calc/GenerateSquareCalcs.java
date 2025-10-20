@@ -76,7 +76,6 @@ public class GenerateSquareCalcs {
 
     // @formatter:off
     private static int     numberOfSquaresInRecording;      // Total number of squares per recording.
-    private static int     numberOfSquaresInOneDimension;   // Number of squares in one dimension (e.g. 20 for 20x20).
     private static Path    projectPath;
     private static boolean plotFittingCurves;
     // @formatter:on
@@ -159,7 +158,8 @@ public class GenerateSquareCalcs {
     public static List<Square> generateSquaresForRecording(Recording recording, GenerateSquaresConfig generateSquaresConfig ) {
 
         numberOfSquaresInRecording    = generateSquaresConfig.getNumberOfSquaresInRecording();
-        numberOfSquaresInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);
+        // Number of squares in one dimension (e.g. 20 for 20x20).
+        int numberOfSquaresInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);
 
         // @formatter:off
         List<Square> squares = new ArrayList<>();
@@ -364,13 +364,10 @@ public class GenerateSquareCalcs {
                 square.setRSquared(Double.NaN);
             }
 
-            //TODO
-
             // @format:off
-            int lowPrecision     = 3;
-            int medPrecision     = 3;
-            int highPrecision    = 3;
-            int veryHighPrecison = 4;
+            int lowPrecision      = 3;
+            int highPrecision     = 3;
+            int veryHighPrecision = 4;
             // @format:on
 
             if (tracksInSquareTable.rowCount() != 0) {
@@ -396,7 +393,7 @@ public class GenerateSquareCalcs {
 
                 // TODO Need to have this parameterised
                 double density = calculateDensity(tracksInSquare.size(), area, RECORDING_DURATION, concentration);
-                square.setDensity(round(density, veryHighPrecison));
+                square.setDensity(round(density, veryHighPrecision));
 
                 double densityRatio = tracksInSquare.size() / numberOfTracksInBackgroundSquares;
                 square.setDensityRatio(round(densityRatio, lowPrecision));

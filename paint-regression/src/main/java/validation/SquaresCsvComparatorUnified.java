@@ -10,9 +10,9 @@ import java.util.*;
  *  --------------------------------------------------------------------------
  *  Compares two SQUARES_CSV files (old Python vs new Java versions)
  *  by normalizing, rounding, and numerically comparing corresponding values.
- *
+ * <p>
  *  Output directory: ~/Downloads/Validate/Squares/
- *
+ * <p>
  *  Generates:
  *    - Old/New normalized CSVs
  *    - Comparison report with per-field differences
@@ -82,8 +82,6 @@ public class SquaresCsvComparatorUnified {
     private static final Set<String> NUMERIC_FIELDS = new HashSet<>(NUMERIC_FIELDS_LIST);
 
     // These fields are used for counting and collecting results
-    List<String[]> diffs = new ArrayList<>();
-    int total = 0, diffCount = 0;
     Set<String> squaresWithDiffs = new HashSet<>();
 
     /** Default rounding precision if nothing better is detected. */
@@ -647,7 +645,7 @@ public class SquaresCsvComparatorUnified {
                 double within5 = percentWithin(diffs, 5.0);
                 double bestTol = 5.0, bestKeep = within5;
 
-                // Find smallest tolerance that still keeps ≥98% within range
+                // Find the smallest tolerance that still keeps ≥98% within range
                 for (double tol : testLevels) {
                     double keep = percentWithin(diffs, tol);
                     if (keep < targetKeep) break;
@@ -677,7 +675,9 @@ public class SquaresCsvComparatorUnified {
 
     /** Parses string to Double safely. Returns null for NaN or empty. */
     private static Double parseDouble(String s) {
-        if (s == null || s.isEmpty() || s.equalsIgnoreCase("NaN")) return null;
+        if (s == null || s.isEmpty() || s.equalsIgnoreCase("NaN")) {
+            return null;
+        }
         try {
             double v = Double.parseDouble(s);
             return Double.isNaN(v) ? null : v;
@@ -705,7 +705,7 @@ public class SquaresCsvComparatorUnified {
     /**
      * Computes the relative deviation (%) between two numeric values.
      * Returns NaN if either is missing.
-     *
+     * <p>
      * Example:
      *   old=10, new=12 → 20% deviation
      */
@@ -723,7 +723,7 @@ public class SquaresCsvComparatorUnified {
      *   - Density Ratio ≥ 2.0
      *   - Variability < 10.0
      *   - R² > 0.1
-     *
+     * <p>
      * Used to mark inclusion/exclusion in the "Selected" overview.
      */
     private static boolean isSelected(Map<String, String> r) {

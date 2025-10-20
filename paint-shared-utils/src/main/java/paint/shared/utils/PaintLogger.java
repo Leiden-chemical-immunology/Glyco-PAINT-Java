@@ -4,8 +4,6 @@ import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -78,11 +76,6 @@ public class PaintLogger {
         }
     }
 
-
-    public static Level getLevel() {
-        return currentLevel;
-    }
-
     /**
      * Initialise the logger: creates Logs directory and rotates file names.
      * The log file will be created in the project directory/Logs/paint-log-XX.log
@@ -107,35 +100,6 @@ public class PaintLogger {
         } catch (IOException e) {
             System.err.println("PaintLogger could not initialise: " + e.getMessage());
         }
-    }
-
-    /**
-     * Find the next available numbered log file in the directory.
-     */
-    private static Path nextLogFile(Path logPath, String baseName) throws IOException {
-        final String prefix = baseName + "-";
-        final String suffix = ".log";
-        int maxIndex = 0;
-
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(logPath, baseName + "-*.log")) {
-            for (Path path : stream) {
-                String name = path.getFileName().toString();
-                if (name.startsWith(prefix) && name.endsWith(suffix)) {
-                    String numberPart = name.substring(prefix.length(), name.length() - suffix.length());
-                    try {
-                        int index = Integer.parseInt(numberPart);
-                        if (index > maxIndex) {
-                            maxIndex = index;
-                        }
-                    } catch (NumberFormatException ignored) {
-                    }
-                }
-            }
-        }
-
-        int nextIndex = maxIndex + 1;
-        String nextFileName = String.format("%s-%02d%s", baseName, nextIndex, suffix);
-        return logPath.resolve(nextFileName);
     }
 
     public static void close() {

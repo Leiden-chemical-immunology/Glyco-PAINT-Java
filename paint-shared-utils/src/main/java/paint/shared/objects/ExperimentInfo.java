@@ -233,7 +233,7 @@ public class ExperimentInfo {
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(String.format("\tExperment Info"));
+        sb.append("\tExperment Info");
         sb.append(String.format("\t              Experiment Name               : %s\n", experimentName));
         sb.append(String.format("\t              Recording Name                : %s%n", recordingName));
         sb.append(String.format("\t              Condition Nr                  : %d%n", conditionNumber));

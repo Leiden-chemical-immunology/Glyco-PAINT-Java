@@ -15,7 +15,7 @@ import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
 import static paint.shared.constants.PaintConstants.RECORDINGS_CSV;
 
 /**
- * Utility to traverse subdirectories, locate RECORDINGS_CSV and EXPERIMENT_INFO)_CSV" files,
+ * Utility to traverse subdirectories, locate RECORDINGS_CSV and EXPERIMENT_INFO_CSV files,
  * and add an "Experiment Name" column directly *before* "Recording Name".
  * The value is derived from the recording name (e.g., "230417-Exp-1-A1-1" → "230417").
  */

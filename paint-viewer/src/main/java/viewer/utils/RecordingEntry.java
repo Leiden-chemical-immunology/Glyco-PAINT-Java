@@ -184,7 +184,4 @@ public class RecordingEntry {
         return squares;
     }
 
-//    public void clearCachedSquares() {
-//        this.squares = null;
-//    }
 }

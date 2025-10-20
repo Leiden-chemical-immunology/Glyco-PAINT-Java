@@ -132,7 +132,7 @@ Support for parameter sweeps is implemented allowing TrackMate and Generate Squa
 
 #### Background determination
 
-A new statistical method has been introduced to determibe which squares are considered to be background and which squares represent cell suface. An histogram of cell/background allocation is prepared.
+A new statistical method has been introduced to determibe which squares are considered to be background and which squares represent cell suface. A histogram of cell/background allocation is prepared.
 
 
 
@@ -150,7 +150,7 @@ An imperfection in the original code has been addressed, where tracks on the squ
 
 #### New Get Omero app
 
-A simple app has been introduced to transform the downloaded Omero structure into an Glycol-PAint image directory.
+A simple app has been introduced to transform the downloaded Omero structure into a Glycol-PAint image directory.
 
 
 

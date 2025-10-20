@@ -52,7 +52,7 @@ import static paint.shared.constants.PaintConstants.SQUARES_CSV;
  *        • Both are empty / NaN / 0.0
  *        • (Tau rule) OLD Tau < 0 and NEW Tau is empty or NaN
  *  - Otherwise, both numeric → compared after rounding to effective precision
- *  - If mismatch:
+ *  - If mismatched:
  *        Relative Difference (%) = 100 * |new - old| / |old|
  *        (shown to 2 decimals, blank if old = 0 or non-numeric)
  *  - Additionally, if "Selected" differs, a row with Field="Selected" is added

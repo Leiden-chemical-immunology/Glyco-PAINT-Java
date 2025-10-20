@@ -113,7 +113,7 @@ public class RunTrackMateOnExperiment {
 
         PaintLogger.debugf(trackMateConfig.toString());
 
-        // Write the parameters used file, so that we know for sure what paramters have been used
+        // Write the parameters used file, so that we know for sure what parameters have been used
         try {
             Path filePath = experimentPath.resolve("Output").resolve("ParametersUsed.txt");
             Files.createDirectories(filePath.getParent());
@@ -130,9 +130,11 @@ public class RunTrackMateOnExperiment {
             return false;
         }
 
+        // @formatter:off
         int numberRecordingsToProcess = countProcessed(experimentFilePath);
         String experimentName         = experimentPath.getFileName().toString();             // TODO Dangerous?
         String projectName            = experimentPath.getParent().getFileName().toString();
+        // @formatter:on
 
         PaintLogger.blankline();
         PaintLogger.infof("Processing %d %s in experiment '%s' in project '%s'.",
@@ -306,7 +308,7 @@ public class RunTrackMateOnExperiment {
             return false;
         }
 
-        // Concatenmate all tacks files that were just created into an All Tracks file
+        // Concatenate all tacks files that were just created into an All Tracks file
         Path tracksFilePath = experimentPath.resolve(TRACKS_CSV);
         try {
             concatenateCsvFiles(processedTrackFiles, tracksFilePath, true);

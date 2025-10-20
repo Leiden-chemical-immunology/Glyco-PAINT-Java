@@ -16,7 +16,7 @@ import java.util.Map;
 import static paint.shared.constants.PaintConstants.TRACKS_CSV;
 
 /**
- * Simple utility to traverse subdirectories, locate TRADCKS_CSV files,
+ * Simple utility to traverse subdirectories, locate TRACKS_CSV files,
  * remove the column "Track Label" if present, and overwrite each file.
  */
 public class RemoveTrackLabelColumn {

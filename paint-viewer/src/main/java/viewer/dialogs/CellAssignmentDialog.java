@@ -46,11 +46,14 @@ public class CellAssignmentDialog extends JDialog {
         add(scroll, BorderLayout.CENTER);
 
         // --- Controls ---
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
+        // @formatter:off
+        JPanel buttons    = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton assignBtn = new JButton("Assign");
-        JButton undoBtn = new JButton("Undo");
+        JButton undoBtn   = new JButton("Undo");
         JButton cancelBtn = new JButton("Cancel");
-        JButton closeBtn = new JButton("Close");
+        JButton closeBtn  = new JButton("Close");
+        // @formatter:on
 
         assignBtn.addActionListener(e -> listener.onAssign(getSelectedCellId()));
         undoBtn.addActionListener(e -> listener.onUndo());
@@ -138,4 +141,24 @@ public class CellAssignmentDialog extends JDialog {
         }
         repaint();
     }
+
+//  Above is the workinng version, but it does not do anything. Maybe this was meant?
+//    private void updateVisualSelection() {
+//        for (Map.Entry<JRadioButton, JPanel> e : squareByRadio.entrySet()) {
+//            JRadioButton rb = e.getKey();
+//            JPanel square = e.getValue();
+//
+//            int id = (Integer) rb.getClientProperty("cellId");
+//            Color base = (id == 0) ? Color.GRAY : SquareGridPanel.getColorForCell(id);
+//
+//            if (rb.isSelected()) {
+//                square.setBackground(base);
+//                square.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+//            } else {
+//                square.setBackground(Color.WHITE);
+//                square.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+//            }
+//        }
+//        repaint();
+//    }
 }
