@@ -57,7 +57,7 @@ public final class ExperimentSquareCache {
         List<Square> result = expMap.getOrDefault(recordingName, Collections.emptyList());
 
         if (expectedNumberOfSquares != 0 && result.size() != expectedNumberOfSquares) {
-            PaintLogger.warningf(
+            PaintLogger.warnf(
                     "Recording %s expected %d squares but has %d",
                     recordingName, expectedNumberOfSquares, result.size()
             );

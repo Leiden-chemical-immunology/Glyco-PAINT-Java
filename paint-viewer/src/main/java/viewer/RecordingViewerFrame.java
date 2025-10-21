@@ -285,7 +285,7 @@ public class RecordingViewerFrame extends JFrame
     @Override
     public void onPlayRecordingRequested() {
         if (recordings.isEmpty() || currentIndex < 0 || currentIndex >= recordings.size()) {
-            PaintLogger.warningf("No recording selected to play.");
+            PaintLogger.warnf("No recording selected to play.");
             JOptionPane.showMessageDialog(this,
                                           "No recording selected to play.",
                                           "No Selection",

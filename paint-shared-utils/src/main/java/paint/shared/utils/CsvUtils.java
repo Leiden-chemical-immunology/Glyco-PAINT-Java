@@ -133,7 +133,7 @@ public class CsvUtils {
                 try {
                     Files.deleteIfExists(f);
                 } catch (IOException e) {
-                    PaintLogger.warningf("Could not delete %s: %s", f, e.getMessage());
+                    PaintLogger.warnf("Could not delete %s: %s", f, e.getMessage());
                 }
             }
         }
@@ -204,7 +204,7 @@ public class CsvUtils {
         for (String exp : experimentNames) {
             Path csvPath = root.resolve(exp).resolve(fileName);
             if (!Files.exists(csvPath)) {
-                PaintLogger.warningf("CsvUtils.addCase(): file not found %s", csvPath);
+                PaintLogger.warnf("CsvUtils.addCase(): file not found %s", csvPath);
                 continue;
             }
 

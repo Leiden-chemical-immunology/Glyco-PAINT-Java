@@ -99,7 +99,7 @@ public class PaintConfig {
         } else {
             Path newConfigPath = projectPath.resolve(PAINT_CONFIGURATION_JSON);
             if (!INSTANCE.path.equals(newConfigPath)) {
-                PaintLogger.warningf(
+                PaintLogger.warnf(
                         "PaintConfig already initialised at %s (attempted reinit with %s)\n",
                         INSTANCE.path, newConfigPath
                 );
@@ -115,7 +115,7 @@ public class PaintConfig {
         synchronized (PaintConfig.class) {
             INSTANCE = null;
             initialise(projectPath);
-            PaintLogger.infof("PaintConfig reinitialised at %s",
+            PaintLogger.debugf("PaintConfig reinitialised at %s",
                               projectPath.resolve(PAINT_CONFIGURATION_JSON));
         }
     }
@@ -147,7 +147,7 @@ public class PaintConfig {
                 this.configData = new JsonObject();
             }
         } else {
-            PaintLogger.warningf("No config file exists at %s, default created.\n", path);
+            PaintLogger.warnf("No config file exists at %s, default created.\n", path);
             this.configData = new JsonObject();
             loadDefaults();
             save();
@@ -370,7 +370,7 @@ public class PaintConfig {
                 return sec.getAsJsonPrimitive(realKey).getAsString();
             }
         }
-        PaintLogger.warningf("No value for '%s' found, default '%s' applied", key, defaultValue);
+        PaintLogger.warnf("No value for '%s' found, default '%s' applied", key, defaultValue);
         setStringValue(section, key, defaultValue, true);
         return defaultValue;
     }
@@ -384,12 +384,12 @@ public class PaintConfig {
                 try {
                     return sec.getAsJsonPrimitive(realKey).getAsInt();
                 } catch (NumberFormatException e) {
-                    PaintLogger.warningf("Invalid '%s', default %d applied", realKey, defaultValue);
+                    PaintLogger.warnf("Invalid '%s', default %d applied", realKey, defaultValue);
                     setIntValue(section, key, defaultValue, true);
                 }
             }
         }
-        PaintLogger.warningf("No value for '%s', default %d applied", key, defaultValue);
+        PaintLogger.warnf("No value for '%s', default %d applied", key, defaultValue);
         setIntValue(section, key, defaultValue, true);
         return defaultValue;
     }
@@ -403,12 +403,12 @@ public class PaintConfig {
                 try {
                     return sec.getAsJsonPrimitive(realKey).getAsDouble();
                 } catch (NumberFormatException e) {
-                    PaintLogger.warningf("Invalid '%s', default %.2f applied", realKey, defaultValue);
+                    PaintLogger.warnf("Invalid '%s', default %.2f applied", realKey, defaultValue);
                     setDoubleValue(section, key, defaultValue, true);
                 }
             }
         }
-        PaintLogger.warningf("No value for '%s', default %.2f applied", key, defaultValue);
+        PaintLogger.warnf("No value for '%s', default %.2f applied", key, defaultValue);
         setDoubleValue(section, key, defaultValue, true);
         return defaultValue;
     }
@@ -424,7 +424,7 @@ public class PaintConfig {
                 } catch (Exception ignored) {}
             }
         }
-        PaintLogger.warningf("No value for '%s', default %b applied", key, defaultValue);
+        PaintLogger.warnf("No value for '%s', default %b applied", key, defaultValue);
         setBooleanValue(section, key, defaultValue, true);
         return defaultValue;
     }

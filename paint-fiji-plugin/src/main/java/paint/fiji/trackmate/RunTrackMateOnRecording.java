@@ -48,14 +48,14 @@ public class RunTrackMateOnRecording {
                     img.close();
                 }
             } catch (Exception e) {
-                PaintLogger.warningf("Error closing image: %s", e.getMessage());
+                PaintLogger.warnf("Error closing image: %s", e.getMessage());
             }
         }
     }
 
     private static TrackMateResults cancelEarly(ImagePlus... images) {
         closeImages(images);
-        PaintLogger.warningf("   Recording cancelled.");
+        PaintLogger.warnf("   Recording cancelled.");
         return new TrackMateResults(false);
     }
 
@@ -150,7 +150,7 @@ public class RunTrackMateOnRecording {
             }
 
             if (brightFieldPath == null || Files.notExists(brightFieldPath)) {
-                PaintLogger.warningf("      Could not open brightfield file: %s",
+                PaintLogger.warnf("      Could not open brightfield file: %s",
                                      brightFieldPath == null ? "none found" : brightFieldPath.toString());
             }
             else {
@@ -216,7 +216,7 @@ public class RunTrackMateOnRecording {
 
             int numberOfSpots = model.getSpots().getNSpots(false);
             if (numberOfSpots > trackMateConfig.getMaxNrSpotsInImage()) {
-                PaintLogger.warningf("   Trackmate - Too many spots detected (%d). Limit is %d.",
+                PaintLogger.warnf("   Trackmate - Too many spots detected (%d). Limit is %d.",
                                      numberOfSpots, trackMateConfig.getMaxNrSpotsInImage());
                 return cancelEarly(imp, impBrightfield, capture);
             }

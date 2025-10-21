@@ -157,11 +157,11 @@ public class PaintLogger {
         log(Level.DEBUG, "");
     }
 
-    public static void warningf(String fmt, Object... args) {
+    public static void warnf(String fmt, Object... args) {
         log(Level.WARN, String.format(fmt, args));
     }
 
-    public static void warningf() {
+    public static void warnf() {
         log(Level.WARN, "");
     }
 

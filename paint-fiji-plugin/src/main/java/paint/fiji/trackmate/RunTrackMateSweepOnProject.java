@@ -112,7 +112,7 @@ public class RunTrackMateSweepOnProject {
                                 Files.createDirectories(expDstDir);
                                 Files.copy(expSrc, expDst, StandardCopyOption.REPLACE_EXISTING);
                             } else {
-                                PaintLogger.warningf("Experiment Info.csv not found for %s at %s", expName, expSrc);
+                                PaintLogger.warnf("Experiment Info.csv not found for %s at %s", expName, expSrc);
                             }
                         } catch (IOException e) {
                             PaintLogger.errorf("Failed to copy Experiment Info.csv for %s: %s", expName, e.getMessage());

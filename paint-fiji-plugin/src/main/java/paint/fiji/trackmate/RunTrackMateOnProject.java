@@ -51,7 +51,7 @@ public class RunTrackMateOnProject {
         // Process each experiment
         for (String experimentName : experimentNames) {
             if (dialog != null && dialog.isCancelled()) {
-                PaintLogger.warningf("Processing aborted by user.");
+                PaintLogger.warnf("Processing aborted by user.");
                 break;
             }
 

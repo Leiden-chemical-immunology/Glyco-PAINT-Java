@@ -56,7 +56,6 @@ public class TrackMateHeadless implements Command {
 
             // Reinitialise PaintConfig with the real project path
             PaintConfig.reinitialise(projectPath);
-            //Path imagesPath = Paths.get(PaintConfig.getString("Paths", "Images Root", ""));
             Path imagesPath = Paths.get(PaintPrefs.getString("Images Root", ""));
 
             // --- Step 3: setup logging ---
@@ -66,7 +65,7 @@ public class TrackMateHeadless implements Command {
             // --- Step 4: find experiments marked as true ---
             List<String> experiments = getSelectedExperiments();
             if (experiments.isEmpty()) {
-                PaintLogger.warningf("No experiments marked as true in configuration. Nothing to process.");
+                PaintLogger.warnf("No experiments marked as true in configuration. Nothing to process.");
                 return;
             }
 
@@ -91,7 +90,7 @@ public class TrackMateHeadless implements Command {
         List<String> selected = new ArrayList<>();
         JsonObject experiments = PaintConfig.instance().getSection("Experiments");
         if (experiments == null) {
-            PaintLogger.warningf("No 'Experiments' section found in configuration.");
+            PaintLogger.warnf("No 'Experiments' section found in configuration.");
             return selected;
         }
 

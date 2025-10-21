@@ -61,7 +61,7 @@ public class RunTrackMateOnExperiment {
 
             // ✅ User pressed cancel
             if (dialog != null && dialog.isCancelled()) {
-                PaintLogger.warningf("User requested cancellation — stopping TrackMate gracefully...");
+                PaintLogger.warnf("User requested cancellation — stopping TrackMate gracefully...");
                 // ⚠️ Do NOT call thread.interrupt(), just mark as finished
                 return false;
             }
@@ -83,7 +83,7 @@ public class RunTrackMateOnExperiment {
         // ⏱ Timeout reached
         PaintLogger.errorf("   TrackMate - exceeded time limit of %d seconds.", maxSecondsPerRecording);
         // ⚠️ Instead of thread.interrupt(), just log and exit cleanly
-        // PaintLogger.warningf("Not interrupting TrackMate threads to avoid InterruptedException.");
+        // PaintLogger.warnf("Not interrupting TrackMate threads to avoid InterruptedException.");
         return false;
     }
 
@@ -104,7 +104,7 @@ public class RunTrackMateOnExperiment {
         if (Files.exists(configPath)) {
             PaintConfig.initialise(experimentPath.getParent());
         } else {
-            PaintLogger.warningf("No PaintConfig.json found in %s, defaults will be used.",
+            PaintLogger.warnf("No PaintConfig.json found in %s, defaults will be used.",
                                  experimentPath.getParent());
         }
         PaintConfig paintConfig         = PaintConfig.instance();
@@ -178,7 +178,7 @@ public class RunTrackMateOnExperiment {
             for (CSVRecord experientInfoRecord : experimentInfoParser) {
 
                 if (dialog != null && dialog.isCancelled()) {
-                    PaintLogger.warningf("User requested cancellation. Stopping.");
+                    PaintLogger.warnf("User requested cancellation. Stopping.");
                     break;
                 }
 
@@ -303,7 +303,7 @@ public class RunTrackMateOnExperiment {
         }
 
         if (dialog != null && dialog.isCancelled()) {
-            PaintLogger.warningf("Cancellation processed.");
+            PaintLogger.warnf("Cancellation processed.");
             PaintLogger.blankline();
             return false;
         }

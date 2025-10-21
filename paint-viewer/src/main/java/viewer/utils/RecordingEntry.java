@@ -65,9 +65,9 @@ public class RecordingEntry {
                 PaintLogger.debugf("[%s] Loaded via ImageIO: %s", label, imagePath);
                 return new ImageIcon(img);
             }
-            PaintLogger.warningf("[%s] ImageIO returned null for %s", label, imagePath);
+            PaintLogger.warnf("[%s] ImageIO returned null for %s", label, imagePath);
         } catch (Exception e) {
-            PaintLogger.warningf("[%s] ImageIO failed for %s (%s)", label, imagePath, e.getMessage());
+            PaintLogger.warnf("[%s] ImageIO failed for %s (%s)", label, imagePath, e.getMessage());
         }
 
         try {
@@ -77,9 +77,9 @@ public class RecordingEntry {
                 PaintLogger.debugf("[%s] Loaded via ImageJ Opener: %s", label, imagePath);
                 return new ImageIcon(imp.getImage());
             }
-            PaintLogger.warningf("[%s] ImageJ Opener returned null for %s", label, imagePath);
+            PaintLogger.warnf("[%s] ImageJ Opener returned null for %s", label, imagePath);
         } catch (Throwable t) {
-            PaintLogger.warningf("[%s] ImageJ Opener threw error for %s (%s)", label, imagePath, t.getMessage());
+            PaintLogger.warnf("[%s] ImageJ Opener threw error for %s (%s)", label, imagePath, t.getMessage());
         }
 
         PaintLogger.errorf("[%s] Failed to load image: %s", label, imagePath);
