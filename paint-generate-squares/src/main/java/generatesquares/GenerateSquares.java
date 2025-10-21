@@ -25,6 +25,7 @@ package generatesquares;
 
 import paint.shared.config.PaintConfig;
 import paint.shared.dialogs.ProjectSpecificationDialog;
+import paint.shared.prefs.PaintPrefs;
 import paint.shared.utils.JarInfoLogger;
 import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
@@ -57,10 +58,7 @@ public class GenerateSquares {
         SwingUtilities.invokeLater(() -> {
 
             // --- Step 1: Determine last used project directory ---
-            String lastProjectDir = paint.shared.prefs.PaintPrefs.getString(
-                    "Project Root",
-                    System.getProperty("user.home")
-            );
+            String lastProjectDir = PaintPrefs.getString("Project Root", System.getProperty("user.home"));
             Path projectPath = Paths.get(lastProjectDir);
 
             // --- Step 2: Initialise config and logger early (in case project was known) ---
