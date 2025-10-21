@@ -169,23 +169,27 @@ public class RunTrackMateOnRecording {
             Settings settings = new Settings(imp);
             settings.detectorFactory = new LogDetectorFactory();
             settings.detectorSettings = settings.detectorFactory.getDefaultSettings();
-            settings.detectorSettings.put("TARGET_CHANNEL", trackMateConfig.getTargetChannel());
-            settings.detectorSettings.put("RADIUS", trackMateConfig.getRadius());
-            settings.detectorSettings.put("DO_SUBPIXEL_LOCALIZATION", trackMateConfig.isDoSubpixelLocalization());
-            settings.detectorSettings.put("THRESHOLD", threshold);
-            settings.detectorSettings.put("DO_MEDIAN_FILTERING", trackMateConfig.isMedianFiltering());
 
-            settings.trackerFactory = new SparseLAPTrackerFactory();
+            // @formatter:off
+            settings.detectorSettings.put("TARGET_CHANNEL",           trackMateConfig.getTargetChannel());
+            settings.detectorSettings.put("RADIUS",                   trackMateConfig.getRadius());
+            settings.detectorSettings.put("DO_SUBPIXEL_LOCALIZATION", trackMateConfig.isDoSubpixelLocalization());
+            settings.detectorSettings.put("THRESHOLD",                threshold);
+            settings.detectorSettings.put("DO_MEDIAN_FILTERING",      trackMateConfig.isMedianFiltering());
+
+            settings.trackerFactory  = new SparseLAPTrackerFactory();
             settings.trackerSettings = settings.trackerFactory.getDefaultSettings();
-            settings.trackerSettings.put("LINKING_MAX_DISTANCE", trackMateConfig.getLinkingMaxDistance());
+
+            settings.trackerSettings.put("LINKING_MAX_DISTANCE",            trackMateConfig.getLinkingMaxDistance());
             settings.trackerSettings.put("ALTERNATIVE_LINKING_COST_FACTOR", trackMateConfig.getAlternativeLinkingCostFactor());
-            settings.trackerSettings.put("ALLOW_GAP_CLOSING", trackMateConfig.isAllowGapClosing());
-            settings.trackerSettings.put("GAP_CLOSING_MAX_DISTANCE", trackMateConfig.getGapClosingMaxDistance());
-            settings.trackerSettings.put("MAX_FRAME_GAP", trackMateConfig.getMaxFrameGap());
-            settings.trackerSettings.put("ALLOW_TRACK_SPLITTING", trackMateConfig.isAllowTrackSplitting());
-            settings.trackerSettings.put("SPLITTING_MAX_DISTANCE", trackMateConfig.getSplittingMaxDistance());
-            settings.trackerSettings.put("ALLOW_TRACK_MERGING", trackMateConfig.isAllowTrackMerging());
-            settings.trackerSettings.put("MERGING_MAX_DISTANCE", trackMateConfig.getMergingMaxDistance());
+            settings.trackerSettings.put("ALLOW_GAP_CLOSING",               trackMateConfig.isAllowGapClosing());
+            settings.trackerSettings.put("GAP_CLOSING_MAX_DISTANCE",        trackMateConfig.getGapClosingMaxDistance());
+            settings.trackerSettings.put("MAX_FRAME_GAP",                   trackMateConfig.getMaxFrameGap());
+            settings.trackerSettings.put("ALLOW_TRACK_SPLITTING",           trackMateConfig.isAllowTrackSplitting());
+            settings.trackerSettings.put("SPLITTING_MAX_DISTANCE",          trackMateConfig.getSplittingMaxDistance());
+            settings.trackerSettings.put("ALLOW_TRACK_MERGING",             trackMateConfig.isAllowTrackMerging());
+            settings.trackerSettings.put("MERGING_MAX_DISTANCE",            trackMateConfig.getMergingMaxDistance());
+            // @formatter:on
 
             settings.addSpotFilter(new FeatureFilter("QUALITY", 0, true));
             settings.addAllAnalyzers();
@@ -252,6 +256,7 @@ public class RunTrackMateOnRecording {
             displayer.render();
             displayer.refresh();
 
+
             if (isCancelled(Thread.currentThread(), dialog)) {
                 return cancelEarly(imp, impBrightfield, capture);
             }
@@ -264,6 +269,7 @@ public class RunTrackMateOnRecording {
                     PaintLogger.errorf("Failed to save TIFF to: %s", imagePath);
                 }
             }
+            IJ.wait(2000);
 
             // --- Step 6: Write tracks CSV ---
             String tracksName = experimentInfoRecord.getRecordingName() + "-tracks.csv";
