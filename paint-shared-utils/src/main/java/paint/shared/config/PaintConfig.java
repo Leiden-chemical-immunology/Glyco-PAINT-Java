@@ -175,7 +175,6 @@ public class PaintConfig {
         JsonObject paint = new JsonObject();
         paint.addProperty("Version",                                               "1.0");
         paint.addProperty("Image File Extension",                                  ".nd2");
-        paint.addProperty("Log Level",                                             "INFO");
         configData.add(SECTION_PAINT, paint);
 
         JsonObject recordingViewer = new JsonObject();

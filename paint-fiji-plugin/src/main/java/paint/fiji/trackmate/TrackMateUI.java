@@ -66,7 +66,7 @@ public class TrackMateUI implements Command {
         // --- Initialise logging and configuration ---
         PaintConsoleWindow.createConsoleFor("TrackMate");
         PaintConfig.initialise(projectPath);
-        String debugLevel = PaintConfig.getString("Paint", "Log Level", "INFO");
+        String debugLevel = PaintPrefs.getString("Log Level", "INFO");
         PaintLogger.setLevel(debugLevel);
         PaintLogger.initialise(projectPath, "TrackMateOnProject.log");
         PaintLogger.debugf("TrackMate plugin started (Interactive).");
