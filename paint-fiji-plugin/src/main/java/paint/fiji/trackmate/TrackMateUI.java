@@ -3,7 +3,7 @@ package paint.fiji.trackmate;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 import paint.shared.config.PaintConfig;
-import paint.shared.dialogs.ProjectSpecificationDialog;
+import paint.shared.dialogs.ProjectDialog;
 import paint.shared.prefs.PaintPrefs;
 import paint.shared.utils.JarInfoLogger;
 import paint.shared.utils.PaintConsoleWindow;
@@ -84,8 +84,8 @@ public class TrackMateUI implements Command {
         PaintLogger.blankline();
 
         // --- Experiment dialog ---
-        ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(
-                null, projectPath, ProjectSpecificationDialog.DialogMode.TRACKMATE);
+        ProjectDialog dialog = new ProjectDialog(
+                null, projectPath, ProjectDialog.DialogMode.TRACKMATE);
         PaintConsoleWindow.closeOnDialogDispose(dialog.getDialog());
 
         dialog.setCalculationCallback(project -> {

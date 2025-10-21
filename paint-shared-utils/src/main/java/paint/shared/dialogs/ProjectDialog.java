@@ -24,7 +24,7 @@ import java.util.List;
 
 import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
 
-public class ProjectSpecificationDialog {
+public class ProjectDialog {
 
     public enum DialogMode {
         TRACKMATE,
@@ -66,7 +66,7 @@ public class ProjectSpecificationDialog {
     private final DialogMode      mode;
     // @formatter:on
 
-    public ProjectSpecificationDialog(Frame owner, Path initialProjectPath, DialogMode mode) {
+    public ProjectDialog(Frame owner, Path initialProjectPath, DialogMode mode) {
         this.projectPath = initialProjectPath;
         this.paintConfig = PaintConfig.instance();
         this.project     = new Project(initialProjectPath);

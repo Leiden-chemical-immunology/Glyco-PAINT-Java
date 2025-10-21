@@ -6,7 +6,7 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
-import paint.shared.dialogs.ProjectSpecificationDialog;
+import paint.shared.dialogs.ProjectDialog;
 import paint.shared.objects.ExperimentInfo;
 import paint.shared.utils.PaintLogger;
 
@@ -38,7 +38,7 @@ public class RunTrackMateOnExperiment {
      */
     private static boolean runWithWatchdog(Runnable task,
                                            int maxSecondsPerRecording,
-                                           ProjectSpecificationDialog dialog) {
+                                           ProjectDialog dialog) {
         Thread thread = new Thread(task, "TrackMateThread");
         thread.start();
 
@@ -89,7 +89,7 @@ public class RunTrackMateOnExperiment {
 
     public static boolean runTrackMateOnExperiment(Path experimentPath,
                                                    Path imagesPath,
-                                                   ProjectSpecificationDialog dialog) {
+                                                   ProjectDialog dialog) {
 
         // @formatter:off
         Duration totalDuration           = Duration.ZERO;

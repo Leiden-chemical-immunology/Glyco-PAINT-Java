@@ -10,12 +10,11 @@ import fiji.plugin.trackmate.tracking.jaqaman.SparseLAPTrackerFactory;
 import fiji.plugin.trackmate.visualization.hyperstack.HyperStackDisplayer;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.gui.ImageWindow;
 import ij.io.FileSaver;
 import loci.common.DebugTools;
 import paint.fiji.tracks.TrackCsvWriter;
 import paint.shared.config.TrackMateConfig;
-import paint.shared.dialogs.ProjectSpecificationDialog;
+import paint.shared.dialogs.ProjectDialog;
 import paint.shared.objects.ExperimentInfo;
 import paint.shared.utils.PaintLogger;
 
@@ -37,7 +36,7 @@ public class RunTrackMateOnRecording {
 
     static final boolean debug = true;
 
-    private static boolean isCancelled(Thread t, ProjectSpecificationDialog dialog) {
+    private static boolean isCancelled(Thread t, ProjectDialog dialog) {
         return t.isInterrupted() || (dialog != null && dialog.isCancelled());
     }
 
@@ -64,7 +63,7 @@ public class RunTrackMateOnRecording {
                                                            TrackMateConfig trackMateConfig,
                                                            double threshold,
                                                            ExperimentInfo experimentInfoRecord,
-                                                           ProjectSpecificationDialog dialog) throws IOException {
+                                                           ProjectDialog dialog) throws IOException {
 
         final boolean debugFlag = getBoolean("Debug", "Debug RunTrackMateOnRecording", false);
         LocalDateTime start = LocalDateTime.now();

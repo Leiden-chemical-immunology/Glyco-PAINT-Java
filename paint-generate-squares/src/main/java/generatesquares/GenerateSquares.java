@@ -24,7 +24,7 @@
 package generatesquares;
 
 import paint.shared.config.PaintConfig;
-import paint.shared.dialogs.ProjectSpecificationDialog;
+import paint.shared.dialogs.ProjectDialog;
 import paint.shared.prefs.PaintPrefs;
 import paint.shared.utils.JarInfoLogger;
 import paint.shared.utils.PaintConsoleWindow;
@@ -77,10 +77,10 @@ public class GenerateSquares {
             PaintLogger.blankline();
 
             // --- Step 3: Show the integrated configuration dialog ---
-            ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(
+            ProjectDialog dialog = new ProjectDialog(
                     null,
                     projectPath,
-                    ProjectSpecificationDialog.DialogMode.GENERATE_SQUARES
+                    ProjectDialog.DialogMode.GENERATE_SQUARES
             );
 
             // --- Step 4: Create console and tie it to dialog lifecycle ---

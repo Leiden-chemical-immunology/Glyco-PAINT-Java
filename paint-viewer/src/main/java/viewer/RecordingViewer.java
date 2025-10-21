@@ -1,9 +1,9 @@
 package viewer;
 
 import paint.shared.config.PaintConfig;
-import paint.shared.dialogs.ProjectSpecificationDialog;
-import paint.shared.dialogs.ProjectSpecificationDialog.DialogMode;
-import paint.shared.objects.Project;
+import paint.shared.dialogs.ProjectDialog;
+import paint.shared.dialogs.ProjectDialog.DialogMode;
+import paint.shared.prefs.PaintPrefs;
 import paint.shared.utils.PaintLogger;
 import viewer.utils.RecordingEntry;
 import viewer.utils.RecordingLoader;
@@ -19,10 +19,7 @@ public class RecordingViewer {
         SwingUtilities.invokeLater(() -> {
 
             // --- Step 1: Load last used project root from preferences ---
-            String lastProject = paint.shared.prefs.PaintPrefs.getString(
-                    "Project Root",
-                    System.getProperty("user.home")
-            );
+            String lastProject = PaintPrefs.getString("Project Root", System.getProperty("user.home"));
             Path projectPath = Paths.get(lastProject);
 
             // --- Step 2: Initialise logging/config ---
@@ -30,8 +27,8 @@ public class RecordingViewer {
             PaintLogger.initialise(projectPath, "Viewer");
 
             // --- Step 3: Open Project Specification dialog directly ---
-            ProjectSpecificationDialog specificationDialog =
-                    new ProjectSpecificationDialog(null, projectPath, DialogMode.VIEWER);
+            ProjectDialog specificationDialog =
+                    new ProjectDialog(null, projectPath, DialogMode.VIEWER);
 
             // ✅ Callback for the OK button — launches the viewer
             specificationDialog.setCalculationCallback(project -> {

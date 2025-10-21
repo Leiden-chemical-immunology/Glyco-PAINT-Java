@@ -1,6 +1,6 @@
 package paint.fiji.trackmate;
 
-import paint.shared.dialogs.ProjectSpecificationDialog;
+import paint.shared.dialogs.ProjectDialog;
 import paint.shared.utils.PaintLogger;
 import paint.shared.validate.ValidationResult;
 
@@ -24,7 +24,7 @@ public class RunTrackMateOnProject {
     public static boolean runProject(Path projectPath,
                                      Path imagesPath,
                                      List<String> experimentNames,
-                                     ProjectSpecificationDialog dialog,
+                                     ProjectDialog dialog,
                                      Path sweepDir) {
 
         boolean status = true;
