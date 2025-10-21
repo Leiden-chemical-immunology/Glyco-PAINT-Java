@@ -434,7 +434,14 @@ public class PaintConfig {
         return defaultValue;
     }
 
-    private JsonObject getSection(String section) {
+    /**
+     * Returns a JsonObject for the given section name (case-insensitive),
+     * or {@code null} if the section does not exist.
+     * <p>
+     * This is useful for external modules (e.g., TrackMateHeadless) that
+     * need to iterate over dynamically defined sections like "Experiments".
+     */
+    public JsonObject getSection(String section) {
         ensureLoaded();
         return findSectionIgnoreCase(section);
     }
@@ -465,4 +472,6 @@ public class PaintConfig {
         }
         return null;
     }
+
+
 }
