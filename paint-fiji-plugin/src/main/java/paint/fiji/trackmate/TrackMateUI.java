@@ -4,7 +4,6 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 import paint.shared.config.PaintConfig;
 import paint.shared.dialogs.ProjectSpecificationDialog;
-import paint.shared.dialogs.RootSelectionDialog;
 import paint.shared.prefs.PaintPrefs;
 import paint.shared.utils.JarInfoLogger;
 import paint.shared.utils.PaintConsoleWindow;
@@ -24,11 +23,12 @@ import java.time.format.DateTimeFormatter;
  *
  *  <p><b>Purpose:</b><br>
  *  Interactive version of the TrackMate launcher.
- *  Allows the user to select a project and experiments before running.
+ *  Uses the project root stored in preferences, allowing the user
+ *  to select experiments interactively before running.
  *  </p>
  *
  *  <p><b>Menu:</b><br>
- *  Plugins ▸ Glyco-PAINT ▸ Run TrackMate on Project
+ *  Plugins ▸ Glyco-PAINT ▸ Run (Interactive)
  *  </p>
  * ============================================================================
  */
@@ -45,21 +45,21 @@ public class TrackMateUI implements Command {
         );
 
         if (running) {
-            JOptionPane optionPane = new JOptionPane(
-                    "TrackMate processing is already running.\nPlease wait until it finishes.",
-                    JOptionPane.WARNING_MESSAGE
-            );
-            JDialog warnDialog = optionPane.createDialog(null, "Already Running");
-            warnDialog.setAlwaysOnTop(true);
-            warnDialog.setVisible(true);
+            showWarning("TrackMate processing is already running.\nPlease wait until it finishes.");
             return;
         }
 
-        // Select project root directory
-        RootSelectionDialog selectionDialog = new RootSelectionDialog(null, RootSelectionDialog.Mode.PROJECT);
-        Path projectPath = selectionDialog.showDialog();
-        if (projectPath == null) {
-            PaintLogger.infof("User cancelled project selection.");
+        // --- Retrieve project root from preferences ---
+        String projectRoot = PaintPrefs.getString("Project Root", null);
+        if (projectRoot == null || projectRoot.trim().isEmpty()) {
+            showError("No project root found in preferences.\n" +
+                              "Please set 'Project Root' in Glyco-PAINT preferences first.");
+            return;
+        }
+
+        Path projectPath = Paths.get(projectRoot);
+        if (!Files.isDirectory(projectPath)) {
+            showError("The configured project path does not exist:\n" + projectPath);
             return;
         }
 
@@ -68,10 +68,10 @@ public class TrackMateUI implements Command {
         PaintConfig.initialise(projectPath);
         String debugLevel = PaintConfig.getString("Paint", "Log Level", "INFO");
         PaintLogger.setLevel(debugLevel);
-        PaintLogger.initialise(projectPath, "TrackMateOnProject");
-        PaintLogger.debugf("TrackMate plugin started.");
+        PaintLogger.initialise(projectPath, "TrackMateOnProject.log");
+        PaintLogger.debugf("TrackMate plugin started (Interactive).");
 
-        // --- Log JAR information ---
+        // --- Log version info ---
         JarInfoLogger.JarInfo info = JarInfoLogger.getJarInfo(TrackMateUI.class);
         if (info != null) {
             PaintLogger.infof("Compilation date: %s", info.implementationDate);
@@ -106,24 +106,22 @@ public class TrackMateUI implements Command {
 
             try {
                 boolean debug = PaintConfig.getBoolean("Debug", "Debug RunTrackMateOnProject", false);
-                String imagesRoot = PaintPrefs.getString("Images Root", "");
-                Path imagesPath = Paths.get(imagesRoot);
+                Path imagesPath = project.getImagesRootPath(); // ✅ from dialog
+                Path currentProjectRoot = project.getProjectRootPath(); // ✅ new local variable
 
                 if (debug) {
                     PaintLogger.debugf("TrackMate processing started.");
                     PaintLogger.debugf("Experiments: %s", project.experimentNames.toString());
                 }
 
-                // Detect sweep configuration
-                Path sweepFile = projectPath.resolve("Sweep Config.json");
+                Path sweepFile = currentProjectRoot.resolve("Sweep Config.json");
                 if (Files.exists(sweepFile)) {
                     PaintLogger.infof("Sweep configuration detected at %s", sweepFile);
                     return RunTrackMateSweepOnProject.runWithSweep(
-                            projectPath, imagesPath, project.experimentNames);
+                            currentProjectRoot, imagesPath, project.experimentNames);
                 }
 
-                // Normal processing
-                return RunTrackMate.run(projectPath, imagesPath, project.experimentNames);
+                return RunTrackMate.run(currentProjectRoot, imagesPath, project.experimentNames);
 
             } catch (Exception e) {
                 PaintLogger.errorf("Error during TrackMate execution: %s", e.getMessage());
@@ -135,5 +133,20 @@ public class TrackMateUI implements Command {
         });
 
         dialog.showDialog();
+    }
+
+    // --- Utility methods ---
+    private void showWarning(String message) {
+        JOptionPane optionPane = new JOptionPane(message, JOptionPane.WARNING_MESSAGE);
+        JDialog warnDialog = optionPane.createDialog(null, "Warning");
+        warnDialog.setAlwaysOnTop(true);
+        warnDialog.setVisible(true);
+    }
+
+    private void showError(String message) {
+        JOptionPane optionPane = new JOptionPane(message, JOptionPane.ERROR_MESSAGE);
+        JDialog errorDialog = optionPane.createDialog(null, "Configuration Error");
+        errorDialog.setAlwaysOnTop(true);
+        errorDialog.setVisible(true);
     }
 }
