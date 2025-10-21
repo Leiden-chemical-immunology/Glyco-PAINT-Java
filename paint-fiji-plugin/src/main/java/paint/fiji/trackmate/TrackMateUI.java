@@ -11,6 +11,7 @@ import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
 
 import javax.swing.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -22,23 +23,16 @@ import java.time.format.DateTimeFormatter;
  *  Part of the Glyco-PAINT Fiji plugin.
  *
  *  <p><b>Purpose:</b><br>
- *  Provides the graphical entry point for running TrackMate on a project.
- *  Handles user interaction (dialogs), logging initialization, and delegates
- *  the actual processing to {@link RunTrackMate} for headless execution.
+ *  Interactive version of the TrackMate launcher.
+ *  Allows the user to select a project and experiments before running.
  *  </p>
  *
- *  <p><b>Notes:</b><br>
- *  This class replaces {@code RunTrackMateOnProject} as the plugin entry.
- *  It remains responsible only for the UI and user-triggered flow.
- *  </p>
- *
- *  <p><b>Author:</b> Herr Doctor<br>
- *  <b>Version:</b> 2.0<br>
- *  <b>Module:</b> paint-fiji-plugin
+ *  <p><b>Menu:</b><br>
+ *  Plugins ▸ Glyco-PAINT ▸ Run TrackMate on Project
  *  </p>
  * ============================================================================
  */
-@Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run")
+@Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run (Interactive)")
 public class TrackMateUI implements Command {
 
     private static volatile boolean running = false;
@@ -46,14 +40,18 @@ public class TrackMateUI implements Command {
     @Override
     public void run() {
 
-        // Prevent duplicate executions
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) ->
+                                                          PaintLogger.debugf("AWT complained: %s", throwable.getMessage())
+        );
+
         if (running) {
-            JOptionPane.showMessageDialog(
-                    null,
+            JOptionPane optionPane = new JOptionPane(
                     "TrackMate processing is already running.\nPlease wait until it finishes.",
-                    "Already Running",
                     JOptionPane.WARNING_MESSAGE
             );
+            JDialog warnDialog = optionPane.createDialog(null, "Already Running");
+            warnDialog.setAlwaysOnTop(true);
+            warnDialog.setVisible(true);
             return;
         }
 
@@ -65,40 +63,41 @@ public class TrackMateUI implements Command {
             return;
         }
 
-        // Initialise console + configuration
+        // --- Initialise logging and configuration ---
         PaintConsoleWindow.createConsoleFor("TrackMate");
         PaintConfig.initialise(projectPath);
-        PaintLogger.setLevel(PaintConfig.getString("Paint", "Log Level", "INFO"));
+        String debugLevel = PaintConfig.getString("Paint", "Log Level", "INFO");
+        PaintLogger.setLevel(debugLevel);
         PaintLogger.initialise(projectPath, "TrackMateOnProject");
         PaintLogger.debugf("TrackMate plugin started.");
 
-        // Log metadata
+        // --- Log JAR information ---
         JarInfoLogger.JarInfo info = JarInfoLogger.getJarInfo(TrackMateUI.class);
         if (info != null) {
             PaintLogger.infof("Compilation date: %s", info.implementationDate);
             PaintLogger.infof("Version: %s", info.implementationVersion);
-        } else {
-            PaintLogger.errorf("No manifest information found.");
         }
 
-        String formattedTime = LocalDateTime.now()
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        LocalDateTime now = LocalDateTime.now();
+        String formattedTime = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         PaintLogger.infof("Current time: %s", formattedTime);
         PaintLogger.blankline();
 
-        // Experiment selection dialog
+        // --- Experiment dialog ---
         ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(
                 null, projectPath, ProjectSpecificationDialog.DialogMode.TRACKMATE);
         PaintConsoleWindow.closeOnDialogDispose(dialog.getDialog());
 
         dialog.setCalculationCallback(project -> {
+
             if (running) {
-                JOptionPane.showMessageDialog(
-                        null,
+                JOptionPane optionPane = new JOptionPane(
                         "TrackMate processing is already running.\nPlease wait until it finishes.",
-                        "Already Running",
                         JOptionPane.WARNING_MESSAGE
                 );
+                JDialog warnDialog = optionPane.createDialog(null, "Already Running");
+                warnDialog.setAlwaysOnTop(true);
+                warnDialog.setVisible(true);
                 return false;
             }
 
@@ -125,6 +124,10 @@ public class TrackMateUI implements Command {
 
                 // Normal processing
                 return RunTrackMate.run(projectPath, imagesPath, project.experimentNames);
+
+            } catch (Exception e) {
+                PaintLogger.errorf("Error during TrackMate execution: %s", e.getMessage());
+                return false;
             } finally {
                 running = false;
                 SwingUtilities.invokeLater(() -> dialog.setOkEnabled(true));
