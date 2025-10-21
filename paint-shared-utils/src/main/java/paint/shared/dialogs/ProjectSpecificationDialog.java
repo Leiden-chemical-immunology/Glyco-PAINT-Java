@@ -5,6 +5,7 @@ import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.objects.Project;
 import paint.shared.utils.PaintLogger;
+import paint.shared.prefs.PaintPrefs;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -197,8 +198,8 @@ public class ProjectSpecificationDialog {
             JLabel dirLabel = new JLabel("Images Root:");
             dirLabel.setPreferredSize(labelSize);
 
-            String defaultDir = PaintConfig.getString("Paths", "Images Root", System.getProperty("user.home"));
-            JTextField dirField = new JTextField(defaultDir, 30);
+            String defaultDir    = PaintPrefs.getString("Images Root", System.getProperty("user.home"));
+            JTextField dirField  = new JTextField(defaultDir, 30);
             JButton browseButton = new JButton("Browse...");
 
             browseButton.addActionListener(e -> {
@@ -386,11 +387,9 @@ public class ProjectSpecificationDialog {
             PaintConfig.setDouble("Generate Squares", "Min Required Density Ratio", Double.parseDouble(minDensityRatioField.getText()));
             PaintConfig.setDouble("Generate Squares", "Max Allowable Variability", Double.parseDouble(maxVariabilityField.getText()));
         } else if (mode == DialogMode.TRACKMATE) {
-            PaintConfig.setString("Paths", "Images Root", imageDirectoryField.getText());
-            PaintConfig.setString("Paths", "Project Root", this.projectPath.toString());
-        } else if (mode == DialogMode.VIEWER) {
-            PaintConfig.setString("Paths", "Project Root", this.projectPath.toString());
+            PaintPrefs.putString("Images Root", imageDirectoryField.getText());
         }
+        PaintPrefs.putString("Project Root", this.projectPath.toString());
 
         if (saveExperimentsCheckBox.isSelected()) {
             PaintConfig.removeSection("Experiments");

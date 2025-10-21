@@ -5,6 +5,7 @@ import org.scijava.plugin.Plugin;
 import paint.shared.config.PaintConfig;
 import paint.shared.dialogs.ProjectSpecificationDialog;
 import paint.shared.dialogs.RootSelectionDialog;
+import paint.shared.prefs.PaintPrefs;
 import paint.shared.utils.JarInfoLogger;
 import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
@@ -105,7 +106,24 @@ public class TrackMateUI implements Command {
             dialog.setOkEnabled(false);
 
             try {
-                Path imagesPath = Paths.get(PaintConfig.getString("Paths", "Images Root", ""));
+                boolean debug = PaintConfig.getBoolean("Debug", "Debug RunTrackMateOnProject", false);
+                String imagesRoot = PaintPrefs.getString("Images Root", "");
+                Path imagesPath = Paths.get(imagesRoot);
+
+                if (debug) {
+                    PaintLogger.debugf("TrackMate processing started.");
+                    PaintLogger.debugf("Experiments: %s", project.experimentNames.toString());
+                }
+
+                // Detect sweep configuration
+                Path sweepFile = projectPath.resolve("Sweep Config.json");
+                if (Files.exists(sweepFile)) {
+                    PaintLogger.infof("Sweep configuration detected at %s", sweepFile);
+                    return RunTrackMateSweepOnProject.runWithSweep(
+                            projectPath, imagesPath, project.experimentNames);
+                }
+
+                // Normal processing
                 return RunTrackMate.run(projectPath, imagesPath, project.experimentNames);
             } finally {
                 running = false;

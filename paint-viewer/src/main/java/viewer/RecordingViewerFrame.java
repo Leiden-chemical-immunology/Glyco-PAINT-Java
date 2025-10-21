@@ -3,6 +3,7 @@ package viewer;
 import paint.shared.config.PaintConfig;
 import paint.shared.dialogs.RootSelectionDialog;
 import paint.shared.objects.Project;
+import paint.shared.prefs.PaintPrefs;
 import paint.shared.utils.PaintLogger;
 
 import viewer.dialogs.CellAssignmentDialog;
@@ -303,16 +304,13 @@ public class RecordingViewerFrame extends JFrame
             return;
         }
 
-        RecordingEntry entry = recordings.get(currentIndex);
-        final String experimentName = entry.getExperimentName();
-        final String recordingName = entry.getRecordingName();
-
-        final String[] imagesRootPathRef = {
-                getString("Paths", "Images Root", "/Volumes/Extreme Pro/Omero")
-        };
-        final Path[] imagePathRef = {
-                Paths.get(imagesRootPathRef[0], experimentName, recordingName + ".nd2")
-        };
+        // @formatter:off
+        RecordingEntry entry             = recordings.get(currentIndex);
+        final String experimentName      = entry.getExperimentName();
+        final String recordingName       = entry.getRecordingName();
+        final String[] imagesRootPathRef = {PaintPrefs.getString("Images Root", "")};
+        final Path[] imagePathRef        = {Paths.get(imagesRootPathRef[0], experimentName, recordingName + ".nd2")};
+        // @formatter:on
 
         if (!Files.exists(imagePathRef[0])) {
             int choice = JOptionPane.showConfirmDialog(
@@ -347,7 +345,7 @@ public class RecordingViewerFrame extends JFrame
                                                   JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                PaintConfig.setString("Paths", "Images Root", imagesRootPathRef[0]);
+                PaintPrefs.putString("Images Root", imagesRootPathRef[0]);
                 PaintConfig.instance().save();
             } else {
                 return;

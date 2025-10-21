@@ -63,6 +63,12 @@
             <version>0.37</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.googlecode.plist</groupId>
+            <artifactId>dd-plist</artifactId>
+            <version>1.23</version>
+        </dependency>
+
     </dependencies>
 
     <repositories>

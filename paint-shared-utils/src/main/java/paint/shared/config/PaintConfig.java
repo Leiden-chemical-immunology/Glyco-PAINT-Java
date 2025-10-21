@@ -63,7 +63,6 @@ public class PaintConfig {
     public static final String SECTION_RECORDING_VIEWER = "Recording Viewer"; // Section name for the Recording Viewer configuration.
     public static final String SECTION_TRACKMATE        = "TrackMate";        // Section name for TrackMate configuration.
     public static final String SECTION_DEBUG            = "Debug";            // Section name for Debug configuration.
-    public static final String SECTION_PATHS            = "Paths";            // Section name for Path configuration.
     // @ formatter:on
 
     // ============================================================================
@@ -206,10 +205,6 @@ public class PaintConfig {
         trackMate.addProperty("Debug RunTrackMateOnProject",                       false);
         trackMate.addProperty("Debug RunTrackMateOnRecording",                     false);
         configData.add(SECTION_DEBUG, trackMate);
-
-        trackMate.addProperty("Project Root",                                      "");
-        trackMate.addProperty("Images Root",                                       "");
-        configData.add(SECTION_PATHS, trackMate);
 
         // @formatter:on
     }
