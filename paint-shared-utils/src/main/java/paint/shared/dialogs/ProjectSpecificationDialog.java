@@ -203,8 +203,15 @@ public class ProjectSpecificationDialog {
             JButton browseButton = new JButton("Browse...");
 
             browseButton.addActionListener(e -> {
-                JFileChooser chooser = new JFileChooser();
+                // Use the text field as the starting directory if it exists
+                File currentDir = new File(dirField.getText().trim());
+                JFileChooser chooser = new JFileChooser(
+                        (currentDir.exists() && currentDir.isDirectory())
+                                ? currentDir
+                                : new File(System.getProperty("user.home"))
+                );
                 chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                chooser.setDialogTitle("Select Images Directory");
                 if (chooser.showOpenDialog(dialog) == JFileChooser.APPROVE_OPTION) {
                     dirField.setText(chooser.getSelectedFile().getAbsolutePath());
                 }
