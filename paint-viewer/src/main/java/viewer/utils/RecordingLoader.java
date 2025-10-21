@@ -52,7 +52,7 @@ public class RecordingLoader {
 
         List<RecordingEntry> entries = new ArrayList<>();
 
-        for (String experimentName : project.experimentNames) {
+        for (String experimentName : project.getExperimentNames()) {
 
             Path experimentPath = project.getProjectRootPath().resolve(experimentName);
 

@@ -54,12 +54,10 @@ public class GenerateSquaresHeadless {
         // --- Construct the Project object expected by GenerateSquareCalcs ---
         GenerateSquaresConfig generateSquaresConfig = GenerateSquaresConfig.from(PaintConfig.instance());
 
-        // @formatter:off
-        Project project               = new Project();
-        project.projectRootPath       = projectPath;
-        project.experimentNames       = experimentNames;
-        project.generateSquaresConfig = generateSquaresConfig;
-        // @formatter:on
+        Project project = new Project();
+        project.setProjectRootPath(projectPath);
+        project.setExperimentNames(experimentNames);
+        project.setGenerateSquaresConfig(generateSquaresConfig);
 
         // --- Run squares calculation for each experiment ---
         for (String experimentName : experimentNames) {

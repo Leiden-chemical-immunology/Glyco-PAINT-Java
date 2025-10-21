@@ -67,8 +67,8 @@ public class GenerateSquareCalcs {
     public static boolean generateSquaresForExperiment(Project project, String experimentName) {
 
         // @formatter:off
-        GenerateSquaresConfig generateSquaresConfig = project.generateSquaresConfig;
-        projectPath                                 = project.projectRootPath;
+        GenerateSquaresConfig generateSquaresConfig = project.getGenerateSquaresConfig();
+        projectPath                                 = project.getProjectRootPath();
         plotFittingCurves                           = getBoolean("Generate Squares", "Plot Curve Fitting", false);
         Experiment experiment                       = null;
         // @formatter:on
@@ -77,7 +77,7 @@ public class GenerateSquareCalcs {
         PaintLogger.debugf("Loading Experiment '%s'", experimentName);
 
         try {
-            experiment = loadExperiment(project.projectRootPath, experimentName, false);
+            experiment = loadExperiment(project.getProjectRootPath(), experimentName, false);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to load Experiment '%s'", experimentName);
         }
@@ -101,7 +101,7 @@ public class GenerateSquareCalcs {
             assignTracksToSquares(recording);
 
             // Calculate square-level and recording-level attributes
-            Path experimentPath = project.projectRootPath.resolve(experiment.getExperimentName());
+            Path experimentPath = project.getProjectRootPath().resolve(experiment.getExperimentName());
             CalculateAttributes.calculateSquareAttributes(experimentPath, experimentName, recording, generateSquaresConfig);
             CalculateAttributes.calculateRecordingAttributes(recording, generateSquaresConfig);
         }
@@ -112,7 +112,7 @@ public class GenerateSquareCalcs {
 
         // Compile all squares and write
         Table allSquaresTable = compileAllSquares(experiment);
-        Path experimentPath = project.projectRootPath.resolve(experiment.getExperimentName());
+        Path experimentPath = project.getProjectRootPath().resolve(experiment.getExperimentName());
         writeAllSquares(experimentPath, allSquaresTable);
 
         // Write recordings

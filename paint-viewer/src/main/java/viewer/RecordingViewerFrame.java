@@ -1,7 +1,6 @@
 package viewer;
 
 import paint.shared.config.PaintConfig;
-import paint.shared.dialogs.RootSelectionDialog;
 import paint.shared.objects.Project;
 import paint.shared.prefs.PaintPrefs;
 import paint.shared.utils.PaintLogger;
@@ -28,7 +27,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static paint.shared.config.PaintConfig.getString;
 import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_HEIGHT;
 import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH;
 
@@ -295,58 +293,38 @@ public class RecordingViewerFrame extends JFrame
             return;
         }
 
-        // @formatter:off
-        RecordingEntry entry             = recordings.get(currentIndex);
-        final String experimentName      = entry.getExperimentName();
-        final String recordingName       = entry.getRecordingName();
-        final String[] imagesRootPathRef = {PaintPrefs.getString("Images Root", "")};
-        final Path[] imagePathRef        = {Paths.get(imagesRootPathRef[0], experimentName, recordingName + ".nd2")};
-        // @formatter:on
+        RecordingEntry entry = recordings.get(currentIndex);
+        String experimentName = entry.getExperimentName();
+        String recordingName  = entry.getRecordingName();
 
-        if (!Files.exists(imagePathRef[0])) {
-            int choice = JOptionPane.showConfirmDialog(
-                    this,
-                    "Recording file not found:\n" + imagePathRef[0] +
-                            "\n\nSelect a new image root directory and try again?",
-                    "File Missing",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE
-            );
-
-            if (choice == JOptionPane.YES_OPTION) {
-                RootSelectionDialog dlg =
-                        new RootSelectionDialog(this, RootSelectionDialog.Mode.IMAGES);
-                Path newRoot = dlg.showDialog();
-
-                if (dlg.isCancelled() || newRoot == null) {
-                    JOptionPane.showMessageDialog(this,
-                                                  "No directory selected. Playback cancelled.",
-                                                  "Cancelled",
-                                                  JOptionPane.INFORMATION_MESSAGE);
-                    return;
-                }
-
-                imagesRootPathRef[0] = newRoot.toString();
-                imagePathRef[0] = newRoot.resolve(experimentName).resolve(recordingName + ".nd2");
-
-                if (!Files.exists(imagePathRef[0])) {
-                    JOptionPane.showMessageDialog(this,
-                                                  "Still could not find the recording file:\n" + imagePathRef[0],
-                                                  "File Missing",
-                                                  JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                PaintPrefs.putString("Images Root", imagesRootPathRef[0]);
-                PaintConfig.instance().save();
+        Path imagesRoot = project.getImagesRootPath();
+        if (imagesRoot == null) {
+            String stored = PaintPrefs.getString("Images Root", "");
+            if (stored != null && !stored.isEmpty()) {
+                imagesRoot = Paths.get(stored);
             } else {
+                JOptionPane.showMessageDialog(this,
+                                              "No Images Root is defined.\nPlease set it in the Project Specification dialog.",
+                                              "Configuration Error",
+                                              JOptionPane.ERROR_MESSAGE);
                 return;
             }
+        }
+
+        Path imagePath = imagesRoot.resolve(experimentName).resolve(recordingName + ".nd2");
+
+        if (!Files.exists(imagePath)) {
+            JOptionPane.showMessageDialog(this,
+                                          "Recording file not found:\n" + imagePath,
+                                          "File Missing",
+                                          JOptionPane.ERROR_MESSAGE);
+            return;
         }
 
         Thread movieThread = new Thread(() -> {
             try {
                 TiffMoviePlayer player = new TiffMoviePlayer();
-                player.playMovie(imagePathRef[0].toString());
+                player.playMovie(imagePath.toString());
             } catch (Exception ex) {
                 PaintLogger.errorf("Error playing recording: %s", ex.getMessage());
                 ex.printStackTrace();
@@ -355,7 +333,6 @@ public class RecordingViewerFrame extends JFrame
 
         movieThread.setDaemon(true);
         movieThread.start();
-
         PaintLogger.infof("Playing recording: %s / %s", experimentName, recordingName);
     }
 }

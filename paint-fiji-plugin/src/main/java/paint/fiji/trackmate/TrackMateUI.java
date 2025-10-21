@@ -111,17 +111,17 @@ public class TrackMateUI implements Command {
 
                 if (debug) {
                     PaintLogger.debugf("TrackMate processing started.");
-                    PaintLogger.debugf("Experiments: %s", project.experimentNames.toString());
+                    PaintLogger.debugf("Experiments: %s", project.getExperimentNames().toString());
                 }
 
                 Path sweepFile = currentProjectRoot.resolve("Sweep Config.json");
                 if (Files.exists(sweepFile)) {
                     PaintLogger.infof("Sweep configuration detected at %s", sweepFile);
                     return RunTrackMateSweepOnProject.runWithSweep(
-                            currentProjectRoot, imagesPath, project.experimentNames);
+                            currentProjectRoot, imagesPath, project.getExperimentNames());
                 }
 
-                return RunTrackMate.run(currentProjectRoot, imagesPath, project.experimentNames);
+                return RunTrackMate.run(currentProjectRoot, imagesPath, project.getExperimentNames());
 
             } catch (Exception e) {
                 PaintLogger.errorf("Error during TrackMate execution: %s", e.getMessage());

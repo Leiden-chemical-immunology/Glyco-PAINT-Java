@@ -2,7 +2,7 @@
  * ============================================================================
  *  GenerateSquares.java
  *  Part of the "Generate Squares" module.
- *
+ * <p>
  *  Purpose:
  *    Acts as the main entry point for the Generate Squares workflow.
  *    Provides a GUI-driven process to:
@@ -10,11 +10,11 @@
  *      - Configure analysis parameters
  *      - Run square-based calculations on TrackMate output
  *      - Export histogram summaries and consolidated CSVs
- *
+ * <p>
  *  Notes:
  *    This class contains only orchestration logic and user interface flow.
  *    All computational work is delegated to GenerateSquaresRunner.
- *
+ * <p>
  *  Author: Herr Doctor
  *  Version: 1.0
  *  Module: paint-generate-squares
@@ -92,7 +92,7 @@ public class GenerateSquares {
             // --- Step 5: Run calculations when user presses OK ---
             dialog.setCalculationCallback(project -> {
                 try {
-                    GenerateSquaresHeadless.run(project.getProjectRootPath(), project.experimentNames);
+                    GenerateSquaresHeadless.run(project.getProjectRootPath(), project.getExperimentNames());
                     return true;
                 } catch (Exception e) {
                     PaintLogger.errorf("Generate Squares failed: %s", e.getMessage());
