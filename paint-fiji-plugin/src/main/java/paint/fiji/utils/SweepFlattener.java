@@ -1,6 +1,6 @@
 package paint.fiji.utils;
 
-import static generatesquares.GenerateSquaresRunner.run;
+import static generatesquares.GenerateSquaresHeadless.run;
 import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.utils.CsvUtils.addCase;
 import static paint.shared.utils.CsvUtils.concatenateNamedCsvFiles;

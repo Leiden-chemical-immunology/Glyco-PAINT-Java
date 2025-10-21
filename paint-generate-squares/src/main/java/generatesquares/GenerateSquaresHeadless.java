@@ -24,7 +24,7 @@ import static paint.shared.validate.ValidationHandler.validateExperiments;
 /**
  * Provides a programmatic, non-GUI entry point for the Generate Squares workflow.
  */
-public class GenerateSquaresRunner {
+public class GenerateSquaresHeadless {
 
     /**
      * Executes the full Generate Squares pipeline for the given project path and experiments.
