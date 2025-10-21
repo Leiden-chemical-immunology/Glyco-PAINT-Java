@@ -13,6 +13,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
+
 /**
  * ============================================================================
  *  TrackMateHeadless.java
@@ -35,17 +37,22 @@ public class TrackMateHeadless implements Command {
     @Override
     public void run() {
         try {
-            // --- Step 1: initialise PaintConfig (temporary default) ---
-            Path defaultPath = Paths.get(System.getProperty("user.home"));
-            PaintConfig.initialise(defaultPath);
 
-            // --- Step 2: read actual project path from config ---
-            //Path projectPath = Paths.get(PaintConfig.getString("Paths", "Project Root", ""));
+            //  --- Step 1: read the project path from Prefs ---
             Path projectPath = Paths.get(PaintPrefs.getString("Project Root", ""));
             if (projectPath == null || !projectPath.toFile().exists()) {
-                PaintLogger.errorf("Invalid or missing project path in configuration.");
+                PaintLogger.errorf("Invalid or missing project path: %s.", projectPath != null ? projectPath.toString() : "");
                 return;
             }
+
+            // --- Step 2: initialise PaintConfig  ---
+            // Check if the file exists
+            Path jsonPath = projectPath.resolve(PAINT_CONFIGURATION_JSON);
+            if (!jsonPath.toFile().exists()) {
+                PaintLogger.errorf("Invalid or missing configuration file: %s. ", jsonPath );
+                return;
+            }
+            PaintConfig.initialise(projectPath);
 
             // Reinitialise PaintConfig with the real project path
             PaintConfig.reinitialise(projectPath);
