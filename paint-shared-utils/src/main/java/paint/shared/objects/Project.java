@@ -10,25 +10,25 @@ import java.util.List;
 
 public class Project {
 
-    //
+    // -------------------------------------------------------------------------
     // Attributes
-    //
+    // -------------------------------------------------------------------------
 
     // @formatter:off
-    boolean                      status;
-    public Path                  projectRootPath;
-    public Path                  imagesRootPath;
-    public String                projectName;
-    public PaintConfig           paintConfig;
-    public TrackMateConfig       trackMateConfig;
-    public GenerateSquaresConfig generateSquaresConfig;
-    public List<String>          experimentNames;
-    public List<Experiment>      experiments;
+    private boolean                status;
+    private Path                   projectRootPath;
+    private Path                   imagesRootPath;
+    private String                 projectName;
+    private PaintConfig            paintConfig;
+    private TrackMateConfig        trackMateConfig;
+    private GenerateSquaresConfig  generateSquaresConfig;
+    private List<String>           experimentNames;
+    private List<Experiment>       experiments;
     // @formatter:on
 
-    //
+    // -------------------------------------------------------------------------
     // Constructors
-    //
+    // -------------------------------------------------------------------------
 
     public Project(boolean status,
                    Path projectRootPath,
@@ -39,59 +39,43 @@ public class Project {
                    TrackMateConfig trackMateConfig,
                    List<Experiment> experiments) {
 
-        // @formatter:off
         this.status                = status;
         this.projectRootPath       = projectRootPath;
         this.imagesRootPath        = imagesRootPath;
-        this.projectName           = projectRootPath.getFileName().toString();
-        this.experimentNames       = experimentNames;
+        this.projectName           = projectRootPath != null ? projectRootPath.getFileName().toString() : "(none)";
+        this.experimentNames       = experimentNames != null ? experimentNames : new ArrayList<>();
         this.paintConfig           = paintConfig;
         this.generateSquaresConfig = generateSquaresConfig;
         this.trackMateConfig       = trackMateConfig;
-        // @formatter:on
-
-        if (experiments == null) {
-            this.experiments = new ArrayList<>();
-        } else {
-            this.experiments = experiments;
-        }
+        this.experiments           = experiments != null ? experiments : new ArrayList<>();
     }
 
-    public Project(Path projectRootPath,
-                   List<Experiment> experiments) {
-
-        // @formatter:off
-        this.status                = false;
-        this.projectRootPath       = projectRootPath;
-        this.imagesRootPath        = null;
-        this.projectName           = projectRootPath.getFileName().toString();
-        this.experimentNames       = null;
-        this.paintConfig           = null;
-        this.generateSquaresConfig = null;
-        this.trackMateConfig       = null;
-        // @formatter:on
-
-        if (experiments == null) {
-            this.experiments = new ArrayList<>();
-        } else {
-            this.experiments = experiments;
-        }
+    public Project(Path projectRootPath, List<Experiment> experiments) {
+        this(false, projectRootPath, null, null, null, null, null, experiments);
     }
 
     public Project() {
         this.experimentNames = new ArrayList<>();
+        this.experiments     = new ArrayList<>();
     }
 
     public Project(Path projectRootPath) {
         this.projectRootPath = projectRootPath;
-        this.projectName = projectRootPath.getFileName().toString();
+        this.projectName     = projectRootPath != null ? projectRootPath.getFileName().toString() : "(none)";
+        this.experimentNames = new ArrayList<>();
+        this.experiments     = new ArrayList<>();
     }
 
+    // -------------------------------------------------------------------------
+    // Getters and Setters
+    // -------------------------------------------------------------------------
 
-    // Getters and setters
+    public boolean isStatus() {
+        return status;
+    }
 
-    public String getProjectName() {
-        return projectName;
+    public void setStatus(boolean status) {
+        this.status = status;
     }
 
     public Path getProjectRootPath() {
@@ -100,19 +84,60 @@ public class Project {
 
     public void setProjectRootPath(Path projectRootPath) {
         this.projectRootPath = projectRootPath;
+        if (projectRootPath != null)
+            this.projectName = projectRootPath.getFileName().toString();
+    }
+
+    public Path getImagesRootPath() {
+        return imagesRootPath;
+    }
+
+    public void setImagesRootPath(Path imagesRootPath) {
+        this.imagesRootPath = imagesRootPath;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    public PaintConfig getPaintConfig() {
+        return paintConfig;
+    }
+
+    public void setPaintConfig(PaintConfig paintConfig) {
+        this.paintConfig = paintConfig;
+    }
+
+    public TrackMateConfig getTrackMateConfig() {
+        return trackMateConfig;
+    }
+
+    public void setTrackMateConfig(TrackMateConfig trackMateConfig) {
+        this.trackMateConfig = trackMateConfig;
+    }
+
+    public GenerateSquaresConfig getGenerateSquaresConfig() {
+        return generateSquaresConfig;
+    }
+
+    public void setGenerateSquaresConfig(GenerateSquaresConfig generateSquaresConfig) {
+        this.generateSquaresConfig = generateSquaresConfig;
+    }
+
+    public List<String> getExperimentNames() {
+        return experimentNames;
+    }
+
+    public void setExperimentNames(List<String> experimentNames) {
+        this.experimentNames = experimentNames;
     }
 
     public List<Experiment> getExperiments() {
         return experiments;
-    }
-
-    public Experiment getExperiment(String experimentName) {
-        for (Experiment experiment : experiments) {
-            if (experiment.getExperimentName().equals(experimentName)) {
-                return experiment;
-            }
-        }
-        return null;
     }
 
     public void setExperiments(List<Experiment> experiments) {
@@ -120,34 +145,53 @@ public class Project {
     }
 
     public void addExperiment(Experiment experiment) {
+        if (this.experiments == null) {
+            this.experiments = new ArrayList<>();
+        }
         this.experiments.add(experiment);
     }
 
+    public Experiment getExperiment(String experimentName) {
+        if (experiments == null) return null;
+        for (Experiment experiment : experiments) {
+            if (experimentName.equals(experiment.getExperimentName())) {
+                return experiment;
+            }
+        }
+        return null;
+    }
+
+    // -------------------------------------------------------------------------
+    // toString()
+    // -------------------------------------------------------------------------
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
         sb.append("\n\n");
         sb.append("----------------------------------------------------------------------\n");
         sb.append("Project: ").append(projectName).append("\n");
-        sb.append("----------------------------------------------------------------------\n");
-        sb.append("\n");
+        sb.append("----------------------------------------------------------------------\n\n");
 
-        sb.append("\n");
-        sb.append(String.format("%nExperiment %s has %d experiment%n", projectName, experiments.size()));
+        if (experiments == null || experiments.isEmpty()) {
+            sb.append("No experiments.\n");
+            return sb.toString();
+        }
+
+        sb.append(String.format("%nExperiment %s has %d experiments%n", projectName, experiments.size()));
         for (Experiment experiment : experiments) {
             sb.append(String.format("\t%s%n", experiment.getExperimentName()));
         }
 
         for (Experiment experiment : experiments) {
-            sb.append("\n");
-            sb.append(experiment);
+            sb.append("\n").append(experiment);
             List<Recording> recordings = experiment.getRecordings();
             for (Recording rec : recordings) {
-                sb.append("\n");
-                sb.append(rec);
+                sb.append("\n").append(rec);
             }
         }
+
         return sb.toString();
     }
-
 }
