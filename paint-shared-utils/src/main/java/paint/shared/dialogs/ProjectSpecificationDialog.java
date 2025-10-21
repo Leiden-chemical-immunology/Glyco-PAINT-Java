@@ -382,10 +382,10 @@ public class ProjectSpecificationDialog {
                 int n = Integer.parseInt(selected.split("x")[0].trim());
                 PaintConfig.setInt("Generate Squares", "Number of Squares in Recording", n * n);
             }
-            PaintConfig.setInt("Generate Squares", "Min Tracks to Calculate Tau", Integer.parseInt(minTracksField.getText()));
-            PaintConfig.setDouble("Generate Squares", "Min Required R Squared", Double.parseDouble(minRSquaredField.getText()));
-            PaintConfig.setDouble("Generate Squares", "Min Required Density Ratio", Double.parseDouble(minDensityRatioField.getText()));
-            PaintConfig.setDouble("Generate Squares", "Max Allowable Variability", Double.parseDouble(maxVariabilityField.getText()));
+            PaintConfig.setInt(   "Generate Squares", "Min Tracks to Calculate Tau", Integer.parseInt(minTracksField.getText()));
+            PaintConfig.setDouble("Generate Squares", "Min Required R Squared",      Double.parseDouble(minRSquaredField.getText()));
+            PaintConfig.setDouble("Generate Squares", "Min Required Density Ratio",  Double.parseDouble(minDensityRatioField.getText()));
+            PaintConfig.setDouble("Generate Squares", "Max Allowable Variability",   Double.parseDouble(maxVariabilityField.getText()));
         } else if (mode == DialogMode.TRACKMATE) {
             PaintPrefs.putString("Images Root", imageDirectoryField.getText());
         }
