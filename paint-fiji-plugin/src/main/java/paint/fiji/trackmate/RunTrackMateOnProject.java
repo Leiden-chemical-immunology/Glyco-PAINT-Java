@@ -1,147 +1,85 @@
 package paint.fiji.trackmate;
 
-import org.scijava.command.Command;
-import org.scijava.plugin.Plugin;
-import paint.shared.config.PaintConfig;
 import paint.shared.dialogs.ProjectSpecificationDialog;
-import paint.shared.dialogs.RootSelectionDialog;
-import paint.shared.utils.JarInfoLogger;
-import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
+import paint.shared.validate.ValidationResult;
 
-import javax.swing.*;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.List;
 
-import static paint.shared.config.PaintConfig.getBoolean;
-import static paint.shared.config.PaintConfig.getString;
-import static paint.shared.utils.JarInfoLogger.getJarInfo;
+import static paint.fiji.trackmate.RunTrackMateOnExperiment.runTrackMateOnExperiment;
+import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
+import static paint.shared.utils.Miscellaneous.formatDuration;
+import static paint.shared.validate.ImageRootValidator.validateImageRoot;
+import static paint.shared.validate.ValidationHandler.validateExperiments;
 
 /**
- * Fiji plugin entry point for running TrackMate on a selected project.
- * <p>
- * This class handles user dialogs and delegates processing to
- * {@link RunTrackMateOnProjectCore} or {@link RunTrackMateSweepOnProject}
- * if a sweep configuration file is present.
+ * Core TrackMate project runner, reusable by plugin and sweep runner.
  */
-@Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run TrackMate on Project")
-public class RunTrackMateOnProject implements Command {
+public class RunTrackMateOnProject {
 
-    private static volatile boolean running = false;
+    public static boolean runProject(Path projectPath,
+                                     Path imagesPath,
+                                     List<String> experimentNames,
+                                     ProjectSpecificationDialog dialog,
+                                     Path sweepDir) {
 
-    @Override
-    public void run() {
+        boolean status = true;
+        LocalDateTime start = LocalDateTime.now();
 
-        // Prevent noisy AWT exception messages
-        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
-            PaintLogger.debugf("   AWT is complaining - ignore");
-        });
-
-        if (running) {
-            JOptionPane optionPane = new JOptionPane(
-                    "TrackMate processing is already running.\nPlease wait until it finishes.",
-                    JOptionPane.WARNING_MESSAGE
-            );
-            JDialog warnDialog = optionPane.createDialog(null, "Already Running");
-            warnDialog.setAlwaysOnTop(true);
-            warnDialog.setVisible(true);
-            return;
+        // Validate image root
+        ValidationResult validateResult = validateImageRoot(projectPath, imagesPath, experimentNames);
+        if (!validateResult.isValid()) {
+            for (String err : validateResult.getErrors()) {
+                PaintLogger.errorf(err);
+            }
+            return false;
         }
 
-        // Project selection dialog
-        RootSelectionDialog selectionDialog = new RootSelectionDialog(null, RootSelectionDialog.Mode.PROJECT);
-        Path projectPath = selectionDialog.showDialog();
-
-        if (projectPath == null) {
-            PaintLogger.infof("User cancelled project selection.");
-            return;
+        // Validate experiment info files
+        validateResult = validateExperiments(projectPath, experimentNames, EXPERIMENT_INFO_CSV);
+        if (!validateResult.isValid()) {
+            for (String err : validateResult.getErrors()) {
+                PaintLogger.errorf(err);
+            }
+            return false;
         }
 
-        // Initialise config + logger
-        PaintConsoleWindow.createConsoleFor("TrackMate");
-        PaintConfig.initialise(projectPath);
-        String debugLevel = PaintConfig.getString("Paint", "Log Level", "INFO");
-        PaintLogger.setLevel(debugLevel);
-        PaintLogger.initialise(projectPath, "TrackMateOnProject");
-        PaintLogger.debugf("TrackMate plugin started");
-
-        // Log JAR info
-        JarInfoLogger.JarInfo info = getJarInfo(RunTrackMateOnProject.class);
-        if (info != null) {
-            PaintLogger.infof("Compilation date: %s", info.implementationDate);
-            PaintLogger.infof("Version: %s", info.implementationVersion);
-        } else {
-            PaintLogger.errorf("No manifest information found.");
-        }
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formattedTime = now.format(fmt);
-        PaintLogger.infof("Current time is: %s", formattedTime);
-
-        PaintLogger.blankline();
-        PaintLogger.blankline();
-
-        // Experiment selection dialog
-        ProjectSpecificationDialog dialog = new ProjectSpecificationDialog(
-                null, projectPath, ProjectSpecificationDialog.DialogMode.TRACKMATE);
-
-        // Ensure console closes when dialog closes
-        PaintConsoleWindow.closeOnDialogDispose(dialog.getDialog());
-
-        dialog.setCalculationCallback(project -> {
-
-            if (running) {
-                JOptionPane optionPane = new JOptionPane(
-                        "TrackMate processing is already running.\nPlease wait until it finishes.",
-                        JOptionPane.WARNING_MESSAGE
-                );
-                JDialog warnDialog = optionPane.createDialog(null, "Already Running");
-                warnDialog.setAlwaysOnTop(true);
-                warnDialog.setVisible(true);
-                return false;
+        // Process each experiment
+        for (String experimentName : experimentNames) {
+            if (dialog != null && dialog.isCancelled()) {
+                PaintLogger.warningf("Processing aborted by user.");
+                break;
             }
 
-            running = true;
-            dialog.setOkEnabled(false);
+            Path experimentPath = (sweepDir != null)
+                    ? sweepDir.resolve(experimentName)
+                    : projectPath.resolve(experimentName);
+
+            if (!Files.isDirectory(projectPath.resolve(experimentName))) {
+                PaintLogger.errorf("Experiment directory '%s' does not exist.", experimentPath);
+                continue;
+            }
 
             try {
-                boolean debug = getBoolean("Debug", "Debug RunTrackMateOnProject", false);
-                String imagesRoot = getString("Paths", "Images Root", "");  //ToDo
-                Path imagesPath = Paths.get(imagesRoot);
-
-                if (debug) {
-                    PaintLogger.debugf("TrackMate processing started.");
-                    PaintLogger.debugf("Experiments %s", project.experimentNames.toString());
+                boolean ok = runTrackMateOnExperiment(
+                        experimentPath, imagesPath.resolve(experimentName), dialog);
+                if (!ok) {
+                    status = false;
                 }
-
-                // Sweep detection
-                Path sweepFile = projectPath.resolve("Sweep Config.json");
-                // PaintLogger.infof("Sweep Config file %s", sweepFile.toString());
-                if (Files.exists(sweepFile)) {
-                    PaintLogger.infof("Sweep configuration detected at %s", sweepFile);
-                    try {
-                        return RunTrackMateSweepOnProject.runWithSweep(
-                                projectPath, imagesPath, project.experimentNames);
-                    } catch (IOException e) {
-                        PaintLogger.errorf("Sweep execution failed: %s", e.getMessage());
-                        return false;
-                    }
-                }
-
-                // Normal execution
-                return RunTrackMateOnProjectCore.runProject(
-                        projectPath, imagesPath, project.experimentNames, dialog, null);
-
-            } finally {
-                running = false;
-                SwingUtilities.invokeLater(() -> dialog.setOkEnabled(true));
+            } catch (Exception e) {
+                PaintLogger.errorf("Error during TrackMate run for '%s': %s", experimentName, e.getMessage());
+                status = false;
             }
-        });
+        }
 
-        dialog.showDialog();
+        // Report
+        Duration totalDuration = Duration.between(start, LocalDateTime.now());
+        PaintLogger.infof("Processed %d experiments in %s.",
+                          experimentNames.size(), formatDuration((int) (totalDuration.toMillis() / 1000)));
+        return status;
     }
 }

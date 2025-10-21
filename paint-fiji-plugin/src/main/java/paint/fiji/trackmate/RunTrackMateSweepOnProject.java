@@ -40,7 +40,7 @@ public class RunTrackMateSweepOnProject {
         if (!Files.exists(sweepFile)) {
             PaintLogger.infof("No sweep configuration found at %s", sweepFile);
             // 👉 Run normal mode if no sweep file
-            return RunTrackMateOnProjectCore.runProject(projectPath, imagesPath, experimentNames, null, projectPath);
+            return RunTrackMateOnProject.runProject(projectPath, imagesPath, experimentNames, null, projectPath);
         }
 
         SweepConfig sweepConfig = new SweepConfig(sweepFile.toString());
@@ -50,14 +50,14 @@ public class RunTrackMateSweepOnProject {
         if (!sweepEnabled) {
             PaintLogger.infof("Sweep configuration present, but sweep mode disabled.");
             // 👉 Run normal mode if sweep disabled
-            return RunTrackMateOnProjectCore.runProject(projectPath, imagesPath, experimentNames, null, projectPath);
+            return RunTrackMateOnProject.runProject(projectPath, imagesPath, experimentNames, null, projectPath);
         }
 
         Map<String, List<Number>> sweeps = sweepConfig.getActiveSweepValues("TrackMate Sweep");
         if (sweeps.isEmpty()) {
             PaintLogger.infof("Sweep enabled, but no active sweep parameters defined.");
             // 👉 Run normal mode if no sweep parameters
-            return RunTrackMateOnProjectCore.runProject(projectPath, imagesPath, experimentNames, null, projectPath);
+            return RunTrackMateOnProject.runProject(projectPath, imagesPath, experimentNames, null, projectPath);
         }
 
         // --- Sweep mode ---
@@ -120,7 +120,7 @@ public class RunTrackMateSweepOnProject {
                     }
 
                     // Run TrackMate in sweepDir
-                    boolean status = RunTrackMateOnProjectCore.runProject(
+                    boolean status = RunTrackMateOnProject.runProject(
                             projectPath, imagesPath, experimentNames, null, sweepDir);
 
                     summaryRows.add(new String[]{
