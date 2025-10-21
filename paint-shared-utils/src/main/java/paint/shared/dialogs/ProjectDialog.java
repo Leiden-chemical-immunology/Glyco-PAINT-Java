@@ -48,20 +48,25 @@ public class ProjectDialog {
 
     private JTextField        projectRootField;
     private JTextField        imageDirectoryField;
+
+    // Squares params (shown in TRACKMATE + GENERATE_SQUARES)
+    private JPanel            paramsPanel;
+    private JCheckBox         runSquaresAfterTrackMateCheck; // only visible in TRACKMATE
+    private JComboBox<String> gridSizeCombo;
     private JTextField        minTracksField;
     private JTextField        minRSquaredField;
     private JTextField        minDensityRatioField;
     private JTextField        maxVariabilityField;
-    private JComboBox<String> gridSizeCombo;
 
     private final JCheckBox       saveExperimentsCheckBox;
     private final JPanel          checkboxPanel = new JPanel();
     private final List<JCheckBox> checkBoxes = new ArrayList<>();
-    private       boolean         okPressed = false;
 
     private final JButton         okButton;
     private final JButton         cancelButton;
+
     private volatile boolean      cancelled = false;
+    private       boolean         okPressed = false;
 
     private final DialogMode      mode;
     // @formatter:on
@@ -72,188 +77,147 @@ public class ProjectDialog {
         this.project     = new Project(initialProjectPath);
         this.mode        = mode;
 
-        String projectName = projectPath.getFileName() != null
+        String projectName = projectPath != null && projectPath.getFileName() != null
                 ? projectPath.getFileName().toString()
                 : "(none)";
+
         String dialogTitle;
         switch (mode) {
-            case TRACKMATE:
-                dialogTitle = "Run TrackMate on Project - '" + projectName + "'";
-                break;
-            case VIEWER:
-                dialogTitle = "View Recordings for Project - '" + projectName + "'";
-                break;
-            default:
-                dialogTitle = "Generate Squares for Project - '" + projectName + "'";
+            case TRACKMATE: dialogTitle = "Run TrackMate on Project - '" + projectName + "'"; break;
+            case VIEWER:    dialogTitle = "View Recordings for Project - '" + projectName + "'"; break;
+            default:        dialogTitle = "Generate Squares for Project - '" + projectName + "'";
         }
 
         this.dialog = new JDialog(owner, dialogTitle, false);
         this.dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
+        // ======= TOP FORM =======
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.WEST;
-
-        Dimension labelSize = new Dimension(220, 20);
-
-        // === PROJECT ROOT SELECTION ===
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        JLabel rootLabel = new JLabel("Project Root:");
-        rootLabel.setPreferredSize(labelSize);
-        formPanel.add(rootLabel, gbc);
-
-        gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
-        projectRootField = new JTextField(projectPath.toString(), 30);
-        formPanel.add(projectRootField, gbc);
 
-        gbc.gridx = 2;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0;
-        JButton browseRootButton = new JButton("Browse...");
+        Dimension labelSize = new Dimension(160, 20);
+        int row = 0;
 
-        browseRootButton.addActionListener(e -> {
-            File current = new File(projectRootField.getText().trim());
-            if (!current.exists() || !current.isDirectory()) {
-                current = new File(System.getProperty("user.home"));
-            }
-            FileDialog dialogChooser = new FileDialog((Frame) null, "Select Project Root", FileDialog.LOAD);
-            dialogChooser.setDirectory(current.getAbsolutePath());
-            System.setProperty("apple.awt.fileDialogForDirectories", "true");
-            dialogChooser.setVisible(true);
-            System.clearProperty("apple.awt.fileDialogForDirectories");
+        // Project Root
+        addLabeledFieldWithBrowse(formPanel, gbc, row++, "Project Root:", labelSize,
+                                  (tf) -> projectRootField = tf,
+                                  () -> (projectPath != null ? projectPath.toString() : System.getProperty("user.home")),
+                                  this::onProjectRootChosen);
 
-            String selectedDir = dialogChooser.getDirectory();
-            if (selectedDir != null) {
-                String selectedFile = dialogChooser.getFile();
-                if (selectedFile != null) {
-                    File selected = new File(selectedDir, selectedFile);
-                    projectRootField.setText(selected.getAbsolutePath());
-                    reloadConfigForNewProject(selected.toPath());
-                }
-            }
-        });
-        formPanel.add(browseRootButton, gbc);
+        // Images Root (always shown, all modes)
+        addLabeledFieldWithBrowse(formPanel, gbc, row++, "Images Root:", labelSize,
+                                  (tf) -> imageDirectoryField = tf,
+                                  () -> {
+                                      String def = PaintPrefs.getString("Images Root", System.getProperty("user.home"));
+                                      return (def == null || def.isEmpty()) ? System.getProperty("user.home") : def;
+                                  },
+                                  this::onImagesRootChosen);
 
-        // === IMAGES ROOT SELECTION (TRACKMATE + VIEWER MODES) ===
-        int row = 1;
-        if (mode == DialogMode.TRACKMATE || mode == DialogMode.VIEWER) {
-            gbc.gridx = 0;
-            gbc.gridy = row;
-            JLabel imageRootLabel = new JLabel("Images Root:");
-            imageRootLabel.setPreferredSize(labelSize);
-            formPanel.add(imageRootLabel, gbc);
+        // ======= PARAMS BLOCK (TRACKMATE + GENERATE_SQUARES) =======
+        if (mode == DialogMode.TRACKMATE || mode == DialogMode.GENERATE_SQUARES) {
+            paramsPanel = new JPanel(new GridBagLayout());
+            paramsPanel.setBorder(BorderFactory.createTitledBorder("Generate Squares Parameters"));
+            GridBagConstraints pg = new GridBagConstraints();
+            pg.insets = new Insets(5,5,5,5);
+            pg.anchor = GridBagConstraints.WEST;
 
-            gbc.gridx = 1;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx = 1.0;
-
-            String imagesRootPref = PaintPrefs.getString("Images Root", System.getProperty("user.home"));
-            imageDirectoryField = new JTextField(imagesRootPref, 30);
-            formPanel.add(imageDirectoryField, gbc);
-
-            gbc.gridx = 2;
-            gbc.fill = GridBagConstraints.NONE;
-            gbc.weightx = 0;
-            JButton browseImageButton = new JButton("Browse...");
-            browseImageButton.addActionListener(e -> {
-                File current = new File(imageDirectoryField.getText().trim());
-                if (!current.exists() || !current.isDirectory()) {
-                    current = new File(System.getProperty("user.home"));
-                }
-                FileDialog dialogChooser = new FileDialog((Frame) null, "Select Images Root", FileDialog.LOAD);
-                dialogChooser.setDirectory(current.getAbsolutePath());
-                System.setProperty("apple.awt.fileDialogForDirectories", "true");
-                dialogChooser.setVisible(true);
-                System.clearProperty("apple.awt.fileDialogForDirectories");
-
-                String selectedDir = dialogChooser.getDirectory();
-                if (selectedDir != null) {
-                    String selectedFile = dialogChooser.getFile();
-                    if (selectedFile != null) {
-                        File selected = new File(selectedDir, selectedFile);
-                        imageDirectoryField.setText(selected.getAbsolutePath());
-                    }
-                }
-            });
-            formPanel.add(browseImageButton, gbc);
-            row++;
-        }
-
-        // === GENERATE SQUARES PARAMETERS ===
-        if (mode == DialogMode.GENERATE_SQUARES) {
             int nrOfSquaresInRecording = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", 400);
             int minTracks              = PaintConfig.getInt("Generate Squares", "Min Tracks to Calculate Tau", 11);
             double minRSquared         = PaintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
             double minDensityRatio     = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
             double maxVariability      = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
 
-            Dimension narrowFieldSize = new Dimension(70, 22);
+            Dimension narrowFieldSize = new Dimension(80, 24);
 
-            JLabel lbl1 = new JLabel("Number of Squares in Recording:");
-            lbl1.setPreferredSize(labelSize);
-            gbc.gridx = 0; gbc.gridy = row;
-            formPanel.add(lbl1, gbc);
-            gbc.gridx = 1;
-            String[] gridOptions = {"5x5", "10x10", "15x15", "20x20", "25x25", "30x30", "35x35", "40x40"};
+            int prow = 0;
+
+            // TrackMate-only toggle
+            if (mode == DialogMode.TRACKMATE) {
+                pg.gridx = 0; pg.gridy = prow; pg.gridwidth = 2;
+                runSquaresAfterTrackMateCheck = new JCheckBox(
+                        "Run Generate Squares after TrackMate",
+                        PaintConfig.getBoolean("TrackMate", "Run Generate Squares After", true)
+                );
+                runSquaresAfterTrackMateCheck.addActionListener(e -> setSquaresParamsEnabled(runSquaresAfterTrackMateCheck.isSelected()));
+                paramsPanel.add(runSquaresAfterTrackMateCheck, pg);
+                prow++;
+                pg.gridwidth = 1;
+            }
+
+            // Number of squares (grid)
+            pg.gridx = 0; pg.gridy = prow; paramsPanel.add(label("Number of Squares in Recording:", labelSize), pg);
+            pg.gridx = 1;
+            String[] gridOptions = {"5x5","10x10","15x15","20x20","25x25","30x30","35x35","40x40"};
             gridSizeCombo = new JComboBox<>(gridOptions);
-            int number = (int) Math.sqrt(nrOfSquaresInRecording);
-            gridSizeCombo.setSelectedItem(number + "x" + number);
-            formPanel.add(gridSizeCombo, gbc);
-            row++;
+            int n = (int)Math.sqrt(nrOfSquaresInRecording);
+            gridSizeCombo.setSelectedItem(n + "x" + n);
+            paramsPanel.add(gridSizeCombo, pg);
+            prow++;
 
-            gbc.gridx = 0; gbc.gridy = row;
-            JLabel lbl2 = new JLabel("Min Tracks to Calculate Tau:");
-            lbl2.setPreferredSize(labelSize);
-            formPanel.add(lbl2, gbc);
-            gbc.gridx = 1;
+            // Min Tracks
+            pg.gridx = 0; pg.gridy = prow; paramsPanel.add(label("Min Tracks to Calculate Tau:", labelSize), pg);
+            pg.gridx = 1;
             minTracksField = createTightTextField(String.valueOf(minTracks), new IntegerDocumentFilter());
             minTracksField.setPreferredSize(narrowFieldSize);
-            formPanel.add(minTracksField, gbc);
-            row++;
+            paramsPanel.add(minTracksField, pg);
+            prow++;
 
-            gbc.gridx = 0; gbc.gridy = row;
-            JLabel lbl3 = new JLabel("Min Required R²:");
-            lbl3.setPreferredSize(labelSize);
-            formPanel.add(lbl3, gbc);
-            gbc.gridx = 1;
+            // Min R^2
+            pg.gridx = 0; pg.gridy = prow; paramsPanel.add(label("Min Required R²:", labelSize), pg);
+            pg.gridx = 1;
             minRSquaredField = createTightTextField(String.valueOf(minRSquared), new FloatDocumentFilter());
             minRSquaredField.setPreferredSize(narrowFieldSize);
-            formPanel.add(minRSquaredField, gbc);
-            row++;
+            paramsPanel.add(minRSquaredField, pg);
+            prow++;
 
-            gbc.gridx = 0; gbc.gridy = row;
-            JLabel lbl4 = new JLabel("Min Required Density Ratio:");
-            lbl4.setPreferredSize(labelSize);
-            formPanel.add(lbl4, gbc);
-            gbc.gridx = 1;
+            // Min Density Ratio
+            pg.gridx = 0; pg.gridy = prow; paramsPanel.add(label("Min Required Density Ratio:", labelSize), pg);
+            pg.gridx = 1;
             minDensityRatioField = createTightTextField(String.valueOf(minDensityRatio), new FloatDocumentFilter());
             minDensityRatioField.setPreferredSize(narrowFieldSize);
-            formPanel.add(minDensityRatioField, gbc);
-            row++;
+            paramsPanel.add(minDensityRatioField, pg);
+            prow++;
 
-            gbc.gridx = 0; gbc.gridy = row;
-            JLabel lbl5 = new JLabel("Max Allowed Variability:");
-            lbl5.setPreferredSize(labelSize);
-            formPanel.add(lbl5, gbc);
-            gbc.gridx = 1;
+            // Max Variability
+            pg.gridx = 0; pg.gridy = prow; paramsPanel.add(label("Max Allowed Variability:", labelSize), pg);
+            pg.gridx = 1;
             maxVariabilityField = createTightTextField(String.valueOf(maxVariability), new FloatDocumentFilter());
             maxVariabilityField.setPreferredSize(narrowFieldSize);
-            formPanel.add(maxVariabilityField, gbc);
+            paramsPanel.add(maxVariabilityField, pg);
+
+            // initial enable state in TrackMate
+            if (mode == DialogMode.TRACKMATE) {
+                setSquaresParamsEnabled(runSquaresAfterTrackMateCheck.isSelected());
+            }
+
+            // write-through grid size to config immediately on change
+            gridSizeCombo.addActionListener(e -> {
+                String sel = (String) gridSizeCombo.getSelectedItem();
+                if (sel != null && sel.contains("x")) {
+                    int side = Integer.parseInt(sel.split("x")[0].trim());
+                    PaintConfig.setInt("Generate Squares", "Number of Squares in Recording", side * side);
+                }
+            });
+
+            // add params panel to form
+            gbc.gridx = 0; gbc.gridy = row++; gbc.gridwidth = 3; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
+            formPanel.add(paramsPanel, gbc);
+            gbc.gridwidth = 1; // reset
         }
 
         dialog.add(formPanel, BorderLayout.NORTH);
 
-        // === EXPERIMENT SELECTION ===
+        // ======= EXPERIMENTS =======
         checkboxPanel.setLayout(new BoxLayout(checkboxPanel, BoxLayout.Y_AXIS));
         populateCheckboxes();
 
         JScrollPane scrollPane = new JScrollPane(checkboxPanel);
-        scrollPane.setPreferredSize(new Dimension(600, 200));
+        scrollPane.setPreferredSize(new Dimension(680, 240));
         scrollPane.setBorder(BorderFactory.createEtchedBorder());
 
         JButton selectAll = new JButton("Select All");
@@ -270,7 +234,7 @@ public class ProjectDialog {
         centerPanel.add(scrollPane, BorderLayout.CENTER);
         dialog.add(centerPanel, BorderLayout.CENTER);
 
-        // === BOTTOM BUTTONS ===
+        // ======= BOTTOM =======
         saveExperimentsCheckBox = new JCheckBox("Save Experiments", false);
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         leftPanel.add(saveExperimentsCheckBox);
@@ -278,81 +242,136 @@ public class ProjectDialog {
         okButton = new JButton("OK");
         cancelButton = new JButton("Cancel");
 
-        okButton.setEnabled(false); // will update dynamically
-        for (JCheckBox cb : checkBoxes) {
-            cb.addActionListener(e -> updateOkButtonState());
-        }
+        // listeners affecting OK state
+        for (JCheckBox cb : checkBoxes) cb.addActionListener(e -> updateOkButtonState());
         projectRootField.getDocument().addDocumentListener((SimpleDocumentListener) e -> updateOkButtonState());
-        if (imageDirectoryField != null)
-            imageDirectoryField.getDocument().addDocumentListener((SimpleDocumentListener) e -> updateOkButtonState());
+        imageDirectoryField.getDocument().addDocumentListener((SimpleDocumentListener) e -> updateOkButtonState());
 
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         rightPanel.add(okButton);
         rightPanel.add(cancelButton);
 
-        JPanel buttonPanel = new JPanel(new BorderLayout());
-        buttonPanel.add(leftPanel, BorderLayout.WEST);
-        buttonPanel.add(rightPanel, BorderLayout.EAST);
-        dialog.add(buttonPanel, BorderLayout.SOUTH);
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.add(leftPanel, BorderLayout.WEST);
+        bottomPanel.add(rightPanel, BorderLayout.EAST);
+        dialog.add(bottomPanel, BorderLayout.SOUTH);
 
-        okButton.addActionListener(e -> {
-            okPressed = true;
-            cancelled = false;
-            saveConfig();
+        okButton.addActionListener(e -> onOkPressed());
+        cancelButton.addActionListener(e -> { cancelled = true; dialog.dispose(); });
 
-            if (calculationCallback != null) {
-                setInputsEnabled(false);
-                okButton.setEnabled(false);
-
-                new Thread(() -> {
-                    try {
-                        boolean success = calculationCallback.run(getProject());
-                        SwingUtilities.invokeLater(() -> {
-                            setInputsEnabled(true);
-                            okButton.setEnabled(true);
-
-                            // ✅ Dialog stays open for all modes
-                            if (!success) {
-                                JOptionPane.showMessageDialog(dialog,
-                                                              "Operation failed. Please check the log.",
-                                                              "Warning",
-                                                              JOptionPane.WARNING_MESSAGE);
-                            } else {
-                                // Optional success notice for Viewer mode
-                                if (mode == DialogMode.VIEWER) {
-                                    PaintLogger.infof("Viewer launched successfully.");
-                                }
-                            }
-                        });
-                    } catch (Exception ex1) {
-                        PaintLogger.errorf("Error in callback: %s", ex1.getMessage());
-                        SwingUtilities.invokeLater(() -> {
-                            setInputsEnabled(true);
-                            okButton.setEnabled(true);
-                            JOptionPane.showMessageDialog(dialog,
-                                                          "Unexpected error: " + ex1.getMessage(),
-                                                          "Error",
-                                                          JOptionPane.ERROR_MESSAGE);
-                        });
-                    }
-                }).start();
-            }
-        });
-
-        cancelButton.addActionListener(e -> {
-            cancelled = true;
-            dialog.dispose();
-        });
-
-        // === Ensure adequate dialog size ===
-        int width  = (mode == DialogMode.GENERATE_SQUARES) ? 800 : 700;
-        int height = 600;
+        // size & show
+        int width  = 820;
+        int height = (mode == DialogMode.VIEWER) ? 600 : 680;
         dialog.setMinimumSize(new Dimension(width, height));
         dialog.setPreferredSize(new Dimension(width, height));
         dialog.pack();
         dialog.setLocationRelativeTo(owner);
 
-        updateOkButtonState();
+        updateOkButtonState(); // reflect current state
+    }
+
+    // ======= Actions =======
+
+    private void onOkPressed() {
+        okPressed = true;
+        cancelled = false;
+        saveConfig(); // persist roots + experiments (+ params if edited)
+
+        if (calculationCallback != null) {
+            setInputsEnabled(false);
+            okButton.setEnabled(false);
+            new Thread(() -> {
+                boolean success = false;
+                try {
+                    success = calculationCallback.run(getProject());
+                } catch (Exception ex) {
+                    PaintLogger.errorf("Error in callback: %s", ex.getMessage());
+                }
+                final boolean s = success;
+                SwingUtilities.invokeLater(() -> {
+                    setInputsEnabled(true);
+                    okButton.setEnabled(true);
+                    if (!s) {
+                        JOptionPane.showMessageDialog(dialog,
+                                                      "Operation finished with errors. Check the log.",
+                                                      "Warning",
+                                                      JOptionPane.WARNING_MESSAGE);
+                    }
+                    // Dialog intentionally stays open in all modes.
+                });
+            }, "ProjectDialog-OK").start();
+        }
+    }
+
+    private void onProjectRootChosen(File chosen) {
+        if (chosen != null && chosen.isDirectory()) {
+            projectRootField.setText(chosen.getAbsolutePath());
+            reloadConfigForNewProject(chosen.toPath());
+        }
+    }
+
+    private void onImagesRootChosen(File chosen) {
+        if (chosen != null && chosen.isDirectory()) {
+            imageDirectoryField.setText(chosen.getAbsolutePath());
+            updateOkButtonState();
+        }
+    }
+
+    // ======= Helpers =======
+
+    private void addLabeledFieldWithBrowse(
+            JPanel panel,
+            GridBagConstraints gbc,
+            int row,
+            String labelText,
+            Dimension labelSize,
+            java.util.function.Consumer<JTextField> fieldOut,
+            java.util.function.Supplier<String> defaultValueSupplier,
+            java.util.function.Consumer<File> onChosen
+    ) {
+        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0; gbc.fill = GridBagConstraints.NONE;
+        JLabel lbl = new JLabel(labelText);
+        lbl.setPreferredSize(labelSize);
+        panel.add(lbl, gbc);
+
+        gbc.gridx = 1; gbc.weightx = 1.0; gbc.fill = GridBagConstraints.HORIZONTAL;
+        JTextField tf = new JTextField(defaultValueSupplier.get(), 32);
+        panel.add(tf, gbc);
+        fieldOut.accept(tf);
+
+        gbc.gridx = 2; gbc.weightx = 0; gbc.fill = GridBagConstraints.NONE;
+        JButton browse = new JButton("Browse...");
+        browse.addActionListener(e -> {
+            File current = new File(tf.getText().trim());
+            if (!current.exists() || !current.isDirectory()) {
+                current = new File(System.getProperty("user.home"));
+            }
+            FileDialog dialogChooser = new FileDialog((Frame) null, labelText, FileDialog.LOAD);
+            dialogChooser.setDirectory(current.getAbsolutePath());
+            System.setProperty("apple.awt.fileDialogForDirectories", "true");
+            dialogChooser.setVisible(true);
+            System.clearProperty("apple.awt.fileDialogForDirectories");
+            String dir = dialogChooser.getDirectory();
+            String name = dialogChooser.getFile();
+            if (dir != null && name != null) {
+                onChosen.accept(new File(dir, name));
+            }
+        });
+        panel.add(browse, gbc);
+    }
+
+    private JLabel label(String text, Dimension pref) {
+        JLabel l = new JLabel(text);
+        l.setPreferredSize(pref);
+        return l;
+    }
+
+    private void setSquaresParamsEnabled(boolean enabled) {
+        if (gridSizeCombo != null) gridSizeCombo.setEnabled(enabled);
+        if (minTracksField != null) minTracksField.setEnabled(enabled);
+        if (minRSquaredField != null) minRSquaredField.setEnabled(enabled);
+        if (minDensityRatioField != null) minDensityRatioField.setEnabled(enabled);
+        if (maxVariabilityField != null) maxVariabilityField.setEnabled(enabled);
     }
 
     private void reloadConfigForNewProject(Path newRoot) {
@@ -370,13 +389,11 @@ public class ProjectDialog {
         if (okButton == null) return;
 
         boolean anySelected = checkBoxes.stream().anyMatch(JCheckBox::isSelected);
-        boolean rootsValid = true;
 
-        if (mode == DialogMode.GENERATE_SQUARES || mode == DialogMode.TRACKMATE || mode == DialogMode.VIEWER) {
-            File proj = new File(projectRootField.getText().trim());
-            File img  = (imageDirectoryField != null) ? new File(imageDirectoryField.getText().trim()) : null;
-            rootsValid = proj.isDirectory() && (img == null || img.isDirectory());
-        }
+        File proj = new File(projectRootField.getText().trim());
+        File img  = new File(imageDirectoryField.getText().trim());
+
+        boolean rootsValid = proj.isDirectory() && img.isDirectory();
 
         okButton.setEnabled(anySelected && rootsValid);
     }
@@ -385,7 +402,7 @@ public class ProjectDialog {
         checkboxPanel.removeAll();
         checkBoxes.clear();
 
-        File[] subs = project.getProjectRootPath().toFile().listFiles();
+        File[] subs = (projectPath != null ? projectPath.toFile().listFiles() : null);
         if (subs != null) {
             Arrays.sort(subs, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
             for (File sub : subs) {
@@ -404,34 +421,60 @@ public class ProjectDialog {
 
         for (JCheckBox cb : checkBoxes) cb.addActionListener(e -> updateOkButtonState());
         updateOkButtonState();
-        checkboxPanel.revalidate();
-        checkboxPanel.repaint();
     }
 
     private void saveConfig() {
+        // Roots
         PaintPrefs.putString("Project Root", projectRootField.getText().trim());
-        if (imageDirectoryField != null)
-            PaintPrefs.putString("Images Root", imageDirectoryField.getText().trim());
+        PaintPrefs.putString("Images Root",  imageDirectoryField.getText().trim());
+
+        // Squares params (write if panel exists; values used by either mode)
+        if (paramsPanel != null) {
+            if (gridSizeCombo != null) {
+                String selected = (String) gridSizeCombo.getSelectedItem();
+                if (selected != null && selected.contains("x")) {
+                    int side = Integer.parseInt(selected.split("x")[0].trim());
+                    PaintConfig.setInt("Generate Squares", "Number of Squares in Recording", side * side);
+                }
+            }
+            if (minTracksField != null)       PaintConfig.setInt(   "Generate Squares", "Min Tracks to Calculate Tau", parseIntSafe(minTracksField.getText(), 11));
+            if (minRSquaredField != null)     PaintConfig.setDouble("Generate Squares", "Min Required R Squared",      parseDoubleSafe(minRSquaredField.getText(), 0.1));
+            if (minDensityRatioField != null) PaintConfig.setDouble("Generate Squares", "Min Required Density Ratio",  parseDoubleSafe(minDensityRatioField.getText(), 2.0));
+            if (maxVariabilityField != null)  PaintConfig.setDouble("Generate Squares", "Max Allowable Variability",   parseDoubleSafe(maxVariabilityField.getText(), 10.0));
+
+            if (mode == DialogMode.TRACKMATE && runSquaresAfterTrackMateCheck != null) {
+                PaintConfig.setBoolean("TrackMate", "Run Generate Squares After", runSquaresAfterTrackMateCheck.isSelected());
+            }
+        }
+
+        // Experiments
         if (saveExperimentsCheckBox.isSelected()) {
             PaintConfig.removeSection("Experiments");
             for (JCheckBox cb : checkBoxes)
                 PaintConfig.setBoolean("Experiments", cb.getText(), cb.isSelected());
         }
+
         paintConfig.save();
     }
 
+    private static int parseIntSafe(String s, int def) {
+        try { return Integer.parseInt(s.trim()); } catch (Exception e) { return def; }
+    }
+    private static double parseDoubleSafe(String s, double def) {
+        try { return Double.parseDouble(s.trim()); } catch (Exception e) { return def; }
+    }
+
     private Project getProject() {
-        TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
+        TrackMateConfig trackMateConfig     = TrackMateConfig.from(paintConfig);
         GenerateSquaresConfig squaresConfig = GenerateSquaresConfig.from(paintConfig);
+
         List<String> experimentNames = new ArrayList<>();
         for (JCheckBox cb : checkBoxes)
             if (cb.isSelected()) experimentNames.add(cb.getText());
 
         Path imagesPath = null;
-        if (imageDirectoryField != null) {
-            String imgText = imageDirectoryField.getText().trim();
-            if (!imgText.isEmpty()) imagesPath = Paths.get(imgText);
-        }
+        String imgText = imageDirectoryField.getText().trim();
+        if (!imgText.isEmpty()) imagesPath = Paths.get(imgText);
 
         return new Project(
                 okPressed,
@@ -446,18 +489,22 @@ public class ProjectDialog {
     }
 
     public Project showDialog() {
-        dialog.setVisible(true);
+        dialog.setVisible(true); // stays open until user closes it
         return getProject();
     }
 
     private void setInputsEnabled(boolean enabled) {
         if (projectRootField != null) projectRootField.setEnabled(enabled);
         if (imageDirectoryField != null) imageDirectoryField.setEnabled(enabled);
-        if (minTracksField != null) minTracksField.setEnabled(enabled);
-        if (minRSquaredField != null) minRSquaredField.setEnabled(enabled);
-        if (minDensityRatioField != null) minDensityRatioField.setEnabled(enabled);
-        if (maxVariabilityField != null) maxVariabilityField.setEnabled(enabled);
-        checkBoxes.forEach(cb -> cb.setEnabled(enabled));
+
+        boolean enableSquares = enabled;
+        if (mode == DialogMode.TRACKMATE && runSquaresAfterTrackMateCheck != null) {
+            runSquaresAfterTrackMateCheck.setEnabled(enabled);
+            enableSquares = enabled && runSquaresAfterTrackMateCheck.isSelected();
+        }
+        setSquaresParamsEnabled(enableSquares);
+
+        for (JCheckBox cb : checkBoxes) cb.setEnabled(enabled);
         saveExperimentsCheckBox.setEnabled(enabled);
     }
 
@@ -483,7 +530,7 @@ public class ProjectDialog {
     }
 
     public boolean isCancelled() { return cancelled; }
-    public JDialog getDialog() { return dialog; }
+    public JDialog getDialog()    { return dialog; }
 
     public void setOkEnabled(boolean enabled) {
         if (okButton != null) okButton.setEnabled(enabled);
