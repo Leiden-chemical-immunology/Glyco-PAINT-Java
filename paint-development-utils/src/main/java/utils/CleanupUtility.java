@@ -1,4 +1,4 @@
-package paint.shared.debug;
+package utils;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * <h3>Command-line usage</h3>
  * <pre>{@code
- * java paint.shared.debug.CleanupUtility <root-directory> <mode> [--dry-run] [--old | --all]
+ * java utils.CleanupUtility <root-directory> <mode> [--dry-run] [--old | --all]
  * }</pre>
  *
  * <h4>Modes</h4>
@@ -258,7 +258,7 @@ public class CleanupUtility {
     }
 
     private static void printUsageAndExit() {
-        System.err.println("Usage: java paint.shared.debug.CleanupUtility <root-directory> <mode> [--dry-run] [--old | --all]");
+        System.err.println("Usage: java utils.CleanupUtility <root-directory> <mode> [--dry-run] [--old | --all]");
         System.err.println("  <mode>    : TRACKMATE | GENERATE_SQUARES");
         System.err.println("  --dry-run : show what would be deleted without deleting");
         System.err.println("  --old     : target legacy CSV names without \" Java\"");
