@@ -12,10 +12,13 @@ import java.time.format.DateTimeFormatter;
 public class PaintLogger {
 
     public enum Level {
+
+        // @formatter: off
         DEBUG(0, Color.GRAY),
-        INFO(1, Color.BLACK),
-        WARN(2, Color.ORANGE.darker()),
+        INFO( 1, Color.BLACK),
+        WARN( 2, Color.ORANGE.darker()),
         ERROR(3, Color.RED);
+        // @formatter: on
 
         private final int rank;
         private final Color color;

@@ -15,14 +15,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
-import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
+import static paint.shared.constants.PaintConstants.*;
 
 /**
  * Executes TrackMate on a project while sweeping over configuration parameters.
  * Results are written into per-value subdirectories under Sweep/, with a summary CSV.
  */
-public class RunTrackMateSweepOnProject {
+public class RunTrackMateOnProjectSweep {
 
     /**
      * Runs TrackMate on the given project with sweep parameters if enabled.
@@ -30,13 +29,14 @@ public class RunTrackMateSweepOnProject {
      * @param projectPath     base project path
      * @param imagesPath      path to the image root
      * @param experimentNames experiments to process
-     * @return true if all sweeps completed successfully, false if any failed
-     * @throws IOException if sweep config cannot be read
+     * @return                true if all sweeps completed successfully, false if any failed
+     * @throws IOException    if sweep config cannot be read
      */
     public static boolean runWithSweep(Path projectPath,
                                        Path imagesPath,
                                        List<String> experimentNames) throws IOException {
-        Path sweepFile = projectPath.resolve("Sweep Config.json");
+
+        Path sweepFile = projectPath.resolve(PAINT_SWEEP_CONFIGURATION_JSON);
         if (!Files.exists(sweepFile)) {
             PaintLogger.infof("No sweep configuration found at %s", sweepFile);
             // 👉 Run normal mode if no sweep file

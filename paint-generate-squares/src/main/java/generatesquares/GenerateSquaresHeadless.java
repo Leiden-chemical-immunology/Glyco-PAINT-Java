@@ -95,6 +95,5 @@ public class GenerateSquaresHeadless {
             PaintLogger.errorf("Failed to concatenate CSVs: %s", e.getMessage());
         }
 
-        PaintLogger.infof("Generate Squares finished successfully.");
     }
 }

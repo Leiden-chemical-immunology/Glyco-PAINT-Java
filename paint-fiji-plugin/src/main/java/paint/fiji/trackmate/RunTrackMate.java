@@ -18,7 +18,7 @@ import java.util.List;
  *  <p><b>Purpose:</b><br>
  *  Provides a headless entry point for TrackMate processing.
  *  Detects sweep configuration automatically and executes
- *  either {@link RunTrackMateSweepOnProject} or
+ *  either {@link RunTrackMateOnProjectSweep} or
  *  {@link RunTrackMateOnProject}.
  *  </p>
  *
@@ -65,7 +65,7 @@ public final class RunTrackMate {
         if (Files.exists(sweepFile)) {
             PaintLogger.infof("Sweep configuration detected at %s", sweepFile);
             try {
-                return RunTrackMateSweepOnProject.runWithSweep(projectPath, imagesPath, experimentNames);
+                return RunTrackMateOnProjectSweep.runWithSweep(projectPath, imagesPath, experimentNames);
             } catch (IOException e) {
                 PaintLogger.errorf("Sweep execution failed: %s", e.getMessage());
                 return false;

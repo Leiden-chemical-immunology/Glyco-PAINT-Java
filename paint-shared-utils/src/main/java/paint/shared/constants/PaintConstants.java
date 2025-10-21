@@ -32,14 +32,15 @@ public final class PaintConstants {
     // Filenames
     // =====================
 
-    public static final String RECORDINGS              = "Recordings.csv";
-    public static final String RECORDINGS_CSV           = "Recordings.csv";
-    public static final String TRACKS                   = "Tracks.csv";
-    public static final String TRACKS_CSV               = "Tracks.csv";
-    public static final String SQUARES                  = "Squares.csv";
-    public static final String SQUARES_CSV              = "Squares.csv";
-    public static final String EXPERIMENT_INFO_CSV      = "Experiment Info.csv";
-    public static final String PAINT_CONFIGURATION_JSON = "Paint Configuration.json";
+    public static final String RECORDINGS                    = "Recordings.csv";
+    public static final String RECORDINGS_CSV                 = "Recordings.csv";
+    public static final String TRACKS                         = "Tracks.csv";
+    public static final String TRACKS_CSV                     = "Tracks.csv";
+    public static final String SQUARES                        = "Squares.csv";
+    public static final String SQUARES_CSV                    = "Squares.csv";
+    public static final String EXPERIMENT_INFO_CSV            = "Experiment Info.csv";
+    public static final String PAINT_CONFIGURATION_JSON       = "Paint Configuration.json";
+    public static final String PAINT_SWEEP_CONFIGURATION_JSON = "Paint Sweep Configuration.json";
 
     // =====================
     // Directories

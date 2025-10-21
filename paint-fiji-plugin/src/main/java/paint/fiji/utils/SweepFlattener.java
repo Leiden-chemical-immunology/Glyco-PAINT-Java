@@ -95,7 +95,6 @@ public class SweepFlattener {
         concatenateNamedCsvFiles(sweepRoot, TRACKS_CSV, paramDirsFound);
         concatenateNamedCsvFiles(sweepRoot, RECORDINGS_CSV, paramDirsFound);
         concatenateNamedCsvFiles(sweepRoot, EXPERIMENT_INFO_CSV, paramDirsFound);
-
     }
 
     private static void deleteRecursively(Path path) throws IOException {
