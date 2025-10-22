@@ -31,12 +31,13 @@ import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
 
 import javax.swing.*;
+import java.awt.*;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
+import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
 
 public class GenerateSquares {
 
@@ -64,8 +65,9 @@ public class GenerateSquares {
             }
 
             // --- Step 2: Initialise config and logger early (in case project was known) ---
-            PaintConfig.initialise(projectPath);
             PaintLogger.initialise(projectPath, "Generate Squares.log");
+            PaintConfig.initialise(projectPath);
+
 
             JarInfoLogger.JarInfo info = getJarInfo(GenerateSquares.class);
             if (info != null) {
