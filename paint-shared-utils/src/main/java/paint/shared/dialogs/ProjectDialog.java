@@ -60,6 +60,7 @@ public class ProjectDialog {
     private JTextField        maxVariabilityField;
 
     private final JCheckBox       saveExperimentsCheckBox;
+    private final JCheckBox       verboseCheckBox;
     private final JPanel          checkboxPanel = new JPanel();
     private final List<JCheckBox> checkBoxes = new ArrayList<>();
 
@@ -246,6 +247,8 @@ public class ProjectDialog {
 
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         leftPanel.add(saveExperimentsCheckBox);
+
+        leftPanel.add(verboseCheckBox);
 
         okButton = new JButton("OK");
         cancelButton = new JButton("Cancel");
