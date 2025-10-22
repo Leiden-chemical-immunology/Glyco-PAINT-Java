@@ -58,8 +58,10 @@ public class GenerateSquares {
         SwingUtilities.invokeLater(() -> {
 
             // --- Step 1: Determine last used project directory ---
-            String lastProjectDir = PaintPrefs.getString("Project Root", System.getProperty("user.home"));
-            Path projectPath = Paths.get(lastProjectDir);
+            Path projectPath = getValidProjectPath();
+            if (projectPath == null) {
+                return;
+            }
 
             // --- Step 2: Initialise config and logger early (in case project was known) ---
             PaintConfig.initialise(projectPath);

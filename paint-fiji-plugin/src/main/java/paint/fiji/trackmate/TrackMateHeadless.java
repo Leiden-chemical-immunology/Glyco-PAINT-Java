@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
+import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
 
 /**
  * ============================================================================
@@ -39,9 +40,9 @@ public class TrackMateHeadless implements Command {
         try {
 
             //  --- Step 1: read the project path from Prefs ---
-            Path projectPath = Paths.get(PaintPrefs.getString("Project Root", ""));
-            if (projectPath == null || !projectPath.toFile().exists()) {
-                PaintLogger.errorf("Invalid or missing project path: %s.", projectPath != null ? projectPath.toString() : "");
+            Path projectPath = getValidProjectPath();
+            if (projectPath == null) {
+                PaintLogger.errorf("No valid Project Root found.");
                 return;
             }
 

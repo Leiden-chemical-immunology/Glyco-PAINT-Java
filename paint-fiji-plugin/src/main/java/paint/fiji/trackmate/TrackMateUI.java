@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static paint.shared.constants.PaintConstants.PAINT_SWEEP_CONFIGURATION_JSON;
+import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
 
 @Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run (Interactive)")
 public class TrackMateUI implements Command {
@@ -37,17 +38,9 @@ public class TrackMateUI implements Command {
             return;
         }
 
-        // --- Retrieve project root from preferences ---
-        String projectRoot = PaintPrefs.getString("Project Root", null);
-        if (projectRoot == null || projectRoot.trim().isEmpty()) {
-            showError("No project root found in preferences.\n" +
-                              "Please set 'Project Root' in Glyco-PAINT preferences first.");
-            return;
-        }
-
-        Path projectPath = Paths.get(projectRoot);
-        if (!Files.isDirectory(projectPath)) {
-            showError("The configured project path does not exist:\n" + projectPath);
+        // --- Retrieve project root ---
+        Path projectPath = getValidProjectPath();
+        if (projectPath == null) {
             return;
         }
 
