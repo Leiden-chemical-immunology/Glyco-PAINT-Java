@@ -1,6 +1,9 @@
 package paint.fiji.utils;
 
-import static generatesquares.GenerateSquaresHeadless.run;
+import generatesquares.GenerateSquaresHeadless;
+import org.apache.commons.io.FileUtils;
+import paint.shared.utils.PaintLogger;
+
 import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.utils.CsvUtils.addCase;
 import static paint.shared.utils.CsvUtils.concatenateNamedCsvFiles;
@@ -87,7 +90,7 @@ public class SweepFlattener {
                 // Optionally delete experiment subdirectories
                 if (deleteSubdirs) {
                     for (String sub : experimentNames) {
-                        deleteRecursively(paramDir.resolve(sub));
+                        FileUtils.deleteDirectory(paramPath.resolve(sub).toFile());
                     }
                 }
             }
