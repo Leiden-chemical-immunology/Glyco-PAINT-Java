@@ -136,7 +136,9 @@ public class PaintConfig {
     // ============================================================================
 
     private synchronized void ensureLoaded() {
-        if (this.configData != null) return;
+        if (this.configData != null) {
+            return;
+        }
 
         if (Files.exists(path)) {
             try (Reader reader = Files.newBufferedReader(path)) {
@@ -154,7 +156,9 @@ public class PaintConfig {
         }
     }
 
-    /** Loads default configuration values (called if no file exists). */
+    /**
+     * Loads default configuration values (called if no file exists).
+     */
     private void loadDefaults() {
 
         // @formatter:off

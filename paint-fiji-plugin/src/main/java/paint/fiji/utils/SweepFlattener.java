@@ -25,28 +25,30 @@ public class SweepFlattener {
      * Scans all sweep parameter directories (those starting with '[')
      * and flattens their subdirectories by concatenating CSV files.
      * <p></p>
-     * After flattening, it calls GenerateSquaresRunner.run(sweepRoot, paramDirsFound)
+     * After flattening, it calls GenerateSquaresRunner.run(sweepPath, paramDirsFound)
      * to process all parameter directories.
      *
-     * @param sweepRoot     Path to the root Sweep directory
+     * @param sweepPath     Path to the root Sweep directory
      * @param deleteSubdirs Whether to delete the subdirectories after flattening
      * @throws IOException if reading or writing fails
      */
-    public static void flattenSweep(Path sweepRoot, List<String> experimentNames, boolean deleteSubdirs) throws IOException {
-        if (!Files.isDirectory(sweepRoot)) {
-            throw new IOException("Not a directory: " + sweepRoot);
+    public static void flattenSweep(Path sweepPath, List<String> experimentNames, boolean deleteSubdirs) throws IOException {
+        if (!Files.isDirectory(sweepPath)) {
+            throw new IOException("Not a directory: " + sweepPath);
         }
 
         // List to collect all parameter directories
         List<String> paramDirsFound = new ArrayList<>();
 
         // Look for directories starting with '['
-        try (DirectoryStream<Path> paramDirs = Files.newDirectoryStream(sweepRoot, "[[]*")) {
-            for (Path paramDir : paramDirs) {
-                if (!Files.isDirectory(paramDir)) continue;
+        try (DirectoryStream<Path> paramPaths = Files.newDirectoryStream(sweepPath, "[[]*")) {
+            for (Path paramPath : paramPaths) {
+                if (!Files.isDirectory(paramPath)) {
+                    continue;
+                }
 
-                System.out.println("Flattening: " + paramDir.getFileName());
-                paramDirsFound.add(paramDir.getFileName().toString());
+                System.out.println("Flattening: " + paramPath.getFileName());
+                paramDirsFound.add(paramPath.getFileName().toString());
 
 
                 if (experimentNames.isEmpty()) {
@@ -56,7 +58,7 @@ public class SweepFlattener {
 
                 // Run Generate Squares
                 try {
-                    run(paramDir, experimentNames);
+                    GenerateSquaresHeadless.run(paramPath, experimentNames);
                 } catch (Exception e) {
                 }
 

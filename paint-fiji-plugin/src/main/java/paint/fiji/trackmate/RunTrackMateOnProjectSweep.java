@@ -26,7 +26,7 @@ public class RunTrackMateOnProjectSweep {
     /**
      * Runs TrackMate on the given project with sweep parameters if enabled.
      *
-     * @param projectPath     base project path
+     * @param projectPath     path to the project root
      * @param imagesPath      path to the image root
      * @param experimentNames experiments to process
      * @return                true if all sweeps completed successfully, false if any failed
@@ -60,7 +60,11 @@ public class RunTrackMateOnProjectSweep {
             return RunTrackMateOnProject.runProject(projectPath, imagesPath, experimentNames, null, projectPath);
         }
 
-        // --- Sweep mode ---
+        // --- Sweep mode - we really have a viable sweep configuration ---
+
+        // Sweeps is a Hash<ap that contains the parametsr that need to be swept, e.g. MAX_FRAM_GAP
+        // and the values those parameters take
+
         boolean overallStatus = true;
         List<String[]> summaryRows = new ArrayList<>();
 
@@ -76,10 +80,10 @@ public class RunTrackMateOnProjectSweep {
                     // Cycle through the values
                     PaintLogger.infof("Running sweep for %s = %s", parameter, val);
 
-                    // Directory name with [PARAM]-[VALUE]
-                    Path sweepDir = projectPath.resolve("Sweep")
-                            .resolve("[" + parameter + "]-[" + val + "]");
-                    sweepDir.toFile().mkdirs();
+                    // Create the sweepPOath, delete if exists and recreate empty
+                    Path sweepPath = projectPath.resolve("Sweep").resolve("[" + parameter + "]-[" + val + "]");
+                    FileUtils.deleteDirectory(sweepPath.toFile());
+                    Files.createDirectory(sweepPath);
 
                     // --- Copy baseline PaintConfig.json into sweep dir ---
                     Path baselineConfig = projectPath.resolve(PAINT_CONFIGURATION_JSON);
