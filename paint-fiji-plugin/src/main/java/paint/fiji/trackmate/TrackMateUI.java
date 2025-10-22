@@ -20,7 +20,7 @@ import java.time.format.DateTimeFormatter;
 import static paint.shared.constants.PaintConstants.PAINT_SWEEP_CONFIGURATION_JSON;
 import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
 
-@Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run (Interactive)")
+@Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run")
 public class TrackMateUI implements Command {
 
     private static volatile boolean running = false;
@@ -104,7 +104,7 @@ public class TrackMateUI implements Command {
                     PaintLogger.infof("Sweep configuration detected at %s", sweepFile);
                     success = RunTrackMateOnProjectSweep.runWithSweep(currentProjectRoot, imagesPath, project.getExperimentNames());
                 } else {
-                    success = RunTrackMate.run(currentProjectRoot, imagesPath, project.getExperimentNames());
+                    success = RunTrackMateOnProject.runProject(projectPath, imagesPath, project.getExperimentNames(), dialog, null);
 
                     if (success && PaintConfig.getBoolean("TrackMate", "Run Generate Squares After", true)) {
                         PaintLogger.infof("TrackMate finished successfully. Starting Generate Squares...");
