@@ -42,22 +42,24 @@ public class ProjectDialog {
     public void setCalculationCallback(CalculationCallback callback) { this.calculationCallback = callback; }
 
     // @formatter:off
-    private final JDialog     dialog;
-    private       Path        projectPath;
-    private final PaintConfig paintConfig;
-    private       Project     project;
+    private final JDialog         dialog;
+    private       Path            projectPath;
+    private final PaintConfig     paintConfig;
+    private       Project         project;
 
-    private JTextField        projectRootField;
-    private JTextField        imageDirectoryField;
+    private JTextField            projectRootField;
+    private JTextField            imageDirectoryField;
 
     // Squares params (shown in TRACKMATE + GENERATE_SQUARES)
-    private JPanel            paramsPanel;
-    private JCheckBox         runSquaresAfterTrackMateCheck; // only visible in TRACKMATE
-    private JComboBox<String> gridSizeCombo;
-    private JTextField        minTracksField;
-    private JTextField        minRSquaredField;
-    private JTextField        minDensityRatioField;
-    private JTextField        maxVariabilityField;
+    private JPanel                paramsPanel;
+    private JCheckBox             runSquaresAfterTrackMateCheck; // only visible in TRACKMATE
+    private JComboBox<String>     gridSizeCombo;
+    private JTextField            minTracksField;
+    private JTextField            minRSquaredField;
+    private JTextField            minDensityRatioField;
+    private JTextField            maxVariabilityField;
+
+    private List<JLabel>          squareParamLabels = new ArrayList<>();
 
     private final JCheckBox       saveExperimentsCheckBox;
     private final JCheckBox       verboseCheckBox;
@@ -66,11 +68,16 @@ public class ProjectDialog {
     private final JPanel          checkboxPanel = new JPanel();
     private final List<JCheckBox> checkBoxes = new ArrayList<>();
 
+    private JButton               selectAllButton;
+    private JButton               clearAllButton;
+    private JButton               projectBrowseButton;
+    private JButton               imagesBrowseButton;
+
     private final JButton         okButton;
     private final JButton         cancelButton;
 
     private volatile boolean      cancelled = false;
-    private       boolean         okPressed = false;
+    private          boolean      okPressed = false;
 
     private final DialogMode      mode;
     // @formatter:on
@@ -163,8 +170,16 @@ public class ProjectDialog {
                 pg.gridwidth = 1;
             }
 
+            // Prepare to collect labels for later grey-out
+            squareParamLabels = new ArrayList<>();
+
             // Number of squares (grid)
-            pg.gridx = 0; pg.gridy = prow; paramsPanel.add(label("Number of Squares in Recording:", labelSize), pg);
+            pg.gridx = 0;
+            pg.gridy = prow;
+            JLabel lblNumSquares = label("Number of Squares in Recording:", labelSize);
+            squareParamLabels.add(lblNumSquares);
+            paramsPanel.add(lblNumSquares, pg);
+
             pg.gridx = 1;
             String[] gridOptions = {"5x5","10x10","15x15","20x20","25x25","30x30","35x35","40x40"};
             gridSizeCombo = new JComboBox<>(gridOptions);
@@ -174,15 +189,25 @@ public class ProjectDialog {
             prow++;
 
             // Min Tracks
-            pg.gridx = 0; pg.gridy = prow; paramsPanel.add(label("Min Tracks to Calculate Tau:", labelSize), pg);
+            pg.gridx = 0;
+            pg.gridy = prow;
+            JLabel lblMinTracks = label("Min Tracks to Calculate Tau:", labelSize);
+            squareParamLabels.add(lblMinTracks);
+            paramsPanel.add(lblMinTracks, pg);
+
             pg.gridx = 1;
             minTracksField = createTightTextField(String.valueOf(minTracks), new IntegerDocumentFilter());
             minTracksField.setPreferredSize(narrowFieldSize);
             paramsPanel.add(minTracksField, pg);
             prow++;
 
-            // Min R^2
-            pg.gridx = 0; pg.gridy = prow; paramsPanel.add(label("Min Required R²:", labelSize), pg);
+            // Min R²
+            pg.gridx = 0;
+            pg.gridy = prow;
+            JLabel lblRSq = label("Min Required R²:", labelSize);
+            squareParamLabels.add(lblRSq);
+            paramsPanel.add(lblRSq, pg);
+
             pg.gridx = 1;
             minRSquaredField = createTightTextField(String.valueOf(minRSquared), new FloatDocumentFilter());
             minRSquaredField.setPreferredSize(narrowFieldSize);
@@ -190,7 +215,12 @@ public class ProjectDialog {
             prow++;
 
             // Min Density Ratio
-            pg.gridx = 0; pg.gridy = prow; paramsPanel.add(label("Min Required Density Ratio:", labelSize), pg);
+            pg.gridx = 0;
+            pg.gridy = prow;
+            JLabel lblDensity = label("Min Required Density Ratio:", labelSize);
+            squareParamLabels.add(lblDensity);
+            paramsPanel.add(lblDensity, pg);
+
             pg.gridx = 1;
             minDensityRatioField = createTightTextField(String.valueOf(minDensityRatio), new FloatDocumentFilter());
             minDensityRatioField.setPreferredSize(narrowFieldSize);
@@ -198,12 +228,16 @@ public class ProjectDialog {
             prow++;
 
             // Max Variability
-            pg.gridx = 0; pg.gridy = prow; paramsPanel.add(label("Max Allowed Variability:", labelSize), pg);
+            pg.gridx = 0;
+            pg.gridy = prow;
+            JLabel lblVar = label("Max Allowed Variability:", labelSize);
+            squareParamLabels.add(lblVar);
+            paramsPanel.add(lblVar, pg);
+
             pg.gridx = 1;
             maxVariabilityField = createTightTextField(String.valueOf(maxVariability), new FloatDocumentFilter());
             maxVariabilityField.setPreferredSize(narrowFieldSize);
             paramsPanel.add(maxVariabilityField, pg);
-
             // initial enable state in TrackMate
             if (mode == DialogMode.TRACKMATE) {
                 setSquaresParamsEnabled(runSquaresAfterTrackMateCheck.isSelected());
@@ -234,14 +268,14 @@ public class ProjectDialog {
         scrollPane.setPreferredSize(new Dimension(680, 240));
         scrollPane.setBorder(BorderFactory.createEtchedBorder());
 
-        JButton selectAll = new JButton("Select All");
-        JButton clearAll  = new JButton("Clear All");
-        selectAll.addActionListener(e -> { checkBoxes.forEach(cb -> cb.setSelected(true)); updateOkButtonState(); });
-        clearAll.addActionListener(e -> { checkBoxes.forEach(cb -> cb.setSelected(false)); updateOkButtonState(); });
+        selectAllButton = new JButton("Select All");
+        clearAllButton  = new JButton("Clear All");
+        selectAllButton.addActionListener(e -> { checkBoxes.forEach(cb -> cb.setSelected(true)); updateOkButtonState(); });
+        clearAllButton.addActionListener(e -> { checkBoxes.forEach(cb -> cb.setSelected(false)); updateOkButtonState(); });
 
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        controlPanel.add(selectAll);
-        controlPanel.add(clearAll);
+        controlPanel.add(selectAllButton);
+        controlPanel.add(clearAllButton);
 
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.add(controlPanel, BorderLayout.NORTH);
@@ -391,18 +425,33 @@ public class ProjectDialog {
             java.util.function.Supplier<String> defaultValueSupplier,
             java.util.function.Consumer<File> onChosen
     ) {
-        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0; gbc.fill = GridBagConstraints.NONE;
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         JLabel lbl = new JLabel(labelText);
         lbl.setPreferredSize(labelSize);
         panel.add(lbl, gbc);
 
-        gbc.gridx = 1; gbc.weightx = 1.0; gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         JTextField tf = new JTextField(defaultValueSupplier.get(), 32);
         panel.add(tf, gbc);
         fieldOut.accept(tf);
 
-        gbc.gridx = 2; gbc.weightx = 0; gbc.fill = GridBagConstraints.NONE;
+        gbc.gridx = 2;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
         JButton browse = new JButton("Browse...");
+
+        // ✅ store reference for enabling/disabling later
+        if (labelText.startsWith("Project Root:")) {
+            projectBrowseButton = browse;
+        } else if (labelText.startsWith("Images Root:")) {
+            imagesBrowseButton = browse;
+        }
+
         browse.addActionListener(e -> {
             File current = new File(tf.getText().trim());
             if (!current.exists() || !current.isDirectory()) {
@@ -419,6 +468,7 @@ public class ProjectDialog {
                 onChosen.accept(new File(dir, name));
             }
         });
+
         panel.add(browse, gbc);
     }
 
@@ -429,11 +479,26 @@ public class ProjectDialog {
     }
 
     private void setSquaresParamsEnabled(boolean enabled) {
-        if (gridSizeCombo != null) gridSizeCombo.setEnabled(enabled);
-        if (minTracksField != null) minTracksField.setEnabled(enabled);
-        if (minRSquaredField != null) minRSquaredField.setEnabled(enabled);
-        if (minDensityRatioField != null) minDensityRatioField.setEnabled(enabled);
-        if (maxVariabilityField != null) maxVariabilityField.setEnabled(enabled);
+        Color fg = enabled ? UIManager.getColor("Label.foreground") : Color.GRAY;
+
+        for (JLabel lbl : squareParamLabels)
+            lbl.setForeground(fg);
+
+        if (gridSizeCombo != null) {
+            gridSizeCombo.setEnabled(enabled);
+        }
+        if (minTracksField != null) {
+            minTracksField.setEnabled(enabled);
+        }
+        if (minRSquaredField != null) {
+            minRSquaredField.setEnabled(enabled);
+        }
+        if (minDensityRatioField != null) {
+            minDensityRatioField.setEnabled(enabled);
+        }
+        if (maxVariabilityField != null) {
+            maxVariabilityField.setEnabled(enabled);
+        }
     }
 
     private void reloadConfigForNewProject(Path newRoot) {
@@ -499,11 +564,18 @@ public class ProjectDialog {
                     PaintConfig.setInt("Generate Squares", "Number of Squares in Recording", side * side);
                 }
             }
-            if (minTracksField != null)       PaintConfig.setInt(   "Generate Squares", "Min Tracks to Calculate Tau", parseIntSafe(minTracksField.getText(), 11));
-            if (minRSquaredField != null)     PaintConfig.setDouble("Generate Squares", "Min Required R Squared",      parseDoubleSafe(minRSquaredField.getText(), 0.1));
-            if (minDensityRatioField != null) PaintConfig.setDouble("Generate Squares", "Min Required Density Ratio",  parseDoubleSafe(minDensityRatioField.getText(), 2.0));
-            if (maxVariabilityField != null)  PaintConfig.setDouble("Generate Squares", "Max Allowable Variability",   parseDoubleSafe(maxVariabilityField.getText(), 10.0));
-
+            if (minTracksField != null) {
+                PaintConfig.setInt(   "Generate Squares", "Min Tracks to Calculate Tau", parseIntSafe(minTracksField.getText(), 11));
+            }
+            if (minRSquaredField != null) {
+                PaintConfig.setDouble("Generate Squares", "Min Required R Squared",      parseDoubleSafe(minRSquaredField.getText(), 0.1));
+            }
+            if (minDensityRatioField != null) {
+                PaintConfig.setDouble("Generate Squares", "Min Required Density Ratio",  parseDoubleSafe(minDensityRatioField.getText(), 2.0));
+            }
+            if (maxVariabilityField != null) {
+                PaintConfig.setDouble("Generate Squares", "Max Allowable Variability",   parseDoubleSafe(maxVariabilityField.getText(), 10.0));
+            }
             if (mode == DialogMode.TRACKMATE && runSquaresAfterTrackMateCheck != null) {
                 PaintConfig.setBoolean("TrackMate", "Run Generate Squares After", runSquaresAfterTrackMateCheck.isSelected());
             }
@@ -556,8 +628,12 @@ public class ProjectDialog {
     }
 
     private void setInputsEnabled(boolean enabled) {
-        if (projectRootField != null) projectRootField.setEnabled(enabled);
-        if (imageDirectoryField != null) imageDirectoryField.setEnabled(enabled);
+        if (projectRootField != null) {
+            projectRootField.setEnabled(enabled);
+        }
+        if (imageDirectoryField != null) {
+            imageDirectoryField.setEnabled(enabled);
+        }
 
         boolean enableSquares = enabled;
         if (mode == DialogMode.TRACKMATE && runSquaresAfterTrackMateCheck != null) {
@@ -566,8 +642,30 @@ public class ProjectDialog {
         }
         setSquaresParamsEnabled(enableSquares);
 
-        for (JCheckBox cb : checkBoxes) cb.setEnabled(enabled);
+        for (JCheckBox cb : checkBoxes) {
+            cb.setEnabled(enabled);
+        }
         saveExperimentsCheckBox.setEnabled(enabled);
+        saveExperimentsCheckBox.setEnabled(enabled);
+
+        if (selectAllButton != null) {
+            selectAllButton.setEnabled(enabled);
+        }
+        if (clearAllButton != null) {
+            clearAllButton.setEnabled(enabled);
+        }
+        if (projectBrowseButton != null) {
+            projectBrowseButton.setEnabled(enabled);
+        }
+        if (imagesBrowseButton != null) {
+            imagesBrowseButton.setEnabled(enabled);
+        }
+        if (sweepCheckBox != null) {
+            sweepCheckBox.setEnabled(enabled);
+        }
+        if (verboseCheckBox != null) {
+            verboseCheckBox.setEnabled(enabled);
+        }
     }
 
     private JTextField createTightTextField(String value, DocumentFilter filter) {
