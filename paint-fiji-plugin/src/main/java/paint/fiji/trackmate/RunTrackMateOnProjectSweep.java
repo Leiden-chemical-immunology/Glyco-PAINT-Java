@@ -48,12 +48,6 @@ public class RunTrackMateOnProjectSweep {
 
         SweepConfig sweepConfig = new SweepConfig(sweepFile.toString());
 
-        // 🔑 Require Sweep Settings.Sweep = true
-        boolean sweepEnabled = sweepConfig.getBoolean("Sweep Settings", "Sweep", false);
-        if (!sweepEnabled) {
-            PaintLogger.infof("Sweep configuration present, but sweep mode disabled.");
-            return false;
-        }
 
         Map<String, List<Number>> sweeps = sweepConfig.getActiveSweepValues("TrackMate Sweep");
         if (sweeps.isEmpty()) {
@@ -69,6 +63,38 @@ public class RunTrackMateOnProjectSweep {
         boolean overallStatus = true;
         List<String[]> summaryRows = new ArrayList<>();
 
+        // Prepare an overview of the Sweep operation for use feedback
+        List<String> sweepSummary = new ArrayList<>();
+        sweepSummary.add(""); // spacing line
+        try {
+            for (Map.Entry<String, List<Number>> entry : sweeps.entrySet()) {
+                String parameter = entry.getKey();       // parameter name
+                List<Number> values = entry.getValue();  // list of values
+
+                // Convert values to comma-separated string
+                String valueList = values.stream()
+                        .map(Object::toString)
+                        .reduce((a, b) -> a + ", " + b)
+                        .orElse("(none)");
+
+                // Add a header line for the parameter
+                sweepSummary.add(String.format("Parameter: %s", parameter));
+                sweepSummary.add(String.format("Values:    %s", valueList));
+                sweepSummary.add(""); // spacing line
+            }
+
+            // Add experiments section at the end
+            if (experimentNames != null && !experimentNames.isEmpty()) {
+                String exps = String.join(", ", experimentNames);
+                sweepSummary.add(String.format("Experiments: %s", exps));
+            }
+
+        } catch (Exception e) {
+            PaintLogger.errorf("Error building sweep summary: %s", e.getMessage());
+        }
+        PaintLogger.doc("Sweep analys to be performed", sweepSummary);
+
+        // Now do the actual sweep
         try {
             for (Map.Entry<String, List<Number>> entry : sweeps.entrySet()) {
                 // Cycle through the parameters

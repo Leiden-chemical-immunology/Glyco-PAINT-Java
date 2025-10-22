@@ -194,11 +194,6 @@ public class PaintLogger {
         justPrintedRaw = true;
     }
 
-    public static void raw(char c) {
-        PaintConsoleWindow.printChar(c);
-        justPrintedRaw = true;
-    }
-
     public static void blankline() {
         if (justPrintedRaw) {
             PaintConsoleWindow.print("\n");
@@ -214,5 +209,47 @@ public class PaintLogger {
                 System.err.println("PaintLogger failed to write blank line: " + e.getMessage());
             }
         }
+    }
+
+    public static void doc(String header, Iterable<String> lines) {
+        // Blank line before block
+        blankline();
+
+        // Print the main header line using standard INFO formatting
+        log(Level.INFO, header);
+
+        // Compute indentation (exactly up to one space after [INFO ])
+        String prefix = String.format("%s [%-5s]",
+                                      LocalDateTime.now().format(TIME_FMT), Level.INFO);
+        String indent = repeat(" ", prefix.length() + 1);
+
+        // Print continuation lines without timestamp, perfectly aligned
+        for (String line : lines) {
+            String formatted = indent + line;
+
+            PaintConsoleWindow.log(formatted, Level.INFO.color());
+
+            if (initialised && writer != null) {
+                try {
+                    writer.write(formatted);
+                    writer.newLine();
+                    writer.flush();
+                } catch (IOException e) {
+                    System.err.println("PaintLogger failed to write doc line: " + e.getMessage());
+                }
+            }
+        }
+
+        // Blank line after block
+        blankline();
+    }
+
+    /**
+     * Simple replacement for String.repeat(int) for Java 8 compatibility.
+     */
+    private static String repeat(String s, int count) {
+        StringBuilder sb = new StringBuilder(s.length() * count);
+        for (int i = 0; i < count; i++) sb.append(s);
+        return sb.toString();
     }
 }
