@@ -51,7 +51,7 @@ public class ImageRootValidator {
 
             // --- 1. Image directory must exist
             if (!Files.isDirectory(imageDir)) {
-                result.addError("[" + experiment + "] Missing corresponding image directory: " + imageDir);
+                result.addError("[" + experiment + "] Missing corresponding Image Root: " + imageDir);
                 continue;
             }
 

@@ -66,12 +66,14 @@ public class RunTrackMateOnProjectSweep {
 
         try {
             for (Map.Entry<String, List<Number>> entry : sweeps.entrySet()) {
-                String parameter = entry.getKey();
-                List<Number> values = entry.getValue();
+                // Cycle through the parameters
+                String parameter    = entry.getKey();       // Holds a parameter that we sweep
+                List<Number> values = entry.getValue();     // Values holds the values
 
                 String originalValue = PaintConfig.getString("TrackMate", parameter, "undefined");
 
                 for (Number val : values) {
+                    // Cycle through the values
                     PaintLogger.infof("Running sweep for %s = %s", parameter, val);
 
                     // Directory name with [PARAM]-[VALUE]
@@ -81,7 +83,7 @@ public class RunTrackMateOnProjectSweep {
 
                     // --- Copy baseline PaintConfig.json into sweep dir ---
                     Path baselineConfig = projectPath.resolve(PAINT_CONFIGURATION_JSON);
-                    Path configCopy = sweepDir.resolve(PAINT_CONFIGURATION_JSON);
+                    Path configCopy     = sweepPath.resolve(PAINT_CONFIGURATION_JSON);
                     try {
                         Files.copy(baselineConfig, configCopy, StandardCopyOption.REPLACE_EXISTING);
                         PaintLogger.infof("Copied baseline PaintConfig.json to %s", configCopy);
@@ -90,8 +92,8 @@ public class RunTrackMateOnProjectSweep {
                                            configCopy, e.getMessage());
                     }
 
-                    // 🔑 Reinitialise PaintConfig to point at sweepDir
-                    PaintConfig.reinitialise(sweepDir);
+                    // Reinitialise PaintConfig to point at sweepDir
+                    PaintConfig.reinitialise(sweepPath);
 
                     // Apply parameter update in sweep config
                     if (val.doubleValue() == val.intValue()) {
@@ -99,14 +101,14 @@ public class RunTrackMateOnProjectSweep {
                     } else {
                         PaintConfig.setDouble("TrackMate", parameter, val.doubleValue());
                     }
-                    // 💾 Save updated sweepDir JSON
+                    // Save updated sweepDir JSON
                     PaintConfig.instance().save();
 
                     // --- Copy each experiment's Experiment Info.csv ---
                     for (String expName : experimentNames) {
-                        Path expSrc = projectPath.resolve(expName).resolve(EXPERIMENT_INFO_CSV);
-                        Path expDstDir = sweepDir.resolve(expName);
-                        Path expDst = expDstDir.resolve(EXPERIMENT_INFO_CSV);
+                        Path expSrc    = projectPath.resolve(expName).resolve(EXPERIMENT_INFO_CSV);
+                        Path expDstDir = sweepPath.resolve(expName);
+                        Path expDst    = expDstDir.resolve(EXPERIMENT_INFO_CSV);
                         try {
                             if (Files.exists(expSrc)) {
                                 Files.createDirectories(expDstDir);
@@ -120,11 +122,10 @@ public class RunTrackMateOnProjectSweep {
                     }
 
                     // Run TrackMate in sweepDir
-                    boolean status = RunTrackMateOnProject.runProject(
-                            projectPath, imagesPath, experimentNames, null, sweepDir);
+                    boolean status = RunTrackMateOnProject.runProject(projectPath, imagesPath, experimentNames, null, sweepPath);
 
                     summaryRows.add(new String[]{
-                            parameter, val.toString(), sweepDir.toString(),
+                            parameter, val.toString(), sweepPath.toString(),
                             status ? "SUCCESS" : "FAILED"
                     });
 
@@ -148,9 +149,9 @@ public class RunTrackMateOnProjectSweep {
                 PaintLogger.infof("Restored %s to %s", parameter, originalValue);
             }
         } finally {
-            // 🔑 Always restore PaintConfig to project root at the end
+            // Always restore PaintConfig to project root at the end
             PaintConfig.reinitialise(projectPath);
-            PaintLogger.infof("Reinitialised PaintConfig back to project root: %s", projectPath);
+            PaintLogger.infof("Reinitialised original PaintConfig back to project root: %s", projectPath);
         }
 
         // Write summary CSV

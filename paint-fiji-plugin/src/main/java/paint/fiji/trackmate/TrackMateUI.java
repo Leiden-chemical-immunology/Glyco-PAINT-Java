@@ -106,14 +106,13 @@ public class TrackMateUI implements Command {
                     success = RunTrackMateOnProjectSweep.runWithSweep(currentProjectRoot, imagesPath, project.getExperimentNames());
                 } else {
                     success = RunTrackMate.run(currentProjectRoot, imagesPath, project.getExperimentNames());
-                }
 
-                // ✅ NEW: if checkbox selected, trigger Generate Squares
-                if (success && PaintConfig.getBoolean("TrackMate", "Run Generate Squares After", true)) {
-                    PaintLogger.infof("TrackMate finished successfully. Starting Generate Squares...");
-                    PaintLogger.infof();
-                    GenerateSquaresHeadless.run(currentProjectRoot, project.getExperimentNames());
-                    PaintLogger.infof("Generate Squares completed successfully.");
+                    if (success && PaintConfig.getBoolean("TrackMate", "Run Generate Squares After", true)) {
+                        PaintLogger.infof("TrackMate finished successfully. Starting Generate Squares...");
+                        PaintLogger.infof();
+                        GenerateSquaresHeadless.run(currentProjectRoot, project.getExperimentNames());
+                        PaintLogger.infof("Generate Squares completed successfully.");
+                    }
                 }
 
                 return success;
@@ -138,10 +137,4 @@ public class TrackMateUI implements Command {
         warnDialog.setVisible(true);
     }
 
-    private void showError(String message) {
-        JOptionPane optionPane = new JOptionPane(message, JOptionPane.ERROR_MESSAGE);
-        JDialog errorDialog = optionPane.createDialog(null, "Configuration Error");
-        errorDialog.setAlwaysOnTop(true);
-        errorDialog.setVisible(true);
-    }
 }

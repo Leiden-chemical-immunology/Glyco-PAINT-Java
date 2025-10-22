@@ -62,24 +62,24 @@ public class SweepFlattener {
 
                 // Add the case field to all files
                 try {
-                    String caseName = paramDir.getFileName().toString();
+                    String caseName = paramPath.getFileName().toString();
 
-                    addCase(paramDir, SQUARES_CSV, experimentNames, caseName);
-                    addCase(paramDir, TRACKS_CSV, experimentNames, caseName);
-                    addCase(paramDir, RECORDINGS_CSV, experimentNames, caseName);
-                    addCase(paramDir, EXPERIMENT_INFO_CSV, experimentNames, caseName);
+                    addCase(paramPath, SQUARES_CSV, experimentNames, caseName);
+                    addCase(paramPath, TRACKS_CSV, experimentNames, caseName);
+                    addCase(paramPath, RECORDINGS_CSV, experimentNames, caseName);
+                    addCase(paramPath, EXPERIMENT_INFO_CSV, experimentNames, caseName);
                 } catch (IOException e) {
-                    System.err.println("  Error concatenating files in " + paramDir + ": " + e.getMessage());
+                    System.err.println("  Error concatenating files in " + paramPath + ": " + e.getMessage());
                 }
 
                 // Concatenate the four CSVs
                 try {
-                    concatenateNamedCsvFiles(paramDir, SQUARES_CSV, experimentNames);
-                    concatenateNamedCsvFiles(paramDir, TRACKS_CSV, experimentNames);
-                    concatenateNamedCsvFiles(paramDir, RECORDINGS_CSV, experimentNames);
-                    concatenateNamedCsvFiles(paramDir, EXPERIMENT_INFO_CSV, experimentNames);
+                    concatenateNamedCsvFiles(paramPath, SQUARES_CSV, experimentNames);
+                    concatenateNamedCsvFiles(paramPath, TRACKS_CSV, experimentNames);
+                    concatenateNamedCsvFiles(paramPath, RECORDINGS_CSV, experimentNames);
+                    concatenateNamedCsvFiles(paramPath, EXPERIMENT_INFO_CSV, experimentNames);
                 } catch (IOException e) {
-                    System.err.println("  Error concatenating files in " + paramDir + ": " + e.getMessage());
+                    System.err.println("  Error concatenating files in " + paramPath + ": " + e.getMessage());
                 }
 
                 // Optionally delete experiment subdirectories
@@ -91,21 +91,14 @@ public class SweepFlattener {
             }
         }
 
-        concatenateNamedCsvFiles(sweepRoot, SQUARES_CSV, paramDirsFound);
-        concatenateNamedCsvFiles(sweepRoot, TRACKS_CSV, paramDirsFound);
-        concatenateNamedCsvFiles(sweepRoot, RECORDINGS_CSV, paramDirsFound);
-        concatenateNamedCsvFiles(sweepRoot, EXPERIMENT_INFO_CSV, paramDirsFound);
-    }
+        concatenateNamedCsvFiles(sweepPath, SQUARES_CSV, paramDirsFound);
+        concatenateNamedCsvFiles(sweepPath, TRACKS_CSV, paramDirsFound);
+        concatenateNamedCsvFiles(sweepPath, RECORDINGS_CSV, paramDirsFound);
+        concatenateNamedCsvFiles(sweepPath, EXPERIMENT_INFO_CSV, paramDirsFound);
 
-    private static void deleteRecursively(Path path) throws IOException {
-        if (Files.isDirectory(path)) {
-            try (DirectoryStream<Path> entries = Files.newDirectoryStream(path)) {
-                for (Path entry : entries) {
-                    deleteRecursively(entry);
-                }
-            }
-        }
-        Files.deleteIfExists(path);
+        PaintLogger.infof();
+        PaintLogger.infof("Completed Sweep");
+
     }
 
     public static void main(String[] args) throws IOException {

@@ -35,7 +35,7 @@ public final class PaintPrefs {
                 plist = (NSDictionary) PropertyListParser.parse(PREF_FILE);
             }
         } catch (Exception e) {
-            System.err.println("⚠️ Could not load plist: " + e.getMessage());
+            System.err.println(" Could not load plist: " + e.getMessage());
             plist = new NSDictionary();
         }
     }

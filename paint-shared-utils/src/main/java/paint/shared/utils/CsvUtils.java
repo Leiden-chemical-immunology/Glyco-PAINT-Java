@@ -98,12 +98,13 @@ public class CsvUtils {
         List<Path> processed = new ArrayList<>();
 
         try (BufferedWriter writer = Files.newBufferedWriter(outputFile)) {
-            for (Path input : inputFiles) {
-                if (!Files.exists(input)) {
-                    throw new IOException("Missing input file: " + input);
+            for (Path inputFile : inputFiles) {
+                if (!Files.exists(inputFile)) {
+                    PaintLogger.warnf("Skipping missing file: %s", inputFile);
+                    continue;
                 }
 
-                try (Reader reader = Files.newBufferedReader(input);
+                try (Reader reader = Files.newBufferedReader(inputFile);
                      CSVParser parser = CSVFormat.DEFAULT.builder()
                              .setHeader()
                              .setSkipHeaderRecord(true)
@@ -121,7 +122,7 @@ public class CsvUtils {
                         printer.printRecord(record);
                     }
 
-                    processed.add(input);
+                    processed.add(inputFile);
                 }
             }
 
@@ -243,7 +244,7 @@ public class CsvUtils {
             }
 
             Files.move(tempPath, csvPath, StandardCopyOption.REPLACE_EXISTING);
-            PaintLogger.infof("Updated 'Case' column in %s", csvPath);
+            PaintLogger.debugf("Updated 'Case' column in %s", csvPath);
         }
     }
 
