@@ -6,6 +6,7 @@ import paint.shared.config.TrackMateConfig;
 import paint.shared.objects.Project;
 import paint.shared.prefs.PaintPrefs;
 import paint.shared.utils.PaintLogger;
+import paint.shared.utils.PaintRuntime;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -236,6 +237,11 @@ public class ProjectDialog {
 
         // ======= BOTTOM =======
         saveExperimentsCheckBox = new JCheckBox("Save Experiments", false);
+        verboseCheckBox = new JCheckBox("Verbose", PaintRuntime.isVerbose());
+
+        // ✅ Add listener to handle user toggles immediately
+        verboseCheckBox.addActionListener(e -> onVerboseToggled(verboseCheckBox.isSelected()));
+
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         leftPanel.add(saveExperimentsCheckBox);
 
@@ -534,6 +540,12 @@ public class ProjectDialog {
 
     public void setOkEnabled(boolean enabled) {
         if (okButton != null) okButton.setEnabled(enabled);
+    }
+
+    private void onVerboseToggled(boolean enabled) {
+        // Persist preference immediately
+        PaintRuntime.setVerbose(enabled);
+        PaintLogger.infof("Verbose mode %s.", enabled ? "enabled" : "disabled");
     }
 
     // Simple lambda-friendly document listener

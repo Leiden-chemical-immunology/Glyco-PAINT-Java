@@ -9,6 +9,7 @@ import paint.shared.utils.JarInfoLogger;
 import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
 import generatesquares.GenerateSquaresHeadless;
+import paint.shared.utils.PaintRuntime;
 
 import javax.swing.*;
 import java.nio.file.Files;
@@ -57,6 +58,10 @@ public class TrackMateUI implements Command {
         PaintLogger.setLevel(debugLevel);
         PaintLogger.initialise(projectPath, "TrackMateOnProject.log");
         PaintLogger.debugf("TrackMate plugin started (Interactive).");
+        PaintRuntime.initialiseFromPrefs();
+        if (PaintRuntime.isVerbose()) {
+            PaintLogger.infof("Verbose mode enabled from preferences.");
+        }
 
         // --- Log version info ---
         JarInfoLogger.JarInfo info = JarInfoLogger.getJarInfo(TrackMateUI.class);

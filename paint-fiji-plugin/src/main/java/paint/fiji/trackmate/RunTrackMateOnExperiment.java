@@ -9,6 +9,7 @@ import paint.shared.config.TrackMateConfig;
 import paint.shared.dialogs.ProjectDialog;
 import paint.shared.objects.ExperimentInfo;
 import paint.shared.utils.PaintLogger;
+import paint.shared.utils.PaintRuntime;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -112,6 +113,9 @@ public class RunTrackMateOnExperiment {
         int maxSecondsPerRecording      = paintConfig.getIntValue("TrackMate", "Max Seconds Per Recording", 2000);
 
         PaintLogger.debugf(trackMateConfig.toString());
+        if (PaintRuntime.isVerbose()) {
+            PaintLogger.infof(trackMateConfig.toString());
+        }
 
         // Write the parameters used file, so that we know for sure what parameters have been used
         try {
