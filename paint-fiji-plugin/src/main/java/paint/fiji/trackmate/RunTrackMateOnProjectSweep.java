@@ -2,6 +2,7 @@ package paint.fiji.trackmate;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.io.FileUtils;
 import paint.shared.config.PaintConfig;
 import paint.shared.config.SweepConfig;
 import paint.shared.utils.PaintLogger;
@@ -10,11 +11,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
+import static paint.fiji.utils.SweepFlattener.flattenSweep;
 import static paint.shared.constants.PaintConstants.*;
 
 /**
@@ -39,8 +43,7 @@ public class RunTrackMateOnProjectSweep {
         Path sweepFile = projectPath.resolve(PAINT_SWEEP_CONFIGURATION_JSON);
         if (!Files.exists(sweepFile)) {
             PaintLogger.infof("No sweep configuration found at %s", sweepFile);
-            // 👉 Run normal mode if no sweep file
-            return RunTrackMateOnProject.runProject(projectPath, imagesPath, experimentNames, null, projectPath);
+            return false;
         }
 
         SweepConfig sweepConfig = new SweepConfig(sweepFile.toString());
@@ -49,15 +52,13 @@ public class RunTrackMateOnProjectSweep {
         boolean sweepEnabled = sweepConfig.getBoolean("Sweep Settings", "Sweep", false);
         if (!sweepEnabled) {
             PaintLogger.infof("Sweep configuration present, but sweep mode disabled.");
-            // 👉 Run normal mode if sweep disabled
-            return RunTrackMateOnProject.runProject(projectPath, imagesPath, experimentNames, null, projectPath);
+            return false;
         }
 
         Map<String, List<Number>> sweeps = sweepConfig.getActiveSweepValues("TrackMate Sweep");
         if (sweeps.isEmpty()) {
             PaintLogger.infof("Sweep enabled, but no active sweep parameters defined.");
-            // 👉 Run normal mode if no sweep parameters
-            return RunTrackMateOnProject.runProject(projectPath, imagesPath, experimentNames, null, projectPath);
+            return false;
         }
 
         // --- Sweep mode - we really have a viable sweep configuration ---
@@ -137,20 +138,6 @@ public class RunTrackMateOnProjectSweep {
                         overallStatus = false;
                     }
                 }
-
-                // Restore original PaintConfig value in memory (not strictly needed if we always reinit)
-                try {
-                    int intVal = Integer.parseInt(originalValue);
-                    PaintConfig.setInt("TrackMate", parameter, intVal);
-                } catch (NumberFormatException e1) {
-                    try {
-                        double dblVal = Double.parseDouble(originalValue);
-                        PaintConfig.setDouble("TrackMate", parameter, dblVal);
-                    } catch (NumberFormatException e2) {
-                        PaintConfig.setString("TrackMate", parameter, originalValue);
-                    }
-                }
-                PaintLogger.infof("Restored %s to %s", parameter, originalValue);
             }
         } finally {
             // Always restore PaintConfig to project root at the end
@@ -176,6 +163,16 @@ public class RunTrackMateOnProjectSweep {
         }
         PaintLogger.infof("Sweep summary written to %s", summaryFile);
 
+        if (overallStatus) {
+            flattenSweep(projectPath.resolve("Sweep"), experimentNames, true);
+        }
         return overallStatus;
+    }
+
+    public static void main(String[] args) throws IOException {
+        runWithSweep(
+                Paths.get("/Users/hans/Paint Test Project"),
+                Paths.get("/Volumes/Extreme Pro/Omero"),
+                Arrays.asList("221012", "AnyName"));
     }
 }
