@@ -99,10 +99,18 @@ public class TrackMateUI implements Command {
                 }
 
                 boolean success;
+
+                boolean sweepEnabled = dialog.isSweepSelected();
                 Path sweepFile = currentProjectRoot.resolve(PAINT_SWEEP_CONFIGURATION_JSON);
-                if (Files.exists(sweepFile)) {
-                    PaintLogger.infof("Sweep configuration detected at %s", sweepFile);
-                    success = RunTrackMateOnProjectSweep.runWithSweep(currentProjectRoot, imagesPath, project.getExperimentNames());
+
+                if (sweepEnabled) {
+                    if (Files.exists(sweepFile)) {
+                         success = RunTrackMateOnProjectSweep.runWithSweep(currentProjectRoot, imagesPath, project.getExperimentNames());
+                    }
+                    else {
+                        PaintLogger.infof("No Sweep configuration detected at %s", sweepFile);
+                        return false;
+                    }
                 } else {
                     success = RunTrackMateOnProject.runProject(projectPath, imagesPath, project.getExperimentNames(), dialog, null);
 

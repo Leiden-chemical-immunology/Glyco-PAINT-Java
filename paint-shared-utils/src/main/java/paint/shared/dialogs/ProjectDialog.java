@@ -61,6 +61,8 @@ public class ProjectDialog {
 
     private final JCheckBox       saveExperimentsCheckBox;
     private final JCheckBox       verboseCheckBox;
+    private final JCheckBox       sweepCheckBox;
+
     private final JPanel          checkboxPanel = new JPanel();
     private final List<JCheckBox> checkBoxes = new ArrayList<>();
 
@@ -142,7 +144,10 @@ public class ProjectDialog {
 
             // TrackMate-only toggle
             if (mode == DialogMode.TRACKMATE) {
-                pg.gridx = 0; pg.gridy = prow; pg.gridwidth = 2;
+                pg.gridx = 0;
+                pg.gridy = prow;
+                pg.gridwidth = 2;
+
                 runSquaresAfterTrackMateCheck = new JCheckBox(
                         "Run Generate Squares after TrackMate",
                         PaintConfig.getBoolean("TrackMate", "Run Generate Squares After", true)
@@ -240,15 +245,25 @@ public class ProjectDialog {
 
         // ======= BOTTOM =======
         saveExperimentsCheckBox = new JCheckBox("Save Experiments", false);
-        verboseCheckBox = new JCheckBox("Verbose", PaintRuntime.isVerbose());
+        verboseCheckBox         = new JCheckBox("Verbose", PaintRuntime.isVerbose());
+        sweepCheckBox           = new JCheckBox("Sweep", PaintConfig.getBoolean("Sweep Settings", "Sweep", false));
 
-        // ✅ Add listener to handle user toggles immediately
         verboseCheckBox.addActionListener(e -> onVerboseToggled(verboseCheckBox.isSelected()));
+
+
+        // Handle user toggling Sweep checkbox
+        sweepCheckBox.addActionListener(e -> {
+            boolean enabled = sweepCheckBox.isSelected();
+            PaintConfig.setBoolean("Sweep Settings", "Sweep", enabled);
+            PaintConfig.instance().save();
+            PaintLogger.infof("Sweep mode %s.", enabled ? "enabled" : "disabled");
+            updateOkButtonState();
+        });
 
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         leftPanel.add(saveExperimentsCheckBox);
-
         leftPanel.add(verboseCheckBox);
+        leftPanel.add(sweepCheckBox);
 
         okButton = new JButton("OK");
         cancelButton = new JButton("Cancel");
@@ -551,6 +566,10 @@ public class ProjectDialog {
         // Persist preference immediately
         PaintRuntime.setVerbose(enabled);
         PaintLogger.infof("Verbose mode %s.", enabled ? "enabled" : "disabled");
+    }
+
+    public boolean isSweepSelected() {
+        return sweepCheckBox != null && sweepCheckBox.isSelected();
     }
 
     // Simple lambda-friendly document listener
