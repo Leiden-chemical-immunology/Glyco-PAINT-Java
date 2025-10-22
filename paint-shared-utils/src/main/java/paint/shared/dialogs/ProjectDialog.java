@@ -152,7 +152,12 @@ public class ProjectDialog {
                         "Run Generate Squares after TrackMate",
                         PaintConfig.getBoolean("TrackMate", "Run Generate Squares After", true)
                 );
-                runSquaresAfterTrackMateCheck.addActionListener(e -> setSquaresParamsEnabled(runSquaresAfterTrackMateCheck.isSelected()));
+
+                runSquaresAfterTrackMateCheck.addActionListener(e -> {
+                    setSquaresParamsEnabled(runSquaresAfterTrackMateCheck.isSelected());
+                    updateOkButtonState(); // ✅ new line
+                });
+
                 paramsPanel.add(runSquaresAfterTrackMateCheck, pg);
                 prow++;
                 pg.gridwidth = 1;
@@ -265,13 +270,23 @@ public class ProjectDialog {
         leftPanel.add(verboseCheckBox);
         leftPanel.add(sweepCheckBox);
 
-        okButton = new JButton("OK");
+        okButton     = new JButton("OK");
         cancelButton = new JButton("Cancel");
 
         // listeners affecting OK state
-        for (JCheckBox cb : checkBoxes) cb.addActionListener(e -> updateOkButtonState());
+        for (JCheckBox cb : checkBoxes) {
+            cb.addActionListener(e -> updateOkButtonState());
+        }
         projectRootField.getDocument().addDocumentListener((SimpleDocumentListener) e -> updateOkButtonState());
         imageDirectoryField.getDocument().addDocumentListener((SimpleDocumentListener) e -> updateOkButtonState());
+
+        // Also re-enable OK when toggling these checkboxes
+        if (runSquaresAfterTrackMateCheck != null) {
+            runSquaresAfterTrackMateCheck.addActionListener(e -> updateOkButtonState());
+        }
+        if (sweepCheckBox != null) {
+            sweepCheckBox.addActionListener(e -> updateOkButtonState());
+        }
 
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         rightPanel.add(okButton);
@@ -305,23 +320,44 @@ public class ProjectDialog {
 
         if (calculationCallback != null) {
             setInputsEnabled(false);
+            okButton.setText("Running...");
             okButton.setEnabled(false);
+
             new Thread(() -> {
                 boolean success = false;
+                Exception caught = null;
+
                 try {
                     success = calculationCallback.run(getProject());
                 } catch (Exception ex) {
+                    caught = ex;
                     PaintLogger.errorf("Error in callback: %s", ex.getMessage());
                 }
-                final boolean s = success;
+
+                final boolean callbackSuccess = success;
+                final Exception callbackError = caught;
+
                 SwingUtilities.invokeLater(() -> {
                     setInputsEnabled(true);
-                    okButton.setEnabled(true);
-                    if (!s) {
-                        JOptionPane.showMessageDialog(dialog,
-                                                      "Operation finished with errors. Check the log.",
-                                                      "Warning",
-                                                      JOptionPane.WARNING_MESSAGE);
+
+                    if (callbackSuccess) {
+                        // ✅ Success: show "Completed", then disable button
+                        okButton.setText("Completed");
+                        okButton.setEnabled(false);
+                        PaintLogger.infof("Operation completed successfully.");
+
+                        // Reset text to "OK" (still disabled) after a short delay
+                        new javax.swing.Timer(1500, evt -> okButton.setText("OK")).start();
+
+                    } else {
+                        // ❌ Failure: enable immediately to allow retry
+                        okButton.setText("OK");
+                        okButton.setEnabled(true);
+                        String msg = (callbackError != null)
+                                ? "An error occurred: " + callbackError.getMessage()
+                                : "Operation finished with errors. Check the log.";
+                        JOptionPane.showMessageDialog(dialog, msg,
+                                                      "Warning", JOptionPane.WARNING_MESSAGE);
                     }
                     // Dialog intentionally stays open in all modes.
                 });

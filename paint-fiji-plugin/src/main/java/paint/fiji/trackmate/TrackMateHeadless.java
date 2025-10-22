@@ -32,7 +32,7 @@ import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
  *  </p>
  * ============================================================================
  */
-@Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run (Headless)")
+//@Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run (Headless)")
 public class TrackMateHeadless implements Command {
 
     @Override
@@ -75,7 +75,7 @@ public class TrackMateHeadless implements Command {
             PaintLogger.infof("Images root:  %s", imagesPath);
             PaintLogger.infof("Experiments:  %s", experiments);
 
-            boolean success = RunTrackMate.run(projectPath, imagesPath, experiments);
+            boolean success = RunTrackMateOnProject.runProject(projectPath, imagesPath, experiments, null, null);
             if (success)
                 PaintLogger.infof("✅ TrackMate completed successfully.");
             else

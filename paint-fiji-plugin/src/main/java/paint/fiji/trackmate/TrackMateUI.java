@@ -129,7 +129,7 @@ public class TrackMateUI implements Command {
                 return false;
             } finally {
                 running = false;
-                SwingUtilities.invokeLater(() -> dialog.setOkEnabled(true));
+                //SwingUtilities.invokeLater(() -> dialog.setOkEnabled(true));
             }
         });
 

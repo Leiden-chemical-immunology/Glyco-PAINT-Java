@@ -33,6 +33,7 @@ import javax.swing.*;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
@@ -62,21 +63,25 @@ public class GenerateSquares {
                 return;
             }
 
-            // --- Step 2: Initialise config and logger early (in case project was known) ---
+            // --- Step 2: Create console,initialise config and logger early ---
+            PaintConsoleWindow.createConsoleFor("Generate Squares");
             PaintLogger.initialise(projectPath, "Generate Squares.log");
             PaintConfig.initialise(projectPath);
-
 
             JarInfoLogger.JarInfo info = getJarInfo(GenerateSquares.class);
             if (info != null) {
                 PaintLogger.infof("Version: %s", info.implementationVersion);
                 PaintLogger.infof("Compiled: %s", info.implementationDate);
             }
-
-            LocalDateTime now = LocalDateTime.now();
-            String formattedTime = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            String formattedTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             PaintLogger.infof("Current time is: %s", formattedTime);
             PaintLogger.blankline();
+
+            PaintLogger.doc("Generate Squares", Arrays.asList(
+                    "Line 1 of commentary",
+                    "Line 2 of commentary",
+                    "Line 3 of commentary"
+            ));
 
             // --- Step 3: Show the integrated configuration dialog ---
             ProjectDialog dialog = new ProjectDialog(
@@ -84,12 +89,9 @@ public class GenerateSquares {
                     projectPath,
                     ProjectDialog.DialogMode.GENERATE_SQUARES
             );
-
-            // --- Step 4: Create console and tie it to dialog lifecycle ---
-            PaintConsoleWindow.createConsoleFor("Generate Squares");
             PaintConsoleWindow.closeOnDialogDispose(dialog.getDialog());
 
-            // --- Step 5: Run calculations when user presses OK ---
+            // --- Step 4: Run calculations when user presses OK ---
             dialog.setCalculationCallback(project -> {
                 try {
                     GenerateSquaresHeadless.run(project.getProjectRootPath(), project.getExperimentNames());
@@ -100,9 +102,8 @@ public class GenerateSquares {
                 }
             });
 
-            // --- Step 6: Show dialog ---
+            // --- Step 5: Show dialog ---
             dialog.showDialog();
         });
     }
-
 }
