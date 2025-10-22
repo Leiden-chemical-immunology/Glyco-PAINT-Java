@@ -141,29 +141,6 @@ public class CsvUtils {
     }
 
     /**
-     * Concatenates all CSV files in a directory whose names match a regex pattern.
-     *
-     * @param inputDir     directory containing CSV files
-     * @param outputFile   path to output CSV
-     * @param regex        regex pattern for filenames
-     * @param deleteInputs delete files after success
-     * @throws IOException on I/O error
-     */
-    public static void concatenateCsvFilesInDirectory(Path inputDir, Path outputFile,
-                                                      String regex, boolean deleteInputs) throws IOException {
-        List<Path> files = new ArrayList<>();
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(inputDir)) {
-            for (Path p : stream) {
-                if (p.getFileName().toString().matches(regex)) {
-                    files.add(p);
-                }
-            }
-        }
-        Collections.sort(files);
-        concatenateCsvFiles(files, outputFile, deleteInputs);
-    }
-
-    /**
      * Concatenates a same-named CSV file (e.g. "Tracks.csv") from multiple
      * experiment subfolders into a single file at the project root.
      *
@@ -211,43 +188,52 @@ public class CsvUtils {
 
             Path tempPath = csvPath.resolveSibling(fileName + ".tmp");
 
+            // Modern builder-style read format
+            CSVFormat readFormat = CSVFormat.DEFAULT.builder()
+                    .setHeader()
+                    .setSkipHeaderRecord(true)
+                    .build();
+
             try (Reader reader = Files.newBufferedReader(csvPath);
-                 CSVParser parser = CSVFormat.DEFAULT
-                         .withFirstRecordAsHeader()
-                         .parse(reader);
+                 CSVParser parser = new CSVParser(reader, readFormat);
                  BufferedWriter writer = Files.newBufferedWriter(tempPath)) {
 
                 Map<String, Integer> headerMap = parser.getHeaderMap();
-                boolean hasCaseColumn = headerMap.containsKey("Case");
+                if (headerMap == null || headerMap.isEmpty()) {
+                    PaintLogger.warnf("CsvUtils.addCase(): missing or invalid header in %s", csvPath);
+                    continue;
+                }
 
+                boolean hasCaseColumn = headerMap.containsKey("Case");
                 List<String> headers = new ArrayList<>(headerMap.keySet());
                 if (!hasCaseColumn) headers.add("Case");
 
-                CSVPrinter printer = new CSVPrinter(writer,
-                                                    CSVFormat.DEFAULT.withHeader(headers.toArray(new String[0])));
+                // Define write format only once, now with explicit header
+                CSVFormat writeFormat = CSVFormat.DEFAULT.builder()
+                        .setHeader(headers.toArray(new String[0]))
+                        .build();
 
-                for (CSVRecord record : parser) {
-                    List<String> row = new ArrayList<>();
-                    for (String h : headerMap.keySet()) {
-                        if (h.equals("Case")) {
-                            row.add(caseName); // overwrite if exists
-                        } else {
-                            row.add(record.get(h));
+                try (CSVPrinter printer = new CSVPrinter(writer, writeFormat)) {
+                    for (CSVRecord record : parser) {
+                        List<String> row = new ArrayList<>();
+                        for (String h : headerMap.keySet()) {
+                            if (h.equals("Case")) {
+                                row.add(caseName); // overwrite if exists
+                            } else {
+                                row.add(record.get(h));
+                            }
                         }
+                        if (!hasCaseColumn) row.add(caseName);
+                        printer.printRecord(row);
                     }
-                    if (!hasCaseColumn) row.add(caseName);
-                    printer.printRecord(row);
+                    printer.flush();
                 }
 
-                printer.flush();
-                printer.close();
+                Files.move(tempPath, csvPath, StandardCopyOption.REPLACE_EXISTING);
+                PaintLogger.debugf("Updated 'Case' column in %s", csvPath);
             }
-
-            Files.move(tempPath, csvPath, StandardCopyOption.REPLACE_EXISTING);
-            PaintLogger.debugf("Updated 'Case' column in %s", csvPath);
         }
     }
-
     // =====================================================================
     // == DEMO ==============================================================
     // =====================================================================

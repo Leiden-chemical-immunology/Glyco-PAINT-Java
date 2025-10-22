@@ -34,7 +34,7 @@ public class PlotUtils {
      *
      * @param x         array of track durations (domain)
      * @param y         array of corresponding frequencies (range)
-     * @param result    Tau fitting result (may be {@code null} or invalid)
+     * @param result    Tau fitting result (can be {@code null} or invalid)
      * @param fitFailed {@code true} if the fit failed or was invalid
      * @param width     image width in pixels
      * @param height    image height in pixels

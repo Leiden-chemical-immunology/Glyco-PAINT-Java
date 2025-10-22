@@ -63,7 +63,7 @@ public class RunTrackMateOnProjectSweep {
 
         // --- Sweep mode - we really have a viable sweep configuration ---
 
-        // Sweeps is a Hash<ap that contains the parametsr that need to be swept, e.g. MAX_FRAM_GAP
+        // Sweeps is a Hash<ap that contains the parameter that need to be swept, e.g. MAX_FRAME_GAP
         // and the values those parameters take
 
         boolean overallStatus = true;

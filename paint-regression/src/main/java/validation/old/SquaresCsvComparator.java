@@ -8,8 +8,8 @@ import java.util.*;
  * ============================================================================
  *  SquaresCsvComparator.java
  *  Version: 4.0 — Precision & Tolerance-Aligned Edition
- *  Author: Herr Doctor
- *
+ *  Author: Hans Bakker
+ *  <p>
  *  PURPOSE
  *  ---------------------------------------------------------------------------
  *  Compare two “Squares” CSVs (Python vs Java) with:
@@ -18,7 +18,7 @@ import java.util.*;
  *   • Percentage-based tolerance per numeric field
  *   • “Selected” logic consistency
  *   • Detailed CSV reporting
- *
+ *  <p>
  *  OUTPUT FILES
  *  ---------------------------------------------------------------------------
  *  ~/Downloads/Validate/Squares/

@@ -488,7 +488,7 @@ public class TracksCsvComparator {
      *
      * @param old        reference track
      * @param candidates candidate new tracks
-     * @return the map containing best candidate ID, per-field deviations, and score
+     * @return           the map containing the best candidate ID, per-field deviations, and score
      */
     private static Map<String, Object> findBestCandidate(
             Map<String, String> old, List<Map<String, String>> candidates) {

@@ -5,8 +5,6 @@ import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.util.FastMath;
 import paint.shared.objects.Track;
 
-import javax.swing.*;
-import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;

@@ -13,10 +13,10 @@ Software
 - Check if a sweep.json file is present in the project directory.
 - Look in the sweep section for which parameters need to be swept.
 - Create a 'Sweep' directory in the project
-- For each parameter cycle through the values lsited in the sweep file section 
-- Update the JSON file with the current paramneter
+- For each parameter cycle through the values listed in the sweep file section 
+- Update the JSON file with the current parameter
 - Perform the TrackMate calculations 
-- Write the Recordings and Tracks file into seperate directories for each case
+- Write the Recordings and Tracks file into separate directories for each case
 - Add a Case field to the files describing the case 'Threshold 5', 'Threshold 6' 
 
 

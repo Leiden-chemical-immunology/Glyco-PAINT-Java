@@ -2,18 +2,18 @@
  * ============================================================================
  *  PaintConfig.java
  *  Shared configuration manager for the Paint suite.
- *
+ *  <p>
  *  Purpose:
  *    Manages JSON-based configuration files with forgiving,
  *    case-insensitive access and automatic default population.
- *
+ *  <p>
  *  Key features:
  *    - Singleton access via PaintConfig.instance()
  *    - Thread-safe lazy initialization
  *    - Self-healing defaults for missing keys
  *    - Case-insensitive key and section lookup
  *    - Separate static and instance APIs
- *
+ *  <p>
  *  Author: Herr Doctor
  *  Module: paint-shared-utils
  * ============================================================================

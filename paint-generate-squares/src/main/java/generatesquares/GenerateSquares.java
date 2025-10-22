@@ -25,13 +25,11 @@ package generatesquares;
 
 import paint.shared.config.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
-import paint.shared.prefs.PaintPrefs;
 import paint.shared.utils.JarInfoLogger;
 import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
 
 import javax.swing.*;
-import java.awt.*;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

@@ -55,7 +55,7 @@ public class AddExperimentNameBeforeRecordingName {
             }
         }
 
-        System.out.println("\n✅ Done. Modified " + modifiedCount + " file(s).");
+        System.out.println("\nDone. Modified " + modifiedCount + " file(s).");
     }
 
     /**

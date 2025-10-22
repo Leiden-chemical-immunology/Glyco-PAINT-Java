@@ -10,8 +10,8 @@ import static paint.shared.constants.PaintConstants.SQUARES_CSV;
  * ============================================================================
  *  SquaresCsvComparator.java
  *  Version: 3.3
- *  Author: Herr Doctor
- *
+ *  Author: Hans Bakker
+ *  <p>
  *  PURPOSE
  *  ---------------------------------------------------------------------------
  *  Compare two "Squares" CSV files (Python vs Java) by:
@@ -19,7 +19,7 @@ import static paint.shared.constants.PaintConstants.SQUARES_CSV;
  *    2. Sorting by Recording Name + Square Nr
  *    3. Writing normalized CSVs for inspection
  *    4. Generating a detailed, precision-aware difference report
- *
+ *  <p>
  *  NORMALIZATION RULES
  *  ---------------------------------------------------------------------------
  *  - Remove trailing "-threshold-<number>" from Recording Name in OLD file
@@ -30,13 +30,13 @@ import static paint.shared.constants.PaintConstants.SQUARES_CSV;
  *        Density, Density Ratio, Total Displacement
  *  - Columns aligned via FIELD_MAP so OLD and NEW use identical schema
  *  - Add computed boolean column "Selected" (see criteria below) to BOTH normalized files
- *
+ *  <p>
  *  "SELECTED" FLAG
  *  ---------------------------------------------------------------------------
  *  Selected := (Density Ratio >= 2) AND (Variability < 10) AND (R Squared > 0.1)
  *  - The "Selected" column is added to both normalized outputs ("true"/"false")
  *  - The comparison report also includes a row when Selected differs between OLD/NEW
- *
+ *  <p>
  *  PRECISION HANDLING
  *  ---------------------------------------------------------------------------
  *  - Detects decimal precision separately in OLD and NEW
@@ -45,7 +45,7 @@ import static paint.shared.constants.PaintConstants.SQUARES_CSV;
  *  - Rounds all numeric values to effective precision in both:
  *        • Normalized CSV output
  *        • Equality checks during comparison
- *
+ *  <p>
  *  COMPARISON LOGIC
  *  ---------------------------------------------------------------------------
  *  - Two values are considered equal if:
@@ -56,7 +56,7 @@ import static paint.shared.constants.PaintConstants.SQUARES_CSV;
  *        Relative Difference (%) = 100 * |new - old| / |old|
  *        (shown to 2 decimals, blank if old = 0 or non-numeric)
  *  - Additionally, if "Selected" differs, a row with Field="Selected" is added
- *
+ *  <p>
  *  REPORT OUTPUT
  *  ---------------------------------------------------------------------------
  *  - File: "/Users/Hans/Desktop/Squares Validation - Comparison.csv"
@@ -73,14 +73,14 @@ import static paint.shared.constants.PaintConstants.SQUARES_CSV;
  *        2) Square Nr (numeric)
  *  - Summary (tail of file + console):
  *        Matched, Mismatched, Missing, Extra, Selected mismatches
- *
+ *  <p>
  *  NORMALIZED OUTPUTS
  *  ---------------------------------------------------------------------------
  *  For reference and manual inspection:
  *        • Squares Validation - All Squares Python Normalized.csv
  *        • Squares Validation - All Squares Java Normalized.csv
  *    (contain the computed "Selected" column)
- *
+ *  <p>
  *  CONSOLE SUMMARY
  *  ---------------------------------------------------------------------------
  *  Prints:
