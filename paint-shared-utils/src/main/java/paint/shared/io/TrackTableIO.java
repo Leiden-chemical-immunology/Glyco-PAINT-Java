@@ -14,14 +14,26 @@ import java.util.List;
 import static paint.shared.constants.PaintConstants.*;
 
 /**
- * Table IO for Track entities.
+ * Handles reading, writing, and converting {@link Track} entities
+ * to and from {@link Table} representations.
  */
 public class TrackTableIO extends BaseTableIO {
 
+    /**
+     * Creates an empty {@link Table} for tracks with the correct schema.
+     *
+     * @return a new empty {@link Table} with all track columns
+     */
     public Table emptyTable() {
         return newEmptyTable("Tracks", TRACKS_COLS, TRACKS_TYPES);
     }
 
+    /**
+     * Converts a list of {@link Track} objects into a {@link Table}.
+     *
+     * @param tracks list of {@link Track} entities
+     * @return a {@link Table} containing one row per track
+     */
     public Table toTable(List<Track> tracks) {
         Table table = emptyTable();
         for (Track track : tracks) {
@@ -48,11 +60,16 @@ public class TrackTableIO extends BaseTableIO {
             row.setInt(    "Square Number",             track.getSquareNumber());
             row.setInt(    "Label Number",              track.getLabelNumber());
             // @formatter:on
-
         }
         return table;
     }
 
+    /**
+     * Converts a {@link Table} into a list of {@link Track} entities.
+     *
+     * @param table the source {@link Table}
+     * @return a list of {@link Track} objects
+     */
     public List<Track> toEntities(Table table) {
         List<Track> tracks = new ArrayList<>();
         for (Row row : table) {
@@ -85,10 +102,24 @@ public class TrackTableIO extends BaseTableIO {
         return tracks;
     }
 
+    /**
+     * Reads a CSV file into a {@link Table} using the expected track schema.
+     *
+     * @param csvPath path to the CSV file
+     * @return the parsed {@link Table}
+     * @throws IOException if the file cannot be read or validated
+     */
     public Table readCsv(Path csvPath) throws IOException {
         return readCsvWithSchema(csvPath, TRACKS, TRACKS_COLS, TRACKS_TYPES, false);
     }
 
+    /**
+     * Appends all rows from the source {@link Table} into the target {@link Table}.
+     * This variant performs manual column-type matching for track data.
+     *
+     * @param target target {@link Table} to append to
+     * @param source source {@link Table} to append from
+     */
     public void appendInPlace(Table target, Table source) {
         for (Row row : source) {
             Row newRow = target.appendRow();
@@ -108,7 +139,10 @@ public class TrackTableIO extends BaseTableIO {
     }
 
     /**
-     * Convert a single row into a Track.
+     * Converts a single {@link Row} into a {@link Track} entity.
+     *
+     * @param row the {@link Row} containing track data
+     * @return a {@link Track} populated with values from the row
      */
     public Track rowToEntity(Row row) {
         Track track = new Track();

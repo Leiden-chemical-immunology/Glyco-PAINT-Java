@@ -13,18 +13,17 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 /**
- * Utility for extracting and displaying build metadata from a JAR’s MANIFEST.MF.
+ * Utility for extracting and displaying build metadata from a JAR’s {@code MANIFEST.MF}.
  * <p>
- * Reads entries such as:
+ * Reads manifest entries such as:
  * <ul>
- *   <li>Implementation-Title</li>
- *   <li>Implementation-Version</li>
- *   <li>Implementation-Vendor</li>
- *   <li>Build-Timestamp</li>
+ *   <li>{@code Implementation-Title}</li>
+ *   <li>{@code Implementation-Version}</li>
+ *   <li>{@code Implementation-Vendor}</li>
+ *   <li>{@code Build-Timestamp}</li>
  * </ul>
  * Converts UTC timestamps to Europe/Amsterdam local time for display.
- * <p>
- * Works for both IDE (classpath) and fat-JAR executions.
+ * Works in both IDE (classpath) and packaged JAR executions.
  */
 public class JarInfoLogger {
 
@@ -32,6 +31,7 @@ public class JarInfoLogger {
     private static final DateTimeFormatter OUT_FMT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z").withZone(AMS);
 
+    /** Prevent instantiation of this static utility class. */
     private JarInfoLogger() {
         // static utility
     }
@@ -39,8 +39,8 @@ public class JarInfoLogger {
     /**
      * Reads JAR manifest information for the given class.
      *
-     * @param clazz any class from the JAR whose manifest you want to read
-     * @return a {@link JarInfo} record containing manifest data, or {@code null} if none found
+     * @param clazz any class from the JAR whose manifest should be read
+     * @return a {@link JarInfo} record containing manifest data, or {@code null} if not found
      */
     public static JarInfo getJarInfo(Class<?> clazz) {
         try {
@@ -77,6 +77,12 @@ public class JarInfoLogger {
     // Internal helpers
     // ---------------------------------------------------------------------
 
+    /**
+     * Attempts to read a manifest directly from the JAR file associated with the given class.
+     *
+     * @param clazz the class whose code source will be used to locate the JAR
+     * @return the parsed {@link Manifest}, or {@code null} if unavailable
+     */
     private static Manifest manifestFromCodeSource(Class<?> clazz) {
         try {
             CodeSource cs = clazz.getProtectionDomain().getCodeSource();
@@ -103,6 +109,12 @@ public class JarInfoLogger {
         }
     }
 
+    /**
+     * Attempts to read the first manifest file found on the classpath.
+     *
+     * @param clazz the class providing a {@link ClassLoader} to search with
+     * @return the first {@link Manifest} found, or {@code null} if none
+     */
     private static Manifest manifestFromClasspath(Class<?> clazz) {
         try {
             ClassLoader cl = clazz.getClassLoader();
@@ -118,10 +130,17 @@ public class JarInfoLogger {
     }
 
     /**
-     * Converts a UTC timestamp string to Amsterdam time, trying several formats.
+     * Converts a UTC timestamp string to Amsterdam local time.
+     * <p>
+     * Supported input formats:
+     * <ul>
+     *   <li>ISO 8601 (e.g., {@code 2025-10-14T06:39:16Z})</li>
+     *   <li>{@code yyyy-MM-dd HH:mm:ss} (assumed UTC)</li>
+     *   <li>{@code yyyy-MM-dd'T'HH:mm:ssXXX}</li>
+     * </ul>
      *
-     * @param utcString raw string from manifest
-     * @return formatted string (e.g., "2025-10-14 08:39:16 CET"), or {@code null} if invalid
+     * @param utcString raw timestamp string from the manifest
+     * @return formatted string (e.g., {@code "2025-10-14 08:39:16 CET"}), or {@code null} if invalid
      */
     public static String formatAmsterdam(String utcString) {
         if (utcString == null || utcString.trim().isEmpty()) return null;
@@ -150,7 +169,9 @@ public class JarInfoLogger {
     }
 
     /**
-     * Prints manifest info for the given class (for manual CLI testing).
+     * Prints manifest information for this utility’s own class (for manual CLI testing).
+     *
+     * @param args command-line arguments (unused)
      */
     public static void main(String[] args) {
         JarInfo info = getJarInfo(JarInfoLogger.class);
@@ -174,6 +195,17 @@ public class JarInfoLogger {
         public final String specificationVersion;
         public final String specificationVendor;
 
+        /**
+         * Constructs a new {@code JarInfo} instance.
+         *
+         * @param implTitle    implementation title
+         * @param implVersion  implementation version
+         * @param implVendor   implementation vendor
+         * @param implDate     implementation build date/time
+         * @param specTitle    specification title
+         * @param specVersion  specification version
+         * @param specVendor   specification vendor
+         */
         public JarInfo(String implTitle,
                        String implVersion,
                        String implVendor,
@@ -194,6 +226,7 @@ public class JarInfoLogger {
             // @formatter:on
         }
 
+        /** @return a human-readable short summary of implementation metadata. */
         @Override
         public String toString() {
             return String.format(
@@ -206,6 +239,7 @@ public class JarInfoLogger {
             );
         }
 
+        /** @return a detailed summary including specification metadata. */
         public String toStringLONG() {
             return String.format(
                     "Implementation Title  : %s%n" +

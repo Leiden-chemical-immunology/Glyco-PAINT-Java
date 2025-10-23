@@ -7,40 +7,20 @@ import java.util.*;
 /**
  * ============================================================================
  *  TracksCsvComparator.java
- *  Version: 3.0 — Documented Edition
- * <p>
- *  PURPOSE
- *  ---------------------------------------------------------------------------
- *  Compare and validate two "All Tracks" CSV exports (e.g., Python vs Java)
- *  produced by the PAINT/TrackMate pipeline.
- * <p>
- *  The comparator:
- *    1. Normalizes both CSVs (unifies headers, trims values, aligns naming)
- *    2. Sorts by Recording Name + Track Id
- *    3. Performs multiphase matching:
- *         - Phase 1: strict per-field tolerance-based matching
- *         - Phase 2: diagnostic best-fit analysis for remaining unmatched tracks
- *         - Phase 3: summary report with matched/unmatched IDs
- *    4. Writes detailed comparison, diagnostics, normalized, and summary CSVs
- * <p>
- *  OUTPUT FILES
- *  ---------------------------------------------------------------------------
- *  ~/Downloads/Validate/Tracks/
- *    ├── Tracks Validation - Comparison.csv
- *    ├── Tracks Validation - Comparison Diagnostics.csv
- *    ├── Tracks Validation - Comparison Summary.csv
- *    ├── Tracks Validation - Old Normalised.csv
- *    └── Tracks Validation - New Normalised.csv
- * <p>
- *  COMPARISON LOGIC
- *  ---------------------------------------------------------------------------
- *  Matching is done per Recording Name (threshold suffix removed).
- *  Each old track is compared to potential new tracks using a configurable
- *  set of numerical tolerances. If only one new track matches → unique match.
- *  Multiple matches are recorded and scored in diagnostics.
- * <p>
- *  Phase 2 diagnostics rank unmatched tracks using a root-mean-square
- *  deviation metric across selected columns, limited by MAX_ACCEPTABLE_SCORE.
+ *  Part of the Paint Regression module.
+ *
+ *  Purpose:
+ *    Performs field-by-field comparison between legacy and Java-generated
+ *    Tracks CSV output files and generates a set of validation reports:
+ *
+ *       +-- Tracks Validation - Comparison.csv
+ *       +-- Tracks Validation - Comparison Diagnostics.csv
+ *       +-- Tracks Validation - Comparison Summary.csv
+ *       +-- Tracks Validation - Old Normalised.csv
+ *       \-- Tracks Validation - New Normalised.csv
+ *
+ *  Author: Hans Bakker
+ *  Module: paint-regression
  * ============================================================================
  */
 public class TracksCsvComparator {
@@ -74,6 +54,8 @@ public class TracksCsvComparator {
     // ---------------------------------------------------------------------
     /**
      * Main entry point. Reads both CSVs, runs all phases, and writes output files.
+     *
+     * @param args command-line arguments (not used)
      */
     public static void main(String[] args) {
 

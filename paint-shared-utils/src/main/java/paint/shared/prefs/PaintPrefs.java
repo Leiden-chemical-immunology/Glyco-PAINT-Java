@@ -11,13 +11,13 @@ import java.io.File;
  *  PaintPrefs.java
  *  Global preference handler for Glyco-PAINT.
  *
- *  <p>Stores preferences in ~/Library/Preferences/Glyco-PAINT.plist</p>
- *  <p>Behavior:
- *    <ul>
- *      <li>If a key exists → return its value</li>
- *      <li>If it doesn’t → create it with the provided default, save to disk, and return it</li>
- *    </ul>
- *  </p>
+ *  <p>Stores preferences in <code>~/Library/Preferences/Glyco-PAINT.plist</code>.</p>
+ *
+ *  <p>Behavior:</p>
+ *  <ul>
+ *    <li>If a key exists &rarr; return its value.</li>
+ *    <li>If it doesn’t &rarr; create it with the provided default, save to disk, and return it.</li>
+ *  </ul>
  * ============================================================================
  */
 public final class PaintPrefs {

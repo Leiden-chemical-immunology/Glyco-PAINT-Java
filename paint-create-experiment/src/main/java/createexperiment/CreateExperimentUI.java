@@ -1,6 +1,6 @@
 /**
  * Part of the Paint project.
- * Copyright (c) 2025 Herr Doctor.
+ * Copyright (c) 2025 Hans Bakker.
  * Licensed under the MIT License.
  */
 

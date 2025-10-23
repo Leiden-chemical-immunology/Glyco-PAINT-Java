@@ -14,7 +14,7 @@
  *    - Case-insensitive key and section lookup
  *    - Separate static and instance APIs
  *  <p>
- *  Author: Herr Doctor
+ *  Author: Hans Bakker
  *  Module: paint-shared-utils
  * ============================================================================
  */
@@ -87,6 +87,9 @@ public class PaintConfig {
     /**
      * Initializes the global PaintConfig with a custom config file location.
      * If called more than once, the first call "wins".
+     *
+     * @param projectPath base project directory; the config will be read/written at
+     *                    {@code projectPath/PAINT_CONFIGURATION_JSON}
      */
     public static void initialise(Path projectPath) {
         Path configPath = projectPath.resolve(PAINT_CONFIGURATION_JSON);
@@ -110,6 +113,8 @@ public class PaintConfig {
     /**
      * Re-initializes the global PaintConfig, replacing any existing instance.
      * Use this when switching projects.
+     *
+     * @param projectPath base project directory for the new configuration location
      */
     public static void reinitialise(Path projectPath) {
         synchronized (PaintConfig.class) {
@@ -122,6 +127,8 @@ public class PaintConfig {
 
     /**
      * Returns the global PaintConfig instance, creating it if necessary.
+     *
+     * @return the singleton {@link PaintConfig} instance
      */
     public static PaintConfig instance() {
         if (INSTANCE == null) {
@@ -135,6 +142,13 @@ public class PaintConfig {
     // Load, Save, Defaults
     // ============================================================================
 
+    /**
+     * Ensures the configuration JSON is loaded from disk.
+     * <p>
+     * If not yet loaded, it attempts to read from {@link #path}; if no file exists,
+     * defaults are created and saved.
+     * </p>
+     */
     private synchronized void ensureLoaded() {
         if (this.configData != null) {
             return;
@@ -310,12 +324,21 @@ public class PaintConfig {
     // Static Removals (shortcuts)
     // ============================================================================
 
-    /** Removes a single key (always saves). */
+    /**
+     * Removes a single key (always saves).
+     *
+     * @param section section name (case-insensitive)
+     * @param key     key within the section to remove (case-insensitive)
+     */
     public static void remove(String section, String key) {
         instance().removeValue(section, key, true);
     }
 
-    /** Removes an entire section (always saves). */
+    /**
+     * Removes an entire section (always saves).
+     *
+     * @param section section name to remove (case-insensitive)
+     */
     public static void removeSection(String section) {
         instance().removeSectionValue(section, true);
     }
@@ -324,6 +347,13 @@ public class PaintConfig {
     // Removal and Listing
     // ============================================================================
 
+    /**
+     * Removes a single key from a given section.
+     *
+     * @param section  section name (case-insensitive)
+     * @param key      key name to remove (case-insensitive)
+     * @param autoSave whether to immediately persist the change
+     */
     public void removeValue(String section, String key, boolean autoSave) {
         ensureLoaded();
         JsonObject sec = getSection(section);
@@ -333,22 +363,44 @@ public class PaintConfig {
         }
     }
 
+    /**
+     * Removes an entire section from the configuration.
+     *
+     * @param section  section name to remove (case-insensitive)
+     * @param autoSave whether to immediately persist the change
+     */
     public void removeSectionValue(String section, boolean autoSave) {
         ensureLoaded();
         configData.remove(section);
         if (autoSave) save();
     }
 
+    /**
+     * Returns the set of keys defined in the specified section.
+     *
+     * @param section section name (case-insensitive)
+     * @return set of keys, or an empty set if the section does not exist
+     */
     public Set<String> keys(String section) {
         JsonObject sec = getSection(section);
         return sec != null ? sec.keySet() : Collections.emptySet();
     }
 
+    /**
+     * Returns all top-level section names currently in the configuration.
+     *
+     * @return set of section names
+     */
     public Set<String> sections() {
         ensureLoaded();
         return configData.keySet();
     }
 
+    /**
+     * Returns the full configuration data as a {@link JsonObject}.
+     *
+     * @return the root configuration JSON
+     */
     public JsonObject getJson() {
         ensureLoaded();
         return configData;
@@ -438,12 +490,22 @@ public class PaintConfig {
      * <p>
      * This is useful for external modules (e.g., TrackMateHeadless) that
      * need to iterate over dynamically defined sections like "Experiments".
+     * </p>
+     *
+     * @param section section name to retrieve (case-insensitive)
+     * @return the section as a {@link JsonObject}, or {@code null} if absent
      */
     public JsonObject getSection(String section) {
         ensureLoaded();
         return findSectionIgnoreCase(section);
     }
 
+    /**
+     * Finds a section (case-insensitive), creating it if missing.
+     *
+     * @param section section name to find or create
+     * @return existing or newly created {@link JsonObject} section
+     */
     private JsonObject getOrCreateSection(String section) {
         ensureLoaded();
         JsonObject sec = findSectionIgnoreCase(section);
@@ -453,6 +515,13 @@ public class PaintConfig {
         return newSec;
     }
 
+    /**
+     * Finds a key in a JSON object, ignoring case.
+     *
+     * @param obj the object to search
+     * @param key the key name to locate
+     * @return the actual key string if found, otherwise {@code null}
+     */
     private String findKeyIgnoreCase(JsonObject obj, String key) {
         if (obj == null || key == null) return null;
         for (String k : obj.keySet()) {
@@ -461,6 +530,12 @@ public class PaintConfig {
         return null;
     }
 
+    /**
+     * Locates a section in the root config object by case-insensitive name.
+     *
+     * @param section section name to search for
+     * @return the {@link JsonObject} section if found, otherwise {@code null}
+     */
     private JsonObject findSectionIgnoreCase(String section) {
         ensureLoaded();
         for (String s : configData.keySet()) {

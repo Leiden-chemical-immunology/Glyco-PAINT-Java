@@ -23,12 +23,9 @@ import java.util.*;
  */
 public class SquaresCsvComparatorUnified {
 
-    // ---------------------------- Field Maps ----------------------------
-
     /** Mapping of old column names (Python) to new column names (Java). */
     private static final Map<String, String> FIELD_MAP = new LinkedHashMap<>();
     static {
-        // Define correspondence between old and new CSV columns
         FIELD_MAP.put("Row Nr", "Row Number");
         FIELD_MAP.put("Col Nr", "Column Number");
         FIELD_MAP.put("Nr Tracks", "Number of Tracks");
@@ -177,7 +174,10 @@ public class SquaresCsvComparatorUnified {
 
     /**
      * Reads a CSV file and returns a list of row maps.
-     * Each row is represented as Map<column, value>.
+     *
+     * @param p the path to the CSV file
+     * @return a list of rows, each row as Map&lt;column,value&gt;
+     * @throws IOException if an I/O error occurs while reading
      */
     private static List<Map<String, String>> readCsv(Path p) throws IOException {
         List<Map<String, String>> rows = new ArrayList<>();
@@ -202,6 +202,10 @@ public class SquaresCsvComparatorUnified {
     /**
      * Writes a normalized list of rows to CSV.
      * Applies numeric rounding and cleans up zero fields.
+     *
+     * @param rows list of row maps to write
+     * @param file output file path
+     * @throws IOException if writing fails
      */
     private static void writeCsv(List<Map<String, String>> rows, Path file) throws IOException {
         if (rows.isEmpty()) return;
@@ -256,7 +260,12 @@ public class SquaresCsvComparatorUnified {
         }
     }
 
-    /** Escapes CSV text fields containing commas or quotes. */
+    /**
+     * Escapes CSV fields containing commas or quotes.
+     *
+     * @param s input string
+     * @return CSV-safe escaped string
+     */
     private static String escapeCsv(String s) {
         if (s == null) return "";
         if (s.contains(",") || s.contains("\"")) return "\"" + s.replace("\"", "\"\"") + "\"";
@@ -266,11 +275,17 @@ public class SquaresCsvComparatorUnified {
     // ---------------------------- Normalization ----------------------------
 
     /**
-     * Normalizes the "old" (Python) CSV:
-     *  - Renames fields to unified keys.
-     *  - Removes negative Tau values.
-     *  - Adjusts indices (Row/Col Nr → zero-based).
-     *  - Adds derived 'Selected' flag.
+     * Normalizes the "old" (Python) CSV by renaming and cleaning fields.
+     * <ul>
+     *   <li>Strips <code>-threshold-N</code> suffix from recording names.</li>
+     *   <li>Maps columns using {@link #FIELD_MAP} to a unified schema.</li>
+     *   <li>Clears negative Tau values.</li>
+     *   <li>Converts 1-based row/column indices to 0-based.</li>
+     *   <li>Derives and adds the {@code Selected} flag.</li>
+     * </ul>
+     *
+     * @param oldRows list of rows from the old CSV
+     * @return normalized list of row maps (same size as input)
      */
     public static List<Map<String, String>> normalizeOld(List<Map<String, String>> oldRows) {
         List<Map<String, String>> out = new ArrayList<>();
@@ -302,9 +317,11 @@ public class SquaresCsvComparatorUnified {
     }
 
     /**
-     * Normalizes the "new" (Java) CSV:
-     *  - Applies field mapping from FIELD_MAP.
-     *  - Adds unified 'Selected' flag.
+     * Normalizes the "new" (Java) CSV to the unified schema and appends
+     * a computed {@code Selected} flag.
+     *
+     * @param newRows list of rows from the new CSV
+     * @return normalized list of row maps
      */
     public static List<Map<String, String>> normalizeNew(List<Map<String, String>> newRows) {
         List<Map<String, String>> out = new ArrayList<>();
@@ -319,7 +336,12 @@ public class SquaresCsvComparatorUnified {
         return out;
     }
 
-    /** Converts "Row Nr" or "Col Nr" to zero-based index if possible. */
+    /**
+     * Converts a 1-based integer field to 0-based, if it parses as a number.
+     *
+     * @param m row map to mutate
+     * @param k key whose value should be decremented (Row Nr / Col Nr)
+     */
     private static void adjustIndex(Map<String, String> m, String k) {
         try {
             String v = m.get(k);
@@ -331,8 +353,14 @@ public class SquaresCsvComparatorUnified {
     }
 
     /**
-     * Detects the shared numeric precision (number of decimal places)
-     * for all numeric fields based on both datasets.
+     * Detects the shared numeric precision (decimal places) for all
+     * numeric fields across two datasets by taking the minimum precision
+     * observed per field.
+     *
+     * @param a       first dataset (normalized rows)
+     * @param b       second dataset (normalized rows)
+     * @param numeric set of field names to consider as numeric
+     * @return map of field → effective precision
      */
     private static Map<String, Integer> computeEffectivePrecisions(
             List<Map<String, String>> a, List<Map<String, String>> b, Set<String> numeric) {
@@ -345,7 +373,14 @@ public class SquaresCsvComparatorUnified {
         return res;
     }
 
-    /** Finds the maximum number of decimals present in field values. */
+    /**
+     * Determines the maximum number of fractional digits present for a field
+     * within a list of row maps.
+     *
+     * @param rows rows to scan
+     * @param f    field name
+     * @return the highest number of decimals seen; 0 if none
+     */
     private static int detectPrecision(List<Map<String, String>> rows, String f) {
         int best = 0;
         for (Map<String, String> r : rows) {
@@ -361,12 +396,14 @@ public class SquaresCsvComparatorUnified {
     // ---------------------------- Comparison (status) ----------------------------
 
     /**
-     * Compares normalized old/new CSVs field-by-field.
-     * Writes detailed differences, missing values, and per-field summaries.
+     * Compares normalized old/new CSVs field-by-field and writes the
+     * per-field comparison report, including differences, missing values,
+     * and field-level summaries.
      *
-     * @param oldN  normalized old data
-     * @param newN  normalized new data
+     * @param oldN   normalized old data
+     * @param newN   normalized new data
      * @param outDir directory where the comparison CSV is written
+     * @throws IOException if writing the comparison file fails
      */
     private static void compareStatus(List<Map<String, String>> oldN, List<Map<String, String>> newN, Path outDir) throws IOException {
         Path out = outDir.resolve("Squares Validation - Comparison.csv");
@@ -500,6 +537,11 @@ public class SquaresCsvComparatorUnified {
     /**
      * Writes a detailed numeric comparison for all numeric fields,
      * including absolute and percentage differences per field.
+     *
+     * @param oldN    normalized old data
+     * @param newN    normalized new data
+     * @param outFile output CSV file to create
+     * @throws IOException if writing fails
      */
     private static void writeDetailed(List<Map<String, String>> oldN, List<Map<String, String>> newN, Path outFile) throws IOException {
         Map<String, Map<String, String>> newMap = new HashMap<>();
@@ -559,8 +601,13 @@ public class SquaresCsvComparatorUnified {
     // ---------------------------- Selected Overview ----------------------------
 
     /**
-     * Writes a compact comparison showing which squares were selected
-     * in the old vs new data, plus key metrics for each (Tau, Density Ratio, Variability).
+     * Writes a compact overview comparing selection status (old vs new) per square,
+     * including Tau, Density Ratio, and Variability values.
+     *
+     * @param oldN    normalized old data
+     * @param newN    normalized new data
+     * @param outFile output CSV file to create
+     * @throws IOException if writing fails
      */
     private static void writeSelectedOverview(List<Map<String, String>> oldN, List<Map<String, String>> newN, Path outFile) throws IOException {
         Map<String, Map<String, String>> newMap = new HashMap<>();
@@ -588,14 +635,24 @@ public class SquaresCsvComparatorUnified {
         System.out.println("Selected overview written: " + outFile.toAbsolutePath());
     }
 
-    /** Returns the field value safely, or an empty string if missing. */
+    /**
+     * Returns a value from a row map or an empty string if the map is null or key missing.
+     *
+     * @param m row map (may be null)
+     * @param k key to extract
+     * @return value or empty string
+     */
     private static String val(Map<String, String> m, String k) { return m == null ? "" : m.getOrDefault(k, ""); }
 
     // ---------------------------- Tolerance Optimization ----------------------------
 
     /**
-     * Reads the comparison results and estimates the optimal tolerance (%)
-     * per field that keeps ≥98% of cases within range.
+     * Analyze the comparison report to estimate a tighter per-field tolerance
+     * that still keeps at least 98% of cases within range.
+     *
+     * @param comparisonCsv input comparison CSV produced by {@link #compareStatus(List, List, Path)}
+     * @param outCsv        output CSV summarizing suggested tolerances
+     * @throws IOException if reading or writing fails
      */
     private static void optimizeTolerances(Path comparisonCsv, Path outCsv) throws IOException {
         if (!Files.exists(comparisonCsv)) {
@@ -660,20 +717,34 @@ public class SquaresCsvComparatorUnified {
         System.out.println("Tolerance optimization summary written: " + outCsv.toAbsolutePath());
     }
 
-    /** Returns percentage of deviations within given tolerance. */
+    /**
+     * Percentage of values whose absolute magnitude is within the given tolerance.
+     *
+     * @param vals list of numeric deviations (percent)
+     * @param tol  tolerance threshold (percent)
+     * @return percent of entries with |value| ≤ tol
+     */
     private static double percentWithin(List<Double> vals, double tol) {
         long ok = vals.stream().filter(v -> Math.abs(v) <= tol).count();
         return 100.0 * ok / vals.size();
     }
 
-    // ---------------------------- Helpers ----------------------------
-
-    /** Builds a unique key "RecordingName - SquareNr" for row matching. */
+    /**
+     * Builds a unique composite key for a row: {@code "Recording Name - Square Nr"}.
+     *
+     * @param r row map
+     * @return composite key
+     */
     private static String key(Map<String, String> r) {
         return r.getOrDefault("Recording Name", "") + " - " + r.getOrDefault("Square Nr", "");
     }
 
-    /** Parses string to Double safely. Returns null for NaN or empty. */
+    /**
+     * Parses a string to {@link Double}, returning {@code null} for empty or NaN.
+     *
+     * @param s string to parse
+     * @return parsed Double or {@code null}
+     */
     private static Double parseDouble(String s) {
         if (s == null || s.isEmpty() || s.equalsIgnoreCase("NaN")) {
             return null;
@@ -686,28 +757,45 @@ public class SquaresCsvComparatorUnified {
         }
     }
 
-    /** Converts safely to primitive double (null → 0.0). */
+    /**
+     * Parses a string to primitive {@code double}; missing/invalid becomes 0.0.
+     *
+     * @param s input string
+     * @return parsed value or 0.0
+     */
     private static double toDouble(String s) {
         Double d = parseDouble(s);
         return d == null ? 0.0 : d;
     }
 
-    /** Formats a value with 4 decimal places. */
+    /**
+     * Formats a number with 4 fractional digits (US locale).
+     *
+     * @param v value
+     * @return formatted string
+     */
     private static String format4(double v) {
         return String.format(Locale.US, "%.4f", v);
     }
 
-    /** Formats a value with 1 decimal place (used for percentages). */
+    /**
+     * Formats a number with 1 fractional digit (US locale).
+     *
+     * @param v value
+     * @return formatted string
+     */
     private static String format1(double v) {
         return String.format(Locale.US, "%.1f", v);
     }
 
     /**
-     * Computes the relative deviation (%) between two numeric values.
-     * Returns NaN if either is missing.
-     * <p>
-     * Example:
-     *   old=10, new=12 → 20% deviation
+     * Computes the relative deviation (percent) between two numeric values given as strings.
+     * Returns NaN if either value is missing/invalid. If old is zero and new is non-zero,
+     * returns {@link Double#POSITIVE_INFINITY}.
+     *
+     * @param oldVal old value (string)
+     * @param newVal new value (string)
+     * @return relative deviation in percent, NaN if not applicable
      */
     private static double relativeDeviation(String oldVal, String newVal) {
         Double oldNum = parseDouble(oldVal);
@@ -719,12 +807,15 @@ public class SquaresCsvComparatorUnified {
     }
 
     /**
-     * Determines whether a square is "selected" based on key thresholds:
-     *   - Density Ratio ≥ 2.0
-     *   - Variability < 10.0
-     *   - R² > 0.1
-     * <p>
-     * Used to mark inclusion/exclusion in the "Selected" overview.
+     * Evaluates whether a row meets the "selected" criteria:
+     * <ul>
+     *     <li>Density Ratio ≥ 2.0</li>
+     *     <li>Variability &lt; 10.0</li>
+     *     <li>R Squared &gt; 0.1</li>
+     * </ul>
+     *
+     * @param r row map
+     * @return {@code true} if selected, otherwise {@code false}
      */
     private static boolean isSelected(Map<String, String> r) {
         Double dr = parseDouble(r.get("Density Ratio"));
@@ -734,8 +825,11 @@ public class SquaresCsvComparatorUnified {
     }
 
     /**
-     * Optional numeric fields that may legitimately contain zeros.
-     * These are treated as "missing" if one side is empty or zero.
+     * Indicates whether a field is treated as an "optional zero" numeric field.
+     * For these fields, a zero or empty value on either side may be considered missing.
+     *
+     * @param f field name
+     * @return {@code true} if field is optional-zero; otherwise {@code false}
      */
     private static boolean isOptionalZeroField(String f) {
         return Arrays.asList(
@@ -752,8 +846,10 @@ public class SquaresCsvComparatorUnified {
     }
 
     /**
-     * Checks if a string is null, blank, or represents numeric zero.
-     * Used to treat zero-values as "empty" for optional fields.
+     * Determines if the given string is null/blank or parses to numeric zero.
+     *
+     * @param s string to test
+     * @return {@code true} if empty or numerically zero; otherwise {@code false}
      */
     private static boolean isZeroOrEmpty(String s) {
         if (s == null || s.trim().isEmpty()) return true;
@@ -764,4 +860,3 @@ public class SquaresCsvComparatorUnified {
         }
     }
 }
-

@@ -8,84 +8,30 @@ import static paint.shared.constants.PaintConstants.SQUARES_CSV;
 
 /**
  * ============================================================================
- *  SquaresCsvComparator.java
- *  Version: 3.3
- *  Author: Hans Bakker
- *  <p>
- *  PURPOSE
- *  ---------------------------------------------------------------------------
- *  Compare two "Squares" CSV files (Python vs Java) by:
- *    1. Normalizing both files to a common schema
- *    2. Sorting by Recording Name + Square Nr
- *    3. Writing normalized CSVs for inspection
- *    4. Generating a detailed, precision-aware difference report
- *  <p>
- *  NORMALIZATION RULES
- *  ---------------------------------------------------------------------------
- *  - Remove trailing "-threshold-<number>" from Recording Name in OLD file
- *  - Convert Row Nr and Col Nr in OLD file to 0-based indexing
- *  - Tau < 0 in OLD file → set to empty
- *  - Zero values converted to empty ("") in fields:
- *        R Squared, Median Long/Short Track Duration, Total Track Duration,
- *        Density, Density Ratio, Total Displacement
- *  - Columns aligned via FIELD_MAP so OLD and NEW use identical schema
- *  - Add computed boolean column "Selected" (see criteria below) to BOTH normalized files
- *  <p>
- *  "SELECTED" FLAG
- *  ---------------------------------------------------------------------------
- *  Selected := (Density Ratio >= 2) AND (Variability < 10) AND (R Squared > 0.1)
- *  - The "Selected" column is added to both normalized outputs ("true"/"false")
- *  - The comparison report also includes a row when Selected differs between OLD/NEW
- *  <p>
- *  PRECISION HANDLING
- *  ---------------------------------------------------------------------------
- *  - Detects decimal precision separately in OLD and NEW
- *  - Uses the lowest shared precision for comparison:
- *        effective_precision = min(old_precision, new_precision)
- *  - Rounds all numeric values to effective precision in both:
- *        • Normalized CSV output
- *        • Equality checks during comparison
- *  <p>
- *  COMPARISON LOGIC
- *  ---------------------------------------------------------------------------
- *  - Two values are considered equal if:
- *        • Both are empty / NaN / 0.0
- *        • (Tau rule) OLD Tau < 0 and NEW Tau is empty or NaN
- *  - Otherwise, both numeric → compared after rounding to effective precision
- *  - If mismatched:
- *        Relative Difference (%) = 100 * |new - old| / |old|
- *        (shown to 2 decimals, blank if old = 0 or non-numeric)
- *  - Additionally, if "Selected" differs, a row with Field="Selected" is added
- *  <p>
- *  REPORT OUTPUT
- *  ---------------------------------------------------------------------------
- *  - File: "/Users/Hans/Desktop/Squares Validation - Comparison.csv"
- *  - Columns:
- *        Recording Name, Square Nr, Field,
- *        Old Value, New Value, Precision Used,
- *        Relative Difference (%), Status
- *  - Status values:
- *        DIFFERENT        → Field mismatch detected (incl. Selected mismatches)
- *        Missing in NEW   → Row exists only in OLD file
- *        Extra in NEW     → Row exists only in NEW file
- *  - Rows sorted by:
- *        1) Recording Name (alphabetical)
- *        2) Square Nr (numeric)
- *  - Summary (tail of file + console):
- *        Matched, Mismatched, Missing, Extra, Selected mismatches
- *  <p>
- *  NORMALIZED OUTPUTS
- *  ---------------------------------------------------------------------------
- *  For reference and manual inspection:
- *        • Squares Validation - All Squares Python Normalized.csv
- *        • Squares Validation - All Squares Java Normalized.csv
- *    (contain the computed "Selected" column)
- *  <p>
- *  CONSOLE SUMMARY
- *  ---------------------------------------------------------------------------
- *  Prints:
- *        - Detected effective precision per field
- *        - Summary counts of Matched, Mismatched, Missing, Extra, Selected mismatches
+ *  SquaresSidebySideComparator.java
+ *  Part of the Paint Regression module.
+ *
+ *  <p><b>Purpose:</b><br>
+ *  Compares legacy (Python) and new (Java) Squares CSVs side by side,
+ *  aligning matching rows and applying tolerance-based field comparison.
+ *  Handles numeric rounding, missing-value normalization, and per-field
+ *  difference reporting.
+ *  </p>
+ *
+ *  <p><b>Key Rules:</b></p>
+ *  <ul>
+ *    <li>Removes trailing "-threshold-N" from Recording Name in the old file.</li>
+ *    <li>Sets Tau &lt; 0 in old file to empty.</li>
+ *    <li>A square is selected if all of the following are true:</li>
+ *    <li>&nbsp;&nbsp;&bull;&nbsp;Density Ratio &gt;= 2</li>
+ *    <li>&nbsp;&nbsp;&bull;&nbsp;Variability &lt; 10</li>
+ *    <li>&nbsp;&nbsp;&bull;&nbsp;R&nbsp;Squared &gt; 0.1</li>
+ *  </ul>
+ *
+ *  <p>Generates several diagnostic CSVs in the validation output directory.</p>
+ *
+ *  <p><b>Author:</b> Hans&nbsp;Bakker<br>
+ *  <b>Module:</b> paint-regression</p>
  * ============================================================================
  */
 public class SquaresSidebySideComparator {

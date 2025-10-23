@@ -17,7 +17,13 @@ import java.util.Locale;
 public abstract class BaseTableIO {
 
     /**
-     * Create a new empty Table with the given schema.
+     * Creates a new empty {@link Table} with the given schema.
+     *
+     * @param tableName name of the table to create
+     * @param colNames  array of column names
+     * @param colTypes  array of corresponding {@link ColumnType}s
+     * @return a new empty {@link Table} with the specified schema
+     * @throws IllegalArgumentException if the lengths of {@code colNames} and {@code colTypes} differ
      */
     protected Table newEmptyTable(String tableName, String[] colNames, ColumnType[] colTypes) {
         if (colNames.length != colTypes.length) {
@@ -33,13 +39,17 @@ public abstract class BaseTableIO {
     }
 
     /**
-     * Append all rows from source into target, in-place.
-     * Both tables must have the same schema.
+     * Appends all rows from {@code source} into {@code target} in place.
+     * Both tables must have identical schemas.
+     *
+     * @param target the {@link Table} to append rows into
+     * @param source the {@link Table} providing rows to append
+     * @throws IllegalArgumentException if the tables have different schemas
      */
     public void appendInPlace(Table target, Table source) {
         if (target.columnCount() != source.columnCount()) {
-            throw new IllegalArgumentException("Cannot append: column count mismatch (" +
-                                                       target.columnCount() + " vs " + source.columnCount() + ")");
+            throw new IllegalArgumentException("Cannot append: column count mismatch ("
+                                                       + target.columnCount() + " vs " + source.columnCount() + ")");
         }
         // Enforce same column names in order
         for (int i = 0; i < target.columnCount(); i++) {
@@ -52,7 +62,11 @@ public abstract class BaseTableIO {
     }
 
     /**
-     * Build CsvReadOptions enforcing the provided column types.
+     * Builds a {@link CsvReadOptions} instance enforcing the provided column types.
+     *
+     * @param csvPath  path to the CSV file
+     * @param colTypes expected {@link ColumnType}s for the file
+     * @return configured {@link CsvReadOptions}
      */
     protected CsvReadOptions buildCsvReadOptions(Path csvPath, ColumnType[] colTypes) {
         return CsvReadOptions.builder(csvPath.toFile())
@@ -62,7 +76,15 @@ public abstract class BaseTableIO {
     }
 
     /**
-     * Read a CSV file into a Table with a known schema and validate its header.
+     * Reads a CSV file into a {@link Table} with a known schema and validates its header and types.
+     *
+     * @param csvPath       path to the CSV file
+     * @param logicalName   logical name used for error reporting
+     * @param expectedCols  expected column names in order
+     * @param expectedTypes expected {@link ColumnType}s in order
+     * @param allowSuperset whether extra columns are allowed
+     * @return a validated {@link Table}
+     * @throws IOException if the file cannot be read or validation fails
      */
     public Table readCsvWithSchema(Path csvPath,
                                    String logicalName,
@@ -92,6 +114,14 @@ public abstract class BaseTableIO {
         return table;
     }
 
+    /**
+     * Validates that the table header matches the expected columns.
+     *
+     * @param t             the {@link Table} to validate
+     * @param expectedCols  expected column names
+     * @param allowSuperset whether extra columns are allowed
+     * @return a list of validation error messages (empty if valid)
+     */
     protected List<String> validateHeader(Table t, String[] expectedCols, boolean allowSuperset) {
         List<String> errors = new ArrayList<>();
         List<String> actualCols = new ArrayList<>();
@@ -126,6 +156,14 @@ public abstract class BaseTableIO {
         return errors;
     }
 
+    /**
+     * Validates that the column types in the table match the expected schema.
+     *
+     * @param t      the {@link Table} to validate
+     * @param names  expected column names
+     * @param types  expected {@link ColumnType}s
+     * @return a list of validation error messages (empty if valid)
+     */
     protected List<String> validateTypes(Table t, String[] names, ColumnType[] types) {
         List<String> errors = new ArrayList<>();
         for (int i = 0; i < names.length; i++) {
@@ -148,7 +186,11 @@ public abstract class BaseTableIO {
     }
 
     /**
-     * Write a Table as CSV (with header).
+     * Writes a {@link Table} to a CSV file (with header).
+     *
+     * @param table  the {@link Table} to write
+     * @param target target file path
+     * @throws IOException if writing fails
      */
     public void writeCsv(Table table, Path target) throws IOException {
         Files.createDirectories(target.getParent());
@@ -158,5 +200,4 @@ public abstract class BaseTableIO {
                 .build();
         table.write().usingOptions(opts);
     }
-
 }

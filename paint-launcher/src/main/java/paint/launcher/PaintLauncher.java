@@ -88,7 +88,7 @@ public class PaintLauncher {
         flowPanel.add(Box.createVerticalGlue());
         root.add(flowPanel, BorderLayout.CENTER);
 
-        JLabel footer = new JLabel("Herr Doctor • © 2025", SwingConstants.CENTER);
+        JLabel footer = new JLabel("Hans Bakker • © 2025", SwingConstants.CENTER);
         footer.setForeground(new Color(160, 160, 160));
         footer.setFont(new Font("SansSerif", Font.PLAIN, 12));
         footer.setBorder(new EmptyBorder(20, 0, 0, 0));

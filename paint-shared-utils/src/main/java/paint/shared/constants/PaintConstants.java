@@ -4,19 +4,18 @@ import tech.tablesaw.api.ColumnType;
 
 /**
  * Centralized constants for the Paint project.
- * <p>
- * This class defines file names, directory names, schema column definitions,
+ *
+ * <p>This class defines file names, directory names, schema column definitions,
  * and associated {@link ColumnType} arrays used for parsing and validating
- * CSV files in the Paint application.
- * </p>
- * <p>
- * The constants are grouped by domain:
+ * CSV files in the Paint application.</p>
+ *
+ * <p>The constants are grouped by domain:</p>
  * <ul>
- *     <li>Filenames and directory names</li>
- *     <li>General configuration values</li>
- *     <li>Schema definitions for Tracks, Squares, Recordings, and Experiments</li>
+ *   <li>Filenames and directory names</li>
+ *   <li>General configuration values</li>
+ *   <li>Schema definitions for Tracks, Squares, Recordings, and Experiments</li>
  * </ul>
- * </p>
+ *
  * <p><b>Note:</b> This class depends on Tablesaw's {@link ColumnType} for schema typing.</p>
  */
 public final class PaintConstants {

@@ -55,11 +55,11 @@ public class SweepConfig {
     }
 
     /**
-     * Returns the active sweep values as a map of attribute -> list of Numbers.
-     * JSON integers will become Integer, decimals will become Double.
+     * Returns the active sweep values as a map of attribute &rarr; list of {@link Number}s.
+     * JSON integers will become {@link Integer}, decimals will become {@link Double}.
      *
      * @param category name of the sweep category section (e.g. "TrackMate Sweep")
-     * @return map of parameter name -> list of numeric values
+     * @return map of parameter name &rarr; list of numeric values
      */
     public Map<String, List<Number>> getActiveSweepValues(String category) {
         Map<String, List<Number>> activeValues = new LinkedHashMap<>();

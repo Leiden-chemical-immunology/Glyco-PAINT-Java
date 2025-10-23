@@ -24,28 +24,17 @@ import static paint.shared.utils.SquareUtils.filterTracksInSquare;
 /**
  * ============================================================================
  *  GenerateSquareCalcs.java
- *  Part of the "Generate Squares" module.
+ *  Orchestrates all calculations for the "Generate Squares" workflow.
  *
- *  <p><b>Purpose:</b><br>
- *  Performs the computational workflow for square-based analysis of
- *  TrackMate experiment data. Handles:
- *  <ul>
- *      <li>Grid generation per recording</li>
- *      <li>Track-to-square assignment</li>
- *      <li>Tau, Variability, and Density calculations</li>
- *      <li>Aggregation and export of results</li>
- *  </ul>
- *  </p>
+ *  <p><b>Purpose:</b> Coordinates square-level and recording-level metrics
+ *  computation, invoking {@link CalculateAttributes} and related modules.</p>
  *
- *  <p><b>Notes:</b><br>
- *  All methods are static; this class acts as a calculation utility.
- *  No GUI elements or user input handling are included here.
- *  </p>
+ *  <p><b>Usage:</b> Called internally by {@code GenerateSquares} or executed
+ *  as part of automated batch processing.</p>
  *
- *  <p><b>Author:</b> Herr Doctor<br>
+ *  <p><b>Author:</b> Hans Bakker<br>
  *  <b>Version:</b> 1.0<br>
- *  <b>Module:</b> paint-generate-squares
- *  </p>
+ *  <b>Module:</b> paint-generate-squares</p>
  * ============================================================================
  */
 

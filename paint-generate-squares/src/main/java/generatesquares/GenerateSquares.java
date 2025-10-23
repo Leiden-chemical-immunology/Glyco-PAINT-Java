@@ -15,7 +15,7 @@
  *    This class contains only orchestration logic and user interface flow.
  *    All computational work is delegated to GenerateSquaresRunner.
  * <p>
- *  Author: Herr Doctor
+ *  Author: Hans Bakker
  *  Version: 1.0
  *  Module: paint-generate-squares
  * ============================================================================
@@ -41,7 +41,9 @@ import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
 public class GenerateSquares {
 
     /**
-     * Main entry point for the Generate Squares module.
+     * Application entry point for the Generate Squares GUI.
+     *
+     * @param args command-line arguments (not used)
      */
     public static void main(String[] args) {
 

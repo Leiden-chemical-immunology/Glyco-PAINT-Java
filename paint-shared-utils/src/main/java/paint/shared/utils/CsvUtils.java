@@ -13,17 +13,19 @@ import static paint.shared.constants.PaintConstants.RECORDINGS_CSV;
  * <p>
  * Features:
  * <ul>
- *   <li>Concatenate multiple CSV files into one output file</li>
- *   <li>Concatenate all CSVs in a directory by regex</li>
- *   <li>Concatenate same-named CSVs from experiment subfolders</li>
- *   <li>Add or update a "Case" column in experiment CSVs</li>
- *   <li>Count how many rows are marked as processed</li>
+ *   <li>Concatenates multiple CSV files into one output file</li>
+ *   <li>Concatenates all CSVs in a directory by regex</li>
+ *   <li>Concatenates same-named CSVs from experiment subfolders</li>
+ *   <li>Adds or updates a "Case" column in experiment CSVs</li>
+ *   <li>Counts how many rows are marked as processed</li>
  * </ul>
  * <p>
  * Uses <b>Apache Commons CSV</b> for robust parsing and writing.
+ * </p>
  */
 public class CsvUtils {
 
+    /** Prevents instantiation of this utility class. */
     private CsvUtils() {
         // prevent instantiation
     }
@@ -34,10 +36,10 @@ public class CsvUtils {
 
     /**
      * Counts rows in a CSV file whose "Process Flag" column contains a truthy value
-     * (true, yes, y, or 1).
+     * ({@code true}, {@code yes}, {@code y}, or {@code 1}).
      *
      * @param filePath path to the CSV file
-     * @return number of processed rows, or 0 if file missing or invalid
+     * @return number of processed rows, or 0 if the file is missing or invalid
      */
     public static int countProcessed(Path filePath) {
         int count = 0;
@@ -82,15 +84,16 @@ public class CsvUtils {
     // =====================================================================
 
     /**
-     * Concatenates multiple CSV files into one output file.
+     * Concatenates multiple CSV files into a single output file.
      * <p>
-     * Writes the header only once (from the first file). Optionally deletes
-     * input files after successful concatenation.
+     * The header is written only once (from the first valid file). Optionally,
+     * input files can be deleted after successful concatenation.
+     * </p>
      *
-     * @param inputFiles   input CSV files
+     * @param inputFiles   list of input CSV files
      * @param outputFile   destination CSV file
      * @param deleteInputs whether to delete input files after success
-     * @throws IOException if reading or writing fails
+     * @throws IOException if reading or writing any file fails
      */
     public static void concatenateCsvFiles(List<Path> inputFiles, Path outputFile, boolean deleteInputs) throws IOException {
         boolean headerWritten = false;
@@ -141,13 +144,13 @@ public class CsvUtils {
     }
 
     /**
-     * Concatenates a same-named CSV file (e.g. "Tracks.csv") from multiple
+     * Concatenates a same-named CSV file (e.g., {@code "Tracks.csv"}) from multiple
      * experiment subfolders into a single file at the project root.
      *
-     * @param projectPath     root directory
-     * @param fileName        CSV file name
+     * @param projectPath     root project directory
+     * @param fileName        name of the CSV file to merge
      * @param experimentNames list of experiment subfolder names
-     * @throws IOException on I/O error
+     * @throws IOException if any I/O error occurs during reading or writing
      */
     public static void concatenateNamedCsvFiles(Path projectPath, String fileName,
                                                 List<String> experimentNames) throws IOException {
@@ -165,14 +168,14 @@ public class CsvUtils {
     // =====================================================================
 
     /**
-     * Adds or updates a "Case" column with a given fixed value in CSV files
+     * Adds or updates a {@code "Case"} column with a given fixed value in CSV files
      * found in experiment subdirectories.
      *
      * @param root            root directory containing experiment folders
-     * @param fileName        name of the CSV file to modify (e.g. RECORDINGS_CSV)
+     * @param fileName        name of the CSV file to modify (e.g., {@link paint.shared.constants.PaintConstants#RECORDINGS_CSV})
      * @param experimentNames list of experiment directory names
-     * @param caseName        value to insert into the "Case" column
-     * @throws IOException if reading or writing fails
+     * @param caseName        value to insert or overwrite in the {@code "Case"} column
+     * @throws IOException if reading or writing a file fails
      */
     public static void addCase(Path root,
                                String fileName,
@@ -188,7 +191,6 @@ public class CsvUtils {
 
             Path tempPath = csvPath.resolveSibling(fileName + ".tmp");
 
-            // Modern builder-style read format
             CSVFormat readFormat = CSVFormat.DEFAULT.builder()
                     .setHeader()
                     .setSkipHeaderRecord(true)
@@ -234,11 +236,17 @@ public class CsvUtils {
             }
         }
     }
+
     // =====================================================================
     // == DEMO ==============================================================
     // =====================================================================
 
-    /** Example usage. */
+    /**
+     * Demonstration of adding a "Case" column and concatenating experiment CSVs.
+     *
+     * @param args command-line arguments (unused)
+     * @throws IOException if file I/O operations fail
+     */
     public static void main(String[] args) throws IOException {
         Path root = Paths.get("/Users/hans/Paint Test Project/Sweep");
         List<String> exps = Arrays.asList("221012", "AnyName");

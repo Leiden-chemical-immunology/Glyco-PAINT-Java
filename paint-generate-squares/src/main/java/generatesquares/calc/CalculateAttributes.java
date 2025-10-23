@@ -24,24 +24,21 @@ import static paint.shared.utils.SquareUtils.*;
  *
  *  <p><b>Purpose:</b><br>
  *  Centralized computation of both square-level and recording-level
- *  metrics for the "Generate Squares" workflow.
- *  Handles:
+ *  metrics for the "Generate Squares" workflow.</p>
+ *
  *  <ul>
  *      <li>Per-square metrics (Tau, Variability, Density, Density Ratio)</li>
  *      <li>Recording-level aggregates (Tau, Background, Density)</li>
  *  </ul>
- *  </p>
  *
  *  <p><b>Notes:</b><br>
  *  This class unifies functionality previously split between
  *  {@code CalculateRecordingAttributes} and {@code CalculateSquareAttributes}.
- *  All methods are static utilities used by {@link GenerateSquareCalcs}.
- *  </p>
+ *  All methods are static utilities used by {@link GenerateSquareCalcs}.</p>
  *
- *  <p><b>Author:</b> Herr Doctor<br>
+ *  <p><b>Author:</b> Hans Bakker<br>
  *  <b>Version:</b> 1.0<br>
- *  <b>Module:</b> paint-generate-squares
- *  </p>
+ *  <b>Module:</b> paint-generate-squares</p>
  * ============================================================================
  */
 public class CalculateAttributes {
@@ -49,6 +46,7 @@ public class CalculateAttributes {
     /**
      * Calculates detailed metrics for each square (Tau, variability, density ratio, etc.).
      *
+     * @param experimentPath        path to the experiment directory
      * @param experimentName        the experiment name
      * @param recording             the recording containing the squares
      * @param generateSquaresConfig the {@link GenerateSquaresConfig} parameters
@@ -58,14 +56,16 @@ public class CalculateAttributes {
                                                  Recording recording,
                                                  GenerateSquaresConfig generateSquaresConfig) {
 
-        double minRequiredRSquared = generateSquaresConfig.getMinRequiredRSquared();
-        int minTracksForTau = generateSquaresConfig.getMinTracksToCalculateTau();
-        double maxAllowableVariability = generateSquaresConfig.getMaxAllowableVariability();
-        double minRequiredDensityRatio = generateSquaresConfig.getMinRequiredDensityRatio();
-        String neighbourMode = generateSquaresConfig.getNeighbourMode();
-        int numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
-        double area = calcSquareArea(numberOfSquaresInRecording);
-        double concentration = recording.getConcentration();
+        // @formatter:off
+        double minRequiredRSquared        = generateSquaresConfig.getMinRequiredRSquared();
+        int    minTracksForTau            = generateSquaresConfig.getMinTracksToCalculateTau();
+        double maxAllowableVariability    = generateSquaresConfig.getMaxAllowableVariability();
+        double minRequiredDensityRatio    = generateSquaresConfig.getMinRequiredDensityRatio();
+        String neighbourMode              = generateSquaresConfig.getNeighbourMode();
+        int    numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
+        double area                       = calcSquareArea(numberOfSquaresInRecording);
+        double concentration              = recording.getConcentration();
+        // @formatter:on
 
         SquareUtils.BackgroundEstimationResult result = estimateBackgroundDensity(recording.getSquaresOfRecording());
         double meanBackgroundTracks = result.getBackgroundMean();

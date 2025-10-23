@@ -24,7 +24,7 @@ import static java.lang.Double.NaN;
  *
  *  <p>Fits the model: y = m * exp(-t * x) + b</p>
  *
- *  <p><b>Author:</b> Herr Doctor<br>
+ *  <p><b>Author:</b> Hans Bakker<br>
  *  <b>Version:</b> 1.0</p>
  * ============================================================================
  */

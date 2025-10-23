@@ -16,6 +16,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Abstract base class for validating CSV files used in Paint.
+ * <p>
+ * Provides header and type validation logic for CSV-based experiment data.
+ * Subclasses define the expected header layout and column data types.
+ * </p>
+ */
 public abstract class AbstractFileValidator {
 
     private final Set<String> reportedTypeErrors = new HashSet<>();
@@ -29,11 +36,11 @@ public abstract class AbstractFileValidator {
             .toFormatter();
 
     /**
-     * Validate headers and optionally values.
+     * Validates both headers and values of the given CSV file.
      *
-     * @param file        CSV file
-     * @param checkValues if true, check row values against expected types
-     * @return ValidationResult
+     * @param file        CSV file to validate
+     * @param checkValues whether to validate row values against expected types
+     * @return a {@link ValidationResult} describing all detected errors and warnings
      */
     public ValidationResult validate(File file, boolean checkValues) {
         ValidationResult result = new ValidationResult();
@@ -89,23 +96,48 @@ public abstract class AbstractFileValidator {
     }
 
     /**
-     * Shortcut: header-only validation
+     * Validates only the headers of a CSV file, without checking row data.
+     *
+     * @param file CSV file to validate
+     * @return a {@link ValidationResult} containing header validation results
      */
     public ValidationResult validateHeadersOnly(File file) {
         return validate(file, false);
     }
 
     /**
-     * Full validation (headers + values)
+     * Validates both headers and data values of the given CSV file.
+     *
+     * @param file CSV file to validate
+     * @return a {@link ValidationResult} describing validation results
      */
     public ValidationResult validate(File file) {
         return validate(file, true);
     }
 
+    /**
+     * Checks whether the actual CSV header matches the expected header.
+     *
+     * @param actualHeader list of header names from the CSV file
+     * @param result       validation result accumulator for recording mismatches
+     */
     protected abstract void validateHeader(List<String> actualHeader, ValidationResult result);
 
+    /**
+     * Returns the expected column types for the CSV file.
+     *
+     * @return an array of {@link ColumnType} values defining expected types
+     */
     protected abstract ColumnType[] getExpectedTypes();
 
+    /**
+     * Compares expected and actual headers, adding descriptive errors if mismatched.
+     *
+     * @param expected list of expected header names
+     * @param actual   list of actual header names
+     * @param result   validation result for error accumulation
+     * @return {@code true} if headers match exactly; otherwise {@code false}
+     */
     protected boolean headersMatch(List<String> expected, List<String> actual, ValidationResult result) {
         if (expected.equals(actual)) {
             return true;
@@ -137,6 +169,16 @@ public abstract class AbstractFileValidator {
         return false;
     }
 
+    /**
+     * Checks if all values in a given row conform to the expected column types.
+     *
+     * @param row       the row values as strings
+     * @param types     the expected column types
+     * @param headers   header names for reference
+     * @param rowIndex  current row index (1-based for readability)
+     * @param result    validation result for accumulating errors
+     * @return {@code true} if all values match their expected types; otherwise {@code false}
+     */
     protected boolean rowMatchesTypes(String[] row, ColumnType[] types, List<String> headers, int rowIndex, ValidationResult result) {
         for (int i = 0; i < types.length; i++) {
             String value = row[i];
@@ -153,6 +195,13 @@ public abstract class AbstractFileValidator {
         return true;
     }
 
+    /**
+     * Determines whether a value can be parsed according to the specified column type.
+     *
+     * @param value the raw string value from the CSV
+     * @param type  the expected {@link ColumnType}
+     * @return {@code true} if parsing succeeds or the value is empty; otherwise {@code false}
+     */
     private boolean canParse(String value, ColumnType type) {
         if (value == null || value.trim().isEmpty()) {
             return true;

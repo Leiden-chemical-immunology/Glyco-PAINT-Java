@@ -7,25 +7,19 @@ import java.util.*;
 /**
  * ============================================================================
  *  SquaresCsvComparator.java
- *  Version: 4.0 — Precision & Tolerance-Aligned Edition
+ *  Part of the Paint Regression module.
+ *
+ *  Purpose:
+ *    Compares two versions of the "Squares" CSV output (old Python vs new Java)
+ *    and produces several comparison reports:
+ *
+ *       +-- Squares Validation - Comparison.csv
+ *       +-- Squares Validation - Old Normalized.csv
+ *       +-- Squares Validation - New Normalized.csv
+ *       \-- Squares Validation - Selected Overview.csv
+ *
  *  Author: Hans Bakker
- *  <p>
- *  PURPOSE
- *  ---------------------------------------------------------------------------
- *  Compare two “Squares” CSVs (Python vs Java) with:
- *   • Automatic normalization
- *   • Effective precision alignment
- *   • Percentage-based tolerance per numeric field
- *   • “Selected” logic consistency
- *   • Detailed CSV reporting
- *  <p>
- *  OUTPUT FILES
- *  ---------------------------------------------------------------------------
- *  ~/Downloads/Validate/Squares/
- *    ├── Squares Validation - Comparison.csv
- *    ├── Squares Validation - Old Normalized.csv
- *    ├── Squares Validation - New Normalized.csv
- *    └── Squares Validation - Selected Overview.csv
+ *  Module: paint-regression
  * ============================================================================
  */
 public class SquaresCsvComparator {

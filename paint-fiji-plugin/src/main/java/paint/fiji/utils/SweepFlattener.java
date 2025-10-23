@@ -18,22 +18,27 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Flattens sweep result directories by concatenating experiment-level CSV files
- * (SQUARES_CSV, TRACKS_CSV, RECORDINGS_CSV, "Experiment Info Java.csv")
- * from all subdirectories into the corresponding files in the parameter-level directory.
+ * Utility for flattening sweep result directories by concatenating experiment-level CSV files.
+ * <p>
+ * It merges per-experiment CSV files (<code>SQUARES_CSV</code>, <code>TRACKS_CSV</code>,
+ * <code>RECORDINGS_CSV</code>, and <code>EXPERIMENT_INFO_CSV</code>) from all subdirectories
+ * into the corresponding CSV files in the parameter-level directory.
+ * </p>
  */
 public class SweepFlattener {
 
     /**
      * Scans all sweep parameter directories (those starting with '[')
      * and flattens their subdirectories by concatenating CSV files.
-     * <p></p>
-     * After flattening, it calls GenerateSquaresRunner.run(sweepPath, paramDirsFound)
+     * <p>
+     * After flattening, it calls {@link GenerateSquaresHeadless#run(Path, List)}
      * to process all parameter directories.
+     * </p>
      *
-     * @param sweepPath     Path to the root Sweep directory
-     * @param deleteSubdirs Whether to delete the subdirectories after flattening
-     * @throws IOException if reading or writing fails
+     * @param sweepPath      the root sweep directory containing parameter subdirectories
+     * @param experimentNames list of experiment subdirectory names to include
+     * @param deleteSubdirs   whether to delete the experiment subdirectories after flattening
+     * @throws IOException if reading or writing CSV files fails
      */
     public static void flattenSweep(Path sweepPath, List<String> experimentNames, boolean deleteSubdirs) throws IOException {
         if (!Files.isDirectory(sweepPath)) {
@@ -52,7 +57,6 @@ public class SweepFlattener {
 
                 System.out.println("Flattening: " + paramPath.getFileName());
                 paramDirsFound.add(paramPath.getFileName().toString());
-
 
                 if (experimentNames.isEmpty()) {
                     System.out.println("  (no subdirectories found)");
@@ -74,7 +78,7 @@ public class SweepFlattener {
                     addCase(paramPath, RECORDINGS_CSV, experimentNames, caseName);
                     addCase(paramPath, EXPERIMENT_INFO_CSV, experimentNames, caseName);
                 } catch (IOException e) {
-                    System.err.println("  Error concatenating files in " + paramPath + ": " + e.getMessage());
+                    System.err.println("  Error adding case field in " + paramPath + ": " + e.getMessage());
                 }
 
                 // Concatenate the four CSVs
@@ -96,6 +100,7 @@ public class SweepFlattener {
             }
         }
 
+        // Concatenate results across all parameter directories
         concatenateNamedCsvFiles(sweepPath, SQUARES_CSV, paramDirsFound);
         concatenateNamedCsvFiles(sweepPath, TRACKS_CSV, paramDirsFound);
         concatenateNamedCsvFiles(sweepPath, RECORDINGS_CSV, paramDirsFound);
@@ -103,11 +108,16 @@ public class SweepFlattener {
 
         PaintLogger.infof();
         PaintLogger.infof("Completed Sweep");
-
     }
 
+    /**
+     * Entry point for manual invocation of the sweep flattener.
+     *
+     * @param args command-line arguments (unused)
+     * @throws IOException if I/O operations fail during flattening
+     */
     public static void main(String[] args) throws IOException {
         Path sweepPath = Paths.get("/Users/hans/Paint Test Project/Sweep");
-        flattenSweep(sweepPath, Arrays.asList("221012", "AnyName"),false);
+        flattenSweep(sweepPath, Arrays.asList("221012", "AnyName"), false);
     }
 }
