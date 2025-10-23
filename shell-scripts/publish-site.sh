@@ -3,6 +3,7 @@ set -e
 
 SITE_DIR="../target/site"
 BRANCH="gh-pages"
+TMP_DIR="../target/ghpages-tmp"
 MAIN_BRANCH="main"
 
 if [ ! -d "../.git" ]; then
@@ -17,40 +18,27 @@ if [ ! -d "target/site" ]; then
   mvn clean site
 fi
 
-TMP_DIR=$(mktemp -d)
-echo "📦 Copying site to temporary folder..."
-cp -R target/site/* "$TMP_DIR"
+# === CREATE WORKTREE FOR GH-PAGES BRANCH ===
+echo "🌿 Preparing temporary worktree for '$BRANCH'..."
+rm -rf "$TMP_DIR"
+git worktree add "$TMP_DIR" "$BRANCH" || git worktree add -b "$BRANCH" "$TMP_DIR"
 
-CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-if [ "$CURRENT_BRANCH" != "$BRANCH" ]; then
-  echo "⚠️  You are on branch '$CURRENT_BRANCH'."
-  read -p "Switch to '$BRANCH' and continue? (y/n) " CONFIRM
-  if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
-    echo "❌ Aborted."
-    exit 1
-  fi
-  git switch "$BRANCH"
-fi
+# === COPY NEW SITE ===
+echo "📂 Copying new site..."
+rm -rf "$TMP_DIR"/*
+cp -R "$SITE_DIR"/* "$TMP_DIR"/
 
-echo "🧹 Cleaning old site files..."
-git rm -rf . >/dev/null 2>&1 || true
-git clean -fdx >/dev/null 2>&1 || true
-
-echo "📂 Copying new site from temporary folder..."
-cp -R "$TMP_DIR"/* .
-
+# === COMMIT AND PUSH ===
+cd "$TMP_DIR"
 git add .
 git commit -m "Update Maven site" || echo "✅ Nothing new to commit."
 git push origin "$BRANCH"
 
-echo "🚀 Site published to GitHub Pages!"
-echo "🌍 https://jjabakker.github.io/JavaPaintProjects"
-
-echo "🔄 Returning to '$MAIN_BRANCH'..."
-git switch "$MAIN_BRANCH"
-
-echo "🧹 Cleaning temporary data..."
+# === CLEANUP ===
+cd ..
+git worktree remove "$TMP_DIR" --force
 rm -rf "$TMP_DIR"
-mvn clean -q || echo "(clean skipped)"
 
-echo "✅ Done! Back on '$MAIN_BRANCH'."
+echo "🚀 Site published successfully to GitHub Pages!"
+echo "🌍 https://jjabakker.github.io/JavaPaintProjects"
+echo "✅ Your working directory was never modified."

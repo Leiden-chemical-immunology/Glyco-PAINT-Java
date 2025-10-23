@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
 set -e
 
-# --- Default configuration ---
+# === CONFIGURATION ===
+MAIN_BRANCH="main"
 DRY_RUN=true
 SHOW_DIFF=true
+
+# --- Optional integrations ---
+PUBLISH_SITE=false          # ❌ handled automatically by GitHub Actions
+CREATE_GITHUB_RELEASE=false # ❌ handled automatically by GitHub Actions
+
+# --- Setup environment ---
+cd "$(dirname "$0")/.."  # move to project root
 
 # --- Parse arguments ---
 if [[ "$1" == "--execute" || "$1" == "-x" ]]; then
@@ -17,7 +25,7 @@ fi
 
 VERSION_ARG="$1"
 
-# --- Helper to conditionally execute commands ---
+# --- Helpers ---
 run() {
   echo "👉 $*"
   if [ "$DRY_RUN" = false ]; then
@@ -54,11 +62,21 @@ echo "🔄 Next dev version:     $NEXT_VERSION"
 read -p "Proceed with release? (y/n): " CONFIRM
 [ "$CONFIRM" == "y" ] || exit 0
 
-# --- Check for clean working tree ---
+# --- Check branch and workspace ---
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$CURRENT_BRANCH" != "$MAIN_BRANCH" ]; then
+  echo "⚠️  You are on branch '$CURRENT_BRANCH'. Switching to '$MAIN_BRANCH'..."
+  run git switch "$MAIN_BRANCH"
+fi
+
 if [ "$DRY_RUN" = false ] && [ -n "$(git status --porcelain)" ]; then
   echo "❌ Working directory not clean. Commit or stash your changes first."
   exit 1
 fi
+
+# --- Verify build before tagging ---
+echo "🧪 Verifying Maven build before tagging..."
+run mvn clean verify -DskipTests
 
 # --- Set release version ---
 run mvn versions:set -DnewVersion=$RELEASE_VERSION -DprocessAllModules=true
@@ -108,19 +126,8 @@ run git commit -m "Release v$RELEASE_VERSION"
 run git tag -a "v$RELEASE_VERSION" -m "Release v$RELEASE_VERSION"
 
 # --- Push and bump ---
-run git push origin main
+run git push origin "$MAIN_BRANCH"
 run git push origin "v$RELEASE_VERSION"
-run mvn versions:set -DnewVersion=$NEXT_VERSION -DprocessAllModules=true
-run mvn versions:commit
-run git add -u
-run git commit -m "Start $NEXT_VERSION development"
-run git push origin main
 
-echo ""
-if [ "$DRY_RUN" = true ]; then
-  echo "✅ Dry-run complete — no changes were made."
-  echo "Use './release.sh --execute' to perform the actual release."
-else
-  echo "🎉 Release v$RELEASE_VERSION complete!"
-  echo "🚀 GitHub Actions will now build and publish the release automatically."
-fi
+run mvn versions:set -DnewVersion=$NEXT_VERSION -DprocessAllModules=true
+run mvn
