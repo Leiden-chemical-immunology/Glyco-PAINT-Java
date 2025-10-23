@@ -169,7 +169,7 @@
                 </executions>
             </plugin>
 
-            <!-- Cleanup and copy JAR into Fiji -->
+            <!-- Cleanup and copy JAR into Fiji (skip in CI) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -178,20 +178,36 @@
                     <execution>
                         <id>deploy-to-fiji</id>
                         <phase>install</phase>
-                        <goals><goal>run</goal></goals>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
                         <configuration>
+                            <!-- ✅ Skip deployment when -Dskip.fiji.copy=true -->
+                            <skip>${skip.fiji.copy}</skip>
                             <target>
-                                <delete quiet="true">
-                                    <fileset dir="${fiji.dir}">
-                                        <include name="**/paint*.jar"/>
-                                    </fileset>
-                                </delete>
-                                <copy todir="${fiji.dir}/plugins/" overwrite="true">
-                                    <fileset dir="${project.build.directory}">
-                                        <include name="${project.artifactId}-${project.version}-jar-with-dependencies.jar"/>
-                                    </fileset>
-                                </copy>
-                                <echo message="✅ Deployed ${project.artifactId} fat JAR to ${fiji.dir}/plugins/"/>
+                                <condition property="skip.fiji.copy" value="true" else="false">
+                                    <isset property="env.CI" />
+                                </condition>
+
+                                <if>
+                                    <equals arg1="${skip.fiji.copy}" arg2="false"/>
+                                    <then>
+                                        <delete quiet="true">
+                                            <fileset dir="${fiji.dir}">
+                                                <include name="**/paint*.jar"/>
+                                            </fileset>
+                                        </delete>
+                                        <copy todir="${fiji.dir}/plugins/" overwrite="true">
+                                            <fileset dir="${project.build.directory}">
+                                                <include name="${project.artifactId}-${project.version}-jar-with-dependencies.jar"/>
+                                            </fileset>
+                                        </copy>
+                                        <echo message="✅ Deployed ${project.artifactId} fat JAR to ${fiji.dir}/plugins/"/>
+                                    </then>
+                                    <else>
+                                        <echo message="⏭️ Skipping Fiji copy (CI environment or skip.fiji.copy=true)"/>
+                                    </else>
+                                </if>
                             </target>
                         </configuration>
                     </execution>
