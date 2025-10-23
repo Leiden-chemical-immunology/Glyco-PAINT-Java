@@ -21,6 +21,9 @@
     <properties>
         <!-- reproducible builds -->
         <project.build.outputTimestamp>2025-10-23T08:47:23Z</project.build.outputTimestamp>
+
+        <!-- default: local build copies to Fiji -->
+        <skip.copy.to.fiji>false</skip.copy.to.fiji>
     </properties>
 
     <dependencies>
@@ -68,19 +71,11 @@
             <artifactId>dd-plist</artifactId>
             <version>1.23</version>
         </dependency>
-
     </dependencies>
-
-    <repositories>
-        <repository>
-            <id>central</id>
-            <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-    </repositories>
 
     <build>
         <plugins>
-            <!-- Copy the JAR into Fiji’s plugins folder (optional convenience) -->
+            <!-- Copy JAR into Fiji’s plugins folder (local only) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -91,10 +86,12 @@
                         <phase>package</phase>
                         <goals><goal>run</goal></goals>
                         <configuration>
+                            <skip>${skip.copy.to.fiji}</skip>
                             <target>
                                 <copy file="${project.build.directory}/${project.build.finalName}.jar"
                                       todir="/Applications/Fiji.app/plugins"
                                       overwrite="true"/>
+                                <echo message="✅ Copied ${project.build.finalName}.jar to Fiji plugins folder"/>
                             </target>
                         </configuration>
                     </execution>
@@ -102,4 +99,21 @@
             </plugin>
         </plugins>
     </build>
+
+    <!-- 👇 CI profile: automatically skips copy when CI=true -->
+    <profiles>
+        <profile>
+            <id>ci-build</id>
+            <activation>
+                <property>
+                    <name>env.CI</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <skip.copy.to.fiji>true</skip.copy.to.fiji>
+            </properties>
+        </profile>
+    </profiles>
+
 </project>
