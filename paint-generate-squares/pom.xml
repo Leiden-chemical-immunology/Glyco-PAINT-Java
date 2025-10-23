@@ -232,6 +232,37 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                 </executions>
             </plugin>
 
+
+            <!-- ✅ NEW: Extract MANIFEST.MF after build -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>extract-manifest</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <target name="extract-manifest">
+                                <mkdir dir="${project.build.directory}"/>
+                                <unzip src="${fat.jar}" dest="${project.build.directory}/manifest-temp">
+                                    <patternset>
+                                        <include name="META-INF/MANIFEST.MF"/>
+                                    </patternset>
+                                </unzip>
+                                <copy file="${project.build.directory}/manifest-temp/META-INF/MANIFEST.MF"
+                                      tofile="${project.build.directory}/MANIFEST.MF"
+                                      overwrite="true"/>
+                                <delete dir="${project.build.directory}/manifest-temp"/>
+                                <echo message="✅ Extracted MANIFEST.MF to ${project.build.directory}/MANIFEST.MF"/>
+                            </target>
+                        </configuration>
+                        <goals><goal>run</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+
             <!-- Windows .exe launcher using Launch4j -->
             <plugin>
                 <groupId>com.akathist.maven.plugins.launch4j</groupId>
