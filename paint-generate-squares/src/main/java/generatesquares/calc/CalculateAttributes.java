@@ -18,38 +18,20 @@ import static paint.shared.utils.Miscellaneous.round;
 import static paint.shared.utils.SquareUtils.*;
 
 /**
- * ============================================================================
- *  CalculateAttributes.java
- *  Part of the "Generate Squares" module.
- *
- *  <p><b>Purpose:</b><br>
- *  Centralized computation of both square-level and recording-level
- *  metrics for the "Generate Squares" workflow.</p>
- *
- *  <ul>
- *      <li>Per-square metrics (Tau, Variability, Density, Density Ratio)</li>
- *      <li>Recording-level aggregates (Tau, Background, Density)</li>
- *  </ul>
- *
- *  <p><b>Notes:</b><br>
- *  This class unifies functionality previously split between
- *  {@code CalculateRecordingAttributes} and {@code CalculateSquareAttributes}.
- *  All methods are static utilities used by {@link GenerateSquareCalcs}.</p>
- *
- *  <p><b>Author:</b> Hans Bakker<br>
- *  <b>Version:</b> 1.0<br>
- *  <b>Module:</b> paint-generate-squares</p>
- * ============================================================================
+ * The CalculateAttributes class provides methods for calculating detailed metrics for individual squares
+ * and aggregate metrics for an entire recording. These metrics include values such as Tau, variability,
+ * density ratios, background estimation, and density calculations.
  */
 public class CalculateAttributes {
 
     /**
-     * Calculates detailed metrics for each square (Tau, variability, density ratio, etc.).
+     * Calculates attributes for each square in a recording, such as Tau, density, variability, and density ratio.
+     * It also applies visibility filtering based on given parameters and assigns label numbers to selected squares.
      *
-     * @param experimentPath        path to the experiment directory
-     * @param experimentName        the experiment name
-     * @param recording             the recording containing the squares
-     * @param generateSquaresConfig the {@link GenerateSquaresConfig} parameters
+     * @param experimentPath         the file path of the current experiment for saving generated files
+     * @param experimentName         the name of the experiment
+     * @param recording              the recording containing squares and associated track data
+     * @param generateSquaresConfig  the configuration parameters used for generating square attributes and analysis
      */
     public static void calculateSquareAttributes(Path experimentPath,
                                                  String experimentName,
@@ -133,10 +115,13 @@ public class CalculateAttributes {
     }
 
     /**
-     * Calculates aggregate metrics for an entire recording (Tau, background, density).
+     * Calculates various attributes for a recording, including Tau, density,
+     * background statistics, and R-squared values. This method processes detailed
+     * information about the recording and applies configuration settings to compute
+     * necessary metrics.
      *
-     * @param recording             the recording to analyze
-     * @param generateSquaresConfig the {@link GenerateSquaresConfig} parameters
+     * @param recording the recording object containing square and track data to process
+     * @param generateSquaresConfig the configuration parameters for generating square attributes
      */
     public static void calculateRecordingAttributes(Recording recording,
                                                     GenerateSquaresConfig generateSquaresConfig) {
@@ -178,6 +163,17 @@ public class CalculateAttributes {
         recording.setDensity(round(density, 2));
     }
 
+    /**
+     * Calculates the variability of tracking data within a specified square of a recording.
+     * Variability is measured as the coefficient of variation of track densities in grid cells
+     * produced within the square based on the specified granularity.
+     *
+     * @param tracks                   the table containing track data with x and y locations
+     * @param squareNumber             the index number of the square in the recording for variability analysis
+     * @param numberOfSquaresInRecording the total number of squares in the recording
+     * @param granularity              the granularity level for subdividing the square into a grid
+     * @return the coefficient of variation (standard deviation divided by mean) of track densities in the grid
+     */
     // Main variability calculation
     public static double calcVariability(Table tracks,
                                          int squareNumber,
@@ -230,6 +226,13 @@ public class CalculateAttributes {
         return std / mean; // coefficient of variation
     }
 
+    /**
+     * Computes the mean of the given array of double values.
+     *
+     * @param values an array of double values for which the mean is to be calculated.
+     *               The array must not be empty and must contain at least one value.
+     * @return the mean (average) of the given array of double values.
+     */
     // Utility: compute mean
     private static double mean(double[] values) {
         double sum = 0.0;
@@ -239,6 +242,14 @@ public class CalculateAttributes {
         return sum / values.length;
     }
 
+    /**
+     * Calculates the population standard deviation of the given array of double values.
+     *
+     * @param values an array of double values for which the population standard deviation is to be calculated.
+     *               The array must not be empty and must contain at least one value.
+     * @param mean   the mean (average) of the values in the array, precomputed to optimize calculation.
+     * @return the population standard deviation of the given array of double values.
+     */
     // Utility: compute std (population standard deviation)
     private static double std(double[] values, double mean) {
         double sumSq = 0.0;
@@ -249,6 +260,21 @@ public class CalculateAttributes {
         return Math.sqrt(sumSq / values.length);
     }
 
+    /**
+     * Calculates the grid indices for a point within a specific square of a recording.
+     * The method determines the location of the point in a finer grid inside the square,
+     * based on the specified granularity.
+     *
+     * @param x1                the x-coordinate of the point in the global coordinate system
+     * @param y1                the y-coordinate of the point in the global coordinate system
+     * @param width             the width of each square in the grid
+     * @param height            the height of each square in the grid
+     * @param squareSeqNr       the sequence number of the square in the grid
+     * @param nrOfSquaresInRow  the total number of squares in a single row of the grid
+     * @param granularity       the number of subdivisions along one axis within a square
+     * @return an array of two integers, where the first value is the x-index (column index)
+     *         and the second value is the y-index (row index) of the point in the finer grid
+     */
     private static int[] getIndices(double x1,
                                     double y1,
                                     double width,

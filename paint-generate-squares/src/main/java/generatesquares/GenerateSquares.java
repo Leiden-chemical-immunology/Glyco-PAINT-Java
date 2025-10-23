@@ -38,12 +38,20 @@ import java.util.Arrays;
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
 
+/**
+ * The GenerateSquares class is the main entry point for running the "Generate Squares" GUI application.
+ * This application initializes required configurations, manages project directories, and performs
+ * square generation calculations in response to user inputs.
+ */
 public class GenerateSquares {
 
     /**
-     * Application entry point for the Generate Squares GUI.
+     * The main entry point for the "Generate Squares" application. This method initializes the
+     * application's environment, configuration, logging, and graphical user interface (GUI)
+     * components to manage project directories and perform square generation calculations
+     * based on user input.
      *
-     * @param args command-line arguments (not used)
+     * @param args command-line arguments (not used by this application)
      */
     public static void main(String[] args) {
 

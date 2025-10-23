@@ -7,18 +7,42 @@ import com.dd.plist.PropertyListParser;
 import java.io.File;
 
 /**
- * ============================================================================
- *  PaintPrefs.java
- *  Global preference handler for Glyco-PAINT.
+ * The PaintPrefs class provides a mechanism to manage application-level preferences
+ * stored in a plist file specific to the Glyco-PAINT application. Preferences are
+ * persisted using Apple's Property List (plist) format and loaded/saved from a
+ * predefined file location in the user's home directory. This class includes both
+ * retrieval and storage methods for preferences, with synchronized methods to ensure
+ * thread safety.
  *
- *  <p>Stores preferences in <code>~/Library/Preferences/Glyco-PAINT.plist</code>.</p>
+ * This class is designed for storing and retrieving key-value pairs with support
+ * for string, boolean, and integer values. Default values can be provided when
+ * retrieving preferences.
  *
- *  <p>Behavior:</p>
- *  <ul>
- *    <li>If a key exists &rarr; return its value.</li>
- *    <li>If it doesn’t &rarr; create it with the provided default, save to disk, and return it.</li>
- *  </ul>
- * ============================================================================
+ * Key features:
+ * - Synchronized methods to ensure thread-safe updates and retrieval.
+ * - Automatic saving of preferences to the plist file upon modification.
+ * - Allows reloading preferences from disk to reflect external changes.
+ * - Provides fallback defaults during retrieval if a key is absent.
+ *
+ * Core methods:
+ * - getString(String key, String defaultValue): Retrieves a string value or sets and returns the default if the key does not exist.
+ * - getBoolean(String key, boolean defaultValue): Retrieves a boolean value or sets and returns the default if the key does not exist.
+ * - getInt(String key, int defaultValue): Retrieves an integer value or sets and returns the default if the key does not exist.
+ * - putString(String key, String value): Stores a string value for the given key.
+ * - putBoolean(String key, boolean value): Stores a boolean value for the given key.
+ * - putInt(String key, int value): Stores an integer value for the given key.
+ * - reload(): Forces preferences to be reloaded from the plist file on disk.
+ *
+ * The class initializes the preferences from the plist file defined at
+ * "~/Library/Preferences/Glyco-PAINT.plist" upon loading. If the file does not
+ * exist, it starts with an empty set of preferences.
+ *
+ * Note:
+ * - Any changes made using the put* methods are automatically saved to the plist file.
+ * - When reloading, if the file does not exist or an error occurs, the preferences
+ *   are reset to an empty state.
+ * - This class is not intended to be instantiated, as it contains only static methods
+ *   and a private constructor to prevent instantiation.
  */
 public final class PaintPrefs {
 

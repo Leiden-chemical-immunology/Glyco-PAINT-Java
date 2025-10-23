@@ -3,6 +3,10 @@ package paint.shared.objects;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The Experiment class represents a scientific or research experiment
+ * that contains a name and a collection of recordings.
+ */
 public class Experiment {
 
     private String experimentName;

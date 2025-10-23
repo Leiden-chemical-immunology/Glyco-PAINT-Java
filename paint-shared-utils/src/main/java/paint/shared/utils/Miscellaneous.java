@@ -2,6 +2,11 @@ package paint.shared.utils;
 
 import java.time.Duration;
 
+/**
+ * The Miscellaneous class contains utility methods for various purposes,
+ * including formatting durations, extracting user-friendly messages
+ * from exceptions, and rounding numeric values.
+ */
 public class Miscellaneous {
 
     public static void main(String[] args) {

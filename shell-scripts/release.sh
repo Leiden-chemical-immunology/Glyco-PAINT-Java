@@ -236,4 +236,5 @@ if [ "$DRY_RUN" = true ]; then
 else
   echo "🎉 Release v$RELEASE_VERSION complete!"
   echo "🚀 Pushed to GitHub + new development version started."
+  echo "Check: https://github.com/jjabakker/JavaPaintProjects/actions"
 fi

@@ -3,20 +3,24 @@ package paint.shared.constants;
 import tech.tablesaw.api.ColumnType;
 
 /**
- * Centralized constants for the Paint project.
+ * The PaintConstants class defines a set of constants used within the application.
+ * It includes constants related to file names, directories, geometry, timing, and schema definitions
+ * for tracks, squares, and recordings. This utility class is final and cannot be instantiated.
  *
- * <p>This class defines file names, directory names, schema column definitions,
- * and associated {@link ColumnType} arrays used for parsing and validating
- * CSV files in the Paint application.</p>
+ * Purpose:
+ * - Provides a centralized location for all constant values used across the application.
+ * - Ensures consistency and avoids hardcoding of values throughout the codebase.
  *
- * <p>The constants are grouped by domain:</p>
- * <ul>
- *   <li>Filenames and directory names</li>
- *   <li>General configuration values</li>
- *   <li>Schema definitions for Tracks, Squares, Recordings, and Experiments</li>
- * </ul>
+ * Structure:
+ * 1. File Names: Constants for default file names used for storing and retrieving data.
+ * 2. Directories: Paths for storing specific categories of files.
+ * 3. Geometry: Constants related to pixel dimensions and image sizes.
+ * 4. Timing: Constants specifying intervals, frame counts, and durations.
+ * 5. Schema Definitions: Column names and their data types for track, square, and recording metadata.
  *
- * <p><b>Note:</b> This class depends on Tablesaw's {@link ColumnType} for schema typing.</p>
+ * Usage:
+ * - The constants in this class can be accessed directly as they are declared public static final.
+ * - Modifications to these values require adjustments only in this class, promoting maintainability.
  */
 public final class PaintConstants {
 

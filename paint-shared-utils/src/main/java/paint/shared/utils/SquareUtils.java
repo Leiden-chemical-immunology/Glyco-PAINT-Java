@@ -11,12 +11,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Utility class providing helper functions for operations on {@link Square} and {@link Recording} objects.
- * <p>
- * Includes calculations of densities, selection filters, background estimations,
- * and table-based filtering for spatial data.
- *
- * <p>This class is not instantiable.
+ * Utility class for operations related to square data analysis.
  */
 public class SquareUtils {
 
@@ -24,14 +19,18 @@ public class SquareUtils {
     private SquareUtils() {}
 
     /**
-     * Calculates the density of tracks in a square.
+     * Calculates the density of tracks in a specified area over time and considering a concentration factor.
      *
-     * @param nrTracks      Number of tracks detected within the square.
-     * @param area          Area of the square (in µm²).
-     * @param time          Duration of the recording (in seconds).
-     * @param concentration Concentration factor used for normalization.
-     * @return Density value (normalized by area, time, and concentration).
-     * @throws IllegalArgumentException if any of {@code area}, {@code time}, or {@code concentration} is non-positive.
+     * The density is computed as the number of tracks divided by the area,
+     * then divided by the time, and finally divided by the concentration.
+     * If any of the area, time, or concentration values are non-positive, an IllegalArgumentException is thrown.
+     *
+     * @param nrTracks      The total number of tracks to calculate density for.
+     * @param area          The area over which the density is calculated. Must be positive.
+     * @param time          The time period over which the density is calculated. Must be positive.
+     * @param concentration The concentration factor to apply to the density calculation. Must be positive.
+     * @return The calculated density as a double.
+     * @throws IllegalArgumentException if area, time, or concentration is less than or equal to zero.
      */
     public static double calculateDensity(int nrTracks, double area, double time, double concentration) {
         if (area <= 0 || time <= 0 || concentration <= 0) {
@@ -46,28 +45,17 @@ public class SquareUtils {
     }
 
     /**
-     * Applies visibility and selection filters to the squares of a recording.
-     * <p>
-     * A square is marked as visible (selected) if:
-     * <ul>
-     *   <li>Its density ratio ≥ {@code minDensityRatio}</li>
-     *   <li>Its variability ≤ {@code maxVariability}</li>
-     *   <li>Its R² ≥ {@code minRSquared}</li>
-     *   <li>And its R² value is numeric (not NaN)</li>
-     * </ul>
-     * <p>
-     * Optionally applies neighbor filtering:
-     * <ul>
-     *   <li><b>Free</b> — no neighbor constraint</li>
-     *   <li><b>Relaxed</b> — must touch another visible square by edge or corner</li>
-     *   <li><b>Strict</b> — must share a common edge with another visible square</li>
-     * </ul>
+     * Applies a visibility filter to the squares in the provided recording based on specified
+     * density ratio, variability, R-squared value, and neighbor mode criteria.
+     * This method first filters squares based on numeric criteria, then optionally applies
+     * neighbor-based filtering if a neighbor mode is specified.
      *
-     * @param recording       The recording whose squares are filtered.
-     * @param minDensityRatio Minimum allowed density ratio.
-     * @param maxVariability  Maximum allowed variability.
-     * @param minRSquared     Minimum allowed R² value.
-     * @param neighbourMode   Neighbor mode: "Free", "Relaxed", or "Strict".
+     * @param recording       The recording containing the squares to be filtered.
+     * @param minDensityRatio The minimum density ratio required for a square to pass the filter.
+     * @param maxVariability  The maximum variability allowed for a square to pass the filter.
+     * @param minRSquared     The minimum R-squared value a square must have to pass the filter.
+     * @param neighbourMode   The neighbor mode defining how adjacency is considered.
+     *                        Possible values are "Free", "Relaxed", and "Strict".
      */
     public static void applyVisibilityFilter(Recording recording,
                                              double minDensityRatio,
@@ -153,12 +141,15 @@ public class SquareUtils {
     }
 
     /**
-     * Performs iterative mean/standard-deviation-based background estimation.
-     * <p>
-     * Removes outliers iteratively until convergence or a maximum number of iterations is reached.
+     * Estimates the background density of track counts from a list of squares.
+     * The method iteratively filters squares with track counts exceeding a dynamically
+     * calculated threshold (mean + 2 * standard deviation), recalculates the mean,
+     * and repeats until the mean stabilizes or a maximum number of iterations is reached.
      *
-     * @param squares List of squares whose track counts are used for estimation.
-     * @return {@link BackgroundEstimationResult} containing the mean and list of background squares.
+     * @param squares List of Square objects containing track count information.
+     *                Must not be null or empty.
+     * @return A BackgroundEstimationResult object containing the estimated mean track count
+     *         for the background and the list of squares identified as background.
      */
     public static BackgroundEstimationResult estimateBackgroundDensity(List<Square> squares) {
         if (squares == null || squares.isEmpty())
@@ -213,10 +204,11 @@ public class SquareUtils {
     }
 
     /**
-     * Collects all {@link Track} objects from squares that are currently selected.
+     * Retrieves a list of tracks from all selected squares in the provided recording.
+     * If a square is selected and contains tracks, those tracks are added to the result.
      *
-     * @param recording Source recording.
-     * @return Combined list of tracks from all selected squares.
+     * @param recording The recording object containing the squares to be checked.
+     * @return A list of tracks from all selected squares in the recording.
      */
     public static List<Track> getTracksFromSelectedSquares(Recording recording) {
         List<Track> selectedTracks = new ArrayList<>();
@@ -229,10 +221,10 @@ public class SquareUtils {
     }
 
     /**
-     * Counts the number of selected squares in a recording.
+     * Counts the number of squares marked as selected in the provided recording.
      *
-     * @param recording The recording to check.
-     * @return Number of selected squares.
+     * @param recording The recording object containing a collection of squares.
+     * @return The count of squares that are marked as selected.
      */
     public static int getNumberOfSelectedSquares(Recording recording) {
         int count = 0;
@@ -243,17 +235,20 @@ public class SquareUtils {
     }
 
     /**
-     * Container class for background estimation results.
+     * Represents the result of a background estimation process for track counts.
+     * Contains the mean track count of the estimated background and the list of
+     * squares identified as background.
      */
     public static class BackgroundEstimationResult {
         private final double backgroundMean;
         private final List<Square> backgroundSquares;
 
         /**
-         * Constructs a new {@code BackgroundEstimationResult}.
+         * Constructs a new BackgroundEstimationResult with the provided mean background value
+         * and the list of squares classified as background.
          *
-         * @param backgroundMean    Mean track count of the estimated background.
-         * @param backgroundSquares List of squares included in the background.
+         * @param backgroundMean the mean value of tracks estimated as background
+         * @param backgroundSquares the list of squares identified as background
          */
         public BackgroundEstimationResult(double backgroundMean, List<Square> backgroundSquares) {
             this.backgroundMean = backgroundMean;
@@ -272,12 +267,17 @@ public class SquareUtils {
     }
 
     /**
-     * Computes the average track count among the {@code nrOfAverageCountSquares} least populated squares.
-     * Ignores squares with zero tracks.
+     * Calculates the average track count in a specified number of background squares
+     * by selecting a configurable number of the smallest non-zero track counts from
+     * the provided list of squares.
      *
-     * @param squaresOfRecording      List of all squares in the recording.
-     * @param nrOfAverageCountSquares Number of lowest-count squares to average.
-     * @return Average track count of background squares.
+     * @param squaresOfRecording A list of Square objects, each containing track count data.
+     *                           Must not be null.
+     * @param nrOfAverageCountSquares The number of smallest non-zero track counts to include
+     *                                 in the average calculation. Must be greater than zero.
+     * @return The average track count as a double, calculated from the smallest non-zero
+     *         track counts in the specified number of squares. Returns 0.0 if none are found
+     *         or if the number of valid squares is zero.
      */
     public static double calcAverageTrackCountInBackgroundSquares(List<Square> squaresOfRecording,
                                                                   int nrOfAverageCountSquares) {
@@ -308,12 +308,14 @@ public class SquareUtils {
     }
 
     /**
-     * Filters tracks within a square’s coordinate boundaries.
+     * Filters tracks within a given square, restricting to a specific range of x and y coordinates.
+     * This method processes tracks to retain only those within the coordinate bounds of the specified square.
+     * Handles inclusive or exclusive boundaries depending on whether the square is in the last column or row.
      *
-     * @param tracks     The full table of track coordinates.
-     * @param square     The square defining the region of interest.
-     * @param lastRowCol Index of the last row/column (used for inclusive edge behavior).
-     * @return A subset {@link Table} containing only tracks within the square.
+     * @param tracks The table containing track data, with at least "Track X Location" and "Track Y Location" columns.
+     * @param square The square specifying the area of interest with defined corner coordinates.
+     * @param lastRowCol The index of the last column or row, used to adjust boundary conditions.
+     * @return A new table containing only the tracks located within the specified square's boundaries.
      */
     public static Table filterTracksInSquare(Table tracks, Square square, int lastRowCol) {
         double x0 = square.getX0(), y0 = square.getY0(), x1 = square.getX1(), y1 = square.getY1();

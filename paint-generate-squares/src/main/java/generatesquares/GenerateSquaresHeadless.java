@@ -22,16 +22,24 @@ import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.validate.ValidationHandler.validateExperiments;
 
 /**
- * Provides a programmatic, non-GUI entry point for the Generate Squares workflow.
+ * A utility class responsible for running the Generate Squares pipeline in a headless mode.
+ * This class processes a list of experiment subdirectories located within a specified project path,
+ * validates input data, calculates square data, exports histogram PDFs, and creates summary output files.
  */
 public class GenerateSquaresHeadless {
 
     /**
-     * Executes the full Generate Squares pipeline for the given project path and experiments.
+     * Executes the process of validating experiment data, performing calculations,
+     * exporting results, and generating summary files for the specified experiments
+     * within a given project directory.
      *
-     * @param projectPath      root project directory
-     * @param experimentNames  list of experiment subdirectories to process
-     * @throws Exception if any part of the workflow fails
+     * The method validates the input configuration, processes individual experiments,
+     * generates required outputs, and consolidates results into summary files.
+     *
+     * @param projectPath the root directory path of the project containing the experiments
+     * @param experimentNames a list of names of the experiments to be processed
+     * @throws Exception if validation fails, file handling issues occur,
+     *                   or other exceptions are encountered during execution
      */
     public static void run(Path projectPath, List<String> experimentNames ) throws Exception {
 

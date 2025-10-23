@@ -22,20 +22,9 @@ import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.utils.SquareUtils.filterTracksInSquare;
 
 /**
- * ============================================================================
- *  GenerateSquareCalcs.java
- *  Orchestrates all calculations for the "Generate Squares" workflow.
- *
- *  <p><b>Purpose:</b> Coordinates square-level and recording-level metrics
- *  computation, invoking {@link CalculateAttributes} and related modules.</p>
- *
- *  <p><b>Usage:</b> Called internally by {@code GenerateSquares} or executed
- *  as part of automated batch processing.</p>
- *
- *  <p><b>Author:</b> Hans Bakker<br>
- *  <b>Version:</b> 1.0<br>
- *  <b>Module:</b> paint-generate-squares</p>
- * ============================================================================
+ * The GenerateSquareCalcs class provides methods to generate and process square regions and assign tracks.
+ * This class is primarily used for dividing a recording's spatial data into square segments,
+ * calculating attributes, and assigning tracks to those square regions.
  */
 
 public class GenerateSquareCalcs {
@@ -47,11 +36,14 @@ public class GenerateSquareCalcs {
     // @formatter:on
 
     /**
-     * Runs the "Generate Squares" process for a single experiment.
+     * Processes an experiment to generate square regions for each recording, compute attributes,
+     * and compile data tables for all squares and tracks. The method applies geometric segmentations,
+     * assigns tracks to the generated squares, and calculates additional square and recording-level attributes.
+     * Finally, it writes compiled results to the file system.
      *
-     * @param project        the {@link Project} containing experiment data
-     * @param experimentName the name of the experiment
-     * @return {@code true} if successful, {@code false} otherwise
+     * @param project the project containing configurations and experiment data
+     * @param experimentName the name of the experiment to process
+     * @return {@code true} if the experiment was successfully processed and saved, {@code false} otherwise
      */
     public static boolean generateSquaresForExperiment(Project project, String experimentName) {
 
@@ -116,11 +108,12 @@ public class GenerateSquareCalcs {
     }
 
     /**
-     * Generates all square regions for a given recording.
+     * Generates a list of {@code Square} objects for the given recording. Each square corresponds to a
+     * segment of the recording area based on the configuration provided.
      *
-     * @param generateSquaresConfig configuration defining number and layout of squares
-     * @param recording             the recording to segment into squares
-     * @return list of {@link Square} objects representing the grid
+     * @param recording the recording for which squares are to be generated
+     * @param generateSquaresConfig the configuration specifying the number of squares and related parameters
+     * @return a list of {@code Square} objects representing the segmented areas of the recording
      */
     public static List<Square> generateSquaresForRecording(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
 
@@ -161,9 +154,13 @@ public class GenerateSquareCalcs {
     }
 
     /**
-     * Assigns track data to each square based on spatial coordinates.
+     * Assigns tracks to the predefined square regions of a recording.
+     * It processes the tracks table of the recording, assigns each track to the relevant square,
+     * updates the square attributes, and compiles a complete tracks table for the recording.
      *
-     * @param recording the recording containing track information
+     * @param recording the {@code Recording} instance containing track and square data.
+     *                  The method modifies this object by assigning tracks to the corresponding squares
+     *                  and updating their track-related attributes.
      */
     public static void assignTracksToSquares(Recording recording) {
 
@@ -226,7 +223,14 @@ public class GenerateSquareCalcs {
     }
 
     /**
-     * Compiles all squares of all recordings in an experiment into one combined table.
+     * Compiles all square data from the recordings in the specified experiment into a single table.
+     * The method iterates through each recording in the experiment, retrieves its square data,
+     * and appends it to a cumulative table. If a recording does not have square data available,
+     * an error is logged.
+     *
+     * @param experiment the experiment containing recordings whose square data is to be combined
+     * @return a {@code Table} containing the aggregated square data from all recordings in the experiment,
+     *         or an empty table if no square data exists
      */
     private static Table compileAllSquares(Experiment experiment) {
         SquareTableIO squaresTableIO = new SquareTableIO();
@@ -244,7 +248,14 @@ public class GenerateSquareCalcs {
     }
 
     /**
-     * Compiles all tracks of all recordings in an experiment into one combined table.
+     * Compiles all track data from the recordings in the specified experiment into a single table.
+     * The method iterates through each recording in the experiment, retrieves its track data,
+     * and appends it to an aggregate table. If a recording does not have track data available,
+     * an error is logged.
+     *
+     * @param experiment the experiment containing recordings whose track data is to be combined
+     * @return a {@code Table} containing the aggregated track data from all recordings in the experiment,
+     *         or an empty table if no track data exists
      */
     private static Table compileAllTracks(Experiment experiment) {
         TrackTableIO trackTableIO = new TrackTableIO();

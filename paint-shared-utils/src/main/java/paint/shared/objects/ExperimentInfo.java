@@ -12,7 +12,15 @@ import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
 
 /**
- * Represents a Recording with metadata, squares, and tracks.
+ * The ExperimentInfo class represents metadata and associated data objects
+ * related to a specific scientific experiment. It contains core fields to
+ * store metadata and collections to manage related objects such as
+ * squares and tracks.
+ *
+ * This class provides constructors to initialize its fields, either through
+ * explicit parameters or by parsing key-value pairs from a map. It includes
+ * getter and setter methods for each field, as well as convenience methods
+ * for adding or managing associated data objects.
  */
 public class ExperimentInfo {
 

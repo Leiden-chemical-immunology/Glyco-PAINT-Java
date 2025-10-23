@@ -13,17 +13,14 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 /**
- * Utility for extracting and displaying build metadata from a JAR’s {@code MANIFEST.MF}.
- * <p>
- * Reads manifest entries such as:
- * <ul>
- *   <li>{@code Implementation-Title}</li>
- *   <li>{@code Implementation-Version}</li>
- *   <li>{@code Implementation-Vendor}</li>
- *   <li>{@code Build-Timestamp}</li>
- * </ul>
- * Converts UTC timestamps to Europe/Amsterdam local time for display.
- * Works in both IDE (classpath) and packaged JAR executions.
+ * Utility class for logging or analyzing JAR manifest metadata.
+ * Provides methods to extract essential information from the manifest files defined
+ * within JAR archives, such as implementation details, specification details, and build timestamps.
+ *
+ * This class also includes functionality to format timestamps into a standardized output.
+ * The retrieved information is returned encapsulated in the {@code JarInfo} nested class.
+ *
+ * Note: This is a static utility class and cannot be instantiated.
  */
 public class JarInfoLogger {
 

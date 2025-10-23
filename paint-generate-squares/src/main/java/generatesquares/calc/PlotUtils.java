@@ -5,16 +5,9 @@ import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
 /**
- * Utility class for rendering Tau fitting plots as {@link BufferedImage} objects.
- * <p>
- * This class performs all low-level 2D drawing operations using Java2D.
- * No GUI window or external plotting library is used.
- * <p>
- * The generated image can be directly saved to disk using
- * {@link javax.imageio.ImageIO#write(java.awt.image.RenderedImage, String, java.io.File)}.
- * <p>
- * It is typically invoked by {@link TauPlotCollector} to visualize Tau fitting
- * results for individual recording squares.
+ * Utility class for generating plots related to Tau fitting and analysis.
+ * This class is not meant to be instantiated and serves only as a helper
+ * for rendering graphical representations of analysis results.
  */
 public class PlotUtils {
 
@@ -23,22 +16,15 @@ public class PlotUtils {
     }
 
     /**
-     * Renders a Tau fitting plot showing:
-     * <ul>
-     *     <li>Blue circles for measured data points (duration vs. frequency)</li>
-     *     <li>A red exponential decay curve for the fitted Tau (if valid)</li>
-     *     <li>Labels and a status annotation (Tau and R² or "Fit failed")</li>
-     * </ul>
-     * <p>
-     * The plot is returned as a {@link BufferedImage} for saving or embedding.
+     * Renders a Tau plot with given data points, fit curve, axes, labels, and annotations.
      *
-     * @param x         array of track durations (domain)
-     * @param y         array of corresponding frequencies (range)
-     * @param result    Tau fitting result (can be {@code null} or invalid)
-     * @param fitFailed {@code true} if the fit failed or was invalid
-     * @param width     image width in pixels
-     * @param height    image height in pixels
-     * @return a rendered {@link BufferedImage} containing the Tau fit plot
+     * @param x          the array of x-coordinate values for the data points to be plotted
+     * @param y          the array of y-coordinate values for the data points to be plotted
+     * @param result     the calculated result containing the Tau value and R² value for the exponential fit
+     * @param fitFailed  a flag indicating whether the exponential fit failed
+     * @param width      the width of the generated image in pixels
+     * @param height     the height of the generated image in pixels
+     * @return a BufferedImage representing the rendered Tau plot
      */
     public static BufferedImage renderTauPlot(double[] x, double[] y,
                                               CalculateTau.CalculateTauResult result,

@@ -18,8 +18,25 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * The HistogramPdfExporter class provides functionality to export histograms as a PDF document
+ * derived from data within an Experiment. Each recording within the experiment is analyzed, and
+ * histograms illustrating the distribution of tracks across squares are generated and added as
+ * individual pages in the output PDF.
+ *
+ * This class includes methods to calculate background density estimation, build histogram bins,
+ * and render visual representations of these histograms.
+ */
 public class HistogramPdfExporter {
 
+    /**
+     * Exports histograms of the experimental data to a PDF file. Each recording of the experiment
+     * is represented as a histogram in a separate page within the generated PDF.
+     *
+     * @param experiment The experiment containing recordings with track count data to be exported.
+     * @param outputFile The output {@code Path} where the generated PDF file will be saved.
+     * @throws IOException If an error occurs during the creation or saving of the PDF file.
+     */
     public static void exportExperimentHistogramsToPdf(Experiment experiment, Path outputFile) throws IOException {
 
         try (PDDocument doc = new PDDocument()) {
@@ -122,6 +139,22 @@ public class HistogramPdfExporter {
 
     }
 
+    /**
+     * Draws a histogram representing track count distributions for a given recording.
+     *
+     * @param g2 The {@code Graphics2D} object used for rendering the histogram.
+     * @param w The width of the canvas where the histogram is to be drawn.
+     * @param h The height of the canvas where the histogram is to be drawn.
+     * @param allBins An array containing the total count of tracks for each bin.
+     * @param bgBins An array containing the background track counts for each bin.
+     * @param binSize The approximate size of each bin (number of tracks).
+     * @param title The title of the histogram to be displayed.
+     * @param totalSquares The total number of squares in the recording.
+     * @param totalTracks The total number of tracks in the recording.
+     * @param nBackground The number of squares identified as background squares.
+     * @param backgroundTracksTotal The total number of tracks within the background squares.
+     * @param avgTracksInBackground The average number of tracks found in the background squares.
+     */
     private static void drawHistogram(Graphics2D g2,
                                       int w,
                                       int h,

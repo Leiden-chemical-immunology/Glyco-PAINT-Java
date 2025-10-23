@@ -12,13 +12,11 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Utility class responsible for collecting and saving Tau fitting plots.
- * <p>
- * Each plot corresponds to one square of one recording. It separates results into
- * <b>Success</b> and <b>Failed</b> subfolders depending on the fit status.
- * <p>
- * This class does not perform Tau fitting — it assumes that a {@link CalculateTau.CalculateTauResult}
- * is already available and uses {@link PlotUtils} to render the corresponding frequency plot image.
+ * The TauPlotCollector class is responsible for generating and saving Tau fitting plot images
+ * to designated directories based on the result of Tau fitting operations. It organizes the
+ * plots into subdirectories labeled "Success" or "Failed" according to the fitting outcome.
+ * This class ensures proper directory structure and handles rendering and file output without
+ * requiring a graphical user interface (GUI).
  */
 public class TauPlotCollector {
 
@@ -35,9 +33,10 @@ public class TauPlotCollector {
     }
 
     /**
-     * Ensures that a directory exists, creating it if necessary.
+     * Ensures that a given directory exists. If the directory does not exist,
+     * it attempts to create it. Logs an error message if the directory creation fails.
      *
-     * @param dir the directory to verify or create
+     * @param dir the directory to be checked or created
      */
     private static void ensureDir(File dir) {
         if (!dir.exists() && !dir.mkdirs()) {
@@ -46,19 +45,15 @@ public class TauPlotCollector {
     }
 
     /**
-     * Saves a Tau fitting plot image into the appropriate subfolder
-     * (either <b>Success</b> or <b>Failed</b>).
-     * <p>
-     * The output file is stored under:
-     * <pre>
-     * {experimentPath}/Output/Tau Fitting Plots/{Success|Failed}/{recordingName}_square_XXX.png
-     * </pre>
+     * Saves a plot visualizing the distribution of track durations and the tau fit result.
+     * The generated plot is written as a PNG file to an appropriate directory based on the
+     * success or failure of the fit.
      *
-     * @param tracks         list of tracks used in the fit (used to derive frequency data)
-     * @param tauResult      the Tau fit result (already computed, may be {@code null})
-     * @param experimentPath path to the experiment root directory
-     * @param recordingName  name of the recording (used for output filename)
-     * @param squareIndex    index (ID) of the square within the recording
+     * @param tracks the list of tracks used to compute the frequency distribution of track durations
+     * @param tauResult the result of the tau calculation, containing tau values, R-squared, and the fit status
+     * @param experimentPath the base path of the experiment, used to determine the output directory
+     * @param recordingName the name of the recording associated with the current plot
+     * @param squareIndex the index of the square region associated with the current recording
      */
     public static void saveFitPlot(List<Track> tracks,
                                    CalculateTau.CalculateTauResult tauResult,

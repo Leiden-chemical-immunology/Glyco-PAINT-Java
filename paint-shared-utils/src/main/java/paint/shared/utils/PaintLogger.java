@@ -9,20 +9,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Central logging utility for the Paint application.
- * <p>
- * Provides both console and file logging with configurable log levels,
- * timestamp formatting, and color-coded output in the GUI console.
- * </p>
- * <p>
- * Features:
- * <ul>
- *   <li>Four log levels: DEBUG, INFO, WARN, and ERROR</li>
- *   <li>Automatic timestamp formatting</li>
- *   <li>Optional file-based logging with log rotation</li>
- *   <li>Colored output in {@link PaintConsoleWindow}</li>
- *   <li>Java 8 compatibility (custom string repeat method)</li>
- * </ul>
+ * Manages logging functionality for the application, providing various log levels
+ * and the ability to write log messages to a console and to a log file.
  */
 public class PaintLogger {
 
@@ -115,11 +103,12 @@ public class PaintLogger {
     }
 
     /**
-     * Initializes the logger by creating a {@code Logs} directory under the project path
-     * and opening a new log file (e.g., {@code paint-log-1.log}, {@code paint-log-2.log}, etc.).
+     * Initializes the logger by creating a logs directory and setting up a log file
+     * with a name based on the specified log base name. If the directory or file does
+     * not already exist, it will be created. Logs are written to the generated file.
      *
-     * @param projectPath  base project directory
-     * @param logBaseName  base name for the log file
+     * @param projectPath the base directory path under which the "Logs" folder will be created
+     * @param logBaseName the base name used to generate the log file name
      */
     public static void initialise(Path projectPath, String logBaseName) {
         try {

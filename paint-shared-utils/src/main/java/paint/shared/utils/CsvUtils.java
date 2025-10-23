@@ -9,19 +9,10 @@ import java.util.*;
 import static paint.shared.constants.PaintConstants.RECORDINGS_CSV;
 
 /**
- * Comprehensive CSV utility class for the Paint project.
- * <p>
- * Features:
- * <ul>
- *   <li>Concatenates multiple CSV files into one output file</li>
- *   <li>Concatenates all CSVs in a directory by regex</li>
- *   <li>Concatenates same-named CSVs from experiment subfolders</li>
- *   <li>Adds or updates a "Case" column in experiment CSVs</li>
- *   <li>Counts how many rows are marked as processed</li>
- * </ul>
- * <p>
- * Uses <b>Apache Commons CSV</b> for robust parsing and writing.
- * </p>
+ * Utility class providing methods for working with CSV files, including operations
+ * such as counting rows based on conditions, concatenating multiple CSV files, and
+ * adding or updating specific columns. Designed to perform common CSV manipulations
+ * in an efficient and reusable manner.
  */
 public class CsvUtils {
 
@@ -35,11 +26,13 @@ public class CsvUtils {
     // =====================================================================
 
     /**
-     * Counts rows in a CSV file whose "Process Flag" column contains a truthy value
-     * ({@code true}, {@code yes}, {@code y}, or {@code 1}).
+     * Counts the number of records in a CSV file where the "Process Flag" column
+     * has a value indicating it is processed. Valid values for processed include
+     * "true", "yes", "y", and "1" (case-insensitive).
      *
-     * @param filePath path to the CSV file
-     * @return number of processed rows, or 0 if the file is missing or invalid
+     * @param filePath the path to the CSV file to be processed
+     * @return the number of records marked as processed; returns 0 if the "Process Flag"
+     *         column is not found or an error occurs while processing the file
      */
     public static int countProcessed(Path filePath) {
         int count = 0;
@@ -84,16 +77,14 @@ public class CsvUtils {
     // =====================================================================
 
     /**
-     * Concatenates multiple CSV files into a single output file.
-     * <p>
-     * The header is written only once (from the first valid file). Optionally,
-     * input files can be deleted after successful concatenation.
-     * </p>
+     * Concatenates multiple CSV files into a single CSV file, with an option to delete the input files
+     * after processing. The method ensures that the output file contains a single header row
+     * (retrieved from the first valid input file) and appends all records from the input files.
      *
-     * @param inputFiles   list of input CSV files
-     * @param outputFile   destination CSV file
-     * @param deleteInputs whether to delete input files after success
-     * @throws IOException if reading or writing any file fails
+     * @param inputFiles a list of paths to input CSV files to be concatenated
+     * @param outputFile the path to the resulting output CSV file
+     * @param deleteInputs a flag indicating whether to delete the input files after successful processing
+     * @throws IOException if an I/O error occurs during reading or writing files
      */
     public static void concatenateCsvFiles(List<Path> inputFiles, Path outputFile, boolean deleteInputs) throws IOException {
         boolean headerWritten = false;
@@ -144,13 +135,14 @@ public class CsvUtils {
     }
 
     /**
-     * Concatenates a same-named CSV file (e.g., {@code "Tracks.csv"}) from multiple
-     * experiment subfolders into a single file at the project root.
+     * Concatenates CSV files located in subdirectories of a specified project path, using a given file name
+     * and a list of directory names. The resulting concatenated CSV file is written to the main project path
+     * with the same file name.
      *
-     * @param projectPath     root project directory
-     * @param fileName        name of the CSV file to merge
-     * @param experimentNames list of experiment subfolder names
-     * @throws IOException if any I/O error occurs during reading or writing
+     * @param projectPath     the base directory containing the experiment subdirectories
+     * @param fileName        the name of the CSV file to look for in each experiment subdirectory
+     * @param experimentNames a list of experiment subdirectory names that contain the target CSV file
+     * @throws IOException if an I/O error occurs during reading or writing the CSV files
      */
     public static void concatenateNamedCsvFiles(Path projectPath, String fileName,
                                                 List<String> experimentNames) throws IOException {
@@ -168,14 +160,15 @@ public class CsvUtils {
     // =====================================================================
 
     /**
-     * Adds or updates a {@code "Case"} column with a given fixed value in CSV files
-     * found in experiment subdirectories.
+     * Adds or updates a "Case" column in CSV files within specified experiment directories.
+     * If a "Case" column already exists, its values are overwritten; if it does not exist,
+     * it is added to the end of each record. Updated files replace the original files.
      *
-     * @param root            root directory containing experiment folders
-     * @param fileName        name of the CSV file to modify (e.g., {@link paint.shared.constants.PaintConstants#RECORDINGS_CSV})
-     * @param experimentNames list of experiment directory names
-     * @param caseName        value to insert or overwrite in the {@code "Case"} column
-     * @throws IOException if reading or writing a file fails
+     * @param root the root directory containing experiment subdirectories
+     * @param fileName the name of the CSV file to be processed within each experiment subdirectory
+     * @param experimentNames a list of experiment subdirectory names to locate the target CSV file
+     * @param caseName the value to be assigned or updated in the "Case" column for each record
+     * @throws IOException if an I/O error occurs during file processing
      */
     public static void addCase(Path root,
                                String fileName,
@@ -242,10 +235,12 @@ public class CsvUtils {
     // =====================================================================
 
     /**
-     * Demonstration of adding a "Case" column and concatenating experiment CSVs.
+     * The main method serves as the entry point for the program execution.
+     * It demonstrates the usage of utility methods such as adding a "Case" column
+     * to CSV files and concatenating CSV files within experiment directories.
      *
-     * @param args command-line arguments (unused)
-     * @throws IOException if file I/O operations fail
+     * @param args the command-line arguments passed to the program; not utilized in this implementation
+     * @throws IOException if an I/O error occurs during file processing
      */
     public static void main(String[] args) throws IOException {
         Path root = Paths.get("/Users/hans/Paint Test Project/Sweep");

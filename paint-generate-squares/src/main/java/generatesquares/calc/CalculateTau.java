@@ -13,20 +13,10 @@ import java.util.TreeMap;
 import static java.lang.Double.NaN;
 
 /**
- * ============================================================================
- *  CalculateTau.java
- *  Part of the "Generate Squares" module.
- *
- *  <p><b>Purpose:</b><br>
- *  Performs exponential decay fitting of track duration distributions to
- *  determine characteristic time constants (Tau) and fit quality (R²).
- *  </p>
- *
- *  <p>Fits the model: y = m * exp(-t * x) + b</p>
- *
- *  <p><b>Author:</b> Hans Bakker<br>
- *  <b>Version:</b> 1.0</p>
- * ============================================================================
+ * This class provides methods for calculating the tau value by fitting a mono-exponential
+ * decay to a frequency distribution of track durations.
+ * It is designed to evaluate the quality of the fit based on the R² value.
+ * The class cannot be instantiated and includes static methods for the calculation.
  */
 public class CalculateTau {
 
@@ -34,13 +24,17 @@ public class CalculateTau {
     }
 
     /**
-     * Calculates tau by fitting a mono-exponential decay to a frequency
-     * distribution of track durations.
+     * Calculates the tau (time constant) and goodness-of-fit (R-squared) from a given set of track durations using an exponential decay model.
+     * The method performs a series of checks and validations, fits the data to a model,
+     * and evaluates the quality of the fit to decide the result status.
      *
-     * @param tracks              list of input tracks
-     * @param minTracksForTau     minimum number of tracks required to attempt a fit
-     * @param minRequiredRSquared minimum acceptable R² value
-     * @return {@code CalculateTauResult} containing the fit outcome
+     * @param tracks the list of Track objects from which durations are extracted. Each Track represents a single time measurement.
+     * @param minTracksForTau the minimum number of tracks required to perform the calculation. If the size of {@code tracks} is below this value, the method will return an insufficient
+     *  points status.
+     * @param minRequiredRSquared the minimum allowable value for the R-squared of the fit. If the computed R-squared is less than this threshold, the method will return a too-low
+     *  R-squared status.
+     * @return a {@code CalculateTauResult} object containing the calculated tau, R-squared value, and the status of the calculation. Possible statuses include success, insufficient
+     *  points, no fit, or R-squared too low.
      */
     public static CalculateTauResult calcTau(List<Track> tracks,
                                              int minTracksForTau,
@@ -91,9 +85,14 @@ public class CalculateTau {
         return new CalculateTauResult(fitResult.tauMs, fitResult.rSquared, CalculateTauResult.Status.TAU_SUCCESS);
     }
 
-    // ------------------------------------------------------------------------
-    // Tau result
-    // ------------------------------------------------------------------------
+    /**
+     * Represents the result of the tau calculation process, containing the
+     * tau value, R-squared value, and the status of the calculation.
+     *
+     * This result is produced after performing an exponential decay model
+     * fitting on given track durations, evaluating the quality of the fit,
+     * and determining if the computation meets the required conditions.
+     */
     public static class CalculateTauResult {
 
         private final double tau;
@@ -130,7 +129,15 @@ public class CalculateTau {
     }
 
     /**
-     * Build frequency distribution: key = duration, value = count.
+     * Creates a frequency distribution from an array of track durations.
+     * The method calculates the number of occurrences for each unique duration
+     * and stores the result in a map where the keys are unique durations and
+     * the values are their respective frequencies.
+     *
+     * @param trackDurations an array of double values representing track durations.
+     *                       If the array is null, an empty map is returned.
+     * @return a map containing unique track durations as keys and their
+     *         corresponding frequencies as values.
      */
     private static Map<Double, Integer> createFrequencyDistribution(double[] trackDurations) {
         Map<Double, Integer> frequencyDistribution = new TreeMap<>();
@@ -145,9 +152,11 @@ public class CalculateTau {
         return frequencyDistribution;
     }
 
-    // ------------------------------------------------------------------------
-    // Inner static class for exponential fitting
-    // ------------------------------------------------------------------------
+    /**
+     * A utility class performing exponential decay fitting. This class enables
+     * the computation of an exponential decay's time constant (tau) and
+     * the goodness-of-fit (R-squared) through least-squares optimization.
+     */
     private static class CalculateTauExpDecayFitter {
 
         private CalculateTauExpDecayFitter() {}
@@ -163,7 +172,20 @@ public class CalculateTau {
             }
         }
 
-        /** Performs least-squares exponential fitting. */
+        /**
+         * Fits a model to the given data points using a non-linear least squares optimization
+         * and returns the results as a {@code FitResult}.
+         * The model assumes an exponential decay function of the form:
+         * y = m * exp(-t * x) + b.
+         *
+         * @param x the independent variable data points (input values)
+         * @param y the dependent variable data points (output values)
+         *          Both arrays must have the same length and contain at least two elements.
+         * @return a {@code FitResult} containing the calculated time constant in milliseconds (tauMs)
+         *         and the coefficient of determination (rSquared).
+         *         Returns a {@code FitResult} with NaN values if the input is invalid
+         *         or the fitting process fails.
+         */
         private static FitResult fit(double[] x, double[] y) {
             if (x == null || y == null || x.length != y.length || x.length < 2) {
                 return new FitResult(NaN, NaN);
@@ -218,6 +240,21 @@ public class CalculateTau {
             }
         }
 
+        /**
+         * Generates an initial guess for the parameters of an exponential decay model
+         * based on the provided input data.
+         * This method calculates preliminary values for the model parameters
+         * which can be used as a starting point for further optimization or fitting.
+         *
+         * @param x the independent variable data points (input values).
+         *          The array must have at least two elements.
+         * @param y the dependent variable data points (output values).
+         *          The array must have the same length as the {@code x} array.
+         * @return a double array containing the initial guesses for the model parameters:
+         *         - {@code m}: the scaling factor
+         *         - {@code t}: the time constant
+         *         - {@code b}: the baseline offset
+         */
         private static double[] initialGuess(double[] x, double[] y) {
             double minY = Arrays.stream(y).min().orElse(0);
             double maxY = Arrays.stream(y).max().orElse(1);
@@ -262,6 +299,21 @@ public class CalculateTau {
             return new double[]{m, t, b};
         }
 
+        /**
+         * Computes the coefficient of determination (R-squared) for the given data points
+         * and model parameters. The R-squared value indicates how well the model fits
+         * the data, with a value ranging from 0 (no fit) to 1 (perfect fit).
+         *
+         * @param x the independent variable data points (input values).
+         *          Must be an array of doubles with length matching the {@code y} array.
+         * @param y the dependent variable data points (output values).
+         *          Must be an array of doubles with length matching the {@code x} array.
+         * @param m the scaling factor (model parameter).
+         * @param t the time constant (model parameter).
+         * @param b the baseline offset (model parameter).
+         * @return the R-squared value, representing the goodness of fit of the model to the data.
+         *         Returns NaN if the total sum of squares is zero.
+         */
         private static double computeRSquared(double[] x, double[] y, double m, double t, double b) {
             double meanY = Arrays.stream(y).average().orElse(0);
             double ssRes = 0.0, ssTot = 0.0;
@@ -278,6 +330,15 @@ public class CalculateTau {
         }
     }
 
+    /**
+     * Fits the given data arrays to an exponential decay model and returns the calculated time constant (tau)
+     * and the goodness-of-fit (R-squared) as an array of double values.
+     *
+     * @param x the independent variable data points
+     * @param y the dependent variable data points
+     * @return an array of double values, where the first element is the time constant (tau) and the second
+     * element is the goodness-of-fit (R-squared)
+     */
     public static double[] debugFit(double[] x, double[] y) {
         CalculateTauExpDecayFitter.FitResult result = CalculateTauExpDecayFitter.fit(x, y);
         return new double[]{ result.tauMs, result.rSquared };

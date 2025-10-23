@@ -6,27 +6,10 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * Represents a single imaging or experimental recording within a Paint project.
- * <p>
- * A {@code Recording} stores metadata about experimental conditions,
- * quantitative analysis results (e.g., number of spots, tracks, tau, R², etc.),
- * and associations to related objects such as {@link Square} and {@link Track}.
- * </p>
- * <p>
- * Each recording corresponds to one row in the <b>All Recordings</b>  CSV files, and may
- * include references to derived data such as Tablesaw {@link Table} instances for track analysis.
- * </p>
- *
- * <h3>Core Responsibilities</h3>
- * <ul>
- *   <li>Maintain metadata about a single recording (probe, condition, threshold, etc.).</li>
- *   <li>Hold quantitative measurements produced by analysis.</li>
- *   <li>Reference associated {@link Square} and {@link Track} objects.</li>
- *   <li>Provide a human-readable summary via {@link #toString()}.</li>
- * </ul>
- *
- * <p><b>Thread safety:</b> This class is not thread-safe. External synchronization
- * is required if instances are accessed from multiple threads.</p>
+ * The {@code Recording} class represents metadata and associated data regarding a specific recording
+ * within an experiment. It includes properties such as experimental conditions, measurements,
+ * analysis parameters, and collections of tracks and squares. This class serves as a central
+ * data structure for managing recording details and results.
  */
 public class Recording {
 

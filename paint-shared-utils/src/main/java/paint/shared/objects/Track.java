@@ -3,13 +3,12 @@ package paint.shared.objects;
 import java.lang.reflect.Field;
 
 /**
- * Represents a single tracked trajectory (track) within a recording.
- * <p>
- * A {@code Track} aggregates various properties that describe its identity,
- * statistics about detected spots, dynamics such as displacement, speed,
- * and diffusion coefficients, as well as contextual information such as
- * square and label numbers.
- * </p>
+ * The {@code Track} class represents the properties and attributes of a trajectory or path
+ * recorded during an experiment. It contains various analytical properties such as displacement,
+ * speed, and diffusion coefficients as well as associated metadata like experiment and recording
+ * details.
+ *
+ * This class provides the necessary getters and setters for accessing and modifying its fields.
  */
 public class Track {
 

@@ -11,21 +11,9 @@ import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
 import static paint.shared.utils.Miscellaneous.round;
 
 /**
- * Represents a square region within a recording image.
- * <p>
- * Each {@code Square} corresponds to a defined spatial subregion of an image
- * used for localized tracking or analysis of particle motion. A square contains
- * numerical descriptors such as density, variability, displacement metrics,
- * and diffusion coefficients derived from the tracks assigned to it.
- * </p>
- * <p>
- * Squares are identified by their {@code squareNumber}, position
- * ({@code rowNumber}, {@code colNumber}), and pixel boundaries
- * ({@code x0, y0, x1, y1}). They may also maintain an associated list of
- * {@link Track} objects representing motion events within the region.
- * </p>
- *
- * <p><b>Note:</b> This class is not thread-safe.</p>
+ * Represents a rectangular region (square) within a recording or experiment, with associated
+ * spatial and metadata. The Square class tracks the position, labels, and various statistics
+ * within the square, as well as related tracks and calculations.
  */
 public class Square {
 
@@ -33,41 +21,41 @@ public class Square {
 
     // @formatter:off
     private String  uniqueKey;                       // 0
-    private String  experimentName;
-    private String  recordingName;                   // 1
-    private int     squareNumber;                    // 2
-    private int     rowNumber;                       // 3
-    private int     colNumber;                       // 4
-    private int     labelNumber;                     // 5
-    private int     cellId;                          // 6
-    private boolean selected;                        // 7
-    private boolean squareManuallyExcluded;          // 8
-    private boolean imageExcluded;                   // 9
-    private double  x0;                              // 10
-    private double  y0;                              // 11
-    private double  x1;                              // 12
-    private double  y1;                              // 13
-    private int     numberOfTracks;                  // 14
-    private double  variability;                     // 15
-    private double  density;                         // 16
-    private double  densityRatio;                    // 17
-    private double  densityRatioOri;                 // 18
-    private double  tau;                             // 19
-    private double  rSquared;                        // 20
-    private double  medianDiffusionCoefficient;      // 21
-    private double  medianDiffusionCoefficientExt;   // 22
-    private double  medianLongTrackDuration;         // 23
-    private double  medianShortTrackDuration;        // 24
-    private double  medianDisplacement;              // 25
-    private double  maxDisplacement;                 // 26
-    private double  totalDisplacement;               // 27
-    private double  medianMaxSpeed;                  // 28
-    private double  maxMaxSpeed;                     // 29
-    private double  medianMeanSpeed;                 // 30
-    private double  maxMeanSpeed;                    // 31
-    private double  maxTrackDuration;                // 32
-    private double  totalTrackDuration;              // 33
-    private double  medianTrackDuration;             // 34
+    private String  experimentName;                  // 1
+    private String  recordingName;                   // 2
+    private int     squareNumber;                    // 3
+    private int     rowNumber;                       // 4
+    private int     colNumber;                       // 5
+    private int     labelNumber;                     // 6
+    private int     cellId;                          // 7
+    private boolean selected;                        // 8
+    private boolean squareManuallyExcluded;          // 9
+    private boolean imageExcluded;                   // 10
+    private double  x0;                              // 11
+    private double  y0;                              // 12
+    private double  x1;                              // 13
+    private double  y1;                              // 14
+    private int     numberOfTracks;                  // 15
+    private double  variability;                     // 16
+    private double  density;                         // 17
+    private double  densityRatio;                    // 18
+    private double  densityRatioOri;                 // 19
+    private double  tau;                             // 20
+    private double  rSquared;                        // 21
+    private double  medianDiffusionCoefficient;      // 22
+    private double  medianDiffusionCoefficientExt;   // 23
+    private double  medianLongTrackDuration;         // 24
+    private double  medianShortTrackDuration;        // 25
+    private double  medianDisplacement;              // 26
+    private double  maxDisplacement;                 // 27
+    private double  totalDisplacement;               // 28
+    private double  medianMaxSpeed;                  // 29
+    private double  maxMaxSpeed;                     // 30
+    private double  medianMeanSpeed;                 // 31
+    private double  maxMeanSpeed;                    // 32
+    private double  maxTrackDuration;                // 33
+    private double  totalTrackDuration;              // 34
+    private double  medianTrackDuration;             // 35
 
     private List<Track> tracks = new ArrayList<>();
     private Table tracksTable = null;
