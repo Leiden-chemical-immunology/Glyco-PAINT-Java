@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*.*.*'      # Trigger when you push a version tag like v1.3.0
 
+permissions:
+  contents: write  # ✅ required for GitHub Pages + releases
+
 jobs:
   build:
     name: Build and Release JARs
