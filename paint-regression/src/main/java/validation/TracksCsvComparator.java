@@ -5,28 +5,58 @@ import java.nio.file.*;
 import java.util.*;
 
 /**
- * ============================================================================
- *  TracksCsvComparator.java
- *  Part of the Paint Regression module.
+ * The TracksCsvComparator class is responsible for comparing two CSV datasets representing
+ * trajectories or tracks. It provides utilities to normalize CSV data, perform matching
+ * between tracks based on tolerance thresholds, and generate diagnostic and summary outputs.
+ * The comparison process evaluates multiple metrics such as duration, displacement, speed,
+ * distance, containment, and positional coordinates.
  *
- *  Purpose:
- *    Performs field-by-field comparison between legacy and Java-generated
- *    Tracks CSV output files and generates a set of validation reports:
+ * The class contains methods for normalization, grouping, tolerance optimization, and
+ * exact and approximate track matching. Additionally, it generates diagnostic outputs and
+ * summary CSVs for validating the results of the comparison process. Key features of this
+ * class include handling CSV read/write operations, computing match scores, and optimizing
+ * parameters for better matching.
  *
- *       +-- Tracks Validation - Comparison.csv
- *       +-- Tracks Validation - Comparison Diagnostics.csv
- *       +-- Tracks Validation - Comparison Summary.csv
- *       +-- Tracks Validation - Old Normalised.csv
- *       \-- Tracks Validation - New Normalised.csv
+ * Fields:
+ * - XY_TOLERANCE: Tolerance for positional X/Y deviations.
+ * - DURATION_TOLERANCE: Tolerance for duration deviations.
+ * - SPEED_TOLERANCE: Tolerance for speed deviations.
+ * - DISPLACEMENT_TOLERANCE: Tolerance for displacement deviations.
+ * - DIST_TOLERANCE: Tolerance for distance matching.
+ * - CONFINEMENT_TOLERANCE: Tolerance for confinement deviations.
+ * - MAX_ACCEPTABLE_SCORE: Maximum RMS score allowed for a match.
+ * - COMPARE_COLUMNS: Columns used for comparison across datasets.
+ * - COLUMN_MAP: Mapping between old and new CSV column names.
  *
- *  Author: Hans Bakker
- *  Module: paint-regression
- * ============================================================================
+ * Methods:
+ * - main: Entry point for the program; orchestrates data normalization, matching, and output generation.
+ * - normalizeRecordingName: Processes recording names by removing threshold suffixes.
+ * - findClosestRecording: Finds the best matching recording name among candidates.
+ * - normalizeAndSort: Normalizes and sorts rows based on recording names and track IDs.
+ * - writeNormalizedCsv: Writes normalized data to disk for verification.
+ * - findMatches: Performs matching between old and new tracks based on configurations.
+ * - findBestCandidate: Computes and returns the best possible match for a given reference track.
+ * - summarize: Generates a CSV summary of comparison results, capturing perfect, reasonable, and unmatched IDs.
+ * - diff: Calculates normalized differences for fields to be used in RMS scoring.
+ * - parseDoubleSafe: Safely parses strings into doubles, returning NaN on failure.
+ * - parseIntSafe: Safely parses strings into integers, returning -1 on failure.
+ * - readCsv: Reads a CSV file into a list of maps, retaining column-value associations.
+ * - escapeCsv: Escapes fields containing special characters such as commas or quotes.
+ * - groupBy: Groups rows by values in a given column.
+ * - fmt: Formats numbers to three decimal places for diagnostic output.
+ * - optimizeTolerances: Evaluates threshold effects on match counts to optimize tolerances.
+ * - percentWithin: Computes the percentage of deviations that are within specified tolerances.
  */
 public class TracksCsvComparator {
 
     /**
-     * Configuration for which comparison features are active.
+     * Represents configuration options for controlling the matching process in the context
+     * of trajectory or track comparison. Each field determines whether a specific metric
+     * or characteristic should be factored into the matching algorithm.
+     *
+     * The available metrics include duration, displacement, speed, distance, positional
+     * coordinates (x/y), and confinement. These boolean flags enable or disable the inclusion
+     * of the respective metric in the matching evaluation.
      */
     private static final class MatchConfig {
 
@@ -52,10 +82,15 @@ public class TracksCsvComparator {
     private static final double MAX_ACCEPTABLE_SCORE   = 40;
 
     // ---------------------------------------------------------------------
+
     /**
-     * Main entry point. Reads both CSVs, runs all phases, and writes output files.
+     * The main method serves as the entry point to the program, orchestrating the process
+     * of normalizing data, grouping, matching, and validating tracks from two CSV files
+     * representing an old and new dataset, respectively. The output includes validation
+     * summaries, diagnostics, and comparison files to analyze the results of strict and
+     * diagnostic matching phases.
      *
-     * @param args command-line arguments (not used)
+     * @param args the command-line arguments passed to the program; typically unused
      */
     public static void main(String[] args) {
 

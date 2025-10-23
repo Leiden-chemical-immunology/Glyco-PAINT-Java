@@ -39,18 +39,32 @@ import java.util.Set;
 import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 
 /**
- * PaintConfig manages JSON configuration files for the Paint application.
- * <p>
- * Features:
- * <ul>
- *   <li>Lazy initialisation: config file is only loaded when first accessed</li>
- *   <li>Self-healing defaults: missing keys are written back with default values</li>
- *   <li>Singleton access: a single global instance is maintained internally</li>
- *   <li>Static API for simple use with static imports (always saves)</li>
- *   <li>Instance API with {@code Value}-suffixed methods and optional autoSave</li>
- *   <li>Config file location can be set explicitly via {@link #initialise(Path)}</li>
- * </ul>
- */
+ * The {@code PaintConfig} class provides a configuration management system
+ * for handling configuration data, organized into named sections and key-value pairs.
+ * The configuration is stored as a JSON file and includes methods for reading,
+ * updating, and persisting values. It supports automatic creation of default
+ * configurations and offers both static and instance-level access.
+ *
+ * This class follows a singleton pattern for managing a global configuration instance,
+ * accessed via the {@link #instance()} method. It also supports initializing and
+ * switching between different configuration files.
+ *
+ * Fields:
+ * - {@code SECTION_GENERATE_SQUARES}: Section name for configuration related to generating squares.
+ * - {@code SECTION_PAINT}: Section name for configuration specific to painting operations.
+ * - {@code SECTION_RECORDING_VIEWER}: Section name related to recording viewer functionality.
+ * - {@code SECTION_TRACKMATE}: Section name for configurations concerning TrackMate integration.
+ * - {@code SECTION_DEBUG}: Section name for debug-related configuration.
+ * - {@code INSTANCE}: Singleton instance of the {@code PaintConfig} class.
+ * - {@code GSON}: Gson instance for JSON parsing and serialization.
+ * - {@code path}: Path to the configuration file on disk.
+ * - {@code configData}: Stored configuration data represented as a {@link JsonObject}.
+ *
+ * Key Features:
+ * - Retrieve and store configuration values of various types (string, int, double, boolean).
+ * - Dynamically create and remove configuration sections and keys.
+ * - Ability to specify a default value if a key or section is not found.
+ * - Thread-safe loading and saving of configuration data*/
 public class PaintConfig {
 
     // ============================================================================
@@ -85,11 +99,11 @@ public class PaintConfig {
     // ============================================================================
 
     /**
-     * Initializes the global PaintConfig with a custom config file location.
-     * If called more than once, the first call "wins".
+     * Initializes the global PaintConfig instance with the specified project path.
+     * If an instance already exists, it logs a warning and does not reinitialize
+     * unless the specified path differs from the current configuration path.
      *
-     * @param projectPath base project directory; the config will be read/written at
-     *                    {@code projectPath/PAINT_CONFIGURATION_JSON}
+     * @param projectPath the base project directory to resolve the configuration file path
      */
     public static void initialise(Path projectPath) {
         Path configPath = projectPath.resolve(PAINT_CONFIGURATION_JSON);
@@ -111,10 +125,11 @@ public class PaintConfig {
     }
 
     /**
-     * Re-initializes the global PaintConfig, replacing any existing instance.
-     * Use this when switching projects.
+     * Reinitializes the global PaintConfig instance with the specified project path.
+     * This method clears the existing configuration instance and creates a new one
+     * using the provided path.
      *
-     * @param projectPath base project directory for the new configuration location
+     * @param projectPath the base project directory to resolve the configuration file path
      */
     public static void reinitialise(Path projectPath) {
         synchronized (PaintConfig.class) {
@@ -126,9 +141,11 @@ public class PaintConfig {
     }
 
     /**
-     * Returns the global PaintConfig instance, creating it if necessary.
+     * Returns the singleton instance of {@code PaintConfig}, initializing it if necessary.
+     * If the instance is not yet created, it initializes with the default configuration
+     * path located in the user's home directory.
      *
-     * @return the singleton {@link PaintConfig} instance
+     * @return the singleton {@code PaintConfig} instance
      */
     public static PaintConfig instance() {
         if (INSTANCE == null) {
@@ -143,11 +160,23 @@ public class PaintConfig {
     // ============================================================================
 
     /**
-     * Ensures the configuration JSON is loaded from disk.
-     * <p>
-     * If not yet loaded, it attempts to read from {@link #path}; if no file exists,
-     * defaults are created and saved.
-     * </p>
+     * Ensures that the configuration data has been loaded into memory. This method is synchronized
+     * to prevent concurrent access issues. If the configuration data is already loaded, it immediately
+     * returns without performing further actions.
+     *
+     * If a configuration file exists at the specified path, it reads and parses the file into a
+     * {@link JsonObject}. If the file cannot be read or the content is invalid, an error is logged,
+     * and a new default {@link JsonObject} is created.
+     *
+     * If no configuration file exists at the specified path, a warning is logged, default values are
+     * loaded, and a new configuration file is saved to the disk.
+     *
+     * This method is primarily responsible for initializing the {@code configData} field with either
+     * the existing configuration from the file or freshly generated defaults.
+     *
+     * Thread-safety: This method locks the instance to prevent simultaneous operations that could
+     * interfere with loading the configuration. It must be invoked before accessing or modifying the
+     * configuration data to ensure consistency and availability.
      */
     private synchronized void ensureLoaded() {
         if (this.configData != null) {
@@ -171,7 +200,19 @@ public class PaintConfig {
     }
 
     /**
-     * Loads default configuration values (called if no file exists).
+     * Loads default configuration settings into the application's configuration store.
+     *
+     * This method initializes several sections of configuration, including but not limited to:
+     * - Generate Squares: Contains parameters for calculations and processing such as
+     *   minimum tracks, R-squared thresholds, variability limits, and density ratios.
+     * - Paint: Manages settings related to image file handling, such as file extension and version.
+     * - Recording Viewer: Determines behavior for saving recordings, such as prompting the user for action.
+     * - TrackMate: Sets up various parameters for track analysis, including frame gaps, linking costs,
+     *   spot tracking, track splitting, merging, median filtering, and distance thresholds.
+     * - Debug: Contains flags for enabling or disabling debug-related configurations.
+     *
+     * Each configuration section is encapsulated in a JsonObject and added to the global configuration store.
+     * Default values are statically defined within the method for consistency across application runs.
      */
     private void loadDefaults() {
 
@@ -226,7 +267,16 @@ public class PaintConfig {
         // @formatter:on
     }
 
-    /** Saves the current configuration to disk. */
+    /**
+     * Saves the current configuration data to a file specified by the path.
+     * This method ensures the directory structure exists before saving the
+     * configuration data in JSON format using the GSON library.
+     *
+     * If an error occurs during the saving process, an error message is logged.
+     *
+     * Pre-condition: The configuration data must be loaded and valid.
+     * Post-condition: The configuration data will be written to the specified path.
+     */
     public void save() {
         ensureLoaded();
         try {
@@ -348,11 +398,12 @@ public class PaintConfig {
     // ============================================================================
 
     /**
-     * Removes a single key from a given section.
+     * Removes a value associated with a specified key from a given section.
+     * If the autoSave parameter is set to true, saves the updated data.
      *
-     * @param section  section name (case-insensitive)
-     * @param key      key name to remove (case-insensitive)
-     * @param autoSave whether to immediately persist the change
+     * @param section the section from which the key-value pair should be removed
+     * @param key the key identifying the value to be removed
+     * @param autoSave whether to automatically save after removing the value
      */
     public void removeValue(String section, String key, boolean autoSave) {
         ensureLoaded();
@@ -364,10 +415,12 @@ public class PaintConfig {
     }
 
     /**
-     * Removes an entire section from the configuration.
+     * Removes a section from the configuration data.
+     * If autoSave is enabled, the configuration data will
+     * automatically be saved after the section is removed.
      *
-     * @param section  section name to remove (case-insensitive)
-     * @param autoSave whether to immediately persist the change
+     * @param section the name of the section to be removed
+     * @param autoSave if true, automatically saves the configuration after removing the section
      */
     public void removeSectionValue(String section, boolean autoSave) {
         ensureLoaded();
@@ -376,10 +429,11 @@ public class PaintConfig {
     }
 
     /**
-     * Returns the set of keys defined in the specified section.
+     * Retrieves the set of keys from a specific section within a JSON object.
      *
-     * @param section section name (case-insensitive)
-     * @return set of keys, or an empty set if the section does not exist
+     * @param section the name of the section to retrieve keys from
+     * @return a set of keys in the specified section; if the section does not exist,
+     *         returns an empty set
      */
     public Set<String> keys(String section) {
         JsonObject sec = getSection(section);
@@ -387,9 +441,10 @@ public class PaintConfig {
     }
 
     /**
-     * Returns all top-level section names currently in the configuration.
+     * Retrieves the set of section names available in the configuration data.
+     * Ensures that the configuration data is loaded before fetching the section names.
      *
-     * @return set of section names
+     * @return a set of strings representing the section names in the configuration.
      */
     public Set<String> sections() {
         ensureLoaded();
@@ -397,9 +452,11 @@ public class PaintConfig {
     }
 
     /**
-     * Returns the full configuration data as a {@link JsonObject}.
+     * Retrieves the JSON configuration data.
      *
-     * @return the root configuration JSON
+     * This method ensures that the configuration data is loaded before returning it.
+     *
+     * @return a JsonObject representing the configuration data.
      */
     public JsonObject getJson() {
         ensureLoaded();
@@ -416,6 +473,15 @@ public class PaintConfig {
     // Internal Helpers (for forgiving lookup)
     // ============================================================================
 
+    /**
+     * Retrieves a string value from the specified section and key. If the value is not found,
+     * the provided default value is returned, and a warning is logged.
+     *
+     * @param section the name of the section to look for the key
+     * @param key the key to search for in the specified section
+     * @param defaultValue the value to return if the key is not found or does not have a valid string value
+     * @return the string value associated with the specified key, or the provided default value if the key is not found
+     */
     private String getStringInternal(String section, String key, String defaultValue) {
         ensureLoaded();
         JsonObject sec = getSection(section);
@@ -430,6 +496,19 @@ public class PaintConfig {
         return defaultValue;
     }
 
+    /**
+     * Retrieves an integer value from a specified section and key in a JSON structure.
+     * If the key does not exist or the value is not a valid integer, a default value is applied
+     * and logged, and the default value is returned.
+     * The method ensures the data is loaded before attempting to retrieve the value.
+     *
+     * @param section     the section of the JSON structure to search for the key
+     * @param key         the key to look up in the specified section
+     * @param defaultValue the default integer value to return and apply if the key is not found
+     *                     or the value is not valid
+     * @return the integer value associated with the given key, or the default value if the key
+     *         does not exist or the value is not valid
+     */
     private int getIntInternal(String section, String key, int defaultValue) {
         ensureLoaded();
         JsonObject sec = getSection(section);
@@ -449,6 +528,18 @@ public class PaintConfig {
         return defaultValue;
     }
 
+    /**
+     * Retrieves a double value from a configuration section based on the provided key.
+     * If the key does not exist or contains an invalid value, the default value is returned
+     * and optionally written back to the configuration.
+     *
+     * @param section the section name in the configuration to search for the key
+     * @param key the key within the section to retrieve the double value for
+     * @param defaultValue the default value to return and apply if the key does not exist
+     *                     or contains an invalid value
+     * @return the double value associated with the key, or the default value if the key
+     *         does not exist or contains an invalid value
+     */
     private double getDoubleInternal(String section, String key, double defaultValue) {
         ensureLoaded();
         JsonObject sec = getSection(section);
@@ -468,6 +559,15 @@ public class PaintConfig {
         return defaultValue;
     }
 
+    /**
+     * Retrieves a boolean value from a specific section and key in the configuration.
+     * If the key is not found or cannot be converted to a boolean, it applies and returns the default value.
+     *
+     * @param section the configuration section from which the key is to be retrieved
+     * @param key the key whose boolean value is to be fetched
+     * @param defaultValue the default boolean value to be returned and applied if the key is not found or invalid
+     * @return the boolean value corresponding to the specified key or the default value if not found or invalid
+     */
     private boolean getBooleanInternal(String section, String key, boolean defaultValue) {
         ensureLoaded();
         JsonObject sec = getSection(section);
@@ -485,15 +585,10 @@ public class PaintConfig {
     }
 
     /**
-     * Returns a JsonObject for the given section name (case-insensitive),
-     * or {@code null} if the section does not exist.
-     * <p>
-     * This is useful for external modules (e.g., TrackMateHeadless) that
-     * need to iterate over dynamically defined sections like "Experiments".
-     * </p>
+     * Retrieves the specified section from the loaded configuration, ignoring case.
      *
-     * @param section section name to retrieve (case-insensitive)
-     * @return the section as a {@link JsonObject}, or {@code null} if absent
+     * @param section the name of the section to retrieve from the configuration
+     * @return a JsonObject representing the requested section, or null if the section does not exist
      */
     public JsonObject getSection(String section) {
         ensureLoaded();
@@ -501,10 +596,11 @@ public class PaintConfig {
     }
 
     /**
-     * Finds a section (case-insensitive), creating it if missing.
+     * Retrieves a section from the configuration if it exists, ignoring case sensitivity,
+     * or creates a new section if it does not exist.
      *
-     * @param section section name to find or create
-     * @return existing or newly created {@link JsonObject} section
+     * @param section the name of the section to retrieve or create
+     * @return the existing or newly created JsonObject section
      */
     private JsonObject getOrCreateSection(String section) {
         ensureLoaded();
@@ -516,11 +612,13 @@ public class PaintConfig {
     }
 
     /**
-     * Finds a key in a JSON object, ignoring case.
+     * Searches for a key in the given JsonObject, ignoring case sensitivity.
+     * If a match is found, the original key from the JsonObject is returned.
      *
-     * @param obj the object to search
-     * @param key the key name to locate
-     * @return the actual key string if found, otherwise {@code null}
+     * @param obj the JsonObject to search through, must not be null
+     * @param key the key to search for (case-insensitive), must not be null
+     * @return the original key from the JsonObject that matches the given key
+     *         case-insensitively, or null if no match is found
      */
     private String findKeyIgnoreCase(JsonObject obj, String key) {
         if (obj == null || key == null) return null;
@@ -531,10 +629,12 @@ public class PaintConfig {
     }
 
     /**
-     * Locates a section in the root config object by case-insensitive name.
+     * Searches for a section in the configuration data, ignoring case differences in the section name.
+     * If a matching section is found, it returns the section as a JsonObject.
+     * If no matching section is found, returns null.
      *
-     * @param section section name to search for
-     * @return the {@link JsonObject} section if found, otherwise {@code null}
+     * @param section the name of the section to search for, case-insensitive
+     * @return the JsonObject corresponding to the matched section, or null if no match is found
      */
     private JsonObject findSectionIgnoreCase(String section) {
         ensureLoaded();
@@ -545,6 +645,4 @@ public class PaintConfig {
         }
         return null;
     }
-
-
 }

@@ -5,25 +5,60 @@ import java.nio.file.*;
 import java.util.*;
 
 /**
- * ============================================================================
- *  SquaresCsvComparatorUnified.java
- *  --------------------------------------------------------------------------
- *  Compares two SQUARES_CSV files (old Python vs new Java versions)
- *  by normalizing, rounding, and numerically comparing corresponding values.
- * <p>
- *  Output directory: ~/Downloads/Validate/Squares/
- * <p>
- *  Generates:
- *    - Old/New normalized CSVs
- *    - Comparison report with per-field differences
- *    - Detailed numeric diff
- *    - Selected overview summary
- *    - Tolerance optimization summary
- * ============================================================================
+ * The SquaresCsvComparatorUnified class provides functionality to compare two CSV datasets
+ * aligning them to a unified schema, detecting differences, and generating detailed comparison
+ * reports. This class is primarily used to normalize and analyze discrepancies between data
+ * generated from two different systems (e.g., Python and Java).
+ *
+ * Fields:
+ * - FIELD_MAP: Defines column mapping from old CSV schema to the unified schema.
+ * - NUMERIC_FIELDS_LIST: List of field names treated as numeric.
+ * - NUMERIC_FIELDS: Set of numeric field names for precision handling.
+ * - squaresWithDiffs: Tracks squares with detected differences.
+ * - ROUNDING_MAP: Configures rounding precision for specific numeric fields.
+ * - TOLERANCE_MAP: Map of allowed tolerance thresholds for numeric comparisons.
+ * - EFFECTIVE_PRECISION_MAP: Maps effective precision (decimal places) per numeric field.
+ *
+ * Methods:
+ * - main(String[] args): Entry point to execute the CSV comparison process.
+ * - readCsv(Path p): Reads a CSV file and returns its content as rows of data.
+ * - writeCsv(List<Map<String, String>> rows, Path file): Writes rows of data to CSV, applying normalization.
+ * - escapeCsv(String s): Escapes special characters in CSV fields.
+ * - normalizeOld(List<Map<String, String>> oldRows): Normalizes the old dataset (e.g., Python CSV).
+ * - normalizeNew(List<Map<String, String>> newRows): Normalizes the new dataset (e.g., Java CSV).
+ * - adjustIndex(Map<String, String> m, String k): Adjusts 1-based indices to 0-based in the dataset.
+ * - computeEffectivePrecisions(List<Map<String, String>> a, List<Map<String, String>> b, Set<String> numeric):
+ *   Determines the effective numeric precision for numeric fields in the datasets.
+ * - detectPrecision(List<Map<String, String>> rows, String f): Detects maximum decimal precision for a field.
+ * - compareStatus(List<Map<String, String>> oldN, List<Map<String, String>> newN, Path outDir): Compares normalized datasets and generates a field-by-field comparison report.
+ * - writeDetailed(List<Map<String, String>> oldN, List<Map<String, String>> newN, Path outFile): Writes a detailed numeric differences report.
+ * - writeSelectedOverview(List<Map<String, String>> oldN, List<Map<String, String>> newN, Path outFile): Creates a compact comparison overview of selection criteria across datasets
+ * .
+ * - val(Map<String, String> m, String k): Extracts a value from a row map or returns an empty string if missing.
+ * - optimizeTolerances(Path comparisonCsv, Path outCsv): Analyzes comparison data to suggest optimal per-field tolerances.
+ * - percentWithin(List<Double> vals, double tol): Calculates percentage of values within a tolerance threshold.
+ * - key(Map<String, String> r): Creates a composite key for a row based on specific fields.
+ * - parseDouble(String s): Parses a string to Double, returning null for invalid inputs.
+ * - toDouble(String s): Parses a string to primitive double, returning 0.0 for invalid inputs.
+ * - format4(double v): Formats a double with 4 decimal places.
+ * - format1(double v): Formats a double with 1 decimal place.
+ * - relativeDeviation(String oldVal, String newVal): Computes relative deviation (percent) between two numeric strings.
+ * - isSelected(Map<String, String> r): Evaluates if a row meets predefined "selection" criteria.
+ * - isOptionalZero(String f): Checks if a field is treated as an "optional zero" numeric field.
  */
 public class SquaresCsvComparatorUnified {
 
-    /** Mapping of old column names (Python) to new column names (Java). */
+    /**
+     * A static and final map that serves as a key-value data structure
+     * for storing mappings of strings. The map is initialized as a
+     * LinkedHashMap to ensure that the order of insertion is preserved.
+     *
+     * This map is intended to be immutable, meaning it cannot be modified
+     * after its initialization. It is used to represent predefined mappings
+     * between string keys and string values, likely for configuration,
+     * settings, or other mapping-based use cases within the context of
+     * the application.
+     */
     private static final Map<String, String> FIELD_MAP = new LinkedHashMap<>();
     static {
         FIELD_MAP.put("Row Nr", "Row Number");
@@ -53,7 +88,12 @@ public class SquaresCsvComparatorUnified {
         FIELD_MAP.put("Square Nr", "Square Number");
     }
 
-    /** Ordered list of numeric fields that are compared in detail. */
+    /**
+     * A constant list that defines names of numeric fields used in specific calculations, analyses,
+     * or statistical operations. The list contains descriptive string identifiers associated with
+     * numeric data attributes related to specialized domains such as tracking, displacement, diffusion,
+     * density, and variability metrics.
+     */
     private static final List<String> NUMERIC_FIELDS_LIST = Arrays.asList(
             "Square Nr",
             "Nr Tracks",
@@ -102,6 +142,14 @@ public class SquaresCsvComparatorUnified {
 
     // ---------------------------- Main ----------------------------
 
+    /**
+     * The main method orchestrates the entire workflow for comparing and validating
+     * CSV data related to square structures. It performs tasks such as reading CSVs,
+     * normalizing data, calculating precision levels, generating comparison files,
+     * and optimizing tolerance levels.
+     *
+     * @param args Command-line arguments passed to the program.
+     */
     public static void main(String[] args) {
         try {
             // Prepare output directory under ~/Downloads/Validate/Squares
@@ -173,11 +221,13 @@ public class SquaresCsvComparatorUnified {
     // ---------------------------- IO ----------------------------
 
     /**
-     * Reads a CSV file and returns a list of row maps.
+     * Reads a CSV file from the given path and parses its content into a list of maps.
+     * Each map represents a row, where the keys are the column headers
+     * and the values are the corresponding cell values.
      *
-     * @param p the path to the CSV file
-     * @return a list of rows, each row as Map&lt;column,value&gt;
-     * @throws IOException if an I/O error occurs while reading
+     * @param p the path to the CSV file to be read
+     * @return a list of maps where each map corresponds to a row in the CSV file with key-value pairs of column headers to cell values
+     * @throws IOException if there is an error opening or reading the file
      */
     private static List<Map<String, String>> readCsv(Path p) throws IOException {
         List<Map<String, String>> rows = new ArrayList<>();
@@ -200,12 +250,13 @@ public class SquaresCsvComparatorUnified {
     }
 
     /**
-     * Writes a normalized list of rows to CSV.
-     * Applies numeric rounding and cleans up zero fields.
+     * Writes a list of rows represented as key-value pairs into a CSV file at the specified location.
+     * The method creates necessary directories if they do not exist and processes special formatting
+     * requirements for numeric fields and headers.
      *
-     * @param rows list of row maps to write
-     * @param file output file path
-     * @throws IOException if writing fails
+     * @param rows a list of maps where each map represents a row of the CSV. Keys are column names, and values are cell data.
+     * @param file the path to the CSV file to be written. Directories in the path will be created if they do not exist.
+     * @throws IOException if an I/O error occurs during file creation or writing.
      */
     private static void writeCsv(List<Map<String, String>> rows, Path file) throws IOException {
         if (rows.isEmpty()) return;
@@ -261,10 +312,13 @@ public class SquaresCsvComparatorUnified {
     }
 
     /**
-     * Escapes CSV fields containing commas or quotes.
+     * Escapes a string for safe usage in a CSV file. If the string contains
+     * a comma or a double quote, it will be wrapped in double quotes,
+     * and any double quotes within the string will be escaped by doubling them.
+     * If the input is null, an empty string is returned.
      *
-     * @param s input string
-     * @return CSV-safe escaped string
+     * @param s the string to be escaped for CSV formatting; may be null
+     * @return a CSV-safe version of the input string, or an empty string if the input is null
      */
     private static String escapeCsv(String s) {
         if (s == null) return "";
@@ -275,17 +329,15 @@ public class SquaresCsvComparatorUnified {
     // ---------------------------- Normalization ----------------------------
 
     /**
-     * Normalizes the "old" (Python) CSV by renaming and cleaning fields.
-     * <ul>
-     *   <li>Strips <code>-threshold-N</code> suffix from recording names.</li>
-     *   <li>Maps columns using {@link #FIELD_MAP} to a unified schema.</li>
-     *   <li>Clears negative Tau values.</li>
-     *   <li>Converts 1-based row/column indices to 0-based.</li>
-     *   <li>Derives and adds the {@code Selected} flag.</li>
-     * </ul>
+     * Normalizes and transforms a list of rows (represented as maps)
+     * by cleaning and remapping fields, adjusting indices, and
+     * computing selection flags.
      *
-     * @param oldRows list of rows from the old CSV
-     * @return normalized list of row maps (same size as input)
+     * @param oldRows a list of maps representing rows of data to be normalized.
+     *                Each map contains key-value pairs of the original data.
+     * @return a list of maps where each map represents a normalized row of data
+     *         with cleaned and remapped fields, adjusted indices, and computed
+     *         selection flags.
      */
     public static List<Map<String, String>> normalizeOld(List<Map<String, String>> oldRows) {
         List<Map<String, String>> out = new ArrayList<>();
@@ -317,11 +369,11 @@ public class SquaresCsvComparatorUnified {
     }
 
     /**
-     * Normalizes the "new" (Java) CSV to the unified schema and appends
-     * a computed {@code Selected} flag.
+     * Normalizes a list of maps by restructuring and updating each map's key-value pairs
+     * based on predefined mappings and logic.
      *
-     * @param newRows list of rows from the new CSV
-     * @return normalized list of row maps
+     * @param newRows a list of maps representing rows of data to be normalized
+     * @return a list of normalized maps with updated key-value pairs
      */
     public static List<Map<String, String>> normalizeNew(List<Map<String, String>> newRows) {
         List<Map<String, String>> out = new ArrayList<>();

@@ -6,10 +6,72 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * GetOmeroUI represents a graphical user interface (GUI) application designed to manage
+ * directory-based operations related to Omero file processes. It allows the user to select
+ * a directory, initiate a processing operation on "Fileset" directories within the selected
+ * directory, and display the results of the operation.
+ *
+ * This class extends JFrame, providing a Swing-based GUI framework for interactions.
+ *
+ * Features:
+ * - Directory selection via a file chooser.
+ * - Initiating processing for directories containing "Fileset" data.
+ * - Moving valid files to the root folder and deleting empty "Fileset" directories upon processing.
+ * - Displaying remaining files within the root directory in a scrollable dialog.
+ * - Allowing users to close the application via a dedicated button.
+ *
+ * Components:
+ * - JLabel: Displays a label for the directory selection field.
+ * - JTextField: Displays the path of the currently selected directory.
+ * - JButton: Used for browsing directories, initiating processing, and exiting the application.
+ * - JPanel: Organizes layout for the directory selection area and buttons.
+ * - JScrollPane and JTextArea: Display the list of files after the processing operation.
+ *
+ * Processing Workflow:
+ * - The user selects a root directory from the application.
+ * - Valid files from "Fileset" directories within the root directory are moved to the root.
+ * - Empty "Fileset" directories are deleted after processing.
+ * - A summary of visible files now in the root directory is displayed.
+ *
+ * Exceptions:
+ * - Catches and handles I/O errors that may occur during file processing.
+ *
+ * Navigation:
+ * - JFrame window headline defaults to "Get Omero".
+ * - The application provides interactive navigation options for directory viewing and processing.
+ *
+ * Restrictions:
+ * - The directory field is non-editable, and must be selected via the browse button.
+ * - Prevents processing unless the chosen directory is valid.
+ */
 public class GetOmeroUI extends JFrame {
 
     private final JTextField directoryField;
 
+    /**
+     * Constructs an instance of the GetOmeroUI class, a GUI for processing directory-based data
+     * in the context of Omero file operations. The UI allows users to select a directory,
+     * initiate processing of "Fileset" directories within the selected directory, and view the
+     * processing results.
+     *
+     * Key features:
+     * - Displays a graphical user interface for directory selection and interaction.
+     * - Contains a "Browse" button for selecting directories via a file chooser.
+     * - Provides a "Process" button to initiate processing of selected directories.
+     * - Shows a processing summary, including the list of files remaining in the processed directory.
+     * - Includes a "Close" button to exit the application.
+     *
+     * Layout includes:
+     * - A text field showing the currently selected directory.
+     * - Buttons for browsing directories, processing data, and closing the application.
+     * - Proper spacing and formatting for usability.
+     *
+     * Upon processing:
+     * - Moves valid files from "Fileset" directories to the root directory.
+     * - Deletes empty "Fileset" directories post-processing.
+     * - Displays the results in a scrollable dialog.
+     */
     public GetOmeroUI() {
         super("Get Omero");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -74,6 +136,13 @@ public class GetOmeroUI extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Handles the action event triggered when the user clicks the "Browse" button.
+     * Opens a file chooser dialog to select a directory and updates the
+     * directory field with the selected directory path.
+     *
+     * @param e the action event triggered by the "Browse" button
+     */
     private void onBrowse(ActionEvent e) {
         JFileChooser chooser = new JFileChooser(directoryField.getText());
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -83,6 +152,15 @@ public class GetOmeroUI extends JFrame {
         }
     }
 
+    /**
+     * Handles the action event triggered when the "Process" button is clicked.
+     * Validates the directory selected by the user, processes the files within
+     * "Fileset" directories in the selected directory, and displays the list of
+     * remaining files in a scrollable dialog. Displays error messages for invalid
+     * inputs or processing failures.
+     *
+     * @param e the action event triggered by the "Process" button
+     */
     private void onProcess(ActionEvent e) {
         String path = directoryField.getText();
         if (path == null || path.isEmpty()) {

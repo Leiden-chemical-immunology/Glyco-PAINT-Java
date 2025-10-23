@@ -10,6 +10,26 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * The PaintLauncher class provides functionality for launching and managing
+ * a graphical user interface (GUI) designed to assist users in navigating through
+ * workflow-related applications in the Glyco-PAINT software suite.
+ *
+ * The GUI includes components like buttons, labels, and panels arranged in a specific layout
+ * to represent a workflow. The class utilizes mappings between user-friendly labels
+ * and associated application identifiers, enabling the conditional display of actionable
+ * buttons or visual-only workflow steps based on the map contents.
+ *
+ * Features:
+ * - Customized GUI appearance with consistent sizing, fonts, and colors.
+ * - Creation of customizable buttons and section labels with hover effects and styling.
+ * - Dynamic rendering of workflow paths using arrows and defined visual elements.
+ * - Integration to external application launching using associated identifiers.
+ * - Non-resizable, centered application window with a footer.
+ *
+ * The GUI is intended to provide a user-friendly gateway for interacting
+ * with Glyco-PAINT tools or associated processes.
+ */
 public class PaintLauncher {
 
     private static final Map<String, String> APP_MAP = new LinkedHashMap<>();
@@ -25,6 +45,18 @@ public class PaintLauncher {
     }
 
 
+    /**
+     * Initializes and displays the main graphical user interface (GUI) for the Glyco-PAINT Launcher.
+     *
+     * This method sets up the main window of the application with a fixed size and layout, featuring
+     * a title, a workflow panel with buttons and visual elements, and a footer. Buttons in the workflow
+     * panel are dynamically created based on the {@code APP_MAP} field, each associated with specific
+     * functionalities or applications. The GUI elements use customized styles, colors, and layouts
+     * optimized for a consistent appearance.
+     *
+     * The window is designed to be non-resizable, centered on the screen, and includes functionality
+     * for launching external applications defined by app mappings.
+     */
     private static void createAndShowGUI() {
         JFrame frame = new JFrame("Glyco-PAINT Launcher");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -98,6 +130,20 @@ public class PaintLauncher {
         frame.setVisible(true);
     }
 
+    /**
+     * Creates a styled JButton with custom appearance and behavior.
+     *
+     * This method sets properties such as font, colors, size, cursor, and border
+     * to create a visually consistent button. It also adds mouse listeners to
+     * provide a hover effect by adjusting the background color.
+     *
+     * @param text   The text to be displayed on the button.
+     * @param accent The primary accent color for the button (used as background color).
+     * @param fg     The color for the button's text.
+     * @param bg     The color for the background (though not directly set here, it may be relevant for overridden methods).
+     * @param size   The dimensions of the button.
+     * @return A JButton instance with the applied styles and behavior.
+     */
     private static JButton createStyledButton(String text, Color accent, Color fg, Color bg, Dimension size) {
         JButton btn = new JButton(text);
         btn.setPreferredSize(size);
@@ -126,6 +172,16 @@ public class PaintLauncher {
         return btn;
     }
 
+    /**
+     * Creates a styled JLabel with custom appearance and size. The label is centered
+     * with the specified text, background color, foreground color, and dimensions.
+     *
+     * @param text    The text to be displayed on the label.
+     * @param bgColor The background color of the label.
+     * @param fg      The foreground color (text color) of the label.
+     * @param size    The dimensions of the label (preferred, maximum, and minimum sizes).
+     * @return A JLabel instance with the applied styles and specified properties.
+     */
     private static JLabel createSectionLabel(String text, Color bgColor, Color fg, Dimension size) {
         JLabel label = new JLabel(text, SwingConstants.CENTER);
         label.setOpaque(true);
@@ -139,6 +195,17 @@ public class PaintLauncher {
         return label;
     }
 
+    /**
+     * Creates a JLabel representing a bold arrow with customized appearance.
+     *
+     * The arrow is displayed as a large, bold, and centered downward arrow ("↓")
+     * with a shadow effect, using the specified main and shadow colors. This method
+     * customizes the label's font, alignment, border, and preferred size.
+     *
+     * @param main   The primary color of the arrow.
+     * @param shadow The color used to create the shadow effect for the arrow.
+     * @return A JLabel instance with a styled bold arrow and shadow effect.
+     */
     private static JLabel createBoldArrow(Color main, Color shadow) {
         JLabel arrow = new JLabel("↓", SwingConstants.CENTER) {
             @Override
@@ -166,6 +233,15 @@ public class PaintLauncher {
         return arrow;
     }
 
+    /**
+     * Launches an external application by locating a JAR file with a specified prefix
+     * and executing it as a new process. The method searches for the JAR files in a
+     * predefined directory and displays error messages if no matching JAR is found or
+     * if the process fails to start.
+     *
+     * @param jarPrefix The prefix of the JAR file name to be located and executed.
+     * @param parent    The parent component for displaying error messages in dialog boxes.
+     */
     private static void launchApp(String jarPrefix, Component parent) {
         File jarDir = new File(System.getProperty("user.dir"), JAR_DIR);
         if (!jarDir.exists() || !jarDir.isDirectory()) {

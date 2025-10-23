@@ -8,7 +8,43 @@ import java.nio.file.Path;
 import static paint.shared.config.PaintConfig.*;
 
 /**
- * Holds the data retrieved from the TrackMate section of the Paint configuration file.
+ * The TrackMateConfig class represents configuration parameters used in a
+ * tracking system. It encapsulates various settings related to frame gap,
+ * localization techniques, distance thresholds, and track management
+ * functionalities like merging and splitting.
+ *
+ * The class is immutable as all properties are final and set through
+ * constructors. This allows for thread-safe usage and ensures the
+ * configuration data remains consistent throughout the application.
+ *
+ * TrackMateConfig offers the following core functionalities:
+ *
+ * - Specification of tracking parameters such as maximum frame gap, linking
+ *   costs, maximum allowed distances for linking, gap closing, splitting,
+ *   and merging.
+ * - Enabling or disabling specific track behaviors such as subpixel
+ *   localization, track merging, splitting, and gap closing.
+ * - Setting constraints on track construction, including minimum spots per
+ *   track, maximum spots in an image, and other related parameters.
+ * - Configuration of optional operations such as median filtering.
+ * - Enables retrieval of data in a structured manner using getter methods.
+ *   Setter methods are intentionally omitted due to the immutable nature of
+ *   the class.
+ * - Provides a utility method to initialize the configuration from a
+ *   PaintConfig object.
+ * - Offers functionality to serialize the configuration to a file in the
+ *   form of a structured string representation.
+ *
+ * Utility Methods:
+ *
+ * - `from(PaintConfig paintConfig)`: Creates a TrackMateConfig instance by
+ *   reading parameters from a PaintConfig object.
+ *
+ * - `trackMateConfigToFile(TrackMateConfig trackMateConfig, Path filePath)`:
+ *   Serializes the configuration object to a file for persistence.
+ *
+ * This class is designed for advanced tracking applications where precise
+ * and customizable configurations are essential.
  */
 public class TrackMateConfig {
 
@@ -33,6 +69,27 @@ public class TrackMateConfig {
 
     // Full constructor with all values specified
 
+    /**
+     * Constructs a configuration object for TrackMate with various parameters used for
+     * defining track linking, merging, splitting, and other track-based operations.
+     *
+     * @param maxFrameGap                  Maximum allowable frame gap for linking spots in a track.
+     * @param alternativeLinkingCostFactor Factor affecting the costs during alternative linking of spots.
+     * @param doSubpixelLocalization       Flag indicating whether subpixel spot localization should be performed.
+     * @param minNrSpotsInTrack            Minimum number of spots required for a track to be considered valid.
+     * @param linkingMaxDistance           Maximum allowable distance for linking neighboring spots.
+     * @param maxNrSpotsInImage            Maximum number of spots allowed in a single image/frame.
+     * @param gapClosingMaxDistance        Maximum distance permitted for closing gaps between track segments.
+     * @param targetChannel                The target channel to be used for track analysis.
+     * @param splittingMaxDistance         Maximum allowable distance for splitting tracks.
+     * @param trackColouring               Colouring scheme to use for visualizing tracks.
+     * @param radius                       The radius used for spatial filtering of the spots.
+     * @param allowGapClosing              Flag indicating whether gap closing in tracks is allowed.
+     * @param doMedianFiltering            Flag indicating whether median filtering should be applied to the tracks.
+     * @param allowTrackSplitting          Flag indicating if track splitting at branching points is allowed.
+     * @param allowTrackMerging            Flag indicating if merging of separate tracks is allowed.
+     * @param mergingMaxDistance           Maximum allowable distance for merging tracks.
+     */
     private TrackMateConfig(
 
             // @formatter:off
@@ -72,6 +129,14 @@ public class TrackMateConfig {
         // @formatter:on
     }
 
+    /**
+     * Constructs a configuration object for TrackMate using the parameters provided
+     * in the given PaintConfig instance. The configuration parameters set here are
+     * used for defining track-related operations such as linking, merging, splitting,
+     * and visualization.
+     *
+     * @param paintConfig The PaintConfig object containing parameters for configuring the TrackMate instance.
+     */
     private TrackMateConfig(PaintConfig paintConfig) {
         // @formatter:off
         this.maxFrameGap                  = getInt(    "TrackMate", "MAX_FRAME_GAP", 3);

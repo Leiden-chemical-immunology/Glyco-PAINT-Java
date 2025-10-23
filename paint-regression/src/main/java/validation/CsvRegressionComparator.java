@@ -5,36 +5,21 @@ import java.nio.file.*;
 import java.util.*;
 
 /**
- * ============================================================================
- *  CsvRegressionComparator.java
- *  Version: 2.4 (documented)
- * <p>
- *  PURPOSE
- *  ---------------------------------------------------------------------------
- *  Compare two already-normalized CSV files (e.g. "Squares" or "Tracks")
- *  to detect regressions between a baseline (reference) and a test file.
- * <p>
- *  This tool performs a deterministic, row-by-row comparison and reports
- *  any textual or numeric differences.  It is especially useful for validating
- *  output stability across code changes or environments.
- * <p>
- *  KEY FEATURES
- *  ---------------------------------------------------------------------------
- *   • No short-circuit — both files are fully read and compared even if identical.
- *   • Deterministic 1 : 1 row comparison (no reordering or fuzzy matching).
- *   • Console progress reporting for large datasets.
- *   • Summary preview of the first few detected differences.
- *   • Full difference report written to:
- *       ~/Downloads/Validate/Squares/Squares Regression Differences.csv
- * ============================================================================
+ * The CsvRegressionComparator class provides the functionality to compare two CSV files line by line.
+ * It generates a report summarizing the differences detected between the baseline and test CSV files.
+ * Designed as a utility tool, it can be executed from the command line with appropriate parameters or used programmatically.
  */
 public class CsvRegressionComparator {
 
     /**
-     * Entry point for command-line execution.
-     * Expects exactly two arguments: baseline CSV and test CSV paths.
+     * The main method serves as the program entry point. It compares two CSV files
+     * for regression differences, generates a comparison report, and outputs key
+     * details to the console. The application expects two arguments: paths to the
+     * baseline and test CSV files.
      *
-     * @param args [0] = baseline.csv, [1] = test.csv
+     * @param args an array of command-line arguments where:
+     *             args[0] is the path to the baseline CSV file
+     *             args[1] is the path to the test CSV file
      */
     public static void main(String[] args) {
         try {
@@ -72,7 +57,13 @@ public class CsvRegressionComparator {
         }
     }
 
-    /** @return default report path under the user’s Downloads/Validate/Squares directory. */
+    /**
+     * Constructs the default path where the regression comparison report will be saved.
+     *
+     * @return the default path for the regression difference report as a {@code Path} object,
+     *         pointing to the "Squares Regression Differences.csv" file located in a "Validate/Squares"
+     *         subdirectory under the user's "Downloads" folder.
+     */
     private static Path defaultReportPath() {
         return Paths.get(System.getProperty("user.home"), "Downloads", "Validate", "Squares",
                          "Squares Regression Differences.csv");
@@ -80,13 +71,17 @@ public class CsvRegressionComparator {
 
     // ----------------------------------------------------------------------
     /**
-     * Compare two CSV files line by line and generate a difference report.
+     * Compares two CSV files for differences based on their content, generates
+     * a detailed comparison report in CSV format, and returns the total count
+     * of detected differences. The comparison is performed row-wise and field-wise,
+     * capturing any added, missing, or differing values between the two files.
      *
-     * @param oldCsv  baseline (reference) CSV file
-     * @param newCsv  test CSV file
-     * @param outCsv  destination path for difference report
-     * @return total number of differences detected
-     * @throws IOException if file I/O fails
+     * @param oldCsv the path to the baseline CSV file
+     * @param newCsv the path to the test CSV file to compare against the baseline
+     * @param outCsv the path where the generated comparison report will be saved
+     * @return the total number of differences detected between the two CSV files
+     * @throws IOException if an I/O error occurs while reading the input files
+     *         or writing the output report
      */
     public static int compareFiles(Path oldCsv, Path newCsv, Path outCsv) throws IOException {
 
@@ -224,8 +219,14 @@ public class CsvRegressionComparator {
 
     // ----------------------------------------------------------------------
     /**
-     * Convert list of rows to a map keyed by "Recording Name - Square Nr".
-     * Multiple rows for the same key are stored in a list (preserving order).
+     * Converts a list of maps into a multi-map structure where each key in the resulting map
+     * is derived by concatenating the "Recording Name" and "Square Nr" values from the input maps.
+     * Each key maps to a list of the corresponding maps from the input list.
+     *
+     * @param rows a list of maps, where each map represents a row with string keys and values;
+     *             expected to contain "Recording Name" and "Square Nr" keys.
+     * @return a map where the keys are String combinations of "Recording Name" and "Square Nr" values,
+     *         and the values are lists of maps with corresponding entries.
      */
     private static Map<String, List<Map<String, String>>> toMultiMap(List<Map<String, String>> rows) {
         Map<String, List<Map<String, String>>> mm = new TreeMap<>();
@@ -240,8 +241,15 @@ public class CsvRegressionComparator {
 
     // ----------------------------------------------------------------------
     /**
-     * Read a CSV file into a list of maps (header → value).
-     * Commas are used as separators, no quoting support needed for normalized files.
+     * Reads a CSV file from the given path and parses its content into a list of maps.
+     * Each map represents a row in the CSV file, where the keys are the column headers
+     * and the values are the corresponding cell values. Empty rows are skipped and
+     * missing or empty values are represented as empty strings.
+     *
+     * @param path the path to the input CSV file
+     * @return a list of maps, where each map represents a row with column headers as keys
+     *         and cell values as values
+     * @throws IOException if an I/O error occurs while reading the file
      */
     private static List<Map<String, String>> readCsv(Path path) throws IOException {
         List<Map<String, String>> rows = new ArrayList<>();
@@ -269,7 +277,14 @@ public class CsvRegressionComparator {
     }
 
     // ----------------------------------------------------------------------
-    /** Clean field value: trim and normalize "NaN"/"null" to empty string. */
+    /**
+     * Cleans the given string input by trimming whitespace and replacing specific
+     * invalid values ("nan", "null") with an empty string.
+     *
+     * @param s the input string to clean; may be {@code null}
+     * @return a cleaned string with whitespace removed; returns an empty string if
+     *         the input is {@code null} or contains invalid values ("nan", "null")
+     */
     private static String clean(String s) {
         if (s == null) return "";
         String t = s.trim();
@@ -278,8 +293,15 @@ public class CsvRegressionComparator {
     }
 
     /**
-     * Determine whether two string values are equivalent,
-     * performing numeric equality check if both are valid numbers.
+     * Compares two string values for equality. If the strings are equal using {@link Objects#equals},
+     * the method returns true. If the strings represent valid numeric values, they are parsed and
+     * compared as doubles. The method returns true if the numeric representations are equal, and
+     * false otherwise.
+     *
+     * @param a the first string value to compare, may be {@code null}
+     * @param b the second string value to compare, may be {@code null}
+     * @return {@code true} if the strings are equal, either as exact string matches or as equivalent
+     *         numeric values; {@code false} otherwise
      */
     private static boolean valuesEqual(String a, String b) {
         if (Objects.equals(a, b)) return true;
@@ -289,7 +311,15 @@ public class CsvRegressionComparator {
         return false;
     }
 
-    /** Parse a string as a Double, returning null for invalid or NaN input. */
+    /**
+     * Attempts to parse a {@code String} into a {@code Double}. If the input string is
+     * {@code null}, empty, or cannot be parsed as a double, the method returns {@code null}.
+     * Also returns {@code null} if the parsed value is {@code NaN}.
+     *
+     * @param s the input string to parse into a {@code Double}; may be {@code null} or empty
+     * @return the {@code Double} value represented by the input string, or {@code null}
+     *         if the input is invalid, unparseable, or represents {@code NaN}
+     */
     private static Double parseDouble(String s) {
         if (s == null || s.isEmpty()) return null;
         try {
@@ -300,12 +330,26 @@ public class CsvRegressionComparator {
         }
     }
 
-    /** Safe null-to-empty conversion. */
+    /**
+     * Ensures that the given string is non-null by returning an empty string if the input is {@code null}.
+     * If the input is not {@code null}, the original string is returned unchanged.
+     *
+     * @param s the input string to check; may be {@code null}
+     * @return the original string if non-null, or an empty string if the input is {@code null}
+     */
     private static String safe(String s) {
         return (s == null) ? "" : s;
     }
 
-    /** Escape field content for CSV output if it contains commas or quotes. */
+    /**
+     * Processes a string to make it safe for use in a CSV file by properly escaping
+     * special characters and enclosing the string in quotes if necessary. Special
+     * characters include commas, double quotes, newlines, and carriage returns.
+     *
+     * @param s the input string to be processed; may be {@code null}
+     * @return a CSV-safe string, enclosed in quotes if special characters are present,
+     *         or an empty string if the input is {@code null}
+     */
     private static String csv(String s) {
         if (s == null) return "";
         if (s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r")) {

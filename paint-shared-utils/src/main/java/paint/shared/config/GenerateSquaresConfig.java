@@ -3,7 +3,31 @@ package paint.shared.config;
 import static paint.shared.config.PaintConfig.*;
 
 /**
- * Holds the data retrieved from the GenerateSquares section of the Paint configuration file.
+ * This class represents the configuration for generating squares within a system.
+ * It holds various parameters required for controlling and defining the behavior
+ * of square generation, including thresholds, counts, and mode settings.
+ *
+ * Instances of this class are created with configuration values retrieved
+ * from a file using helper methods for obtaining integer, double, and string
+ * values. These values are used to configure aspects such as the number of squares
+ * to generate, constraints for calculations, and mode parameters.
+ *
+ * The configuration parameters include:
+ * - Number of Squares in Recording: Specifies the total number of squares
+ *   involved in the system.
+ * - Min Tracks to Calculate Tau: Defines the minimum number of tracks required
+ *   to perform Tau calculations.
+ * - Min Required R Squared: Sets the minimum threshold for the R Squared value
+ *   to ensure statistical reliability.
+ * - Min Required Density Ratio: Determines the minimum density ratio required
+ *   for calculations.
+ * - Max Allowable Variability: Establishes the upper bound for allowed variability
+ *   within the system.
+ * - Neighbour Mode: Specifies the mode for handling neighborhood interactions.
+ *   Typical values include "Free".
+ *
+ * The default values for these parameters are defined in the class and can be
+ * overridden if needed during the creation of the configuration instance.
  */
 public class GenerateSquaresConfig {
 
@@ -17,7 +41,25 @@ public class GenerateSquaresConfig {
     // @formatter:on
 
 
-    /*
+    /**
+     * Constructs an instance of GenerateSquaresConfig with all configuration values
+     * retrieved from a file. The configuration values include integer, double, and
+     * string parameters which control aspects such as the number of squares in a recording,
+     * thresholds for calculations, and mode preferences.
+     *
+     * Retrieves configuration values using the following methods:
+     * - getInt: Used to fetch integer configuration values from the specified section and key.
+     * - getDouble: Used to fetch double configuration values from the specified section and key.
+     * - getString: Used to fetch string configuration values from the specified section and key.
+     *
+     * Default values for the configuration parameters are as follows:
+     * - Number of Squares in Recording: 400
+     * - Min Tracks to Calculate Tau: 20
+     * - Min Required R Squared: 0.1
+     * - Min Required Density Ratio: 0.1
+     * - Max Allowable Variability: 10.0
+     * - Neighbour Mode: "Free"
+     */ /*
      * Full constructor with all values retrieved from file
      */
     private GenerateSquaresConfig() {

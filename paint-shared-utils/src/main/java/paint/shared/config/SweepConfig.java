@@ -12,41 +12,21 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * SweepConfig loads and provides access to sweep configuration JSON.
- * <p>
- * Features:
- * <ul>
- *   <li>Parse a JSON file once and expose structured access</li>
- *   <li>Return active sweep values for TrackMate (numeric lists)</li>
- *   <li>Convenience boolean getter for flags (true/false, 1/0, strings)</li>
- * </ul>
- * <p>
- * Typical JSON structure:
- * <pre>{@code
- * {
- *   "Sweep Settings": {
- *     "Sweep": true
- *   },
- *   "TrackMate Sweep": {
- *     "LINKING_MAX_DISTANCE": true,
- *     "MAX_FRAME_GAP": false
- *   },
- *   "LINKING_MAX_DISTANCE": {
- *     "v1": 0.3,
- *     "v2": 0.4
- *   }
- * }
- * }</pre>
+ * The {@code SweepConfig} class provides functionality for loading, parsing, and retrieving
+ * sweep-related configuration from a JSON file. This configuration is stored internally
+ * as a {@link JsonObject}, and methods are provided to access specific types of data.
  */
 public class SweepConfig {
 
     private final JsonObject root;
 
     /**
-     * Load sweep configuration JSON from the given file path.
+     * Constructs a SweepConfig object by parsing a JSON configuration file.
+     * This constructor reads the specified file, parses its content as JSON, and initializes
+     * the configuration data.
      *
-     * @param filePath JSON file containing sweep configuration
-     * @throws IOException if the file cannot be read
+     * @param filePath the path to the JSON file containing the sweep configuration.
+     * @throws IOException if an I/O error occurs while reading the file.
      */
     public SweepConfig(String filePath) throws IOException {
         try (FileReader reader = new FileReader(filePath)) {
@@ -55,11 +35,15 @@ public class SweepConfig {
     }
 
     /**
-     * Returns the active sweep values as a map of attribute &rarr; list of {@link Number}s.
-     * JSON integers will become {@link Integer}, decimals will become {@link Double}.
+     * Retrieves the active sweep values for a specified category.
+     * This method processes the JSON configuration to extract and return
+     * a map containing the category attributes and their corresponding active numeric values.
+     * Only enabled attributes are included in the resulting map.
      *
-     * @param category name of the sweep category section (e.g. "TrackMate Sweep")
-     * @return map of parameter name &rarr; list of numeric values
+     * @param category the name of the category whose sweep values are to be fetched.
+     *                 It corresponds to a key in the root JSON object.
+     * @return a map of attributes to lists of numeric values. The map is empty if the category
+     *         does not exist or no active values are found.
      */
     public Map<String, List<Number>> getActiveSweepValues(String category) {
         Map<String, List<Number>> activeValues = new LinkedHashMap<>();
@@ -100,13 +84,14 @@ public class SweepConfig {
     }
 
     /**
-     * Convenience getter for booleans under a section/key.
-     * Accepts true/false, "true"/"false" (case-insensitive), or 1/0.
+     * Retrieves a boolean value from the configuration based on the specified section and key.
+     * If the section or key does not exist, or the value is not a valid boolean representation,
+     * the method returns the provided default value.
      *
-     * @param section      section name (e.g. "Sweep Settings")
-     * @param key          key name (e.g. "Sweep")
-     * @param defaultValue value to return if not found or invalid
-     * @return resolved boolean value
+     * @param section the name of the section in the configuration.
+     * @param key the name of the key within the specified section.
+     * @param defaultValue the value to return if the specified key is not found, or if the value cannot be resolved to a boolean.
+     * @return the boolean value from the configuration if found and valid; otherwise, the provided default value.
      */
     public boolean getBoolean(String section, String key, boolean defaultValue) {
         if (!root.has(section) || !root.get(section).isJsonObject()) {
