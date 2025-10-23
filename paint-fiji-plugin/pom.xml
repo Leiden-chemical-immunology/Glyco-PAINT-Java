@@ -24,6 +24,7 @@
     </properties>
 
     <dependencies>
+
         <!-- Fiji / TrackMate APIs (provided by Fiji runtime) -->
         <dependency>
             <groupId>sc.fiji</groupId>
@@ -84,16 +85,20 @@
             <version>1.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
+
     </dependencies>
 
     <repositories>
+
         <repository>
             <id>scijava.public</id>
             <url>https://maven.scijava.org/content/groups/public</url>
         </repository>
+
     </repositories>
 
     <build>
+
         <plugins>
 
             <!-- Compile to Java 8 -->
