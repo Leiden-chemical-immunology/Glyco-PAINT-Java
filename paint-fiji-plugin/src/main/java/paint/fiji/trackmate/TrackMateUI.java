@@ -51,9 +51,6 @@ public class TrackMateUI implements Command {
         PaintLogger.initialise(projectPath, "TrackMateOnProject.log");
         PaintLogger.debugf("TrackMate plugin started (Interactive).");
         PaintRuntime.initialiseFromPrefs();
-        if (PaintRuntime.isVerbose()) {
-            PaintLogger.infof("Verbose mode enabled from preferences.");
-        }
 
         // --- Log version info ---
         JarInfoLogger.JarInfo info = JarInfoLogger.getJarInfo(TrackMateUI.class);
