@@ -8,7 +8,6 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <!-- Common metadata -->
     <name>Paint Parent</name>
     <description>Parent POM for Paint projects</description>
     <url>https://github.com/jjabakker</url>
@@ -35,23 +34,11 @@
         </developer>
     </developers>
 
-    <contributors>
-        <contributor>
-            <name>Contributors welcome</name>
-        </contributor>
-    </contributors>
-
-    <mailingLists>
-        <mailingList>
-            <name>Paint Fiji Plugin Users</name>
-            <post>paint-fiji-plugin@example.com</post>
-        </mailingList>
-    </mailingLists>
-
     <scm>
         <connection>scm:git:git://github.com/jjabakker/paint-fiji-plugin.git</connection>
         <developerConnection>scm:git:ssh://github.com:jjabakker/paint-fiji-plugin.git</developerConnection>
         <url>https://github.com/jjabakker/paint-fiji-plugin</url>
+        <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
@@ -64,7 +51,7 @@
         <url>https://github.com/jjabakker/paint-fiji-plugin/actions</url>
     </ciManagement>
 
-    <!-- Build all modules together -->
+    <!-- Modules -->
     <modules>
         <module>paint-shared-utils</module>
         <module>paint-fiji-plugin</module>
@@ -78,70 +65,51 @@
     </modules>
 
     <properties>
-        <!-- Java 8 globally -->
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-
-        <!-- Explicit encoding for all modules -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-        <!-- Common JVM args for all GUI apps -->
         <app.jvm.args>-Xms512m -Xmx2048m -XX:ReservedCodeCacheSize=256m</app.jvm.args>
     </properties>
 
-    <!-- Central place for dependency versions -->
     <dependencyManagement>
-
         <dependencies>
-
             <dependency>
                 <groupId>com.github.jjabakker</groupId>
                 <artifactId>paint-shared-utils</artifactId>
                 <version>1.0.0-SNAPSHOT</version>
             </dependency>
-
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-csv</artifactId>
                 <version>1.10.0</version>
             </dependency>
-
             <dependency>
                 <groupId>org.scijava</groupId>
                 <artifactId>scijava-common</artifactId>
                 <version>2.94.1</version>
             </dependency>
-
         </dependencies>
-
     </dependencyManagement>
 
-    <!-- Central place for plugin versions -->
     <build>
-
         <pluginManagement>
-
             <plugins>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.11.0</version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>3.6.0</version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
                     <version>3.1.0</version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
@@ -159,23 +127,48 @@
                             </configuration>
                         </execution>
                     </executions>
-
                 </plugin>
-
             </plugins>
-
         </pluginManagement>
 
+        <plugins>
+            <!-- Site plugin: no <aggregate> tag; aggregation handled automatically -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.12.1</version>
+            </plugin>
+
+            <!-- GitHub Pages publishing -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-scm-publish-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <scmBranch>gh-pages</scmBranch>
+                    <pubScmUrl>scm:git:git@github.com:jjabakker/paint-fiji-plugin.git</pubScmUrl>
+                    <sitePath>.</sitePath>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
-    <!-- Reports (site + Javadoc) -->
     <reporting>
         <plugins>
-
+            <!-- Aggregator: generates combined parent+modules site -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
                 <version>3.4.5</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>dependencies</report>
+                            <report>modules</report>
+                            <report>summary</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
             </plugin>
 
             <plugin>
@@ -185,13 +178,36 @@
                 <reportSets>
                     <reportSet>
                         <reports>
-                            <report>javadoc</report>
+                            <report>aggregate</report> <!-- ✅ aggregate mode -->
                         </reports>
                     </reportSet>
                 </reportSets>
-            </plugin>
 
+                <configuration>
+                    <!-- Restore classic Javadoc layout -->
+                    <noindex>false</noindex>
+                    <notree>false</notree>
+                    <use>true</use>
+                    <splitindex>true</splitindex>
+
+                    <!-- Optional: Better look and feel -->
+                    <additionalOptions>
+                        <additionalOption>-linksource</additionalOption>
+                    </additionalOptions>
+
+                    <!-- Show protected/package classes too -->
+                    <show>protected</show>
+                </configuration>
+
+            </plugin>
         </plugins>
     </reporting>
+
+    <distributionManagement>
+        <site>
+            <id>github</id>
+            <url>scm:git:git@github.com:jjabakker/paint-fiji-plugin.git</url>
+        </site>
+    </distributionManagement>
 
 </project>
