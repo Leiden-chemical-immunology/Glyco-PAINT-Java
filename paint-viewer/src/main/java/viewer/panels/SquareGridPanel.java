@@ -18,22 +18,57 @@ import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_HEIGHT;
 import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH;
 
 /**
- * A Swing component for displaying and interacting with a grid of {@link Square} objects.
- * <p>
- * Each cell in the grid represents a single {@link Square} within a recording or experiment.
- * The panel supports visual overlays, square selection (individual or rectangular),
- * shading, borders, and contextual pop-ups with detailed square information.
- * </p>
+ * A graphical panel that displays a grid of squares and provides interactive features such as selection,
+ * annotation, and filtering. The {@code SquareGridPanel} can be customized with different display settings
+ * and includes capabilities for visual overlays, background images, and informational popups.
  *
- * <h3>Core Features</h3>
- * <ul>
- *   <li>Draws a grid of squares over an optional background image</li>
- *   <li>Allows click or drag-based square selection</li>
- *   <li>Displays overlays (shading, cell colors, selection highlights)</li>
- *   <li>Shows per-square metrics in a popup on left click</li>
- *   <li>Supports toggling of borders, shading, and numeric overlays</li>
- *   <li>Integrates with visibility filtering and control parameters from dialogs</li>
- * </ul>
+ * Fields:
+ * - {@code recording}: Associated recording object for the panel.
+ * - {@code rows}: Number of rows in the grid.
+ * - {@code cols}: Number of columns in the grid.
+ * - {@code backgroundImage}: The background image displayed beneath the grid.
+ * - {@code squares}: List of squares currently displayed in the grid.
+ * - {@code selectedSquares}: Set of currently selected square IDs.
+ * - {@code showBorders}: Flag indicating whether borders around the squares are displayed.
+ * - {@code showShading}: Flag indicating whether shading overlays are displayed.
+ * - {@code selectionRect}: Temporary selection rectangle during drag actions.
+ * - {@code dragStart}: Coordinates of the start point of a drag selection.
+ * - {@code ctrlMinDensityRatio}: Minimum density ratio for visibility filtering.
+ * - {@code ctrlMaxVariability}: Maximum allowed variability for visibility filtering.
+ * - {@code ctrlMinRSquared}: Minimum required R² value for visibility filtering.
+ * - {@code ctrlNeighbourMode}: Mode controlling neighbour-based visibility.
+ * - {@code selectionEnabled}: Flag indicating if interactive selection is enabled.
+ * - {@code dragSelectedSquares}: Set of squares temporarily selected during a drag.
+ * - {@code numberMode}: Numeric display mode for selected squares.
+ * - {@code CELL_COLORS}: Array of consistent cell colors.
+ * - {@code infoPopup}: Popup component for displaying square-related information.
+ *
+ * Methods:
+ * - Constructor: {@link SquareGridPanel(int, int)} initializes the panel with dimensions.
+ * - {@link #showSquareInfo(int, int)} displays an informational popup for a square under certain coordinates.
+ * - {@link #hideInfoPopup()} hides the square information popup if it is displayed.
+ * - {@link #selectSquaresInRect(Rectangle)} selects all squares intersecting a given selection rectangle.
+ * - {@link #setSelectionEnabled(boolean)} enables or disables interactive square selection.
+ * - {@link #getSelectedSquares()} returns the set of currently selected square IDs.
+ * - {@link #clearSelection()} clears all selected squares and refreshes the panel.
+ * - {@link #getSquares()} retrieves the list of currently displayed squares.
+ * - {@link #setSquares(List)} sets the list of squares to display on the panel.
+ * - {@link #setBackgroundImage(ImageIcon)} sets the background image displayed beneath the grid.
+ * - {@link #paintComponent(Graphics)} handles the rendering of the square grid and overlays.
+ * - {@link #drawCenteredString(Graphics, String, int, int, int, int)} draws centered text within a square cell.
+ * - {@link #setShowBorders(boolean)} toggles border visibility around the grid squares.
+ * - {@link #setNumberMode(NumberMode)} sets the numeric display mode for selected squares.
+ * - {@link #getSupportedCellCount()} retrieves the number of supported cell colors.
+ * - {@link #getColorForCell(int)} retrieves a consistent color associated with a given cell ID.
+ * - {@link #setControlParameters(double, double, double, String)} updates visibility control parameters.
+ * - {@link #applyVisibilityFilter()} reapplies square visibility filtering using current control parameters.
+ * - {@link #assignSelectedToCell(int)} assigns the currently selected squares to a specific cell ID.
+ * - {@link #clearMouseSelection()} clears all mouse-selection highlights.
+ * - {@link #setShowShading(boolean)} toggles shading overlay visibility.
+ * - {@link #setRecording(Recording)} sets the associated {@code Recording} object.
+ * - {@link #getRecording()} retrieves the associated {@code Recording} object.
+ *
+ * Inherits functionality from {@link JPanel}, allowing it to integrate seamlessly into UI applications.
  */
 public class SquareGridPanel extends JPanel {
 
@@ -64,7 +99,17 @@ public class SquareGridPanel extends JPanel {
     private final Set<Integer> dragSelectedSquares = new HashSet<>();
 
     /**
-     * Enumeration representing numeric display modes for squares.
+     * The NumberMode enumeration defines the modes for displaying numbers
+     * on squares within a grid. It provides three distinct modes:
+     * NONE, LABEL, and SQUARE, each controlling how numbers are rendered.
+     *
+     * Enumeration values:
+     * - NONE: Disables the drawing of numbers on the squares.
+     * - LABEL: Displays label numbers on specific selected squares.
+     * - SQUARE: Displays numbers representing square indices on selected squares.
+     *
+     * This enumeration is used to control the numeric display mode
+     * within the grid managed by the containing panel.
      */
     public enum NumberMode {
 
@@ -75,7 +120,19 @@ public class SquareGridPanel extends JPanel {
 
     private NumberMode numberMode = NumberMode.NONE;
 
-    /** Default cell colors used for visually differentiating assigned cells. */
+    /**
+     * An array of {@link Color} objects representing predefined cell colors used for
+     * coloring cells within the square grid. This is used to ensure consistent and
+     * distinguishable colors for different cells in the grid.
+     *
+     * Colors in the array:
+     * - {@link Color#RED}
+     * - {@link Color#GREEN}
+     * - {@link Color#BLUE}
+     * - {@link Color#MAGENTA}
+     * - {@link Color#ORANGE}
+     * - {@link Color#CYAN}
+     */
     private static final Color[] CELL_COLORS = {
             Color.RED,
             Color.GREEN,
@@ -88,10 +145,12 @@ public class SquareGridPanel extends JPanel {
     private JWindow infoPopup;
 
     /**
-     * Creates a {@code SquareGridPanel} with the given number of rows and columns.
+     * Constructs a new {@code SquareGridPanel} with the specified number of rows and columns.
+     * Adds mouse listeners to enable interactive square selection, displaying information popups,
+     * and handling rectangular selection through mouse dragging.
      *
-     * @param rows number of rows in the grid
-     * @param cols number of columns in the grid
+     * @param rows the number of rows in the square grid
+     * @param cols the number of columns in the square grid
      */
     public SquareGridPanel(int rows, int cols) {
         this.rows = rows;
@@ -145,7 +204,7 @@ public class SquareGridPanel extends JPanel {
                     }
                 }
 
-                // Always show popup on left-click; right-click closes it
+                // Always show the popup on left-click; right-click closes it
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     showSquareInfo(e.getX(), e.getY());
                 } else if (SwingUtilities.isRightMouseButton(e)) {
@@ -172,10 +231,13 @@ public class SquareGridPanel extends JPanel {
     }
 
     /**
-     * Displays an informational popup for the square under the given coordinates.
+     * Displays detailed information about the square in the grid that corresponds
+     * to the specified mouse coordinates. The information is presented in the form
+     * of a popup window showing characteristics such as density ratio,
+     * variability, R² value, and the number of tracks.
      *
-     * @param mouseX x-coordinate of the mouse click
-     * @param mouseY y-coordinate of the mouse click
+     * @param mouseX the x-coordinate of the mouse position in the panel
+     * @param mouseY the y-coordinate of the mouse position in the panel
      */
     private void showSquareInfo(int mouseX, int mouseY) {
         if (squares == null || squares.isEmpty()) {
@@ -249,7 +311,13 @@ public class SquareGridPanel extends JPanel {
         infoPopup.setVisible(true);
     }
 
-    /** Hides and disposes the square information popup if present. */
+    /**
+     * Hides the information popup if it is currently visible by setting its visibility
+     * to false and disposing of it. Once hidden, the reference to the popup is set to null
+     * to free up resources.
+     *
+     * This method ensures that any active information popup is closed and cleaned up properly.
+     */
     private void hideInfoPopup() {
         if (infoPopup != null) {
             infoPopup.setVisible(false);

@@ -13,6 +13,15 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A utility class for managing and recording viewer override configurations in a CSV file.
+ * The ViewerOverrideWriter is designed to log and persist parameter overrides at different
+ * scoping levels: Recording, Experiment, and Project.
+ *
+ * The class ensures that recording-specific override configurations are saved in a managed
+ * structured way within the specified CSV file, and it handles both appending and replacing
+ * existing entries based on the recording names.
+ */
 public class ViewerOverrideWriter {
     private final File csvFile;
 
@@ -20,8 +29,22 @@ public class ViewerOverrideWriter {
         this.csvFile = csvFile;
     }
 
-    public void applyAndWrite(String scope, SquareControlParams params,
-                              List<RecordingEntry> recordings, int currentIndex, Project project) {
+    /**
+     * Applies the given parameters and writes override records based on the specified scope.
+     * The scope determines the granularity at which the override is applied:
+     * "Recording", "Experiment", or "Project".
+     *
+     * @param scope the scope of the operation, either "Recording", "Experiment", or "Project"
+     * @param params the parameters to be written as override values
+     * @param recordings the list of recording entries from which the data will be determined
+     * @param currentIndex the index of the current recording entry being processed in the recordings list
+     * @param project the project within which the operation is being performed
+     */
+    public void applyAndWrite(String scope,
+                              SquareControlParams params,
+                              List<RecordingEntry> recordings,
+                              int currentIndex,
+                              Project project) {
         String timestamp = LocalDateTime.now().toString();
 
         if ("Recording".equals(scope)) {
@@ -43,7 +66,20 @@ public class ViewerOverrideWriter {
         }
     }
 
-    private void writeOverrideRecord(String recordingName, SquareControlParams params, String timestamp) {
+    /**
+     * Writes an override record into the CSV file based on the provided recording name,
+     * control parameters, and timestamp. If the recording already exists in the file,
+     * its entry is updated; otherwise, a new record is added. If the file does not
+     * exist or does not have valid headers, the necessary headers are added.
+     *
+     * @param recordingName the name of the recording for which the override is written
+     * @param params the control parameters containing density ratio, variability,
+     *               R-squared value, and neighbour mode
+     * @param timestamp the timestamp associated with the override record
+     */
+    private void writeOverrideRecord(String recordingName,
+                                     SquareControlParams params,
+                                     String timestamp) {
         PaintLogger.infof(
                 "Override for '%s': MinDensityRatio=%.0f, MaxVariability=%.0f, MinRSquared=%.2f, NeighbourMode=%s",
                 recordingName, params.densityRatio, params.variability, params.rSquared, params.neighbourMode

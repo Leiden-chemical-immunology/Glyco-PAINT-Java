@@ -7,6 +7,35 @@ import java.awt.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * A dialog window for assigning actions related to a specific cell within a
+ * grid-like interface. The dialog allows users to select a cell via radio
+ * buttons and perform actions such as assigning, undoing, canceling, or
+ * closing the dialog.
+ *
+ * The selection is visually represented by a colored square alongside
+ * radio buttons, where the colors correspond to specific cells. The dialog
+ * interacts with a {@link CellAssignmentDialog.Listener} interface for
+ * handling user actions.
+ *
+ * Features of this dialog include:
+ * - Modeless behavior to remain accessible alongside the parent frame.
+ * - Dynamic creation of cell options based on the number of supported cells.
+ * - Visual UI components that include a custom color-coded cell representation
+ *   and a grouped selection mechanism with radio buttons.
+ * - Scrollable layout for handling a large number of cells.
+ *
+ * Key Actions:
+ * 1. "Assign": Notifies the listener to assign a selected cell ID.
+ * 2. "Undo": Notifies the listener to undo the last selection or assignment action.
+ * 3. "Cancel": Notifies the listener to cancel the current selection.
+ * 4. "Close": Closes the dialog without making changes.
+ *
+ * Constructor Parameters:
+ * - `owner`: The parent frame that owns this dialog.
+ * - `listener`: An implementation of the {@code CellAssignmentDialog.Listener} interface
+ *   used for event handling when users perform actions in the dialog.
+ */
 public class CellAssignmentDialog extends JDialog {
 
     public interface Listener {
@@ -72,6 +101,16 @@ public class CellAssignmentDialog extends JDialog {
         updateVisualSelection(); // initial state
     }
 
+    /**
+     * Creates a JPanel that represents a row containing a square indicator and a radio button
+     * for selecting a specific cell, along with associated visual and interaction logic.
+     *
+     * @param cellId the unique identifier for the cell associated with this row
+     * @param label the text label to display next to the radio button
+     * @param baseColor the base border color for the square indicator
+     * @param selected whether the radio button should be pre-selected upon creation
+     * @return a JPanel configured with the square indicator and a labeled radio button
+     */
     private JPanel createCellRow(int cellId, String label, Color baseColor, boolean selected) {
         JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
 
@@ -120,6 +159,13 @@ public class CellAssignmentDialog extends JDialog {
         return row;
     }
 
+    /**
+     * Retrieves the unique identifier (cell ID) for the currently selected cell
+     * based on the selected radio button within the `squareByRadio` group.
+     * If no radio button is selected, the method returns 0.
+     *
+     * @return the cell ID associated with the selected radio button, or 0 if none is selected
+     */
     private int getSelectedCellId() {
         for (JRadioButton rb : squareByRadio.keySet()) {
             if (rb.isSelected()) {
@@ -132,6 +178,15 @@ public class CellAssignmentDialog extends JDialog {
         return 0;
     }
 
+    /**
+     * Updates the visual selection of radio buttons and their associated squares in the dialog.
+     *
+     * Iterates over the entries in the squareByRadio mapping, which associates radio buttons
+     * with corresponding JPanel (square) components. For each radio button, it retrieves the
+     * cell ID stored in its client property and determines the corresponding color to apply.
+     * If the cell ID is 0, a default color is applied; otherwise, a specific color is retrieved
+     * for the cell ID. Finally, triggers a repaint of the component to reflect the updates.
+     */
     private void updateVisualSelection() {
         for (Map.Entry<JRadioButton, JPanel> e : squareByRadio.entrySet()) {
             JRadioButton rb = e.getKey();

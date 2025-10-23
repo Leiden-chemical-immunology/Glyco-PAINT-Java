@@ -13,6 +13,14 @@ import java.util.List;
 
 public class RecordingEntry {
 
+    /**
+     * Represents a recording associated with a specific entry in a recording-based experiment.
+     * This field stores metadata and data pertaining to the recording, which can be accessed
+     * or manipulated through the associated methods and properties of the {@code RecordingEntry} class.
+     * <p>
+     * The {@code recording} is used to retrieve or analyze information related to the experiment
+     * it belongs to, such as the recording's name, probe data, and other parameters.
+     */
     // @formatter:off
     private final Recording recording;
     private final Path      trackmateImagePath;
@@ -28,6 +36,18 @@ public class RecordingEntry {
     private final ImageIcon rightImage;
     private List<Square> squares;
 
+    /**
+     * Constructs a new RecordingEntry with the given parameters.
+     *
+     * @param recording the recording object that contains data related to the recording.
+     * @param trackmateImagePath the file path to the TrackMate image.
+     * @param brightfieldImagePath the file path to the Brightfield image.
+     * @param experimentName the name of the experiment associated with this entry.
+     * @param minRequiredDensityRatio the minimum required density ratio for processing or validation.
+     * @param maxAllowableVariability the maximum allowable variability level accepted.
+     * @param minRequiredRSquared the minimum required R-squared value for model fitting or analysis.
+     * @param neighbourMode the mode defining neighbor calculation or analysis strategy.
+     */
     public RecordingEntry(
             Recording recording,
             Path trackmateImagePath,
@@ -53,7 +73,15 @@ public class RecordingEntry {
         this.rightImage = loadImage(brightfieldImagePath, "Brightfield");
     }
 
-    // === Robust image loading helper ===
+    /**
+     * Loads an image from the given file path. If the image cannot be loaded using standard
+     * ImageIO methods, it attempts to load the image using ImageJ's Opener. In case of a
+     * failure to load the image, an error is logged, and null is returned.
+     *
+     * @param imagePath the file path of the image to be loaded; must not be null.
+     * @param label a descriptive label used for logging, providing context about the image being loaded.
+     * @return an ImageIcon instance representing the loaded image, or null if the image could not be loaded.
+     */
     private static ImageIcon loadImage(Path imagePath, String label) {
         if (imagePath == null) {
             return null;
@@ -163,7 +191,19 @@ public class RecordingEntry {
         return recording;
     }
 
-    // === Square loading and caching (experiment-level) ===
+    /**
+     * Retrieves a list of Square objects associated with the current recording. This method
+     * caches the fetched squares per experiment to optimize performance. If the squares have
+     * already been cached, it returns the cached version; otherwise, it fetches them from
+     * the experiment-level cache and caches them for future use.
+     *
+     * @param project the project object representing the context of the current operation,
+     *                used for retrieving the experiment-related data.
+     * @param expectedNumberOfSquares the expected number of Square objects to retrieve,
+     *                                helping ensure consistency in the loaded data.
+     * @return a list of Square objects associated with the current recording. If an error
+     *         occurs during retrieval, an empty list is returned.
+     */
     public List<Square> getSquares(Project project, int expectedNumberOfSquares) {
         if (squares == null) {
             try {

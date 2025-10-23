@@ -10,6 +10,22 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+/**
+ * The FilterDialog class provides a modal dialog for filtering a list of
+ * RecordingEntry objects based on various attributes such as cell type,
+ * probe name, probe type, adjuvant, and concentration.
+ *
+ * This class extends JDialog and uses JList components for user input,
+ * allowing multiple filter criteria to be selected. Users can apply filters,
+ * reset individual filters, reset all filters, or cancel the operation.
+ *
+ * Key Features:
+ * 1. Displays various filtering options as lists, each grouped in separate
+ *    panels with filter and reset buttons.
+ * 2. Allows multi-selection in each filter list for flexible filtering.
+ * 3. Updates the displayed options dynamically based on the filtered results.
+ * 4. Provides options to apply filters, reset all filters, or cancel the actions.
+ */
 public class FilterDialog extends JDialog {
 
     private final List<RecordingEntry> originalRecordings;
@@ -23,6 +39,14 @@ public class FilterDialog extends JDialog {
 
     private boolean cancelled = true;
 
+    /**
+     * Constructs a FilterDialog for filtering a list of RecordingEntry objects. The dialog
+     * provides a user interface for selecting and applying various filtering options
+     * based on attributes such as cell type, probe name, probe type, adjuvants, and concentrations.
+     *
+     * @param owner the parent frame that owns this dialog
+     * @param recordings the list of RecordingEntry objects to be filtered
+     */
     public FilterDialog(Frame owner, List<RecordingEntry> recordings) {
         super(owner, "Filter Recordings", true);
         this.originalRecordings = new ArrayList<>(recordings);
@@ -102,6 +126,14 @@ public class FilterDialog extends JDialog {
         setLocationRelativeTo(owner);
     }
 
+    /**
+     * Creates a JList from the provided set of string values.
+     * The JList is configured to support multiple interval selection
+     * and displays a maximum of five visible rows.
+     *
+     * @param values the set of string values to populate the JList
+     * @return a JList containing the given values
+     */
     private JList<String> createList(Set<String> values) {
         JList<String> list = new JList<>(values.toArray(new String[0]));
         list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -109,6 +141,16 @@ public class FilterDialog extends JDialog {
         return list;
     }
 
+    /**
+     * Creates a JPanel containing a titled border, a scrollable JList,
+     * and two buttons ("Filter" and "Reset") with attached functionality.
+     * The "Filter" button applies filters based on selected items in the JList,
+     * and the "Reset" button resets the filters.
+     *
+     * @param title the title to be displayed on the JPanel border
+     * @param list  the JList component to be added to the panel; used for filtering and resetting functionality
+     * @return a JPanel that integrates the JList and associated buttons in a structured layout
+     */
     private JPanel createListBoxWithButtons(String title, JList<String> list) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder(title));
@@ -133,6 +175,14 @@ public class FilterDialog extends JDialog {
         return panel;
     }
 
+    /**
+     * Applies a filter to the list of recordings based on the selected items
+     * in the provided JList. The method modifies the filteredRecordings field by
+     * retaining only the entries that match the selected criteria in the JList.
+     * Updates the UI lists after applying the filter.
+     *
+     * @param list the JList component containing selectable filter criteria
+     */
     private void applySingleFilter(JList<String> list) {
         List<String> selected = list.getSelectedValuesList();
         if (selected.isEmpty()) {
@@ -146,16 +196,39 @@ public class FilterDialog extends JDialog {
         updateLists();
     }
 
+    /**
+     * Resets the filtered recordings list to its original unfiltered state and updates the UI
+     * components based on the full set of original recordings. This action corresponds
+     * to resetting a single filter associated with the provided JList.
+     *
+     * @param list the JList representing the filter criteria to be reset
+     */
     private void resetSingleFilter(JList<String> list) {
         filteredRecordings = new ArrayList<>(originalRecordings);
         updateLists();
     }
 
+    /**
+     * Resets all applied filters and restores the filtered recordings to the original unfiltered state.
+     * This method resets the filteredRecordings list to match the originalRecordings list, ensuring
+     * that no filtering constraints are applied. After resetting the filters, it updates the associated
+     * UI lists to reflect the full set of available recordings and their attributes.
+     */
     private void resetAllFilters() {
         filteredRecordings = new ArrayList<>(originalRecordings);
         updateLists();
     }
 
+    /**
+     * Checks if a given RecordingEntry matches the selected filter criteria in the specified JList.
+     * The method evaluates the relevant attribute of the RecordingEntry based on the type of JList
+     * provided (e.g., cell type, probe name, etc.) and determines whether it is included in the selected criteria.
+     *
+     * @param entry the RecordingEntry to be evaluated against the filter criteria
+     * @param list the JList representing the filter criteria (e.g., cell type list, probe name list)
+     * @param selected the list of selected filter criteria corresponding to the JList
+     * @return true if the RecordingEntry matches the selected criteria; false otherwise
+     */
     private boolean matches(RecordingEntry entry, JList<String> list, List<String> selected) {
         if (list == cellTypeList) {
             return selected.contains(entry.getCellType());
@@ -171,12 +244,27 @@ public class FilterDialog extends JDialog {
         return true;
     }
 
+    /**
+     * Updates the contents of several UI lists (cellTypeList, probeNameList, probeTypeList, adjuvantList, and concentrationList)
+     * based on the unique attribute values present in the filteredRecordings list.
+     *
+     * This method utilizes the updateList helper method to populate each JList with the corresponding
+     * set of distinct values derived from the attributes of the filtered recordings.
+     *
+     * Specific attributes of RecordingEntry objects are extracted, including cell type, probe name, probe type,
+     * adjuvant, and concentration. The extracted values are converted to sets to ensure uniqueness, and
+     * the UI lists are updated accordingly.
+     */
     private void updateLists() {
-        updateList(cellTypeList, filteredRecordings.stream().map(RecordingEntry::getCellType).collect(Collectors.toSet()));
-        updateList(probeNameList, filteredRecordings.stream().map(RecordingEntry::getProbeName).collect(Collectors.toSet()));
-        updateList(probeTypeList, filteredRecordings.stream().map(RecordingEntry::getProbeType).collect(Collectors.toSet()));
-        updateList(adjuvantList, filteredRecordings.stream().map(RecordingEntry::getAdjuvant).collect(Collectors.toSet()));
+
+        //@formatter:off
+        updateList(cellTypeList,      filteredRecordings.stream().map(RecordingEntry::getCellType).collect(Collectors.toSet()));
+        updateList(probeNameList,     filteredRecordings.stream().map(RecordingEntry::getProbeName).collect(Collectors.toSet()));
+        updateList(probeTypeList,     filteredRecordings.stream().map(RecordingEntry::getProbeType).collect(Collectors.toSet()));
+        updateList(adjuvantList,      filteredRecordings.stream().map(RecordingEntry::getAdjuvant).collect(Collectors.toSet()));
         updateList(concentrationList, filteredRecordings.stream().map(e -> String.valueOf(e.getConcentration())).collect(Collectors.toSet()));
+        //@formatter:off
+
     }
 
     private void updateList(JList<String> list, Set<String> values) {

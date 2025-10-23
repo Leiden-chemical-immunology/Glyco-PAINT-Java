@@ -30,6 +30,19 @@ import java.util.List;
 import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_HEIGHT;
 import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH;
 
+/**
+ * The RecordingViewerFrame class manages the GUI frame for visualizing and interacting with
+ * recordings and their attributes. It provides functionalities to navigate recordings, display
+ * recording-related images, and manage square-based grid interactions.
+ *
+ * The frame includes a left grid panel showing squares associated with recordings, labels
+ * displaying experiment and recording details, and panels for recording attributes, controls,
+ * and navigation. Additionally, the interface handles user actions such as navigation, filtering,
+ * and square interaction.
+ *
+ * This class implements the listener interfaces for RecordingControlsPanel and NavigationPanel
+ * to handle user-triggered events and updates accordingly.
+ */
 public class RecordingViewerFrame extends JFrame
         implements RecordingControlsPanel.Listener, NavigationPanel.Listener {
 
@@ -50,6 +63,16 @@ public class RecordingViewerFrame extends JFrame
     private final ViewerOverrideWriter overrideWriter;
     private final SquareControlHandler controlHandler = new SquareControlHandler();
 
+    /**
+     * Constructs a {@code RecordingViewerFrame} that initializes and displays the recording viewer UI.
+     * The frame includes panels for grid visualization, controls, recording attributes,
+     * navigation, and an option to close the viewer.
+     *
+     * @param project    the {@code Project} instance associated with this viewer, providing the
+     *                   project context and directory structure needed for initialization.
+     * @param recordings a {@code List} of {@code RecordingEntry} objects representing the recordings
+     *                   to be displayed and navigated within the viewer.
+     */
     public RecordingViewerFrame(Project project, List<RecordingEntry> recordings) {
         super("Recording Viewer - " + project.getProjectRootPath().getFileName());
         this.project = project;
@@ -126,6 +149,15 @@ public class RecordingViewerFrame extends JFrame
         if (!recordings.isEmpty()) showEntry(0);
     }
 
+    /**
+     * Creates a square JPanel that contains the provided JComponent. The panel ensures
+     * that its width and height remain equal by adjusting its dimensions, making it ideal
+     * for displaying square content such as images.
+     *
+     * @param comp the JComponent to be embedded within the square JPanel. This component
+     *             will be positioned at the center of the panel.
+     * @return a JPanel with a square layout containing the given component.
+     */
     private JPanel createSquareImagePanel(JComponent comp) {
         JPanel panel = new JPanel(new BorderLayout()) {
             public Dimension getPreferredSize() {
@@ -142,6 +174,15 @@ public class RecordingViewerFrame extends JFrame
         return panel;
     }
 
+    /**
+     * Scales the given {@code ImageIcon} to fit within the specified width and height using smooth scaling.
+     * Returns a new {@code ImageIcon} with the resized dimensions or {@code null} if the input icon is invalid.
+     *
+     * @param icon the {@code ImageIcon} to be scaled; must not be null and should have valid dimensions.
+     * @param w the target width to scale the icon to.
+     * @param h the target height to scale the icon to.
+     * @return a new scaled {@code ImageIcon} or {@code null} if the input icon is invalid.
+     */
     private static ImageIcon scaleToFit(ImageIcon icon, int w, int h) {
         if (icon == null || icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) {
             return null;
@@ -150,10 +191,30 @@ public class RecordingViewerFrame extends JFrame
         return new ImageIcon(scaled);
     }
 
+    /**
+     * Updates the enabled state of navigation buttons based on the current index
+     * relative to the total number of recordings. Enables or disables the
+     * "previous" and "next" navigation buttons depending on whether there are
+     * preceding or subsequent recordings to navigate to.
+     *
+     * The method utilizes the {@code setEnabledState} method of the
+     * {@code navigationPanel} to configure the state of navigation controls:
+     * - The "previous" buttons are enabled only if the current index is greater than 0.
+     * - The "next" buttons are enabled only if the current index is less than the
+     *   index of the last recording.
+     */
     private void updateNavButtons() {
         navigationPanel.setEnabledState(currentIndex > 0, currentIndex < recordings.size() - 1);
     }
 
+    /**
+     * Displays the recording entry at the specified index, updates various UI components
+     * with the entry's details, and manages navigation within the recording viewer.
+     * If the given index is out of bounds, this method exits without making changes.
+     *
+     * @param index the index of the recording entry to be displayed; must be
+     *              within the bounds of the recordings list.
+     */
     private void showEntry(int index) {
 
         if (index < 0 || index >= recordings.size()) {
@@ -199,6 +260,18 @@ public class RecordingViewerFrame extends JFrame
         showEntry(recordings.size() - 1);
     }
 
+    /**
+     * Handles the action of requesting a filter on the list of recordings.
+     * Opens a {@code FilterDialog} to allow the user to filter the recordings
+     * based on specific criteria. If the dialog is not cancelled and a filtered
+     * list is returned, it updates the view to display the first entry of the
+     * filtered results.
+     *
+     * This method interacts with the existing list of recordings and updates
+     * the display accordingly. If the filtered list is validated and not empty,
+     * the current view is reset to show the first recording entry in the new
+     * filtered set.
+     */
     @Override
     public void onFilterRequested() {
         FilterDialog dialog = new FilterDialog(this, recordings);
@@ -212,6 +285,20 @@ public class RecordingViewerFrame extends JFrame
         }
     }
 
+    /**
+     * Invoked when the user requests to select and control specific squares on the grid.
+     *
+     * This method retrieves the current recording entry based on the viewer's state
+     * and initializes a {@code SquareControlDialog} to provide square control options.
+     *
+     * The dialog allows the user to configure square constraints using parameters
+     * such as minimum required density ratio, maximum allowable variability, and minimum
+     * required R-squared value. The dialog is created with the current grid, relevant parameters,
+     * and a listener to handle subsequent user interactions.
+     *
+     * The dialog is displayed as a modal window, pausing further interaction with the
+     * main application until the dialog is closed.
+     */
     @Override
     public void onSelectSquaresRequested() {
         RecordingEntry current = recordings.get(currentIndex);
@@ -231,6 +318,23 @@ public class RecordingViewerFrame extends JFrame
         dialog.setVisible(true);
     }
 
+    /**
+     * Handles the action of assigning selected squares to a specific cell.
+     *
+     * This method enables selection interactions on the left grid panel and opens a
+     * {@code CellAssignmentDialog} to allow the user to assign selected squares to a specified cell.
+     * The dialog provides three key functions:
+     * - Assign a cell ID to the selected squares.
+     * - Undo the last assignment action.
+     * - Cancel the current selection and clear the highlights.
+     *
+     * A listener is attached to the dialog to handle these user actions. Additionally, a
+     * {@code WindowAdapter} is added to the dialog to disable selection interactions on the
+     * left grid panel once the dialog is closed.
+     *
+     * The dialog is displayed as a modal window, suspending further interaction with the main
+     * application until the dialog is closed.
+     */
     @Override
     public void onAssignCellsRequested() {
         leftGridPanel.setSelectionEnabled(true);
@@ -257,24 +361,54 @@ public class RecordingViewerFrame extends JFrame
         dialog.setVisible(true);
     }
 
+    /**
+     * Toggles the visibility of borders on the left grid panel and repaints the panel to reflect the change.
+     *
+     * @param showBorders a boolean indicating whether borders should be shown (true) or hidden (false).
+     */
     @Override
     public void onBordersToggled(boolean showBorders) {
         leftGridPanel.setShowBorders(showBorders);
         leftGridPanel.repaint();
     }
 
+    /**
+     * Toggles the shading visibility on the left grid panel and repaints the panel to
+     * reflect the updated shading state.
+     *
+     * @param showShading a boolean indicating whether shading should be enabled (true)
+     *                    or disabled (false).
+     */
     @Override
     public void onShadingToggled(boolean showShading) {
         leftGridPanel.setShowShading(showShading);
         leftGridPanel.repaint();
     }
 
+    /**
+     * Handles changes in the number mode for the left grid panel. This method updates
+     * the number mode of the left grid panel and repaints it to reflect the updated state.
+     *
+     * @param mode the {@code SquareGridPanel.NumberMode} representing the new number mode
+     *             to be applied to the left grid panel.
+     */
     @Override
     public void onNumberModeChanged(SquareGridPanel.NumberMode mode) {
         leftGridPanel.setNumberMode(mode);
         leftGridPanel.repaint();
     }
 
+    /**
+     * Applies the specified square control parameters to the grid panel and updates
+     * the relevant components. This method processes the parameters using the control handler,
+     * writes the updated settings using the override writer, and repaints the left grid panel
+     * to reflect the applied changes.
+     *
+     * @param scope  the scope of the square control application, which defines the context or
+     *               boundaries for applying the control (e.g., current recording, project-wide).
+     * @param params an instance of {@code SquareControlParams} containing the parameters
+     *               for square control, such as size, constraints, or other configuration settings.
+     */
     @Override
     public void onApplySquareControl(String scope, SquareControlParams params) {
         controlHandler.apply(params, leftGridPanel);
@@ -282,6 +416,35 @@ public class RecordingViewerFrame extends JFrame
         leftGridPanel.repaint();
     }
 
+    /**
+     * Handles the request to play a selected recording.
+     *
+     * This method checks whether a valid recording is selected within a valid range.
+     * If no selection is made, or the selection is invalid, a warning message is
+     * displayed to the user. The method also verifies the existence of the images
+     * root path and the specific recording file to be played. If any of these
+     * conditions are not met, appropriate error or warning messages are provided
+     * to the user via dialog boxes.
+     *
+     * If all prerequisites are satisfied, a separate thread is created to play
+     * the recording file using a Tiff movie player. A log message is generated
+     * to indicate the playback process, and any errors encountered during playback
+     * are logged and printed to the error stream.
+     *
+     * Preconditions:
+     * - A recording must be selected and exist within the valid index range.
+     * - The images root path must be correctly configured and accessible.
+     * - The file for the selected recording must exist in the specified path.
+     *
+     * Postconditions:
+     * - The recording is played using a separate thread if all conditions are satisfied.
+     *
+     * Error Handling:
+     * - If the recording is not selected, an appropriate warning message is shown.
+     * - If the images root path is not configured, an error dialog prompts the user to configure it.
+     * - If the recording file is missing, an error dialog notifies the user.
+     * - Any playback errors encountered are logged and printed to the console.
+     */
     @Override
     public void onPlayRecordingRequested() {
         if (recordings.isEmpty() || currentIndex < 0 || currentIndex >= recordings.size()) {

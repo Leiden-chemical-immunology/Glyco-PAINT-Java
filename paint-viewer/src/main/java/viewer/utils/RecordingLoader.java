@@ -13,40 +13,23 @@ import java.util.List;
 import static paint.shared.io.HelperIO.readAllRecordings;
 
 /**
- * Loads {@link RecordingEntry} objects from a {@link Project} by scanning its experiment directories.
- * <p>
- * This class reads metadata and image paths for each {@link Recording} in a project,
- * validating the existence of required TrackMate and BrightField image files.
- * It also retrieves default analysis parameters (e.g. density ratio, variability, R² thresholds)
- * from {@link PaintConfig}.
- * </p>
- *
- * <h3>Responsibilities</h3>
- * <ul>
- *   <li>Iterate through experiment directories in a {@link Project}</li>
- *   <li>Read all {@link Recording} definitions from each experiment folder</li>
- *   <li>Verify required images exist before creating {@link RecordingEntry} objects</li>
- *   <li>Attach configuration-derived filtering parameters</li>
- * </ul>
- *
- * <p><b>Note:</b> Missing files or invalid directories are logged using {@link PaintLogger}.</p>
+ * The RecordingLoader class provides functionality for loading and filtering
+ * recordings from a project directory structure. It ensures that the recordings
+ * meet specific process requirements and that necessary file dependencies exist.
  */
 public class RecordingLoader {
 
     /**
-     * Loads all valid {@link RecordingEntry} instances from a {@link Project}.
-     * <p>
-     * Each experiment directory under the project root is processed as follows:
-     * <ol>
-     *   <li>Reads all {@link Recording} objects using {@code readAllRecordings(experimentPath)}</li>
-     *   <li>Filters out recordings marked as non-processable</li>
-     *   <li>Verifies presence of required TrackMate and BrightField image files</li>
-     *   <li>Retrieves control parameters from {@link PaintConfig}</li>
-     *   <li>Builds and collects {@link RecordingEntry} objects</li>
-     * </ol>
+     * Loads a list of recording entries from the specified project. The method iterates
+     * through all experiment names in the project, reads recordings, and constructs
+     * valid recording entries based on specific conditions and configurations.
      *
-     * @param project the {@link Project} containing experiment directories and recordings
-     * @return a list of {@link RecordingEntry} objects representing valid recordings ready for display or analysis
+     * @param project the project from which recordings and their associated data will be loaded.
+     *                This project is expected to contain a root path, experiment names,
+     *                and relevant directories or files required for constructing recording entries.
+     * @return a list of {@link RecordingEntry} objects representing the recordings and their
+     *         associated metadata loaded from the project. The list will be empty if no valid
+     *         recording entries are found.
      */
     public static List<RecordingEntry> loadFromProject(Project project) {
 

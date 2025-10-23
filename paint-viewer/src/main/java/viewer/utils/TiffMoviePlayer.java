@@ -13,8 +13,29 @@ import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
+/**
+ * TiffMoviePlayer is responsible for playing multi-frame TIFF image files as
+ * a movie-like sequence in a graphical user interface. The player provides
+ * options for pausing, adjusting playback speed, and navigating through frames.
+ *
+ * This class uses ImageJ for loading and processing image data, and
+ * Swing for creating the user interface. It ensures a smooth viewing
+ * experience with simple controls and error handling.
+ *
+ * Features:
+ * - Loads and displays multi-frame TIFF files using ImageJ.
+ * - Adjustable playback speed through a slider.
+ * - Pause/play functionality.
+ * - Frame navigation via a slider.
+ * - Displays a simple loading dialog while processing the TIFF file.
+ */
 public class TiffMoviePlayer {
 
+    /**
+     * Plays a TIFF movie file specified by the provided path.
+     *
+     * @param tiffPath the file path of the TIFF movie to be played
+     */
     public void playMovie(String tiffPath) {
         final String fileName = new File(tiffPath).getName();
 

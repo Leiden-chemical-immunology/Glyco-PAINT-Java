@@ -5,6 +5,15 @@ import viewer.shared.SquareControlParams;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * The RecordingControlsPanel class represents a user interface panel that provides
+ * various controls for managing and interacting with recorded data or grid-based operations.
+ * It contains buttons, checkboxes, and radio buttons organized to allow users to
+ * perform actions such as filtering recordings, selecting squares, assigning cells,
+ * playing recordings, toggling display settings, and changing number display modes.
+ *
+ * Listeners can be registered to handle user interactions with these controls.
+ */
 public class RecordingControlsPanel {
     public interface Listener {
         void onFilterRequested();
@@ -19,6 +28,13 @@ public class RecordingControlsPanel {
 
     private final JPanel root;
 
+    /**
+     * Constructs a new RecordingControlsPanel, providing an interface for controlling
+     * the recording features such as filtering, selecting squares, assigning cells,
+     * and toggling display options like borders, shading, and number modes.
+     *
+     * @param listener the event listener that handles the actions triggered by the controls
+     */
     public RecordingControlsPanel(final Listener listener) {
         root = new JPanel(new BorderLayout());
         root.setBorder(BorderFactory.createCompoundBorder(

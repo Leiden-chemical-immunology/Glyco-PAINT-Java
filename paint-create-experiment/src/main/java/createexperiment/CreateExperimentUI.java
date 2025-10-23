@@ -17,22 +17,12 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Swing-based graphical user interface for creating new Paint experiments.
+ * The CreateExperimentUI class provides a graphical user interface for generating experiment files.
+ * It enables users to select a directory, apply regex filters for file selection, and execute a process
+ * to create an {@code Experiment Info.csv} file. The class also handles saving regex histories and
+ * refreshing filtered file lists.
  *
- * <p>This class provides a small utility window that allows users to:</p>
- * <ul>
- *     <li>Select an <b>Images directory</b> containing ND2 files</li>
- *     <li>Select a <b>Project directory</b> where experiment data will be saved</li>
- *     <li>Filter ND2 files by regular expression</li>
- *     <li>Generate a new <b>Experiment Info.csv</b> file using
- *     {@link createexperiment.ExperimentInfoWriter}</li>
- * </ul>
- *
- * <p>User preferences (last used directories and regex history) are stored in
- * {@link java.util.prefs.Preferences} under the node {@code paint/create-experiment}.</p>
- *
- * <p>This tool is standalone and can be launched from the command line or invoked from
- * other Paint tools.</p>
+ * This class serves as the entry point for launching the Swing-based GUI application.
  */
 public class CreateExperimentUI {
 
@@ -51,17 +41,59 @@ public class CreateExperimentUI {
     };
 
     /**
-     * Entry point. Launches the Swing UI on the event dispatch thread.
+     * The main method serves as the entry point for the application, initializing
+     * and displaying the Create Experiment GUI.
+     *
+     * @param args the command-line arguments passed to the application
      */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(CreateExperimentUI::createAndShowGUI);
     }
 
     /**
-     * Constructs and displays the Create Experiment GUI window.
+     * Configures and displays a graphical user interface (GUI) for managing regex filters,
+     * selecting input/output directories, and processing files. The GUI consists of multiple
+     * sections, including regex controls, file list display, input/output directory configurations,
+     * and action buttons. This method also uses preferences to remember user choices
+     * (e.g., regex history and last-used directories) and dynamically updates its components
+     * based on user actions.
      *
-     * <p>Provides directory selection, regex filtering, and process execution for
-     * generating {@code Experiment Info.csv}.</p>
+     * Key Features:
+     * - Regex management: Users can add, select, and delete regex patterns.
+     * - Input/output directory selection: Users can specify directories for source files
+     *   and output storage.
+     * - File display: Files in the selected input directory are listed and filtered based
+     *   on the regex.
+     * - Persisted preferences: User choices (like regex patterns or directories) are saved
+     *   and reloaded on subsequent application launches.
+     * - Modular panel layout: Organized interface using labeled sections for regex filtering,
+     *   file selection, and processing actions.
+     *
+     * Components:
+     * - Regex Controls: Dropdown allowing users to input regex patterns, supported by history and deletion menus.
+     * - File List: A dynamically updated list of files matching the selected regex in the input directory.
+     * - Input/Output Controls: Buttons and labels for selecting directories and displaying their current paths.
+     * - Action Buttons: Buttons for initiating the file processing operation and closing the application.
+     *
+     * Dialogs:
+     * - Uses JFileChooser dialogs for selecting directories.
+     *
+     * Event Handling:
+     * - Handles user interactions via buttons and combo box events (e.g., regex filtering, file refreshing).
+     *
+     * Constraints:
+     * - Limits regex entry length to a maximum of 100 characters.
+     * - Ensures only valid directories are selected and persistently stores their paths.
+     *
+     * Dependencies:
+     * - javax.swing (for GUI elements like JFrame, JPanel, JComboBox, JList, JButton).
+     * - java.util.prefs.Preferences (for storing user-specific persistent settings).
+     * - java.io.File (for directory and file handling).
+     *
+     * Usage:
+     * Typically called during application initialization to present the user interface.
+     * This method does not return, as it focuses on creating and displaying the application
+     * window with active event handling for user interaction.
      */
     private static void createAndShowGUI() {
         Preferences prefs = Preferences.userRoot().node(PREF_NODE);
@@ -310,7 +342,13 @@ public class CreateExperimentUI {
     }
 
     /**
-     * Saves all regex entries in the combo box to user preferences.
+     * Saves the history of regex patterns from a given JComboBox to the specified Preferences object.
+     * The method first clears any existing regex entries in the Preferences storage, and then adds
+     * non-empty and valid regex patterns (trimmed and with a maximum length of 100 characters) from
+     * the JComboBox to the Preferences with sequential keys.
+     *
+     * @param combo the JComboBox containing the regex patterns to be saved.
+     * @param prefs the Preferences object used to persist the regex history.
      */
     private static void saveRegexHistory(JComboBox<String> combo, Preferences prefs) {
         try {
@@ -332,7 +370,15 @@ public class CreateExperimentUI {
     }
 
     /**
-     * Refreshes the visible list of ND2 files in the directory based on a regex filter.
+     * Refreshes the given list model with files from the specified directory that match the given regular expression.
+     * If the directory is null or does not contain any files, the list model will be cleared. If a regex is provided,
+     * only files matching the pattern will be added to the list model. If the regex is invalid, an error message will
+     * be displayed in a dialog.
+     *
+     * @param model the DefaultListModel used to display the filtered list of files
+     * @param dir the directory whose files will be scanned
+     * @param regex the regular expression used to filter file names; if null or empty, all files are included
+     * @param parent the parent component for displaying error dialogs in case of an invalid regex
      */
     private static void refreshList(DefaultListModel<File> model, File dir, String regex, Component parent) {
         model.clear();
