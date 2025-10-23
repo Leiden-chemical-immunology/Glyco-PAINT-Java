@@ -14,12 +14,7 @@
         <module name="paint-generate-squares" />
         <module name="paint-create-experiment" />
         <module name="paint-get-omero" />
-        <module name="paint-development-utils" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="paint-app" target="1.8" />
-      <module name="paint-integrated-fiji" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>

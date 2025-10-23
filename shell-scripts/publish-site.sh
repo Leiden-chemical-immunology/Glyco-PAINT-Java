@@ -2,7 +2,7 @@
 set -e
 
 # === CONFIG ===
-SITE_DIR="target/site"
+SITE_DIR="../target/site"
 BRANCH="gh-pages"
 MAIN_BRANCH="main"     # ← Change if your main branch is named differently
 

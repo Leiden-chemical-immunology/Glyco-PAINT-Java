@@ -35,20 +35,20 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/jjabakker/paint-fiji-plugin.git</connection>
-        <developerConnection>scm:git:ssh://github.com:jjabakker/paint-fiji-plugin.git</developerConnection>
-        <url>https://github.com/jjabakker/paint-fiji-plugin</url>
+        <connection>scm:git:git://github.com/jjabakker/JavaPaintProjects.git</connection>
+        <developerConnection>scm:git:ssh://github.com:jjabakker/JavaPaintProjects.git</developerConnection>
+        <url>https://github.com/jjabakker/JavaPaintProjects</url>
         <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/jjabakker/paint-fiji-plugin/issues</url>
+        <url>https://github.com/jjabakker/JavaPaintProjects/issues</url>
     </issueManagement>
 
     <ciManagement>
         <system>GitHub Actions</system>
-        <url>https://github.com/jjabakker/paint-fiji-plugin/actions</url>
+        <url>https://github.com/jjabakker/JavaPaintProjects/actions</url>
     </ciManagement>
 
     <!-- Modules -->
@@ -131,22 +131,24 @@
         </pluginManagement>
 
         <plugins>
-            <!-- Site plugin: no <aggregate> tag; aggregation handled automatically -->
+            <!-- Site plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.12.1</version>
             </plugin>
 
-            <!-- GitHub Pages publishing -->
+            <!-- GitHub Pages deployment -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-scm-publish-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <scmBranch>gh-pages</scmBranch>
-                    <pubScmUrl>scm:git:git@github.com:jjabakker/paint-fiji-plugin.git</pubScmUrl>
                     <checkoutDirectory>${project.build.directory}/scmpublish</checkoutDirectory>
+                    <pubScmUrl>scm:git:git@github.com:jjabakker/JavaPaintProjects.git</pubScmUrl>
+                    <scmBranch>gh-pages</scmBranch>
+                    <checkinComment>Update Maven site</checkinComment>
+                    <content>${project.reporting.outputDirectory}</content>
                 </configuration>
             </plugin>
         </plugins>
@@ -154,7 +156,6 @@
 
     <reporting>
         <plugins>
-            <!-- Aggregator: generates combined parent+modules site -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
@@ -174,45 +175,34 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.7.0</version>
-
                 <reportSets>
                     <reportSet>
                         <reports>
-                            <report>aggregate</report> <!-- ✅ aggregate mode -->
+                            <report>aggregate</report>
                         </reports>
                     </reportSet>
                 </reportSets>
-
                 <configuration>
-                    <!-- Restore classic Javadoc layout -->
                     <noindex>false</noindex>
                     <notree>false</notree>
                     <use>true</use>
                     <splitindex>true</splitindex>
-
-                    <!-- Optional: Better look and feel -->
                     <additionalOptions>
                         <additionalOption>-linksource</additionalOption>
-                        <!-- Disable strict doclint checks -->
                         <additionalOption>-Xdoclint:none</additionalOption>
                     </additionalOptions>
-
-                    <!-- Show protected/package classes too -->
                     <show>protected</show>
-
-                    <!-- 👇 Critical fixes -->
                     <failOnError>false</failOnError>
                     <doclint>none</doclint>
                 </configuration>
             </plugin>
-
         </plugins>
     </reporting>
 
     <distributionManagement>
         <site>
             <id>github</id>
-            <url>scm:git:git@github.com:jjabakker/paint-fiji-plugin.git</url>
+            <url>scm:git:git@github.com:jjabakker/JavaPaintProjects.git</url>
         </site>
     </distributionManagement>
 
