@@ -22,19 +22,25 @@ import static paint.fiji.utils.SweepFlattener.flattenSweep;
 import static paint.shared.constants.PaintConstants.*;
 
 /**
- * Executes TrackMate on a project while sweeping over configuration parameters.
- * Results are written into per-value subdirectories under Sweep/, with a summary CSV.
+ * A utility class that facilitates the execution of the TrackMate tool on a
+ * specified project, with support for sweeping through various parameter values.
  */
 public class RunTrackMateOnProjectSweep {
 
     /**
-     * Runs TrackMate on the given project with sweep parameters if enabled.
+     * Executes a sweep operation across various configuration parameters defined
+     * in the sweep configuration file. The method performs iterative experiments
+     * for each combination of parameter values, updates the configuration dynamically,
+     * and generates a summary of results upon completion.
      *
-     * @param projectPath     path to the project root
-     * @param imagesPath      path to the image root
-     * @param experimentNames experiments to process
-     * @return                true if all sweeps completed successfully, false if any failed
-     * @throws IOException    if sweep config cannot be read
+     * @param projectPath the root directory of the project where configurations
+     *                    and results are managed
+     * @param imagesPath  the directory containing image resources required
+     *                    for the experiments
+     * @param experimentNames a list of experiment names to include in the sweep process
+     * @return {@code true} if the sweep completes successfully for all parameter
+     *         combinations, otherwise {@code false}
+     * @throws IOException if any file or directory operation fails
      */
     public static boolean runWithSweep(Path projectPath,
                                        Path imagesPath,

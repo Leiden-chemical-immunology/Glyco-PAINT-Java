@@ -18,27 +18,25 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Utility for flattening sweep result directories by concatenating experiment-level CSV files.
- * <p>
- * It merges per-experiment CSV files (<code>SQUARES_CSV</code>, <code>TRACKS_CSV</code>,
- * <code>RECORDINGS_CSV</code>, and <code>EXPERIMENT_INFO_CSV</code>) from all subdirectories
- * into the corresponding CSV files in the parameter-level directory.
- * </p>
+ * The SweepFlattener class provides functionality to process and flatten
+ * subdirectories within a given sweep directory. It is designed to scan
+ * parameter directories, concatenate specific CSV files, and optionally
+ * remove subdirectories after processing.
+ *
+ * This class also integrates and utilizes the GenerateSquaresHeadless operations
+ * during the sweep flattening process.
  */
 public class SweepFlattener {
 
     /**
-     * Scans all sweep parameter directories (those starting with '[')
-     * and flattens their subdirectories by concatenating CSV files.
-     * <p>
-     * After flattening, it calls {@link GenerateSquaresHeadless#run(Path, List)}
-     * to process all parameter directories.
-     * </p>
+     * Flattens the structure of a directory containing parameter directories and experiment subdirectories
+     * by processing and consolidating data into CSV files, running the Generate Squares pipeline,
+     * and optionally deleting experiment subdirectories.
      *
-     * @param sweepPath      the root sweep directory containing parameter subdirectories
-     * @param experimentNames list of experiment subdirectory names to include
-     * @param deleteSubdirs   whether to delete the experiment subdirectories after flattening
-     * @throws IOException if reading or writing CSV files fails
+     * @param sweepPath the root directory path containing the parameter directories to process
+     * @param experimentNames a list of names of the experiment subdirectories to process within each parameter directory
+     * @param deleteSubdirs a flag indicating whether to delete experiment subdirectories after processing
+     * @throws IOException if I/O operations fail during the flattening process
      */
     public static void flattenSweep(Path sweepPath, List<String> experimentNames, boolean deleteSubdirs) throws IOException {
         if (!Files.isDirectory(sweepPath)) {
@@ -111,10 +109,11 @@ public class SweepFlattener {
     }
 
     /**
-     * Entry point for manual invocation of the sweep flattener.
+     * The main entry point for the application. This method initializes the process
+     * to flatten a directory structure based on predefined parameters.
      *
-     * @param args command-line arguments (unused)
-     * @throws IOException if I/O operations fail during flattening
+     * @param args command-line arguments passed to the program; currently unused
+     * @throws IOException if I/O operations fail during the execution
      */
     public static void main(String[] args) throws IOException {
         Path sweepPath = Paths.get("/Users/hans/Paint Test Project/Sweep");

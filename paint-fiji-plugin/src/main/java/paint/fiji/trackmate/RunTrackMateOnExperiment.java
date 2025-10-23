@@ -28,14 +28,27 @@ import static paint.shared.utils.CsvUtils.countProcessed;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 
 /**
- * Runs TrackMate analysis on all recordings in a single experiment.
+ * The {@code RunTrackMateOnExperiment} class provides methods to run TrackMate on a given experiment.
+ * It contains functionality to handle experiments, perform processing on provided paths,
+ * and use a watchdog to manage timeouts or early cancellations.
+ *
+ * Core responsibilities:
+ * - Run TrackMate on an experiment with the required configurations.
+ * - Provide a watchdog to monitor and control the execution time or cancel the process if needed.
  */
 public class RunTrackMateOnExperiment {
 
     static final boolean verbose = PaintRuntime.isVerbose();
 
     /**
-     * Watchdog that joins in 1s slices and interrupts promptly on cancel or timeout.
+     * Executes a given task within a thread while monitoring its progress using a watchdog.
+     * The watchdog ensures that the task completes within the specified time limit, or is stopped gracefully if canceled.
+     *
+     * @param task the task to be executed inside a separate thread
+     * @param maxSecondsPerRecording the maximum duration (in seconds) the task is allowed to run before timing out
+     * @param dialog the user interface dialog that can indicate cancellation via user interaction; may be null
+     * @return {@code true} if the task completes successfully within the time limit, {@code false} if the task
+     *         is canceled by the user or exceeds the time limit
      */
     private static boolean runWithWatchdog(Runnable task,
                                            int maxSecondsPerRecording,
@@ -88,6 +101,20 @@ public class RunTrackMateOnExperiment {
         return false;
     }
 
+    /**
+     * Executes the TrackMate processing workflow on the specified experiment, processing all related data files
+     * and generating output files. This method handles tasks such as configuration initialization, data analysis,
+     * and logging based on the experiment and its recordings.
+     *
+     * @param experimentPath The path to the root directory of the experiment. This directory should contain
+     *                       the necessary experiment-related data files, such as experiment information and recordings.
+     * @param imagesPath     The path to the directory containing image files associated with the experiment.
+     *                       These images are used during TrackMate processing.
+     * @param dialog         An optional {@link ProjectDialog} instance used to monitor the user's interaction
+     *                       (e.g., cancellation requests) during the processing. Can be null.
+     * @return               Returns true if the processing completes successfully for all recordings. Returns
+     *                       false if errors occur during file access, TrackMate execution, or other processing steps.
+     */
     public static boolean runTrackMateOnExperiment(Path experimentPath,
                                                    Path imagesPath,
                                                    ProjectDialog dialog) {

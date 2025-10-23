@@ -19,8 +19,28 @@ import java.util.Set;
 import static paint.fiji.tracks.TrackAttributeCalculations.calculateTrackAttributes;
 import static paint.shared.constants.PaintConstants.TIME_INTERVAL;
 
+/**
+ * The TrackCsvWriter class is responsible for writing track-based information
+ * into a CSV file. It processes track data from a TrackMate instance, extracts
+ * relevant attributes, calculates additional custom features, and organizes the
+ * data in a tabular format before exporting it as a CSV file.
+ *
+ * This class focuses on handling track data for scientific or analytical purposes,
+ * such as the motion properties of detected objects.
+ */
 public class TrackCsvWriter {
 
+    /**
+     * Writes track information from a TrackMate analysis into a CSV file.
+     *
+     * @param trackmate A TrackMate instance containing the model with track data to be written.
+     * @param experimentName The name of the experiment associated with the tracks.
+     * @param recordingName The name of the recording associated with the tracks.
+     * @param csvFile The destination file where the CSV will be written.
+     * @param visibleOnly If true, only visible tracks will be included in the CSV.
+     * @return The total number of spots across all tracks.
+     * @throws IOException If an error occurs during the file writing process.
+     */
     public static int writeTracksCsv(final TrackMate trackmate,
                                      final String experimentName,
                                      final String recordingName,
@@ -105,6 +125,14 @@ public class TrackCsvWriter {
         return totalSpots;
     }
 
+    /**
+     * Rounds a given double value to the specified number of decimal places.
+     * If the input value is null, the method returns {@code Double.NaN}.
+     *
+     * @param v the double value to be rounded; can be null
+     * @param places the number of decimal places to round the value to
+     * @return the rounded value, or {@code Double.NaN} if the input value is null
+     */
     private static double roundTo(Double v, int places) {
         if (v == null) {
             return Double.NaN;
@@ -113,12 +141,31 @@ public class TrackCsvWriter {
         return Math.round(v * scale) / scale;
     }
 
+    /**
+     * Rounds a given double value to the specified number of decimal places.
+     * If the input value is null, it returns a default value specified by {@code ifNull}.
+     *
+     * @param v the double value to be rounded; can be null
+     * @param places the number of decimal places to round the value to
+     * @param ifNull the value to return if {@code v} is null
+     * @return the rounded value if {@code v} is not null, or {@code ifNull} if {@code v} is null
+     */
     private static Double roundOr(Double v, int places, double ifNull) {
         return v == null ? ifNull : roundTo(v, places);
     }
 
+    /**
+     * Converts a {@code Double} value into an {@code int} value.
+     * If the input is {@code null} or {@code NaN}, the method returns -1.
+     * Otherwise, it rounds the value to the nearest integer.
+     *
+     * @param v the {@code Double} value to be converted; can be {@code null} or {@code NaN}
+     * @return the converted integer value, or -1 if {@code v} is {@code null} or {@code NaN}
+     */
     private static int asInt(Double v) {
-        if (v == null || v.isNaN()) return -1;
+        if (v == null || v.isNaN()) {
+            return -1;
+        }
         return (int) Math.round(v);
     }
 }

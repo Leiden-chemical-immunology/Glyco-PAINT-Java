@@ -10,13 +10,17 @@ import java.util.List;
 import static paint.shared.utils.Miscellaneous.round;
 
 /**
- * Utility class for computing custom attributes of a track in TrackMate.
- * <p>
- * This class extracts spots belonging to a track, sorts them by frame,
- * and calculates motion statistics such as total distance, diffusion coefficients,
- * displacement, and confinement ratio. It is invoked by the CSV writer
- * when exporting track data.
- * </p>
+ * Utility class for calculating motion-related attributes for tracks
+ * in a TrackMate dataset. The class is designed for analyzing
+ * trajectories of spots in tracks by computing metrics such as
+ * total travel distance, diffusion coefficients, confinement ratio,
+ * and net displacement.
+ *
+ * This class includes methods to:
+ * - Compute key track attributes given a track and associated parameters.
+ * - Safely retrieve feature values from individual spots.
+ *
+ * This class cannot be instantiated.
  */
 public final class TrackAttributeCalculations {
 
@@ -25,13 +29,14 @@ public final class TrackAttributeCalculations {
     }
 
     /**
-     * Computes motion-related attributes for a track.
+     * Computes the motion attributes of a single track based on the provided track model,
+     * track identifier, and time delta between frames.
      *
-     * @param trackModel the TrackMate {@link TrackModel} containing tracks and spots
-     * @param trackId    the ID of the track to compute attributes for
-     * @param dtSeconds  the time interval between frames (in seconds)
-     * @return a {@link TrackAttributes} object containing the computed attributes,
-     * or a default instance if the track has fewer than 2 spots
+     * @param trackModel the track model containing track data and associated spots
+     * @param trackId the unique identifier of the track to analyze
+     * @param dtSeconds the time interval between consecutive frames, in seconds
+     * @return a {@code TrackAttributes} object containing the computed attributes
+     *         such as total distance, diffusion coefficients, confinement ratio, and displacement
      */
     public static TrackAttributes calculateTrackAttributes(TrackModel trackModel, int trackId, double dtSeconds) {
 
@@ -114,11 +119,12 @@ public final class TrackAttributeCalculations {
     // ---- helpers ----
 
     /**
-     * Safely extracts a numerical feature value from a {@link Spot}.
+     * Retrieves the value of a specific feature for a given spot. If the feature value is not present,
+     * the method returns a default value of 0.0.
      *
-     * @param s          the spot
-     * @param featureKey the feature key (e.g., {@link Spot#POSITION_X})
-     * @return the feature value, or 0.0 if missing
+     * @param s the {@code Spot} object from which the feature value is obtained
+     * @param featureKey the key representing the feature to retrieve
+     * @return the value associated with the specified feature key, or 0.0 if the feature value is not available
      */
     private static double get(Spot s, String featureKey) {
         final Double v = s.getFeature(featureKey);

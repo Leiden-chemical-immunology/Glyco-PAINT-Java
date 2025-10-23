@@ -3,12 +3,12 @@ package paint.fiji.trackmate;
 import java.time.Duration;
 
 /**
- * Encapsulates the results of a TrackMate analysis run in Fiji.
- * <p>
- * This class holds summary statistics about the detection and tracking process,
- * including the number of detected spots, generated tracks, filtered tracks,
- * frames analyzed, runtime duration, and whether the analysis was successful.
- * </p>
+ * Represents the results of a TrackMate analysis.
+ *
+ * This class is designed to encapsulate the outcomes of a TrackMate analysis, such as
+ * whether the analysis was successful, the number of detected spots, tracks,
+ * filtered tracks, and various other statistics related to the analysis process,
+ * including duration and frame count.
  */
 public class TrackMateResults {
 
@@ -24,12 +24,10 @@ public class TrackMateResults {
     // @formatter: on
 
     /**
-     * Constructs a {@code TrackMateResults} instance representing a failed run.
-     * <p>
-     * All numeric values are set to zero and the duration is {@code null}.
-     * </p>
+     * Constructs a {@code TrackMateResults} instance with basic analysis results.
      *
-     * @param success whether the analysis succeeded (typically {@code false})
+     * @param success               whether the analysis succeeded
+     * @param calculationPerformed  whether the calculation was performed
      */
     public TrackMateResults(boolean success, boolean calculationPerformed) {
 
@@ -45,6 +43,11 @@ public class TrackMateResults {
         // @formatter: on
     }
 
+    /**
+     * Constructs a {@code TrackMateResults} instance with the specified success flag.
+     *
+     * @param success whether the analysis succeeded
+     */
     public TrackMateResults(boolean success) {
 
         // @formatter: off
@@ -60,15 +63,16 @@ public class TrackMateResults {
     }
 
     /**
-     * Constructs a {@code TrackMateResults} instance with full result details.
+     * Constructs a {@code TrackMateResults} instance with detailed analysis results.
      *
-     * @param success                  whether the analysis succeeded
-     * @param numberOfSpots            number of detected spots
-     * @param numberOfTracks           number of generated tracks
-     * @param numberOfFilteredTracks   number of tracks after filtering
-     * @param numberOfFrames           number of frames analyzed
-     * @param duration                 runtime duration of the analysis
-     * @param numberOfSpotsInALlTracks total number of spots in all tracks
+     * @param success whether the analysis succeeded
+     * @param calculationPerformed whether the calculation was performed
+     * @param numberOfSpots the total number of detected spots
+     * @param numberOfTracks the total number of tracks identified
+     * @param numberOfFilteredTracks the number of tracks that passed filtering criteria
+     * @param numberOfFrames the total number of frames analyzed
+     * @param duration the time duration of the analysis
+     * @param numberOfSpotsInALlTracks the number of spots present across all tracks
      */
     public TrackMateResults(boolean success,
                             boolean calculationPerformed,

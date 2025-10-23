@@ -30,34 +30,36 @@ import java.util.List;
 import static paint.shared.config.PaintConfig.getBoolean;
 
 /**
- * Executes the TrackMate pipeline on a single recording.
+ * The RunTrackMateOnRecording class provides functionality to run the TrackMate
+ * tracking algorithm on a specified recording. It handles the configuration,
+ * image loading, progress checks, and results management for the tracking process.
+ *
+ * This class is designed to work with experimental data stored in specified paths and
+ * utilizes the TrackMate framework for analyzing particle trajectories.
+ *
+ * It also handles early cancellation of processing, cleanup of resources, and
+ * debugging information if enabled.
  */
 public class RunTrackMateOnRecording {
 
     static final boolean debug = true;
 
-    private static boolean isCancelled(Thread t, ProjectDialog dialog) {
-        return t.isInterrupted() || (dialog != null && dialog.isCancelled());
-    }
 
-    private static void closeImages(ImagePlus... images) {
-        for (ImagePlus img : images) {
-            try {
-                if (img != null && img.isVisible()) {
-                    img.close();
-                }
-            } catch (Exception e) {
-                PaintLogger.warnf("Error closing image: %s", e.getMessage());
-            }
-        }
-    }
 
-    private static TrackMateResults cancelEarly(ImagePlus... images) {
-        closeImages(images);
-        PaintLogger.warnf("   Recording cancelled.");
-        return new TrackMateResults(false);
-    }
-
+    /**
+     * Runs the TrackMate analysis pipeline on a given microscopy recording.
+     * This method processes an ND2 recording, detects spots using TrackMate,
+     * applies user-specified filtering rules and extracts tracking results.
+     *
+     * @param experimentPath The path to the experiment directory where results will be stored.
+     * @param imagesPath The path to the directory containing image files.
+     * @param trackMateConfig Configuration settings for TrackMate, including detection and tracking parameters.
+     * @param threshold The threshold value to use for spot detection in the TrackMate pipeline.
+     * @param experimentInfoRecord Metadata regarding the experiment, including the recording name.
+     * @param dialog The dialog instance used for providing progress feedback and handling user cancellation.
+     * @return A {@code TrackMateResults} object containing the results of the spot detection and tracking, or null if the process is cancelled or fails.
+     * @throws IOException If an I/O error occurs during file operations.
+     */
     public static TrackMateResults runTrackMateOnRecording(Path experimentPath,
                                                            Path imagesPath,
                                                            TrackMateConfig trackMateConfig,
@@ -305,5 +307,46 @@ public class RunTrackMateOnRecording {
         } finally {
             closeImages(imp, impBrightfield, capture);
         }
+    }
+
+    /**
+     * Checks if the given thread has been interrupted or if the provided dialog indicates a cancellation.
+     *
+     * @param t the thread whose interruption status is to be checked
+     * @param dialog the dialog to check for a cancellation flag
+     * @return true if the thread is interrupted or the dialog is cancelled, false otherwise
+     */
+    private static boolean isCancelled(Thread t, ProjectDialog dialog) {
+        return t.isInterrupted() || (dialog != null && dialog.isCancelled());
+    }
+
+    /**
+     * Closes the provided images if they are visible and handles any exceptions that may occur during the closing.
+     *
+     * @param images Varargs parameter accepting one or more ImagePlus objects to be closed.
+     */
+    private static void closeImages(ImagePlus... images) {
+        for (ImagePlus img : images) {
+            try {
+                if (img != null && img.isVisible()) {
+                    img.close();
+                }
+            } catch (Exception e) {
+                PaintLogger.warnf("Error closing image: %s", e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Cancels the current operation early, closing any provided images and
+     * returning a result indicating that the process was cancelled.
+     *
+     * @param images one or more {@code ImagePlus} objects to be closed during the cancellation process.
+     * @return a {@code TrackMateResults} instance indicating that the process was not successfully completed.
+     */
+    private static TrackMateResults cancelEarly(ImagePlus... images) {
+        closeImages(images);
+        PaintLogger.warnf("   Recording cancelled.");
+        return new TrackMateResults(false);
     }
 }

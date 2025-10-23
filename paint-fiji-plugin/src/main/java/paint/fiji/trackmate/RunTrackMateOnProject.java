@@ -17,10 +17,23 @@ import static paint.shared.validate.ImageRootValidator.validateImageRoot;
 import static paint.shared.validate.ValidationHandler.validateExperiments;
 
 /**
- * Core TrackMate project runner, reusable by plugin and sweep runner.
+ * Provides functionality to run the TrackMate process on experiments within a project structure.
+ * This class handles validation of input data, processing of experiments, and error reporting.
  */
 public class RunTrackMateOnProject {
 
+    /**
+     * Executes the TrackMate processing workflow on the given experiments within a project directory.
+     * Performs validation, processes individual experiments, and handles errors.
+     * Outputs logging and optionally responds to user interaction via a dialog.
+     *
+     * @param projectPath the root directory of the project containing experiment data
+     * @param imagesPath the directory containing image files for the experiments
+     * @param experimentNames a list of experiment names to be processed
+     * @param dialog an optional dialog object for interacting with the user and checking for cancellation
+     * @param sweepDir an optional directory for storing results of the processing; defaults to projectPath if null
+     * @return true if all experiments were processed successfully, false if any errors occurred
+     */
     public static boolean runProject(Path projectPath,
                                      Path imagesPath,
                                      List<String> experimentNames,

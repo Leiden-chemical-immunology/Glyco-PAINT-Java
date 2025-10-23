@@ -1,13 +1,10 @@
 package paint.fiji.tracks;
 
 /**
- * Immutable data container for motion attributes of a single track.
- * <p>
- * Instances of this class are produced by
- * {@link TrackAttributeCalculations#calculateTrackAttributes}
- * and represent computed properties such as total travel distance,
- * diffusion coefficients, confinement ratio, and net displacement.
- * </p>
+ * Represents the attributes of a track in a dataset, such as the number of spots,
+ * total distance traveled, diffusion coefficients, confinement ratio, and net displacement.
+ * This class encapsulates descriptive statistics for analyzing the movement or behavior
+ * of objects over time.
  */
 public class TrackAttributes {
 
@@ -19,14 +16,16 @@ public class TrackAttributes {
     public final double displacement;       // Net displacement between the first and last spot in the track.
 
     /**
-     * Creates a populated {@code TrackAttributes} object with the specified values.
+     * Constructs a {@code TrackAttributes} instance representing various properties
+     * of a track, such as the number of spots, total distance traveled, diffusion
+     * coefficients, confinement ratio, and net displacement.
      *
-     * @param numberOfSpotsInTracks number of spots (detections) in the track
-     * @param totalDistance         total distance traveled along the track
-     * @param diffusionCoeff        diffusion coefficient from MSD relative to the first spot
-     * @param diffusionCoeffExt     extended diffusion coefficient from step-wise MSD
-     * @param confinementRatio      ratio of displacement to total distance
-     * @param displacement          net displacement between first and last spot
+     * @param numberOfSpotsInTracks the number of spots (or detections) in the track
+     * @param totalDistance the total distance traveled by the track
+     * @param diffusionCoeff the diffusion coefficient calculated from the mean squared displacement relative to the first spot
+     * @param diffusionCoeffExt the extended diffusion coefficient based on step-wise mean squared displacement
+     * @param confinementRatio the ratio of net displacement to total distance traveled
+     * @param displacement the net displacement between the first and last spot in the track
      */
     public TrackAttributes(int numberOfSpotsInTracks,
                            double totalDistance,
@@ -46,10 +45,12 @@ public class TrackAttributes {
     }
 
     /**
-     * Creates a {@code TrackAttributes} instance with all values set to zero.
-     * <p>
-     * Useful as a fallback for tracks with insufficient spots.
-     * </p>
+     * Constructs a default {@code TrackAttributes} instance with all fields uninitialized
+     * or set to default values. This constructor initializes:
+     * <ul>
+     * - {@code numberOfSpotsInTracks} to {@code 0}.
+     * - {@code totalDistance}, {@code diffusionCoeff}, {@code diffusionCoeffExt},
+     *   {@code confinementRatio}, and {@code displacement} to {@code Double.NaN}.
      */
     public TrackAttributes() {
         this(0,
