@@ -1,13 +1,10 @@
 package paint.fiji.trackmate;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.io.FileUtils;
 import paint.shared.config.PaintConfig;
 import paint.shared.config.SweepConfig;
 import paint.shared.utils.PaintLogger;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -63,7 +60,7 @@ public class RunTrackMateOnProjectSweep {
 
         // --- Sweep mode - we really have a viable sweep configuration ---
 
-        // Sweeps is a Hash<ap that contains the parameter that need to be swept, e.g. MAX_FRAME_GAP
+        // Sweep is a HashMap that contains the parameter that need to be swept, e.g., MAX_FRAME_GAP
         // and the values those parameters take
 
         boolean overallStatus = true;
@@ -89,7 +86,7 @@ public class RunTrackMateOnProjectSweep {
                 sweepSummary.add(""); // spacing line
             }
 
-            // Add experiments section at the end
+            // Add the experiments section at the end
             if (experimentNames != null && !experimentNames.isEmpty()) {
                 String exps = String.join(", ", experimentNames);
                 sweepSummary.add(String.format("Experiments: %s", exps));
@@ -98,7 +95,7 @@ public class RunTrackMateOnProjectSweep {
         } catch (Exception e) {
             PaintLogger.errorf("Error building sweep summary: %s", e.getMessage());
         }
-        PaintLogger.doc("Sweep analys to be performed", sweepSummary);
+        PaintLogger.doc("Sweep analysis to be performed", sweepSummary);
 
         // Now do the actual sweep
         try {
@@ -172,28 +169,10 @@ public class RunTrackMateOnProjectSweep {
                 }
             }
         } finally {
-            // Always restore PaintConfig to project root at the end
+            // Always restore PaintConfig to the project root at the end
             PaintConfig.reinitialise(projectPath);
             PaintLogger.infof("Reinitialised original PaintConfig back to project root: %s", projectPath);
         }
-
-        // Write summary CSV
-        Path outPath = projectPath.resolve("Out");
-        if (!Files.exists(outPath)) {
-            Files.createDirectories(outPath);
-        }
-        Path summaryFile = outPath.resolve("Sweep Summary.csv");
-        try (CSVPrinter printer = new CSVPrinter(
-                new FileWriter(summaryFile.toFile()),
-                CSVFormat.DEFAULT.builder()
-                        .setHeader("Parameter", "Value", "Result Directory", "Status")
-                        .build()
-        )) {
-            for (String[] row : summaryRows) {
-                printer.printRecord((Object[]) row);
-            }
-        }
-        PaintLogger.infof("Sweep summary written to %s", summaryFile);
 
         if (overallStatus) {
             flattenSweep(projectPath.resolve("Sweep"), experimentNames, true);
