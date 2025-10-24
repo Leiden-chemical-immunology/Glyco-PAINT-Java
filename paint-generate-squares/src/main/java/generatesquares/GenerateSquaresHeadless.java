@@ -92,16 +92,24 @@ public class GenerateSquaresHeadless {
         try {
             PaintLogger.infof("Creating project-level summary files...");
 
+            PaintLogger.infof("Creating %s",projectPath.resolve(SQUARES_CSV) );
             concatenateNamedCsvFiles(projectPath, SQUARES_CSV, experimentNames);
+
+            PaintLogger.infof("Creating %s",projectPath.resolve(RECORDINGS_CSV) );
             concatenateNamedCsvFiles(projectPath, RECORDINGS_CSV, experimentNames);
+
+            PaintLogger.infof("Creating %s",projectPath.resolve(EXPERIMENT_INFO_CSV) );
             concatenateNamedCsvFiles(projectPath, EXPERIMENT_INFO_CSV, experimentNames);
+
+            PaintLogger.infof("Creating %s",projectPath.resolve(TRACKS_CSV) );
             concatenateNamedCsvFiles(projectPath, TRACKS_CSV, experimentNames);
+
+            PaintLogger.blankline();
 
             Duration duration = Duration.between(start, LocalDateTime.now());
             PaintLogger.infof("Finished Generate Squares for all experiments in %s", formatDuration(duration));
         } catch (Exception e) {
             PaintLogger.errorf("Failed to concatenate CSVs: %s", e.getMessage());
         }
-
     }
 }
