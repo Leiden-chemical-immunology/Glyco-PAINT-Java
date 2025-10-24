@@ -3,10 +3,10 @@ name: Build, Release, and Publish Site
 on:
   push:
     tags:
-      - 'v*.*.*'      # Trigger when you push a version tag like v1.3.0
+      - 'v*.*.*'  # Trigger when you push a version tag like v1.3.0
 
 permissions:
-  contents: write  # ✅ required for GitHub Pages + releases
+  contents: write  # Needed for gh-pages + releases
 
 jobs:
   build:
@@ -14,9 +14,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Check out your code
+      # 1️⃣ Check out your code (read-only)
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false  # ✅ Prevent any auto-push to main
 
       # 2️⃣ Set up Java 8
       - name: Set up JDK 8
@@ -35,7 +38,7 @@ jobs:
           mkdir -p release
           find . -name "*-jar-with-dependencies.jar" -exec cp {} release/ \;
 
-      # 5️⃣ Publish GitHub Release with JARs attached
+      # 5️⃣ Publish GitHub Release (only touches the release assets, not main)
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -50,25 +53,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Check out your code again (fresh workspace)
+      # 1️⃣ Fresh checkout (again, read-only)
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false  # ✅ prevents pushing to main
 
-      # 2️⃣ Set up JDK 8
+      # 2️⃣ Set up Java 8
       - name: Set up JDK 8
         uses: actions/setup-java@v4
         with:
           java-version: '8'
           distribution: 'temurin'
 
-      # 3️⃣ Generate Maven site (includes Javadoc)
+      # 3️⃣ Generate Maven site
       - name: Generate Maven Site
         run: mvn -B clean site -DskipTests
 
-      # 4️⃣ Deploy Maven site to GitHub Pages
+      # 4️⃣ Deploy Maven site to gh-pages
       - name: Deploy Maven Site to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: ./target/site
+          force_orphan: true  # ✅ ensures gh-pages stays independent
