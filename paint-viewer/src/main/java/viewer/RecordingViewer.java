@@ -3,7 +3,7 @@ package viewer;
 import paint.shared.config.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
 import paint.shared.dialogs.ProjectDialog.DialogMode;
-import paint.shared.prefs.PaintPrefs;
+import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.PaintLogger;
 import viewer.utils.RecordingEntry;
 import viewer.utils.RecordingLoader;
@@ -56,15 +56,15 @@ public class RecordingViewer {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
 
-            // --- Step 1: Load last used project root from preferences ---
-            String lastProject = PaintPrefs.getString("Project Root", System.getProperty("user.home"));
+            // --- Step 1: Load the last used project root from preferences ---
+            String lastProject = PaintPrefs.getString("Path", "Project Root", System.getProperty("user.home"));
             Path projectPath = Paths.get(lastProject);
 
             // --- Step 2: Initialise logging/config ---
             PaintConfig.initialise(projectPath);
             PaintLogger.initialise(projectPath, "Viewer");
 
-            // --- Step 3: Open Project Specification dialog directly ---
+            // --- Step 3: Open the Project Specification dialog directly ---
             ProjectDialog specificationDialog =
                     new ProjectDialog(null, projectPath, DialogMode.VIEWER);
 

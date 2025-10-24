@@ -4,7 +4,7 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 import paint.shared.config.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
-import paint.shared.prefs.PaintPrefs;
+import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.JarInfoLogger;
 import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
@@ -90,7 +90,7 @@ public class TrackMateUI implements Command {
         // --- Initialise logging and configuration ---
         PaintConsoleWindow.createConsoleFor("TrackMate");
         PaintConfig.initialise(projectPath);
-        String debugLevel = PaintPrefs.getString("Log Level", "INFO");
+        String debugLevel = PaintPrefs.getString("Path", "Log Level",  "INFO");
         PaintLogger.setLevel(debugLevel);
         PaintLogger.initialise(projectPath, "TrackMateOnProject.log");
         PaintLogger.debugf("TrackMate plugin started (Interactive).");

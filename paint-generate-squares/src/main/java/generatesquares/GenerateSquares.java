@@ -28,6 +28,7 @@ import paint.shared.dialogs.ProjectDialog;
 import paint.shared.utils.JarInfoLogger;
 import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
+import paint.shared.utils.PaintRuntime;
 
 import javax.swing.*;
 import java.nio.file.Path;
@@ -83,15 +84,10 @@ public class GenerateSquares {
                 PaintLogger.infof("Version: %s", info.implementationVersion);
                 PaintLogger.infof("Compiled: %s", info.implementationDate);
             }
+            PaintLogger.infof("Verbose mode is %s", PaintRuntime.isVerbose() ? "enabled" : "disabled");
             String formattedTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             PaintLogger.infof("Current time is: %s", formattedTime);
             PaintLogger.blankline();
-
-            PaintLogger.doc("Generate Squares", Arrays.asList(
-                    "Line 1 of commentary",
-                    "Line 2 of commentary",
-                    "Line 3 of commentary"
-            ));
 
             // --- Step 3: Show the integrated configuration dialog ---
             ProjectDialog dialog = new ProjectDialog(
@@ -101,7 +97,7 @@ public class GenerateSquares {
             );
             PaintConsoleWindow.closeOnDialogDispose(dialog.getDialog());
 
-            // --- Step 4: Run calculations when user presses OK ---
+            // --- Step 4: Run calculations when the user presses OK ---
             dialog.setCalculationCallback(project -> {
                 try {
                     GenerateSquaresHeadless.run(project.getProjectRootPath(), project.getExperimentNames());

@@ -2,7 +2,7 @@ package viewer;
 
 import paint.shared.config.PaintConfig;
 import paint.shared.objects.Project;
-import paint.shared.prefs.PaintPrefs;
+import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.PaintLogger;
 
 import viewer.dialogs.CellAssignmentDialog;
@@ -462,7 +462,7 @@ public class RecordingViewerFrame extends JFrame
 
         Path imagesRoot = project.getImagesRootPath();
         if (imagesRoot == null) {
-            String stored = PaintPrefs.getString("Images Root", "");
+            String stored = PaintPrefs.getString("Path", "Images Root", "");
             if (stored != null && !stored.isEmpty()) {
                 imagesRoot = Paths.get(stored);
             } else {

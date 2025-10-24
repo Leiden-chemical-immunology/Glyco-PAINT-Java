@@ -1,7 +1,5 @@
 package paint.shared.utils;
 
-import paint.shared.prefs.PaintPrefs;
-
 /**
  * The PaintRuntime class is a utility class that manages runtime settings for controlling
  * verbosity of logs and the logging level within an application. It interacts with the
@@ -43,8 +41,8 @@ public final class PaintRuntime {
      * if the preferences are unavailable.
      */
     public static void initialiseFromPrefs() {
-        verbose  = PaintPrefs.getBoolean("Verbose", false);
-        logLevel = PaintPrefs.getString("Log Level", "INFO");
+        verbose  = PaintPrefs.getBoolean("Runtime", "Verbose", false);
+        logLevel = PaintPrefs.getString("Runtime", "Log Level", "INFO");
     }
 
     public static boolean isVerbose() {
@@ -57,11 +55,11 @@ public final class PaintRuntime {
 
     public static void setVerbose(boolean v) {
         verbose = v;
-        PaintPrefs.putBoolean("Verbose", v);
+        PaintPrefs.putBoolean("Runtime", "Verbose", v);
     }
 
     public static void setLogLevel(String level) {
         logLevel = level;
-        PaintPrefs.putString("Log Level", level);
+        PaintPrefs.putString("Runtime", "Log Level", level);
     }
 }

@@ -1,4 +1,4 @@
-package paint.shared.prefs;
+package paint.shared.utils;
 
 import com.dd.plist.NSDictionary;
 import com.dd.plist.NSObject;
@@ -70,35 +70,58 @@ public final class PaintPrefs {
     // Core API — get or create default
     // =========================================================================
 
-    public static synchronized String getString(String key, String defaultValue) {
-        NSObject obj = plist.objectForKey(key);
-        if (obj == null) {
-            putString(key, defaultValue);
-            return defaultValue;
-        }
-        return obj.toString();
-    }
+    // =========================================================================
+    // Generic sectioned API
+    // =========================================================================
 
-    public static synchronized boolean getBoolean(String key, boolean defaultValue) {
-        NSObject obj = plist.objectForKey(key);
+    public static synchronized boolean getBoolean(String section, String key, boolean defaultValue) {
+        NSDictionary sectionDict = (NSDictionary) plist.objectForKey(section);
+        if (sectionDict == null) {
+            sectionDict = new NSDictionary();
+            plist.put(section, sectionDict);
+        }
+        NSObject obj = sectionDict.objectForKey(key);
         if (obj == null) {
-            putBoolean(key, defaultValue);
+            sectionDict.put(key, defaultValue);
+            save();
             return defaultValue;
         }
         return Boolean.parseBoolean(obj.toString());
     }
 
-    public static synchronized int getInt(String key, int defaultValue) {
-        NSObject obj = plist.objectForKey(key);
+    public static synchronized String getString(String section, String key, String defaultValue) {
+        NSDictionary sectionDict = (NSDictionary) plist.objectForKey(section);
+        if (sectionDict == null) {
+            sectionDict = new NSDictionary();
+            plist.put(section, sectionDict);
+        }
+        NSObject obj = sectionDict.objectForKey(key);
         if (obj == null) {
-            putInt(key, defaultValue);
+            sectionDict.put(key, defaultValue);
+            save();
             return defaultValue;
         }
-        try {
-            return Integer.parseInt(obj.toString());
-        } catch (NumberFormatException e) {
-            return defaultValue;
+        return obj.toString();
+    }
+
+    public static synchronized void putBoolean(String section, String key, boolean value) {
+        NSDictionary sectionDict = (NSDictionary) plist.objectForKey(section);
+        if (sectionDict == null) {
+            sectionDict = new NSDictionary();
+            plist.put(section, sectionDict);
         }
+        sectionDict.put(key, value);
+        save();
+    }
+
+    public static synchronized void putString(String section, String key, String value) {
+        NSDictionary sectionDict = (NSDictionary) plist.objectForKey(section);
+        if (sectionDict == null) {
+            sectionDict = new NSDictionary();
+            plist.put(section, sectionDict);
+        }
+        sectionDict.put(key, value);
+        save();
     }
 
     // =========================================================================

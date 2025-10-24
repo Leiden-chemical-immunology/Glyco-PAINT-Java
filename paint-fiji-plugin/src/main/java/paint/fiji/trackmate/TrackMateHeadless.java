@@ -1,9 +1,8 @@
 package paint.fiji.trackmate;
 
 import org.scijava.command.Command;
-import org.scijava.plugin.Plugin;
 import paint.shared.config.PaintConfig;
-import paint.shared.prefs.PaintPrefs;
+import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
 import com.google.gson.JsonObject;
@@ -80,7 +79,7 @@ public class TrackMateHeadless implements Command {
 
             // Reinitialise PaintConfig with the real project path
             PaintConfig.reinitialise(projectPath);
-            Path imagesPath = Paths.get(PaintPrefs.getString("Images Root", ""));
+            Path imagesPath = Paths.get(PaintPrefs.getString("Path", "Images Root", ""));
 
             // --- Step 3: setup logging ---
             PaintConsoleWindow.createConsoleFor("TrackMate Headless");

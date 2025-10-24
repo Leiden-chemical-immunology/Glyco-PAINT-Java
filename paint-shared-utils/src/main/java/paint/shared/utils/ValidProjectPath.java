@@ -1,7 +1,5 @@
 package paint.shared.utils;
 
-import paint.shared.prefs.PaintPrefs;
-
 import javax.swing.*;
 import java.awt.*;
 import java.nio.file.Files;
@@ -15,7 +13,7 @@ public class ValidProjectPath {
     public static Path getValidProjectPath() {
 
         boolean needToAsk = false;
-        Path projectPath  = Paths.get(PaintPrefs.getString("Project Root", System.getProperty("user.home")));
+        Path projectPath  = Paths.get(PaintPrefs.getString("Path", "Project Root", System.getProperty("user.home")));
 
         if (!Files.isDirectory(projectPath)) {
             JOptionPane.showMessageDialog(null,
@@ -49,7 +47,7 @@ public class ValidProjectPath {
             String file = chooser.getFile();
             if (dir != null && file != null) {
                 projectPath = Paths.get(dir, file);
-                PaintPrefs.putString("Project Root", projectPath.toString());
+                PaintPrefs.putString("Path", "Project Root", projectPath.toString());
             } else {
                 JOptionPane.showMessageDialog(null,
                                               "No project folder selected.\nExiting.",
