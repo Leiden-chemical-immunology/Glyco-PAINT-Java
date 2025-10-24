@@ -135,10 +135,25 @@ public class TiffMoviePlayer {
 
                 controls.add(topRow);
                 controls.add(bottomRow);
-                frame.add(controls, BorderLayout.SOUTH);
 
+                // --- Add Close button below controls ---
+                JButton closeButton = new JButton("Close");
+                closeButton.addActionListener(e -> {
+                    frame.dispose(); // closes the window
+                });
+                JPanel closePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
+                closePanel.setBackground(controls.getBackground());
+                closePanel.add(closeButton);
+
+                JPanel bottomPanel = new JPanel(new BorderLayout());
+                bottomPanel.add(controls, BorderLayout.CENTER);
+                bottomPanel.add(closePanel, BorderLayout.SOUTH);
+
+                frame.add(bottomPanel, BorderLayout.SOUTH);
+
+                // --- Show frame ---
                 frame.setSize(Math.min(imp.getWidth() + 40, 1000),
-                              Math.min(imp.getHeight() + 140, 850));
+                              Math.min(imp.getHeight() + 180, 900));
                 frame.setLocationRelativeTo(null);
                 frame.setVisible(true);
 
