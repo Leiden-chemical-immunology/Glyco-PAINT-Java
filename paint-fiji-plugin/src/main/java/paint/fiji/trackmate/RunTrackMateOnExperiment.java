@@ -260,7 +260,7 @@ public class RunTrackMateOnExperiment {
                                 break;
                             } else {
                                 PaintLogger.errorf("   TrackMate failed or timed out for '%s'.", recordingName);
-                                PaintLogger.infof();
+                                PaintLogger.blankline();
                                 status = false;
                                 continue;
                             }

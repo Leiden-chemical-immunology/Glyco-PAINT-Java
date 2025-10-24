@@ -111,9 +111,9 @@ public class ValidationHandler {
     public static void validate(Path projectPath, List<String> experimentNames, List<String> fileNames) {
 
         PaintLogger.infof("Validating experiments: %s", experimentNames);
-        PaintLogger.infof();
+        PaintLogger.blankline();
         PaintLogger.infof("Validating files: %s", fileNames);
-        PaintLogger.infof();
+        PaintLogger.blankline();
         ValidationResult validateResult = validateExperiments(projectPath, experimentNames, fileNames);
         if (!validateResult.isValid()) {
             for (String line : validateResult.getReport().split("\n")) {

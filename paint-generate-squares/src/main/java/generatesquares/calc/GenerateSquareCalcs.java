@@ -89,7 +89,7 @@ public class GenerateSquareCalcs {
 
         Duration duration = Duration.between(start, LocalDateTime.now());
         PaintLogger.infof("Finished processing experiment '%s' in %s", experimentName, formatDuration(duration));
-        PaintLogger.infof();
+        PaintLogger.blankline();
 
         // Compile all squares and write
         Table allSquaresTable = compileAllSquares(experiment);

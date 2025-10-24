@@ -157,7 +157,7 @@ public class TrackMateUI implements Command {
 
                     if (success && PaintConfig.getBoolean("TrackMate", "Run Generate Squares After", true)) {
                         PaintLogger.infof("TrackMate finished successfully. Starting Generate Squares...");
-                        PaintLogger.infof();
+                        PaintLogger.blankline();
                         GenerateSquaresHeadless.run(currentProjectRoot, project.getExperimentNames());
                         PaintLogger.infof("Generate Squares completed successfully.");
                     }

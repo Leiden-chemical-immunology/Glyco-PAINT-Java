@@ -399,6 +399,7 @@ public class ProjectDialog {
                         // ✅ Success: show "Completed", then disable the button
                         okButton.setText("Completed");
                         okButton.setEnabled(false);
+                        PaintLogger.blankline();
                         PaintLogger.infof("Operation completed successfully.");
 
                         // Reset text to "OK" (still disabled) after a short delay

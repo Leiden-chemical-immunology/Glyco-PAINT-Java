@@ -104,7 +104,7 @@ public class SweepFlattener {
         concatenateNamedCsvFiles(sweepPath, RECORDINGS_CSV, paramDirsFound);
         concatenateNamedCsvFiles(sweepPath, EXPERIMENT_INFO_CSV, paramDirsFound);
 
-        PaintLogger.infof();
+        PaintLogger.blankline();
         PaintLogger.infof("Completed Sweep");
     }
 
