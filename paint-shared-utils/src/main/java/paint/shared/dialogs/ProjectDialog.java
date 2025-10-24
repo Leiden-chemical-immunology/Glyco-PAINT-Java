@@ -68,10 +68,10 @@ public class ProjectDialog {
     private final JPanel          checkboxPanel = new JPanel();
     private final List<JCheckBox> checkBoxes = new ArrayList<>();
 
-    private JButton               selectAllButton;
-    private JButton               clearAllButton;
-    private JButton               projectBrowseButton;
-    private JButton               imagesBrowseButton;
+    private final JButton         selectAllButton;
+    private final JButton         clearAllButton;
+    private       JButton         projectBrowseButton;
+    private       JButton         imagesBrowseButton;
 
     private final JButton         okButton;
     private final JButton         cancelButton;
@@ -129,7 +129,7 @@ public class ProjectDialog {
                                   },
                                   this::onImagesRootChosen);
 
-        // Disable and grey out Images Root in Generate Squares mode
+        // Disable and gray out Images Root in Generate Squares mode
         if (mode == DialogMode.GENERATE_SQUARES) {
             // Text field: read-only (can copy text but not edit)
             imageDirectoryField.setEditable(false);
@@ -191,7 +191,7 @@ public class ProjectDialog {
                 pg.gridwidth = 1;
             }
 
-            // Prepare to collect labels for the later grey-out
+            // Prepare to collect labels for the later gray-out
             squareParamLabels = new ArrayList<>();
 
             // Number of squares (grid)
