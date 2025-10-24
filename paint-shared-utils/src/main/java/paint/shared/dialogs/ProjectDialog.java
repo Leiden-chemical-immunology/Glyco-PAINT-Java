@@ -614,8 +614,17 @@ public class ProjectDialog {
             Arrays.sort(subs, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
             for (File sub : subs) {
                 if (sub.isDirectory()) {
+
+                    // Check if the sub-directory contain an Experiment Info file
                     File file = new File(sub, EXPERIMENT_INFO_CSV);
-                    if (!file.isFile()) continue;
+                    if (!file.isFile()) {
+                        continue;
+                    }
+
+                    // There may be a sweep directory that contains an Experiment Infro file, but skip still
+                    if (sub.getName().equals("Sweep")) {
+                        continue;
+                    }
 
                     JCheckBox cb = new JCheckBox(sub.getName());
                     boolean savedState = PaintConfig.getBoolean("Experiments", sub.getName(), false);
@@ -626,7 +635,9 @@ public class ProjectDialog {
             }
         }
 
-        for (JCheckBox cb : checkBoxes) cb.addActionListener(e -> updateOkButtonState());
+        for (JCheckBox cb : checkBoxes) {
+            cb.addActionListener(e -> updateOkButtonState());
+        }
         updateOkButtonState();
     }
 
