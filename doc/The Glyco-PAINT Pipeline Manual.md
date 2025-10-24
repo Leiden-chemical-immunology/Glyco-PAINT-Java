@@ -10,9 +10,9 @@ Parallel to the Project Root, the pipeline depends on an 'Images Root' directory
 
 The images are likely downloaded from Omero (for which the pipeline has a Get Omero app) or may be copied in any other way. The names of the recordings can be chosen freely, with the restriction that the name of the Brightfield image is equal to the multi-frame recording with '-BF' attached.
 
-In the Project Root directory, a Paint Configuration file exists, in which important parameter for the pipeline are stored. If the file does not exist, for example in a new installation, it will be created automatically with default parameters.
+In the Project Root directory, a Paint Configuration file exists, in which important parameters for the pipeline are stored. If the file does not exist, for example in a new installation, it will be created automatically with default parameters. The user should confirm that the defauklt values are appropriate or make changes. 
 
-The various Glyco-PAINT tools write information into a Console and also to a log file, which is stored in the Log directory that will be created  in the Project Root directory.
+The various Glyco-PAINT tools write information into a Paint Console and also to a log file, which is stored in the Log directory under the Project Root directory.
 
 The pipeline flow is as follows:
 

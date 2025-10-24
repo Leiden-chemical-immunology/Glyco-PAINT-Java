@@ -18,7 +18,7 @@ import java.io.PrintStream;
  * a movie-like sequence in a graphical user interface. The player provides
  * options for pausing, adjusting playback speed, and navigating through frames.
  *
- * This class uses ImageJ for loading and processing image data, and
+ * This class uses ImageJ for loading and processing image data and
  * Swing for creating the user interface. It ensures a smooth viewing
  * experience with simple controls and error handling.
  *
