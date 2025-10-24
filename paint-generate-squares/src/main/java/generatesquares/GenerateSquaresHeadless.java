@@ -43,6 +43,12 @@ public class GenerateSquaresHeadless {
      */
     public static void run(Path projectPath, List<String> experimentNames ) throws Exception {
 
+        // --- Early abort check ---
+        if (Thread.currentThread().isInterrupted()) {
+            PaintLogger.infof("Generate Squares run aborted before start (user cancelled).");
+            return;
+        }
+
         // --- Validate input data ---
         ValidationResult validateResult = validateExperiments(
                 projectPath,
@@ -69,9 +75,25 @@ public class GenerateSquaresHeadless {
 
         // --- Run squares calculation for each experiment ---
         for (String experimentName : experimentNames) {
+
+            if (Thread.currentThread().isInterrupted()) {
+                PaintLogger.infof("Generate Squares run stopped early (user cancelled).");
+                return;
+            }
+
             PaintLogger.infof("Running Generate Squares for experiment: %s", experimentName);
 
-            generateSquaresForExperiment(project, experimentName);
+            try {
+                generateSquaresForExperiment(project, experimentName);
+            } catch (Exception e) {
+                PaintLogger.errorf("Error processing experiment %s: %s", experimentName, e.getMessage());
+                continue;
+            }
+
+            if (Thread.currentThread().isInterrupted()) {
+                PaintLogger.infof("Cancelled before exporting histograms for %s", experimentName);
+                return;
+            }
 
             try {
                 Experiment experiment = loadExperiment(projectPath, experimentName, true);
@@ -89,6 +111,11 @@ public class GenerateSquaresHeadless {
         }
 
         // --- Concatenate results ---
+        if (Thread.currentThread().isInterrupted()) {
+            PaintLogger.infof("Cancelled before concatenating project-level CSVs.");
+            return;
+        }
+
         try {
             PaintLogger.infof("Creating project-level summary files...");
 

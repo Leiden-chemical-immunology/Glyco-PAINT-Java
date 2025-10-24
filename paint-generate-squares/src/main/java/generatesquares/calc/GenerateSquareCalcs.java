@@ -57,6 +57,11 @@ public class GenerateSquareCalcs {
         LocalDateTime start = LocalDateTime.now();
         PaintLogger.debugf("Loading Experiment '%s'", experimentName);
 
+        // EARLY EXIT if the user cancelled before we start
+        if (Thread.currentThread().isInterrupted()) {
+            PaintLogger.infof("Cancelled before starting experiment %s", experimentName);
+            return false;
+        }
         try {
             experiment = loadExperiment(project.getProjectRootPath(), experimentName, false);
         } catch (Exception e) {
@@ -71,6 +76,12 @@ public class GenerateSquareCalcs {
         PaintLogger.infof("Starting processing experiment '%s'", experimentName);
 
         for (Recording recording : experiment.getRecordings()) {
+
+            // CHECK before starting each recording
+            if (Thread.currentThread().isInterrupted()) {
+                PaintLogger.infof("Cancelled before processing recording %s", recording.getRecordingName());
+                return false;
+            }
             PaintLogger.infof("   Processing: %s", recording.getRecordingName());
             PaintLogger.debugf(recording.toString());
 
@@ -81,6 +92,12 @@ public class GenerateSquareCalcs {
             // Assign the recording tracks to the squares
             assignTracksToSquares(recording);
 
+            // CHECK mid-work, before calculating attributes
+            if (Thread.currentThread().isInterrupted()) {
+                PaintLogger.infof("Cancelled before attribute calculation for %s", recording.getRecordingName());
+                return false;
+            }
+
             // Calculate square-level and recording-level attributes
             Path experimentPath = project.getProjectRootPath().resolve(experiment.getExperimentName());
             CalculateAttributes.calculateSquareAttributes(experimentPath, experimentName, recording, generateSquaresConfig);
@@ -90,6 +107,12 @@ public class GenerateSquareCalcs {
         Duration duration = Duration.between(start, LocalDateTime.now());
         PaintLogger.infof("Finished processing experiment '%s' in %s", experimentName, formatDuration(duration));
         PaintLogger.blankline();
+
+        // 5️⃣ CHECK before writing output files
+        if (Thread.currentThread().isInterrupted()) {
+            PaintLogger.infof("Cancelled before writing output for %s", experimentName);
+            return false;
+        }
 
         // Compile all squares and write
         Table allSquaresTable = compileAllSquares(experiment);

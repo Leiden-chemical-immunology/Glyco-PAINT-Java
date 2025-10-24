@@ -80,6 +80,8 @@ public class ProjectDialog {
     private          boolean      okPressed = false;
 
     private final DialogMode      mode;
+
+    private volatile Thread       workerThread = null;
     // @formatter:on
 
     public ProjectDialog(Frame owner, Path initialProjectPath, DialogMode mode) {
@@ -100,7 +102,20 @@ public class ProjectDialog {
         }
 
         this.dialog = new JDialog(owner, dialogTitle, false);
-        this.dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+        // handle window [X] the same as Cancel
+        this.dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        this.dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                cancelled = true;
+                if (workerThread != null && workerThread.isAlive()) {
+                    workerThread.interrupt();
+                    PaintLogger.infof("Cancellation requested — interrupting background thread...");
+                }
+                dialog.dispose();
+            }
+        });
 
         // ======= TOP FORM =======
         JPanel formPanel = new JPanel(new GridBagLayout());
@@ -353,7 +368,30 @@ public class ProjectDialog {
         dialog.add(bottomPanel, BorderLayout.SOUTH);
 
         okButton.addActionListener(e -> onOkPressed());
-        cancelButton.addActionListener(e -> { cancelled = true; dialog.dispose(); });
+        cancelButton.addActionListener(e -> {
+            cancelled = true;
+            if (workerThread != null && workerThread.isAlive()) {
+                PaintLogger.infof("Cancellation requested — attempting graceful shutdown...");
+                workerThread.interrupt();
+
+                new Thread(() -> {
+                    try {
+                        workerThread.join(2000); // wait up to 2 seconds for the worker to die
+                    } catch (InterruptedException ignored) { }
+
+                    if (workerThread.isAlive()) {
+                        PaintLogger.errorf("Worker thread did not stop — forcing JVM halt.");
+                        Runtime.getRuntime().halt(0);
+                    } else {
+                        PaintLogger.infof("Worker thread terminated cleanly.");
+                    }
+                }, "ForceShutdownWatcher").start();
+            } else {
+                PaintLogger.infof("No active worker thread — closing dialog.");
+            }
+
+            dialog.dispose();
+        });
 
         // size and show
         int width  = 820;
@@ -378,22 +416,41 @@ public class ProjectDialog {
             okButton.setText("Running...");
             okButton.setEnabled(false);
 
-            new Thread(() -> {
+            workerThread = new Thread(() -> {
                 boolean success = false;
                 Exception caught = null;
 
                 try {
-                    success = calculationCallback.run(getProject());
+                    if (!cancelled && !Thread.currentThread().isInterrupted()) {
+                        success = calculationCallback.run(getProject());
+                    }
                 } catch (Exception ex) {
                     caught = ex;
-                    PaintLogger.errorf("Error in callback: %s", ex.getMessage());
+                    // If this was triggered by an interruption, mark it
+                    if (ex instanceof InterruptedException) {
+                        Thread.currentThread().interrupt();
+                        cancelled = true;
+                        PaintLogger.infof("Generate Squares run was interrupted.");
+                    } else {
+                        PaintLogger.errorf("Error in callback: %s", ex.getMessage());
+                    }
                 }
 
                 final boolean callbackSuccess = success;
                 final Exception callbackError = caught;
+                final boolean wasCancelled = cancelled || Thread.currentThread().isInterrupted();
 
                 SwingUtilities.invokeLater(() -> {
                     setInputsEnabled(true);
+
+                    if (wasCancelled) {
+                        okButton.setText("Cancelled");
+                        okButton.setEnabled(true);
+                        PaintLogger.blankline();
+                        PaintLogger.infof("Operation was cancelled by the user.");
+                        workerThread = null;   // ✅ cleanup
+                        return;
+                    }
 
                     if (callbackSuccess) {
                         // ✅ Success: show "Completed", then disable the button
@@ -415,9 +472,11 @@ public class ProjectDialog {
                         JOptionPane.showMessageDialog(dialog, msg,
                                                       "Warning", JOptionPane.WARNING_MESSAGE);
                     }
-                    // Dialog intentionally stays open in all modes.
+                    workerThread = null;   // ✅ always clear
                 });
-            }, "ProjectDialog-OK").start();
+            }, "ProjectDialog-Worker");
+
+            workerThread.start();
         }
     }
 
@@ -743,5 +802,9 @@ public class ProjectDialog {
         default void insertUpdate(javax.swing.event.DocumentEvent e) { update(e); }
         default void removeUpdate(javax.swing.event.DocumentEvent e) { update(e); }
         default void changedUpdate(javax.swing.event.DocumentEvent e) { update(e); }
+    }
+
+    public boolean isCancelledOrInterrupted() {
+        return cancelled || (workerThread != null && workerThread.isInterrupted());
     }
 }
