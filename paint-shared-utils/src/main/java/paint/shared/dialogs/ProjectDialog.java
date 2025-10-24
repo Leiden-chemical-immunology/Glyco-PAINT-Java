@@ -4,7 +4,7 @@ import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.objects.Project;
-import paint.shared.prefs.PaintPrefs;
+import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintRuntime;
 
@@ -139,23 +139,22 @@ public class ProjectDialog {
         addLabeledFieldWithBrowse(formPanel, gbc, row++, "Images Root:", labelSize,
                                   (tf) -> imageDirectoryField = tf,
                                   () -> {
-                                      String def = PaintPrefs.getString("Images Root", System.getProperty("user.home"));
+                                      String def = PaintPrefs.getString("Path", "Images Root", System.getProperty("user.home"));
                                       return (def == null || def.isEmpty()) ? System.getProperty("user.home") : def;
                                   },
                                   this::onImagesRootChosen);
 
-        // Disable and gray out Images Root in Generate Squares mode
-        if (mode == DialogMode.GENERATE_SQUARES) {
-            // Text field: read-only (can copy text but not edit)
-            imageDirectoryField.setEditable(false);
-            imageDirectoryField.setBackground(UIManager.getColor("TextField.inactiveBackground"));
+        // Disable and visually gray out "Images Root" in TRACKMATE or GENERATE_SQUARES mode
+        if (mode == DialogMode.TRACKMATE || mode == DialogMode.GENERATE_SQUARES) {
+            imageDirectoryField.setEnabled(false);
+            imageDirectoryField.setBackground(UIManager.getColor("Panel.background"));
+            imageDirectoryField.setForeground(Color.GRAY);
+            imageDirectoryField.setFocusable(false);
 
-            // Disable the Browse button
             if (imagesBrowseButton != null) {
                 imagesBrowseButton.setEnabled(false);
             }
 
-            // Grey out the label
             for (Component comp : formPanel.getComponents()) {
                 if (comp instanceof JLabel && ((JLabel) comp).getText().startsWith("Images Root:")) {
                     comp.setForeground(Color.GRAY);
@@ -323,8 +322,8 @@ public class ProjectDialog {
         verboseCheckBox         = new JCheckBox("Verbose", PaintRuntime.isVerbose());
         sweepCheckBox           = new JCheckBox("Sweep", PaintConfig.getBoolean("Sweep Settings", "Sweep", false));
 
-        verboseCheckBox.addActionListener(e -> onVerboseToggled(verboseCheckBox.isSelected()));
-
+        // Defer attaching listener until after the initial state is set
+        SwingUtilities.invokeLater(() -> verboseCheckBox.addActionListener(e -> onVerboseToggled(verboseCheckBox.isSelected())));
 
         // Handle user toggling Sweep checkbox
         sweepCheckBox.addActionListener(e -> {
@@ -409,7 +408,7 @@ public class ProjectDialog {
     private void onOkPressed() {
         okPressed = true;
         cancelled = false;
-        saveConfig(); // persist roots + experiments (+ params if edited)
+        saveConfig();
 
         if (calculationCallback != null) {
             setInputsEnabled(false);
@@ -453,17 +452,12 @@ public class ProjectDialog {
                     }
 
                     if (callbackSuccess) {
-                        // ✅ Success: show "Completed", then disable the button
                         okButton.setText("Completed");
                         okButton.setEnabled(false);
                         PaintLogger.blankline();
                         PaintLogger.infof("Operation completed successfully.");
-
-                        // Reset text to "OK" (still disabled) after a short delay
                         new javax.swing.Timer(1500, evt -> okButton.setText("OK")).start();
-
                     } else {
-                        // ❌ Failure: enable immediately to allow retry
                         okButton.setText("OK");
                         okButton.setEnabled(true);
                         String msg = (callbackError != null)
@@ -633,8 +627,8 @@ public class ProjectDialog {
 
     private void saveConfig() {
         // Roots
-        PaintPrefs.putString("Project Root", projectRootField.getText().trim());
-        PaintPrefs.putString("Images Root",  imageDirectoryField.getText().trim());
+        PaintPrefs.putString("Path", "Project Root", projectRootField.getText().trim());
+        PaintPrefs.putString("Path", "Images Root",  imageDirectoryField.getText().trim());
 
         // Squares params (write if the panel exists; values used by either mode)
         if (paramsPanel != null) {
@@ -673,10 +667,19 @@ public class ProjectDialog {
     }
 
     private static int parseIntSafe(String s, int def) {
-        try { return Integer.parseInt(s.trim()); } catch (Exception e) { return def; }
+        try {
+            return Integer.parseInt(s.trim());
+        } catch (Exception e) {
+            return def;
+        }
     }
+
     private static double parseDoubleSafe(String s, double def) {
-        try { return Double.parseDouble(s.trim()); } catch (Exception e) { return def; }
+        try {
+            return Double.parseDouble(s.trim());
+        } catch (Exception e) {
+            return def;
+        }
     }
 
     private Project getProject() {
@@ -778,8 +781,13 @@ public class ProjectDialog {
                 throws BadLocationException { if (text.matches("\\d*(\\.\\d*)?")) super.replace(fb, offset,length, text, attrs); }
     }
 
-    public boolean isCancelled() { return cancelled; }
-    public JDialog getDialog()    { return dialog; }
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public JDialog getDialog() {
+        return dialog;
+    }
 
     public void setOkEnabled(boolean enabled) {
         if (okButton != null) okButton.setEnabled(enabled);
