@@ -12,7 +12,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import static generatesquares.calc.GenerateSquareCalcs.generateSquaresForExperiment;
 import static paint.shared.constants.PaintConstants.*;
@@ -22,26 +24,13 @@ import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.validate.ValidationHandler.validateExperiments;
 
 /**
- * A utility class responsible for running the Generate Squares pipeline in a headless mode.
- * This class processes a list of experiment subdirectories located within a specified project path,
- * validates input data, calculates square data, exports histogram PDFs, and creates summary output files.
+ * Runs the Generate Squares pipeline headlessly:
+ * validates experiments, performs calculations, exports results,
+ * and builds project-level summary CSVs.
  */
 public class GenerateSquaresHeadless {
 
-    /**
-     * Executes the process of validating experiment data, performing calculations,
-     * exporting results, and generating summary files for the specified experiments
-     * within a given project directory.
-     *
-     * The method validates the input configuration, processes individual experiments,
-     * generates required outputs, and consolidates results into summary files.
-     *
-     * @param projectPath the root directory path of the project containing the experiments
-     * @param experimentNames a list of names of the experiments to be processed
-     * @throws Exception if validation fails, file handling issues occur,
-     *                   or other exceptions are encountered during execution
-     */
-    public static void run(Path projectPath, List<String> experimentNames ) throws Exception {
+    public static void run(Path projectPath, List<String> experimentNames) throws Exception {
 
         // --- Early abort check ---
         if (Thread.currentThread().isInterrupted()) {
@@ -50,10 +39,12 @@ public class GenerateSquaresHeadless {
         }
 
         // --- Validate input data ---
+        PaintLogger.infof("Validating input data...");
+
         ValidationResult validateResult = validateExperiments(
                 projectPath,
                 experimentNames,
-                java.util.Arrays.asList(EXPERIMENT_INFO_CSV, RECORDINGS_CSV, TRACKS_CSV)
+                Arrays.asList(EXPERIMENT_INFO_CSV, RECORDINGS_CSV, TRACKS_CSV)
         );
 
         if (!validateResult.isValid()) {
@@ -63,17 +54,17 @@ public class GenerateSquaresHeadless {
             throw new IllegalStateException("Experiment validation failed.");
         }
 
+        logContextAndConfiguration(projectPath, experimentNames);
         LocalDateTime start = LocalDateTime.now();
 
-        // --- Construct the Project object expected by GenerateSquareCalcs ---
+        // --- Prepare project ---
         GenerateSquaresConfig generateSquaresConfig = GenerateSquaresConfig.from(PaintConfig.instance());
-
         Project project = new Project();
         project.setProjectRootPath(projectPath);
         project.setExperimentNames(experimentNames);
         project.setGenerateSquaresConfig(generateSquaresConfig);
 
-        // --- Run squares calculation for each experiment ---
+        // --- Run each experiment ---
         for (String experimentName : experimentNames) {
 
             if (Thread.currentThread().isInterrupted()) {
@@ -119,24 +110,99 @@ public class GenerateSquaresHeadless {
         try {
             PaintLogger.infof("Creating project-level summary files...");
 
-            PaintLogger.infof("Creating %s",projectPath.resolve(SQUARES_CSV) );
+            PaintLogger.infof("   Creating %s", projectPath.resolve(SQUARES_CSV));
             concatenateNamedCsvFiles(projectPath, SQUARES_CSV, experimentNames);
+            if (Thread.currentThread().isInterrupted()) return;
 
-            PaintLogger.infof("Creating %s",projectPath.resolve(RECORDINGS_CSV) );
+            PaintLogger.infof("   Creating %s", projectPath.resolve(RECORDINGS_CSV));
             concatenateNamedCsvFiles(projectPath, RECORDINGS_CSV, experimentNames);
+            if (Thread.currentThread().isInterrupted()) return;
 
-            PaintLogger.infof("Creating %s",projectPath.resolve(EXPERIMENT_INFO_CSV) );
+            PaintLogger.infof("   Creating %s", projectPath.resolve(EXPERIMENT_INFO_CSV));
             concatenateNamedCsvFiles(projectPath, EXPERIMENT_INFO_CSV, experimentNames);
+            if (Thread.currentThread().isInterrupted()) return;
 
-            PaintLogger.infof("Creating %s",projectPath.resolve(TRACKS_CSV) );
+            PaintLogger.infof("   Creating %s", projectPath.resolve(TRACKS_CSV));
             concatenateNamedCsvFiles(projectPath, TRACKS_CSV, experimentNames);
 
             PaintLogger.blankline();
 
             Duration duration = Duration.between(start, LocalDateTime.now());
             PaintLogger.infof("Finished Generate Squares for all experiments in %s", formatDuration(duration));
+
         } catch (Exception e) {
             PaintLogger.errorf("Failed to concatenate CSVs: %s", e.getMessage());
         }
+    }
+
+    private static void logContextAndConfiguration(Path projectPath, List<String> experimentNames) {
+
+        int nSquares      = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", 400);
+        int side          = (int) Math.round(Math.sqrt(nSquares));
+        int minTracks     = PaintConfig.getInt("Generate Squares", "Min Tracks to Calculate Tau", 20);
+        double minRSq     = PaintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
+        double minDensity = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
+        double maxVar     = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
+
+        // Neatly wrapped experiment list
+        // Neatly wrapped experiment list
+        // Neatly wrapped experiment list
+        String formattedExperiments;
+        if (experimentNames.isEmpty()) {
+            formattedExperiments = "                   (none selected — please verify selection)";
+        } else {
+            final int MAX_WIDTH = 100;
+            final String INDENT = "                   ";
+
+            StringBuilder sb = new StringBuilder("  "); // the firstline has only 2 leading spaces
+            int currentLineLength = 2;
+            int effectiveMaxWidthFirstLine = MAX_WIDTH - (INDENT.length() - 2);
+
+            for (int i = 0; i < experimentNames.size(); i++) {
+                String exp = experimentNames.get(i);
+                int tokenLength = exp.length() + (i < experimentNames.size() - 1 ? 2 : 0);
+
+                // use narrower limit for first line, normal for later lines
+                int limit = (sb.indexOf("\n") == -1) ? effectiveMaxWidthFirstLine : MAX_WIDTH;
+
+                if (currentLineLength + tokenLength > limit) {
+                    sb.append("\n").append(INDENT);
+                    currentLineLength = INDENT.length();
+                }
+
+                sb.append(exp);
+                currentLineLength += exp.length();
+
+                if (i < experimentNames.size() - 1) {
+                    sb.append(", ");
+                    currentLineLength += 2;
+                }
+            }
+
+            formattedExperiments = sb.toString();
+        }
+
+        PaintLogger.doc("Generate Squares", Arrays.asList(
+                "Starting Generate Squares analysis for project: " + projectPath.getFileName(),
+                "",
+                "Selected experiments:",
+                formattedExperiments,
+                "",
+                "Using parameters:",
+                String.format(Locale.getDefault(), "  • Grid size:                 %dx%d (%d squares)", side, side, nSquares),
+                String.format(Locale.getDefault(), "  • Minimum tracks per square: %d", minTracks),
+                String.format(Locale.getDefault(), "  • Minimum R²:                %.2f", minRSq),
+                String.format(Locale.getDefault(), "  • Minimum density ratio:     %.1f", minDensity),
+                String.format(Locale.getDefault(), "  • Maximum variability:       %.1f", maxVar),
+                "",
+                "Each recording will be divided into spatial squares, and per-square track statistics will be calculated.",
+                "Results will be prepared per experiment and squares and tracks files updated",
+                "",
+                "The results will then be compiled into project level files:",
+                String.format("  • %s", SQUARES_CSV),
+                String.format("  • %s (with updated Square Number and Label Number fields)", TRACKS_CSV),
+                String.format("  • %s", RECORDINGS_CSV),
+                String.format("  • %s", EXPERIMENT_INFO_CSV)
+        ));
     }
 }

@@ -1,6 +1,7 @@
 package paint.shared.validate;
 
 import paint.shared.utils.PaintLogger;
+import paint.shared.utils.PaintRuntime;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -32,8 +33,9 @@ public class ValidationHandler {
     public static ValidationResult validateExperiments(Path projectPath,
                                                        List<String> experimentNames,
                                                        List<String> fileNames) {
-        List<String> report = new ArrayList<>();
-        ValidationResult overall = new ValidationResult();
+        List<String>     report    = new ArrayList<>();
+        ValidationResult overall   = new ValidationResult();
+        boolean          isVerbose = PaintRuntime.isVerbose();
 
         for (String expName : experimentNames) {
             Path expDir = projectPath.resolve(expName);
@@ -43,6 +45,9 @@ public class ValidationHandler {
                 overall.addError(msg);
                 report.add(msg);
                 continue;
+            }
+            if (isVerbose) {
+                PaintLogger.infof("   Validating experiment: %s", expName);
             }
 
             for (String fileName : fileNames) {
@@ -65,6 +70,9 @@ public class ValidationHandler {
                     }
                 }
             }
+        }
+        if (isVerbose) {
+            PaintLogger.blankline();
         }
 
         if (!report.isEmpty()) {
