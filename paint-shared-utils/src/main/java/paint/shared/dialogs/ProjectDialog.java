@@ -318,26 +318,31 @@ public class ProjectDialog {
         dialog.add(centerPanel, BorderLayout.CENTER);
 
         // ======= BOTTOM =======
+
         saveExperimentsCheckBox = new JCheckBox("Save Experiments", false);
         verboseCheckBox         = new JCheckBox("Verbose", PaintRuntime.isVerbose());
-        sweepCheckBox           = new JCheckBox("Sweep", PaintConfig.getBoolean("Sweep Settings", "Sweep", false));
 
-        // Defer attaching listener until after the initial state is set
-        SwingUtilities.invokeLater(() -> verboseCheckBox.addActionListener(e -> onVerboseToggled(verboseCheckBox.isSelected())));
-
-        // Handle user toggling Sweep checkbox
-        sweepCheckBox.addActionListener(e -> {
-            boolean enabled = sweepCheckBox.isSelected();
-            PaintConfig.setBoolean("Sweep Settings", "Sweep", enabled);
-            PaintConfig.instance().save();
-            PaintLogger.infof("Sweep mode %s.", enabled ? "enabled" : "disabled");
-            updateOkButtonState();
-        });
+        // Only create the Sweep checkbox in TRACKMATE mode
+        if (mode == DialogMode.TRACKMATE) {
+            sweepCheckBox = new JCheckBox("Sweep", PaintConfig.getBoolean("Sweep Settings", "Sweep", false));
+            sweepCheckBox.addActionListener(e -> {
+                boolean enabled = sweepCheckBox.isSelected();
+                PaintConfig.setBoolean("Sweep Settings", "Sweep", enabled);
+                PaintConfig.instance().save();
+                PaintLogger.infof("Sweep mode %s.", enabled ? "enabled" : "disabled");
+                updateOkButtonState();
+            });
+        } else {
+            sweepCheckBox = null; // hide it in other modes
+        }
 
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         leftPanel.add(saveExperimentsCheckBox);
         leftPanel.add(verboseCheckBox);
-        leftPanel.add(sweepCheckBox);
+
+        if (sweepCheckBox != null) {
+            leftPanel.add(sweepCheckBox);
+        }
 
         okButton     = new JButton("OK");
         cancelButton = new JButton("Cancel");
