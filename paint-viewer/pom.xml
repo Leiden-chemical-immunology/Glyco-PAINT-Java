@@ -16,56 +16,46 @@
     <packaging>jar</packaging>
 
     <name>Paint Viewer</name>
-    <description>Paint desktop application</description>
+    <description>Standalone desktop application for viewing experiment recordings</description>
 
     <properties>
         <project.build.outputTimestamp>2025-10-23T08:47:23Z</project.build.outputTimestamp>
+        <app.name>Paint Viewer</app.name>
+        <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
+        <fat.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</fat.jar>
     </properties>
 
     <dependencies>
-        <!-- Shared utilities -->
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
             <version>1.0.1-SNAPSHOT</version>
         </dependency>
 
-        <!-- Logging Suppress SLF4J errors-->
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.2.13</version>
-        </dependency>
-
-        <!-- ImageJ1 core -->
         <dependency>
             <groupId>net.imagej</groupId>
             <artifactId>ij</artifactId>
             <version>1.54h</version>
         </dependency>
 
-        <!-- Fiji TrackMate -->
         <dependency>
             <groupId>sc.fiji</groupId>
             <artifactId>TrackMate</artifactId>
             <version>7.14.0</version>
         </dependency>
 
-        <!-- Fiji lib -->
         <dependency>
             <groupId>sc.fiji</groupId>
             <artifactId>fiji-lib</artifactId>
             <version>2.1.3</version>
         </dependency>
 
-        <!-- ImgLib2 -->
         <dependency>
             <groupId>net.imglib2</groupId>
             <artifactId>imglib2</artifactId>
             <version>7.1.5</version>
         </dependency>
 
-        <!-- Bio-Formats -->
         <dependency>
             <groupId>ome</groupId>
             <artifactId>bio-formats_plugins</artifactId>
@@ -84,27 +74,30 @@
             <version>6.13.0</version>
         </dependency>
 
-        <!-- Tablesaw -->
         <dependency>
             <groupId>tech.tablesaw</groupId>
             <artifactId>tablesaw-core</artifactId>
             <version>0.43.1</version>
         </dependency>
 
-        <!-- CSV -->
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>5.9</version>
         </dependency>
 
-        <!-- JSON -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.11.0</version>
         </dependency>
 
+        <!-- Silence SLF4J -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>1.7.36</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -112,16 +105,16 @@
             <id>scijava.public</id>
             <url>https://maven.scijava.org/content/groups/public</url>
         </repository>
-
         <repository>
             <id>ome.releases</id>
             <url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
         </repository>
     </repositories>
 
-    <!-- Add fat JAR build -->
     <build>
         <plugins>
+
+            <!-- Fat JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -135,19 +128,129 @@
                             <mainClass>viewer.RecordingViewer</mainClass>
                         </manifest>
                     </archive>
-                    <finalName>${project.artifactId}-${project.version}</finalName>
                 </configuration>
                 <executions>
                     <execution>
                         <id>make-assembly</id>
                         <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
+                        <goals><goal>single</goal></goals>
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Create macOS .app bundle -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>create-app-bundle</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <target name="create-app-bundle">
+                                <echo message="🍎 Creating macOS app bundle at ${app.bundle}"/>
+
+                                <delete dir="${app.bundle}" failonerror="false"/>
+                                <delete file="${project.build.directory}/${app.name}.app.zip" failonerror="false"/>
+
+                                <mkdir dir="${app.bundle}/Contents/MacOS"/>
+                                <mkdir dir="${app.bundle}/Contents/Java"/>
+                                <mkdir dir="${app.bundle}/Contents/Resources"/>
+
+                                <copy file="${fat.jar}" todir="${app.bundle}/Contents/Java" overwrite="true"/>
+
+                                <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key>
+  <string>${app.name}</string>
+  <key>CFBundleExecutable</key>
+  <string>launch</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.github.jjabakker.PaintViewer</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleVersion</key>
+  <string>${project.version}</string>
+</dict>
+</plist>
+                                ]]></echo>
+
+                                <echo file="${app.bundle}/Contents/MacOS/launch"><![CDATA[
+#!/bin/bash
+DIR="$( cd "$( dirname "$0" )" && cd ../Java && pwd )"
+exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-jar-with-dependencies.jar"
+                                ]]></echo>
+
+                                <fixcrlf file="${app.bundle}/Contents/MacOS/launch" eol="unix"/>
+                                <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
+
+                                <exec executable="zip">
+                                    <arg value="-r"/>
+                                    <arg value="${project.build.directory}/${app.name}.app.zip"/>
+                                    <arg value="${app.bundle}"/>
+                                </exec>
+
+                                <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
+                                <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
+                                <copy todir="${user.home}/Applications/Glyco-PAINT" overwrite="true">
+                                    <fileset dir="${project.build.directory}">
+                                        <include name="${app.name}.app/**"/>
+                                    </fileset>
+                                </copy>
+
+                                <exec executable="chmod">
+                                    <arg value="755"/>
+                                    <arg value="${user.home}/Applications/Glyco-PAINT/${app.name}.app/Contents/MacOS/launch"/>
+                                </exec>
+
+                                <echo message="✅ Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
+                            </target>
+                        </configuration>
+                        <goals><goal>run</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Create Windows .exe launcher -->
+            <plugin>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <version>2.5.0</version>
+                <executions>
+                    <execution>
+                        <id>l4j-paint-viewer</id>
+                        <phase>package</phase>
+                        <goals><goal>launch4j</goal></goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <outfile>${project.build.directory}/${app.name}.exe</outfile>
+                    <jar>${fat.jar}</jar>
+                    <dontWrapJar>false</dontWrapJar>
+                    <jre>
+                        <minVersion>1.8.0</minVersion>
+                    </jre>
+                    <classPath>
+                        <mainClass>viewer.RecordingViewer</mainClass>
+                    </classPath>
+                    <headerType>gui</headerType>
+                    <errTitle>${app.name}</errTitle>
+                    <versionInfo>
+                        <fileVersion>1.0.0.0</fileVersion>
+                        <txtFileVersion>${project.version}</txtFileVersion>
+                        <productVersion>1.0.0.0</productVersion>
+                        <txtProductVersion>${project.version}</txtProductVersion>
+                        <fileDescription>${project.description}</fileDescription>
+                        <productName>${app.name}</productName>
+                        <companyName>Glyco-PAINT</companyName>
+                    </versionInfo>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
-
 </project>

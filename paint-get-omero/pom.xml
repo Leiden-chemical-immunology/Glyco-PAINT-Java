@@ -20,7 +20,7 @@
 
     <properties>
         <project.build.outputTimestamp>2025-10-23T08:47:23Z</project.build.outputTimestamp>
-        <app.name>GetOmero</app.name>
+        <app.name>Get Omero</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <fat.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</fat.jar>
     </properties>
@@ -105,7 +105,7 @@
   <key>CFBundleExecutable</key>
   <string>launch</string>
   <key>CFBundleIdentifier</key>
-  <string>com.github.jjabakker.${app.name}</string>
+  <string>com.github.jjabakker.GetOmero</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleVersion</key>

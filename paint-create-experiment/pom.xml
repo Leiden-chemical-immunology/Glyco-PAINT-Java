@@ -3,6 +3,8 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
@@ -10,35 +12,31 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <modelVersion>4.0.0</modelVersion>
     <artifactId>paint-create-experiment</artifactId>
     <packaging>jar</packaging>
 
     <name>Paint Create Experiment</name>
     <description>Standalone Swing app for creating experiments</description>
-    <url>https://github.com/jjabakker/paint-create-experiment</url>
 
     <properties>
         <project.build.outputTimestamp>2025-10-23T08:47:23Z</project.build.outputTimestamp>
-        <app.name>CreateExperiment</app.name>
+        <app.name>Create Experiment</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <fat.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</fat.jar>
-
-        <!-- 👇 skip flag for CI -->
-        <skip.create.app.bundle>false</skip.create.app.bundle>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+        </dependency>
+
+        <!-- Silence SLF4J logs -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
@@ -49,28 +47,20 @@
     <build>
         <plugins>
 
-            <!-- Compiler plugin -->
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-
             <!-- Fat JAR -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.6.0</version>
                 <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
                     <archive>
                         <manifest>
                             <mainClass>createexperiment.CreateExperimentUI</mainClass>
                         </manifest>
                     </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
                 </configuration>
                 <executions>
                     <execution>
@@ -81,32 +71,7 @@
                 </executions>
             </plugin>
 
-            <!-- Filter Info.plist -->
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.3.1</version>
-                <executions>
-                    <execution>
-                        <id>filter-plist</id>
-                        <phase>process-resources</phase>
-                        <goals><goal>resources</goal></goals>
-                        <configuration>
-                            <resources>
-                                <resource>
-                                    <directory>src/main/resources</directory>
-                                    <includes>
-                                        <include>Info.plist.template</include>
-                                    </includes>
-                                    <filtering>true</filtering>
-                                </resource>
-                            </resources>
-                            <outputDirectory>${project.build.directory}/filtered-resources</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Create macOS .app bundle (local only, skipped on CI) -->
+            <!-- Create macOS .app bundle and install -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -115,9 +80,7 @@
                     <execution>
                         <id>create-app-bundle</id>
                         <phase>package</phase>
-                        <goals><goal>run</goal></goals>
                         <configuration>
-                            <skip>${skip.create.app.bundle}</skip>
                             <target name="create-app-bundle">
                                 <echo message="🍎 Creating macOS app bundle at ${app.bundle}"/>
 
@@ -133,10 +96,25 @@
                                 <!-- Copy JAR -->
                                 <copy file="${fat.jar}" todir="${app.bundle}/Contents/Java" overwrite="true"/>
 
-                                <!-- Info.plist (safe) -->
-                                <copy file="${project.build.directory}/filtered-resources/Info.plist.template"
-                                      tofile="${app.bundle}/Contents/Info.plist"
-                                      overwrite="true" failonerror="false"/>
+                                <!-- Info.plist -->
+                                <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key>
+  <string>${app.name}</string>
+  <key>CFBundleExecutable</key>
+  <string>launch</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.github.jjabakker.CreateExperiment</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleVersion</key>
+  <string>${project.version}</string>
+</dict>
+</plist>
+                                ]]></echo>
 
                                 <!-- Launcher script -->
                                 <echo file="${app.bundle}/Contents/MacOS/launch"><![CDATA[
@@ -156,14 +134,30 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                                     <arg value="${app.bundle}"/>
                                 </exec>
 
-                                <echo message="✅ Created bundle: ${app.name}.app.zip"/>
+                                <!-- Copy full .app bundle to Applications -->
+                                <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
+                                <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
+                                <copy todir="${user.home}/Applications/Glyco-PAINT" overwrite="true">
+                                    <fileset dir="${project.build.directory}">
+                                        <include name="${app.name}.app/**"/>
+                                    </fileset>
+                                </copy>
+
+                                <!-- ✅ Fix permissions after copy -->
+                                <exec executable="chmod">
+                                    <arg value="755"/>
+                                    <arg value="${user.home}/Applications/Glyco-PAINT/${app.name}.app/Contents/MacOS/launch"/>
+                                </exec>
+
+                                <echo message="✅ Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
                             </target>
                         </configuration>
+                        <goals><goal>run</goal></goals>
                     </execution>
                 </executions>
             </plugin>
 
-            <!-- Windows .exe launcher -->
+            <!-- Create Windows .exe launcher -->
             <plugin>
                 <groupId>com.akathist.maven.plugins.launch4j</groupId>
                 <artifactId>launch4j-maven-plugin</artifactId>
@@ -201,21 +195,4 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
 
         </plugins>
     </build>
-
-    <!-- Skip macOS bundle creation automatically on CI -->
-    <profiles>
-        <profile>
-            <id>ci-build</id>
-            <activation>
-                <property>
-                    <name>env.CI</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <properties>
-                <skip.create.app.bundle>true</skip.create.app.bundle>
-            </properties>
-        </profile>
-    </profiles>
-
 </project>
