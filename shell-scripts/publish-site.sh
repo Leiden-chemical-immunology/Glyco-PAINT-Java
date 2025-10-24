@@ -28,6 +28,15 @@
 
 set -e
 
+# === SAFETY CLEANUP ===
+echo "🧹 Cleaning up any stale gh-pages worktree or branch..."
+if git worktree list | grep -q "gh-pages"; then
+  git worktree remove gh-pages --force || true
+fi
+if git show-ref --verify --quiet refs/heads/gh-pages; then
+  git branch -D gh-pages || true
+fi
+
 # === Resolve script location ===
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -36,7 +45,6 @@ cd "$PROJECT_ROOT"
 # === CONFIG ===
 SITE_DIR="target/site"
 BRANCH="gh-pages"
-MAIN_BRANCH="main"
 TMP_DIR="$(mktemp -d)"   # ✅ safe temporary worktree directory
 
 # === BUILD SITE IF NEEDED ===
@@ -45,10 +53,18 @@ if [ ! -d "$SITE_DIR" ]; then
   mvn clean site
 fi
 
-# === CREATE WORKTREE FOR GH-PAGES BRANCH ===
+# === FETCH REMOTE BRANCH SAFELY ===
 echo "🌿 Preparing temporary worktree for '$BRANCH'..."
 git fetch origin "$BRANCH" || true
-git worktree add "$TMP_DIR" "$BRANCH" 2>/dev/null || git worktree add -b "$BRANCH" "$TMP_DIR"
+
+# Create or checkout branch safely
+if git show-ref --verify --quiet "refs/remotes/origin/$BRANCH"; then
+  git worktree add "$TMP_DIR" "origin/$BRANCH"
+  cd "$TMP_DIR"
+  git checkout -B "$BRANCH"
+else
+  git worktree add -b "$BRANCH" "$TMP_DIR"
+fi
 
 # === COPY NEW SITE CONTENT ===
 echo "📂 Copying new site content..."
@@ -58,8 +74,12 @@ cp -R "$SITE_DIR"/* "$TMP_DIR"/
 # === COMMIT AND PUSH CHANGES ===
 cd "$TMP_DIR"
 git add .
-git commit -m "Update Maven site" || echo "✅ Nothing new to commit."
-git push origin "$BRANCH"
+if git diff --cached --quiet; then
+  echo "✅ Nothing new to commit."
+else
+  git commit -m "Update Maven site ($(date +'%Y-%m-%d %H:%M:%S'))"
+  git push -u origin "$BRANCH"
+fi
 
 # === CLEANUP WORKTREE ===
 cd "$PROJECT_ROOT"

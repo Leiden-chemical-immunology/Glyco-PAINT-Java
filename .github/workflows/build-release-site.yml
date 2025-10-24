@@ -71,11 +71,19 @@ jobs:
       - name: Generate Maven Site
         run: mvn -B clean site -DskipTests
 
-      # 4️⃣ Deploy Maven site to gh-pages
+    # 4️⃣ Deploy Maven site to gh-pages
       - name: Deploy Maven Site to gh-pages
+        run: |
+          echo "🧹 Cleaning up old gh-pages worktree if present..."
+          git worktree list | grep -q "gh-pages" && git worktree remove gh-pages --force || true
+          git branch -D gh-pages 2>/dev/null || true
+
+        continue-on-error: true
+
+      - name: Publish site to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: ./target/site
-          force_orphan: true  # ✅ ensures gh-pages stays independent
+          force_orphan: true  # keeps gh-pages clean and detached
