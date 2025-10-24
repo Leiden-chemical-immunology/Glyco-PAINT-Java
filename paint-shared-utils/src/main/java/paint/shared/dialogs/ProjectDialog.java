@@ -129,6 +129,27 @@ public class ProjectDialog {
                                   },
                                   this::onImagesRootChosen);
 
+        // Disable and grey out Images Root in Generate Squares mode
+        if (mode == DialogMode.GENERATE_SQUARES) {
+            // Text field: read-only (can copy text but not edit)
+            imageDirectoryField.setEditable(false);
+            imageDirectoryField.setBackground(UIManager.getColor("TextField.inactiveBackground"));
+
+            // Disable the Browse button
+            if (imagesBrowseButton != null) {
+                imagesBrowseButton.setEnabled(false);
+            }
+
+            // Grey out the label
+            for (Component comp : formPanel.getComponents()) {
+                if (comp instanceof JLabel && ((JLabel) comp).getText().startsWith("Images Root:")) {
+                    comp.setForeground(Color.GRAY);
+                    break;
+                }
+            }
+        }
+
+
         // ======= PARAMS BLOCK (TRACKMATE + GENERATE_SQUARES) =======
         if (mode == DialogMode.TRACKMATE || mode == DialogMode.GENERATE_SQUARES) {
             paramsPanel = new JPanel(new GridBagLayout());
@@ -170,7 +191,7 @@ public class ProjectDialog {
                 pg.gridwidth = 1;
             }
 
-            // Prepare to collect labels for later grey-out
+            // Prepare to collect labels for the later grey-out
             squareParamLabels = new ArrayList<>();
 
             // Number of squares (grid)
@@ -252,7 +273,7 @@ public class ProjectDialog {
                 }
             });
 
-            // add params panel to form
+            // add the params panel to the form
             gbc.gridx = 0; gbc.gridy = row++; gbc.gridwidth = 3; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
             formPanel.add(paramsPanel, gbc);
             gbc.gridwidth = 1; // reset
@@ -314,7 +335,7 @@ public class ProjectDialog {
         projectRootField.getDocument().addDocumentListener((SimpleDocumentListener) e -> updateOkButtonState());
         imageDirectoryField.getDocument().addDocumentListener((SimpleDocumentListener) e -> updateOkButtonState());
 
-        // Also re-enable OK when toggling these checkboxes
+        // Also, re-enable OK when toggling these checkboxes
         if (runSquaresAfterTrackMateCheck != null) {
             runSquaresAfterTrackMateCheck.addActionListener(e -> updateOkButtonState());
         }
@@ -334,7 +355,7 @@ public class ProjectDialog {
         okButton.addActionListener(e -> onOkPressed());
         cancelButton.addActionListener(e -> { cancelled = true; dialog.dispose(); });
 
-        // size & show
+        // size and show
         int width  = 820;
         int height = (mode == DialogMode.VIEWER) ? 600 : 680;
         dialog.setMinimumSize(new Dimension(width, height));
@@ -375,7 +396,7 @@ public class ProjectDialog {
                     setInputsEnabled(true);
 
                     if (callbackSuccess) {
-                        // ✅ Success: show "Completed", then disable button
+                        // ✅ Success: show "Completed", then disable the button
                         okButton.setText("Completed");
                         okButton.setEnabled(false);
                         PaintLogger.infof("Operation completed successfully.");
@@ -555,7 +576,7 @@ public class ProjectDialog {
         PaintPrefs.putString("Project Root", projectRootField.getText().trim());
         PaintPrefs.putString("Images Root",  imageDirectoryField.getText().trim());
 
-        // Squares params (write if panel exists; values used by either mode)
+        // Squares params (write if the panel exists; values used by either mode)
         if (paramsPanel != null) {
             if (gridSizeCombo != null) {
                 String selected = (String) gridSizeCombo.getSelectedItem();
@@ -631,8 +652,16 @@ public class ProjectDialog {
         if (projectRootField != null) {
             projectRootField.setEnabled(enabled);
         }
+
         if (imageDirectoryField != null) {
-            imageDirectoryField.setEnabled(enabled);
+            if (mode == DialogMode.GENERATE_SQUARES) {
+                // Keep read-only and inactive in Generate Squares mode
+                imageDirectoryField.setEditable(false);
+                imageDirectoryField.setEnabled(true); // allow selection/copy
+                imageDirectoryField.setBackground(UIManager.getColor("TextField.inactiveBackground"));
+            } else {
+                imageDirectoryField.setEnabled(enabled);
+            }
         }
 
         boolean enableSquares = enabled;
