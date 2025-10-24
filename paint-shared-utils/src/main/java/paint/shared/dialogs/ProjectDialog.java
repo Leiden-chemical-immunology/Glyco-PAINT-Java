@@ -4,6 +4,7 @@ import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.objects.Project;
+import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintRuntime;
@@ -391,10 +392,21 @@ public class ProjectDialog {
                     }
                 }, "ForceShutdownWatcher").start();
             } else {
-                PaintLogger.infof("No active worker thread — closing dialog.");
-            }
+                PaintLogger.infof("No active worker thread — closing dialog and console.");
+                SwingUtilities.invokeLater(() -> {
+                    JDialog dlg = getDialog();
+                    if (dlg != null && dlg.isDisplayable()) {
+                        dlg.dispose();
+                    }
 
-            dialog.dispose();
+                    try {
+                        PaintConsoleWindow.closeIfVisible();
+                    } catch (Throwable t) {
+                        // ignore if not available
+                    }
+                });
+                return;
+            }
         });
 
         // size and show

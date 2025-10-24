@@ -458,4 +458,19 @@ public class PaintConsoleWindow {
             frame.setTitle(baseTitle);
         }
     }
+
+    public static void closeIfVisible() {
+        if (frame != null && frame.isDisplayable()) {
+            SwingUtilities.invokeLater(() -> {
+                frame.setVisible(false);
+                frame.dispose();
+                frame = null;
+                textPane = null;
+                doc = null;
+                scrollLock = null;
+                problemPositions.clear();
+                currentProblemIndex = -1;
+            });
+        }
+    }
 }
