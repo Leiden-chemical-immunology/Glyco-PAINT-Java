@@ -5,7 +5,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static paint.shared.config.PaintConfig.*;
+import static paint.shared.config.PaintConfig.SECTION_TRACKMATE;
+import static paint.shared.constants.PaintConstants.*;
 
 /**
  * The TrackMateConfig class represents configuration parameters used in a
@@ -37,11 +38,6 @@ import static paint.shared.config.PaintConfig.*;
  *
  * Utility Methods:
  *
- * - `from(PaintConfig paintConfig)`: Creates a TrackMateConfig instance by
- *   reading parameters from a PaintConfig object.
- *
- * - `trackMateConfigToFile(TrackMateConfig trackMateConfig, Path filePath)`:
- *   Serializes the configuration object to a file for persistence.
  *
  * This class is designed for advanced tracking applications where precise
  * and customizable configurations are essential.
@@ -52,9 +48,10 @@ public class TrackMateConfig {
     private final int     maxFrameGap;
     private final double  alternativeLinkingCostFactor;
     private final boolean doSubpixelLocalization;
-    private final int     minNrSpotsInTrack;
+    private final int     minNumberOfSpotsInTrack;
     private final double  linkingMaxDistance;
-    private final int     maxNrSpotsInImage;
+    private final int     maxNumberOfSpotsInImage;
+    private final int     maxNumberOfSecondsPerImage;
     private final double  gapClosingMaxDistance;
     private final int     targetChannel;
     private final double  splittingMaxDistance;
@@ -78,7 +75,8 @@ public class TrackMateConfig {
      * @param doSubpixelLocalization       Flag indicating whether subpixel spot localization should be performed.
      * @param minNrSpotsInTrack            Minimum number of spots required for a track to be considered valid.
      * @param linkingMaxDistance           Maximum allowable distance for linking neighboring spots.
-     * @param maxNrSpotsInImage            Maximum number of spots allowed in a single image/frame.
+     * @param maxNumberOfSpotsInImage      Maximum number of spots allowed in a single image/frame.
+     * @param maxNumberOfSecondsPerImage   Maximum number of seconds allowed for a single image/frame.
      * @param gapClosingMaxDistance        Maximum distance permitted for closing gaps between track segments.
      * @param targetChannel                The target channel to be used for track analysis.
      * @param splittingMaxDistance         Maximum allowable distance for splitting tracks.
@@ -98,7 +96,8 @@ public class TrackMateConfig {
             boolean doSubpixelLocalization,
             int     minNrSpotsInTrack,
             double  linkingMaxDistance,
-            int     maxNrSpotsInImage,
+            int     maxNumberOfSpotsInImage,
+            int     maxNumberOfSecondsPerImage,
             double  gapClosingMaxDistance,
             int     targetChannel,
             double  splittingMaxDistance,
@@ -113,9 +112,10 @@ public class TrackMateConfig {
         this.maxFrameGap                  = maxFrameGap;
         this.alternativeLinkingCostFactor = alternativeLinkingCostFactor;
         this.doSubpixelLocalization       = doSubpixelLocalization;
-        this.minNrSpotsInTrack            = minNrSpotsInTrack;
+        this.minNumberOfSpotsInTrack      = minNrSpotsInTrack;
         this.linkingMaxDistance           = linkingMaxDistance;
-        this.maxNrSpotsInImage            = maxNrSpotsInImage;
+        this.maxNumberOfSpotsInImage      = maxNumberOfSpotsInImage;
+        this.maxNumberOfSecondsPerImage   = maxNumberOfSecondsPerImage;
         this.gapClosingMaxDistance        = gapClosingMaxDistance;
         this.targetChannel                = targetChannel;
         this.splittingMaxDistance         = splittingMaxDistance;
@@ -134,10 +134,8 @@ public class TrackMateConfig {
      * in the given PaintConfig instance. The configuration parameters set here are
      * used for defining track-related operations such as linking, merging, splitting,
      * and visualization.
-     *
-     * @param paintConfig The PaintConfig object containing parameters for configuring the TrackMate instance.
      */
-    private TrackMateConfig(PaintConfig paintConfig) {
+    public TrackMateConfig() {
         // @formatter:off
         this.maxFrameGap                  = PaintConfig.getInt(    SECTION_TRACKMATE, MAX_FRAME_GAP, 3);
         this.alternativeLinkingCostFactor = PaintConfig.getDouble( SECTION_TRACKMATE, ALTERNATIVE_LINKING_COST_FACTOR,2.0);
@@ -175,16 +173,20 @@ public class TrackMateConfig {
         return doSubpixelLocalization;
     }
 
-    public int getMinNrSpotsInTrack() {
-        return minNrSpotsInTrack;
+    public int getMinNumberOfSpotsInTrack() {
+        return minNumberOfSpotsInTrack;
     }
 
     public double getLinkingMaxDistance() {
         return linkingMaxDistance;
     }
 
-    public int getMaxNrSpotsInImage() {
-        return maxNrSpotsInImage;
+    public int getMaxNumberOfSpotsInImage() {
+        return maxNumberOfSpotsInImage;
+    }
+
+    public int getMaxNumberOfSecondsPerImage() {
+        return maxNumberOfSecondsPerImage;
     }
 
     public double getGapClosingMaxDistance() {

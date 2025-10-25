@@ -195,7 +195,7 @@ public class RunTrackMateOnRecording {
 
             settings.addSpotFilter(new FeatureFilter("QUALITY", 0, true));
             settings.addAllAnalyzers();
-            settings.addTrackFilter(new FeatureFilter("NUMBER_SPOTS", trackMateConfig.getMinNrSpotsInTrack(), true));
+            settings.addTrackFilter(new FeatureFilter("NUMBER_SPOTS", trackMateConfig.getMinNumberOfSpotsInTrack(), true));
 
             if (isCancelled(Thread.currentThread(), dialog)) {
                 return cancelEarly(imp, impBrightfield, capture);
@@ -220,9 +220,9 @@ public class RunTrackMateOnRecording {
             }
 
             int numberOfSpots = model.getSpots().getNSpots(false);
-            if (numberOfSpots > trackMateConfig.getMaxNrSpotsInImage()) {
+            if (numberOfSpots > trackMateConfig.getMaxNumberOfSpotsInImage()) {
                 PaintLogger.warnf("   Trackmate - Too many spots detected (%d). Limit is %d.",
-                                     numberOfSpots, trackMateConfig.getMaxNrSpotsInImage());
+                                     numberOfSpots, trackMateConfig.getMaxNumberOfSpotsInImage());
                 return cancelEarly(imp, impBrightfield, capture);
             }
             else {
