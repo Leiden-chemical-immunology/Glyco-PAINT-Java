@@ -232,22 +232,23 @@ public class TrackMateConfig {
     public String toString() {
         // @formatter:off
         return "TrackMateConfig" + "\n" +
-                "                  maxFrameGap                  = " + maxFrameGap + "\n" +
-                "                  alternativeLinkingCostFactor = " + alternativeLinkingCostFactor + "\n" +
-                "                  doSubpixelLocalization       = " + doSubpixelLocalization + "\n" +
-                "                  minNrSpotsInTrack            = " + minNrSpotsInTrack + "\n" +
-                "                  linkingMaxDistance           = " + linkingMaxDistance + "\n" +
-                "                  maxNrSpotsInImage=           = " + maxNrSpotsInImage + "\n" +
-                "                  gapClosingMaxDistance        = " + gapClosingMaxDistance + "\n" +
-                "                  targetChannel                = " + targetChannel + "\n" +
-                "                  splittingMaxDistance         = " + splittingMaxDistance + "\n" +
-                "                  trackColoring                = '" + trackColouring + '\'' + "\n" +
-                "                  radius                       = " + radius + "\n" +
-                "                  allowGapClosing              = " + allowGapClosing + "\n" +
-                "                  doMedianFiltering            = " + medianFiltering + "\n" +
-                "                  allowTrackSplitting          = " + allowTrackSplitting + "\n" +
-                "                  allowTrackMerging            = " + allowTrackMerging + "\n" +
-                "                  mergingMaxDistance           = " + mergingMaxDistance + "\n";
+                "                  Max Frame Gap                   = "  + maxFrameGap + "\n" +
+                "                  Alternative Linking Cost Factor = "  + alternativeLinkingCostFactor + "\n" +
+                "                  Do Subpixel Localization        = "  + doSubpixelLocalization + "\n" +
+                "                  Min Number of Spots In T        = "  + minNumberOfSpotsInTrack + "\n" +
+                "                  Linking Max Distance            = "  + linkingMaxDistance + "\n" +
+                "                  Max Number of Spots in Image    = "  + maxNumberOfSpotsInImage + "\n" +
+                "                  Max Number of Seconds per Image = "  + maxNumberOfSecondsPerImage + "\n" +
+                "                  Gap Closing Max Distance        = "  + gapClosingMaxDistance + "\n" +
+                "                  Target Channel                  = "  + targetChannel + "\n" +
+                "                  Splitting MaxD istance          = "  + splittingMaxDistance + "\n" +
+                "                  Track Coloring                  = '" + trackColouring + '\'' + "\n" +
+                "                  Radius                          = "  + radius + "\n" +
+                "                  Allow Gap Closing               = "  + allowGapClosing + "\n" +
+                "                  Do Median Filtering             = "  + medianFiltering + "\n" +
+                "                  Allow Track Splitting           = "  + allowTrackSplitting + "\n" +
+                "                  Allow Track Merging             = "  + allowTrackMerging + "\n" +
+                "                  Merging Max Distance            = "  + mergingMaxDistance + "\n";
         // @formatter:on
     }
 
