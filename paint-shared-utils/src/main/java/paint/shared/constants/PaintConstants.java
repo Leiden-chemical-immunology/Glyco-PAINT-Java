@@ -35,7 +35,7 @@ public final class PaintConstants {
     // Filenames
     // =====================
 
-    public static final String RECORDINGS                    = "Recordings.csv";
+    public static final String RECORDINGS                     = "Recordings.csv";
     public static final String RECORDINGS_CSV                 = "Recordings.csv";
     public static final String TRACKS                         = "Tracks.csv";
     public static final String TRACKS_CSV                     = "Tracks.csv";

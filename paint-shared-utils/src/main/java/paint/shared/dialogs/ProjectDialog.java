@@ -240,7 +240,7 @@ public class ProjectDialog {
             // Min R²
             pg.gridx = 0;
             pg.gridy = prow;
-            JLabel lblRSq = label("Min Required R²:", labelSize);
+            JLabel lblRSq = label("Min Required R²", labelSize);
             squareParamLabels.add(lblRSq);
             paramsPanel.add(lblRSq, pg);
 
@@ -253,7 +253,7 @@ public class ProjectDialog {
             // Min Density Ratio
             pg.gridx = 0;
             pg.gridy = prow;
-            JLabel lblDensity = label("Min Required Density Ratio:", labelSize);
+            JLabel lblDensity = label("Min Required Density Ratio", labelSize);
             squareParamLabels.add(lblDensity);
             paramsPanel.add(lblDensity, pg);
 
@@ -266,7 +266,7 @@ public class ProjectDialog {
             // Max Variability
             pg.gridx = 0;
             pg.gridy = prow;
-            JLabel lblVar = label("Max Allowed Variability:", labelSize);
+            JLabel lblVar = label("Max Allowed Variability", labelSize);
             squareParamLabels.add(lblVar);
             paramsPanel.add(lblVar, pg);
 
@@ -402,10 +402,9 @@ public class ProjectDialog {
                     try {
                         PaintConsoleWindow.closeIfVisible();
                     } catch (Throwable t) {
-                        // ignore if not available
+                        // ignore
                     }
                 });
-                return;
             }
         });
 
