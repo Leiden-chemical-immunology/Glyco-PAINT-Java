@@ -261,9 +261,10 @@ public class PaintConfig {
 
         configData.add(SECTION_TRACKMATE, trackMate);
 
+        JsonObject debugFlags = new JsonObject();
         trackMate.addProperty("Debug RunTrackMateOnProject",                       false);
         trackMate.addProperty("Debug RunTrackMateOnRecording",                     false);
-        configData.add(SECTION_DEBUG, trackMate);
+        configData.add(SECTION_DEBUG, debugFlags);
 
         // @formatter:on
     }
