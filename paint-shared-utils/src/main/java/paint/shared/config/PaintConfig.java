@@ -219,7 +219,7 @@ public class PaintConfig {
         // @formatter:off
         JsonObject generateSquares = new JsonObject();
         generateSquares.addProperty(MIN_TRACKS_TO_CALCULATE_TAU,                 20);
-        generateSquares.addProperty(MIN_TRACKS_TO_CALCULATE_TAU,                      0.1);
+        generateSquares.addProperty(MIN_REQUIRED_R_SQUARED,                      0.1);
         generateSquares.addProperty(MAX_ALLOWABLE_VARIABILITY,                   10.0);
         generateSquares.addProperty(MIN_REQUIRED_DENSITY_RATIO,                  2.0);
         generateSquares.addProperty(MIN_TRACK_DURATION,                          0);
@@ -231,14 +231,14 @@ public class PaintConfig {
         generateSquares.addProperty("Plot Curve Fitting",                          false);
         configData.add(SECTION_GENERATE_SQUARES, generateSquares);
 
-        JsonObject paint = new JsonObject();
-        paint.addProperty("Version",                                               "1.0");
-        paint.addProperty("Image File Extension",                                  ".nd2");
-        configData.add(SECTION_PAINT, paint);
-
-        JsonObject recordingViewer = new JsonObject();
-        recordingViewer.addProperty("Save Mode",                                   "Ask");
-        configData.add(SECTION_RECORDING_VIEWER, recordingViewer);
+//        JsonObject paint = new JsonObject();
+//        paint.addProperty("Version",                                               "1.0");
+//        paint.addProperty("Image File Extension",                                  ".nd2");
+//        configData.add(SECTION_PAINT, paint);
+//
+//        JsonObject recordingViewer = new JsonObject();
+//        recordingViewer.addProperty("Save Mode",                                   "Ask");
+//        configData.add(SECTION_RECORDING_VIEWER, recordingViewer);
 
         JsonObject trackMate = new JsonObject();
         trackMate.addProperty(MAX_FRAME_GAP,                                     3);
@@ -262,8 +262,8 @@ public class PaintConfig {
         configData.add(SECTION_TRACKMATE, trackMate);
 
         JsonObject debugFlags = new JsonObject();
-        trackMate.addProperty("Debug RunTrackMateOnProject",                       false);
-        trackMate.addProperty("Debug RunTrackMateOnRecording",                     false);
+        debugFlags.addProperty("Debug RunTrackMateOnProject",             false);
+        debugFlags.addProperty("Debug RunTrackMateOnRecording",           false);
         configData.add(SECTION_DEBUG, debugFlags);
 
         // @formatter:on
