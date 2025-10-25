@@ -4,25 +4,35 @@
 #  make-icons.sh
 #
 #  Description:
-#    Converts one or more 1024×1024 PNG icons into both:
+#    Converts all 1024×1024 PNG icons found in:
+#        ~/JavaPaintProjects/paint-icons-generation/
+#    into both:
 #      - macOS .icns bundles (via sips + iconutil)
 #      - Windows .ico files (via ImageMagick convert)
-#    Then copies both into each app's icons folder under
-#      ~/JavaPaintProjects/<module>/src/main/resources/icons/
-#
-#  Usage:
-#    ./make-icons.sh paint-viewer.png paint-get-omero.png paint-generate-squares.png paint-create-experiment.png
+#    Then copies both into each app's icons folder under:
+#        ~/JavaPaintProjects/<module>/src/main/resources/icons/
 # ================================================================
 
 set -e
 
-if [ $# -eq 0 ]; then
-  echo "Usage: $0 <icon1.png> [<icon2.png> ...]"
+PROJECT_ROOT="$HOME/JavaPaintProjects"
+ICON_SOURCE_DIR="$PROJECT_ROOT/paint-icons-generation"
+DEST_SUBDIR="src/main/resources/icons"
+
+# Ensure the source directory exists
+if [ ! -d "$ICON_SOURCE_DIR" ]; then
+  echo "❌ Source directory not found: $ICON_SOURCE_DIR"
   exit 1
 fi
 
-PROJECT_ROOT="$HOME/JavaPaintProjects"
-DEST_SUBDIR="src/main/resources/icons"
+cd "$ICON_SOURCE_DIR"
+
+png_files=( *.png )
+
+if [ ${#png_files[@]} -eq 0 ]; then
+  echo "⚠️  No PNG files found in $ICON_SOURCE_DIR"
+  exit 0
+fi
 
 # Check for ImageMagick
 if command -v convert >/dev/null 2>&1; then
@@ -33,12 +43,7 @@ else
   echo "   → Install with: brew install imagemagick"
 fi
 
-for pngfile in "$@"; do
-  if [ ! -f "$pngfile" ]; then
-    echo "❌ File not found: $pngfile"
-    continue
-  fi
-
+for pngfile in "${png_files[@]}"; do
   base="$(basename "$pngfile" .png)"
   iconset="${base}.iconset"
 
@@ -98,7 +103,6 @@ for pngfile in "$@"; do
   fi
 
   echo "📦 Copied icons to: $dest_dir"
-
 done
 
 echo "🎉 All icons generated and copied successfully!"
