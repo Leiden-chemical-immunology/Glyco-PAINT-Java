@@ -139,22 +139,23 @@ public class TrackMateConfig {
      */
     private TrackMateConfig(PaintConfig paintConfig) {
         // @formatter:off
-        this.maxFrameGap                  = getInt(    "TrackMate", "MAX_FRAME_GAP", 3);
-        this.alternativeLinkingCostFactor = getDouble( "TrackMate", "ALTERNATIVE_LINKING_COST_FACTOR",2.0);
-        this.doSubpixelLocalization       = getBoolean("TrackMate", "DO_SUBPIXEL_LOCALIZATION",       true);
-        this.minNrSpotsInTrack            = getInt(    "TrackMate", "MIN_NR_SPOTS_IN_TRACK",          3);
-        this.linkingMaxDistance           = getDouble( "TrackMate", "LINKING_MAX_DISTANCE",           0.6);
-        this.maxNrSpotsInImage            = getInt(    "TrackMate", "MAX_NR_SPOTS_IN_IMAGE",          2000000);
-        this.gapClosingMaxDistance        = getDouble( "TrackMate", "GAP_CLOSING_MAX_DISTANCE",       1.2);
-        this.targetChannel                = getInt(    "TrackMate", "TARGET_CHANNEL",                 1);
-        this.splittingMaxDistance         = getDouble( "TrackMate", "SPLITTING_MAX_DISTANCE",         1.0);
-        this.trackColouring               = getString( "TrackMate", "TRACK_COLOURING",                "TRACK_DURATION");
-        this.radius                       = getDouble( "TrackMate", "RADIUS",                         1.0);
-        this.allowGapClosing              = getBoolean("TrackMate", "ALLOW_GAP_CLOSING",              true);
-        this.medianFiltering              = getBoolean("TrackMate", "DO_MEDIAN_FILTERING",            false);
-        this.allowTrackSplitting          = getBoolean("TrackMate", "ALLOW_TRACK_SPLITTING",          false);
-        this.allowTrackMerging            = getBoolean("TrackMate", "ALLOW_TRACK_MERGING",            false);
-        this.mergingMaxDistance           = getDouble(  "TrackMate", "MERGING_MAX_DISTANCE",          1.0);
+        this.maxFrameGap                  = PaintConfig.getInt(    SECTION_TRACKMATE, MAX_FRAME_GAP, 3);
+        this.alternativeLinkingCostFactor = PaintConfig.getDouble( SECTION_TRACKMATE, ALTERNATIVE_LINKING_COST_FACTOR,2.0);
+        this.doSubpixelLocalization       = PaintConfig.getBoolean(SECTION_TRACKMATE, DO_SUBPIXEL_LOCALIZATION,       true);
+        this.minNumberOfSpotsInTrack      = PaintConfig.getInt(    SECTION_TRACKMATE, MIN_NR_SPOTS_IN_TRACK,          3);
+        this.linkingMaxDistance           = PaintConfig.getDouble( SECTION_TRACKMATE, LINKING_MAX_DISTANCE,           0.6);
+        this.maxNumberOfSpotsInImage      = PaintConfig.getInt(    SECTION_TRACKMATE, MAX_NR_SPOTS_IN_IMAGE,          2000000);
+        this.maxNumberOfSecondsPerImage   = PaintConfig.getInt(    SECTION_TRACKMATE, MAX_NR_SECONDS_PER_IMAGE,       2000);
+        this.gapClosingMaxDistance        = PaintConfig.getDouble( SECTION_TRACKMATE, GAP_CLOSING_MAX_DISTANCE,       1.2);
+        this.targetChannel                = PaintConfig.getInt(    SECTION_TRACKMATE, TARGET_CHANNEL,                 1);
+        this.splittingMaxDistance         = PaintConfig.getDouble( SECTION_TRACKMATE, SPLITTING_MAX_DISTANCE,         1.0);
+        this.trackColouring               = PaintConfig.getString( SECTION_TRACKMATE, TRACK_COLOURING,                "TRACK_DURATION");
+        this.radius                       = PaintConfig.getDouble( SECTION_TRACKMATE, RADIUS,                         1.0);
+        this.allowGapClosing              = PaintConfig.getBoolean(SECTION_TRACKMATE, ALLOW_GAP_CLOSING,              true);
+        this.medianFiltering              = PaintConfig.getBoolean(SECTION_TRACKMATE, DO_MEDIAN_FILTERING,            false);
+        this.allowTrackSplitting          = PaintConfig.getBoolean(SECTION_TRACKMATE, ALLOW_TRACK_SPLITTING,          false);
+        this.allowTrackMerging            = PaintConfig.getBoolean(SECTION_TRACKMATE, ALLOW_TRACK_MERGING,            false);
+        this.mergingMaxDistance           = PaintConfig.getDouble( SECTION_TRACKMATE, MERGING_MAX_DISTANCE,           1.0);
         // @formatter:on
     }
 
