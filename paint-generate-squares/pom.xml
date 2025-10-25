@@ -16,18 +16,18 @@
     <packaging>jar</packaging>
 
     <name>Paint Generate Squares</name>
-    <description>Paint desktop application</description>
+    <description>Standalone desktop application for generating experiment squares</description>
 
     <properties>
         <project.build.outputTimestamp>2025-10-23T08:47:23Z</project.build.outputTimestamp>
-        <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss'Z'</maven.build.timestamp.format>
         <app.name>Generate Squares</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
+        <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-generate-squares.icns</app.icon.macos>
+        <app.icon.windows>${project.basedir}/src/main/resources/icons/paint-generate-squares.ico</app.icon.windows>
         <fat.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</fat.jar>
     </properties>
 
     <dependencies>
-
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
@@ -99,11 +99,9 @@
             <artifactId>gson</artifactId>
             <version>2.11.0</version>
         </dependency>
-
     </dependencies>
 
     <build>
-
         <plugins>
 
             <!-- Fat JAR -->
@@ -117,41 +115,25 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <addClasspath>true</addClasspath>
                             <mainClass>generatesquares.GenerateSquares</mainClass>
                         </manifest>
-
-                        <manifestEntries>
-                            <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
-                            <Implementation-Title>${project.name}</Implementation-Title>
-                            <Implementation-Version>${project.version}</Implementation-Version>
-                            <Implementation-Vendor>Glyco-PAINT</Implementation-Vendor>
-                            <Specification-Title>${project.artifactId}</Specification-Title>
-                            <Specification-Version>${project.version}</Specification-Version>
-                            <Specification-Vendor>Glyco-PAINT</Specification-Vendor>
-                        </manifestEntries>
-
                     </archive>
-                    <finalName>${project.build.finalName}</finalName>
                 </configuration>
                 <executions>
                     <execution>
                         <id>make-assembly</id>
                         <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
+                        <goals><goal>single</goal></goals>
                     </execution>
                 </executions>
             </plugin>
 
-            <!-- Create macOS .app bundle and install -->
+            <!-- macOS .app bundle -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
-
                     <execution>
                         <id>create-app-bundle</id>
                         <phase>package</phase>
@@ -159,19 +141,16 @@
                             <target name="create-app-bundle">
                                 <echo message="🍎 Creating macOS app bundle at ${app.bundle}"/>
 
-                                <!-- Clean previous build -->
                                 <delete dir="${app.bundle}" failonerror="false"/>
                                 <delete file="${project.build.directory}/${app.name}.app.zip" failonerror="false"/>
 
-                                <!-- Create bundle structure -->
                                 <mkdir dir="${app.bundle}/Contents/MacOS"/>
                                 <mkdir dir="${app.bundle}/Contents/Java"/>
                                 <mkdir dir="${app.bundle}/Contents/Resources"/>
 
-                                <!-- Copy JAR -->
                                 <copy file="${fat.jar}" todir="${app.bundle}/Contents/Java" overwrite="true"/>
+                                <copy file="${app.icon.macos}" todir="${app.bundle}/Contents/Resources" overwrite="true"/>
 
-                                <!-- Info.plist -->
                                 <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -182,34 +161,32 @@
   <key>CFBundleExecutable</key>
   <string>launch</string>
   <key>CFBundleIdentifier</key>
-  <string>com.github.jjabakker.${app.name}</string>
+  <string>com.github.jjabakker.PaintGenerateSquares</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleVersion</key>
   <string>${project.version}</string>
+  <key>CFBundleIconFile</key>
+  <string>paint-generate-squares</string>
 </dict>
 </plist>
                                 ]]></echo>
 
-                                <!-- Launcher script -->
                                 <echo file="${app.bundle}/Contents/MacOS/launch"><![CDATA[
 #!/bin/bash
 DIR="$( cd "$( dirname "$0" )" && cd ../Java && pwd )"
 exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-jar-with-dependencies.jar"
                                 ]]></echo>
 
-                                <!-- Fix permissions before zip -->
                                 <fixcrlf file="${app.bundle}/Contents/MacOS/launch" eol="unix"/>
                                 <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
 
-                                <!-- Create ZIP archive -->
                                 <exec executable="zip">
                                     <arg value="-r"/>
                                     <arg value="${project.build.directory}/${app.name}.app.zip"/>
                                     <arg value="${app.bundle}"/>
                                 </exec>
 
-                                <!-- Copy full .app bundle to Applications -->
                                 <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
                                 <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
                                 <copy todir="${user.home}/Applications/Glyco-PAINT" overwrite="true">
@@ -218,7 +195,6 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                                     </fileset>
                                 </copy>
 
-                                <!-- ✅ Fix permissions after copy -->
                                 <exec executable="chmod">
                                     <arg value="755"/>
                                     <arg value="${user.home}/Applications/Glyco-PAINT/${app.name}.app/Contents/MacOS/launch"/>
@@ -232,38 +208,7 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                 </executions>
             </plugin>
 
-
-            <!-- ✅ NEW: Extract MANIFEST.MF after build -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>extract-manifest</id>
-                        <phase>package</phase>
-                        <configuration>
-                            <target name="extract-manifest">
-                                <mkdir dir="${project.build.directory}"/>
-                                <unzip src="${fat.jar}" dest="${project.build.directory}/manifest-temp">
-                                    <patternset>
-                                        <include name="META-INF/MANIFEST.MF"/>
-                                    </patternset>
-                                </unzip>
-                                <copy file="${project.build.directory}/manifest-temp/META-INF/MANIFEST.MF"
-                                      tofile="${project.build.directory}/MANIFEST.MF"
-                                      overwrite="true"/>
-                                <delete dir="${project.build.directory}/manifest-temp"/>
-                                <echo message="✅ Extracted MANIFEST.MF to ${project.build.directory}/MANIFEST.MF"/>
-                            </target>
-                        </configuration>
-                        <goals><goal>run</goal></goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-
-            <!-- Windows .exe launcher using Launch4j -->
+            <!-- Windows .exe launcher -->
             <plugin>
                 <groupId>com.akathist.maven.plugins.launch4j</groupId>
                 <artifactId>launch4j-maven-plugin</artifactId>
@@ -279,6 +224,7 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                     <outfile>${project.build.directory}/${app.name}.exe</outfile>
                     <jar>${fat.jar}</jar>
                     <dontWrapJar>false</dontWrapJar>
+                    <icon>${app.icon.windows}</icon>
                     <jre>
                         <minVersion>1.8.0</minVersion>
                     </jre>

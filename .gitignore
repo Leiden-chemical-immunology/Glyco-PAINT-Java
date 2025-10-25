@@ -54,3 +54,10 @@ $RECYCLE.BIN/
 *.local
 *.prefsjects/paint-shared-utils/.idea/workspace.xml
 .Rproj.user
+
+# Ignore local icon generation artifacts
+paint-icons-generation/
+
+# Ignore all macOS and Windows icon files anywhere in the repo
+*.icns
+*.ico

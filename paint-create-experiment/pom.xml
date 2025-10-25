@@ -16,12 +16,14 @@
     <packaging>jar</packaging>
 
     <name>Paint Create Experiment</name>
-    <description>Standalone Swing app for creating experiments</description>
+    <description>Standalone desktop app for creating experiments</description>
 
     <properties>
         <project.build.outputTimestamp>2025-10-23T08:47:23Z</project.build.outputTimestamp>
         <app.name>Create Experiment</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
+        <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-create-experiment.icns</app.icon.macos>
+        <app.icon.windows>${project.basedir}/src/main/resources/icons/paint-create-experiment.ico</app.icon.windows>
         <fat.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</fat.jar>
     </properties>
 
@@ -36,7 +38,7 @@
             <artifactId>commons-csv</artifactId>
         </dependency>
 
-        <!-- Silence SLF4J logs -->
+        <!-- Silence SLF4J -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
@@ -71,7 +73,7 @@
                 </executions>
             </plugin>
 
-            <!-- Create macOS .app bundle and install -->
+            <!-- macOS .app bundle -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -84,19 +86,16 @@
                             <target name="create-app-bundle">
                                 <echo message="🍎 Creating macOS app bundle at ${app.bundle}"/>
 
-                                <!-- Clean previous build -->
                                 <delete dir="${app.bundle}" failonerror="false"/>
                                 <delete file="${project.build.directory}/${app.name}.app.zip" failonerror="false"/>
 
-                                <!-- Create bundle structure -->
                                 <mkdir dir="${app.bundle}/Contents/MacOS"/>
                                 <mkdir dir="${app.bundle}/Contents/Java"/>
                                 <mkdir dir="${app.bundle}/Contents/Resources"/>
 
-                                <!-- Copy JAR -->
                                 <copy file="${fat.jar}" todir="${app.bundle}/Contents/Java" overwrite="true"/>
+                                <copy file="${app.icon.macos}" todir="${app.bundle}/Contents/Resources" overwrite="true"/>
 
-                                <!-- Info.plist -->
                                 <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -107,34 +106,32 @@
   <key>CFBundleExecutable</key>
   <string>launch</string>
   <key>CFBundleIdentifier</key>
-  <string>com.github.jjabakker.CreateExperiment</string>
+  <string>com.github.jjabakker.PaintCreateExperiment</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleVersion</key>
   <string>${project.version}</string>
+  <key>CFBundleIconFile</key>
+  <string>paint-create-experiment</string>
 </dict>
 </plist>
                                 ]]></echo>
 
-                                <!-- Launcher script -->
                                 <echo file="${app.bundle}/Contents/MacOS/launch"><![CDATA[
 #!/bin/bash
 DIR="$( cd "$( dirname "$0" )" && cd ../Java && pwd )"
 exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-jar-with-dependencies.jar"
                                 ]]></echo>
 
-                                <!-- Fix permissions before zip -->
                                 <fixcrlf file="${app.bundle}/Contents/MacOS/launch" eol="unix"/>
                                 <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
 
-                                <!-- Create ZIP archive -->
                                 <exec executable="zip">
                                     <arg value="-r"/>
                                     <arg value="${project.build.directory}/${app.name}.app.zip"/>
                                     <arg value="${app.bundle}"/>
                                 </exec>
 
-                                <!-- Copy full .app bundle to Applications -->
                                 <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
                                 <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
                                 <copy todir="${user.home}/Applications/Glyco-PAINT" overwrite="true">
@@ -143,7 +140,6 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                                     </fileset>
                                 </copy>
 
-                                <!-- ✅ Fix permissions after copy -->
                                 <exec executable="chmod">
                                     <arg value="755"/>
                                     <arg value="${user.home}/Applications/Glyco-PAINT/${app.name}.app/Contents/MacOS/launch"/>
@@ -157,7 +153,7 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                 </executions>
             </plugin>
 
-            <!-- Create Windows .exe launcher -->
+            <!-- Windows .exe launcher -->
             <plugin>
                 <groupId>com.akathist.maven.plugins.launch4j</groupId>
                 <artifactId>launch4j-maven-plugin</artifactId>
@@ -173,6 +169,7 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                     <outfile>${project.build.directory}/${app.name}.exe</outfile>
                     <jar>${fat.jar}</jar>
                     <dontWrapJar>false</dontWrapJar>
+                    <icon>${app.icon.windows}</icon>
                     <jre>
                         <minVersion>1.8.0</minVersion>
                     </jre>

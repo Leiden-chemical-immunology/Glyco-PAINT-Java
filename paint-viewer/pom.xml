@@ -22,6 +22,8 @@
         <project.build.outputTimestamp>2025-10-23T08:47:23Z</project.build.outputTimestamp>
         <app.name>Paint Viewer</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
+        <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-viewer.icns</app.icon.macos>
+        <app.icon.windows>${project.basedir}/src/main/resources/icons/paint-viewer.ico</app.icon.windows>
         <fat.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</fat.jar>
     </properties>
 
@@ -158,7 +160,11 @@
                                 <mkdir dir="${app.bundle}/Contents/Java"/>
                                 <mkdir dir="${app.bundle}/Contents/Resources"/>
 
+                                <!-- Copy fat JAR -->
                                 <copy file="${fat.jar}" todir="${app.bundle}/Contents/Java" overwrite="true"/>
+
+                                <!-- Copy macOS icon -->
+                                <copy file="${app.icon.macos}" todir="${app.bundle}/Contents/Resources" overwrite="true"/>
 
                                 <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
 <?xml version="1.0" encoding="UTF-8"?>
@@ -175,6 +181,8 @@
   <string>APPL</string>
   <key>CFBundleVersion</key>
   <string>${project.version}</string>
+  <key>CFBundleIconFile</key>
+  <string>paint-viewer</string>
 </dict>
 </plist>
                                 ]]></echo>
@@ -235,6 +243,9 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                         <minVersion>1.8.0</minVersion>
                     </jre>
                     <classPath>
+
+
+
                         <mainClass>viewer.RecordingViewer</mainClass>
                     </classPath>
                     <headerType>gui</headerType>
