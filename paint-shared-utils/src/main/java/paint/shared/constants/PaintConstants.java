@@ -74,6 +74,26 @@ public final class PaintConstants {
     public static final double RECORDING_DURATION       = FRAMES * TIME_INTERVAL;  // The timespan of a recording
     // TODO These should ge json parameters
 
+    // =====================
+    // JSON
+    // =====================
+    public static final String MAX_FRAME_GAP                   = "MAX_FRAME_GAP";
+    public static final String ALTERNATIVE_LINKING_COST_FACTOR = "ALTERNATIVE_LINKING_COST_FACTOR";
+    public static final String DO_SUBPIXEL_LOCALIZATION        = "DO_SUBPIXEL_LOCALIZATION";
+    public static final String MIN_NR_SPOTS_IN_TRACK           = "MIN_NR_SPOTS_IN_TRACK";
+    public static final String LINKING_MAX_DISTANCE            = "LINKING_MAX_DISTANCE";
+    public static final String MAX_NR_SPOTS_IN_IMAGE           = "MAX_NR_SPOTS_IN_IMAGE";
+    public static final String MAX_NR_SECONDS_PER_IMAGE        = "MAX_NR_SECONDS_PER_IMAGE";
+    public static final String GAP_CLOSING_MAX_DISTANCE        = "GAP_CLOSING_MAX_DISTANCE";
+    public static final String TARGET_CHANNEL                  = "TARGET_CHANNEL";
+    public static final String SPLITTING_MAX_DISTANCE          = "SPLITTING_MAX_DISTANCE";
+    public static final String TRACK_COLOURING                 = "TRACK_COLOURING";
+    public static final String RADIUS                          = "RADIUS";
+    public static final String ALLOW_GAP_CLOSING               = "ALLOW_GAP_CLOSING";
+    public static final String DO_MEDIAN_FILTERING             = "DO_MEDIAN_FILTERING";
+    public static final String ALLOW_TRACK_SPLITTING           = "ALLOW_TRACK_SPLITTING";
+    public static final String ALLOW_TRACK_MERGING             = "ALLOW_TRACK_MERGING";
+    public static final String MERGING_MAX_DISTANCE            = "MERGING_MAX_DISTANCE";
     // @formatter:on
 
     // =====================
