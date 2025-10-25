@@ -218,16 +218,16 @@ public class PaintConfig {
 
         // @formatter:off
         JsonObject generateSquares = new JsonObject();
-        generateSquares.addProperty("Min Tracks to Calculate Tau",                 20);
-        generateSquares.addProperty("Min Required R Squared",                      0.1);
-        generateSquares.addProperty("Max Allowable Variability",                   10.0);
-        generateSquares.addProperty("Min Required Density Ratio",                  2.0);
-        generateSquares.addProperty("Min Track Duration",                          0);
-        generateSquares.addProperty("Max Track Duration",                          2000000);
+        generateSquares.addProperty(MIN_TRACKS_TO_CALCULATE_TAU,                 20);
+        generateSquares.addProperty(MIN_TRACKS_TO_CALCULATE_TAU,                      0.1);
+        generateSquares.addProperty(MAX_ALLOWABLE_VARIABILITY,                   10.0);
+        generateSquares.addProperty(MIN_REQUIRED_DENSITY_RATIO,                  2.0);
+        generateSquares.addProperty(MIN_TRACK_DURATION,                          0);
+        generateSquares.addProperty(MAX_TRACK_DURATION,                          2000000);
         generateSquares.addProperty("Fraction of Squares to Determine Background", 0.1);
         generateSquares.addProperty("Exclude zero DC tracks from Tau Calculation", false);
-        generateSquares.addProperty("Neighbour Mode",                              "Free");
-        generateSquares.addProperty("Number of Squares in Recording",              400);
+        generateSquares.addProperty(NEIGHBOUR_MODE,                              "Free");
+        generateSquares.addProperty(NUMBER_OF_SQUARES_IN_RECORDING,              400);
         generateSquares.addProperty("Plot Curve Fitting",                          false);
         configData.add(SECTION_GENERATE_SQUARES, generateSquares);
 

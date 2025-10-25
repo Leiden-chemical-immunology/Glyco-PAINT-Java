@@ -1,5 +1,8 @@
 package paint.shared.config;
 
+import static paint.shared.config.PaintConfig.SECTION_GENERATE_SQUARES;
+import static paint.shared.constants.PaintConstants.*;
+
 /**
  * This class represents the configuration for generating squares within a system.
  * It holds various parameters required for controlling and defining the behavior
@@ -63,12 +66,12 @@ public class GenerateSquaresConfig {
     private GenerateSquaresConfig() {
 
         // @formatter:off
-        this.numberOfSquaresInRecording  = PaintConfig.getInt(   "Generate Squares", "Number of Squares in Recording", 400);
-        this.minTracksToCalculateTau     = PaintConfig.getInt(   "Generate Squares", "Min Tracks to Calculate Tau", 20);
-        this.minRequiredRSquared         = PaintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
-        this.minRequiredDensityRatio     = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 0.1);
-        this.maxAllowableVariability     = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
-        this.neighbourMode               = PaintConfig.getString("Generate Squares", "Neighbour Mode", "Free");
+        this.numberOfSquaresInRecording  = PaintConfig.getInt(   SECTION_GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING,400);
+        this.minTracksToCalculateTau     = PaintConfig.getInt(   SECTION_GENERATE_SQUARES, MIN_TRACKS_TO_CALCULATE_TAU,   20);
+        this.minRequiredRSquared         = PaintConfig.getDouble(SECTION_GENERATE_SQUARES, MIN_REQUIRED_R_SQUARED,        0.1);
+        this.minRequiredDensityRatio     = PaintConfig.getDouble(SECTION_GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,    0.1);
+        this.maxAllowableVariability     = PaintConfig.getDouble(SECTION_GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY,     10.0);
+        this.neighbourMode               = PaintConfig.getString(SECTION_GENERATE_SQUARES, NEIGHBOUR_MODE,                "Free");
         // @formatter:on
     }
 
@@ -105,12 +108,12 @@ public class GenerateSquaresConfig {
 
         // @formatter:off
         return "GenerateSquaresConfig{" +
-                "nrSquaresInRow="            + numberOfSquaresInRecording +
-                ", minTracksToCalculateTau=" + minTracksToCalculateTau +
-                ", minRequiredRSquared="     + minRequiredRSquared +
-                ", minRequiredDensityRatio=" + minRequiredDensityRatio +
-                ", maxAllowableVariability=" + maxAllowableVariability +
-                ", neighbourMode='"          + neighbourMode + '\'' +
+                "Number of Squares in Row      = " + numberOfSquaresInRecording +
+                ", Min Tracks To Calculate Tau = " + minTracksToCalculateTau +
+                ", Min Required RSquared       = " + minRequiredRSquared +
+                ", Min Required Density Ratio  = " + minRequiredDensityRatio +
+                ", Max Allowable Variability   = " + maxAllowableVariability +
+                ", Neighbour Mode              = '"+ neighbourMode + '\'' +
                 '}';
         // @formatter:on
     }

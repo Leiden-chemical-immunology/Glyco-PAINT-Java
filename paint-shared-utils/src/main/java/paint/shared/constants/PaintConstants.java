@@ -1,5 +1,6 @@
 package paint.shared.constants;
 
+import paint.shared.config.PaintConfig;
 import tech.tablesaw.api.ColumnType;
 
 /**
@@ -94,6 +95,16 @@ public final class PaintConstants {
     public static final String ALLOW_TRACK_SPLITTING           = "ALLOW_TRACK_SPLITTING";
     public static final String ALLOW_TRACK_MERGING             = "ALLOW_TRACK_MERGING";
     public static final String MERGING_MAX_DISTANCE            = "MERGING_MAX_DISTANCE";
+
+    public static final String NUMBER_OF_SQUARES_IN_RECORDING  = "Number of Squares in Recording";
+    public static final String MIN_TRACKS_TO_CALCULATE_TAU     = "Min Tracks to Calculate Tau";
+    public static final String MIN_REQUIRED_R_SQUARED          = "Min Required R Squared";
+    public static final String MIN_REQUIRED_DENSITY_RATIO      = "Min Required Density Ratio";
+    public static final String MAX_ALLOWABLE_VARIABILITY       = "Max Allowable Variability";
+    public static final String NEIGHBOUR_MODE                  = "Neighbour Mode";
+    public static final String MIN_TRACK_DURATION              = "Min Track Duration";
+    public static final String MAX_TRACK_DURATION              = "Max Track Duration";
+
     // @formatter:on
 
     // =====================
