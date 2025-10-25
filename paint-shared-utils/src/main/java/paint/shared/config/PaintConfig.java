@@ -36,7 +36,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Set;
 
-import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
+import static paint.shared.constants.PaintConstants.*;
 
 /**
  * The {@code PaintConfig} class provides a configuration management system
@@ -241,23 +241,24 @@ public class PaintConfig {
         configData.add(SECTION_RECORDING_VIEWER, recordingViewer);
 
         JsonObject trackMate = new JsonObject();
-        trackMate.addProperty("MAX_FRAME_GAP",                                     3);
-        trackMate.addProperty("ALTERNATIVE_LINKING_COST_FACTOR",                   1.05);
-        trackMate.addProperty("DO_SUBPIXEL_LOCALIZATION",                          false);
-        trackMate.addProperty("MIN_NR_SPOTS_IN_TRACK",                             3);
-        trackMate.addProperty("LINKING_MAX_DISTANCE",                              0.6);
-        trackMate.addProperty("MAX_NR_SPOTS_IN_IMAGE",                             2000000);
-        trackMate.addProperty("GAP_CLOSING_MAX_DISTANCE",                          1.2);
-        trackMate.addProperty("TARGET_CHANNEL",                                    1);
-        trackMate.addProperty("SPLITTING_MAX_DISTANCE",                            15.0);
-        trackMate.addProperty("TRACK_COLOURING",                                   "TRACK_DURATION");
-        trackMate.addProperty("RADIUS",                                            0.5);
-        trackMate.addProperty("ALLOW_GAP_CLOSING",                                 true);
-        trackMate.addProperty("DO_MEDIAN_FILTERING",                               false);
-        trackMate.addProperty("ALLOW_TRACK_SPLITTING",                             false);
-        trackMate.addProperty("ALLOW_TRACK_MERGING",                               false);
-        trackMate.addProperty("MERGING_MAX_DISTANCE",                              15.0);
-        trackMate.addProperty("Max Seconds Per Recording",                         2000);
+        trackMate.addProperty(MAX_FRAME_GAP,                                     3);
+        trackMate.addProperty(ALTERNATIVE_LINKING_COST_FACTOR,                   1.05);
+        trackMate.addProperty(DO_SUBPIXEL_LOCALIZATION,                          false);
+        trackMate.addProperty(MIN_NR_SPOTS_IN_TRACK,                             3);
+        trackMate.addProperty(LINKING_MAX_DISTANCE,                              0.6);
+        trackMate.addProperty(MAX_NR_SPOTS_IN_IMAGE,                             2000000);
+        trackMate.addProperty(MAX_NR_SECONDS_PER_IMAGE,                          2000);
+        trackMate.addProperty(GAP_CLOSING_MAX_DISTANCE,                          1.2);
+        trackMate.addProperty(TARGET_CHANNEL,                                    1);
+        trackMate.addProperty(SPLITTING_MAX_DISTANCE,                            15.0);
+        trackMate.addProperty(TRACK_COLOURING,                                   "TRACK_DURATION");
+        trackMate.addProperty(RADIUS,                                            0.5);
+        trackMate.addProperty(ALLOW_GAP_CLOSING,                                 true);
+        trackMate.addProperty(DO_MEDIAN_FILTERING,                               false);
+        trackMate.addProperty(ALLOW_TRACK_SPLITTING,                             false);
+        trackMate.addProperty(ALLOW_TRACK_MERGING,                               false);
+        trackMate.addProperty(MERGING_MAX_DISTANCE,                              15.0);
+
         configData.add(SECTION_TRACKMATE, trackMate);
 
         trackMate.addProperty("Debug RunTrackMateOnProject",                       false);
