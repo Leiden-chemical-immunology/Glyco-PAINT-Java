@@ -216,8 +216,13 @@ public abstract class AbstractFileValidator {
                     Double.parseDouble(value);
                     break;
                 case "BOOLEAN":
-                    if (!(value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"))) {
-                        throw new IllegalArgumentException();
+                    String v = value.trim().toLowerCase();
+                    if (!(v.equals("true") || v.equals("false")
+                            || v.equals("1") || v.equals("0")
+                            || v.equals("yes") || v.equals("no")
+                            || v.equals("y") || v.equals("n")
+                            || v.equals("t") || v.equals("f"))) {
+                        throw new IllegalArgumentException("Invalid boolean: " + value);
                     }
                     break;
                 case "LOCAL_DATE_TIME":
