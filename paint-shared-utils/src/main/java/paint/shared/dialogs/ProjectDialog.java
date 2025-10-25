@@ -710,7 +710,7 @@ public class ProjectDialog {
     }
 
     private Project getProject() {
-        TrackMateConfig trackMateConfig     = TrackMateConfig.from(paintConfig);
+        TrackMateConfig trackMateConfig     = new TrackMateConfig();
         GenerateSquaresConfig squaresConfig = GenerateSquaresConfig.from(paintConfig);
 
         List<String> experimentNames = new ArrayList<>();

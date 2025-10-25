@@ -159,9 +159,7 @@ public class TrackMateConfig {
         // @formatter:on
     }
 
-    public static TrackMateConfig from(PaintConfig paintConfig) {
-        return new TrackMateConfig(paintConfig);
-    }
+
 
     // Getters only, Setter methods are not needed either, as the attributes are final
 

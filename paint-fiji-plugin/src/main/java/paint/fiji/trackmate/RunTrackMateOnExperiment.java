@@ -136,15 +136,14 @@ public class RunTrackMateOnExperiment {
                                  experimentPath.getParent());
         }
         PaintConfig paintConfig         = PaintConfig.instance();
-        TrackMateConfig trackMateConfig = TrackMateConfig.from(paintConfig);
-        int maxSecondsPerRecording      = paintConfig.getIntValue("TrackMate", "Max Seconds Per Recording", 2000);
-
+        TrackMateConfig trackMateConfig = new TrackMateConfig();
+        int maxSecondsPerRecording      = trackMateConfig.getMaxNumberOfSecondsPerImage();
         PaintLogger.debugf(trackMateConfig.toString());
         if (PaintRuntime.isVerbose()) {
             PaintLogger.infof(trackMateConfig.toString());
         }
 
-        // Write the parameters used file, so that we know for sure what parameters have been used
+        // Write the parameters used to file, so that we know for sure what parameters have been used
         try {
             Path filePath = experimentPath.resolve("Output").resolve("ParametersUsed.txt");
             Files.createDirectories(filePath.getParent());
