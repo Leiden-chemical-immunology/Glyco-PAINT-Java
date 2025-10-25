@@ -723,7 +723,7 @@ public class ProjectDialog {
 
     private Project getProject() {
         TrackMateConfig trackMateConfig     = new TrackMateConfig();
-        GenerateSquaresConfig squaresConfig = GenerateSquaresConfig.from(paintConfig);
+        GenerateSquaresConfig squaresConfig = new GenerateSquaresConfig();
 
         List<String> experimentNames = new ArrayList<>();
         for (JCheckBox cb : checkBoxes)

@@ -63,7 +63,7 @@ public class GenerateSquaresConfig {
      */ /*
      * Full constructor with all values retrieved from file
      */
-    private GenerateSquaresConfig() {
+    public GenerateSquaresConfig() {
 
         // @formatter:off
         this.numberOfSquaresInRecording  = PaintConfig.getInt(   SECTION_GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING,400);
@@ -75,7 +75,7 @@ public class GenerateSquaresConfig {
         // @formatter:on
     }
 
-    public static GenerateSquaresConfig from(PaintConfig paintConfig) {
+    public static GenerateSquaresConfig from() {
         return new GenerateSquaresConfig();
     }
 

@@ -58,7 +58,7 @@ public class GenerateSquaresHeadless {
         LocalDateTime start = LocalDateTime.now();
 
         // --- Prepare project ---
-        GenerateSquaresConfig generateSquaresConfig = GenerateSquaresConfig.from(PaintConfig.instance());
+        GenerateSquaresConfig generateSquaresConfig = new GenerateSquaresConfig();
         Project project = new Project();
         project.setProjectRootPath(projectPath);
         project.setExperimentNames(experimentNames);
@@ -154,7 +154,7 @@ public class GenerateSquaresHeadless {
             final int MAX_WIDTH = 100;
             final String INDENT = "                   ";
 
-            StringBuilder sb = new StringBuilder("  "); // the firstline has only 2 leading spaces
+            StringBuilder sb = new StringBuilder("  "); // the first line has only 2 leading spaces
             int currentLineLength = 2;
             int effectiveMaxWidthFirstLine = MAX_WIDTH - (INDENT.length() - 2);
 
