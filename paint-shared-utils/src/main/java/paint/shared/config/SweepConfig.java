@@ -11,6 +11,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// NOTE: All `.get(...)`, `.has(...)`, and `.getAsXxx(...)` methods refer to Gson's JsonObject / JsonElement API.
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 /**
  * The {@code SweepConfig} class provides functionality for loading, parsing, and retrieving
  * sweep-related configuration from a JSON file. This configuration is stored internally
@@ -81,43 +85,5 @@ public class SweepConfig {
         }
 
         return activeValues;
-    }
-
-    /**
-     * Retrieves a boolean value from the configuration based on the specified section and key.
-     * If the section or key does not exist, or the value is not a valid boolean representation,
-     * the method returns the provided default value.
-     *
-     * @param section the name of the section in the configuration.
-     * @param key the name of the key within the specified section.
-     * @param defaultValue the value to return if the specified key is not found, or if the value cannot be resolved to a boolean.
-     * @return the boolean value from the configuration if found and valid; otherwise, the provided default value.
-     */
-    public boolean getBoolean(String section, String key, boolean defaultValue) {
-        if (!root.has(section) || !root.get(section).isJsonObject()) {
-            return defaultValue;
-        }
-        JsonObject jsonObject = root.getAsJsonObject(section);
-        if (!jsonObject.has(key)) {
-            return defaultValue;
-        }
-
-        JsonElement jsonElement = jsonObject.get(key);
-        if (!jsonElement.isJsonPrimitive()) {
-            return defaultValue;
-        }
-
-        if (jsonElement.getAsJsonPrimitive().isBoolean()) {
-            return jsonElement.getAsBoolean();
-        }
-        if (jsonElement.getAsJsonPrimitive().isString()) {
-            String s = jsonElement.getAsString().trim();
-            if ("true".equalsIgnoreCase(s)) return true;
-            if ("false".equalsIgnoreCase(s)) return false;
-        }
-        if (jsonElement.getAsJsonPrimitive().isNumber()) {
-            return jsonElement.getAsInt() != 0;
-        }
-        return defaultValue;
     }
 }
