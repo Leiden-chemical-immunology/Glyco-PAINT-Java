@@ -1,6 +1,5 @@
 package paint.shared.constants;
 
-import paint.shared.config.PaintConfig;
 import tech.tablesaw.api.ColumnType;
 
 /**
