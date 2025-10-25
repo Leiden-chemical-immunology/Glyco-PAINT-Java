@@ -127,7 +127,7 @@ public class ProjectDialog {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
 
-        Dimension labelSize = new Dimension(160, 20);
+        Dimension labelSize = new Dimension(200, 20);
         int row = 0;
 
         // Project Root
@@ -146,7 +146,7 @@ public class ProjectDialog {
                                   this::onImagesRootChosen);
 
         // Disable and visually gray out "Images Root" in TRACKMATE or GENERATE_SQUARES mode
-        if (mode == DialogMode.TRACKMATE || mode == DialogMode.GENERATE_SQUARES) {
+        if (mode == DialogMode.GENERATE_SQUARES) {
             imageDirectoryField.setEnabled(false);
             imageDirectoryField.setBackground(UIManager.getColor("Panel.background"));
             imageDirectoryField.setForeground(Color.GRAY);
@@ -212,7 +212,7 @@ public class ProjectDialog {
             // Number of squares (grid)
             pg.gridx = 0;
             pg.gridy = prow;
-            JLabel lblNumSquares = label("Number of Squares in Recording:", labelSize);
+            JLabel lblNumSquares = label("Number of Squares in Recording", labelSize);
             squareParamLabels.add(lblNumSquares);
             paramsPanel.add(lblNumSquares, pg);
 
@@ -227,7 +227,7 @@ public class ProjectDialog {
             // Min Tracks
             pg.gridx = 0;
             pg.gridy = prow;
-            JLabel lblMinTracks = label("Min Tracks to Calculate Tau:", labelSize);
+            JLabel lblMinTracks = label("Min Tracks to Calculate Tau", labelSize);
             squareParamLabels.add(lblMinTracks);
             paramsPanel.add(lblMinTracks, pg);
 
@@ -384,21 +384,33 @@ public class ProjectDialog {
                         workerThread.join(2000); // wait up to 2 seconds for the worker to die
                     } catch (InterruptedException ignored) { }
 
-                    if (workerThread.isAlive()) {
-                        PaintLogger.errorf("Worker thread did not stop — forcing JVM halt.");
-                        Runtime.getRuntime().halt(0);
-                    } else {
-                        PaintLogger.infof("Worker thread terminated cleanly.");
-                    }
+                    SwingUtilities.invokeLater(() -> {
+                        if (workerThread.isAlive()) {
+                            PaintLogger.errorf("Worker thread did not stop — forcing JVM halt.");
+                            Runtime.getRuntime().halt(0);
+                        } else {
+                            PaintLogger.infof("Worker thread terminated cleanly.");
+                            // ✅ reset and close UI
+                            cancelled = false;
+                            okButton.setText("OK");
+                            okButton.setEnabled(true);
+                            try {
+                                PaintConsoleWindow.closeIfVisible();
+                            } catch (Throwable t) {
+                                // ignore
+                            }
+                            dialog.dispose();
+                        }
+                    });
                 }, "ForceShutdownWatcher").start();
             } else {
                 PaintLogger.infof("No active worker thread — closing dialog and console.");
                 SwingUtilities.invokeLater(() -> {
+                    cancelled = false; // ✅ reset
+                    okButton.setText("OK");
+                    okButton.setEnabled(true);
                     JDialog dlg = getDialog();
-                    if (dlg != null && dlg.isDisplayable()) {
-                        dlg.dispose();
-                    }
-
+                    if (dlg != null && dlg.isDisplayable()) dlg.dispose();
                     try {
                         PaintConsoleWindow.closeIfVisible();
                     } catch (Throwable t) {
