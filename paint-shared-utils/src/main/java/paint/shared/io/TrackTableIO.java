@@ -37,28 +37,28 @@ public class TrackTableIO extends BaseTableIO {
     public Table toTable(List<Track> tracks) {
         Table table = emptyTable();
         for (Track track : tracks) {
-            Row row = table.appendRow();
+            Row tablesawRow = table.appendRow();
 
             // @formatter:off
-            row.setString( "Unique Key",                track.getUniqueKey());
-            row.setString( "Experiment Name",           track.getExperimentName());
-            row.setString( "Recording Name",            track.getRecordingName());
-            row.setInt(    "Track Id",                  track.getTrackId());
-            row.setInt(    "Number of Spots",           track.getNumberOfSpots());
-            row.setInt(    "Number of Gaps",            track.getNumberOfGaps());
-            row.setInt(    "Longest Gap",               track.getLongestGap());
-            row.setDouble( "Track Duration",            track.getTrackDuration());
-            row.setDouble( "Track X Location",          track.getTrackXLocation());
-            row.setDouble( "Track Y Location",          track.getTrackYLocation());
-            row.setDouble( "Track Displacement",        track.getTrackDisplacement());
-            row.setDouble( "Track Max Speed",           track.getTrackMaxSpeed());
-            row.setDouble( "Track Median Speed",        track.getTrackMedianSpeed());
-            row.setDouble( "Diffusion Coefficient",     track.getDiffusionCoefficient());
-            row.setDouble( "Diffusion Coefficient Ext", track.getDiffusionCoefficientExt());
-            row.setDouble( "Total Distance",            track.getTotalDistance());
-            row.setDouble( "Confinement Ratio",         track.getConfinementRatio());
-            row.setInt(    "Square Number",             track.getSquareNumber());
-            row.setInt(    "Label Number",              track.getLabelNumber());
+            tablesawRow.setString( "Unique Key",                track.getUniqueKey());
+            tablesawRow.setString( "Experiment Name",           track.getExperimentName());
+            tablesawRow.setString( "Recording Name",            track.getRecordingName());
+            tablesawRow.setInt(    "Track Id",                  track.getTrackId());
+            tablesawRow.setInt(    "Number of Spots",           track.getNumberOfSpots());
+            tablesawRow.setInt(    "Number of Gaps",            track.getNumberOfGaps());
+            tablesawRow.setInt(    "Longest Gap",               track.getLongestGap());
+            tablesawRow.setDouble( "Track Duration",            track.getTrackDuration());
+            tablesawRow.setDouble( "Track X Location",          track.getTrackXLocation());
+            tablesawRow.setDouble( "Track Y Location",          track.getTrackYLocation());
+            tablesawRow.setDouble( "Track Displacement",        track.getTrackDisplacement());
+            tablesawRow.setDouble( "Track Max Speed",           track.getTrackMaxSpeed());
+            tablesawRow.setDouble( "Track Median Speed",        track.getTrackMedianSpeed());
+            tablesawRow.setDouble( "Diffusion Coefficient",     track.getDiffusionCoefficient());
+            tablesawRow.setDouble( "Diffusion Coefficient Ext", track.getDiffusionCoefficientExt());
+            tablesawRow.setDouble( "Total Distance",            track.getTotalDistance());
+            tablesawRow.setDouble( "Confinement Ratio",         track.getConfinementRatio());
+            tablesawRow.setInt(    "Square Number",             track.getSquareNumber());
+            tablesawRow.setInt(    "Label Number",              track.getLabelNumber());
             // @formatter:on
         }
         return table;

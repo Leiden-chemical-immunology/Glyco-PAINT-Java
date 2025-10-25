@@ -59,34 +59,34 @@ public class RecordingTableIO extends BaseTableIO {
 
     public List<Recording> toEntities(Table table) {
         List<Recording> recordings = new ArrayList<>();
-        for (Row row : table) {
+        for (Row tablesawRow : table) {
             Recording recording = new Recording();
 
             // @formatter:off
-            recording.setExperimentName(              row.getString( "Experiment Name"));
-            recording.setRecordingName(               row.getString(  "Recording Name"));
-            recording.setConditionNumber(             row.getInt(     "Condition Number"));
-            recording.setReplicateNumber(             row.getInt(     "Replicate Number"));
-            recording.setProbeName(                   row.getString(  "Probe Name"));
-            recording.setProbeType(                   row.getString(  "Probe Type"));
-            recording.setCellType(                    row.getString(  "Cell Type"));
-            recording.setAdjuvant(                    row.getString(  "Adjuvant"));
-            recording.setConcentration(               row.getDouble(  "Concentration"));
-            recording.setProcessFlag(                 row.getBoolean( "Process Flag"));
-            recording.setThreshold(                   row.getDouble(  "Threshold"));
-            recording.setNumberOfSpots(               row.getInt(     "Number of Spots"));
-            recording.setNumberOfTracks(              row.getInt(     "Number of Tracks"));
-            recording.setNumberOfSquaresInBackground( row.getInt(     "Number of Squares in Background"));
-            recording.setNumberOfTracksInBackground(  row.getInt(     "Number of Tracks in Background"));
-            recording.setAverageTracksInBackGround(   row.getDouble(  "Average Tracks in Background"));
-            recording.setNumberOfSpotsInAllTracks(    row.getInt(     "Number of Spots in All Tracks"));
-            recording.setNumberOfFrames(              row.getInt(     "Number of Frames"));
-            recording.setRunTime(                     row.getDouble(  "Run Time"));
-            recording.setTimeStamp(                   row.getDateTime("Time Stamp"));
-            recording.setExclude(                     row.getBoolean( "Exclude"));
-            recording.setTau(                         row.getDouble(  "Tau"));
-            recording.setRSquared(                    row.getDouble(  "R Squared"));
-            recording.setDensity(                     row.getDouble("Density"));
+            recording.setExperimentName(              tablesawRow.getString( "Experiment Name"));
+            recording.setRecordingName(               tablesawRow.getString(  "Recording Name"));
+            recording.setConditionNumber(             tablesawRow.getInt(     "Condition Number"));
+            recording.setReplicateNumber(             tablesawRow.getInt(     "Replicate Number"));
+            recording.setProbeName(                   tablesawRow.getString(  "Probe Name"));
+            recording.setProbeType(                   tablesawRow.getString(  "Probe Type"));
+            recording.setCellType(                    tablesawRow.getString(  "Cell Type"));
+            recording.setAdjuvant(                    tablesawRow.getString(  "Adjuvant"));
+            recording.setConcentration(               tablesawRow.getDouble(  "Concentration"));
+            recording.setProcessFlag(                 tablesawRow.getBoolean( "Process Flag"));
+            recording.setThreshold(                   tablesawRow.getDouble(  "Threshold"));
+            recording.setNumberOfSpots(               tablesawRow.getInt(     "Number of Spots"));
+            recording.setNumberOfTracks(              tablesawRow.getInt(     "Number of Tracks"));
+            recording.setNumberOfSquaresInBackground( tablesawRow.getInt(     "Number of Squares in Background"));
+            recording.setNumberOfTracksInBackground(  tablesawRow.getInt(     "Number of Tracks in Background"));
+            recording.setAverageTracksInBackGround(   tablesawRow.getDouble(  "Average Tracks in Background"));
+            recording.setNumberOfSpotsInAllTracks(    tablesawRow.getInt(     "Number of Spots in All Tracks"));
+            recording.setNumberOfFrames(              tablesawRow.getInt(     "Number of Frames"));
+            recording.setRunTime(                     tablesawRow.getDouble(  "Run Time"));
+            recording.setTimeStamp(                   tablesawRow.getDateTime("Time Stamp"));
+            recording.setExclude(                     tablesawRow.getBoolean( "Exclude"));
+            recording.setTau(                         tablesawRow.getDouble(  "Tau"));
+            recording.setRSquared(                    tablesawRow.getDouble(  "R Squared"));
+            recording.setDensity(                     tablesawRow.getDouble("Density"));
             // @formatter:on
 
             recordings.add(recording);

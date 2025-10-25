@@ -124,21 +124,21 @@ public class ExperimentInfoTableIO extends BaseTableIO {
      */
     public List<ExperimentInfo> toEntities(Table table) {
         List<ExperimentInfo> infos = new ArrayList<>();
-        for (Row row : table) {
+        for (Row tablesawRow : table) {
             ExperimentInfo experimentInfo = new ExperimentInfo();
 
             // @formatter:off
-            experimentInfo.setExperimentName(  row.getString( "Experiment Name"));
-            experimentInfo.setRecordingName(   row.getString( "Recording Name"));
-            experimentInfo.setConditionNumber( row.getInt(    "Condition Number"));
-            experimentInfo.setReplicateNumber( row.getInt(    "Replicate Number"));
-            experimentInfo.setProbeName(       row.getString( "Probe Name"));
-            experimentInfo.setProbeType(       row.getString( "Probe Type"));
-            experimentInfo.setCellType(        row.getString( "Cell Type"));
-            experimentInfo.setAdjuvant(        row.getString( "Adjuvant"));
-            experimentInfo.setConcentration(   row.getDouble( "Concentration"));
-            experimentInfo.setProcessFlag(     row.getBoolean("Process Flag"));
-            experimentInfo.setThreshold(       row.getDouble( "Threshold"));
+            experimentInfo.setExperimentName(  tablesawRow.getString( "Experiment Name"));
+            experimentInfo.setRecordingName(   tablesawRow.getString( "Recording Name"));
+            experimentInfo.setConditionNumber( tablesawRow.getInt(    "Condition Number"));
+            experimentInfo.setReplicateNumber( tablesawRow.getInt(    "Replicate Number"));
+            experimentInfo.setProbeName(       tablesawRow.getString( "Probe Name"));
+            experimentInfo.setProbeType(       tablesawRow.getString( "Probe Type"));
+            experimentInfo.setCellType(        tablesawRow.getString( "Cell Type"));
+            experimentInfo.setAdjuvant(        tablesawRow.getString( "Adjuvant"));
+            experimentInfo.setConcentration(   tablesawRow.getDouble( "Concentration"));
+            experimentInfo.setProcessFlag(     tablesawRow.getBoolean("Process Flag"));
+            experimentInfo.setThreshold(       tablesawRow.getDouble( "Threshold"));
             // @formatter:off
 
             infos.add(experimentInfo);

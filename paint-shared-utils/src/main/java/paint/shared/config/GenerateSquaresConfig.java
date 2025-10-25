@@ -1,7 +1,5 @@
 package paint.shared.config;
 
-import static paint.shared.config.PaintConfig.*;
-
 /**
  * This class represents the configuration for generating squares within a system.
  * It holds various parameters required for controlling and defining the behavior
@@ -65,12 +63,12 @@ public class GenerateSquaresConfig {
     private GenerateSquaresConfig() {
 
         // @formatter:off
-        this.numberOfSquaresInRecording  = getInt(   "Generate Squares", "Number of Squares in Recording", 400);
-        this.minTracksToCalculateTau     = getInt(   "Generate Squares", "Min Tracks to Calculate Tau", 20);
-        this.minRequiredRSquared         = getDouble("Generate Squares", "Min Required R Squared", 0.1);
-        this.minRequiredDensityRatio     = getDouble("Generate Squares", "Min Required Density Ratio", 0.1);
-        this.maxAllowableVariability     = getDouble("Generate Squares", "Max Allowable Variability", 10.0);
-        this.neighbourMode               = getString("Generate Squares", "Neighbour Mode", "Free");
+        this.numberOfSquaresInRecording  = PaintConfig.getInt(   "Generate Squares", "Number of Squares in Recording", 400);
+        this.minTracksToCalculateTau     = PaintConfig.getInt(   "Generate Squares", "Min Tracks to Calculate Tau", 20);
+        this.minRequiredRSquared         = PaintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
+        this.minRequiredDensityRatio     = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 0.1);
+        this.maxAllowableVariability     = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
+        this.neighbourMode               = PaintConfig.getString("Generate Squares", "Neighbour Mode", "Free");
         // @formatter:on
     }
 
