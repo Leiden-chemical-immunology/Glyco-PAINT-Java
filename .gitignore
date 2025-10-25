@@ -61,3 +61,7 @@ paint-icons-generation/
 # Ignore all macOS and Windows icon files anywhere in the repo
 *.icns
 *.ico
+
+# Ignore all images
+*.png
+
