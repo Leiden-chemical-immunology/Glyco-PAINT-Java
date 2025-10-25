@@ -16,7 +16,9 @@ import java.util.stream.Collectors;
 public class SquareUtils {
 
     /** Private constructor to prevent instantiation. */
-    private SquareUtils() {}
+    private SquareUtils() {
+
+    }
 
     /**
      * Calculates the density of tracks in a specified area over time and considering a concentration factor.
