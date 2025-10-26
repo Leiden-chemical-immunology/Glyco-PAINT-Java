@@ -53,7 +53,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.6.0</version>
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -73,7 +72,7 @@
                 </executions>
             </plugin>
 
-            <!-- macOS .app bundle -->
+            <!-- macOS .app bundle (safe for CI/non-macOS) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -84,6 +83,14 @@
                         <phase>package</phase>
                         <configuration>
                             <target name="create-app-bundle">
+                                <!-- ✅ Detect macOS -->
+                                <condition property="is.macos">
+                                    <os family="mac"/>
+                                </condition>
+
+                                <!-- 🧩 Abort early if not macOS -->
+                                <fail unless="is.macos" message="Skipping macOS .app bundle creation (not running on macOS)."/>
+
                                 <echo message="🍎 Creating macOS app bundle at ${app.bundle}"/>
 
                                 <delete dir="${app.bundle}" failonerror="false"/>
@@ -93,8 +100,8 @@
                                 <mkdir dir="${app.bundle}/Contents/Java"/>
                                 <mkdir dir="${app.bundle}/Contents/Resources"/>
 
-                                <copy file="${fat.jar}" todir="${app.bundle}/Contents/Java" overwrite="true"/>
-                                <copy file="${app.icon.macos}" todir="${app.bundle}/Contents/Resources" overwrite="true"/>
+                                <copy file="${fat.jar}" todir="${app.bundle}/Contents/Java" overwrite="true" failonerror="false"/>
+                                <copy file="${app.icon.macos}" todir="${app.bundle}/Contents/Resources" overwrite="true" failonerror="false"/>
 
                                 <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
 <?xml version="1.0" encoding="UTF-8"?>
@@ -115,13 +122,13 @@
   <string>paint-create-experiment</string>
 </dict>
 </plist>
-                                ]]></echo>
+                    ]]></echo>
 
                                 <echo file="${app.bundle}/Contents/MacOS/launch"><![CDATA[
 #!/bin/bash
 DIR="$( cd "$( dirname "$0" )" && cd ../Java && pwd )"
 exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-jar-with-dependencies.jar"
-                                ]]></echo>
+                    ]]></echo>
 
                                 <fixcrlf file="${app.bundle}/Contents/MacOS/launch" eol="unix"/>
                                 <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
@@ -134,13 +141,13 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
 
                                 <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
                                 <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
-                                <copy todir="${user.home}/Applications/Glyco-PAINT" overwrite="true">
+                                <copy todir="${user.home}/Applications/Glyco-PAINT" overwrite="true" failonerror="false">
                                     <fileset dir="${project.build.directory}">
                                         <include name="${app.name}.app/**"/>
                                     </fileset>
                                 </copy>
 
-                                <exec executable="chmod">
+                                <exec executable="chmod" failonerror="false">
                                     <arg value="755"/>
                                     <arg value="${user.home}/Applications/Glyco-PAINT/${app.name}.app/Contents/MacOS/launch"/>
                                 </exec>

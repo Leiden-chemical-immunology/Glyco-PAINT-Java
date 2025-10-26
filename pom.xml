@@ -100,23 +100,39 @@
     </dependencyManagement>
 
     <build>
+
         <pluginManagement>
+
             <plugins>
+                <!-- Compiler -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.11.0</version>
                 </plugin>
+
+                <!-- Assembly (for fat JARs) -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>3.6.0</version>
                 </plugin>
+
+                <!-- AntRun (for app bundles or small build tasks) -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
                     <version>3.1.0</version>
                 </plugin>
+
+                <!-- Surefire (for tests) -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.2.5</version>
+                </plugin>
+
+                <!-- Enforcer (Java 8 requirement) -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
@@ -135,7 +151,9 @@
                         </execution>
                     </executions>
                 </plugin>
+
             </plugins>
+
         </pluginManagement>
 
         <plugins>

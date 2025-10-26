@@ -48,12 +48,14 @@
             <version>1.10.0</version>
         </dependency>
 
+        <!-- Image I/O -->
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-tiff</artifactId>
             <version>3.10.1</version>
         </dependency>
 
+        <!-- PDF generation -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
@@ -66,6 +68,7 @@
             <version>0.37</version>
         </dependency>
 
+        <!-- macOS plist reader -->
         <dependency>
             <groupId>com.googlecode.plist</groupId>
             <artifactId>dd-plist</artifactId>
@@ -75,11 +78,10 @@
 
     <build>
         <plugins>
-            <!-- Copy JAR into Fiji’s plugins folder (local only) -->
+            <!-- Copy JAR into Fiji’s plugins folder (only on macOS, local builds) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>copy-jar-to-fiji</id>
@@ -88,9 +90,19 @@
                         <configuration>
                             <skip>${skip.copy.to.fiji}</skip>
                             <target>
+                                <!-- Detect macOS -->
+                                <condition property="is.macos">
+                                    <os family="mac"/>
+                                </condition>
+
+                                <!-- Only copy if on macOS -->
+                                <echo message="ℹ️ Checking OS before Fiji copy..."/>
+                                <fail unless="is.macos" message="Skipping Fiji copy (not macOS)."/>
+
                                 <copy file="${project.build.directory}/${project.build.finalName}.jar"
                                       todir="/Applications/Fiji.app/plugins"
-                                      overwrite="true"/>
+                                      overwrite="true"
+                                      failonerror="false"/>
                                 <echo message="✅ Copied ${project.build.finalName}.jar to Fiji plugins folder"/>
                             </target>
                         </configuration>
