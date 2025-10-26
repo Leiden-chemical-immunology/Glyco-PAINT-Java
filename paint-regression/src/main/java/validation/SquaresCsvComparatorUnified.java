@@ -158,7 +158,7 @@ public class SquaresCsvComparatorUnified {
 
             // Define file paths for old/new CSVs
             Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Squares.csv");
-            Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/Squares Java.csv");
+            Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/Squares.csv");
 
             // Step 1: Read both CSVs
             System.out.println("Reading CSVs...");
