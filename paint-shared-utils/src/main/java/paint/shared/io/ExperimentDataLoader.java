@@ -65,12 +65,17 @@ public final class ExperimentDataLoader {
         }
 
         // Attach tracks to recordings
-        for (Recording rec : recordings) {
+        PaintLogger.debugf("Found %d tracks", tracksTable.rowCount());
+        for (Recording recording : recordings) {
+            if (!recording.isProcessFlag()) {
+                continue;
+            }
+            String recName = recording.getRecordingName();
             Table recTracks = tracksTable.where(
-                    tracksTable.stringColumn("Recording Name")
-                            .matchesRegex("^" + rec.getRecordingName() + "(?:-threshold-\\d{1,3})?$"));
-            rec.setTracks(trackIO.toEntities(recTracks));
-            rec.setTracksTable(recTracks);
+                    tracksTable.stringColumn("Recording Name").isEqualTo(recording.getRecordingName()));;
+            PaintLogger.debugf("Found %d tracks for recording '%s'", recTracks.rowCount(), recording.getRecordingName());
+            recording.setTracks(trackIO.toEntities(recTracks));
+            recording.setTracksTable(recTracks);
         }
 
         // ─── Squares (ONLY for mature projects) ───────────────────────────────
