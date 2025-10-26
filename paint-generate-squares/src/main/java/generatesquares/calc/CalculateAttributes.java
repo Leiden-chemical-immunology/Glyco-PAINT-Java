@@ -73,24 +73,25 @@ public class CalculateAttributes {
                                                  GenerateSquaresConfig generateSquaresConfig) {
 
         // @formatter:off
-        double minRequiredRSquared        = generateSquaresConfig.getMinRequiredRSquared();
-        int    minTracksForTau            = generateSquaresConfig.getMinTracksToCalculateTau();
-        double maxAllowableVariability    = generateSquaresConfig.getMaxAllowableVariability();
-        double minRequiredDensityRatio    = generateSquaresConfig.getMinRequiredDensityRatio();
-        String neighbourMode              = generateSquaresConfig.getNeighbourMode();
-        int    numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
-        double area                       = calcSquareArea(numberOfSquaresInRecording);
-        double concentration              = recording.getConcentration();
+        double       minRequiredRSquared        = generateSquaresConfig.getMinRequiredRSquared();
+        int          minTracksForTau            = generateSquaresConfig.getMinTracksToCalculateTau();
+        double       maxAllowableVariability    = generateSquaresConfig.getMaxAllowableVariability();
+        double       minRequiredDensityRatio    = generateSquaresConfig.getMinRequiredDensityRatio();
+        String       neighbourMode              = generateSquaresConfig.getNeighbourMode();
+        int          numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
+        double       area                       = calcSquareArea(numberOfSquaresInRecording);
+        double       concentration              = recording.getConcentration();
+        List<Square> squaresOfRecording         = recording.getSquaresOfRecording();
         // @formatter:on
 
-        SquareUtils.BackgroundEstimationResult result = calculateBackgroundDensity(recording.getSquaresOfRecording());
-        double meanBackgroundTracks = result.getBackgroundMean();
-        double backgroundTracksOri = calcAverageTrackCountInBackgroundSquares(recording.getSquaresOfRecording(), (int) (0.1 * numberOfSquaresInRecording));
+        SquareUtils.BackgroundEstimationResult result = calculateBackgroundDensity(squaresOfRecording);
+        double meanBackgroundTracks                   = result.getBackgroundMean();
+        double backgroundTracksOri                    = calcAverageTrackCountInBackgroundSquares(recording.getSquaresOfRecording(), (int) (0.1 * numberOfSquaresInRecording));
 
         PaintLogger.debugf("Estimated Background track count = %.2f, n = %d%n",
                            meanBackgroundTracks, result.getBackgroundSquares().size());
 
-        for (Square square : recording.getSquaresOfRecording()) {
+        for (Square square : squaresOfRecording) {
 
             // @formatter:off
             List<Track> tracks       = square.getTracks();
