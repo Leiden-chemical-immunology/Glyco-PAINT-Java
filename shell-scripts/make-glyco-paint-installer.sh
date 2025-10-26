@@ -1,15 +1,66 @@
 #!/bin/bash
 #
-# ================================================================
-#  make-glyco-paint-installer.sh
+###############################################################################
+# make-glyco-paint-installer.sh
 #
-#  Description:
-#    Creates a cross-platform self-extracting Glyco-PAINT installer that:
-#      • Installs Glyco-PAINT into a platform-appropriate Applications folder
-#      • Detects Fiji.app automatically in common macOS and Windows locations
-#      • Installs the Fiji fat JAR into the Fiji/plugins directory
-#      • Outputs to ~/Downloads/Glyco-PAINT-Installer.sh
-# ================================================================
+# PURPOSE:
+#   Creates a cross-platform, self-extracting Glyco-PAINT installer that bundles
+#   all desktop applications and the Fiji plugin into a single, portable script.
+#
+# USE CASE:
+#   Run this script after building all Glyco-PAINT modules to produce a complete
+#   installer that users can execute on macOS or Windows (via Git Bash).
+#   The installer automatically locates or prompts for Fiji.app and installs the
+#   appropriate plugin JAR, ensuring a ready-to-run environment.
+#
+# ACTIONS PERFORMED:
+#   1  Detects operating system (macOS or Windows via Git Bash)
+#   2  Gathers built .app bundles from:
+#        ~/Applications/Glyco-PAINT/  (macOS)
+#        ~/AppData/Local/Glyco-PAINT/ (Windows)
+#   3  Finds the Fiji fat JAR automatically from:
+#        ~/JavaPaintProjects/paint-fiji-plugin/target/
+#   4  Packages the applications and JAR into a base64-encoded, self-extracting
+#      Bash installer script located in:
+#        ~/Downloads/Glyco-PAINT-Installer.sh
+#   5  The generated installer:
+#        • Installs Glyco-PAINT into the user’s Applications folder
+#        • Detects or prompts for Fiji.app location
+#        • Copies the Fiji plugin JAR into Fiji’s plugins directory
+#
+# USAGE:
+#   chmod +x make-glyco-paint-installer.sh
+#   ./make-glyco-paint-installer.sh
+#
+# REQUIREMENTS:
+#   - macOS or Windows (Git Bash)
+#   - tar, base64, and standard Unix utilities available on PATH
+#   - Fiji plugin already built (fat JAR must exist in `paint-fiji-plugin/target`)
+#
+# SAFETY FEATURES:
+#   - Exits if required directories or JARs are missing
+#   - Creates temporary workspace safely via `mktemp`
+#   - Cleans up intermediate files automatically
+#
+# RESULT:
+#   - Self-contained Bash installer at:
+#       ~/Downloads/Glyco-PAINT-Installer.sh
+#   - When executed, installs:
+#       • Glyco-PAINT applications → ~/Applications/Glyco-PAINT/
+#       • Fiji plugin → Fiji.app/plugins/
+#
+# WHERE TO CHECK RESULTS:
+#   🔹 Installer Script:
+#        ~/Downloads/Glyco-PAINT-Installer.sh
+#
+#   🔹 Installed Applications:
+#        ~/Applications/Glyco-PAINT/              (macOS)
+#        ~/AppData/Local/Glyco-PAINT/            (Windows)
+#
+#   🔹 Installed Fiji Plugin:
+#        <path-to-Fiji.app>/plugins/
+#
+###############################################################################
 
 set -e
 

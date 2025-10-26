@@ -1,30 +1,59 @@
 #!/bin/bash
 #
-# ================================================================
-#  publish-site.sh
+###############################################################################
+# publish-site.sh
 #
-#  Description:
-#    Builds and publishes the Maven-generated site (target/site)
-#    to the `gh-pages` branch of this repository, which powers
-#    GitHub Pages hosting.
+# PURPOSE:
+#   Builds and publishes the Maven-generated documentation site (target/site)
+#   to the `gh-pages` branch of this repository, which serves GitHub Pages.
 #
-#  Features:
-#    • Works from any directory (auto-detects project root)
-#    • Creates a temporary Git worktree for gh-pages updates
-#    • Builds site automatically if missing
-#    • Cleans up temporary files safely
-#    • Leaves your main working tree untouched
+# USE CASE:
+#   Run this script after tagging or releasing a new version. It safely rebuilds
+#   and deploys the Maven site without disturbing your main working tree or
+#   local branches.
 #
-#  Usage:
-#    ./shell-scripts/publish-site.sh
+# ACTIONS PERFORMED:
+#   1  Detects project root automatically (can run from anywhere)
+#   2  Removes any stale `gh-pages` worktree or branch
+#   3  Builds Maven site if missing (`mvn clean site`)
+#   4  Creates a temporary worktree for the `gh-pages` branch
+#   5  Copies site files from `target/site` into the worktree
+#   6  Commits and pushes changes to GitHub Pages
+#   7  Cleans up all temporary files and worktrees
 #
-#  Requirements:
-#    - Maven must be installed and on your PATH
-#    - Git must be configured with push access
+# FEATURES:
+#   • Fully self-contained — no external dependencies beyond Git + Maven
+#   • Safe — never modifies your main working tree
+#   • Idempotent — does nothing if no site changes are detected
 #
-#  Author: Hans Bakker (jjabakker)
-#  Updated: $(date +"%Y-%m-%d")
-# ================================================================
+# USAGE:
+#   chmod +x publish-site.sh
+#   ./shell-scripts/publish-site.sh
+#
+# REQUIREMENTS:
+#   - Maven installed and available on PATH
+#   - Git configured with push access to the repository
+#
+# SAFETY FEATURES:
+#   - Uses temporary directory for `gh-pages` updates
+#   - Automatically deletes stale branches and worktrees
+#   - Commits only when differences are detected
+#
+# RESULT:
+#   - The site is deployed to the `gh-pages` branch on GitHub.
+#   - Accessible at:
+#       🔹 https://jjabakker.github.io/JavaPaintProjects/
+#
+# WHERE TO CHECK RESULTS:
+#   🔹 GitHub Pages site:
+#        https://jjabakker.github.io/JavaPaintProjects/
+#        → Confirm that site reflects latest Maven documentation
+#
+#   🔹 GitHub Actions (optional):
+#        https://github.com/jjabakker/JavaPaintProjects/actions
+#        → Verify that Pages deployment was successful (if using CI)
+#
+###############################################################################
 
 set -e
 

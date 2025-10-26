@@ -1,17 +1,63 @@
 #!/bin/bash
 #
-# ================================================================
-#  make-icons.sh
+###############################################################################
+# make-icons.sh
 #
-#  Description:
-#    Converts all 1024×1024 PNG icons found in:
+# PURPOSE:
+#   Unified icon generation script for all Glyco-PAINT desktop applications.
+#   Converts high-resolution PNG source images into platform-specific icons
+#   (.icns for macOS, .ico for Windows) and installs them into each module’s
+#   resource directory for packaging.
+#
+# USE CASE:
+#   Run this script whenever PNG icon artwork changes. It rebuilds all required
+#   app icons for macOS and Windows automatically and places them in the proper
+#   module resource locations.
+#
+# ACTIONS PERFORMED:
+#   1  Scans the source directory:
 #        ~/JavaPaintProjects/paint-icons-generation/
-#    into both:
-#      - macOS .icns bundles (via sips + iconutil)
-#      - Windows .ico files (via ImageMagick convert)
-#    Then copies both into each app's icons folder under:
+#   2  For each 1024×1024 PNG file found:
+#        • Creates a macOS .iconset directory
+#        • Uses `sips` and `iconutil` to generate a .icns bundle
+#        • Optionally uses ImageMagick `convert` to generate a .ico file
+#   3  Copies both icon types into each module’s resource directory:
 #        ~/JavaPaintProjects/<module>/src/main/resources/icons/
-# ================================================================
+#
+# SUPPORTED MODULES:
+#   • paint-generate-squares
+#   • paint-create-experiment
+#   • paint-get-omero
+#   • paint-viewer
+#
+# REQUIREMENTS:
+#   - macOS system (for `sips` and `iconutil`)
+#   - ImageMagick (optional, for .ico generation)
+#       → install via: brew install imagemagick
+#
+# USAGE:
+#   chmod +x make-icons.sh
+#   ./make-icons.sh
+#
+# RESULT:
+#   Each module’s `src/main/resources/icons/` directory will contain:
+#     • paint-<app>.icns  — used for macOS .app bundles
+#     • paint-<app>.ico   — used for Windows .exe packaging (if ImageMagick found)
+#
+# SAFETY FEATURES:
+#   - Exits early if source directory not found
+#   - Skips copy for unknown base names
+#   - Gracefully handles missing ImageMagick dependency
+#
+# WHERE TO CHECK RESULTS:
+#   🔹 macOS icon bundles:
+#        ~/JavaPaintProjects/<module>/src/main/resources/icons/*.icns
+#   🔹 Windows icon files:
+#        ~/JavaPaintProjects/<module>/src/main/resources/icons/*.ico
+#   🔹 PNG source files:
+#        ~/JavaPaintProjects/paint-icons-generation/
+#
+###############################################################################
 
 set -e
 
