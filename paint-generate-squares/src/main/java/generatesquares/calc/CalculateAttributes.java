@@ -52,6 +52,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static generatesquares.calc.CalculateTau.calculateTau;
+import static java.lang.Double.NaN;
 import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
 import static paint.shared.constants.PaintConstants.RECORDING_DURATION;
 import static paint.shared.objects.Square.calcSquareArea;
@@ -103,17 +104,21 @@ public class CalculateAttributes {
                 continue;
             }
 
-            CalculateTau.CalculateTauResult results = calculateTau(tracks, minTracksForTau, minRequiredRSquared);
+            if (tracks != null && tracks.size() < minTracksForTau) {
+                CalculateTau.CalculateTauResult results = calculateTau(tracks, minTracksForTau, minRequiredRSquared);
 
-            // Plot curve fitting if enabled
-            if (paint.shared.config.PaintConfig.getBoolean("Generate Squares", "Plot Curve Fitting", false) &&
-                    tracks.size() >= minTracksForTau) {
-                TauPlotCollector.saveFitPlot(tracks, results, experimentPath, recording.getRecordingName(), squareNumber);
-            }
+                if (paint.shared.config.PaintConfig.getBoolean("Generate Squares", "Plot Curve Fitting", false) &&
+                        tracks.size() >= minTracksForTau) {
+                    TauPlotCollector.saveFitPlot(tracks, results, experimentPath, recording.getRecordingName(), squareNumber);
+                }
 
-            if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
-                square.setTau(round(results.getTau(), 0));
-                square.setRSquared(round(results.getRSquared(), 3));
+                if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
+                    square.setTau(round(results.getTau(), 0));
+                    square.setRSquared(round(results.getRSquared(), 3));
+                } else {
+                    square.setTau(Double.NaN);
+                    square.setRSquared(Double.NaN);
+                }
             } else {
                 square.setTau(Double.NaN);
                 square.setRSquared(Double.NaN);

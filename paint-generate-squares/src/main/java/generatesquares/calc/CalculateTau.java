@@ -78,10 +78,6 @@ public class CalculateTau {
                                                   int minTracksForTau,
                                                   double minRequiredRSquared) {
 
-        if (tracks == null || tracks.size() < minTracksForTau) {
-            return new CalculateTauResult(NaN, NaN, CalculateTauResult.Status.TAU_INSUFFICIENT_POINTS);
-        }
-
         // 1) Extract durations
         final int n = tracks.size();
         double[] durations = new double[n];
