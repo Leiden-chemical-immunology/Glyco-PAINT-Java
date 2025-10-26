@@ -2,43 +2,46 @@ name: Build, Release, and Publish Site
 
 on:
   push:
+    branches:
+      - main          # ✅ Rebuild site when pushing to main
     tags:
-      - 'v*.*.*'  # Trigger when you push a version tag like v1.3.0
+      - 'v*.*.*'      # ✅ Also build & release when tagging versions
 
 permissions:
   contents: write  # Needed for gh-pages + releases
 
 jobs:
   build:
+    if: startsWith(github.ref, 'refs/tags/v')  # Only run full release job for version tags
     name: Build and Release JARs
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Check out your code (read-only)
+      # 1️⃣ Checkout (read-only, no credentials)
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false  # ✅ Prevent any auto-push to main
+          persist-credentials: false
 
-      # 2️⃣ Set up Java 8
+      # 2️⃣ Setup Java 8
       - name: Set up JDK 8
         uses: actions/setup-java@v4
         with:
           java-version: '8'
           distribution: 'temurin'
 
-      # 3️⃣ Build with Maven (skip tests to speed up)
+      # 3️⃣ Build with Maven (skip Fiji copy)
       - name: Build with Maven
         run: mvn -B clean package -DskipTests -Dskip.fiji.copy=true
 
-      # 4️⃣ Collect all fat JARs
+      # 4️⃣ Collect all fat JARs for release
       - name: Collect release JARs
         run: |
           mkdir -p release
           find . -name "*-jar-with-dependencies.jar" -exec cp {} release/ \;
 
-      # 5️⃣ Publish GitHub Release (only touches the release assets, not main)
+      # 5️⃣ Publish GitHub Release (attaches JARs)
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -49,16 +52,15 @@ jobs:
 
   site:
     name: Build and Publish Maven Site
-    needs: build
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Fresh checkout (again, read-only)
+      # 1️⃣ Checkout repo (fresh clone)
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false  # ✅ prevents pushing to main
+          persist-credentials: false
 
       # 2️⃣ Set up Java 8
       - name: Set up JDK 8
@@ -69,21 +71,21 @@ jobs:
 
       # 3️⃣ Generate Maven site
       - name: Generate Maven Site
-        run: mvn -B clean site -DskipTests
+        run: mvn -B clean site -DskipTests -Dskip.fiji.copy=true
 
-    # 4️⃣ Deploy Maven site to gh-pages
-      - name: Deploy Maven Site to gh-pages
+      # 4️⃣ Clean up old gh-pages worktree if needed
+      - name: Clean gh-pages worktree
         run: |
           echo "🧹 Cleaning up old gh-pages worktree if present..."
           git worktree list | grep -q "gh-pages" && git worktree remove gh-pages --force || true
           git branch -D gh-pages 2>/dev/null || true
-
         continue-on-error: true
 
+      # 5️⃣ Publish site to GitHub Pages
       - name: Publish site to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: ./target/site
-          force_orphan: true  # keeps gh-pages clean and detached
+          force_orphan: true  # keep gh-pages branch clean
