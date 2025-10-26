@@ -1,6 +1,9 @@
 package paint.shared.utils;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * The Miscellaneous class contains utility methods for various purposes,
@@ -58,6 +61,53 @@ public class Miscellaneous {
             double scale = Math.pow(10, decimals);
             return Math.round(value * scale) / scale;
         }
+    }
+
+    public static boolean isBooleanValue(String value) {
+        if (value.equals("true") || value.equals("1") || value.equals("yes") || value.equals("y") || value.equals("t")) {
+            return (true);
+        } else if (value.equals("false") || value.equals("0") || value.equals("no") || value.equals("n") || value.equals("f")) {
+            return (false);
+        } else {
+            PaintLogger.errorf("Invalid boolean value: %s", value);
+            return (false);
+        }
+    }
+
+    public static Boolean checkBooleanValue(String value) {
+        value = value.trim().toLowerCase();
+
+        Set<String> yesValues = new HashSet<>(Arrays.asList("y", "ye", "yes", "ok", "true", "t", "1"));
+        Set<String> noValues = new HashSet<>(Arrays.asList("n", "no", "false", "f", "0"));
+
+        return yesValues.contains(value) || noValues.contains(value);
+    }
+
+    public static Boolean getBooleanValue(String value) {
+        value = value.trim().toLowerCase();
+
+        Set<String> yesValues = new HashSet<>(Arrays.asList("y", "ye", "yes", "ok", "true", "t", "1"));
+        Set<String> noValues = new HashSet<>(Arrays.asList("n", "no", "false", "f", "0"));
+
+        if (yesValues.contains(value)) {
+            return true;
+        }
+        else if (noValues.contains(value)) {
+            return false;
+        }
+        else {
+            PaintLogger.errorf("Invalid boolean value: %s, default to 'false'", value);
+            return false;
+        }
+    }
+
+    public static Boolean isBooleanTrue(String value) {
+        value = value.trim().toLowerCase();
+
+        Set<String> yesValues = new HashSet<>(Arrays.asList("y", "ye", "yes", "ok", "true", "t", "1"));
+
+        return yesValues.contains(value);
+
     }
 
 }

@@ -59,8 +59,8 @@ public class CsvUtils {
                 }
 
                 for (CSVRecord record : parser) {
-                    String val = record.get(processFlagKey).trim().toLowerCase();
-                    if (val.equals("true") || val.equals("yes") || val.equals("y") || val.equals("1")) {
+                    String val = record.get(processFlagKey);
+                    if (Miscellaneous.isBooleanTrue(val)) {
                         count++;
                     }
                 }

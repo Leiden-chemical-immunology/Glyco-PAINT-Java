@@ -1,5 +1,6 @@
 package paint.shared.objects;
 
+import paint.shared.utils.Miscellaneous;
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.Table;
 
@@ -48,19 +49,19 @@ public class ExperimentInfo {
     public ExperimentInfo() {
     }
 
-    public ExperimentInfo(String experimentName,
-                          String recordingName,
-                          int conditionNumber,
-                          int replicateNumber,
-                          String probeName,
-                          String probeType,
-                          String cellType,
-                          String adjuvant,
-                          double concentration,
+    // @formatter:off
+    public ExperimentInfo(String  experimentName,
+                          String  recordingName,
+                          int     conditionNumber,
+                          int     replicateNumber,
+                          String  probeName,
+                          String  probeType,
+                          String  cellType,
+                          String  adjuvant,
+                          double  concentration,
                           boolean processFlag,
-                          double threshold) {
+                          double  threshold) {
 
-        // @formatter:off
         this.experimentName  = experimentName;
         this.recordingName   = recordingName;
         this.conditionNumber = conditionNumber;
@@ -93,7 +94,7 @@ public class ExperimentInfo {
             this.cellType        = row.get("Cell Type");
             this.adjuvant        = row.get("Adjuvant");
             this.concentration   = parseDouble(row.get("Concentration"));
-            this.processFlag     = parseBoolean(row.get("Process Flag"));
+            this.processFlag     = Miscellaneous.isBooleanTrue(row.get("Process Flag"));
             this.threshold       = parseDouble(row.get("Threshold"));
             // @formatter:on
         } catch (Exception e) {

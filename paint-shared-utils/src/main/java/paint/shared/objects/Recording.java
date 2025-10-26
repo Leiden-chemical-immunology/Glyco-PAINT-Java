@@ -318,10 +318,6 @@ public class Recording {
         this.tracks.add(track);
     }
 
-    private static Boolean checkBooleanValue(String string) {
-        Set<String> yesValues = new HashSet<>(Arrays.asList("y", "ye", "yes", "ok", "true", "t"));
-        return yesValues.contains(string.trim().toLowerCase());
-    }
 
     @Override
     public String toString() {

@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static paint.shared.utils.Miscellaneous.checkBooleanValue;
+
 /**
  * Abstract base class for validating CSV files used in Paint.
  * <p>
@@ -217,11 +219,7 @@ public abstract class AbstractFileValidator {
                     break;
                 case "BOOLEAN":
                     String v = value.trim().toLowerCase();
-                    if (!(v.equals("true") || v.equals("false")
-                            || v.equals("1") || v.equals("0")
-                            || v.equals("yes") || v.equals("no")
-                            || v.equals("y") || v.equals("n")
-                            || v.equals("t") || v.equals("f"))) {
+                    if (!checkBooleanValue(v)) {
                         throw new IllegalArgumentException("Invalid boolean: " + value);
                     }
                     break;
