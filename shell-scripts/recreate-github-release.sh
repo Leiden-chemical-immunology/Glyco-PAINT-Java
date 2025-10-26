@@ -2,7 +2,7 @@
 set -e
 
 ###############################################################################
-# 🔁 recreate-release.sh
+# recreate-github-release.sh
 #
 # PURPOSE:
 #   Recreate a deleted or corrupted GitHub release (and tag) cleanly.
@@ -13,14 +13,14 @@ set -e
 #   re-tags the latest commit, and pushes it to trigger a fresh release workflow.
 #
 # ACTIONS PERFORMED:
-#   1️⃣  Deletes the existing GitHub release and tag (local + remote)
-#   2️⃣  Rebuilds the project with Maven to ensure it compiles
-#   3️⃣  Creates a new annotated tag from the latest main commit
-#   4️⃣  Pushes the new tag to GitHub (triggering GitHub Actions)
-#   5️⃣  Optionally rebuilds and publishes the Maven site to GitHub Pages
+#   1 Deletes the existing GitHub release and tag (local + remote)
+#   2 Rebuilds the project with Maven to ensure it compiles
+#   3 Creates a new annotated tag from the latest main commit
+#   4 Pushes the new tag to GitHub (triggering GitHub Actions)
+#   5 Optionally rebuilds and publishes the Maven site to GitHub Pages
 #
 # USAGE:
-#   ./shell-scripts/recreate-release.sh v1.3.0
+#   ./shell-scripts/recreate-github-release.sh v1.3.0
 #
 # REQUIREMENTS:
 #   - GitHub CLI (`gh`) installed and authenticated

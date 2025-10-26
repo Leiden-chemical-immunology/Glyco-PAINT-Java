@@ -40,7 +40,7 @@ import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
  * concurrent execution of the main processing logic.
  */
 @Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run")
-public class TrackMateUI implements Command {
+public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
 
     private static volatile boolean running = false;
 

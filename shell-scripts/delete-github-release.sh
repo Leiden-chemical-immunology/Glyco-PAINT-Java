@@ -2,7 +2,7 @@
 set -e
 
 ###############################################################################
-# 🗑️ delete-release.sh
+# delete-github-release.sh
 #
 # PURPOSE:
 #   Completely delete a GitHub release and its associated Git tags
@@ -13,13 +13,13 @@ set -e
 #   and want to remove all traces before re-creating it.
 #
 # ACTIONS PERFORMED:
-#   1️⃣  Confirms with the user before destructive action
-#   2️⃣  Deletes the GitHub release via the GitHub CLI (`gh release delete`)
-#   3️⃣  Deletes the local Git tag
-#   4️⃣  Deletes the remote Git tag from origin
+#   1  Confirms with the user before destructive action
+#   2  Deletes the GitHub release via the GitHub CLI (`gh release delete`)
+#   3  Deletes the local Git tag
+#   4  Deletes the remote Git tag from origin
 #
 # USAGE:
-#   ./shell-scripts/delete-release.sh v1.3.0
+#   ./shell-scripts/delete-github-release.sh v1.3.0
 #
 # REQUIREMENTS:
 #   - Git installed and configured

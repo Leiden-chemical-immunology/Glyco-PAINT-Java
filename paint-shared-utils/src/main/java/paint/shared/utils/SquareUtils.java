@@ -70,7 +70,6 @@ public class SquareUtils {
             return;
         }
 
-        int total = squares.size();
         int visibleBasic = 0;
 
         // --- Pass 1: Filter by numeric criteria ---

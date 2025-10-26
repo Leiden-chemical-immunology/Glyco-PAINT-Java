@@ -2,19 +2,19 @@
 set -e
 
 ###############################################################################
-# 🚀 release.sh
+# 🚀 create-new-github-release.sh
 #
 # PURPOSE:
 #   Automate the Maven + Git release workflow for multi-module projects.
 #
 # USE CASE:
 #   You’re ready to publish a new version (e.g., v1.0.0) and want to:
-#     1️⃣ Verify the Maven build
-#     2️⃣ Update all pom.xml files to the release version
-#     3️⃣ Commit and tag the release in Git
-#     4️⃣ Push changes and tag to GitHub
-#     5️⃣ Bump all poms to the next "-SNAPSHOT" version
-#     6️⃣ Optionally trigger GitHub Actions for release and site updates
+#     1Verify the Maven build
+#    ️2 Update all pom.xml files to the release version
+#     3 Commit and tag the release in Git
+#     4 Push changes and tag to GitHub
+#     5 Bump all poms to the next "-SNAPSHOT" version
+#     6 Optionally trigger GitHub Actions for release and site updates
 #
 # FEATURES:
 #   - Supports a safe dry-run mode (default)
@@ -22,14 +22,14 @@ set -e
 #   - Compatible with GitHub Actions automation
 #
 # USAGE:
-#   💡 Preview (dry run):
-#     ./shell-scripts/release.sh
+#   Preview (dry run):
+#     ./shell-scripts/create-new-github-release.sh
 #
-#   ⚙️ Execute for real:
-#     ./shell-scripts/release.sh --execute
+#   Execute for real:
+#     ./shell-scripts/create-new-github-release.sh --execute
 #
-#   🏷️  Specify a custom version:
-#     ./shell-scripts/release.sh --execute 1.2.3
+#   Specify a custom version:
+#     ./shell-scripts/create-new-github-release.sh --execute 1.2.3
 #
 # RESULT:
 #   - Tag "v1.2.3" created and pushed

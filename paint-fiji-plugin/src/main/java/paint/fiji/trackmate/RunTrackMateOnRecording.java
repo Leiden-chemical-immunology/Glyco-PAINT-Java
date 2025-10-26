@@ -40,7 +40,7 @@ import static paint.shared.config.PaintConfig.getBoolean;
  * It also handles early cancellation of processing, cleanup of resources, and
  * debugging information if enabled.
  */
-public class RunTrackMateOnRecording {
+public class RunTrackMateOnRecording extends TrackMateHeadless {
 
     static final boolean debug = true;
 

@@ -36,7 +36,7 @@ import static paint.shared.utils.Miscellaneous.formatDuration;
  * - Run TrackMate on an experiment with the required configurations.
  * - Provide a watchdog to monitor and control the execution time or cancel the process if needed.
  */
-public class RunTrackMateOnExperiment {
+public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
 
     static final boolean verbose = PaintRuntime.isVerbose();
 

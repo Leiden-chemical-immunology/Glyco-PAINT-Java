@@ -2,7 +2,7 @@
 set -e
 
 ###############################################################################
-# 🌀 rollback-release.sh
+# 🌀 rollback-create-new-github-release.sh
 #
 # PURPOSE:
 #   Safely undo a GitHub release and its associated Git tag,
@@ -26,7 +26,7 @@ set -e
 #   - Run this script from within your local clone of the repo.
 #
 # EXAMPLE:
-#   ./shell-scripts/rollback-release.sh v1.0.0
+#   ./shell-scripts/rollback-create-new-github-release.sh v1.0.0
 #
 # RESULT:
 #   - GitHub release "v1.0.0" is deleted

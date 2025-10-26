@@ -20,7 +20,7 @@ import static paint.shared.validate.ValidationHandler.validateExperiments;
  * Provides functionality to run the TrackMate process on experiments within a project structure.
  * This class handles validation of input data, processing of experiments, and error reporting.
  */
-public class RunTrackMateOnProject {
+public class RunTrackMateOnProject extends RunTrackMateOnExperiment {
 
     /**
      * Executes the TrackMate processing workflow on the given experiments within a project directory.

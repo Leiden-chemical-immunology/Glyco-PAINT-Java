@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-###############################################################################
-# 🧱 copy-paint-jars.sh
+#=============================================================================
+# copy-paint-jars.sh
 #
 # PURPOSE:
 #   Collect all runnable “fat JARs” (*-jar-with-dependencies.jar)
@@ -14,9 +14,9 @@ set -e
 #   to gather runnable JARs in one place for launching or packaging.
 #
 # ACTIONS PERFORMED:
-#   1️⃣  Removes any old JARs in paint-launcher/jars/
-#   2️⃣  Scans selected Paint modules for fat JARs
-#   3️⃣  Copies each discovered JAR into the central JAR folder
+#   1 Removes any old JARs in paint-launcher/jars/
+#   2 Scans selected Paint modules for fat JARs
+#   3 Copies each discovered JAR into the central JAR folder
 #
 # USAGE:
 #   ./shell-scripts/copy-paint-jars.sh
@@ -29,7 +29,7 @@ set -e
 #   All runnable JARs end up in:
 #       paint-launcher/jars/
 #
-###############################################################################
+#=============================================================================
 
 # === INITIAL SETUP ===
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
