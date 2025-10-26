@@ -52,10 +52,9 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static generatesquares.calc.CalculateTau.calculateTau;
-import static java.lang.Double.NaN;
 import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
 import static paint.shared.constants.PaintConstants.RECORDING_DURATION;
-import static paint.shared.objects.Square.calcSquareArea;
+import static paint.shared.objects.Square.calculateSquareArea;
 import static paint.shared.utils.Miscellaneous.round;
 import static paint.shared.utils.SquareUtils.*;
 
@@ -80,7 +79,7 @@ public class CalculateAttributes {
         double       minRequiredDensityRatio    = generateSquaresConfig.getMinRequiredDensityRatio();
         String       neighbourMode              = generateSquaresConfig.getNeighbourMode();
         int          numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
-        double       area                       = calcSquareArea(numberOfSquaresInRecording);
+        double       area                       = calculateSquareArea(numberOfSquaresInRecording);
         double       concentration              = recording.getConcentration();
         List<Square> squaresOfRecording         = recording.getSquaresOfRecording();
         // @formatter:on
@@ -95,21 +94,22 @@ public class CalculateAttributes {
         for (Square square : squaresOfRecording) {
 
             // @formatter:off
-            List<Track> tracks       = square.getTracks();
+            List<Track> tracksInSquare       = square.getTracks();
             Table       table        = square.getTracksTable();
             int         squareNumber = square.getSquareNumber();
+            Table tracksInSquareTable = square.getTracksTable();
             // @formatter:on
 
-            if (tracks == null || tracks.isEmpty()) {
+            if (tracksInSquare == null || tracksInSquare.isEmpty()) {
                 continue;
             }
 
-            if (tracks != null && tracks.size() < minTracksForTau) {
-                CalculateTau.CalculateTauResult results = calculateTau(tracks, minTracksForTau, minRequiredRSquared);
+            if (tracksInSquare.size() >= minTracksForTau) {
+                CalculateTau.CalculateTauResult results = calculateTau(tracksInSquare, minTracksForTau, minRequiredRSquared);
 
                 if (paint.shared.config.PaintConfig.getBoolean("Generate Squares", "Plot Curve Fitting", false) &&
-                        tracks.size() >= minTracksForTau) {
-                    TauPlotCollector.saveFitPlot(tracks, results, experimentPath, recording.getRecordingName(), squareNumber);
+                        tracksInSquare.size() >= minTracksForTau) {
+                    TauPlotCollector.saveFitPlot(tracksInSquare, results, experimentPath, recording.getRecordingName(), squareNumber);
                 }
 
                 if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
@@ -131,14 +131,31 @@ public class CalculateAttributes {
             double variability = calcVariability(table, squareNumber, numberOfSquaresInRecording, 10);
             square.setVariability(round(variability, 3));
 
-            double density = calculateDensity(tracks.size(), area, RECORDING_DURATION, concentration);
+            double density = calculateDensity(tracksInSquare.size(), area, RECORDING_DURATION, concentration);
             square.setDensity(round(density, 4));
 
-            double densityRatio = calculateDensityRatio(tracks.size(), meanBackgroundTracks);
+            double densityRatio = calculateDensityRatio(tracksInSquare.size(), meanBackgroundTracks);
             square.setDensityRatio(round(densityRatio, 3));
 
-            double densityRatioOri = calculateDensityRatio(tracks.size(), backgroundTracksOri);
+            double densityRatioOri = calculateDensityRatio(tracksInSquare.size(), backgroundTracksOri);
             square.setDensityRatioOri(round(densityRatioOri, 3));
+
+            square.setMedianDiffusionCoefficient(tracksInSquareTable.doubleColumn("Diffusion Coefficient").median());
+            square.setMedianDiffusionCoefficientExt(tracksInSquareTable.doubleColumn("Diffusion Coefficient Ext").median());
+
+            square.setMedianDisplacement(tracksInSquareTable.doubleColumn("Track Displacement").mean());
+            square.setMaxDisplacement(tracksInSquareTable.doubleColumn("Track Displacement").max());
+            square.setTotalDisplacement(tracksInSquareTable.doubleColumn("Track Displacement").sum());
+
+            square.setMedianMaxSpeed(tracksInSquareTable.doubleColumn("Track Max Speed").median());
+            square.setMaxMaxSpeed(tracksInSquareTable.doubleColumn("Track Max Speed").max());
+
+            square.setMedianMedianSpeed(tracksInSquareTable.doubleColumn("Track Median Speed").median());
+            square.setMaxMedianSpeed(tracksInSquareTable.doubleColumn("Track Median Speed").max());
+
+            square.setMaxTrackDuration(tracksInSquareTable.doubleColumn("Track Duration").max());
+            square.setTotalTrackDuration(tracksInSquareTable.doubleColumn("Track Duration").sum());
+            square.setMedianTrackDuration(tracksInSquareTable.doubleColumn("Track Duration").median());
         }
 
         applyVisibilityFilter(recording,
@@ -197,7 +214,7 @@ public class CalculateAttributes {
 
         double density = calculateDensity(
                 tracksFromSelectedSquares.size(),
-                calcSquareArea(numberOfSelectedSquares),
+                calculateSquareArea(numberOfSelectedSquares),
                 RECORDING_DURATION,
                 recording.getConcentration()
         );
