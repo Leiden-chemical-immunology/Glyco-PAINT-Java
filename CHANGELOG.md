@@ -10,6 +10,10 @@
 
 - Describe new features, fixes, or changes here.
 
+## v0.0.1 - 2025-10-26
+
+- Describe new features, fixes, or changes here.
+
 # Changelog
 
 ## vv0.0.1 - 2025-10-26
