@@ -153,15 +153,17 @@ public class SquareUtils {
      *         for the background and the list of squares identified as background.
      */
     public static BackgroundEstimationResult calculateBackgroundDensity(List<Square> squares) {
-        if (squares == null || squares.isEmpty())
+        if (squares == null || squares.isEmpty()) {
             return new BackgroundEstimationResult(Double.NaN, Collections.emptyList());
+        }
 
         double mean = squares.stream()
                 .mapToDouble(Square::getNumberOfTracks)
                 .average().orElse(Double.NaN);
 
-        if (Double.isNaN(mean) || mean == 0)
+        if (Double.isNaN(mean) || mean == 0) {
             return new BackgroundEstimationResult(mean, Collections.emptyList());
+        }
 
         final double EPSILON = 0.01;
         final int MAX_ITER = 10;
@@ -186,8 +188,9 @@ public class SquareUtils {
                 }
             }
 
-            if (filtered.isEmpty())
+            if (filtered.isEmpty()) {
                 break;
+            }
 
             mean = filtered.stream()
                     .mapToDouble(Square::getNumberOfTracks)
@@ -230,7 +233,9 @@ public class SquareUtils {
     public static int getNumberOfSelectedSquares(Recording recording) {
         int count = 0;
         for (Square square : recording.getSquaresOfRecording()) {
-            if (square.isSelected()) count++;
+            if (square.isSelected()) {
+                count++;
+            }
         }
         return count;
     }
@@ -319,13 +324,18 @@ public class SquareUtils {
      * @return A new table containing only the tracks located within the specified square's boundaries.
      */
     public static Table filterTracksInSquare(Table tracks, Square square, int lastRowCol) {
-        double x0 = square.getX0(), y0 = square.getY0(), x1 = square.getX1(), y1 = square.getY1();
+        double x0 = square.getX0();
+        double y0 = square.getY0();
+        double x1 = square.getX1();
+        double y1 = square.getY1();
+
+        int trackCount = tracks.rowCount();
 
         boolean isLastCol = square.getColNumber() == lastRowCol;
         boolean isLastRow = square.getRowNumber() == lastRowCol;
 
         double left = Math.min(x0, x1), right = Math.max(x0, x1);
-        double top = Math.min(y0, y1), bottom = Math.max(y0, y1);
+        double top  = Math.min(y0, y1), bottom = Math.max(y0, y1);
 
         DoubleColumn x = tracks.doubleColumn("Track X Location");
         DoubleColumn y = tracks.doubleColumn("Track Y Location");
