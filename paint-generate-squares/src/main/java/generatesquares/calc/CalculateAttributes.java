@@ -143,7 +143,7 @@ public class CalculateAttributes {
             square.setMedianDiffusionCoefficient(tracksInSquareTable.doubleColumn("Diffusion Coefficient").median());
             square.setMedianDiffusionCoefficientExt(tracksInSquareTable.doubleColumn("Diffusion Coefficient Ext").median());
 
-            square.setMedianDisplacement(tracksInSquareTable.doubleColumn("Track Displacement").mean());
+            square.setMedianDisplacement(tracksInSquareTable.doubleColumn("Track Displacement").median());
             square.setMaxDisplacement(tracksInSquareTable.doubleColumn("Track Displacement").max());
             square.setTotalDisplacement(tracksInSquareTable.doubleColumn("Track Displacement").sum());
 
