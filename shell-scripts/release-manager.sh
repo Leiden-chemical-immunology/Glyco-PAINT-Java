@@ -1,9 +1,72 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-#=============================================================================
-# 🚀 release-manager.sh (triggers GitHub Actions + supports delete + recreate)
-#=============================================================================
+###############################################################################
+# release-manager.sh
+#
+# PURPOSE:
+#   Unified release management script for multi-module Maven + Git + GitHub projects.
+#   Handles version bumping, tagging, changelog updates, and GitHub release creation.
+#
+# USE CASE:
+#   Run this when you’re ready to publish a new release version or correct an existing one.
+#   It automates Maven version updates, Git commits, tagging, and triggers GitHub Actions
+#   for building, packaging, and publishing release artifacts and Maven sites.
+#
+# ACTIONS PERFORMED:
+#   1  Validates that your working tree is clean
+#   2  Updates Maven POM versions to the release version
+#   3  Commits and tags the release in Git
+#   4  Pushes the tag to GitHub (automatically triggers GitHub Actions)
+#   5  Optionally deletes or re-creates existing releases and tags
+#   6  Bumps project version to the next SNAPSHOT after release
+#
+# SUBCOMMANDS:
+#   create [VERSION]     Create a new release (triggers GitHub Actions build + site deploy)
+#   delete <TAG>         Delete a GitHub release and its tags (local + remote)
+#   recreate <TAG>       Delete and immediately re-create the specified release
+#
+# USAGE:
+#   ./shell-scripts/release-manager.sh create 1.2.0 --execute
+#   ./shell-scripts/release-manager.sh delete 1.2.0 --execute
+#   ./shell-scripts/release-manager.sh recreate 1.2.0 --execute
+#
+# OPTIONS:
+#   --execute, -x   Run for real (default is dry-run)
+#   --help, -h      Show help
+#
+# REQUIREMENTS:
+#   - Git installed and configured
+#   - Maven installed and on PATH
+#   - GitHub CLI (`gh`) installed and authenticated (for deleting GitHub releases)
+#   - GitHub Actions configured to build and publish on tag push (v*.*.*)
+#
+# SAFETY FEATURES:
+#   - Runs in DRY-RUN mode by default (no file or tag changes)
+#   - Confirms before performing destructive actions
+#   - Aborts automatically if uncommitted changes are detected
+#   - Never pushes or deletes tags without explicit confirmation
+#
+# RESULT:
+#   - New release tag pushed → triggers GitHub Actions to:
+#       • Build and attach release JARs
+#       • Publish a GitHub Release with notes
+#       • Rebuild and deploy the Maven site to GitHub Pages
+#   - Local POMs bumped to the next SNAPSHOT version
+#
+# WHERE TO CHECK RESULTS:
+#   🔹 GitHub Releases:
+#        https://github.com/jjabakker/JavaPaintProjects/releases
+#        → Verify that the new release appears with attached JARs and notes
+#
+#   🔹 GitHub Actions (CI/CD logs):
+#        https://github.com/jjabakker/JavaPaintProjects/actions
+#        → Confirm that the “Build, Release, and Publish Site” workflow ran successfully
+#
+#   🔹 GitHub Pages (Maven site):
+#        https://jjabakker.github.io/JavaPaintProjects/
+#        → Confirm that the site updated with the new project documentation
+###############################################################################
 
 export GIT_EDITOR=true
 export EDITOR=true
