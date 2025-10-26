@@ -49,7 +49,7 @@ public class HistogramPdfExporter {
                 }
 
                 // --- Compute background estimation ---
-                SquareUtils.BackgroundEstimationResult backgroundResult = SquareUtils.estimateBackgroundDensity(squares);
+                SquareUtils.BackgroundEstimationResult backgroundResult = SquareUtils.calculateBackgroundDensity(squares);
 
                 Set<Square> backgroundSet = new HashSet<>(backgroundResult.getBackgroundSquares());
                 double backgroundTracksPerSquare = backgroundResult.getBackgroundMean();

@@ -152,7 +152,7 @@ public class SquareUtils {
      * @return A BackgroundEstimationResult object containing the estimated mean track count
      *         for the background and the list of squares identified as background.
      */
-    public static BackgroundEstimationResult estimateBackgroundDensity(List<Square> squares) {
+    public static BackgroundEstimationResult calculateBackgroundDensity(List<Square> squares) {
         if (squares == null || squares.isEmpty())
             return new BackgroundEstimationResult(Double.NaN, Collections.emptyList());
 

@@ -74,9 +74,9 @@ public class CalculateTau {
      * @return a {@code CalculateTauResult} object containing the calculated tau, R-squared value, and the status of the calculation. Possible statuses include success, insufficient
      *  points, no fit, or R-squared too low.
      */
-    public static CalculateTauResult calcTau(List<Track> tracks,
-                                             int minTracksForTau,
-                                             double minRequiredRSquared) {
+    public static CalculateTauResult calculateTau(List<Track> tracks,
+                                                  int minTracksForTau,
+                                                  double minRequiredRSquared) {
 
         if (tracks == null || tracks.size() < minTracksForTau) {
             return new CalculateTauResult(NaN, NaN, CalculateTauResult.Status.TAU_INSUFFICIENT_POINTS);

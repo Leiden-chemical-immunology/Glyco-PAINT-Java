@@ -123,7 +123,15 @@ Every time the Glyco-PAINT Fiji plugin (or any other component of the pipeline) 
 
 #### Generate Squares
 
-If the 'Generate Squares' checkbox was ticked before the the calculation was started, squares will be generated for all the Recordings in the selected Experiments.   
+If the 'Generate Squares' checkbox was ticked before the the calculation was started, squares will be generated for all the Recordings in the selected Experiments. The user can chose several squares sizes, 20x20 has been found to be a good choices.
+
+The following steps are followed:
+
+1. Define the squares (with coordinates)
+2. Determine in which squares the  tracks of the recording are locate.   
+3. For each square, provided there are sufficient tracks, the Tau and R² are calculated.
+4. For ecah square, the density is calculated. 
+5. For each square some statistical information on the tracks is gathered
 
 The results are stored in Experiment-level 'Squares' files
 

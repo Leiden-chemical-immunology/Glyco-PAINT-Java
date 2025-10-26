@@ -136,7 +136,7 @@ public class GenerateSquaresProcessor {
 
             // Calculate square-level and recording-level attributes
             Path experimentPath = project.getProjectRootPath().resolve(experiment.getExperimentName());
-            CalculateAttributes.calculateSquareAttributes(experimentPath, experimentName, recording, generateSquaresConfig);
+            CalculateAttributes.calculateSquareAttributes(experimentPath, recording, generateSquaresConfig);
             CalculateAttributes.calculateRecordingAttributes(recording, generateSquaresConfig);
         }
 

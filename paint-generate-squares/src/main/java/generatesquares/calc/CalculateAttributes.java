@@ -19,7 +19,7 @@
  *    • Aggregate per-square metrics into recording-level summaries
  *
  *  USAGE EXAMPLE:
- *    CalculateAttributes.calculateSquareAttributes(experimentPath, experimentName, recording, config);
+ *    CalculateAttributes.calculateSquareAttributes(experimentPath, recording, config);
  *    CalculateAttributes.calculateRecordingAttributes(recording, config);
  *
  *  DEPENDENCIES:
@@ -51,7 +51,7 @@ import tech.tablesaw.api.Table;
 import java.nio.file.Path;
 import java.util.List;
 
-import static generatesquares.calc.CalculateTau.calcTau;
+import static generatesquares.calc.CalculateTau.calculateTau;
 import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
 import static paint.shared.constants.PaintConstants.RECORDING_DURATION;
 import static paint.shared.objects.Square.calcSquareArea;
@@ -64,13 +64,11 @@ public class CalculateAttributes {
      * Calculates attributes for each square in a recording, such as Tau, density, variability, and density ratio.
      * It also applies visibility filtering based on given parameters and assigns label numbers to selected squares.
      *
-     * @param experimentPath         the file path of the current experiment for saving generated files
-     * @param experimentName         the name of the experiment
-     * @param recording              the recording containing squares and associated track data
-     * @param generateSquaresConfig  the configuration parameters used for generating square attributes and analysis
+     * @param experimentPath        the file path of the current experiment for saving generated files
+     * @param recording             the recording containing squares and associated track data
+     * @param generateSquaresConfig the configuration parameters used for generating square attributes and analysis
      */
     public static void calculateSquareAttributes(Path experimentPath,
-                                                 String experimentName,
                                                  Recording recording,
                                                  GenerateSquaresConfig generateSquaresConfig) {
 
@@ -85,32 +83,31 @@ public class CalculateAttributes {
         double concentration              = recording.getConcentration();
         // @formatter:on
 
-        SquareUtils.BackgroundEstimationResult result = estimateBackgroundDensity(recording.getSquaresOfRecording());
+        SquareUtils.BackgroundEstimationResult result = calculateBackgroundDensity(recording.getSquaresOfRecording());
         double meanBackgroundTracks = result.getBackgroundMean();
-        double backgroundTracksOri = calcAverageTrackCountInBackgroundSquares(
-                recording.getSquaresOfRecording(), (int) (0.1 * numberOfSquaresInRecording)
-        );
+        double backgroundTracksOri = calcAverageTrackCountInBackgroundSquares(recording.getSquaresOfRecording(), (int) (0.1 * numberOfSquaresInRecording));
 
         PaintLogger.debugf("Estimated Background track count = %.2f, n = %d%n",
                            meanBackgroundTracks, result.getBackgroundSquares().size());
 
         for (Square square : recording.getSquaresOfRecording()) {
-            List<Track> tracks = square.getTracks();
-            Table table = square.getTracksTable();
-            int squareNumber = square.getSquareNumber();
 
-            if (tracks == null || tracks.isEmpty()) continue;
+            // @formatter:off
+            List<Track> tracks       = square.getTracks();
+            Table       table        = square.getTracksTable();
+            int         squareNumber = square.getSquareNumber();
+            // @formatter:on
 
-            CalculateTau.CalculateTauResult results =
-                    calcTau(tracks, minTracksForTau, minRequiredRSquared);
+            if (tracks == null || tracks.isEmpty()) {
+                continue;
+            }
+
+            CalculateTau.CalculateTauResult results = calculateTau(tracks, minTracksForTau, minRequiredRSquared);
 
             // Plot curve fitting if enabled
             if (paint.shared.config.PaintConfig.getBoolean("Generate Squares", "Plot Curve Fitting", false) &&
                     tracks.size() >= minTracksForTau) {
-                 TauPlotCollector.saveFitPlot(
-                        tracks, results, experimentPath,
-                        recording.getRecordingName(), squareNumber
-                );
+                TauPlotCollector.saveFitPlot(tracks, results, experimentPath, recording.getRecordingName(), squareNumber);
             }
 
             if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
@@ -121,7 +118,9 @@ public class CalculateAttributes {
                 square.setRSquared(Double.NaN);
             }
 
-            if (table.rowCount() == 0) continue;
+            if (table.rowCount() == 0) {
+                continue;
+            }
 
             double variability = calcVariability(table, squareNumber, numberOfSquaresInRecording, 10);
             square.setVariability(round(variability, 3));
@@ -129,10 +128,10 @@ public class CalculateAttributes {
             double density = calculateDensity(tracks.size(), area, RECORDING_DURATION, concentration);
             square.setDensity(round(density, 4));
 
-            double densityRatio = tracks.size() / meanBackgroundTracks;
+            double densityRatio = calculateDensityRatio(tracks.size(), meanBackgroundTracks);
             square.setDensityRatio(round(densityRatio, 3));
 
-            double densityRatioOri = tracks.size() / backgroundTracksOri;
+            double densityRatioOri = calculateDensityRatio(tracks.size(), backgroundTracksOri);
             square.setDensityRatioOri(round(densityRatioOri, 3));
         }
 
@@ -156,7 +155,7 @@ public class CalculateAttributes {
      * information about the recording and applies configuration settings to compute
      * necessary metrics.
      *
-     * @param recording the recording object containing square and track data to process
+     * @param recording             the recording object containing square and track data to process
      * @param generateSquaresConfig the configuration parameters for generating square attributes
      */
     public static void calculateRecordingAttributes(Recording recording,
@@ -165,7 +164,7 @@ public class CalculateAttributes {
         double minRequiredRSquared = generateSquaresConfig.getMinRequiredRSquared();
         int minTracksForTau = generateSquaresConfig.getMinTracksToCalculateTau();
 
-        SquareUtils.BackgroundEstimationResult result = SquareUtils.estimateBackgroundDensity(recording.getSquaresOfRecording());
+        SquareUtils.BackgroundEstimationResult result = SquareUtils.calculateBackgroundDensity(recording.getSquaresOfRecording());
         double meanBackgroundTracks = result.getBackgroundMean();
         int backgroundTracks = result.getBackgroundSquares().stream().mapToInt(Square::getNumberOfTracks).sum();
 
@@ -180,7 +179,7 @@ public class CalculateAttributes {
         int numberOfSelectedSquares = SquareUtils.getNumberOfSelectedSquares(recording);
 
         CalculateTau.CalculateTauResult results =
-                calcTau(tracksFromSelectedSquares, minTracksForTau, minRequiredRSquared);
+                calculateTau(tracksFromSelectedSquares, minTracksForTau, minRequiredRSquared);
 
         if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
             recording.setTau(round(results.getTau(), 0));
@@ -197,6 +196,16 @@ public class CalculateAttributes {
                 recording.getConcentration()
         );
         recording.setDensity(round(density, 2));
+    }
+
+    public static double calculateDensityRatio(int numberOfTracksInSquare, double numberOfTracksInBackgroundSquare)
+    {
+        if (numberOfTracksInBackgroundSquare == 0) {
+            return 0;
+        }
+        else {
+            return numberOfTracksInSquare / numberOfTracksInBackgroundSquare;
+        }
     }
 
     /**
