@@ -329,7 +329,7 @@ public class CalculateAttributes {
                                     int granularity) {
         // Calculate the top-left corner (x0, y0) of the square
         double x0 = (squareSeqNr % nrOfSquaresInRow) * width;
-        double y0 = (squareSeqNr / nrOfSquaresInRow) * height;
+        double y0 = ((double) squareSeqNr / nrOfSquaresInRow) * height;
 
         // Calculate the grid indices (xi, yi) for the track
         int xi = (int) (((x1 - x0) / width) * granularity);
