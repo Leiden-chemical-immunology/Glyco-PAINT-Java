@@ -2,7 +2,7 @@
 set -euo pipefail
 
 #=============================================================================
-# 🚀 release-manager.sh (triggers GitHub Actions + supports delete)
+# 🚀 release-manager.sh (triggers GitHub Actions + supports delete + recreate)
 #=============================================================================
 
 export GIT_EDITOR=true
@@ -75,10 +75,12 @@ usage() {
 Usage:
   $0 create [--execute] [VERSION]
   $0 delete [TAG] [--execute]
+  $0 recreate [TAG] [--execute]
 
 Subcommands:
   create     Create and tag a new release (triggers GitHub Actions)
   delete     Delete a Git tag and GitHub release
+  recreate   Delete and immediately re-create a release
 
 Options:
   --execute, -x   Run for real (not dry-run)
@@ -159,7 +161,7 @@ fi
   say "📝 Commit and tag release..."
   run git add "$CHANGELOG"
   commit_if_needed "Release v${release}"
-  run git tag -a "v${release}" -m "Release v${release}"
+  run git tag -a "v${release}" -m "Release v${release}" || warn "Tag already exists, skipping."
 
   say "🚀 Pushing release tag (triggers GitHub Actions)..."
   run git push origin "$MAIN_BRANCH"
@@ -184,9 +186,8 @@ cmd_delete() {
   local tag="${1:-}"
   if [ -z "$tag" ]; then die "Usage: $0 delete <tag> [--execute]"; fi
 
-  local tagname="v${tag#v}"  # ensure it has v-prefix
+  local tagname="v${tag#v}"  # normalize prefix
   say "🗑️  Deleting release '$tagname'..."
-
   confirm "Are you sure you want to delete $tagname?" || { say "Aborted."; return 0; }
 
   if command -v gh >/dev/null 2>&1; then
@@ -204,14 +205,26 @@ cmd_delete() {
   say "🧹 Deleting Git tag locally and remotely..."
   run git tag -d "$tagname" || warn "Local tag not found."
   run git push --delete origin "$tagname" || warn "Remote tag not found."
-
   say "✅ Delete complete."
+}
+
+# --- recreate ---
+cmd_recreate() {
+  local tag="${1:-}"
+  if [ -z "$tag" ]; then die "Usage: $0 recreate <tag> [--execute]"; fi
+
+  say "♻️  Recreating release $tag..."
+  cmd_delete "$tag"
+  echo ""
+  cmd_create "$tag"
+  say "✅ Recreated release v${tag#v}."
 }
 
 # --- dispatch ---
 case "$subcommand" in
   create)  cmd_create "${1:-}" ;;
   delete)  cmd_delete "${1:-}" ;;
+  recreate) cmd_recreate "${1:-}" ;;
   rollback) warn "Rollback not implemented yet."; ;;
   ""|-h|--help|help) usage ;;
   *) die "Unknown subcommand: $subcommand" ;;
