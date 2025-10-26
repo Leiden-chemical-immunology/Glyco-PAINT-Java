@@ -183,8 +183,6 @@ public final class PaintConstants {
             "R Squared",
             "Median Diffusion Coefficient",
             "Median Diffusion Coefficient Ext",
-            "Median Long Track Duration",
-            "Median Short Track Duration",
             "Median Displacement",
             "Max Displacement",
             "Total Displacement",
@@ -222,8 +220,6 @@ public final class PaintConstants {
             ColumnType.DOUBLE,   // R Squared
             ColumnType.DOUBLE,   // Median Diffusion Coefficient
             ColumnType.DOUBLE,   // Median Diffusion Coefficient Ext
-            ColumnType.DOUBLE,   // Median Long Track Duration
-            ColumnType.DOUBLE,   // Median Short Track Duration
             ColumnType.DOUBLE,   // Median Displacement
             ColumnType.DOUBLE,   // Max Displacement
             ColumnType.DOUBLE,   // Total Displacement

@@ -44,18 +44,16 @@ public class Square {
     private double  rSquared;                        // 21
     private double  medianDiffusionCoefficient;      // 22
     private double  medianDiffusionCoefficientExt;   // 23
-    private double  medianLongTrackDuration;         // 24
-    private double  medianShortTrackDuration;        // 25
-    private double  medianDisplacement;              // 26
-    private double  maxDisplacement;                 // 27
-    private double  totalDisplacement;               // 28
-    private double  medianMaxSpeed;                  // 29
-    private double  maxMaxSpeed;                     // 30
-    private double  medianMeanSpeed;                 // 31
-    private double  maxMeanSpeed;                    // 32
-    private double  maxTrackDuration;                // 33
-    private double  totalTrackDuration;              // 34
-    private double  medianTrackDuration;             // 35
+    private double  medianDisplacement;              // 24
+    private double  maxDisplacement;                 // 25
+    private double  totalDisplacement;               // 26
+    private double  medianMaxSpeed;                  // 27
+    private double  maxMaxSpeed;                     // 28
+    private double  medianMedianSpeed;               // 29
+    private double  maxMedianSpeed;                  // 30
+    private double  maxTrackDuration;                // 31
+    private double  totalTrackDuration;              // 32
+    private double  medianTrackDuration;             // 33
 
     private List<Track> tracks = new ArrayList<>();
     private Table tracksTable = null;
@@ -324,22 +322,6 @@ public class Square {
         this.medianDiffusionCoefficientExt = medianDiffusionCoefficientExt;
     }
 
-    public double getMedianLongTrackDuration() {
-        return medianLongTrackDuration;
-    }
-
-    public void setMedianLongTrackDuration(double medianLongTrackDuration) {
-        this.medianLongTrackDuration = medianLongTrackDuration;
-    }
-
-    public double getMedianShortTrackDuration() {
-        return medianShortTrackDuration;
-    }
-
-    public void setMedianShortTrackDuration(double medianShortTrackDuration) {
-        this.medianShortTrackDuration = medianShortTrackDuration;
-    }
-
     public double getTotalTrackDuration() {
         return totalTrackDuration;
     }
@@ -364,20 +346,20 @@ public class Square {
         this.maxTrackDuration = maxTrackDuration;
     }
 
-    public double getMedianMeanSpeed() {
-        return medianMeanSpeed;
+    public double getMedianMedianSpeed() {
+        return medianMedianSpeed;
     }
 
-    public void setMedianMeanSpeed(double medianMeanSpeed) {
-        this.medianMeanSpeed = medianMeanSpeed;
+    public void setMedianMedianSpeed(double medianMedianSpeed) {
+        this.medianMedianSpeed = medianMedianSpeed;
     }
 
-    public double getMaxMeanSpeed() {
-        return maxMeanSpeed;
+    public double getMaxMedianSpeed() {
+        return maxMedianSpeed;
     }
 
-    public void setMaxMeanSpeed(double maxMeanSpeed) {
-        this.maxMeanSpeed = maxMeanSpeed;
+    public void setMaxMedianSpeed(double maxMedianSpeed) {
+        this.maxMedianSpeed = maxMedianSpeed;
     }
 
     public double getMedianMaxSpeed() {
@@ -470,16 +452,14 @@ public class Square {
 
         sb.append(String.format("Median Diffusion Coefficient   : %.4f%n", medianDiffusionCoefficient));
         sb.append(String.format("Median Diffusion CoefficientExt: %.4f%n", medianDiffusionCoefficientExt));
-        sb.append(String.format("Median Long Track Duration     : %.4f%n", medianLongTrackDuration));
-        sb.append(String.format("Median Short Track Duration    : %.4f%n", medianShortTrackDuration));
         sb.append(String.format("Median Displacement            : %.4f%n", medianDisplacement));
         sb.append(String.format("Max Displacement               : %.4f%n", maxDisplacement));
         sb.append(String.format("Total Displacement             : %.4f%n", totalDisplacement));
 
         sb.append(String.format("Median Max Speed               : %.4f%n", medianMaxSpeed));
         sb.append(String.format("Max Max Speed                  : %.4f%n", maxMaxSpeed));
-        sb.append(String.format("Median Mean Speed              : %.4f%n", medianMeanSpeed));
-        sb.append(String.format("Max Mean Speed                 : %.4f%n", maxMeanSpeed));
+        sb.append(String.format("Median Mean Speed              : %.4f%n", medianMedianSpeed));
+        sb.append(String.format("Max Mean Speed                 : %.4f%n", maxMedianSpeed));
 
         sb.append(String.format("Max Track Duration             : %.4f%n", maxTrackDuration));
         sb.append(String.format("Total Track Duration           : %.4f%n", totalTrackDuration));
@@ -513,7 +493,7 @@ public class Square {
      * @param nrSquaresInRecording number of squares in the recording
      * @return the area of a single square
      */
-    public static double calcSquareArea(int nrSquaresInRecording) {
+    public static double calculateSquareArea(int nrSquaresInRecording) {
         return IMAGE_WIDTH * IMAGE_HEIGHT / nrSquaresInRecording;
     }
 
@@ -527,7 +507,7 @@ public class Square {
         System.out.println(squares);
 
         double areaOriginal = calcSquareAreaOriginal(20);
-        double areaNew = calcSquareArea(400);
+        double areaNew = calculateSquareArea(400);
         double difference = areaNew - areaOriginal;
         double percentualDifference = (areaNew - areaOriginal) / areaOriginal * 100;
         System.out.println("Area original: " + areaOriginal);
