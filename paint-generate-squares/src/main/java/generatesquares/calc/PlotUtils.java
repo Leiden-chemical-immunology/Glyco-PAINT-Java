@@ -1,14 +1,50 @@
+/******************************************************************************
+ *  Class:        PlotUtils.java
+ *  Package:      generatesquares.calc
+ *
+ *  PURPOSE:
+ *    Provides lightweight rendering utilities for generating Tau fitting plots
+ *    and related graphical visualizations.
+ *
+ *  DESCRIPTION:
+ *    This utility class renders 2D visual representations of Tau fits and their
+ *    corresponding frequency data. It supports rendering of data points, fitted
+ *    exponential decay curves, labeled axes, and annotations summarizing Tau
+ *    and R² statistics. The plots are rendered directly into a BufferedImage,
+ *    suitable for saving or embedding in reports and GUIs.
+ *
+ *  RESPONSIBILITIES:
+ *    • Draw frequency–duration scatter plots
+ *    • Render fitted exponential decay curves
+ *    • Display Tau and R² annotations
+ *    • Produce anti-aliased BufferedImage output for use in Paint analysis
+ *
+ *  USAGE EXAMPLE:
+ *    BufferedImage img = PlotUtils.renderTauPlot(x, y, result, false, 800, 600);
+ *    ImageIO.write(img, "png", outputFile);
+ *
+ *  DEPENDENCIES:
+ *    - java.awt.*
+ *    - java.awt.image.BufferedImage
+ *    - generatesquares.calc.CalculateTau
+ *
+ *  AUTHOR:
+ *    Hans Bakker (jjabakker)
+ *
+ *  UPDATED:
+ *    2025-10-23
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package generatesquares.calc;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
-/**
- * Utility class for generating plots related to Tau fitting and analysis.
- * This class is not meant to be instantiated and serves only as a helper
- * for rendering graphical representations of analysis results.
- */
+
 public class PlotUtils {
 
     private PlotUtils() {

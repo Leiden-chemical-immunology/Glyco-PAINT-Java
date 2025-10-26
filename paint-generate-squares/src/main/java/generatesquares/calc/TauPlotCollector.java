@@ -1,3 +1,44 @@
+/******************************************************************************
+ *  Class:        TauPlotCollector.java
+ *  Package:      generatesquares.calc
+ *
+ *  PURPOSE:
+ *    Collects, renders, and saves Tau fitting plots for individual squares
+ *    within recordings, organizing them into “Success” and “Failed” directories.
+ *
+ *  DESCRIPTION:
+ *    This class automates the creation and storage of visual Tau fit results.
+ *    It converts track duration data into frequency distributions, generates
+ *    plots using {@link PlotUtils}, and writes them as PNG files under the
+ *    experiment’s output path. Directory structures are initialized on demand,
+ *    ensuring a clean separation between successful and failed fits.
+ *
+ *  RESPONSIBILITIES:
+ *    • Generate per-square Tau fit plots from track data
+ *    • Save images to “Success” or “Failed” folders within Output
+ *    • Ensure directory creation and error handling for file operations
+ *    • Operate without GUI dependencies (headless image rendering)
+ *
+ *  USAGE EXAMPLE:
+ *    TauPlotCollector.saveFitPlot(tracks, tauResult, experimentPath, recordingName, squareIndex);
+ *
+ *  DEPENDENCIES:
+ *    - generatesquares.calc.{CalculateTau, PlotUtils}
+ *    - paint.shared.objects.Track
+ *    - javax.imageio.ImageIO
+ *    - java.awt.image.BufferedImage
+ *    - java.nio.file.Path
+ *
+ *  AUTHOR:
+ *    Hans Bakker (jjabakker)
+ *
+ *  UPDATED:
+ *    2025-10-23
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package generatesquares.calc;
 
 import paint.shared.objects.Track;
@@ -11,13 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-/**
- * The TauPlotCollector class is responsible for generating and saving Tau fitting plot images
- * to designated directories based on the result of Tau fitting operations. It organizes the
- * plots into subdirectories labeled "Success" or "Failed" according to the fitting outcome.
- * This class ensures proper directory structure and handles rendering and file output without
- * requiring a graphical user interface (GUI).
- */
 public class TauPlotCollector {
 
 

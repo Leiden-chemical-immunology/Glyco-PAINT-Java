@@ -1,3 +1,44 @@
+/******************************************************************************
+ *  Class:        CalculateAttributes.java
+ *  Package:      generatesquares.calc
+ *
+ *  PURPOSE:
+ *    Performs quantitative analysis and metric calculations for squares and
+ *    recordings in the Paint experiment workflow.
+ *
+ *  DESCRIPTION:
+ *    This class provides static computational methods used by the “Generate Squares”
+ *    process. It computes detailed per-square and per-recording attributes such as:
+ *    Tau fitting, variability, density ratios, and background estimation.
+ *    It also applies visibility filtering and labeling logic to identify valid squares.
+ *
+ *  RESPONSIBILITIES:
+ *    • Calculate Tau and R² values from track data
+ *    • Compute variability, density, and density ratio metrics
+ *    • Estimate background density and apply visibility filters
+ *    • Aggregate per-square metrics into recording-level summaries
+ *
+ *  USAGE EXAMPLE:
+ *    CalculateAttributes.calculateSquareAttributes(experimentPath, experimentName, recording, config);
+ *    CalculateAttributes.calculateRecordingAttributes(recording, config);
+ *
+ *  DEPENDENCIES:
+ *    - paint.shared.config.GenerateSquaresConfig
+ *    - paint.shared.objects.{Square, Recording, Track}
+ *    - paint.shared.utils.{SquareUtils, PaintLogger}
+ *    - generatesquares.calc.CalculateTau
+ *    - tech.tablesaw.api.Table
+ *
+ *  AUTHOR:
+ *    Hans Bakker (jjabakker)
+ *
+ *  UPDATED:
+ *    2025-10-23
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package generatesquares.calc;
 
 import paint.shared.config.GenerateSquaresConfig;
@@ -17,11 +58,6 @@ import static paint.shared.objects.Square.calcSquareArea;
 import static paint.shared.utils.Miscellaneous.round;
 import static paint.shared.utils.SquareUtils.*;
 
-/**
- * The CalculateAttributes class provides methods for calculating detailed metrics for individual squares
- * and aggregate metrics for an entire recording. These metrics include values such as Tau, variability,
- * density ratios, background estimation, and density calculations.
- */
 public class CalculateAttributes {
 
     /**

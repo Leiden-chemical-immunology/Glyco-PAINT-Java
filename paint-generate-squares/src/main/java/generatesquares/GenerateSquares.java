@@ -1,25 +1,44 @@
-/**
- * ============================================================================
- *  GenerateSquares.java
- *  Part of the "Generate Squares" module.
- * <p>
- *  Purpose:
- *    Acts as the main entry point for the Generate Squares workflow.
- *    Provides a GUI-driven process to:
- *      - Select a project directory
- *      - Configure analysis parameters
- *      - Run square-based calculations on TrackMate output
- *      - Export histogram summaries and consolidated CSVs
- * <p>
- *  Notes:
- *    This class contains only orchestration logic and user interface flow.
- *    All computational work is delegated to GenerateSquaresRunner.
- * <p>
- *  Author: Hans Bakker
- *  Version: 1.0
- *  Module: paint-generate-squares
- * ============================================================================
- */
+/******************************************************************************
+ *  Class:        GenerateSquares.java
+ *  Package:      generatesquares
+ *
+ *  PURPOSE:
+ *    Acts as the main entry point for the “Generate Squares” module,
+ *    providing a GUI-driven workflow to configure and execute square-based
+ *    analyses on TrackMate output data.
+ *
+ *  DESCRIPTION:
+ *    This class handles orchestration and user interaction. It initializes
+ *    project configurations, sets up logging and runtime parameters, and
+ *    launches a Swing-based interface allowing users to:
+ *      • Select a project directory
+ *      • Configure analysis parameters
+ *      • Run square-level calculations and data exports
+ *    Computational work is delegated to {@link generatesquares.GenerateSquaresHeadless}.
+ *
+ *  RESPONSIBILITIES:
+ *    • Initialize PaintConfig, logging, and runtime environment
+ *    • Provide GUI interaction for project and experiment selection
+ *    • Launch headless processing via GenerateSquaresHeadless
+ *
+ *  USAGE EXAMPLE:
+ *    $ java -jar paint-generate-squares.jar
+ *
+ *  DEPENDENCIES:
+ *    - paint.shared.config.PaintConfig
+ *    - paint.shared.dialogs.ProjectDialog
+ *    - paint.shared.utils.{PaintLogger, PaintConsoleWindow, PaintRuntime, JarInfoLogger}
+ *    - javax.swing.*
+ *
+ *  AUTHOR:
+ *    Hans Bakker (jjabakker)
+ *
+ *  UPDATED:
+ *    2025-10-23
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
 
 package generatesquares;
 

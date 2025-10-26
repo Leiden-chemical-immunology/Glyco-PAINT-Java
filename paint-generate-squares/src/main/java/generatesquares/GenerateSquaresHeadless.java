@@ -1,3 +1,44 @@
+/******************************************************************************
+ *  Class:        GenerateSquaresHeadless.java
+ *  Package:      generatesquares
+ *
+ *  PURPOSE:
+ *    Provides a headless (non-GUI) execution mode for the “Generate Squares”
+ *    pipeline. Performs experiment validation, per-experiment computation,
+ *    histogram export, and project-level CSV consolidation.
+ *
+ *  DESCRIPTION:
+ *    This class is responsible for orchestrating the core “Generate Squares”
+ *    logic without any user interface. It loads configuration parameters,
+ *    validates experiments, delegates computation to
+ *    {@link generatesquares.calc.GenerateSquaresProcessor}, and exports results.
+ *
+ *  RESPONSIBILITIES:
+ *    • Validate experiment input files before computation
+ *    • Execute square-based calculations for each experiment
+ *    • Export per-experiment histogram PDFs
+ *    • Concatenate experiment-level CSVs into project summaries
+ *
+ *  USAGE EXAMPLE:
+ *    GenerateSquaresHeadless.run(projectPath, Arrays.asList("Exp01", "Exp02"));
+ *
+ *  DEPENDENCIES:
+ *    - paint.shared.config.{PaintConfig, GenerateSquaresConfig}
+ *    - paint.shared.objects.{Project, Experiment}
+ *    - paint.shared.utils.{PaintLogger, HistogramPdfExporter}
+ *    - paint.shared.validate.ValidationHandler
+ *    - generatesquares.calc.GenerateSquaresProcessor
+ *
+ *  AUTHOR:
+ *    Hans Bakker (jjabakker)
+ *
+ *  UPDATED:
+ *    2025-10-23
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package generatesquares;
 
 import paint.shared.config.PaintConfig;
@@ -16,7 +57,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import static generatesquares.calc.GenerateSquareCalcs.generateSquaresForExperiment;
+import static generatesquares.calc.GenerateSquaresProcessor.generateSquaresForExperiment;
 import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.io.ExperimentDataLoader.loadExperiment;
 import static paint.shared.utils.CsvUtils.concatenateNamedCsvFiles;
@@ -144,8 +185,6 @@ public class GenerateSquaresHeadless {
         double minDensity = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
         double maxVar     = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
 
-        // Neatly wrapped experiment list
-        // Neatly wrapped experiment list
         // Neatly wrapped experiment list
         String formattedExperiments;
         if (experimentNames.isEmpty()) {

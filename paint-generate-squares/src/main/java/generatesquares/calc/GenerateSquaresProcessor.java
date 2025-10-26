@@ -1,3 +1,44 @@
+/******************************************************************************
+ *  Class:        GenerateSquaresProcessor.java
+ *  Package:      generatesquares.calc
+ *
+ *  PURPOSE:
+ *    Orchestrates the full square-generation and analysis pipeline for an experiment.
+ *    Handles square grid creation, track assignment, attribute calculation, and
+ *    persistence of results.
+ *
+ *  DESCRIPTION:
+ *    This class drives the "Generate Squares" workflow for the Paint project.
+ *    It segments recordings into grid squares, assigns tracks to each square,
+ *    calculates both per-square and per-recording attributes (via CalculateAttributes),
+ *    and compiles the final results into experiment-level tables written to disk.
+ *
+ *  RESPONSIBILITIES:
+ *    • Generate geometric square grids for each recording
+ *    • Assign tracks to their corresponding square regions
+ *    • Trigger square and recording-level attribute calculations
+ *    • Compile and persist all squares, tracks, and recording results
+ *
+ *  USAGE EXAMPLE:
+ *    GenerateSquaresProcessor.generateSquaresForExperiment(project, "MyExperiment");
+ *
+ *  DEPENDENCIES:
+ *    - paint.shared.config.GenerateSquaresConfig
+ *    - paint.shared.objects.{Project, Experiment, Recording, Square, Track}
+ *    - paint.shared.io.{SquareTableIO, TrackTableIO}
+ *    - generatesquares.calc.CalculateAttributes
+ *    - tech.tablesaw.api.Table
+ *
+ *  AUTHOR:
+ *    Hans Bakker (jjabakker)
+ *
+ *  UPDATED:
+ *    2025-10-23
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package generatesquares.calc;
 
 import paint.shared.config.GenerateSquaresConfig;
@@ -21,13 +62,8 @@ import static paint.shared.io.ExperimentDataLoader.loadExperiment;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.utils.SquareUtils.filterTracksInSquare;
 
-/**
- * The GenerateSquareCalcs class provides methods to generate and process square regions and assign tracks.
- * This class is primarily used for dividing a recording's spatial data into square segments,
- * calculating attributes, and assigning tracks to those square regions.
- */
 
-public class GenerateSquareCalcs {
+public class GenerateSquaresProcessor {
 
     // @formatter:off
     private static int     numberOfSquaresInRecording; // Total number of squares per recording.
