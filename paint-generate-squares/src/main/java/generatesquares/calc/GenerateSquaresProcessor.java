@@ -66,7 +66,8 @@ import static paint.shared.utils.SquareUtils.filterTracksInSquare;
 public class GenerateSquaresProcessor {
 
     // @formatter:off
-    private static int     numberOfSquaresInRecording; // Total number of squares per recording.
+    private static int     numberOfSquaresInRecording;     // Total number of squares per recording.
+    private static int     numberOfSquaresInOneDimension;  // Total number of squares per on one dimnension.
     private static Path    projectPath;
     private static boolean plotFittingCurves;
     // @formatter:on
@@ -144,7 +145,7 @@ public class GenerateSquaresProcessor {
         PaintLogger.infof("Finished processing experiment '%s' in %s", experimentName, formatDuration(duration));
         PaintLogger.blankline();
 
-        // 5️⃣ CHECK before writing output files
+        // CHECK before writing output files
         if (Thread.currentThread().isInterrupted()) {
             PaintLogger.infof("Cancelled before writing output for %s", experimentName);
             return false;
@@ -177,8 +178,7 @@ public class GenerateSquaresProcessor {
     public static List<Square> generateSquaresForRecording(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
 
         numberOfSquaresInRecording    = generateSquaresConfig.getNumberOfSquaresInRecording();
-        // Number of squares in one dimension (e.g. 20 for 20x20).
-        int numberOfSquaresInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);
+        numberOfSquaresInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);   // Number of squares in one dimension (e.g. 20 for 20x20).
 
         // @formatter:off
         List<Square> squares = new ArrayList<>();
@@ -229,8 +229,8 @@ public class GenerateSquaresProcessor {
         Table recordingTrackTable = trackTableIO.emptyTable();
         // @formatter:on
 
-        int lastRowCol = numberOfSquaresInRecording - 1;
-        int labelNumber = 0;
+        int lastRowCol            = numberOfSquaresInOneDimension - 1;
+        int labelNumber           = 0;
         int incrementalTrackCount = 0;
 
         PaintLogger.debugf("Assigning tracks to squares (%d total tracks)", tracksOfRecording.rowCount());
