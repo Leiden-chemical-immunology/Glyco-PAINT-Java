@@ -89,6 +89,7 @@ public class GenerateSquaresProcessor {
         projectPath                                 = project.getProjectRootPath();
         plotFittingCurves                           = getBoolean("Generate Squares", "Plot Curve Fitting", false);
         Experiment experiment                       = null;
+        List<Recording> recordings                  = null;
         // @formatter:on
 
         LocalDateTime start = LocalDateTime.now();
@@ -112,7 +113,8 @@ public class GenerateSquaresProcessor {
 
         PaintLogger.infof("Starting processing experiment '%s'", experimentName);
 
-        for (Recording recording : experiment.getRecordings()) {
+        recordings = experiment.getRecordings();
+        for (Recording recording : recordings) {
 
             // CHECK before starting each recording
             if (Thread.currentThread().isInterrupted()) {
