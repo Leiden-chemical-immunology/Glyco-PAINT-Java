@@ -75,8 +75,6 @@ public class SquaresCsvComparatorUnified {
         FIELD_MAP.put("R Squared", "R Squared");
         FIELD_MAP.put("Median Diffusion Coefficient", "Median Diffusion Coefficient");
         FIELD_MAP.put("Median Diffusion Coefficient Ext", "Median Diffusion Coefficient Ext");
-        FIELD_MAP.put("Median Long Track Duration", "Median Long Track Duration");
-        FIELD_MAP.put("Median Short Track Duration", "Median Short Track Duration");
         FIELD_MAP.put("Median Displacement", "Median Displacement");
         FIELD_MAP.put("Max Displacement", "Max Displacement");
         FIELD_MAP.put("Total Displacement", "Total Displacement");
@@ -110,9 +108,7 @@ public class SquaresCsvComparatorUnified {
             "Total Displacement",
             "Max Displacement",
             "Median Diffusion Coefficient",
-            "Median Diffusion Coefficient Ext",
-            "Median Long Track Duration",
-            "Median Short Track Duration"
+            "Median Diffusion Coefficient Ext"
     );
 
     /** Quick lookup set version of numeric fields. */
