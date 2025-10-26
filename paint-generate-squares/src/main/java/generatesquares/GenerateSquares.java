@@ -53,7 +53,6 @@ import javax.swing.*;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
