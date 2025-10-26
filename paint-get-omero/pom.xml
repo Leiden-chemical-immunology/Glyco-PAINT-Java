@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>0.0.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -19,7 +19,7 @@
     <description>Standalone desktop app for loading Omero data</description>
 
     <properties>
-        <project.build.outputTimestamp>2025-10-26T10:48:30Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-10-26T11:00:00Z</project.build.outputTimestamp>
         <app.name>Get Omero</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-get-omero.icns</app.icon.macos>
