@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.3-SNAPSHOT</version>
+        <version>0.0.2</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -19,7 +19,7 @@
     <description>Standalone desktop application for viewing experiment recordings</description>
 
     <properties>
-        <project.build.outputTimestamp>2025-10-27T19:33:59Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-10-27T19:58:58Z</project.build.outputTimestamp>
         <app.name>Paint Viewer</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-viewer.icns</app.icon.macos>
@@ -31,7 +31,7 @@
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
-            <version>0.0.3-SNAPSHOT</version>
+            <version>0.0.2</version>
         </dependency>
 
         <dependency>

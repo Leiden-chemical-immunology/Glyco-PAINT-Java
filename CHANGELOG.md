@@ -2,6 +2,10 @@
 
 - Describe new features, fixes, or changes here.
 
+## v0.0.2 - 2025-10-27
+
+- Describe new features, fixes, or changes here.
+
 ## v0.0.1 - 2025-10-27
 
 - Describe new features, fixes, or changes here.
