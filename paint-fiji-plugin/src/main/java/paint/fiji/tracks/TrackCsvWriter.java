@@ -8,11 +8,13 @@ import paint.shared.io.TrackTableIO;
 import paint.shared.objects.Track;
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.IntColumn;
+import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -47,50 +49,49 @@ public class TrackCsvWriter {
                                      final File csvFile,
                                      final boolean visibleOnly) throws IOException {
 
-        final Model model = trackmate.getModel();
-        final TrackModel trackModel = model.getTrackModel();
+        final Model model               = trackmate.getModel();
+        final TrackModel trackModel     = model.getTrackModel();
         final FeatureModel featureModel = model.getFeatureModel();
 
-        final Set<Integer> trackIDs = trackModel.trackIDs(visibleOnly);
+        // Collect and sort track IDs for deterministic order
+        final Set<Integer> trackIDsSet = trackModel.trackIDs(visibleOnly);
+        final List<Integer> trackIDs = new ArrayList<>(trackIDsSet);
+        Collections.sort(trackIDs);
+
         final List<Track> tracks = new ArrayList<>();
         int totalSpots = 0;
+        int newTrackId = 0;
 
         for (Integer trackId : trackIDs) {
-
             TrackAttributes trackAttributes = calculateTrackAttributes(trackModel, trackId, TIME_INTERVAL);
 
             Track track = new Track();
-            track.setUniqueKey(recordingName + "-" + trackId);
             track.setExperimentName(experimentName);
             track.setRecordingName(recordingName);
-            track.setTrackId(trackId);
 
-            // @formatter:off
-            track.setNumberOfSpots(     asInt( featureModel.getTrackFeature(trackId,  "NUMBER_SPOTS")));
-            track.setNumberOfGaps(      asInt( featureModel.getTrackFeature(trackId,  "NUMBER_GAPS")));
-            track.setLongestGap(        asInt( featureModel.getTrackFeature(trackId,  "LONGEST_GAP")));
-            track.setTrackDuration(     roundOr(featureModel.getTrackFeature(trackId, "TRACK_DURATION"),     3, -1));
-            track.setTrackXLocation(    roundOr(featureModel.getTrackFeature(trackId, "TRACK_X_LOCATION"),   2, -1));
-            track.setTrackYLocation(    roundOr(featureModel.getTrackFeature(trackId, "TRACK_Y_LOCATION"),   2, -1));
-            track.setTrackDisplacement( roundOr(featureModel.getTrackFeature(trackId, "TRACK_DISPLACEMENT"), 2, -1));
-            track.setTrackMaxSpeed(     roundOr(featureModel.getTrackFeature(trackId, "TRACK_MAX_SPEED"),    2, -1));
-            track.setTrackMedianSpeed(  roundOr(featureModel.getTrackFeature(trackId, "TRACK_MEDIAN_SPEED"), 2, -1));
+            track.setNumberOfSpots(     asInt(    featureModel.getTrackFeature(trackId, "NUMBER_SPOTS")));
+            track.setNumberOfGaps(      asInt(    featureModel.getTrackFeature(trackId, "NUMBER_GAPS")));
+            track.setLongestGap(        asInt(    featureModel.getTrackFeature(trackId, "LONGEST_GAP")));
+            track.setTrackDuration(     roundOr(  featureModel.getTrackFeature(trackId, "TRACK_DURATION"),     3, -1));
+            track.setTrackXLocation(    roundOr(  featureModel.getTrackFeature(trackId, "TRACK_X_LOCATION"),   2, -1));
+            track.setTrackYLocation(    roundOr(  featureModel.getTrackFeature(trackId, "TRACK_Y_LOCATION"),   2, -1));
+            track.setTrackDisplacement( roundOr(  featureModel.getTrackFeature(trackId, "TRACK_DISPLACEMENT"), 2, -1));
+            track.setTrackMaxSpeed(     roundOr(  featureModel.getTrackFeature(trackId, "TRACK_MAX_SPEED"),    2, -1));
+            track.setTrackMedianSpeed(  roundOr(  featureModel.getTrackFeature(trackId, "TRACK_MEDIAN_SPEED"), 2, -1));
 
-            // custom calculated attributes
+            // custom computed attributes
             track.setDiffusionCoefficient(    roundOr(trackAttributes.diffusionCoeff,    2, -1));
             track.setDiffusionCoefficientExt( roundOr(trackAttributes.diffusionCoeffExt, 2, -1));
             track.setTotalDistance(           roundOr(trackAttributes.totalDistance,     2, -1));
             track.setConfinementRatio(        roundOr(trackAttributes.confinementRatio,  2, -1));
             track.setSquareNumber(-1);
             track.setLabelNumber(-1);
-            // @formatter:on
 
             totalSpots += trackAttributes.numberOfSpotsInTracks;
             tracks.add(track);
         }
 
         try {
-            // TrackTableIO trackTableIO = new TrackTableIO();
             TrackTableIO trackTableIO = new paint.shared.io.TrackTableIO();
             Table tracksTable = trackTableIO.toTable(tracks);
             tracksTable = tracksTable.sortOn("Recording Name",
@@ -109,16 +110,20 @@ public class TrackCsvWriter {
                                              "Confinement Ratio");
 
 
-            IntColumn newIds = IntColumn.create("Track Id");
+            IntColumn    newIds       = IntColumn.create(    "Track Id");
+            StringColumn newUniqueKey = StringColumn.create( "Unique Key");
+
             for (int i = 0; i < tracksTable.rowCount(); i++) {
                 newIds.append(i);
+                newUniqueKey.append(recordingName + "-" + i);
             }
             tracksTable.replaceColumn("Track Id", newIds);
+            tracksTable.replaceColumn("Unique Key", newUniqueKey);
 
             trackTableIO.writeCsv(tracksTable, csvFile.toPath());
         }
         catch (Exception e) {
-            PaintLogger.errorf("Whoopsie");
+            PaintLogger.errorf("Failed writing track CSV: %s", e.getMessage());
             e.printStackTrace();
         }
 
