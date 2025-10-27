@@ -173,11 +173,51 @@ Tau is a measure used to characterise the distribution of track durations. To ca
 
 The Tau calculation is only performed if a minimum number of tracks is present (because with insuffcient tracks the calculation is unlikely to be meaningful).  The quality of curve fitting is expressed in an R² parameter. An R² value of 1 indicates a perfect fit, while values lower than 0.5 indicate a low-quality fit. The user-specified ‘Min allowable R-squared’ parameter sets a limit to the acceptable quality of fit.
 
-To calculate one Tau for the entire recording, all tracks within squares that meet the specified selection criteria are considered. These criteria include the minimum required density ratio, maximum allowable variability, minimum and maximum track durations, and neighbour state. 
+To calculate a Tau value for the entire recording, all tracks within squares that meet the specified selection criteria are considered. These criteria include the minimum required density ratio, maximum allowable variability and neighbour state. 
 
 Visual feedback on the fitting process is provided when the "Plot Curve Fitting" flag  (in the "Generate Squares" section) is set to true. In the 'Tau Fitting Plots' directory under the Experiment directories,  plots are gathered in 'Failed' and 'Success' sub directories. 
 
+The code can be found at: [Calculate Tau code](https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java/blob/main/paint-generate-squares/src/main/java/paint/generatesquares/calc/CalculateTau.java).
 
 
 
-Out directory
+#### Calculation of Variability
+
+The variability of a square calculation begins with overlaying a finer grid over the existing grid and determining the number of tracks in each grid element. The variability is then calculated as the quotient of the standard deviation and the mean of the grid track numbers. The figure below illustrates the variability for four fictional squares.
+
+![variability](/Users/hans/JavaPaintProjects/doc/Pictures/variability.png)
+
+The code can be found at: [Calculate Variability code](https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java/blob/main/paint-generate-squares/src/main/java/paint/generatesquares/calc/CalculateSquareAttributes.java).
+
+
+
+#### Calculation of Diffusion Coefficient (Ext)
+
+The 'Diffusion Coefficient' is calculated for each track in the recording that contains three or more spots, using the following formula. Here, **n** represents the dimensionality (in this case 2), and **t** is the time interval over which displacement is measured (0.05 s).
+
+$$
+MSD = \frac{1}{nr\ spots} \sum_{i=1}^{nr\ spots} \left( (x_i - x_0)^2 + (y_i - y_0)^2 \right)
+$$
+
+$$
+\text{Diffusion Coefficient} = \frac{MSD}{2nt}
+$$
+
+The 'Diffusion Coefficient Ext' is a variation on the 'Diffusion Coefficient'. Here, the x and y coordinates of spot (i) are not compared to the first spot (0), but to the previous spot (i-1).
+
+$$
+MSD = \frac{1}{nr\ spots} \sum_{i = 1}^{nr\ spots} \left( (x_i - x_{i-1})^2 + (y_i - y_{i-1})^2 \right)
+$$
+
+$$
+\text{Diffusion Coefficient Ext} = \frac{MSD}{2nt}
+$$
+
+The 'Median Diffusion Coefficient' and 'Median Diffusion Coefficient Ext' are square attributes and describes the median of the 'Diffusion Coefficient (Ext)' values of all tracks in the square.
+
+The code can be found at: [Calculate Diffusion Coefficient code](https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java/blob/main/paint-generate-squares/src/main/java/paint/generatesquares/calc/CalculateSquareAttributes.java).
+
+
+
+#### Calculation of background density
+
