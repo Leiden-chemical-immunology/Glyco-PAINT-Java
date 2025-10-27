@@ -45,7 +45,7 @@ import paint.shared.config.PaintConfig;
 import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Project;
-import paint.shared.utils.HistogramPdfExporter;
+import paint.generatesquares.calc.HistogramPdfExporter;
 import paint.shared.utils.PaintLogger;
 import paint.shared.validate.ValidationResult;
 

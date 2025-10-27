@@ -44,7 +44,6 @@ package paint.generatesquares.calc;
 import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.objects.*;
 import paint.shared.utils.PaintLogger;
-import paint.shared.utils.SquareUtils;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.Table;
 
@@ -56,9 +55,10 @@ import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
 import static paint.shared.constants.PaintConstants.RECORDING_DURATION;
 import static paint.shared.objects.Square.calculateSquareArea;
 import static paint.shared.utils.Miscellaneous.round;
-import static paint.shared.utils.SquareUtils.*;
+import static paint.generatesquares.calc.SquareUtils.*;
+import static paint.shared.utils.SharedSquareUtils.applyVisibilityFilter;
 
-public class CalculateAttributes {
+public class CalculateSquareAttributes {
 
     /**
      * Calculates attributes for each square in a recording, such as Tau, density, variability, and density ratio.

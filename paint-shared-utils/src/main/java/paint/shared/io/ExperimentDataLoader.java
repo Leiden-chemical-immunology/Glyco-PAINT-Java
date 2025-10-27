@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static paint.shared.constants.PaintConstants.*;
-import static paint.shared.utils.SquareUtils.filterTracksInSquare;
+import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
 
 public final class ExperimentDataLoader {
 

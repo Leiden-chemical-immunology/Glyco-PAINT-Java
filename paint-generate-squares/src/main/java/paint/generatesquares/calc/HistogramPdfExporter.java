@@ -1,4 +1,4 @@
-package paint.shared.utils;
+package paint.generatesquares.calc;
 
 import de.rototor.pdfbox.graphics2d.PdfBoxGraphics2D;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -9,6 +9,7 @@ import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
+import paint.shared.utils.PaintLogger;
 
 import java.awt.*;
 import java.io.IOException;
@@ -17,6 +18,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static paint.generatesquares.calc.SquareUtils.calculateBackgroundDensity;
 
 /**
  * The HistogramPdfExporter class provides functionality to export histograms as a PDF document
@@ -49,7 +52,7 @@ public class HistogramPdfExporter {
                 }
 
                 // --- Compute background estimation ---
-                SquareUtils.BackgroundEstimationResult backgroundResult = SquareUtils.calculateBackgroundDensity(squares);
+                SquareUtils.BackgroundEstimationResult backgroundResult = calculateBackgroundDensity(squares);
 
                 Set<Square> backgroundSet = new HashSet<>(backgroundResult.getBackgroundSquares());
                 double backgroundTracksPerSquare = backgroundResult.getBackgroundMean();

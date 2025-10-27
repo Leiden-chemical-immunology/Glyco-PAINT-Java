@@ -60,7 +60,7 @@ import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.io.HelperIO.*;
 import static paint.shared.io.ExperimentDataLoader.loadExperiment;
 import static paint.shared.utils.Miscellaneous.formatDuration;
-import static paint.shared.utils.SquareUtils.filterTracksInSquare;
+import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
 
 
 public class GenerateSquaresProcessor {
@@ -141,8 +141,8 @@ public class GenerateSquaresProcessor {
 
             // Calculate square-level and recording-level attributes
             Path experimentPath = project.getProjectRootPath().resolve(experiment.getExperimentName());
-            CalculateAttributes.calculateSquareAttributes(experimentPath, recording, generateSquaresConfig);
-            CalculateAttributes.calculateRecordingAttributes(recording, generateSquaresConfig);
+            CalculateSquareAttributes.calculateSquareAttributes(experimentPath, recording, generateSquaresConfig);
+            CalculateSquareAttributes.calculateRecordingAttributes(recording, generateSquaresConfig);
         }
 
         Duration duration = Duration.between(start, LocalDateTime.now());

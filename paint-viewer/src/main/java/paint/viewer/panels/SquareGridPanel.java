@@ -2,7 +2,7 @@ package paint.viewer.panels;
 
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
-import paint.shared.utils.SquareUtils;
+import paint.shared.utils.SharedSquareUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -544,7 +544,7 @@ public class SquareGridPanel extends JPanel {
 
     /** Re-applies square visibility filtering using the current control parameters. */
     public void applyVisibilityFilter() {
-        SquareUtils.applyVisibilityFilter(
+        SharedSquareUtils.applyVisibilityFilter(
                 recording,
                 ctrlMinDensityRatio,
                 ctrlMaxVariability,
