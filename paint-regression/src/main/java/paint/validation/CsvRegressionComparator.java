@@ -63,7 +63,7 @@ public class CsvRegressionComparator {
     // ----------------------------------------------------------------------
     // Columns that should be ignored during field-by-field comparison
     private static final Set<String> IGNORE_COLUMNS = new HashSet<>(Arrays.asList(
-            "Run Time", "Time Stamp", "Unique Key"
+            "Run Time", "Time Stamp"
     ));
 
     // ----------------------------------------------------------------------
