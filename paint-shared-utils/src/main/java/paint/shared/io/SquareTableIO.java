@@ -103,8 +103,8 @@ public class SquareTableIO extends BaseTableIO {
             square.setTotalDisplacement(             tablesawRow.getDouble(  "Total Displacement"));
             square.setMedianMaxSpeed(                tablesawRow.getDouble(  "Median Max Speed"));
             square.setMaxMaxSpeed(                   tablesawRow.getDouble(  "Max Max Speed"));
-            square.setMedianMedianSpeed(               tablesawRow.getDouble(  "Median Mean Speed"));
-            square.setMaxMedianSpeed(                  tablesawRow.getDouble(  "Max Mean Speed"));
+            square.setMedianMedianSpeed(             tablesawRow.getDouble(  "Median Mean Speed"));
+            square.setMaxMedianSpeed(                tablesawRow.getDouble(  "Max Mean Speed"));
             square.setMaxTrackDuration(              tablesawRow.getDouble(  "Max Track Duration"));
             square.setTotalTrackDuration(            tablesawRow.getDouble(  "Total Track Duration"));
             square.setMedianTrackDuration(           tablesawRow.getDouble(  "Median Track Duration"));

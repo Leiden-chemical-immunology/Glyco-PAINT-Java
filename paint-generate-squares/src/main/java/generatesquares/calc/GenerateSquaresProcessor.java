@@ -86,16 +86,18 @@ public class GenerateSquaresProcessor {
 
         // @formatter:off
         GenerateSquaresConfig generateSquaresConfig = project.getGenerateSquaresConfig();
+        Experiment            experiment            = null;
+        List<Recording>       recordings            = null;
+
         projectPath                                 = project.getProjectRootPath();
         plotFittingCurves                           = getBoolean("Generate Squares", "Plot Curve Fitting", false);
-        Experiment experiment                       = null;
-        List<Recording> recordings                  = null;
+
         // @formatter:on
 
         LocalDateTime start = LocalDateTime.now();
         PaintLogger.debugf("Loading Experiment '%s'", experimentName);
 
-        // EARLY EXIT if the user cancelled before we start
+        // Early Exit if the user cancelled before we start
         if (Thread.currentThread().isInterrupted()) {
             PaintLogger.infof("Cancelled before starting experiment %s", experimentName);
             return false;
