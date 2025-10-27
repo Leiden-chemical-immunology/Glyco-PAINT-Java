@@ -31,18 +31,18 @@
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
+            <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
+            <version>1.9.0</version>
         </dependency>
-
-        <!-- Silence SLF4J -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
             <version>1.7.36</version>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 
@@ -53,6 +53,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.7.1</version>
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -67,43 +68,55 @@
                     <execution>
                         <id>make-assembly</id>
                         <phase>package</phase>
-                        <goals><goal>single</goal></goals>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
 
-            <!-- macOS .app bundle (safe for CI/non-macOS) -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>create-app-bundle</id>
-                        <phase>package</phase>
-                        <configuration>
-                            <target name="create-app-bundle">
-                                <!-- ✅ Detect macOS -->
-                                <condition property="is.macos">
-                                    <os family="mac"/>
-                                </condition>
+        </plugins>
+    </build>
 
-                                <!-- 🧩 Abort early if not macOS -->
-                                <fail unless="is.macos" message="Skipping macOS .app bundle creation (not running on macOS)."/>
+    <profiles>
+        <profile>
+            <id>macos-appbundle</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>create-app-bundle</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo message="🍎 Creating macOS app bundle at ${app.bundle}"/>
+                                        <delete dir="${app.bundle}" failonerror="false"/>
+                                        <delete file="${project.build.directory}/${app.name}.app.zip" failonerror="false"/>
 
-                                <echo message="🍎 Creating macOS app bundle at ${app.bundle}"/>
+                                        <mkdir dir="${app.bundle}/Contents/MacOS"/>
+                                        <mkdir dir="${app.bundle}/Contents/Java"/>
+                                        <mkdir dir="${app.bundle}/Contents/Resources"/>
 
-                                <delete dir="${app.bundle}" failonerror="false"/>
-                                <delete file="${project.build.directory}/${app.name}.app.zip" failonerror="false"/>
+                                        <copy file="${fat.jar}"
+                                              todir="${app.bundle}/Contents/Java"
+                                              overwrite="true" failonerror="false"/>
+                                        <copy file="${app.icon.macos}"
+                                              todir="${app.bundle}/Contents/Resources"
+                                              overwrite="true" failonerror="false"/>
 
-                                <mkdir dir="${app.bundle}/Contents/MacOS"/>
-                                <mkdir dir="${app.bundle}/Contents/Java"/>
-                                <mkdir dir="${app.bundle}/Contents/Resources"/>
-
-                                <copy file="${fat.jar}" todir="${app.bundle}/Contents/Java" overwrite="true" failonerror="false"/>
-                                <copy file="${app.icon.macos}" todir="${app.bundle}/Contents/Resources" overwrite="true" failonerror="false"/>
-
-                                <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
+                                        <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -122,81 +135,57 @@
   <string>paint-create-experiment</string>
 </dict>
 </plist>
-                    ]]></echo>
+                                    ]]></echo>
 
-                                <echo file="${app.bundle}/Contents/MacOS/launch"><![CDATA[
+                                        <echo file="${app.bundle}/Contents/MacOS/launch"><![CDATA[
 #!/bin/bash
 DIR="$( cd "$( dirname "$0" )" && cd ../Java && pwd )"
 exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-jar-with-dependencies.jar"
-                    ]]></echo>
+                                    ]]></echo>
 
-                                <fixcrlf file="${app.bundle}/Contents/MacOS/launch" eol="unix"/>
-                                <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
+                                        <fixcrlf file="${app.bundle}/Contents/MacOS/launch" eol="unix"/>
+                                        <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
 
-                                <exec executable="zip">
-                                    <arg value="-r"/>
-                                    <arg value="${project.build.directory}/${app.name}.app.zip"/>
-                                    <arg value="${app.bundle}"/>
-                                </exec>
+                                        <exec executable="zip">
+                                            <arg value="-r"/>
+                                            <arg value="${project.build.directory}/${app.name}.app.zip"/>
+                                            <arg value="${app.bundle}"/>
+                                        </exec>
 
-                                <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
-                                <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
-                                <copy todir="${user.home}/Applications/Glyco-PAINT" overwrite="true" failonerror="false">
-                                    <fileset dir="${project.build.directory}">
-                                        <include name="${app.name}.app/**"/>
-                                    </fileset>
-                                </copy>
+                                        <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
+                                        <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
+                                        <copy todir="${user.home}/Applications/Glyco-PAINT"
+                                              overwrite="true" failonerror="false">
+                                            <fileset dir="${project.build.directory}">
+                                                <include name="${app.name}.app/**"/>
+                                            </fileset>
+                                        </copy>
 
-                                <exec executable="chmod" failonerror="false">
-                                    <arg value="755"/>
-                                    <arg value="${user.home}/Applications/Glyco-PAINT/${app.name}.app/Contents/MacOS/launch"/>
-                                </exec>
+                                        <exec executable="chmod" failonerror="false">
+                                            <arg value="755"/>
+                                            <arg value="${user.home}/Applications/Glyco-PAINT/${app.name}.app/Contents/MacOS/launch"/>
+                                        </exec>
 
-                                <echo message="✅ Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
-                            </target>
-                        </configuration>
-                        <goals><goal>run</goal></goals>
-                    </execution>
-                </executions>
-            </plugin>
+                                        <echo message="✅ Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
-            <!-- Windows .exe launcher -->
-            <plugin>
-                <groupId>com.akathist.maven.plugins.launch4j</groupId>
-                <artifactId>launch4j-maven-plugin</artifactId>
-                <version>2.5.0</version>
-                <executions>
-                    <execution>
-                        <id>l4j-create-experiment</id>
-                        <phase>package</phase>
-                        <goals><goal>launch4j</goal></goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <outfile>${project.build.directory}/${app.name}.exe</outfile>
-                    <jar>${fat.jar}</jar>
-                    <dontWrapJar>false</dontWrapJar>
-                    <icon>${app.icon.windows}</icon>
-                    <jre>
-                        <minVersion>1.8.0</minVersion>
-                    </jre>
-                    <classPath>
-                        <mainClass>createexperiment.CreateExperimentUI</mainClass>
-                    </classPath>
-                    <headerType>gui</headerType>
-                    <errTitle>${app.name}</errTitle>
-                    <versionInfo>
-                        <fileVersion>1.0.0.0</fileVersion>
-                        <txtFileVersion>${project.version}</txtFileVersion>
-                        <productVersion>1.0.0.0</productVersion>
-                        <txtProductVersion>${project.version}</txtProductVersion>
-                        <fileDescription>${project.description}</fileDescription>
-                        <productName>${app.name}</productName>
-                        <companyName>Glyco-PAINT</companyName>
-                    </versionInfo>
-                </configuration>
-            </plugin>
+    <repositories>
+        <repository>
+            <id>scijava.public</id>
+            <url>https://maven.scijava.org/content/groups/public</url>
+        </repository>
+        <repository>
+            <id>ome.releases</id>
+            <url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
+        </repository>
+    </repositories>
 
-        </plugins>
-    </build>
 </project>
