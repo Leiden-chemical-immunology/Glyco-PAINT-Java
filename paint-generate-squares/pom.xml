@@ -29,22 +29,76 @@
     </properties>
 
     <dependencies>
-        <!-- your dependencies here ... -->
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
             <version>0.0.3-SNAPSHOT</version>
         </dependency>
-        <!-- ... other dependencies omitted for brevity ... -->
+        <dependency>
+            <groupId>net.imagej</groupId>
+            <artifactId>ij</artifactId>
+            <version>1.54h</version>
+        </dependency>
+        <dependency>
+            <groupId>sc.fiji</groupId>
+            <artifactId>TrackMate</artifactId>
+            <version>7.14.0</version>
+        </dependency>
+        <dependency>
+            <groupId>sc.fiji</groupId>
+            <artifactId>fiji-lib</artifactId>
+            <version>2.1.3</version>
+        </dependency>
+        <dependency>
+            <groupId>net.imglib2</groupId>
+            <artifactId>imglib2</artifactId>
+            <version>7.1.5</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.13</version>
+        </dependency>
+        <dependency>
+            <groupId>ome</groupId>
+            <artifactId>bio-formats_plugins</artifactId>
+            <version>6.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>ome</groupId>
+            <artifactId>formats-gpl</artifactId>
+            <version>6.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>ome</groupId>
+            <artifactId>formats-api</artifactId>
+            <version>6.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>tech.tablesaw</groupId>
+            <artifactId>tablesaw-core</artifactId>
+            <version>0.43.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>5.9</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.11.0</version>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
 
-            <!-- Fat JAR -->
+            <!-- Fat JAR assembly -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.4.2</version>
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -59,12 +113,14 @@
                     <execution>
                         <id>make-assembly</id>
                         <phase>package</phase>
-                        <goals><goal>single</goal></goals>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
 
-            <!-- Windows .exe launcher plugin -->
+            <!-- Windows .exe launcher -->
             <plugin>
                 <groupId>com.akathist.maven.plugins.launch4j</groupId>
                 <artifactId>launch4j-maven-plugin</artifactId>
@@ -73,7 +129,9 @@
                     <execution>
                         <id>l4j-generate-squares</id>
                         <phase>package</phase>
-                        <goals><goal>launch4j</goal></goals>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
                     </execution>
                 </executions>
                 <configuration>
@@ -122,8 +180,11 @@
                             <execution>
                                 <id>create-app-bundle</id>
                                 <phase>package</phase>
-                                <goals><goal>run</goal></goals>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
                                 <configuration>
+                                    <!-- Skip step removed; fail statement removed -->
                                     <target>
                                         <echo message="🍎 Creating macOS app bundle at ${app.bundle}"/>
                                         <delete dir="${app.bundle}" failonerror="false"/>
@@ -139,7 +200,8 @@
                                               overwrite="true" failonerror="false"/>
                                         <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
   <key>CFBundleName</key>
@@ -156,12 +218,12 @@
   <string>paint-generate-squares</string>
 </dict>
 </plist>
-                    ]]></echo>
+                                        ]]></echo>
                                         <echo file="${app.bundle}/Contents/MacOS/launch"><![CDATA[
 #!/bin/bash
 DIR="$( cd "$( dirname "$0" )" && cd ../Java && pwd )"
 exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-jar-with-dependencies.jar"
-                    ]]></echo>
+                                        ]]></echo>
                                         <fixcrlf file="${app.bundle}/Contents/MacOS/launch" eol="unix"/>
                                         <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
                                         <exec executable="zip">
@@ -170,11 +232,9 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                                             <arg value="${app.bundle}"/>
                                         </exec>
                                         <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
-                                        <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app"
-                                                quiet="true"/>
+                                        <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
                                         <copy todir="${user.home}/Applications/Glyco-PAINT"
-                                              overwrite="true"
-                                              failonerror="false">
+                                              overwrite="true" failonerror="false">
                                             <fileset dir="${project.build.directory}">
                                                 <include name="${app.name}.app/**"/>
                                             </fileset>
