@@ -12,6 +12,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.io.FileSaver;
 import loci.common.DebugTools;
+
 import paint.fiji.tracks.TrackCsvWriter;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.dialogs.ProjectDialog;
@@ -26,6 +27,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import static paint.shared.config.PaintConfig.getBoolean;
 
@@ -169,19 +171,18 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
             model.setLogger(Logger.VOID_LOGGER);
 
             Settings settings = new Settings(imp);
-            settings.detectorFactory = new LogDetectorFactory();
-            settings.detectorSettings = settings.detectorFactory.getDefaultSettings();
-
-            // @formatter:off
+            // Detector
+            settings.detectorFactory   = new LogDetectorFactory();
+            settings.detectorSettings  = settings.detectorFactory.getDefaultSettings();
             settings.detectorSettings.put("TARGET_CHANNEL",           trackMateConfig.getTargetChannel());
             settings.detectorSettings.put("RADIUS",                   trackMateConfig.getRadius());
             settings.detectorSettings.put("DO_SUBPIXEL_LOCALIZATION", trackMateConfig.isDoSubpixelLocalization());
             settings.detectorSettings.put("THRESHOLD",                threshold);
             settings.detectorSettings.put("DO_MEDIAN_FILTERING",      trackMateConfig.isMedianFiltering());
 
-            settings.trackerFactory  = new SparseLAPTrackerFactory();
-            settings.trackerSettings = settings.trackerFactory.getDefaultSettings();
-
+            // Tracker
+            settings.trackerFactory    = new SparseLAPTrackerFactory();
+            settings.trackerSettings   = settings.trackerFactory.getDefaultSettings();
             settings.trackerSettings.put("LINKING_MAX_DISTANCE",            trackMateConfig.getLinkingMaxDistance());
             settings.trackerSettings.put("ALTERNATIVE_LINKING_COST_FACTOR", trackMateConfig.getAlternativeLinkingCostFactor());
             settings.trackerSettings.put("ALLOW_GAP_CLOSING",               trackMateConfig.isAllowGapClosing());
@@ -191,7 +192,13 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
             settings.trackerSettings.put("SPLITTING_MAX_DISTANCE",          trackMateConfig.getSplittingMaxDistance());
             settings.trackerSettings.put("ALLOW_TRACK_MERGING",             trackMateConfig.isAllowTrackMerging());
             settings.trackerSettings.put("MERGING_MAX_DISTANCE",            trackMateConfig.getMergingMaxDistance());
-            // @formatter:on
+
+            // --- Make TrackMate deterministic ---
+            Locale.setDefault(Locale.US);
+            System.setProperty("user.language", "en");
+            System.setProperty("user.country", "US");
+            System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "1");  // Disable JVM-level parallelism (limits common pool threads to 1)
+            System.setProperty("trackmate.deterministic", "true");                            // Request deterministic behavior from TrackMate if supportedSo where I
 
             settings.addSpotFilter(new FeatureFilter("QUALITY", 0, true));
             settings.addAllAnalyzers();
