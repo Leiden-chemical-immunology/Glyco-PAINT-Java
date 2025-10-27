@@ -1,3 +1,43 @@
+/******************************************************************************
+ *  Class:        SquareUtils.java
+ *  Package:      paint.generatesquares.calc
+ *
+ *  PURPOSE:
+ *    Provides utility methods for analysis of square-based track data in the Paint
+ *    experiment workflow, including background estimation, density calculations,
+ *    and extraction of tracks from selected squares.
+ *
+ *  DESCRIPTION:
+ *    Contains static methods that compute densities, filter and categorize squares
+ *    based on track counts, extract tracks from selected squares within a recording,
+ *    and count selected squares. Also includes an inner class to hold results of
+ *    background estimation.
+ *
+ *  RESPONSIBILITIES:
+ *    • calculateDensity: compute density given tracks, area, time, concentration
+ *    • calculateBackgroundDensity: iterative filtering to estimate background mean
+ *    • getTracksFromSelectedSquares: extract tracks from squares flagged as selected
+ *    • getNumberOfSelectedSquares: count squares marked as selected in a recording
+ *
+ *  USAGE EXAMPLE:
+ *    List<Square> squares = recording.getSquaresOfRecording();
+ *    SquareUtils.BackgroundEstimationResult result =
+ *        SquareUtils.calculateBackgroundDensity(squares);
+ *
+ *  DEPENDENCIES:
+ *    – paint.shared.objects.{Recording, Square, Track}
+ *    – java.util.{List, ArrayList, Collections, Comparator}
+ *
+ *  AUTHOR:
+ *    Hans Bakker (jjabakker)
+ *
+ *  UPDATED:
+ *    2025-10-27
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.generatesquares.calc;
 
 import paint.shared.objects.Recording;
@@ -7,14 +47,10 @@ import paint.shared.objects.Track;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Utility class for operations related to square data analysis.
- */
 public class SquareUtils {
 
     /** Private constructor to prevent instantiation. */
     private SquareUtils() {
-
     }
 
     /**
@@ -36,9 +72,9 @@ public class SquareUtils {
             throw new IllegalArgumentException("Area, time, and concentration must be positive");
         }
 
-        double density = nrTracks / area;
-        density /= time;
-        density /= concentration;
+        double density  = nrTracks / area;
+        density        /= time;
+        density        /= concentration;
 
         return density;
     }
@@ -69,7 +105,7 @@ public class SquareUtils {
         }
 
         final double EPSILON = 0.01;
-        final int MAX_ITER = 10;
+        final int MAX_ITER   = 10;
         double prevMean;
 
         List<Square> current = new ArrayList<>(squares);
@@ -160,7 +196,7 @@ public class SquareUtils {
          * @param backgroundSquares the list of squares identified as background
          */
         public BackgroundEstimationResult(double backgroundMean, List<Square> backgroundSquares) {
-            this.backgroundMean = backgroundMean;
+            this.backgroundMean    = backgroundMean;
             this.backgroundSquares = backgroundSquares;
         }
 
