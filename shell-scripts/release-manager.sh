@@ -27,9 +27,9 @@ set -euo pipefail
 #   recreate <TAG>       Delete and immediately re-create the specified release
 #
 # USAGE:
-#   ./shell-scripts/release-manager.sh create 1.2.0 --execute
-#   ./shell-scripts/release-manager.sh delete 1.2.0 --execute
-#   ./shell-scripts/release-manager.sh recreate 1.2.0 --execute
+#   ./shell-scripts/release-manager.sh create --execute 1.2.0
+#   ./shell-scripts/release-manager.sh delete --execute 1.2.0
+#   ./shell-scripts/release-manager.sh recreate --execute 1.2.0
 #
 # OPTIONS:
 #   --execute, -x   Run for real (default is dry-run)
