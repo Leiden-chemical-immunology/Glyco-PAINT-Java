@@ -65,3 +65,6 @@ paint-icons-generation/
 # Ignore all images
 *.png
 
+# The reference directory
+221012 reference/
+
