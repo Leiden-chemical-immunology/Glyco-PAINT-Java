@@ -29,6 +29,7 @@
  *  DEPENDENCIES:
  *    - java.io
  *    - java.nio.file
+ *    - java.text
  *    - java.util
  *
  *  AUTHOR:
@@ -45,6 +46,7 @@ package validation;
 
 import java.io.*;
 import java.nio.file.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -58,17 +60,55 @@ import java.util.*;
  */
 public class CsvRegressionComparator {
 
+    // ----------------------------------------------------------------------
+    // Columns that should be ignored during field-by-field comparison
+    private static final Set<String> IGNORE_COLUMNS = new HashSet<>(Arrays.asList(
+            "Run Time", "Time Stamp", "Unique Key"
+    ));
+
+    // ----------------------------------------------------------------------
+    // Dual logging: console + file
+    private static PrintStream dualOut;
+
+    private static void setupDualLogging(Path logDir) throws IOException {
+        String timestamp = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
+        Path logFile = logDir.resolve("paint-regression-" + timestamp + ".log");
+        Files.createDirectories(logFile.getParent());
+
+        // Keep reference to original console output
+        final PrintStream originalOut = System.out;
+        final PrintStream fileOut = new PrintStream(Files.newOutputStream(logFile));
+
+        dualOut = new PrintStream(new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                originalOut.write(b);  // use original, not System.out
+                fileOut.write(b);
+            }
+
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                originalOut.write(b, off, len);
+                fileOut.write(b, off, len);
+            }
+
+            @Override
+            public void flush() throws IOException {
+                originalOut.flush();
+                fileOut.flush();
+            }
+        }, true);
+
+        System.setOut(dualOut);
+        System.setErr(dualOut);
+        System.out.println("🧾 Logging to: " + logFile.toAbsolutePath());
+        System.out.println();
+    }
 
     // ----------------------------------------------------------------------
     /**
      * Compares two CSV files for differences based on their content, generates
-     * a detailed comparison report in CSV format, and returns the total number
-     * of detected differences.
-     *
-     * @param oldCsv the path to the baseline CSV file
-     * @param newCsv the path to the test CSV file to compare against the baseline
-     * @return the total number of differences detected between the two CSV files
-     * @throws IOException if an I/O error occurs while reading or writing files
+     * a detailed comparison report, and returns the total number of detected differences.
      */
     public static int compareFiles(Path oldCsv, Path newCsv) throws IOException {
 
@@ -115,16 +155,15 @@ public class CsvRegressionComparator {
                 Map<String, String> o = (i < ol.size()) ? ol.get(i) : null;
                 Map<String, String> n = (i < nl.size()) ? nl.get(i) : null;
 
-                // Handle added or missing rows
                 if (o == null && n != null) {
                     String rec = safe(n.get("Recording Name"));
-                    String sq  = n.containsKey("Square Nr") ? safe(n.get("Square Nr")) : "";
+                    String sq  = n.containsKey("Square Number") ? safe(n.get("Square Number")) : "";
                     diffs.add(new String[]{ rec, sq, String.valueOf(i + 1), "", "", "", "Extra in NEW" });
                     diffCount++;
                     continue;
                 } else if (o != null && n == null) {
                     String rec = safe(o.get("Recording Name"));
-                    String sq  = o.containsKey("Square Nr") ? safe(o.get("Square Nr")) : "";
+                    String sq  = o.containsKey("Square Number") ? safe(o.get("Square Number")) : "";
                     diffs.add(new String[]{ rec, sq, String.valueOf(i + 1), "", "", "", "Missing in NEW" });
                     diffCount++;
                     continue;
@@ -136,10 +175,11 @@ public class CsvRegressionComparator {
                 fields.addAll(n.keySet());
 
                 String rec = safe(o.get("Recording Name"));
-                String sq  = o.containsKey("Square Nr") ? safe(o.get("Square Nr")) : "";
+                String sq  = o.containsKey("Square Number") ? safe(o.get("Square Number")) : "";
 
                 for (String f : fields) {
                     if (f == null || f.trim().isEmpty()) continue;
+                    if (IGNORE_COLUMNS.contains(f)) continue;
 
                     String ov = clean(o.get(f));
                     String nv = clean(n.get(f));
@@ -164,57 +204,70 @@ public class CsvRegressionComparator {
             }
         }
 
-        // === Difference summary preview ===
+        // === Grouped Difference Summary (aligned globally) ===
         if (!diffs.isEmpty()) {
-            System.out.println("\n🔎 Summary of first few differences:");
-            int shown = 0;
+            // Group by recording and square
+            Map<String, Map<String, List<String[]>>> grouped = new LinkedHashMap<>();
             for (String[] row : diffs) {
-                if (shown >= 10) {
-                    System.out.println("   ... (" + (diffs.size() - shown) + " more)");
-                    break;
+                String rec = row[0];
+                String sq  = row[1].isEmpty() ? "—" : row[1];
+                grouped.computeIfAbsent(rec, r -> new LinkedHashMap<>())
+                        .computeIfAbsent(sq, s -> new ArrayList<>())
+                        .add(row);
+            }
+
+            // Compute global max field name width for perfect alignment
+            int globalFieldWidth = diffs.stream()
+                    .map(row -> row[3] == null ? 0 : row[3].length())
+                    .max(Integer::compareTo)
+                    .orElse(0) + 2;
+
+            System.out.println("\n🔎 Differences grouped by Square");
+            System.out.println("───────────────────────────────");
+
+            int total = 0;
+            Set<String> squaresWithDiffs = new TreeSet<>();
+
+            for (Map.Entry<String, Map<String, List<String[]>>> recEntry : grouped.entrySet()) {
+                System.out.println("Recording: " + recEntry.getKey());
+                for (Map.Entry<String, List<String[]>> sqEntry : recEntry.getValue().entrySet()) {
+                    String sq = sqEntry.getKey();
+                    if (!sq.equals("—")) squaresWithDiffs.add(sq);
+                    List<String[]> entries = sqEntry.getValue();
+
+                    System.out.println("  ▫ Square " + sq + ":");
+                    for (String[] row : entries) {
+                        String field = row[3];
+                        String oldV  = row[4];
+                        String newV  = row[5];
+                        String stat  = row[6];
+                        System.out.printf("     - %-" + globalFieldWidth + "s: '%s' vs '%s' (%s)%n",
+                                          field, oldV, newV, stat);
+                        total++;
+                    }
                 }
-                String rec   = row[0];
-                String sq    = row[1];
-                String field = row[3];
-                String oldV  = row[4];
-                String newV  = row[5];
-                String stat  = row[6];
-                System.out.printf("   → [%s | %s] %s: '%s' vs '%s' (%s)%n",
-                                  rec, sq.isEmpty() ? "—" : "Square " + sq,
-                                  field, oldV, newV, stat);
-                shown++;
+                System.out.println();
+            }
+
+            System.out.printf("%n📊 Total differences listed: %d%n", total);
+            if (!squaresWithDiffs.isEmpty()) {
+                System.out.printf("🟧 Squares with at least one difference: %d (%s)%n",
+                                  squaresWithDiffs.size(),
+                                  String.join(", ", squaresWithDiffs));
             }
         } else {
             System.out.println("\n✅ No differences detected.");
         }
-
         return diffCount;
     }
 
     // ----------------------------------------------------------------------
-    /**
-     * Builds a grouping key based on the available columns in the CSV row.
-     * If both "Recording Name" and "Square Nr" exist, both are used;
-     * otherwise, only "Recording Name" is used.
-     *
-     * @param r a CSV row represented as a map
-     * @return a combined key string identifying the group
-     */
     private static String buildKey(Map<String, String> r) {
         String rec = safe(r.get("Recording Name"));
-        String sq  = r.containsKey("Square Nr") ? safe(r.get("Square Nr")) : "";
+        String sq  = r.containsKey("Square Number") ? safe(r.get("Square Number")) : "";
         return sq.isEmpty() ? rec : rec + " - " + sq;
     }
 
-    // ----------------------------------------------------------------------
-    /**
-     * Converts a list of CSV rows into a grouped map keyed by
-     * "Recording Name" or "Recording Name - Square Nr", depending
-     * on column availability.
-     *
-     * @param rows list of CSV rows as maps
-     * @return a multi-map keyed appropriately for Paint CSVs
-     */
     private static Map<String, List<Map<String, String>>> toMultiMap(List<Map<String, String>> rows) {
         Map<String, List<Map<String, String>>> mm = new TreeMap<>();
         for (Map<String, String> r : rows) {
@@ -224,25 +277,11 @@ public class CsvRegressionComparator {
         return mm;
     }
 
-    // ----------------------------------------------------------------------
-    /**
-     * Reads a CSV file from the given path and parses its content into a list of maps.
-     * Each map represents a row in the CSV file, where the keys are the column headers
-     * and the values are the corresponding cell values. Empty rows are skipped and
-     * missing or empty values are represented as empty strings.
-     *
-     * @param path the path to the input CSV file
-     * @return a list of maps, where each map represents a row with column headers as keys
-     *         and cell values as values
-     * @throws IOException if an I/O error occurs while reading the file
-     */
     private static List<Map<String, String>> readCsv(Path path) throws IOException {
         List<Map<String, String>> rows = new ArrayList<>();
         try (BufferedReader br = Files.newBufferedReader(path)) {
             String headerLine = br.readLine();
-            if (headerLine == null) {
-                return rows;
-            }
+            if (headerLine == null) return rows;
 
             String[] headers = headerLine.split(",", -1);
             for (int i = 0; i < headers.length; i++) headers[i] = headers[i].trim();
@@ -263,59 +302,27 @@ public class CsvRegressionComparator {
         return rows;
     }
 
-    // ----------------------------------------------------------------------
-    /**
-     * Cleans the given string input by trimming whitespace and replacing specific
-     * invalid values ("nan", "null") with an empty string.
-     *
-     * @param s the input string to clean; may be {@code null}
-     * @return a cleaned string with whitespace removed; returns an empty string if
-     *         the input is {@code null} or contains invalid values ("nan", "null")
-     */
     private static String clean(String s) {
-        if (s == null) {
-            return "";
-        }
+        if (s == null) return "";
         String t = s.trim();
-        if (t.equalsIgnoreCase("nan") || t.equalsIgnoreCase("null")) {
-            return "";
-        }
+        if (t.equalsIgnoreCase("nan") || t.equalsIgnoreCase("null")) return "";
         return t;
     }
 
-    /**
-     * Compares two string values for equality. If the strings are equal using {@link Objects#equals},
-     * the method returns true. If the strings represent valid numeric values, they are parsed and
-     * compared as doubles. The method returns true if the numeric representations are equal, and
-     * false otherwise.
-     *
-     * @param a the first string value to compare, may be {@code null}
-     * @param b the second string value to compare, may be {@code null}
-     * @return {@code true} if the strings are equal, either as exact string matches or as equivalent
-     *         numeric values; {@code false} otherwise
-     */
     private static boolean valuesEqual(String a, String b) {
-        if (Objects.equals(a, b)) {
-            return true;
-        }
+        if (Objects.equals(a, b)) return true;
         Double da = parseDouble(a);
         Double db = parseDouble(b);
-        return da != null && db != null && Double.compare(da, db) == 0;
+        if (da != null && db != null) {
+            double ra = Math.round(da * 1000.0) / 1000.0;
+            double rb = Math.round(db * 1000.0) / 1000.0;
+            return Double.compare(ra, rb) == 0;
+        }
+        return false;
     }
 
-    /**
-     * Attempts to parse a {@code String} into a {@code Double}. If the input string is
-     * {@code null}, empty, or cannot be parsed as a double, the method returns {@code null}.
-     * Also returns {@code null} if the parsed value is {@code NaN}.
-     *
-     * @param s the input string to parse into a {@code Double}; may be {@code null} or empty
-     * @return the {@code Double} value represented by the input string, or {@code null}
-     *         if the input is invalid, unparseable, or represents {@code NaN}
-     */
     private static Double parseDouble(String s) {
-        if (s == null || s.isEmpty()) {
-            return null;
-        }
+        if (s == null || s.isEmpty()) return null;
         try {
             double v = Double.parseDouble(s);
             return Double.isNaN(v) ? null : v;
@@ -324,36 +331,11 @@ public class CsvRegressionComparator {
         }
     }
 
-    /**
-     * Ensures that the given string is non-null by returning an empty string if the input is {@code null}.
-     * If the input is not {@code null}, the original string is returned unchanged.
-     *
-     * @param s the input string to check; may be {@code null}
-     * @return the original string if non-null, or an empty string if the input is {@code null}
-     */
     private static String safe(String s) {
         return (s == null) ? "" : s;
     }
 
-    /**
-     * Processes a string to make it safe for use in a CSV file by properly escaping
-     * special characters and enclosing the string in quotes if necessary. Special
-     * characters include commas, double quotes, newlines, and carriage returns.
-     *
-     * @param s the input string to be processed; may be {@code null}
-     * @return a CSV-safe string, enclosed in quotes if special characters are present,
-     *         or an empty string if the input is {@code null}
-     */
-    private static String csv(String s) {
-        if (s == null) {
-            return "";
-        }
-        if (s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r")) {
-            return "\"" + s.replace("\"", "\"\"") + "\"";
-        }
-        return s;
-    }
-
+    // ----------------------------------------------------------------------
     static int compare_stub(Path baseline, Path testfile) throws IOException {
         System.out.println("🔍 CSV Regression Comparator");
         System.out.println("------------------------------------");
@@ -374,9 +356,7 @@ public class CsvRegressionComparator {
         int diffs = 0;
 
         try {
-            baseline = Paths.get("/Users/hans/Paint Test Project/221012/Tracks.csv");
-            testfile = Paths.get("/Users/hans/JavaPaintProjects/paint-regression/src/main/resources/221012 reference/Tracks.csv");
-            diffs += compare_stub(baseline, testfile);
+            setupDualLogging(Paths.get("/Users/hans/Paint Test Project/221012/logs"));
 
             baseline = Paths.get("/Users/hans/Paint Test Project/221012/Squares.csv");
             testfile = Paths.get("/Users/hans/JavaPaintProjects/paint-regression/src/main/resources/221012 reference/Squares.csv");
