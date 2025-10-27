@@ -229,17 +229,18 @@ public class CalculateSquareAttributes {
     }
 
     /**
-     * Calculates the variability of tracking data within a specified square of a recording.
-     * Variability is measured as the coefficient of variation of track densities in grid cells
-     * produced within the square based on the specified granularity.
+     * Computes the spatial variability of track positions within a selected square of a recording.
+     * The square is subdivided into a grid of size `granularity × granularity`, and the count
+     * of tracks falling into each grid cell is determined. Variability is then quantified
+     * as the coefficient of variation (standard deviation divided by mean) of the cell counts.
      *
-     * @param tracks                   the table containing track data with x and y locations
-     * @param squareNumber             the index number of the square in the recording for variability analysis
-     * @param numberOfSquaresInRecording the total number of squares in the recording
-     * @param granularity              the granularity level for subdividing the square into a grid
-     * @return the coefficient of variation (standard deviation divided by mean) of track densities in the grid
+     * @param tracks                     A table of track data, including x- and y-coordinate columns.
+     * @param squareNumber               The index of the square region within the recording which is being analysed.
+     * @param numberOfSquaresInRecording The total number of spatial squares defined for the recording.
+     * @param granularity                The number of subdivisions (cells) along each dimension of the square’s grid.
+     * @return                           The coefficient of variation (σ / μ) of the grid-cell counts;
+     *                                   returns 0.0 if the mean cell count is zero (no tracks).
      */
-    // Main variability calculation
     public static double calcVariability(Table tracks,
                                          int squareNumber,
                                          int numberOfSquaresInRecording,

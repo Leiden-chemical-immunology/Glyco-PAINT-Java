@@ -1,3 +1,41 @@
+/******************************************************************************
+ *  Class:        TrackAttributeCalculations.java
+ *  Package:      paint.fiji.tracks
+ *
+ *  PURPOSE:
+ *    Utility class for calculating motion-related attributes for tracks
+ *    in a TrackMate dataset. This class analyses trajectories of spots
+ *    in tracks by computing metrics such as total travel distance,
+ *    diffusion coefficients, confinement ratio, and net displacement.
+ *
+ *  DESCRIPTION:
+ *    Includes methods to:
+ *      • Compute key track attributes from the track model, track ID and time delta.
+ *      • Safely retrieve feature values from individual spots.
+ *
+ *  RESPONSIBILITIES:
+ *    • Provide a static calculation method for TrackAttributes based on a track.
+ *    • Prevent instantiation (utility class).
+ *
+ *  USAGE EXAMPLE:
+ *    TrackAttributes attrs = TrackAttributeCalculations
+ *                              .calculateTrackAttributes(trackModel, trackId, dtSeconds);
+ *
+ *  DEPENDENCIES:
+ *    - fiji.plugin.trackmate.TrackModel
+ *    - fiji.plugin.trackmate.Spot
+ *    - paint.shared.utils.Miscellaneous (for rounding)
+ *
+ *  AUTHOR:
+ *    Hans Bakker (jjabakker)
+ *
+ *  UPDATED:
+ *    2025-10-27
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.fiji.tracks;
 
 import fiji.plugin.trackmate.Spot;
@@ -9,19 +47,7 @@ import java.util.List;
 
 import static paint.shared.utils.Miscellaneous.round;
 
-/**
- * Utility class for calculating motion-related attributes for tracks
- * in a TrackMate dataset. The class is designed for analyzing
- * trajectories of spots in tracks by computing metrics such as
- * total travel distance, diffusion coefficients, confinement ratio,
- * and net displacement.
- *
- * This class includes methods to:
- * - Compute key track attributes given a track and associated parameters.
- * - Safely retrieve feature values from individual spots.
- *
- * This class cannot be instantiated.
- */
+
 public final class TrackAttributeCalculations {
 
     private TrackAttributeCalculations() {
@@ -31,6 +57,13 @@ public final class TrackAttributeCalculations {
     /**
      * Computes the motion attributes of a single track based on the provided track model,
      * track identifier, and time delta between frames.
+     * Attrubutes calculated are:
+     *     numberSpotsInTrack,
+     *     totalDistance
+     *     diffusionCoeff
+     *     diffusionCoeffExt
+     *     confinementRatio
+     *     displacement
      *
      * @param trackModel the track model containing track data and associated spots
      * @param trackId the unique identifier of the track to analyze
@@ -48,55 +81,64 @@ public final class TrackAttributeCalculations {
         spots.sort(Comparator.comparingInt(s -> (int) Math.round(s.getFeature(Spot.FRAME))));
 
         // @formatter:off
-        double totalDistance     = 0.0;
-        double cumMsd            = 0.0;
-        double cumMsdExt         = 0.0;
-        double diffusionCoeff    = Double.NaN;
-        double diffusionCoeffExt = Double.NaN;
-        double confinementRatio  = Double.NaN;
-        int numberSpotsInTrack   = spots.size();
+        double totalDistance       = 0.0;
+        double cumMsd              = 0.0;
+        double cumMsdExt           = 0.0;
+        double diffusionCoeff      = Double.NaN;
+        double diffusionCoeffExt   = Double.NaN;
+        double confinementRatio    = Double.NaN;
+        int    numberSpotsInTrack  = spots.size();
         // @formatter:on
 
         // Reference first point (x0, y0)
         final double x0 = get(spots.get(0), Spot.POSITION_X);
         final double y0 = get(spots.get(0), Spot.POSITION_Y);
 
+        // Reference last point (xLast, yLast)
         final double xLast = get(spots.get(spots.size() - 1), Spot.POSITION_X);
         final double yLast = get(spots.get(spots.size() - 1), Spot.POSITION_Y);
 
         for (int i = 1; i < spots.size(); i++) {
+
+            // The previous point
             final double x1 = get(spots.get(i - 1), Spot.POSITION_X);
             final double y1 = get(spots.get(i - 1), Spot.POSITION_Y);
+
+            // The current point
             final double x2 = get(spots.get(i), Spot.POSITION_X);
             final double y2 = get(spots.get(i), Spot.POSITION_Y);
 
+            // For MSD Ext, take the distance to the previous point
             final double dx = x2 - x1;
             final double dy = y2 - y1;
-            final double stepDist = Math.hypot(dx, dy);
 
-            totalDistance += stepDist;
+            // For MSD, take the distance to the first point
+            final double dx0   = x2 - x0;
+            final double dy0   = y2 - y0;
 
-            // MSD relative to the first point and step-wise MSD
-            final double dx0 = x2 - x0;
-            final double dy0 = y2 - y0;
-            cumMsd += dx0 * dx0 + dy0 * dy0;
-            cumMsdExt += dx * dx + dy * dy;
+            // Calculate the cumulative values
+            cumMsd            += dx0 * dx0 + dy0 * dy0;
+            cumMsdExt         += dx * dx + dy * dy;
+
+            // Also calculate the increase in total distance
+            totalDistance += Math.hypot(dx, dy);
         }
 
         // Diffusion coefficients (remain NaN if insufficient data or dtSeconds <= 0)
         final int nSteps = spots.size() - 1;
+
         if (nSteps > 0 && dtSeconds > 0.0) {
-            final double msd = cumMsd / nSteps;
+            final double msd    = cumMsd / nSteps;
             final double msdExt = cumMsdExt / nSteps;
 
-            diffusionCoeff = round(msd / (4.0 * dtSeconds), 2);
+            diffusionCoeff    = round(msd / (4.0 * dtSeconds), 2);
             diffusionCoeffExt = round(msdExt / (4.0 * dtSeconds), 2);
         }
 
-        // Displacement between first and last spot
+        // Calculate the displacement between the first and last spot
         double displacement = Math.hypot(xLast - x0, yLast - y0);
 
-        // Confinement ratio = displacement / total distance
+        // Calculate the Confinement ratio = displacement / total distance
         if (totalDistance > 0.0) {
             confinementRatio = round(displacement / totalDistance, 2);
         }
@@ -106,13 +148,12 @@ public final class TrackAttributeCalculations {
             totalDistance = Double.NaN;
         }
 
-        return new TrackAttributes(
-                numberSpotsInTrack,
-                totalDistance,
-                diffusionCoeff,
-                diffusionCoeffExt,
-                confinementRatio,
-                displacement
+        return new TrackAttributes(numberSpotsInTrack,
+                                   totalDistance,
+                                   diffusionCoeff,
+                                   diffusionCoeffExt,
+                                   confinementRatio,
+                                   displacement
         );
     }
 
