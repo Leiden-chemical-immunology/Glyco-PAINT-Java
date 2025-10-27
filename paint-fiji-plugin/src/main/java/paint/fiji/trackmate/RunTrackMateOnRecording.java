@@ -147,16 +147,14 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
                         .filter(Files::exists)
                         .findFirst()
                         .orElse(null);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 PaintLogger.errorf("Could not find Brightfield image file: %s", candidates);
             }
 
             if (brightFieldPath == null || Files.notExists(brightFieldPath)) {
                 PaintLogger.warnf("      Could not open brightfield file: %s",
-                                     brightFieldPath == null ? "none found" : brightFieldPath.toString());
-            }
-            else {
+                                  brightFieldPath == null ? "none found" : brightFieldPath.toString());
+            } else {
                 try {
                     impBrightfield = IJ.openImage(brightFieldPath.toString());
                     IJ.run(impBrightfield, "Enhance Contrast", "saturated=0.35");
@@ -229,11 +227,10 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
             int numberOfSpots = model.getSpots().getNSpots(false);
             if (numberOfSpots > trackMateConfig.getMaxNumberOfSpotsInImage()) {
                 PaintLogger.warnf("   Trackmate - Too many spots detected (%d). Limit is %d.",
-                                     numberOfSpots, trackMateConfig.getMaxNumberOfSpotsInImage());
+                                  numberOfSpots, trackMateConfig.getMaxNumberOfSpotsInImage());
                 return cancelEarly(imp, impBrightfield, capture);
-            }
-            else {
-                String numberOfSpotsString = " (" +  numberOfSpots + " spots detected).";
+            } else {
+                String numberOfSpotsString = " (" + numberOfSpots + " spots detected).";
                 PaintLogger.raw(numberOfSpotsString);
             }
 
@@ -258,13 +255,12 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
 
             // --- Step 5: Visualization ---
             final SelectionModel selectionModel = new SelectionModel(model);
-            final DisplaySettings ds = DisplaySettingsIO.readUserDefault();
+            final DisplaySettings ds    = DisplaySettingsIO.readUserDefault();
             ds.setSpotVisible(false);
             ds.setTrackColorBy(DisplaySettings.TrackMateObject.TRACKS, trackMateConfig.getTrackColoring());
             final HyperStackDisplayer displayer = new HyperStackDisplayer(model, selectionModel, imp, ds);
             displayer.render();
             displayer.refresh();
-
 
             if (isCancelled(Thread.currentThread(), dialog)) {
                 return cancelEarly(imp, impBrightfield, capture);
@@ -282,10 +278,10 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
 
             // --- Step 6: Write tracks CSV ---
             String tracksName = experimentInfoRecord.getRecordingName() + "-tracks.csv";
-            Path tracksPath = experimentPath.resolve(tracksName);
-            int numberOfSpotsInALlTracks = 0;
+            Path tracksPath  = experimentPath.resolve(tracksName);
+            int totalSpotsInAllTracks = 0;
             try {
-                numberOfSpotsInALlTracks = TrackCsvWriter.writeTracksCsv(
+                totalSpotsInAllTracks = TrackCsvWriter.writeTracksCsv(
                         trackmate,
                         experimentInfoRecord.getExperimentName(),
                         experimentInfoRecord.getRecordingName(),
@@ -302,11 +298,16 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
             int numberOfFrames         = imp.getNFrames();
 
             Duration duration = Duration.between(start, LocalDateTime.now());
-
             closeImages(imp, impBrightfield, capture);
 
-            return new TrackMateResults(true, true, numberOfSpotsTotal, numberOfTracks,
-                                        numberOfFilteredTracks, numberOfFrames, duration, numberOfSpotsInALlTracks);
+            return new TrackMateResults(true,
+                                        true,
+                                        numberOfSpotsTotal,
+                                        numberOfTracks,
+                                        numberOfFilteredTracks,
+                                        numberOfFrames,
+                                        duration,
+                                        totalSpotsInAllTracks);
 
         } catch (Exception e) {
             PaintLogger.errorf("Exception during TrackMate processing: %s", e.getMessage());
