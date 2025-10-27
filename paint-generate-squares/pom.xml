@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -120,49 +120,12 @@
                 </executions>
             </plugin>
 
-            <!-- Windows .exe launcher -->
-            <plugin>
-                <groupId>com.akathist.maven.plugins.launch4j</groupId>
-                <artifactId>launch4j-maven-plugin</artifactId>
-                <version>2.5.0</version>
-                <executions>
-                    <execution>
-                        <id>l4j-generate-squares</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>launch4j</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <outfile>${project.build.directory}/${app.name}.exe</outfile>
-                    <jar>${fat.jar}</jar>
-                    <dontWrapJar>false</dontWrapJar>
-                    <icon>${app.icon.windows}</icon>
-                    <jre>
-                        <minVersion>1.8.0</minVersion>
-                    </jre>
-                    <classPath>
-                        <mainClass>paint.generatesquares.GenerateSquares</mainClass>
-                    </classPath>
-                    <headerType>gui</headerType>
-                    <errTitle>${app.name}</errTitle>
-                    <versionInfo>
-                        <fileVersion>1.0.0.0</fileVersion>
-                        <txtFileVersion>${project.version}</txtFileVersion>
-                        <productVersion>1.0.0.0</productVersion>
-                        <txtProductVersion>${project.version}</txtProductVersion>
-                        <fileDescription>${project.description}</fileDescription>
-                        <productName>${app.name}</productName>
-                        <companyName>Glyco-PAINT</companyName>
-                    </versionInfo>
-                </configuration>
-            </plugin>
-
         </plugins>
     </build>
 
     <profiles>
+
+        <!-- macOS .app bundle profile -->
         <profile>
             <id>macos-appbundle</id>
             <activation>
@@ -184,9 +147,8 @@
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <!-- Skip step removed; fail statement removed -->
                                     <target>
-                                        <echo message="🍎 Creating macOS app bundle at ${app.bundle}"/>
+                                        <echo message="🍎 Creating macOS .app bundle at ${app.bundle}"/>
                                         <delete dir="${app.bundle}" failonerror="false"/>
                                         <delete file="${project.build.directory}/${app.name}.app.zip" failonerror="false"/>
                                         <mkdir dir="${app.bundle}/Contents/MacOS"/>
@@ -252,6 +214,58 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                 </plugins>
             </build>
         </profile>
+
+        <!-- Windows .exe launcher profile -->
+        <profile>
+            <id>windows-exe</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.akathist.maven.plugins</groupId>
+                        <artifactId>launch4j-maven-plugin</artifactId>
+                        <version>2.5.0</version>
+                        <executions>
+                            <execution>
+                                <id>l4j-generate-squares</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>launch4j</goal>
+                                </goals>
+                                <configuration>
+                                    <outfile>${project.build.directory}/${app.name}.exe</outfile>
+                                    <jar>${fat.jar}</jar>
+                                    <dontWrapJar>false</dontWrapJar>
+                                    <icon>${app.icon.windows}</icon>
+                                    <jre>
+                                        <minVersion>1.8.0</minVersion>
+                                    </jre>
+                                    <classPath>
+                                        <mainClass>paint.generatesquares.GenerateSquares</mainClass>
+                                    </classPath>
+                                    <headerType>gui</headerType>
+                                    <errTitle>${app.name}</errTitle>
+                                    <versionInfo>
+                                        <fileVersion>1.0.0.0</fileVersion>
+                                        <txtFileVersion>${project.version}</txtFileVersion>
+                                        <productVersion>1.0.0.0</productVersion>
+                                        <txtProductVersion>${project.version}</txtProductVersion>
+                                        <fileDescription>${project.description}</fileDescription>
+                                        <productName>${app.name}</productName>
+                                        <companyName>Glyco-PAINT</companyName>
+                                    </versionInfo>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
     </profiles>
 
     <repositories>
