@@ -73,8 +73,6 @@ public class PaintConfig {
 
     // @ formatter:off
     public static final String SECTION_GENERATE_SQUARES = "Generate Squares"; // Section name for Generate Squares configuration
-    public static final String SECTION_PAINT            = "Paint";            // Section name for general Paint application settings.
-    public static final String SECTION_RECORDING_VIEWER = "Recording Viewer"; // Section name for the Recording Viewer configuration.
     public static final String SECTION_TRACKMATE        = "TrackMate";        // Section name for TrackMate configuration.
     public static final String SECTION_DEBUG            = "Debug";            // Section name for Debug configuration.
     // @ formatter:on
@@ -218,27 +216,18 @@ public class PaintConfig {
 
         // @formatter:off
         JsonObject generateSquares = new JsonObject();
-        generateSquares.addProperty(MIN_TRACKS_TO_CALCULATE_TAU,                 20);
-        generateSquares.addProperty(MIN_REQUIRED_R_SQUARED,                      0.1);
-        generateSquares.addProperty(MAX_ALLOWABLE_VARIABILITY,                   10.0);
-        generateSquares.addProperty(MIN_REQUIRED_DENSITY_RATIO,                  2.0);
-        generateSquares.addProperty(MIN_TRACK_DURATION,                          0);
-        generateSquares.addProperty(MAX_TRACK_DURATION,                          2000000);
+        generateSquares.addProperty(MIN_TRACKS_TO_CALCULATE_TAU,                           20);
+        generateSquares.addProperty(MIN_REQUIRED_R_SQUARED,                                0.1);
+        generateSquares.addProperty(MAX_ALLOWABLE_VARIABILITY,                             10.0);
+        generateSquares.addProperty(MIN_REQUIRED_DENSITY_RATIO,                            2.0);
+        generateSquares.addProperty(MIN_TRACK_DURATION,                                    0);
+        generateSquares.addProperty(MAX_TRACK_DURATION,                                    2000000);
         generateSquares.addProperty("Fraction of Squares to Determine Background", 0.1);
         generateSquares.addProperty("Exclude zero DC tracks from Tau Calculation", false);
-        generateSquares.addProperty(NEIGHBOUR_MODE,                              "Free");
-        generateSquares.addProperty(NUMBER_OF_SQUARES_IN_RECORDING,              400);
-        generateSquares.addProperty("Plot Curve Fitting",                          false);
+        generateSquares.addProperty(NEIGHBOUR_MODE,                                        "Free");
+        generateSquares.addProperty(NUMBER_OF_SQUARES_IN_RECORDING,                        400);
+        generateSquares.addProperty("Plot Curve Fitting",                         false);
         configData.add(SECTION_GENERATE_SQUARES, generateSquares);
-
-//        JsonObject paint = new JsonObject();
-//        paint.addProperty("Version",                                               "1.0");
-//        paint.addProperty("Image File Extension",                                  ".nd2");
-//        configData.add(SECTION_PAINT, paint);
-//
-//        JsonObject recordingViewer = new JsonObject();
-//        recordingViewer.addProperty("Save Mode",                                   "Ask");
-//        configData.add(SECTION_RECORDING_VIEWER, recordingViewer);
 
         JsonObject trackMate = new JsonObject();
         trackMate.addProperty(MAX_FRAME_GAP,                                     3);
