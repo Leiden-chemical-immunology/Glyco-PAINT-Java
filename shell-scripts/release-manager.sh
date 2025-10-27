@@ -56,15 +56,15 @@ set -euo pipefail
 #
 # WHERE TO CHECK RESULTS:
 #   🔹 GitHub Releases:
-#        https://github.com/jjabakker/JavaPaintProjects/releases
+#        https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java/releases
 #        → Verify that the new release appears with attached JARs and notes
 #
 #   🔹 GitHub Actions (CI/CD logs):
-#        https://github.com/jjabakker/JavaPaintProjects/actions
+#        https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java/actions
 #        → Confirm that the “Build, Release, and Publish Site” workflow ran successfully
 #
 #   🔹 GitHub Pages (Maven site):
-#        https://jjabakker.github.io/JavaPaintProjects/
+#        https://leiden-chemical-immunology.github.io/Glyco-PAINT-Java/
 #        → Confirm that the site updated with the new project documentation
 ###############################################################################
 
