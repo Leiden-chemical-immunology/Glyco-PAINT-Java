@@ -103,6 +103,14 @@ In the 'Brightfield Images' directory the corresponding Brightfield images are c
 
 ![brightfield-image](/Users/hans/JavaPaintProjects/doc/Pictures/brightfield-image.png) 
 
+
+
+#### TrackMate Reproducibility 
+
+Maybe surprisingly, TrackMate results are not entirely reproducible. For instance, two runs immediately after each other may yield slightly different results, such as the differing number of spots or tracks (one spot more or less, may cause one track more or less). Differences in the number of tracks can result in variations in certain square attributes. While these differences are negligible for practical purposes, they are worth noting.  
+
+
+
 #### The Paint Console
 
 Each application of the Glyco-PAINT pipeline opens its own Paint Cnsole. In the totel of the window is listed what application the Paint Console is attached to.
@@ -125,13 +133,33 @@ Every time the Glyco-PAINT Fiji plugin (or any other component of the pipeline) 
 
 If the 'Generate Squares' checkbox was ticked before the the calculation was started, squares will be generated for all the Recordings in the selected Experiments. The user can chose several squares sizes, 20x20 has been found to be a good choices.
 
+
+
 The following steps are followed:
 
 1. Define the squares (with coordinates)
-2. Determine in which squares the  tracks of the recording are locate.   
-3. For each square, provided there are sufficient tracks, the Tau and R² are calculated.
-4. For ecah square, the density is calculated. 
-5. For each square some statistical information on the tracks is gathered
+2. Determine in which squares the tracks of the recording are located.
+3. Calculate the recording background density
+4. Caculate for each square:
+   - the Tau and R² (provided there are sufficient tracks,)
+   - the density
+   - the density ratio  
+   - the varability
+   - the Tau and R²
+
+5. For each square determine whether it is 'selected', when all three conditions are met:
+   - the variability < the maximum allowed variability 
+   - the R² > the minimum required R²
+   - the density ratio > the min required density ratio 
+
+6. For the 'selected' squares in the recording calculate:
+   - the Tau and R²
+   - the density
+7. For all squareds calculated simople ([Square calculations](https://github.com/jjabakker/JavaPaintProjects/blob/main/paint-generate-squares/src/main/java/generatesquares/calc/CalculateAttributes.java))
+   - the Tau and R² (provided there are sufficient tracks,)
+   - the density
+   - the density ratio 
+8. For each square some statistical information on the tracks is gathered
 
 The results are stored in Experiment-level 'Squares' files
 
