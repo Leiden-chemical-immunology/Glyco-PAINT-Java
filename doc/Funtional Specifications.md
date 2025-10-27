@@ -133,14 +133,12 @@ Every time the Glyco-PAINT Fiji plugin (or any other component of the pipeline) 
 
 If the 'Generate Squares' checkbox was ticked before the the calculation was started, squares will be generated for all the Recordings in the selected Experiments. The user can chose several squares sizes, 20x20 has been found to be a good choices.
 
-
-
 The following steps are followed:
 
 1. Define the squares (with coordinates)
 2. Determine in which squares the tracks of the recording are located.
 3. Calculate the recording background density
-4. Caculate for each square:
+4. Calculate for each square:
    - the Tau and R² (provided there are sufficient tracks,)
    - the density
    - the density ratio  
@@ -152,24 +150,32 @@ The following steps are followed:
    - the R² > the minimum required R²
    - the density ratio > the min required density ratio 
 
-6. For the 'selected' squares in the recording calculate:
+6. Calculate for the 'selected' squares in the recording:
    - the Tau and R²
    - the density
-7. For all squareds calculated simople ([Square calculations](https://github.com/jjabakker/JavaPaintProjects/blob/main/paint-generate-squares/src/main/java/generatesquares/calc/CalculateAttributes.java))
+7. Calculate for all squares  ([Square calculations](https://github.com/jjabakker/JavaPaintProjects/blob/main/paint-generate-squares/src/main/java/generatesquares/calc/CalculateAttributes.java))
    - the Tau and R² (provided there are sufficient tracks,)
    - the density
    - the density ratio 
-8. For each square some statistical information on the tracks is gathered
+8. Calculate for all squares some statistical information on the tracks 
+   - displacement
+   - speed
+   - duration
+
 
 The results are stored in Experiment-level 'Squares' files
 
 
 
-Following the TrackMate processing, for each Recording a statistical procedure determines the background density, tye number of tracks per square  BackgroundEstimationResult estimateBackgroundDensit 
+#### Calculation of Tau
 
-- Number of Tracks in Background 
-- Number of Squares in Background
-- Average Tracks in Background
+Tau is a measure used to characterise the distribution of track durations. To calculate Tau, a frequency distribution is created from the track durations. These durations are then ordered and fitted with a one-phase exponential decay curve to obtain the Tau value. 
+
+The Tau calculation is only performed if a minimum number of tracks is present (because with insuffcient tracks the calculation is unlikely to be meaningful).  The quality of curve fitting is expressed in an R² parameter. An R² value of 1 indicates a perfect fit, while values lower than 0.5 indicate a low-quality fit. The user-specified ‘Min allowable R-squared’ parameter sets a limit to the acceptable quality of fit.
+
+To calculate one Tau for the entire recording, all tracks within squares that meet the specified selection criteria are considered. These criteria include the minimum required density ratio, maximum allowable variability, minimum and maximum track durations, and neighbour state. 
+
+Visual feedback on the fitting process is provided when the "Plot Curve Fitting" flag  (in the "Generate Squares" section) is set to true. In the 'Tau Fitting Plots' directory under the Experiment directories,  plots are gathered in 'Failed' and 'Success' sub directories. 
 
 
 
