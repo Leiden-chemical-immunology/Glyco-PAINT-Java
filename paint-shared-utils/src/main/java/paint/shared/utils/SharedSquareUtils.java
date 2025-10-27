@@ -28,8 +28,6 @@ public class SharedSquareUtils {
         double x1 = square.getX1();
         double y1 = square.getY1();
 
-        int trackCount = tracks.rowCount();
-
         boolean isLastCol = square.getColNumber() == lastRowCol;
         boolean isLastRow = square.getRowNumber() == lastRowCol;
 

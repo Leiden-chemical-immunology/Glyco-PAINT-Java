@@ -60,7 +60,6 @@ public class TrackCsvWriter {
 
         final List<Track> tracks = new ArrayList<>();
         int totalSpots = 0;
-        int newTrackId = 0;
 
         for (Integer trackId : trackIDs) {
             TrackAttributes trackAttributes = calculateTrackAttributes(trackModel, trackId, TIME_INTERVAL);

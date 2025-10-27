@@ -67,7 +67,7 @@ public class GenerateSquaresProcessor {
 
     // @formatter:off
     private static int     numberOfSquaresInRecording;     // Total number of squares per recording.
-    private static int     numberOfSquaresInOneDimension;  // Total number of squares per on one dimnension.
+    private static int     numberOfSquaresInOneDimension;  // Total number of squares per on one dimension.
     private static Path    projectPath;
     private static boolean plotFittingCurves;
     // @formatter:on
@@ -259,7 +259,7 @@ public class GenerateSquaresProcessor {
                 track.setLabelNumber(labelNumber);
             }
 
-            // Rebuild the table from the modified tracks (ensures table reflects the updates)
+            // Rebuild the table from the modified tracks (ensures the table reflects the updates)
             Table updatedSquareTracks = trackTableIO.toTable(tracks);
 
             // Append updated tracks into the global recording table

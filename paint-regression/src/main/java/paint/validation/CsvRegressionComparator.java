@@ -66,34 +66,33 @@ public class CsvRegressionComparator {
             "Run Time", "Time Stamp"
     ));
 
-    // ----------------------------------------------------------------------
-    // Dual logging: console + file
-    private static PrintStream dualOut;
-
     private static void setupDualLogging(Path logDir) throws IOException {
         String timestamp = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
         Path logFile = logDir.resolve("paint-regression-" + timestamp + ".log");
         Files.createDirectories(logFile.getParent());
 
-        // Keep reference to original console output
+        // Keep reference to the original console output
         final PrintStream originalOut = System.out;
         final PrintStream fileOut = new PrintStream(Files.newOutputStream(logFile));
 
-        dualOut = new PrintStream(new OutputStream() {
+        // use original, not System.out
+        // ----------------------------------------------------------------------
+        // Dual logging: console + file
+        PrintStream dualOut = new PrintStream(new OutputStream() {
             @Override
-            public void write(int b) throws IOException {
+            public void write(int b) {
                 originalOut.write(b);  // use original, not System.out
                 fileOut.write(b);
             }
 
             @Override
-            public void write(byte[] b, int off, int len) throws IOException {
+            public void write(byte[] b, int off, int len) {
                 originalOut.write(b, off, len);
                 fileOut.write(b, off, len);
             }
 
             @Override
-            public void flush() throws IOException {
+            public void flush() {
                 originalOut.flush();
                 fileOut.flush();
             }

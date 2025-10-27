@@ -70,9 +70,9 @@ public final class ExperimentDataLoader {
             if (!recording.isProcessFlag()) {
                 continue;
             }
-            String recName = recording.getRecordingName();
+
             Table recTracks = tracksTable.where(
-                    tracksTable.stringColumn("Recording Name").isEqualTo(recording.getRecordingName()));;
+                    tracksTable.stringColumn("Recording Name").isEqualTo(recording.getRecordingName()));
             PaintLogger.debugf("Found %d tracks for recording '%s'", recTracks.rowCount(), recording.getRecordingName());
             recording.setTracks(trackIO.toEntities(recTracks));
             recording.setTracksTable(recTracks);
