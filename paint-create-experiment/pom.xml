@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.2</version>
+        <version>0.0.3-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -19,7 +19,7 @@
     <description>Standalone desktop app for creating experiments</description>
 
     <properties>
-        <project.build.outputTimestamp>2025-10-27T20:07:51Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-10-27T20:07:56Z</project.build.outputTimestamp>
         <app.name>Create Experiment</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-create-experiment.icns</app.icon.macos>

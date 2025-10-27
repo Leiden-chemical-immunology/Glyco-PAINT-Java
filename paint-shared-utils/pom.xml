@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.2</version>
+        <version>0.0.3-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -20,7 +20,7 @@
 
     <properties>
         <!-- reproducible builds -->
-        <project.build.outputTimestamp>2025-10-27T20:07:51Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-10-27T20:07:56Z</project.build.outputTimestamp>
 
         <!-- default: local build copies to Fiji -->
         <skip.copy.to.fiji>false</skip.copy.to.fiji>
