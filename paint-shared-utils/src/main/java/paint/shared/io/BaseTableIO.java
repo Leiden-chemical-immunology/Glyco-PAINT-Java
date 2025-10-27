@@ -1,14 +1,16 @@
 package paint.shared.io;
 
-import tech.tablesaw.api.ColumnType;
-import tech.tablesaw.api.Table;
+import tech.tablesaw.api.*;
 import tech.tablesaw.columns.Column;
 import tech.tablesaw.io.csv.CsvReadOptions;
 import tech.tablesaw.io.csv.CsvWriteOptions;
+import java.text.DecimalFormatSymbols;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -192,12 +194,40 @@ public abstract class BaseTableIO {
      * @param target target file path
      * @throws IOException if writing fails
      */
+
     public void writeCsv(Table table, Path target) throws IOException {
+        // Force locale-stable, fixed 3-decimal formatting
+        NumberFormat nf = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.US));
+
+        // Build an export table with numeric columns materialized as formatted strings
+        Table export = Table.create(table.name());
+        for (Column<?> col : table.columns()) {
+            if (col instanceof DoubleColumn) {
+                DoubleColumn dc = (DoubleColumn) col;
+                StringColumn sc = StringColumn.create(col.name());
+                for (int i = 0; i < dc.size(); i++) {
+                    sc.append(dc.isMissing(i) ? "" : nf.format(dc.getDouble(i)));
+                }
+                export.addColumns(sc);
+            } else if (col instanceof FloatColumn) {
+                FloatColumn fc = (FloatColumn) col;
+                StringColumn sc = StringColumn.create(col.name());
+                for (int i = 0; i < fc.size(); i++) {
+                    sc.append(fc.isMissing(i) ? "" : nf.format(fc.getFloat(i)));
+                }
+                export.addColumns(sc);
+            } else {
+                // Non-floating types: add as-is (you can copy or reuse the same instance)
+                export.addColumns(col);
+            }
+        }
+
         Files.createDirectories(target.getParent());
         CsvWriteOptions opts = CsvWriteOptions.builder(target.toFile())
                 .header(true)
                 .separator(',')
                 .build();
-        table.write().usingOptions(opts);
+
+        export.write().usingOptions(opts);
     }
 }
