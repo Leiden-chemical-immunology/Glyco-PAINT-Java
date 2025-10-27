@@ -1,52 +1,50 @@
+/******************************************************************************
+ *  Class:        TracksCsvComparator.java
+ *  Package:      validation
+ *
+ *  PURPOSE:
+ *    Compares two Paint-generated “Tracks” CSV datasets (typically from Python
+ *    and Java outputs) and evaluates track-level correspondence across metrics
+ *    such as duration, displacement, speed, distance, confinement, and position.
+ *
+ *  DESCRIPTION:
+ *    The comparator reads, normalizes, and aligns trajectory data by recording
+ *    name and track ID. It performs both strict and diagnostic comparisons using
+ *    configurable tolerance thresholds and computes per-track match statistics.
+ *    Outputs include normalized CSVs, diagnostic scoring files, tolerance
+ *    optimization results, and overall summary reports.
+ *
+ *  RESPONSIBILITIES:
+ *    • Normalize and align datasets for comparison
+ *    • Perform exact and approximate track matching
+ *    • Evaluate numeric differences with configurable tolerances
+ *    • Generate validation diagnostics and summary CSV reports
+ *    • Optimize tolerance settings based on deviation statistics
+ *
+ *  USAGE EXAMPLE:
+ *    TracksCsvComparator.main(new String[]{});
+ *
+ *  DEPENDENCIES:
+ *    - java.io
+ *    - java.nio.file
+ *    - java.util
+ *
+ *  AUTHOR:
+ *    Hans Bakker (jjabakker)
+ *
+ *  UPDATED:
+ *    2025-10-27
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package validation;
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
-/**
- * The TracksCsvComparator class is responsible for comparing two CSV datasets representing
- * trajectories or tracks. It provides utilities to normalize CSV data, perform matching
- * between tracks based on tolerance thresholds, and generate diagnostic and summary outputs.
- * The comparison process evaluates multiple metrics such as duration, displacement, speed,
- * distance, containment, and positional coordinates.
- *
- * The class contains methods for normalization, grouping, tolerance optimization, and
- * exact and approximate track matching. Additionally, it generates diagnostic outputs and
- * summary CSVs for validating the results of the comparison process. Key features of this
- * class include handling CSV read/write operations, computing match scores, and optimizing
- * parameters for better matching.
- *
- * Fields:
- * - XY_TOLERANCE: Tolerance for positional X/Y deviations.
- * - DURATION_TOLERANCE: Tolerance for duration deviations.
- * - SPEED_TOLERANCE: Tolerance for speed deviations.
- * - DISPLACEMENT_TOLERANCE: Tolerance for displacement deviations.
- * - DIST_TOLERANCE: Tolerance for distance matching.
- * - CONFINEMENT_TOLERANCE: Tolerance for confinement deviations.
- * - MAX_ACCEPTABLE_SCORE: Maximum RMS score allowed for a match.
- * - COMPARE_COLUMNS: Columns used for comparison across datasets.
- * - COLUMN_MAP: Mapping between old and new CSV column names.
- *
- * Methods:
- * - main: Entry point for the program; orchestrates data normalization, matching, and output generation.
- * - normalizeRecordingName: Processes recording names by removing threshold suffixes.
- * - findClosestRecording: Finds the best matching recording name among candidates.
- * - normalizeAndSort: Normalizes and sorts rows based on recording names and track IDs.
- * - writeNormalizedCsv: Writes normalized data to disk for verification.
- * - findMatches: Performs matching between old and new tracks based on configurations.
- * - findBestCandidate: Computes and returns the best possible match for a given reference track.
- * - summarize: Generates a CSV summary of comparison results, capturing perfect, reasonable, and unmatched IDs.
- * - diff: Calculates normalized differences for fields to be used in RMS scoring.
- * - parseDoubleSafe: Safely parses strings into doubles, returning NaN on failure.
- * - parseIntSafe: Safely parses strings into integers, returning -1 on failure.
- * - readCsv: Reads a CSV file into a list of maps, retaining column-value associations.
- * - escapeCsv: Escapes fields containing special characters such as commas or quotes.
- * - groupBy: Groups rows by values in a given column.
- * - fmt: Formats numbers to three decimal places for diagnostic output.
- * - optimizeTolerances: Evaluates threshold effects on match counts to optimize tolerances.
- * - percentWithin: Computes the percentage of deviations that are within specified tolerances.
- */
 public class TracksCsvComparator {
 
     /**
@@ -103,8 +101,8 @@ public class TracksCsvComparator {
         }
 
         // Define input and output file locations
-        Path oldCsv     = Paths.get("/Users/hans/Paint Test Project/221012 - Python/Tracks.csv");
-        Path newCsv     = Paths.get("/Users/hans/Paint Test Project/221012/Tracks Java.csv");
+        Path oldCsv     = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Tracks.csv");
+        Path newCsv     = Paths.get("/Users/hans/Paint Test Project/221012/Tracks.csv");
 
         Path outCsv     = validatePath.resolve("Tracks Validation - Comparison.csv");
         Path diagCsv    = validatePath.resolve("Tracks Validation - Comparison Diagnostics.csv");

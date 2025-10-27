@@ -1,51 +1,50 @@
+/******************************************************************************
+ *  Class:        SquaresCsvComparatorUnified.java
+ *  Package:      validation
+ *
+ *  PURPOSE:
+ *    Provides a unified CSV comparison framework for validating and aligning
+ *    Paint-generated “Squares” data across different systems (e.g., Python vs. Java).
+ *    Performs normalization, precision analysis, field-level comparison, and
+ *    tolerance optimization.
+ *
+ *  DESCRIPTION:
+ *    This class reads, normalizes, and compares two datasets to ensure data
+ *    consistency. It detects numeric and textual differences, computes relative
+ *    deviations, evaluates per-field tolerance ranges, and generates multiple
+ *    CSV-based validation outputs for detailed analysis and summary reporting.
+ *
+ *  RESPONSIBILITIES:
+ *    • Normalize datasets into a shared schema
+ *    • Compare fields across Paint versions (old vs. new)
+ *    • Generate per-field numeric and textual difference reports
+ *    • Compute shared numeric precision and deviation tolerances
+ *    • Summarize selection discrepancies between datasets
+ *
+ *  USAGE EXAMPLE:
+ *    SquaresCsvComparatorUnified.main(new String[]{});
+ *
+ *  DEPENDENCIES:
+ *    - java.io
+ *    - java.nio.file
+ *    - java.util
+ *
+ *  AUTHOR:
+ *    Hans Bakker (jjabakker)
+ *
+ *  UPDATED:
+ *    2025-10-27
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package validation;
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
-/**
- * The SquaresCsvComparatorUnified class provides functionality to compare two CSV datasets
- * aligning them to a unified schema, detecting differences, and generating detailed comparison
- * reports. This class is primarily used to normalize and analyze discrepancies between data
- * generated from two different systems (e.g., Python and Java).
- *
- * Fields:
- * - FIELD_MAP: Defines column mapping from old CSV schema to the unified schema.
- * - NUMERIC_FIELDS_LIST: List of field names treated as numeric.
- * - NUMERIC_FIELDS: Set of numeric field names for precision handling.
- * - squaresWithDiffs: Tracks squares with detected differences.
- * - ROUNDING_MAP: Configures rounding precision for specific numeric fields.
- * - TOLERANCE_MAP: Map of allowed tolerance thresholds for numeric comparisons.
- * - EFFECTIVE_PRECISION_MAP: Maps effective precision (decimal places) per numeric field.
- *
- * Methods:
- * - main(String[] args): Entry point to execute the CSV comparison process.
- * - readCsv(Path p): Reads a CSV file and returns its content as rows of data.
- * - writeCsv(List<Map<String, String>> rows, Path file): Writes rows of data to CSV, applying normalization.
- * - escapeCsv(String s): Escapes special characters in CSV fields.
- * - normalizeOld(List<Map<String, String>> oldRows): Normalizes the old dataset (e.g., Python CSV).
- * - normalizeNew(List<Map<String, String>> newRows): Normalizes the new dataset (e.g., Java CSV).
- * - adjustIndex(Map<String, String> m, String k): Adjusts 1-based indices to 0-based in the dataset.
- * - computeEffectivePrecisions(List<Map<String, String>> a, List<Map<String, String>> b, Set<String> numeric):
- *   Determines the effective numeric precision for numeric fields in the datasets.
- * - detectPrecision(List<Map<String, String>> rows, String f): Detects maximum decimal precision for a field.
- * - compareStatus(List<Map<String, String>> oldN, List<Map<String, String>> newN, Path outDir): Compares normalized datasets and generates a field-by-field comparison report.
- * - writeDetailed(List<Map<String, String>> oldN, List<Map<String, String>> newN, Path outFile): Writes a detailed numeric differences report.
- * - writeSelectedOverview(List<Map<String, String>> oldN, List<Map<String, String>> newN, Path outFile): Creates a compact comparison overview of selection criteria across datasets
- * .
- * - val(Map<String, String> m, String k): Extracts a value from a row map or returns an empty string if missing.
- * - optimizeTolerances(Path comparisonCsv, Path outCsv): Analyzes comparison data to suggest optimal per-field tolerances.
- * - percentWithin(List<Double> vals, double tol): Calculates percentage of values within a tolerance threshold.
- * - key(Map<String, String> r): Creates a composite key for a row based on specific fields.
- * - parseDouble(String s): Parses a string to Double, returning null for invalid inputs.
- * - toDouble(String s): Parses a string to primitive double, returning 0.0 for invalid inputs.
- * - format4(double v): Formats a double with 4 decimal places.
- * - format1(double v): Formats a double with 1 decimal place.
- * - relativeDeviation(String oldVal, String newVal): Computes relative deviation (percent) between two numeric strings.
- * - isSelected(Map<String, String> r): Evaluates if a row meets predefined "selection" criteria.
- * - isOptionalZero(String f): Checks if a field is treated as an "optional zero" numeric field.
- */
 public class SquaresCsvComparatorUnified {
 
     /**
