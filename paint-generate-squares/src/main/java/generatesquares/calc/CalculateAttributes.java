@@ -128,34 +128,30 @@ public class CalculateAttributes {
                 continue;
             }
 
-            double variability = calcVariability(table, squareNumber, numberOfSquaresInRecording, 10);
-            square.setVariability(round(variability, 3));
+            // @format:off
+            square.setVariability(                   round(calcVariability(table, squareNumber, numberOfSquaresInRecording, 10),    2));
+            square.setDensity(                       round(calculateDensity(tracksInSquare.size(), area, RECORDING_DURATION, concentration),  3));
+            square.setDensityRatio(                  round(calculateDensityRatio(tracksInSquare.size(), meanBackgroundTracks),                2));
+            square.setDensityRatioOri(               round(calculateDensityRatio(tracksInSquare.size(), backgroundTracksOri),                 2));
 
-            double density = calculateDensity(tracksInSquare.size(), area, RECORDING_DURATION, concentration);
-            square.setDensity(round(density, 4));
+            square.setMedianDiffusionCoefficient(    round(tracksInSquareTable.doubleColumn("Diffusion Coefficient").median(),    2));
+            square.setMedianDiffusionCoefficientExt( round(tracksInSquareTable.doubleColumn("Diffusion Coefficient Ext").median(),2));
 
-            double densityRatio = calculateDensityRatio(tracksInSquare.size(), meanBackgroundTracks);
-            square.setDensityRatio(round(densityRatio, 3));
+            square.setMedianDisplacement(            round(tracksInSquareTable.doubleColumn("Track Displacement").median(),       1));
+            square.setMaxDisplacement(               round(tracksInSquareTable.doubleColumn("Track Displacement").max(),          1));
+            square.setTotalDisplacement(             round(tracksInSquareTable.doubleColumn("Track Displacement").sum(),          1));
 
-            double densityRatioOri = calculateDensityRatio(tracksInSquare.size(), backgroundTracksOri);
-            square.setDensityRatioOri(round(densityRatioOri, 3));
+            square.setMedianMaxSpeed(                round(tracksInSquareTable.doubleColumn("Track Max Speed").median(),          1));
+            square.setMaxMaxSpeed(                   round(tracksInSquareTable.doubleColumn("Track Max Speed").max(),             1));
 
-            square.setMedianDiffusionCoefficient(tracksInSquareTable.doubleColumn("Diffusion Coefficient").median());
-            square.setMedianDiffusionCoefficientExt(tracksInSquareTable.doubleColumn("Diffusion Coefficient Ext").median());
+            square.setMedianMedianSpeed(             round(tracksInSquareTable.doubleColumn("Track Median Speed").median(),       1));
+            square.setMaxMedianSpeed(                round(tracksInSquareTable.doubleColumn("Track Median Speed").max(),          1));
 
-            square.setMedianDisplacement(tracksInSquareTable.doubleColumn("Track Displacement").median());
-            square.setMaxDisplacement(tracksInSquareTable.doubleColumn("Track Displacement").max());
-            square.setTotalDisplacement(tracksInSquareTable.doubleColumn("Track Displacement").sum());
+            square.setMaxTrackDuration(              round(tracksInSquareTable.doubleColumn("Track Duration").max(),              1));
+            square.setTotalTrackDuration(            round(tracksInSquareTable.doubleColumn("Track Duration").sum(),              1));
+            square.setMedianTrackDuration(           round(tracksInSquareTable.doubleColumn("Track Duration").median(),           1));
+            // @format:on
 
-            square.setMedianMaxSpeed(tracksInSquareTable.doubleColumn("Track Max Speed").median());
-            square.setMaxMaxSpeed(tracksInSquareTable.doubleColumn("Track Max Speed").max());
-
-            square.setMedianMedianSpeed(tracksInSquareTable.doubleColumn("Track Median Speed").median());
-            square.setMaxMedianSpeed(tracksInSquareTable.doubleColumn("Track Median Speed").max());
-
-            square.setMaxTrackDuration(tracksInSquareTable.doubleColumn("Track Duration").max());
-            square.setTotalTrackDuration(tracksInSquareTable.doubleColumn("Track Duration").sum());
-            square.setMedianTrackDuration(tracksInSquareTable.doubleColumn("Track Duration").median());
         }
 
         applyVisibilityFilter(recording,
