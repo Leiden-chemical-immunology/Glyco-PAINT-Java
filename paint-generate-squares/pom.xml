@@ -114,7 +114,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>generatesquares.GenerateSquares</mainClass>
+                            <mainClass>paint.generatesquares.GenerateSquares</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -235,7 +235,7 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                         <minVersion>1.8.0</minVersion>
                     </jre>
                     <classPath>
-                        <mainClass>generatesquares.GenerateSquares</mainClass>
+                        <mainClass>paint.generatesquares.GenerateSquares</mainClass>
                     </classPath>
                     <headerType>gui</headerType>
                     <errTitle>${app.name}</errTitle>

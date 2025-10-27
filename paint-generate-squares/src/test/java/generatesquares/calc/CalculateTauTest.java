@@ -1,5 +1,7 @@
 package generatesquares.calc;
 
+import paint.generatesquares.calc.CalculateTau;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;

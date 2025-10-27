@@ -1,6 +1,6 @@
 package paint.fiji.utils;
 
-import generatesquares.GenerateSquaresHeadless;
+import paint.generatesquares.GenerateSquaresHeadless;
 import org.apache.commons.io.FileUtils;
 import paint.shared.utils.PaintLogger;
 

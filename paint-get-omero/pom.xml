@@ -52,7 +52,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>getomero.GetOmeroUI</mainClass>
+                            <mainClass>paint.getomero.GetOmeroUI</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

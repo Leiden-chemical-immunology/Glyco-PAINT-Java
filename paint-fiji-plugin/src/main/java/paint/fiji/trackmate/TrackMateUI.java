@@ -8,7 +8,7 @@ import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.JarInfoLogger;
 import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
-import generatesquares.GenerateSquaresHeadless;
+import paint.generatesquares.GenerateSquaresHeadless;
 import paint.shared.utils.PaintRuntime;
 
 import javax.swing.*;

@@ -47,5 +47,5 @@ Class-Path: paint-shared-utils-1.0.0-SNAPSHOT.jar commons-csv-1.10.0.j
  .0.jar
 Build-Jdk-Spec: 1.8
 Created-By: Maven Archiver 3.6.0
-Main-Class: generatesquares.GenerateSquares
+Main-Class: paint.generatesquares.GenerateSquares
 
