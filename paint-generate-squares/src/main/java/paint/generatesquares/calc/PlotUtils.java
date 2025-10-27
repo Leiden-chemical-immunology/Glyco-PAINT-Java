@@ -1,38 +1,40 @@
 /******************************************************************************
  *  Class:        PlotUtils.java
- *  Package:      generatesquares.calc
+ *  Package:      paint.generatesquares.calc
  *
  *  PURPOSE:
- *    Provides lightweight rendering utilities for generating Tau fitting plots
- *    and related graphical visualizations.
+ *    Provides lightweight rendering utilities for generating Tau‐fitting plots,
+ *    histograms and related graphical visualizations within the Paint experiment
+ *    workflow.
  *
  *  DESCRIPTION:
- *    This utility class renders 2D visual representations of Tau fits and their
- *    corresponding frequency data. It supports rendering of data points, fitted
- *    exponential decay curves, labeled axes, and annotations summarizing Tau
- *    and R² statistics. The plots are rendered directly into a BufferedImage,
- *    suitable for saving or embedding in reports and GUIs.
+ *    This utility class supports rendering of 2D visual representations such as:
+ *      • Frequency–duration scatter plots with exponential curve fits
+ *      • Histograms of track counts per square and background estimation
+ *    Plots are rendered into BufferedImages or PDF documents and can be saved or
+ *    embedded in reports and GUIs.
  *
  *  RESPONSIBILITIES:
- *    • Draw frequency–duration scatter plots
- *    • Render fitted exponential decay curves
- *    • Display Tau and R² annotations
- *    • Produce anti-aliased BufferedImage output for use in Paint analysis
+ *    • Draw frequency–duration scatter plots and fitted exponential curves
+ *    • Display Tau and R² annotations on plots
+ *    • Build histograms of track counts and background counts per square
+ *    • Produce antialiased BufferedImage or PDF output for use in Paint analysis
  *
  *  USAGE EXAMPLE:
- *    BufferedImage img = PlotUtils.renderTauPlot(x, y, result, false, 800, 600);
- *    ImageIO.write(img, "png", outputFile);
+ *    BufferedImage img = PlotUtils.renderTauPlot(x, y, result, false, 800,600);
+ *    PlotUtils.exportExperimentHistogramsToPdf(experiment, outputFile);
  *
  *  DEPENDENCIES:
- *    - java.awt.*
- *    - java.awt.image.BufferedImage
- *    - generatesquares.calc.CalculateTau
+ *    – paint.shared.objects.{Experiment, Recording, Square}
+ *    – paint.shared.utils.PaintLogger
+ *    – paint.generatesquares.calc.SquareUtils
+ *    – org.apache.pdfbox and de.rototor.pdfbox.graphics2d.PdfBoxGraphics2D
  *
  *  AUTHOR:
  *    Hans Bakker (jjabakker)
  *
  *  UPDATED:
- *    2025-10-23
+ *    2025-10-27
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -42,8 +44,22 @@ package paint.generatesquares.calc;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.List;
+import de.rototor.pdfbox.graphics2d.PdfBoxGraphics2D;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import paint.shared.objects.Experiment;
+import paint.shared.objects.Recording;
+import paint.shared.objects.Square;
+import paint.shared.utils.PaintLogger;
 
+import static paint.generatesquares.calc.SquareUtils.calculateBackgroundDensity;
 
 public class PlotUtils {
 
@@ -120,9 +136,9 @@ public class PlotUtils {
         // --- Draw data points ---
         g2.setColor(new Color(30, 100, 200)); // blue tone
         for (int i = 0; i < x.length; i++) {
-            int px = (int) (marginLeft + (x[i] - minX) * xScale);
-            int py = (int) (y0 - (y[i] - minY) * yScale);
-            g2.fillOval(px - 3, py - 3, 6, 6); // 6px diameter point
+            int px = (int)(marginLeft + (x[i] - minX) * xScale);
+            int py = (int)(y0 - (y[i] - minY) * yScale);
+            g2.fillOval(px - 3, py - 3, 6, 6);
         }
 
         // --- Draw fitted exponential curve (if available) ---
@@ -176,5 +192,201 @@ public class PlotUtils {
         // --- Cleanup and return image ---
         g2.dispose();
         return img;
+    }
+
+    /**
+     * Exports histograms of the experimental data to a PDF file. Each recording of the
+     * experiment is represented as a histogram in a separate page within the generated PDF.
+     *
+     * @param experiment The experiment containing recordings with track count data to be exported.
+     * @param outputFile The output {@code Path} where the generated PDF file will be saved.
+     * @throws IOException If an error occurs during the creation or saving of the PDF file.
+     */
+    public static void exportExperimentHistogramsToPdf(Experiment experiment, Path outputFile) throws IOException {
+        try (PDDocument doc = new PDDocument()) {
+            for (Recording recording : experiment.getRecordings()) {
+                List<Square> squares = recording.getSquaresOfRecording();
+                if (squares == null || squares.isEmpty()) {
+                    System.out.printf("Recording '%s': no squares%n", recording.getRecordingName());
+                    continue;
+                }
+
+                SquareUtils.BackgroundEstimationResult backgroundResult = calculateBackgroundDensity(squares);
+                Set<Square> backgroundSet = new HashSet<>(backgroundResult.getBackgroundSquares());
+                double backgroundTracksPerSquare = backgroundResult.getBackgroundMean();
+
+                int totalSquares = squares.size();
+                int nBackground  = backgroundSet.size();
+                int totalTracks  = squares.stream().mapToInt(Square::getNumberOfTracks).sum();
+                int backgroundTracksTotal = backgroundSet.stream().mapToInt(Square::getNumberOfTracks).sum();
+
+                int maxTracks = squares.stream().mapToInt(Square::getNumberOfTracks).max().orElse(0);
+                int binSize   = Math.max(1, maxTracks / 20);
+                int binCount  = (maxTracks / binSize) + 1;
+
+                int[] allBins = new int[binCount];
+                int[] bgBins  = new int[binCount];
+
+                for (Square sq : squares) {
+                    int n   = sq.getNumberOfTracks();
+                    int bin = Math.min(n / binSize, binCount - 1);
+                    allBins[bin]++;
+                    if (backgroundSet.contains(sq)) {
+                        bgBins[bin]++;
+                    }
+                }
+
+                PDPage page   = new PDPage(PDRectangle.A4);
+                doc.addPage(page);
+
+                float pageWidth  = page.getMediaBox().getWidth();
+                float pageHeight = page.getMediaBox().getHeight();
+
+                int plotWidth  = 800;
+                int plotHeight = 600;
+
+                PdfBoxGraphics2D g2 = new PdfBoxGraphics2D(doc, plotWidth, plotHeight);
+
+                drawHistogram(g2,
+                              plotWidth,
+                              plotHeight,
+                              allBins,
+                              bgBins,
+                              binSize,
+                              recording.getRecordingName(),
+                              totalSquares,
+                              totalTracks,
+                              nBackground,
+                              backgroundTracksTotal,
+                              backgroundTracksPerSquare);
+
+                g2.dispose();
+                PDFormXObject formXObject = g2.getXFormObject();
+
+                float margin  = 36f;
+                float maxW    = pageWidth  - 2 * margin;
+                float maxH    = pageHeight - 2 * margin;
+                float scale   = Math.min(Math.min(maxW / plotWidth, maxH / plotHeight), 1.0f);
+                float scaledW = plotWidth  * scale;
+                float scaledH = plotHeight * scale;
+
+                float offsetX = (pageWidth  - scaledW) / 2f;
+                float offsetY = (pageHeight - scaledH) / 2f;
+
+                try (PDPageContentStream contentStream =
+                             new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, true, true)) {
+                    contentStream.saveGraphicsState();
+                    contentStream.transform(org.apache.pdfbox.util.Matrix.getTranslateInstance(offsetX, offsetY));
+                    contentStream.transform(org.apache.pdfbox.util.Matrix.getScaleInstance(scale, scale));
+                    contentStream.drawForm(formXObject);
+                    contentStream.restoreGraphicsState();
+                }
+                PaintLogger.debugf("Added histogram for recording '%s'%n", recording.getRecordingName());
+            }
+
+            PaintLogger.debugf("Added %d pages to %s%n", doc.getNumberOfPages(), outputFile);
+            doc.save(outputFile.toFile());
+        }
+    }
+
+    /**
+     * Draws a histogram representing track count distributions for a given recording.
+     *
+     * @param g2                     The {@code Graphics2D} object used for rendering the histogram.
+     * @param w                       The width of the canvas where the histogram is to be drawn.
+     * @param h                       The height of the canvas where the histogram is to be drawn.
+     * @param allBins                An array containing the total count of tracks for each bin.
+     * @param bgBins                 An array containing the background track counts for each bin.
+     * @param binSize                The approximate size of each bin (number of tracks).
+     * @param title                  The title of the histogram to be displayed.
+     * @param totalSquares           The total number of squares in the recording.
+     * @param totalTracks            The total number of tracks in the recording.
+     * @param nBackground            The number of squares identified as background squares.
+     * @param backgroundTracksTotal  The total number of tracks within the background squares.
+     * @param avgTracksInBackground  The average number of tracks found in the background squares.
+     */
+    private static void drawHistogram(Graphics2D g2,
+                                      int w,
+                                      int h,
+                                      int[] allBins,
+                                      int[] bgBins,
+                                      int binSize,
+                                      String title,
+                                      int totalSquares,
+                                      int totalTracks,
+                                      int nBackground,
+                                      int backgroundTracksTotal,
+                                      double avgTracksInBackground) {
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(Color.WHITE);
+        g2.fillRect(0, 0, w, h);
+
+        int marginLeft   = 70;
+        int marginBottom = 50;
+        int marginTop    = 50;
+        int marginRight  = 40;
+
+        int binCount     = allBins.length;
+        int maxBinCount = Arrays.stream(allBins).max().orElse(1);
+
+        double xStep  = (double)(w - marginLeft - marginRight) / binCount;
+        double yScale = (double)(h - marginTop - marginBottom) / maxBinCount;
+
+        g2.setColor(Color.GRAY);
+        int x0 = marginLeft;
+        int y0 = h - marginBottom;
+        g2.drawLine(x0, y0, w - marginRight, y0);
+        g2.drawLine(x0, y0, x0, marginTop);
+
+        g2.setColor(Color.BLACK);
+        int nTicks = 5;
+        for (int i = 0; i <= nTicks; i++) {
+            int y = y0 - (i * (h - marginTop - marginBottom) / nTicks);
+            int value = (int)Math.round(i * (double)maxBinCount / nTicks);
+            g2.drawLine(x0 - 5, y, x0, y);
+            g2.drawString(String.valueOf(value), x0 - 45, y + 5);
+        }
+
+        for (int i = 0; i < binCount; i++) {
+            int total      = allBins[i];
+            int background = bgBins[i];
+            int x           = (int)(x0 + i * xStep);
+            int barW        = (int)(xStep * 0.8);
+
+            if (background > 0) {
+                int bgHeight = (int)(background * yScale);
+                int bgY      = y0 - bgHeight;
+                g2.setColor(new Color(100,160,255,180));
+                g2.fillRect(x, bgY, barW, bgHeight);
+            }
+
+            int fgHeight = (int)((total - background) * yScale);
+            if (fgHeight > 0) {
+                int fgY = y0 - fgHeight - (int)(background * yScale);
+                g2.setColor(new Color(180,180,180));
+                g2.fillRect(x, fgY, barW, fgHeight);
+            }
+
+            g2.setColor(Color.BLACK);
+            g2.drawRect(x, y0 - (int)(total * yScale), barW, (int)(total * yScale));
+        }
+
+        g2.setFont(new Font("SansSerif", Font.PLAIN,12));
+        g2.drawString("Track count bins (bin size ≈ " + binSize + ")", w / 2 - 90, h - 15);
+        g2.drawString("Number of squares", 10, marginTop - 10);
+
+        g2.setFont(new Font("SansSerif", Font.BOLD,16));
+        g2.drawString("Track Count Histogram – " + title, w / 2 - 150, marginTop - 20);
+
+        g2.setFont(new Font("SansSerif", Font.BOLD,14));
+        g2.setColor(new Color(0,70,180));
+        int textX = w - 370;
+        int textY = marginTop + 20;
+
+        g2.drawString(String.format("Number of squares in recording: %d", totalSquares),      textX, textY);
+        g2.drawString(String.format("Number of tracks in recording: %d", totalTracks),     textX, textY + 20);
+        g2.drawString(String.format("Number of background squares: %d", nBackground),      textX, textY + 40);
+        g2.drawString(String.format("Number of tracks in background: %d", backgroundTracksTotal), textX, textY + 60);
+        g2.drawString(String.format("Average number of tracks in the background: %.3f", avgTracksInBackground), textX, textY + 80);
     }
 }
