@@ -51,6 +51,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static paint.generatesquares.calc.CalculateTau.calculateTau;
+import static paint.generatesquares.calc.PlotUtils.saveTauFitPlot;
 import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
 import static paint.shared.constants.PaintConstants.RECORDING_DURATION;
 import static paint.shared.objects.Square.calculateSquareArea;
@@ -109,7 +110,7 @@ public class CalculateSquareAttributes {
 
                 if (paint.shared.config.PaintConfig.getBoolean("Generate Squares", "Plot Curve Fitting", false) &&
                         tracksInSquare.size() >= minTracksForTau) {
-                    TauPlotCollector.saveFitPlot(tracksInSquare, results, experimentPath, recording.getRecordingName(), squareNumber);
+                    saveTauFitPlot(tracksInSquare, results, experimentPath, recording.getRecordingName(), squareNumber);
                 }
 
                 if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
