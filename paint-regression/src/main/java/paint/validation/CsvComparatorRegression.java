@@ -58,7 +58,7 @@ import java.util.*;
  * Recordings) and adapts automatically based on which columns are present.
  * It can also be executed from the command line or used programmatically.
  */
-public class CsvRegressionComparator {
+public class CsvComparatorRegression {
 
     // ----------------------------------------------------------------------
     // Columns that should be ignored during field-by-field comparison

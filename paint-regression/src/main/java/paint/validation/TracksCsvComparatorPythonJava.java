@@ -45,7 +45,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
-public class TracksCsvComparator {
+public class TracksCsvComparatorPythonJava {
 
     /**
      * Represents configuration options for controlling the matching process in the context
@@ -82,15 +82,16 @@ public class TracksCsvComparator {
     // ---------------------------------------------------------------------
 
     /**
-     * The main method serves as the entry point to the program, orchestrating the process
+     * The run method serves as the entry point to the program, orchestrating the process
      * of normalizing data, grouping, matching, and validating tracks from two CSV files
      * representing an old and new dataset, respectively. The output includes validation
      * summaries, diagnostics, and comparison files to analyze the results of strict and
      * diagnostic matching phases.
      *
-     * @param args the command-line arguments passed to the program; typically unused
+     * @param oldCsv     the old CSV file
+     * @param newCsv     the new CSV file
      */
-    public static void main(String[] args) {
+    public static void run(Path oldCsv, Path newCsv) {
 
         Path downloadsPath = Paths.get(System.getProperty("user.home"), "Downloads");
         Path validatePath  = downloadsPath.resolve("Validate").resolve(Paths.get("Tracks"));
@@ -99,10 +100,6 @@ public class TracksCsvComparator {
             Files.createDirectories(validatePath);
         } catch (IOException ignored) {
         }
-
-        // Define input and output file locations
-        Path oldCsv     = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Tracks.csv");
-        Path newCsv     = Paths.get("/Users/hans/Paint Test Project/221012/Tracks.csv");
 
         Path outCsv     = validatePath.resolve("Tracks Validation - Comparison.csv");
         Path diagCsv    = validatePath.resolve("Tracks Validation - Comparison Diagnostics.csv");
@@ -145,22 +142,35 @@ public class TracksCsvComparator {
             System.out.println();
 
             // === Step 3: Phase 1 — strict direct matching ===
-            Set<String> usedNewIds = new HashSet<>();
-            List<Map<String, String>> unmatched = new ArrayList<>();
+            Set<String> usedNewIds                    = new HashSet<>();
+            List<Map<String, String>> unmatched       = new ArrayList<>();
             List<Map<String, String>> multipleMatches = new ArrayList<>();
-            Set<String> multipleMatchIds = new HashSet<>();
-            List<String> perfectIds = new ArrayList<>();
-            List<String> reasonableIds = new ArrayList<>();
-            List<String> unmatchedIds = new ArrayList<>();
+            Set<String> multipleMatchIds              = new HashSet<>();
+            List<String> perfectIds                   = new ArrayList<>();
+            List<String> reasonableIds                = new ArrayList<>();
+            List<String> unmatchedIds                 = new ArrayList<>();
 
             int total = 0, matched = 0, unique = 0, multiple = 0;
 
             try (BufferedWriter bw = Files.newBufferedWriter(outCsv)) {
                 // Write header row for comparison file
                 bw.write(String.join(",", Arrays.asList(
-                        "Ext Recording Name","Track Id","Track Id Java","Square Nr","Nr Spots","Nr Gaps","Longest Gap",
-                        "Track Duration","Track Displacement","Track Max Speed","Track Median Speed","Total Distance",
-                        "Track X Location","Track Y Location","Confinement Ratio","Matches Found"
+                        "Ext Recording Name",
+                        "Track Id",
+                        "Track Id Java",
+                        "Square Nr",
+                        "Nr Spots",
+                        "Nr Gaps",
+                        "Longest Gap",
+                        "Track Duration",
+                        "Track Displacement",
+                        "Track Max Speed",
+                        "Track Median Speed",
+                        "Total Distance",
+                        "Track X Location",
+                        "Track Y Location",
+                        "Confinement Ratio",
+                        "Matches Found"
                 )));
                 bw.newLine();
 
@@ -201,18 +211,18 @@ public class TracksCsvComparator {
                         row.add(escapeCsv(old.get("Ext Recording Name")));
                         row.add(escapeCsv(old.get("Track Id")));
                         row.add(match != null ? escapeCsv(match.get("Track Id")) : "");
-                        row.add(old.getOrDefault("Square Nr", ""));
-                        row.add(old.getOrDefault("Nr Spots", ""));
-                        row.add(old.getOrDefault("Nr Gaps", ""));
-                        row.add(old.getOrDefault("Longest Gap", ""));
-                        row.add(old.getOrDefault("Track Duration", ""));
+                        row.add(old.getOrDefault("Square Nr",         ""));
+                        row.add(old.getOrDefault("Nr Spots",           ""));
+                        row.add(old.getOrDefault("Nr Gaps",            ""));
+                        row.add(old.getOrDefault("Longest Gap",        ""));
+                        row.add(old.getOrDefault("Track Duration",     ""));
                         row.add(old.getOrDefault("Track Displacement", ""));
-                        row.add(old.getOrDefault("Track Max Speed", ""));
+                        row.add(old.getOrDefault("Track Max Speed",    ""));
                         row.add(old.getOrDefault("Track Median Speed", ""));
-                        row.add(old.getOrDefault("Total Distance", ""));
-                        row.add(old.getOrDefault("Track X Location", ""));
-                        row.add(old.getOrDefault("Track Y Location", ""));
-                        row.add(old.getOrDefault("Confinement Ratio", ""));
+                        row.add(old.getOrDefault("Total Distance",     ""));
+                        row.add(old.getOrDefault("Track X Location",   ""));
+                        row.add(old.getOrDefault("Track Y Location",   ""));
+                        row.add(old.getOrDefault("Confinement Ratio",  ""));
                         row.add(String.valueOf(count));
                         bw.write(String.join(",", row));
                         bw.newLine();
@@ -705,14 +715,14 @@ public class TracksCsvComparator {
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",", -1);
                 if (parts.length < 12) continue;
-                deviationsByField.computeIfAbsent("Duration Δ", k -> new ArrayList<>()).add(parseDoubleSafe(parts[3]));
-                deviationsByField.computeIfAbsent("Displacement Δ", k -> new ArrayList<>()).add(parseDoubleSafe(parts[4]));
-                deviationsByField.computeIfAbsent("Max Speed Δ", k -> new ArrayList<>()).add(parseDoubleSafe(parts[5]));
-                deviationsByField.computeIfAbsent("Median Speed Δ", k -> new ArrayList<>()).add(parseDoubleSafe(parts[6]));
+                deviationsByField.computeIfAbsent("Duration Δ",       k -> new ArrayList<>()).add(parseDoubleSafe(parts[3]));
+                deviationsByField.computeIfAbsent("Displacement Δ",   k -> new ArrayList<>()).add(parseDoubleSafe(parts[4]));
+                deviationsByField.computeIfAbsent("Max Speed Δ",      k -> new ArrayList<>()).add(parseDoubleSafe(parts[5]));
+                deviationsByField.computeIfAbsent("Median Speed Δ",   k -> new ArrayList<>()).add(parseDoubleSafe(parts[6]));
                 deviationsByField.computeIfAbsent("Total Distance Δ", k -> new ArrayList<>()).add(parseDoubleSafe(parts[7]));
-                deviationsByField.computeIfAbsent("X Δ", k -> new ArrayList<>()).add(parseDoubleSafe(parts[8]));
-                deviationsByField.computeIfAbsent("Y Δ", k -> new ArrayList<>()).add(parseDoubleSafe(parts[9]));
-                deviationsByField.computeIfAbsent("Confinement Δ", k -> new ArrayList<>()).add(parseDoubleSafe(parts[10]));
+                deviationsByField.computeIfAbsent("X Δ",              k -> new ArrayList<>()).add(parseDoubleSafe(parts[8]));
+                deviationsByField.computeIfAbsent("Y Δ",              k -> new ArrayList<>()).add(parseDoubleSafe(parts[9]));
+                deviationsByField.computeIfAbsent("Confinement Δ",    k -> new ArrayList<>()).add(parseDoubleSafe(parts[10]));
             }
         }
 
@@ -750,5 +760,13 @@ public class TracksCsvComparator {
     private static double percentWithin(List<Double> devs, double tol) {
         long ok = devs.stream().filter(d -> Math.abs(d) <= tol).count();
         return 100.0 * ok / devs.size();
+    }
+
+    public static void main(String[] args) {
+
+        // Define input and output file locations
+        Path oldCsv     = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Tracks.csv");
+        Path newCsv     = Paths.get("/Users/hans/Paint Test Project/221012/Tracks.csv");
+        run(oldCsv, newCsv);
     }
 }
