@@ -155,6 +155,7 @@ public class Project {
         if (projectRootPath != null)
             this.projectName = projectRootPath.getFileName().toString();
     }
+    public Path getProjectRootPath() { return projectRootPath; }
 
     public Path getImagesRootPath() { return imagesRootPath; }
     public void setImagesRootPath(Path imagesRootPath) { this.imagesRootPath = imagesRootPath; }
