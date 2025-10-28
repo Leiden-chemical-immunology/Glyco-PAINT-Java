@@ -1,3 +1,49 @@
+/******************************************************************************
+ *  Class:        RecordingsValidator.java
+ *  Package:      paint.shared.validate
+ *
+ *  PURPOSE:
+ *    Validates the `recordings.csv` file within a PAINT experiment project.
+ *    Ensures correct header order, data types, and logical consistency across
+ *    condition groups shared with `experiment_info.csv`.
+ *
+ *  DESCRIPTION:
+ *    • Verifies that the header matches {@link PaintConstants#RECORDINGS_COLS}.
+ *    • Checks that each column’s data type conforms to
+ *      {@link PaintConstants#RECORDINGS_TYPES}.
+ *    • Performs a consistency check ensuring that all rows with the same
+ *      “Condition Number” share identical Probe, Cell Type, Adjuvant, and
+ *      Concentration values, consistent with `experiment_info.csv`.
+ *
+ *  RESPONSIBILITIES:
+ *    • Detect header mismatches or missing columns.
+ *    • Validate cell-level data types against the schema definition.
+ *    • Detect logical inconsistencies across repeated condition groups.
+ *
+ *  USAGE EXAMPLE:
+ *    File csv = new File("recordings.csv");
+ *    RecordingsValidator validator = new RecordingsValidator();
+ *    ValidationResult result = validator.validateWithConsistency(csv, "Experiment A");
+ *    if (!result.isValid()) { result.printSummary(); }
+ *
+ *  DEPENDENCIES:
+ *    – paint.shared.constants.PaintConstants
+ *    – paint.shared.validate.{AbstractFileValidator, ConditionConsistencyChecker, ValidationResult}
+ *    – tech.tablesaw.api.ColumnType
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.shared.validate;
 
 import paint.shared.constants.PaintConstants;
@@ -7,38 +53,56 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-
 /**
- * Validator for recordings.csv.
+ * Validates the structural and logical integrity of {@code recordings.csv}.
  * <p>
- * Performs:
- * <ul>
- *   <li>Header validation against {@link PaintConstants#RECORDINGS_COLS}</li>
- *   <li>Row type validation against {@link PaintConstants#RECORDINGS_TYPES}</li>
- *   <li>Consistency check: all rows with the same "Condition Number"
- *       must have identical Probe/Cell/Adjuvant/Concentration values
- *       (shared with ExperimentInfoValidator).</li>
- * </ul>
+ * Performs schema validation (header + types) and an additional
+ * condition-based consistency check to ensure uniformity of experimental metadata.
+ * </p>
  */
-public class RecordingsValidator extends AbstractFileValidator {
+public final class RecordingsValidator extends AbstractFileValidator {
 
+    // ───────────────────────────────────────────────────────────────────────────────
+    // HEADER VALIDATION
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Validates that the header matches {@link PaintConstants#RECORDINGS_COLS}.
+     *
+     * @param actualHeader the CSV header read from file
+     * @param result       validation result collector
+     */
     @Override
     protected void validateHeader(List<String> actualHeader, ValidationResult result) {
         List<String> expectedHeader = Arrays.asList(PaintConstants.RECORDINGS_COLS);
         headersMatch(expectedHeader, actualHeader, result);
     }
 
+    // ───────────────────────────────────────────────────────────────────────────────
+    // TYPE VALIDATION
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Returns the expected column data types as defined in
+     * {@link PaintConstants#RECORDINGS_TYPES}.
+     *
+     * @return array of expected {@link ColumnType}s
+     */
     @Override
     protected ColumnType[] getExpectedTypes() {
         return PaintConstants.RECORDINGS_TYPES;
     }
 
+    // ───────────────────────────────────────────────────────────────────────────────
+    // CONSISTENCY CHECK
+    // ───────────────────────────────────────────────────────────────────────────────
+
     /**
-     * Run full validation: header + type checks + consistency check.
+     * Performs full validation — including header, type, and condition-based consistency checks.
      *
-     * @param file           recordings.csv file
-     * @param experimentName experiment name (for error messages)
-     * @return ValidationResult with errors if validation fails
+     * @param file           the {@code recordings.csv} file to validate
+     * @param experimentName the experiment name (for context in error messages)
+     * @return {@link ValidationResult} summarizing detected issues or confirming validity
      */
     public ValidationResult validateWithConsistency(File file, String experimentName) {
         ValidationResult result = validate(file);

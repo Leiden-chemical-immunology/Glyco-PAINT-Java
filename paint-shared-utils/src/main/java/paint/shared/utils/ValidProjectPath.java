@@ -3,23 +3,22 @@
  *  Package:      paint.shared.utils
  *
  *  PURPOSE:
- *    Validates and returns a usable project root folder path for the Paint
- *    application. It checks that the configured path exists and contains the
- *    required configuration file. If not, it prompts the user to select a valid
- *    folder via a native dialog.
+ *    Validates and returns a usable project root folder path for the PAINT
+ *    application. Checks that the configured path exists and contains the
+ *    required configuration file. If validation fails, prompts the user to
+ *    select a valid folder via a native macOS file dialog.
  *
  *  DESCRIPTION:
  *    • Retrieves the stored “Project Root” path from preferences.
- *    • Verifies the folder exists and contains the expected configuration file
- *      (`PAINT_CONFIGURATION_JSON`).
- *    • If validation fails, prompts the user with a warning message and displays
- *      a folder chooser for manual selection.
+ *    • Verifies that the folder exists and contains the expected configuration file
+ *      ({@code PAINT_CONFIGURATION_JSON}).
+ *    • If validation fails, shows a warning message and invokes a native folder chooser.
  *    • Updates preferences if a new valid path is selected.
- *    • Returns the validated project path or `null` if the user cancels.
+ *    • Returns the validated project path or {@code null} if the user cancels.
  *
  *  RESPONSIBILITIES:
- *    • Ensure the project folder is valid and ready for use by the application.
- *    • Interact with the user (via dialog) when validation fails.
+ *    • Ensure that a valid project directory is available at runtime.
+ *    • Interact with the user when reconfiguration is required.
  *
  *  USAGE EXAMPLE:
  *    Path projectRoot = ValidProjectPath.getValidProjectPath();
@@ -34,13 +33,16 @@
  *    – java.awt.FileDialog
  *    – java.nio.file.{Path, Files}
  *    – paint.shared.constants.PaintConstants
- *    – paint.shared.utils.PaintPrefs (for preference access)
+ *    – paint.shared.utils.PaintPrefs
  *
  *  AUTHOR:
- *    Hans Bakker (jjabakker)
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-10-27
+ *    2025-10-28
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -53,30 +55,50 @@ import java.awt.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.Paths;
 
 import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 
-public class ValidProjectPath {
+/**
+ * Validates and retrieves a usable project root folder path for the PAINT application.
+ * <p>
+ * If the stored path is invalid or missing the configuration file, the user is prompted
+ * with a warning dialog and a native macOS folder chooser to select a valid directory.
+ * The chosen path is stored persistently via {@link PaintPrefs}.
+ * </p>
+ */
+public final class ValidProjectPath {
+
+    /** Private constructor to prevent instantiation. */
+    private ValidProjectPath() {}
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // MAIN VALIDATION LOGIC
+    // ───────────────────────────────────────────────────────────────────────────────
 
     /**
      * Retrieves and validates the configured project root directory.
      * <p>
-     * It first reads the stored project path from preferences. If the path does not exist
-     * or does not contain the expected configuration JSON file, the user is prompted
-     * via a warning dialog and a native folder chooser to select a valid project folder.
-     * The preference is updated if a new folder is selected.
+     * Steps performed:
+     * <ol>
+     *   <li>Reads the stored project path from {@link PaintPrefs}.</li>
+     *   <li>Checks that the directory exists and contains the required
+     *       {@code PAINT_CONFIGURATION_JSON} file.</li>
+     *   <li>If invalid, prompts the user with warnings and a native folder chooser.</li>
+     *   <li>Updates preferences with the newly selected valid folder.</li>
+     * </ol>
      * <p>
-     * If the user cancels during folder selection, this method returns {@code null} indicating
-     * the startup should be aborted.
+     * Returns {@code null} if the user cancels folder selection.
+     * </p>
      *
-     * @return a valid {@link Path} to the project root directory, or {@code null} if the user cancelled the selection
+     * @return a valid {@link Path} to the project root directory, or {@code null} if the user cancelled
      */
     public static Path getValidProjectPath() {
 
         boolean needToAsk = false;
-        Path projectPath  = Paths.get(PaintPrefs.getString("Path", "Project Root", System.getProperty("user.home")));
+        Path projectPath = Paths.get(PaintPrefs.getString("Path", "Project Root",
+                                                          System.getProperty("user.home")));
 
+        // Validate existence of the configured path
         if (!Files.isDirectory(projectPath)) {
             JOptionPane.showMessageDialog(null,
                                           "The configured project path is invalid:\n" + projectPath +
@@ -87,10 +109,11 @@ public class ValidProjectPath {
             needToAsk   = true;
         }
 
+        // Validate configuration file presence
         Path confPath = projectPath.resolve(PAINT_CONFIGURATION_JSON);
         if (!Files.isRegularFile(confPath)) {
             JOptionPane.showMessageDialog(null,
-                                          "There is no configured file:\n" + confPath +
+                                          "The project folder does not contain:\n" + confPath +
                                                   "\n\nPlease select a valid project folder.",
                                           "Invalid Project Path",
                                           JOptionPane.WARNING_MESSAGE);
@@ -98,8 +121,8 @@ public class ValidProjectPath {
             needToAsk   = true;
         }
 
+        // Ask user to select a valid folder if required
         if (needToAsk) {
-            // macOS-friendly native folder picker
             FileDialog chooser = new FileDialog((Frame) null, "Select Project Folder", FileDialog.LOAD);
             System.setProperty("apple.awt.fileDialogForDirectories", "true");
             chooser.setVisible(true);
@@ -107,6 +130,7 @@ public class ValidProjectPath {
 
             String dir  = chooser.getDirectory();
             String file = chooser.getFile();
+
             if (dir != null && file != null) {
                 projectPath = Paths.get(dir, file);
                 PaintPrefs.putString("Path", "Project Root", projectPath.toString());
@@ -115,7 +139,7 @@ public class ValidProjectPath {
                                               "No project folder selected.\nExiting.",
                                               "Operation Cancelled",
                                               JOptionPane.ERROR_MESSAGE);
-                return null; // abort startup
+                return null; // Abort startup
             }
         }
 

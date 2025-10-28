@@ -1,3 +1,40 @@
+/******************************************************************************
+ *  Class:        PaintConsoleWindow.java
+ *  Package:      paint.shared.utils
+ *
+ *  PURPOSE:
+ *    Provides a Swing-based graphical console window for logging, monitoring,
+ *    and visually inspecting messages from the PAINT framework.
+ *
+ *  DESCRIPTION:
+ *    The {@code PaintConsoleWindow} class implements an interactive console
+ *    using Swing components. It supports colored message output, problem
+ *    highlighting (e.g., "Error", "Warning", "Exception"), scroll lock control,
+ *    and the ability to save or close the console from within the GUI.
+ *
+ *    The console is intended as a visual log window for PAINT-based desktop
+ *    applications, allowing both text-based and GUI-integrated feedback.
+ *
+ *  KEY FEATURES:
+ *    • Thread-safe message logging and dynamic color highlighting.
+ *    • Scroll lock and caret control for controlled auto-scrolling.
+ *    • Interactive buttons for saving, closing, and navigating problem messages.
+ *    • Pattern-based highlighting of "Error", "Warning", and "Exception".
+ *    • Fully self-contained Swing UI with no external dependencies.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.shared.utils;
 
 import javax.swing.*;
@@ -10,16 +47,19 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.regex.*;
 
 /**
- * The PaintConsoleWindow class provides a graphical console for logging and displaying
- * messages in a text pane. It includes functionality for dynamic message highlighting,
- * saving console content, and controlling scroll behavior within the console. The console
- * is implemented using Swing components, making it suitable for GUI-based applications.
+ * Provides a Swing-based console window for real-time message output.
+ * <p>
+ * Supports message coloring, saving logs to disk, problem highlighting,
+ * and scroll lock behavior.
  */
-public class PaintConsoleWindow {
+public final class PaintConsoleWindow {
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // FIELDS
+    // ───────────────────────────────────────────────────────────────────────────────
 
     private static JFrame frame;
     private static JTextPane textPane;
@@ -29,49 +69,49 @@ public class PaintConsoleWindow {
     private static final List<Integer> problemPositions = new ArrayList<>();
     private static int currentProblemIndex = -1;
 
-    // --- Public API ---
+    // ───────────────────────────────────────────────────────────────────────────────
+    // PUBLIC LOGGING API
+    // ───────────────────────────────────────────────────────────────────────────────
 
+    /** Logs a message in black text. */
     public static synchronized void log(String message) {
         log(message, Color.BLACK);
     }
 
+    /** Logs a message with a specified color. */
     public static synchronized void log(String message, Color color) {
         ensureConsoleCreated();
         SwingUtilities.invokeLater(() -> appendText(message + "\n", color));
     }
 
+    /** Prints a message in black text without newline. */
     public static synchronized void print(String message) {
         print(message, Color.BLACK);
     }
 
+    /** Prints a message with the specified color without newline. */
     public static synchronized void print(String message, Color color) {
         ensureConsoleCreated();
         SwingUtilities.invokeLater(() -> appendText(message, color));
     }
 
+    /** Prints a single character in black. */
     public static synchronized void printChar(char c) {
         printChar(c, Color.BLACK);
     }
 
+    /** Prints a single character with the specified color. */
     public static synchronized void printChar(char c, Color color) {
         ensureConsoleCreated();
         SwingUtilities.invokeLater(() -> appendText(String.valueOf(c), color));
     }
 
+    // ───────────────────────────────────────────────────────────────────────────────
+    // WINDOW CONTROL
+    // ───────────────────────────────────────────────────────────────────────────────
+
     /**
-     * Closes the console window and releases associated resources.
-     *
-     * This method disposes of the current frame if it exists, clears references to its
-     * components and any related data structures, and resets the internal state of the console.
-     * The operation is performed on the Event Dispatch Thread (EDT) to ensure thread safety
-     * when modifying Swing components.
-     *
-     * Thread Safety:
-     * The method is synchronized to prevent race conditions when invoked from multiple threads.
-     *
-     * Effects:
-     * - Releases the frame and associated resources by setting them to null.
-     * - Clears the problem positions and resets the current problem index.
+     * Closes and disposes of the console window, clearing all references and data.
      */
     public static synchronized void close() {
         if (frame != null) {
@@ -87,6 +127,7 @@ public class PaintConsoleWindow {
         }
     }
 
+    /** Attaches automatic console closure when a given dialog is disposed. */
     public static void closeOnDialogDispose(JDialog dialog) {
         dialog.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
@@ -96,42 +137,34 @@ public class PaintConsoleWindow {
         });
     }
 
-    // --- Added public API for title handling ---
+    /** Closes the console window if currently visible. */
+    public static void closeIfVisible() {
+        if (frame != null && frame.isDisplayable()) {
+            SwingUtilities.invokeLater(() -> {
+                frame.setVisible(false);
+                frame.dispose();
+                frame = null;
+                textPane = null;
+                doc = null;
+                scrollLock = null;
+                problemPositions.clear();
+                currentProblemIndex = -1;
+            });
+        }
+    }
 
-    /**
-     * Sets the title of the console window.
-     *
-     * This method updates the title of the frame associated with the console
-     * on the Event Dispatch Thread (EDT). If the provided title is null,
-     * a default title ("Paint Console") is used instead.
-     *
-     * Thread Safety:
-     * The method is synchronized to ensure thread-safe updates to the frame title.
-     *
-     * @param title the new title to set for the console window; if null,
-     *              a default title ("Paint Console") is used.
-     */
+    // ───────────────────────────────────────────────────────────────────────────────
+    // TITLE MANAGEMENT
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /** Sets the title of the console window. */
     public static synchronized void setConsoleTitle(String title) {
         if (frame != null) {
             SwingUtilities.invokeLater(() -> frame.setTitle(title != null ? title : "Paint Console"));
         }
     }
 
-    /**
-     * Creates or updates the console window for the specified creator.
-     *
-     * If the console window does not already exist, this method initializes
-     * a new console window with a title that includes the creator's name.
-     * If the console window exists, this method updates its title to reflect
-     * the creator's name.
-     *
-     * Thread Safety:
-     * The method is synchronized to ensure thread-safe operations when creating
-     * or updating the console window.
-     *
-     * @param creatorName the name of the creator to display in the console
-     *                    window's title; if null, "Unknown" is used instead.
-     */
+    /** Creates or updates the console window for a specific creator name. */
     public static synchronized void createConsoleFor(String creatorName) {
         if (frame == null) {
             createConsole("Paint Console – " + (creatorName != null ? creatorName : "Unknown"));
@@ -140,7 +173,9 @@ public class PaintConsoleWindow {
         }
     }
 
-    // --- Internal helpers ---
+    // ───────────────────────────────────────────────────────────────────────────────
+    // INTERNAL CONSOLE CREATION
+    // ───────────────────────────────────────────────────────────────────────────────
 
     private static void ensureConsoleCreated() {
         if (frame == null) {
@@ -152,17 +187,7 @@ public class PaintConsoleWindow {
         createConsole("Paint Console");
     }
 
-    /**
-     * Creates and displays a console window with interactive components such as text output,
-     * control buttons, and scroll lock functionality.
-     *
-     * This method initializes a GUI console window with a specified title. The console window
-     * includes a non-editable text pane for displaying content, a scroll lock toggle button,
-     * as well as buttons for highlighting problems, saving console output, and closing the window.
-     *
-     * @param title the title to set for the console window; if null, the default title
-     *              "Paint Console" is used.
-     */
+    /** Creates and displays the console window with default components and layout. */
     private static void createConsole(String title) {
         frame = new JFrame(title != null ? title : "Paint Console");
         frame.setSize(1200, 400);
@@ -203,17 +228,11 @@ public class PaintConsoleWindow {
         frame.setVisible(true);
     }
 
-    /**
-     * Appends the specified text to the console text pane with the given color.
-     *
-     * This method creates a styled text with the specified color and adds it
-     * to the text pane document. It ensures that the text pane's caret position
-     * is updated to the end unless the scroll lock is enabled. In case of an
-     * error inserting text, it logs the exception.
-     *
-     * @param text the text content to append to the console
-     * @param color the color to apply to the appended text
-     */
+    // ───────────────────────────────────────────────────────────────────────────────
+    // TEXT HANDLING AND SAVING
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /** Appends colored text to the console. */
     private static void appendText(String text, Color color) {
         try {
             Style style = textPane.addStyle("Style", null);
@@ -228,17 +247,7 @@ public class PaintConsoleWindow {
         }
     }
 
-    /**
-     * Saves the current content of the console to a file chosen by the user.
-     *
-     * This method opens a file chooser dialog, allowing the user to select
-     * a location and file name for saving the console output. The console
-     * content is written to the specified file. If an error occurs during
-     * the saving process, an error message is displayed to the user.
-     *
-     * @param e the ActionEvent triggered by the user's interaction,
-     *          such as clicking the save button
-     */
+    /** Saves console output to a user-selected file. */
     private static void saveConsoleContent(ActionEvent e) {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Save Console Output");
@@ -247,15 +256,19 @@ public class PaintConsoleWindow {
             File file = chooser.getSelectedFile();
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
                 writer.write(textPane.getText());
-                JOptionPane.showMessageDialog(frame, "Console saved to " + file.getAbsolutePath());
+                JOptionPane.showMessageDialog(frame,
+                                              "Console saved to " + file.getAbsolutePath());
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(frame, "Failed to save file:\n" + ex.getMessage(),
+                JOptionPane.showMessageDialog(frame,
+                                              "Failed to save file:\n" + ex.getMessage(),
                                               "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
-    // --- Problem highlighting and navigation ---
+    // ───────────────────────────────────────────────────────────────────────────────
+    // PROBLEM HIGHLIGHTING AND NAVIGATION
+    // ───────────────────────────────────────────────────────────────────────────────
 
     /**
      * Highlights detected problems in the console output or navigates to the next highlighted problem.
@@ -363,7 +376,8 @@ public class PaintConsoleWindow {
         while (matcher.find()) {
             try {
                 String match = matcher.group().toLowerCase();
-                Color color = match.contains("error") || match.contains("exception") ? Color.PINK : Color.ORANGE;
+                Color color = match.contains("error") || match.contains("exception")
+                        ? Color.PINK : Color.ORANGE;
 
                 highlighter.addHighlight(
                         matcher.start(),
@@ -435,42 +449,19 @@ public class PaintConsoleWindow {
                     return;
                 }
             }
-
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
     }
 
-    /**
-     * Updates the title of the frame to reflect the scroll lock status.
-     * If scroll lock is enabled, "[Scroll Locked]" is appended to the title.
-     * If scroll lock is disabled, any existing "[Scroll Locked]" in the title is removed.
-     *
-     * @param locked a boolean indicating whether scroll lock is enabled (true) or disabled (false)
-     */
+    // ───────────────────────────────────────────────────────────────────────────────
+    // TITLE AND SCROLL LOCK STATUS
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /** Updates window title to reflect scroll lock state. */
     private static void updateTitleForScrollLock(boolean locked) {
         if (frame == null) return;
-        String baseTitle = frame.getTitle();
-        baseTitle = baseTitle.replace(" [Scroll Locked]", "");
-        if (locked) {
-            frame.setTitle(baseTitle + " [Scroll Locked]");
-        } else {
-            frame.setTitle(baseTitle);
-        }
-    }
-
-    public static void closeIfVisible() {
-        if (frame != null && frame.isDisplayable()) {
-            SwingUtilities.invokeLater(() -> {
-                frame.setVisible(false);
-                frame.dispose();
-                frame = null;
-                textPane = null;
-                doc = null;
-                scrollLock = null;
-                problemPositions.clear();
-                currentProblemIndex = -1;
-            });
-        }
+        String baseTitle = frame.getTitle().replace(" [Scroll Locked]", "");
+        frame.setTitle(locked ? baseTitle + " [Scroll Locked]" : baseTitle);
     }
 }

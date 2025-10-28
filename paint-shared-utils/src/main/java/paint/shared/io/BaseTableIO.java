@@ -1,21 +1,62 @@
+/******************************************************************************
+ *  Class:        BaseTableIO.java
+ *  Package:      paint.shared.io
+ *
+ *  PURPOSE:
+ *    Provides shared utilities for creating, validating, reading, and writing
+ *    Tablesaw {@link tech.tablesaw.api.Table} objects used throughout the PAINT
+ *    software ecosystem.
+ *
+ *  DESCRIPTION:
+ *    This abstract base class centralizes common logic for:
+ *      - Creating new tables with defined schemas
+ *      - Validating CSV headers and column types
+ *      - Reading and writing CSV files with enforced schemas
+ *      - Appending tables safely with schema checks
+ *      - Ensuring consistent numeric formatting and locale handling
+ *
+ *  KEY FEATURES:
+ *    - Schema-based CSV reading and validation
+ *    - Locale-stable CSV export (US locale, fixed 3-decimal precision)
+ *    - Header and type consistency checking
+ *    - Robust append operation for schema-aligned tables
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.shared.io;
 
 import tech.tablesaw.api.*;
 import tech.tablesaw.columns.Column;
 import tech.tablesaw.io.csv.CsvReadOptions;
 import tech.tablesaw.io.csv.CsvWriteOptions;
-import java.text.DecimalFormatSymbols;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Abstract base class for consistent CSV and {@link Table} I/O across
+ * the PAINT modules. Provides shared implementations for reading, validating,
+ * appending, and writing tabular data using Tablesaw.
+ */
 public abstract class BaseTableIO {
 
     /**
@@ -98,8 +139,8 @@ public abstract class BaseTableIO {
             throw new IOException("CSV not found: " + csvPath);
         }
 
-        CsvReadOptions opts = buildCsvReadOptions(csvPath, expectedTypes);
-        Table table = Table.read().usingOptions(opts);
+        CsvReadOptions opts  = buildCsvReadOptions(csvPath, expectedTypes);
+        Table          table = Table.read().usingOptions(opts);
 
         List<String> headerErrors = validateHeader(table, expectedCols, allowSuperset);
         if (!headerErrors.isEmpty()) {
@@ -188,7 +229,8 @@ public abstract class BaseTableIO {
     }
 
     /**
-     * Writes a {@link Table} to a CSV file (with header).
+     * Writes a {@link Table} to a CSV file using a stable US locale with fixed
+     * three-decimal formatting for floating-point values.
      *
      * @param table  the {@link Table} to write
      * @param target target file path

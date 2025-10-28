@@ -1,3 +1,40 @@
+/******************************************************************************
+ *  Class:        Square.java
+ *  Package:      paint.shared.objects
+ *
+ *  PURPOSE:
+ *    Represents a rectangular spatial region ("square") within a recording or
+ *    experiment in the PAINT analysis framework.
+ *
+ *  DESCRIPTION:
+ *    The {@code Square} class models a subregion of an experimental image grid.
+ *    Each square stores its spatial coordinates, computed statistics, flags,
+ *    and references to related {@link Track} objects. Squares can be generated
+ *    automatically from the total number of regions in a recording or defined
+ *    explicitly from coordinates.
+ *
+ *    The class also provides utilities for calculating theoretical square areas
+ *    and introspective initialization of numeric fields.
+ *
+ *  KEY FEATURES:
+ *    • Encapsulates position, dimensions, and analysis results of a square.
+ *    • Supports linking of {@link Track} objects and {@link tech.tablesaw.api.Table}.
+ *    • Provides automatic coordinate calculation based on grid size.
+ *    • Offers formatted diagnostic output and NaN initialization for doubles.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.shared.objects;
 
 import tech.tablesaw.api.Table;
@@ -11,13 +48,14 @@ import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
 import static paint.shared.utils.Miscellaneous.round;
 
 /**
- * Represents a rectangular region (square) within a recording or experiment, with associated
- * spatial and metadata. The Square class tracks the position, labels, and various statistics
- * within the square, as well as related tracks and calculations.
+ * Represents a rectangular region (square) within a recording or experiment,
+ * with its coordinates, statistics, and related tracks.
  */
 public class Square {
 
-    // Attributes
+    // ───────────────────────────────────────────────────────────────────────────────
+    // ATTRIBUTES
+    // ───────────────────────────────────────────────────────────────────────────────
 
     // @formatter:off
     private String  uniqueKey;                       // 0
@@ -55,26 +93,26 @@ public class Square {
     private double  totalTrackDuration;              // 32
     private double  medianTrackDuration;             // 33
 
-    private List<Track> tracks = new ArrayList<>();
-    private Table tracksTable = null;
+    private List<Track> tracks      = new ArrayList<>();
+    private Table       tracksTable = null;
 
-    // --- Constructors ---
+    // ───────────────────────────────────────────────────────────────────────────────
+    // CONSTRUCTORS
+    // ───────────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Creates an empty {@code Square}.
-     * */
+    /** Creates an empty {@code Square}. */
     public Square() {
     }
 
     /**
-     * Creates a {@code Square} with explicit coordinate and recording information.
+     * Creates a {@code Square} with explicit coordinates and identifiers.
      *
-     * @param uniqueKey      a unique identifier for this square
-     * @param experimentName the experiment this square belongs to
-     * @param recordingName  the recording this square belongs to
-     * @param squareNumber   sequential number of this square
-     * @param rowNumber      row index within the grid
-     * @param colNumber      column index within the grid
+     * @param uniqueKey      unique identifier
+     * @param experimentName experiment name
+     * @param recordingName  recording name
+     * @param squareNumber   sequential number
+     * @param rowNumber      row index in grid
+     * @param colNumber      column index in grid
      * @param x0             left coordinate in pixels
      * @param y0             top coordinate in pixels
      * @param x1             right coordinate in pixels
@@ -105,11 +143,11 @@ public class Square {
     }
 
     /**
-     * Creates a {@code Square} based on its sequential number and total number of squares
-     * in a recording, automatically calculating its coordinates.
+     * Creates a {@code Square} automatically based on its sequential number and
+     * the total number of squares in the recording.
      *
-     * @param squareNumber               the sequential number of this square
-     * @param numberOfSquaresInRecording the total number of squares in the recording
+     * @param squareNumber               sequential number of the square
+     * @param numberOfSquaresInRecording total number of squares in the recording
      */
     public Square(int squareNumber, int numberOfSquaresInRecording) {
         int numberSquaresInRow = (int) Math.sqrt(numberOfSquaresInRecording);
@@ -125,304 +163,162 @@ public class Square {
         x1 = round((colNumber + 1) * width, 2);
         y0 = round(rowNumber * height, 2);
         y1 = round((rowNumber + 1) * width, 2);
-
-    }
-
-    // --- Getters and Setters ---
-
-    public String getUniqueKey() {
-        return uniqueKey;
-    }
-
-    public void setUniqueKey(String uniqueKey) {
-        this.uniqueKey = uniqueKey;
-    }
-
-    public String getExperimentName() {
-        return experimentName;
-    }
-
-    public void setExperimentName(String experimentName) {
-        this.experimentName = experimentName;
-    }
-
-    public String getRecordingName() {
-        return recordingName;
-    }
-
-    public void setRecordingName(String recordingName) {
-        this.recordingName = recordingName;
-    }
-
-    public int getLabelNumber() {
-        return labelNumber;
-    }
-
-    public void setLabelNumber(int labelNumber) {
-        this.labelNumber = labelNumber;
-    }
-
-    public int getSquareNumber() {
-        return squareNumber;
-    }
-
-    public void setSquareNumber(int squareNumber) {
-        this.squareNumber = squareNumber;
-    }
-
-    public int getRowNumber() {
-        return rowNumber;
-    }
-
-    public void setRowNumber(int rowNumber) {
-        this.rowNumber = rowNumber;
-    }
-
-    public int getColNumber() {
-        return colNumber;
-    }
-
-    public void setColNumber(int colNumber) {
-        this.colNumber = colNumber;
-    }
-
-    public int getCellId() {
-        return cellId;
-    }
-
-    public void setCellId(int cellId) {
-        this.cellId = cellId;
-    }
-
-    public boolean isSelected() {
-        return selected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
-    public boolean isSquareManuallyExcluded() {
-        return squareManuallyExcluded;
-    }
-
-    public void setSquareManuallyExcluded(boolean squareManuallyExcluded) {
-        this.squareManuallyExcluded = squareManuallyExcluded;
-    }
-
-    public boolean isImageExcluded() {
-        return imageExcluded;
-    }
-
-    public void setImageExcluded(boolean imageExcluded) {
-        this.imageExcluded = imageExcluded;
-    }
-
-    public double getX0() {
-        return x0;
-    }
-
-    public void setX0(double x0) {
-        this.x0 = round(x0, 2);
-    }
-
-    public double getY0() {
-        return y0;
-    }
-
-    public void setY0(double y0) {
-        this.y0 = round (y0, 2);
     }
 
-    public double getX1() {
-        return x1;
-    }
-
-    public void setX1(double x1) {
-        this.x1 = round(x1, 2);
-    }
-
-    public double getY1() {
-        return y1;
-    }
-
-    public void setY1(double y1) {
-        this.y1 = round(y1, 2);
-    }
-
-    public int getNumberOfTracks() {
-        return numberOfTracks;
-    }
-
-    public void setNumberOfTracks(int numberTracks) {
-        this.numberOfTracks = numberTracks;
-    }
-
-    public double getVariability() {
-        return variability;
-    }
+    // ───────────────────────────────────────────────────────────────────────────────
+    // ACCESSORS AND MUTATORS
+    // ───────────────────────────────────────────────────────────────────────────────
 
-    public void setVariability(double variability) {
-        this.variability = variability;
-    }
-
-    public double getDensity() {
-        return density;
-    }
+    public String getUniqueKey() { return uniqueKey; }
+    public void setUniqueKey(String uniqueKey) { this.uniqueKey = uniqueKey; }
 
-    public void setDensity(double density) {
-        this.density = density;
-    }
-
-    public double getDensityRatio() {
-        return densityRatio;
-    }
+    public String getExperimentName() { return experimentName; }
+    public void setExperimentName(String experimentName) { this.experimentName = experimentName; }
 
-    public void setDensityRatio(double densityRatio) {
-        this.densityRatio = densityRatio;
-    }
+    public String getRecordingName() { return recordingName; }
+    public void setRecordingName(String recordingName) { this.recordingName = recordingName; }
 
-    public double getDensityRatioOri() {
-        return densityRatioOri;
-    }
+    public int getSquareNumber() { return squareNumber; }
+    public void setSquareNumber(int squareNumber) { this.squareNumber = squareNumber; }
 
-    public void setDensityRatioOri(double densityRatioOri) {
-        this.densityRatioOri = densityRatioOri;
-    }
+    public int getRowNumber() { return rowNumber; }
+    public void setRowNumber(int rowNumber) { this.rowNumber = rowNumber; }
 
-    public double getTau() {
-        return tau;
-    }
+    public int getColNumber() { return colNumber; }
+    public void setColNumber(int colNumber) { this.colNumber = colNumber; }
 
-    public void setTau(double tau) {
-        this.tau = tau;
-    }
+    public int getLabelNumber() { return labelNumber; }
+    public void setLabelNumber(int labelNumber) { this.labelNumber = labelNumber; }
 
-    public double getRSquared() {
-        return rSquared;
-    }
+    public int getCellId() { return cellId; }
+    public void setCellId(int cellId) { this.cellId = cellId; }
 
-    public void setRSquared(double rSquared) {
-        this.rSquared = rSquared;
-    }
+    public boolean isSelected() { return selected; }
+    public void setSelected(boolean selected) { this.selected = selected; }
 
-    public double getMedianDiffusionCoefficient() {
-        return medianDiffusionCoefficient;
-    }
+    public boolean isSquareManuallyExcluded() { return squareManuallyExcluded; }
+    public void setSquareManuallyExcluded(boolean squareManuallyExcluded) { this.squareManuallyExcluded = squareManuallyExcluded; }
 
-    public void setMedianDiffusionCoefficient(double medianDiffusionCoefficient) {
-        this.medianDiffusionCoefficient = medianDiffusionCoefficient;
-    }
+    public boolean isImageExcluded() { return imageExcluded; }
+    public void setImageExcluded(boolean imageExcluded) { this.imageExcluded = imageExcluded; }
 
-    public double getMedianDiffusionCoefficientExt() {
-        return medianDiffusionCoefficientExt;
-    }
+    public double getX0() { return x0; }
+    public void setX0(double x0) { this.x0 = round(x0, 2); }
 
-    public void setMedianDiffusionCoefficientExt(double medianDiffusionCoefficientExt) {
-        this.medianDiffusionCoefficientExt = medianDiffusionCoefficientExt;
-    }
+    public double getY0() { return y0; }
+    public void setY0(double y0) { this.y0 = round(y0, 2); }
 
-    public double getTotalTrackDuration() {
-        return totalTrackDuration;
-    }
+    public double getX1() { return x1; }
+    public void setX1(double x1) { this.x1 = round(x1, 2); }
 
-    public void setTotalTrackDuration(double totalTrackDuration) {
-        this.totalTrackDuration = totalTrackDuration;
-    }
+    public double getY1() { return y1; }
+    public void setY1(double y1) { this.y1 = round(y1, 2); }
 
-    public double getMedianTrackDuration() {
-        return medianTrackDuration;
-    }
+    public int getNumberOfTracks() { return numberOfTracks; }
+    public void setNumberOfTracks(int numberTracks) { this.numberOfTracks = numberTracks; }
 
-    public void setMedianTrackDuration(double medianTrackDuration) {
-        this.medianTrackDuration = medianTrackDuration;
-    }
+    public double getVariability() { return variability; }
+    public void setVariability(double variability) { this.variability = variability; }
 
-    public double getMaxTrackDuration() {
-        return maxTrackDuration;
-    }
+    public double getDensity() { return density; }
+    public void setDensity(double density) { this.density = density; }
 
-    public void setMaxTrackDuration(double maxTrackDuration) {
-        this.maxTrackDuration = maxTrackDuration;
-    }
+    public double getDensityRatio() { return densityRatio; }
+    public void setDensityRatio(double densityRatio) { this.densityRatio = densityRatio; }
 
-    public double getMedianMedianSpeed() {
-        return medianMedianSpeed;
-    }
+    public double getDensityRatioOri() { return densityRatioOri; }
+    public void setDensityRatioOri(double densityRatioOri) { this.densityRatioOri = densityRatioOri; }
 
-    public void setMedianMedianSpeed(double medianMedianSpeed) {
-        this.medianMedianSpeed = medianMedianSpeed;
-    }
+    public double getTau() { return tau; }
+    public void setTau(double tau) { this.tau = tau; }
 
-    public double getMaxMedianSpeed() {
-        return maxMedianSpeed;
-    }
+    public double getRSquared() { return rSquared; }
+    public void setRSquared(double rSquared) { this.rSquared = rSquared; }
 
-    public void setMaxMedianSpeed(double maxMedianSpeed) {
-        this.maxMedianSpeed = maxMedianSpeed;
-    }
+    public double getMedianDiffusionCoefficient() { return medianDiffusionCoefficient; }
+    public void setMedianDiffusionCoefficient(double medianDiffusionCoefficient) { this.medianDiffusionCoefficient = medianDiffusionCoefficient; }
 
-    public double getMedianMaxSpeed() {
-        return medianMaxSpeed;
-    }
+    public double getMedianDiffusionCoefficientExt() { return medianDiffusionCoefficientExt; }
+    public void setMedianDiffusionCoefficientExt(double medianDiffusionCoefficientExt) { this.medianDiffusionCoefficientExt = medianDiffusionCoefficientExt; }
 
-    public void setMedianMaxSpeed(double medianMaxSpeed) {
-        this.medianMaxSpeed = medianMaxSpeed;
-    }
+    public double getMedianDisplacement() { return medianDisplacement; }
+    public void setMedianDisplacement(double medianDisplacement) { this.medianDisplacement = medianDisplacement; }
 
-    public double getMaxMaxSpeed() {
-        return maxMaxSpeed;
-    }
+    public double getMaxDisplacement() { return maxDisplacement; }
+    public void setMaxDisplacement(double maxDisplacement) { this.maxDisplacement = maxDisplacement; }
 
-    public void setMaxMaxSpeed(double maxMaxSpeed) {
-        this.maxMaxSpeed = maxMaxSpeed;
-    }
+    public double getTotalDisplacement() { return totalDisplacement; }
+    public void setTotalDisplacement(double totalDisplacement) { this.totalDisplacement = totalDisplacement; }
 
-    public double getMedianDisplacement() {
-        return medianDisplacement;
-    }
+    public double getMedianMaxSpeed() { return medianMaxSpeed; }
+    public void setMedianMaxSpeed(double medianMaxSpeed) { this.medianMaxSpeed = medianMaxSpeed; }
 
-    public void setMedianDisplacement(double medianDisplacement) {
-        this.medianDisplacement = medianDisplacement;
-    }
+    public double getMaxMaxSpeed() { return maxMaxSpeed; }
+    public void setMaxMaxSpeed(double maxMaxSpeed) { this.maxMaxSpeed = maxMaxSpeed; }
 
-    public double getMaxDisplacement() {
-        return maxDisplacement;
-    }
+    public double getMedianMedianSpeed() { return medianMedianSpeed; }
+    public void setMedianMedianSpeed(double medianMedianSpeed) { this.medianMedianSpeed = medianMedianSpeed; }
 
-    public void setMaxDisplacement(double maxDisplacement) {
-        this.maxDisplacement = maxDisplacement;
-    }
+    public double getMaxMedianSpeed() { return maxMedianSpeed; }
+    public void setMaxMedianSpeed(double maxMedianSpeed) { this.maxMedianSpeed = maxMedianSpeed; }
 
-    public double getTotalDisplacement() {
-        return totalDisplacement;
-    }
+    public double getMaxTrackDuration() { return maxTrackDuration; }
+    public void setMaxTrackDuration(double maxTrackDuration) { this.maxTrackDuration = maxTrackDuration; }
 
-    public void setTotalDisplacement(double totalDisplacement) {
-        this.totalDisplacement = totalDisplacement;
-    }
+    public double getTotalTrackDuration() { return totalTrackDuration; }
+    public void setTotalTrackDuration(double totalTrackDuration) { this.totalTrackDuration = totalTrackDuration; }
 
-    public List<Track> getTracks() {
-        return tracks;
-    }
+    public double getMedianTrackDuration() { return medianTrackDuration; }
+    public void setMedianTrackDuration(double medianTrackDuration) { this.medianTrackDuration = medianTrackDuration; }
 
-    public void setTracks(List<Track> tracks) {
-        this.tracks = tracks;
-    }
+    public List<Track> getTracks() { return tracks; }
+    public void setTracks(List<Track> tracks) { this.tracks = tracks; }
 
-    public Table getTracksTable() {
-        return tracksTable;
-    }
+    public Table getTracksTable() { return tracksTable; }
+    public void setTracksTable(Table tracksTable) { this.tracksTable = tracksTable; }
 
-    public void setTracksTable(Table tracksTable) {
-        this.tracksTable = tracksTable;
-    }
+    // ───────────────────────────────────────────────────────────────────────────────
+    // UTILITIES
+    // ───────────────────────────────────────────────────────────────────────────────
 
     /** Adds a single {@link Track} to this square. */
-    public void addTrack(Track track) {
-        this.tracks.add(track);
+    public void addTrack(Track track) { this.tracks.add(track); }
+
+    /**
+     * Initializes all double fields in this object to {@code NaN}.
+     * Used to ensure undefined numeric values are recognizable.
+     */
+    private void initialiseDoublesToNaN() {
+        for (Field f : getClass().getDeclaredFields()) {
+            if (f.getType() == double.class) {
+                try {
+                    f.setDouble(this, Double.NaN);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 
+    /**
+     * Calculates the theoretical square area for a given recording grid size.
+     *
+     * @param nrSquaresInRecording total number of squares in the recording
+     * @return area of one square (in image units)
+     */
+    public static double calculateSquareArea(int nrSquaresInRecording) {
+        return IMAGE_WIDTH * IMAGE_HEIGHT / nrSquaresInRecording;
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // STRING REPRESENTATION
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Returns a formatted textual representation of this square and its metrics.
+     *
+     * @return formatted string
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -475,40 +371,21 @@ public class Square {
         return sb.toString();
     }
 
-    private void initialiseDoublesToNaN() {
-        for (Field f : getClass().getDeclaredFields()) {
-            if (f.getType() == double.class) {
-                try {
-                    f.setDouble(this, Double.NaN);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-    }
-
-    /**
-     * Calculates the theoretical square area based on a fixed image size.
-     *
-     * @param nrSquaresInRecording number of squares in the recording
-     * @return the area of a single square
-     */
-    public static double calculateSquareArea(int nrSquaresInRecording) {
-        return IMAGE_WIDTH * IMAGE_HEIGHT / nrSquaresInRecording;
-    }
+    // ───────────────────────────────────────────────────────────────────────────────
+    // DEBUG DRIVER
+    // ───────────────────────────────────────────────────────────────────────────────
 
     /** Example driver for debugging square area calculations. */
     public static void main(String[] args) {
         List<Square> squares = new ArrayList<>();
         for (int i = 0; i < 21; i++) {
-            Square square = new Square(i, 100);
-            squares.add(square);
+            squares.add(new Square(i, 100));
         }
         System.out.println(squares);
 
-        double areaOriginal = calcSquareAreaOriginal(20);
-        double areaNew = calculateSquareArea(400);
-        double difference = areaNew - areaOriginal;
+        double areaOriginal         = calcSquareAreaOriginal(20);
+        double areaNew              = calculateSquareArea(400);
+        double difference           = areaNew - areaOriginal;
         double percentualDifference = (areaNew - areaOriginal) / areaOriginal * 100;
         System.out.println("Area original: " + areaOriginal);
         System.out.println("Area new: " + areaNew);
@@ -519,7 +396,7 @@ public class Square {
     private static double calcSquareAreaOriginal(int nrSquaresInRow) {
         double micrometerPerPixel = 0.1602804;
         int pixelsPerImage = 512;
-        double micrometerPerImageAxis = micrometerPerPixel * pixelsPerImage;
+        double micrometerPerImageAxis  = micrometerPerPixel * pixelsPerImage;
         double micrometerPerSquareAxis = micrometerPerImageAxis / nrSquaresInRow;
         return micrometerPerSquareAxis * micrometerPerSquareAxis;
     }

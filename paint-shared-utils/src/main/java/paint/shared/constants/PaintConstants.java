@@ -1,15 +1,45 @@
+/******************************************************************************
+ *  Class:        PaintConstants.java
+ *  Package:      paint.shared.constants
+ *
+ *  PURPOSE:
+ *    Defines a set of constants used within the application.
+ *
+ *  DESCRIPTION:
+ *    This utility class includes constants related to file names, directories,
+ *    geometry, timing, and schema definitions for tracks, squares, and recordings.
+ *
+ *  KEY FEATURES:
+ *    - Centralized repository for all constant values across the application
+ *    - Prevents hard-coding of values in multiple places
+ *    - Ensures consistency by using public static final fields
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.shared.constants;
 
 import tech.tablesaw.api.ColumnType;
 
 /**
  * The PaintConstants class defines a set of constants used within the application.
- * It includes constants related to file names, directories, geometry, timing, and schema definitions
- * for tracks, squares, and recordings. This utility class is final and cannot be instantiated.
+ * It includes constants related to file names, directories, geometry, timing, and
+ * schema definitions for tracks, squares, and recordings. This utility class is
+ * final and cannot be instantiated.
  *
  * Purpose:
  * - Provides a centralized location for all constant values used across the application.
- * - Ensures consistency and avoids hardcoding of values throughout the codebase.
+ * - Ensures consistency and avoids hard-coding of values throughout the codebase.
  *
  * Structure:
  * 1. File Names: Constants for default file names used for storing and retrieving data.
@@ -35,44 +65,42 @@ public final class PaintConstants {
     // Filenames
     // =====================
 
-    public static final String RECORDINGS                     = "Recordings.csv";
-    public static final String RECORDINGS_CSV                 = "Recordings.csv";
-    public static final String TRACKS                         = "Tracks.csv";
-    public static final String TRACKS_CSV                     = "Tracks.csv";
-    public static final String SQUARES                        = "Squares.csv";
-    public static final String SQUARES_CSV                    = "Squares.csv";
-    public static final String EXPERIMENT_INFO_CSV            = "Experiment Info.csv";
-    public static final String PAINT_CONFIGURATION_JSON       = "Paint Configuration.json";
-    public static final String PAINT_SWEEP_CONFIGURATION_JSON = "Paint Sweep Configuration.json";
+    public static final String RECORDINGS                      = "Recordings.csv";
+    public static final String RECORDINGS_CSV                  = "Recordings.csv";
+    public static final String TRACKS                          = "Tracks.csv";
+    public static final String TRACKS_CSV                      = "Tracks.csv";
+    public static final String SQUARES                         = "Squares.csv";
+    public static final String SQUARES_CSV                     = "Squares.csv";
+    public static final String EXPERIMENT_INFO_CSV             = "Experiment Info.csv";
+    public static final String PAINT_CONFIGURATION_JSON        = "Paint Configuration.json";
+    public static final String PAINT_SWEEP_CONFIGURATION_JSON  = "Paint Sweep Configuration.json";
 
     // =====================
     // Directories
     // =====================
 
-    public static final String DIR_TRACKMATE_IMAGES     = "TrackMate Images";
-    public static final String DIR_BRIGHTFIELD_IMAGES   = "Brightfield Images";
+    public static final String DIR_TRACKMATE_IMAGES            = "TrackMate Images";
+    public static final String DIR_BRIGHTFIELD_IMAGES          = "Brightfield Images";
 
     // =====================
     // Geometry
     // =====================
 
-    public static final double PIXEL_WIDTH              = 0.1603251;              // Specified by Nikon (in µm)
-    public static final double PIXEL_HEIGHT             = 0.1603251;              // Specified by Nikon (in µm)
-    public static final int    NUMBER_PIXELS_WIDTH      = 512;                    // Specified by Nikon
-    public static final int    NUMBER_PIXELS_HEIGHT     = 512;                    // Specified by Nikon
-    public static final double IMAGE_WIDTH              = PIXEL_WIDTH * NUMBER_PIXELS_WIDTH;      // 82.08645 (in µm)
-    public static final double IMAGE_HEIGHT             = PIXEL_HEIGHT * NUMBER_PIXELS_HEIGHT;    // 82.08645 (in µm)
-
-
+    public static final double PIXEL_WIDTH                     = 0.1603251;              // Specified by Nikon (in µm)
+    public static final double PIXEL_HEIGHT                    = 0.1603251;              // Specified by Nikon (in µm)
+    public static final int    NUMBER_PIXELS_WIDTH             = 512;                    // Specified by Nikon
+    public static final int    NUMBER_PIXELS_HEIGHT            = 512;                    // Specified by Nikon
+    public static final double IMAGE_WIDTH                     = PIXEL_WIDTH * NUMBER_PIXELS_WIDTH;      // 82.08645 (in µm)
+    public static final double IMAGE_HEIGHT                    = PIXEL_HEIGHT * NUMBER_PIXELS_HEIGHT;    // 82.08645 (in µm)
 
     // =====================
     // Timing
     // =====================
 
-    public static final double TIME_INTERVAL            = 0.05;                    // The time between images (in seconds)
-    public static final double FRAMES                   = 2000;                    // The number of images in a recording
-    public static final double RECORDING_DURATION       = FRAMES * TIME_INTERVAL;  // The timespan of a recording
-    // TODO These should ge json parameters
+    public static final double TIME_INTERVAL                   = 0.05;                    // The time between images (in seconds)
+    public static final double FRAMES                          = 2000;                    // The number of images in a recording
+    public static final double RECORDING_DURATION              = FRAMES * TIME_INTERVAL;  // The timespan of a recording
+    // TODO These should be JSON parameters
 
     // =====================
     // JSON

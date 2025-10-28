@@ -1,3 +1,42 @@
+/******************************************************************************
+ *  Class:        ExperimentInfo.java
+ *  Package:      paint.shared.objects
+ *
+ *  PURPOSE:
+ *    Represents metadata and associated data structures describing a single
+ *    experiment recording within the PAINT analysis framework.
+ *
+ *  DESCRIPTION:
+ *    The {@code ExperimentInfo} class encapsulates all metadata fields that
+ *    describe an experiment, such as condition number, probe information,
+ *    concentration, and threshold values. In addition, it maintains references
+ *    to related entities, including {@link Square} and {@link Track} objects,
+ *    and optionally a {@link tech.tablesaw.api.Table} containing track data.
+ *
+ *    This class provides constructors to create instances from explicit
+ *    parameters or from key-value maps (as when reading experiment info
+ *    from CSV or JSON sources). All fields are mutable through standard
+ *    accessor and mutator methods.
+ *
+ *  KEY FEATURES:
+ *    • Encapsulates all experimental metadata.
+ *    • Links to associated {@link Square} and {@link Track} entities.
+ *    • Provides map-based initialization for tabular imports.
+ *    • Supports formatted string export for diagnostics and logging.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.shared.objects;
 
 import paint.shared.utils.Miscellaneous;
@@ -8,24 +47,22 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
 
-import static java.lang.Boolean.parseBoolean;
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
 
 /**
- * The ExperimentInfo class represents metadata and associated data objects
- * related to a specific scientific experiment. It contains core fields to
- * store metadata and collections to manage related objects such as
- * squares and tracks.
- *
- * This class provides constructors to initialize its fields, either through
- * explicit parameters or by parsing key-value pairs from a map. It includes
- * getter and setter methods for each field, as well as convenience methods
- * for adding or managing associated data objects.
+ * Represents metadata and associated data objects for a single experiment.
+ * <p>
+ * This class encapsulates both the descriptive metadata and the related
+ * data structures (squares, tracks, and tables) that define one recording
+ * in the PAINT workflow.
  */
 public class ExperimentInfo {
 
-    // --- Core fields (columns in Recordings/Experiment Info) ---
+    // ───────────────────────────────────────────────────────────────────────────────
+    // CORE FIELDS
+    // ───────────────────────────────────────────────────────────────────────────────
+
     // @formatter:off
     private String  experimentName;
     private String  recordingName;
@@ -39,17 +76,40 @@ public class ExperimentInfo {
     private boolean processFlag;               // renamed from doProcess
     private double  threshold;
     // @formatter:on
+    // ───────────────────────────────────────────────────────────────────────────────
+    // ASSOCIATED OBJECTS
+    // ───────────────────────────────────────────────────────────────────────────────
 
-    // --- Associated objects ---
+    /** The collection of squares associated with this experiment. */
     private List<Square> squares = new ArrayList<>();
-    private List<Track> tracks = new ArrayList<>();
-    private Table tracksTable;
+    private List<Track>  tracks   = new ArrayList<>();
+    private Table        tracksTable;
 
-    // --- Constructors ---
+    // ───────────────────────────────────────────────────────────────────────────────
+    // CONSTRUCTORS
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Default constructor that creates an empty {@code ExperimentInfo} instance.
+     */
     public ExperimentInfo() {
     }
 
-    // @formatter:off
+    /**
+     * Constructs a fully specified {@code ExperimentInfo} instance.
+     *
+     * @param experimentName  the experiment name
+     * @param recordingName   the recording name
+     * @param conditionNumber the condition number
+     * @param replicateNumber the replicate number
+     * @param probeName       the probe name
+     * @param probeType       the probe type
+     * @param cellType        the cell type
+     * @param adjuvant        the adjuvant used
+     * @param concentration   the concentration value
+     * @param processFlag     whether this recording should be processed
+     * @param threshold       the threshold for processing
+     */
     public ExperimentInfo(String  experimentName,
                           String  recordingName,
                           int     conditionNumber,
@@ -77,10 +137,24 @@ public class ExperimentInfo {
     }
 
     /**
-     * Constructs an ExperimentInfo from a row of string key-value pairs.
-     * Expects keys like "Recording Name", "Condition Number", etc.
+     * Constructs an {@code ExperimentInfo} instance from a map of string key-value pairs.
+     * <p>
+     * Expected keys include:
+     * <ul>
+     *   <li>Experiment Name</li>
+     *   <li>Recording Name</li>
+     *   <li>Condition Number</li>
+     *   <li>Replicate Number</li>
+     *   <li>Probe Name</li>
+     *   <li>Probe Type</li>
+     *   <li>Cell Type</li>
+     *   <li>Adjuvant</li>
+     *   <li>Concentration</li>
+     *   <li>Process Flag</li>
+     *   <li>Threshold</li>
+     * </ul>
      *
-     * @param row the map of column names to values (all as strings)
+     * @param row the map of column names to values
      */
     public ExperimentInfo(Map<String, String> row) {
         try {
@@ -98,7 +172,7 @@ public class ExperimentInfo {
             this.threshold       = parseDouble(row.get("Threshold"));
             // @formatter:on
         } catch (Exception e) {
-            PaintLogger.errorf("Problem in Experiment Info");
+            PaintLogger.errorf("Problem parsing Experiment Info");
             PaintLogger.errorf(row.toString());
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
@@ -106,133 +180,86 @@ public class ExperimentInfo {
         }
     }
 
-    // --- Getters and Setters ---
-    public String getExperimentName() {
-        return experimentName;
-    }
+    // ───────────────────────────────────────────────────────────────────────────────
+    // ACCESSORS AND MUTATORS
+    // ───────────────────────────────────────────────────────────────────────────────
 
-    public void setExperimentName(String experimentName) {
-        this.experimentName = experimentName;
-    }
+    public String getExperimentName() { return experimentName; }
+    public void setExperimentName(String experimentName) { this.experimentName = experimentName; }
 
-    public String getRecordingName() {
-        return recordingName;
-    }
+    public String getRecordingName() { return recordingName; }
+    public void setRecordingName(String recordingName) { this.recordingName = recordingName; }
 
-    public void setRecordingName(String recordingName) {
-        this.recordingName = recordingName;
-    }
+    public int getConditionNumber() { return conditionNumber; }
+    public void setConditionNumber(int conditionNumber) { this.conditionNumber = conditionNumber; }
 
-    public int getConditionNumber() {
-        return conditionNumber;
-    }
+    public int getReplicateNumber() { return replicateNumber; }
+    public void setReplicateNumber(int replicateNumber) { this.replicateNumber = replicateNumber; }
 
-    public void setConditionNumber(int conditionNumber) {
-        this.conditionNumber = conditionNumber;
-    }
+    public String getProbeName() { return probeName; }
+    public void setProbeName(String probeName) { this.probeName = probeName; }
 
-    public int getReplicateNumber() {
-        return replicateNumber;
-    }
+    public String getProbeType() { return probeType; }
+    public void setProbeType(String probeType) { this.probeType = probeType; }
 
-    public void setReplicateNumber(int replicateNumber) {
-        this.replicateNumber = replicateNumber;
-    }
+    public String getCellType() { return cellType; }
+    public void setCellType(String cellType) { this.cellType = cellType; }
 
-    public String getProbeName() {
-        return probeName;
-    }
+    public String getAdjuvant() { return adjuvant; }
+    public void setAdjuvant(String adjuvant) { this.adjuvant = adjuvant; }
 
-    public void setProbeName(String probeName) {
-        this.probeName = probeName;
-    }
+    public double getConcentration() { return concentration; }
+    public void setConcentration(double concentration) { this.concentration = concentration; }
 
-    public String getProbeType() {
-        return probeType;
-    }
+    public boolean isProcessFlag() { return processFlag; }
+    public void setProcessFlag(boolean processFlag) { this.processFlag = processFlag; }
 
-    public void setProbeType(String probeType) {
-        this.probeType = probeType;
-    }
+    public double getThreshold() { return threshold; }
+    public void setThreshold(double threshold) { this.threshold = threshold; }
 
-    public String getCellType() {
-        return cellType;
-    }
+    public List<Square> getSquares() { return squares; }
+    public void setSquares(List<Square> squares) { this.squares = squares; }
 
-    public void setCellType(String cellType) {
-        this.cellType = cellType;
-    }
+    public List<Track> getTracks() { return tracks; }
+    public void setTracks(List<Track> tracks) { this.tracks = tracks; }
 
-    public String getAdjuvant() {
-        return adjuvant;
-    }
+    public Table getTracksTable() { return tracksTable; }
+    public void setTracksTable(Table tracksTable) { this.tracksTable = tracksTable; }
 
-    public void setAdjuvant(String adjuvant) {
-        this.adjuvant = adjuvant;
-    }
+    // ───────────────────────────────────────────────────────────────────────────────
+    // CONVENIENCE METHODS
+    // ───────────────────────────────────────────────────────────────────────────────
 
-    public double getConcentration() {
-        return concentration;
-    }
+    /**
+     * Adds a single {@link Square} to this experiment.
+     *
+     * @param square the square to add
+     */
+    public void addSquare(Square square) { this.squares.add(square); }
 
-    public void setConcentration(double concentration) {
-        this.concentration = concentration;
-    }
+    /**
+     * Adds a list of {@link Square} instances to this experiment.
+     *
+     * @param squares list of squares to add
+     */
+    public void addSquares(List<Square> squares) { this.squares.addAll(squares); }
 
-    public boolean isProcessFlag() {
-        return processFlag;
-    }
+    /**
+     * Adds a single {@link Track} to this experiment.
+     *
+     * @param track the track to add
+     */
+    public void addTrack(Track track) { this.tracks.add(track); }
 
-    public void setProcessFlag(boolean processFlag) {
-        this.processFlag = processFlag;
-    }
+    // ───────────────────────────────────────────────────────────────────────────────
+    // STRING REPRESENTATION
+    // ───────────────────────────────────────────────────────────────────────────────
 
-    public double getThreshold() {
-        return threshold;
-    }
-
-    public void setThreshold(double threshold) {
-        this.threshold = threshold;
-    }
-
-    public List<Square> getSquares() {
-        return squares;
-    }
-
-    public void setSquares(List<Square> squares) {
-        this.squares = squares;
-    }
-
-    public List<Track> getTracks() {
-        return tracks;
-    }
-
-    public void setTracks(List<Track> tracks) {
-        this.tracks = tracks;
-    }
-
-    public Table getTracksTable() {
-        return tracksTable;
-    }
-
-    public void setTracksTable(Table tracksTable) {
-        this.tracksTable = tracksTable;
-    }
-
-    // --- Convenience methods ---
-    public void addSquare(Square square) {
-        this.squares.add(square);
-    }
-
-    public void addSquares(List<Square> squares) {
-        this.squares.addAll(squares);
-    }
-
-    public void addTrack(Track track) {
-        this.tracks.add(track);
-    }
-
-
+    /**
+     * Returns a formatted string representation of this {@code ExperimentInfo}.
+     *
+     * @return formatted experiment information as string
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

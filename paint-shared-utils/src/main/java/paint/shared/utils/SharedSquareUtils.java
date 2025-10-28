@@ -5,36 +5,39 @@
  *  PURPOSE:
  *    Provides common utilities for operations on square regions within
  *    recordings, including filtering track data to a given spatial square
- *    and applying visibility‐based selection criteria across squares.
+ *    and applying visibility-based selection criteria across squares.
  *
  *  DESCRIPTION:
  *    • filterTracksInSquare: Restricts a table of track coordinates to those
  *      that fall within the bounds of a specified square (taking into account
- *      boundary inclusivity for last row/column).  
+ *      boundary inclusivity for last row/column).
  *    • applyVisibilityFilter: Filters a list of squares in a recording based
  *      on numeric thresholds (density ratio, variability, R²) and optionally
- *      applies neighbour‐based retention logic (Free, Relaxed, Strict).
+ *      applies neighbour-based retention logic (Free, Relaxed, Strict).
  *
  *  RESPONSIBILITIES:
- *    • Provide static methods for spatial filtering of track data and
- *      square‐selection logic based on experiment criteria.  
+ *    • Provide static methods for spatial filtering of track data.
+ *    • Apply selection and neighbour-mode logic to visible squares.
  *
  *  USAGE EXAMPLE:
  *    Table filtered = SharedSquareUtils.filterTracksInSquare(tracksTable, square, lastRowCol);
  *    SharedSquareUtils.applyVisibilityFilter(recording, minDensityRatio, maxVariability, minRSq, neighbourMode);
  *
  *  DEPENDENCIES:
- *    – paint.shared.objects.Recording  
- *    – paint.shared.objects.Square  
- *    – tech.tablesaw.api.Table, DoubleColumn  
- *    – tech.tablesaw.selection.Selection  
- *    – java.util.List, java.util.Set, java.util.HashSet  
+ *    – paint.shared.objects.Recording
+ *    – paint.shared.objects.Square
+ *    – tech.tablesaw.api.Table, DoubleColumn
+ *    – tech.tablesaw.selection.Selection
+ *    – java.util.List, java.util.Set, java.util.HashSet
  *
  *  AUTHOR:
- *    Hans Bakker (jjabakker)
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-10-27
+ *    2025-10-28
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -52,20 +55,32 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class SharedSquareUtils {
+/**
+ * Utility class providing methods for filtering and evaluating square regions
+ * in PAINT recordings. Supports both spatial filtering of track coordinates
+ * and multi-criteria visibility selection of squares.
+ */
+public final class SharedSquareUtils {
+
+    /** Private constructor to prevent instantiation. */
+    private SharedSquareUtils() {}
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // FILTER TRACKS BY SQUARE REGION
+    // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Filters tracks within a given square, restricting to a specific range of x and y coordinates.
-     * This method processes tracks to retain only those within the coordinate bounds of the specified square.
-     * It handles inclusive or exclusive boundaries depending on whether the square lies in the last column or row.
+     * Filters track coordinates to include only those within the specified square.
+     * <p>
+     * This method handles inclusive or exclusive boundaries depending on whether
+     * the square is in the last column or row. It operates on a Tablesaw table
+     * containing at least "Track X Location" and "Track Y Location" columns.
+     * </p>
      *
-     * @param tracks     The table containing track data, with at least "Track X Location" and
-     *                   "Track Y Location" columns.
-     * @param square     The square specifying the area of interest, with defined corner coordinates
-     *                   and row/column indices.
-     * @param lastRowCol The index of the last column or row (maximum index) in the grid of squares,
-     *                   used to decide whether boundary edges are inclusive.
-     * @return A new {@link Table} containing only the tracks located within the boundaries of the specified square.
+     * @param tracks     table of track data with X/Y coordinate columns
+     * @param square     the square region defining coordinate boundaries
+     * @param lastRowCol index of the last row/column in the grid (for boundary handling)
+     * @return new {@link Table} containing only the tracks located within the specified square
      */
     public static Table filterTracksInSquare(Table tracks, Square square, int lastRowCol) {
         double x0 = square.getX0();
@@ -95,26 +110,32 @@ public class SharedSquareUtils {
         return tracks.where(selX.and(selY));
     }
 
+    // ───────────────────────────────────────────────────────────────────────────────
+    // VISIBILITY FILTERING ACROSS SQUARES
+    // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Applies a visibility filter to the squares in the provided recording based on specified
-     * numeric criteria and neighbour‐mode criteria.  
+     * Applies a visibility filter to all squares in a recording based on numeric
+     * thresholds and optional neighbour-based retention logic.
      * <p>
-     * First pass: each square is marked selected if it meets the minimum density ratio,
-     * maximum variability, and minimum R² thresholds (and the R² is not NaN).  
-     * <p>
-     * Second pass (unless neighbourMode = "Free"): among the selected squares, further
-     * retain only those that have a selected neighbour according to the neighbourMode:
-     * – "Relaxed": corner or edge adjacency allowed (dr ≤1 & dc ≤1, dr+dc >0)  
-     * – "Strict": direct edge adjacency only (either dr =1 & dc =0 OR dr =0 & dc =1)
+     * <b>Pass 1:</b> Marks each square selected if it meets:
+     * <ul>
+     *   <li>Density ratio ≥ minDensityRatio</li>
+     *   <li>Variability ≤ maxVariability</li>
+     *   <li>R² ≥ minRSquared and not NaN</li>
+     * </ul>
+     * <b>Pass 2:</b> If {@code neighbourMode != "Free"}, keeps only squares having
+     * at least one selected neighbour:
+     * <ul>
+     *   <li>“Relaxed” → corner or edge adjacency allowed (dr ≤ 1 & dc ≤ 1)</li>
+     *   <li>“Strict” → edge adjacency only (dr = 1 & dc = 0 or vice versa)</li>
+     * </ul>
      *
-     * @param recording       The {@link Recording} object containing the list of {@link Square}
-     *                        objects to be filtered.
-     * @param minDensityRatio The minimum density ratio required for a square to pass basic filter.
-     * @param maxVariability  The maximum variability allowed for a square to pass the basic filter.
-     * @param minRSquared     The minimum R² value a square must have to pass the basic filter.
-     * @param neighbourMode   The neighbour mode defining how adjacency is considered for the second filter
-     *                        stage — expected values: "Free", "Relaxed", or "Strict".
+     * @param recording       recording containing the list of squares
+     * @param minDensityRatio minimum density ratio for selection
+     * @param maxVariability  maximum allowed variability
+     * @param minRSquared     minimum R² value for selection
+     * @param neighbourMode   neighbour logic: "Free", "Relaxed", or "Strict"
      */
     public static void applyVisibilityFilter(Recording recording,
                                              double minDensityRatio,
@@ -129,7 +150,7 @@ public class SharedSquareUtils {
 
         int visibleBasic = 0;
 
-        // --- Pass 1: Filter by numeric criteria ---
+        // Pass 1 — Numeric filter
         for (Square square : squares) {
             boolean passes = square.getDensityRatio() >= minDensityRatio
                     && square.getVariability() <= maxVariability
@@ -142,7 +163,7 @@ public class SharedSquareUtils {
             }
         }
 
-        // --- Pass 2: Apply neighbour filtering if requested ---
+        // Pass 2 — Neighbour-based refinement
         if ("Free".equalsIgnoreCase(neighbourMode)) {
             return; // No neighbour constraints
         }
@@ -197,5 +218,4 @@ public class SharedSquareUtils {
         PaintLogger.debugf("NeighbourMode [%s] neighbour-filtered: %d / %d retained",
                            neighbourMode, keptCount, visibleBasic);
     }
-
 }

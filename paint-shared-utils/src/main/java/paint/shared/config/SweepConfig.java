@@ -1,3 +1,32 @@
+/******************************************************************************
+ *  Class:        SweepConfig.java
+ *  Package:      paint.shared.config
+ *
+ *  PURPOSE:
+ *    Configuration loader & accessor for sweep parameters.
+ *
+ *  DESCRIPTION:
+ *    Reads a JSON file and provides methods to extract active sweep values
+ *    for configured categories. Works with Gson to parse JSON.
+ *
+ *  KEY FEATURES:
+ *    - Loads JSON from a file path
+ *    - Case-sensitive keys in JSON structure but supports structured retrieval
+ *    - Retrieves maps of numeric values for enabled sweep attributes
+ *
+ *  AUTHOR:
+ *    Your Name (or Hans Bakker if appropriate)
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Your Name. All rights reserved.
+ ******************************************************************************/
+
 package paint.shared.config;
 
 import com.google.gson.JsonElement;
@@ -16,9 +45,24 @@ import java.util.Map;
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 /**
- * The {@code SweepConfig} class provides functionality for loading, parsing, and retrieving
- * sweep-related configuration from a JSON file. This configuration is stored internally
- * as a {@link JsonObject}, and methods are provided to access specific types of data.
+ * The {@code SweepConfig} class provides functionality for loading, parsing,
+ * and retrieving sweep-related configuration from a JSON file.
+ * The configuration is stored internally as a {@link JsonObject}, and methods
+ * are provided to access specific types of data.
+ *
+ * <p>Typical usage:
+ * <pre>
+ *   SweepConfig cfg = new SweepConfig("path/to/file.json");
+ *   Map&lt;String, List&lt;Number&gt;&gt; values = cfg.getActiveSweepValues("CategoryName");
+ * </pre>
+ *
+ * <p>Key behaviours:
+ * <ul>
+ *   <li>Loads JSON from a file path in constructor.</li>
+ *   <li>Processes a category section (if present) to find attributes flagged `true`.</li>
+ *   <li>For each enabled attribute, collects numeric values from its corresponding JSON object.</li>
+ *   <li>Returns an ordered map (in insertion order) of attribute → list of numbers.</li>
+ * </ul>
  */
 public class SweepConfig {
 
@@ -26,8 +70,8 @@ public class SweepConfig {
 
     /**
      * Constructs a SweepConfig object by parsing a JSON configuration file.
-     * This constructor reads the specified file, parses its content as JSON, and initializes
-     * the configuration data.
+     * This constructor reads the specified file, parses its content as JSON,
+     * and initializes the configuration data.
      *
      * @param filePath the path to the JSON file containing the sweep configuration.
      * @throws IOException if an I/O error occurs while reading the file.
@@ -40,14 +84,16 @@ public class SweepConfig {
 
     /**
      * Retrieves the active sweep values for a specified category.
+     *
      * This method processes the JSON configuration to extract and return
-     * a map containing the category attributes and their corresponding active numeric values.
-     * Only enabled attributes are included in the resulting map.
+     * a map containing the category attributes and their corresponding
+     * active numeric values. Only enabled attributes (true) in the category
+     * section are included.
      *
      * @param category the name of the category whose sweep values are to be fetched.
      *                 It corresponds to a key in the root JSON object.
-     * @return a map of attributes to lists of numeric values. The map is empty if the category
-     *         does not exist or no active values are found.
+     * @return a map of attributes to lists of numeric values. The map is empty
+     *         if the category does not exist or no active values are found.
      */
     public Map<String, List<Number>> getActiveSweepValues(String category) {
         Map<String, List<Number>> activeValues = new LinkedHashMap<>();
@@ -83,7 +129,6 @@ public class SweepConfig {
                 activeValues.put(attribute, values);
             }
         }
-
         return activeValues;
     }
 }

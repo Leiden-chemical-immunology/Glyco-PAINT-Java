@@ -1,3 +1,38 @@
+/******************************************************************************
+*  Class:        ProjectDialog.java
+*  Package:      paint.shared.dialogs
+*
+*  PURPOSE:
+*    Dialog for selecting and running a project workflow (TrackMate, Generate Squares,
+*    or Viewer mode).
+*
+*  DESCRIPTION:
+*    Displays a Swing dialog that allows the user to choose a project root directory,
+*    optionally set image directory, configure square-generation parameters, select
+*    experiments to include, and start the chosen workflow. Supports cancellation,
+*    verbose mode toggle, sweep mode (in TRACKMATE), and saving preferences.
+*
+*  KEY FEATURES:
+*    • Supports 3 modes: TRACKMATE, GENERATE_SQUARES, VIEWER.
+*    • Allows browsing for project root and images root with validation.
+*    • Presents square-generation parameter panel for TRACKMATE and GENERATE_SQUARES modes.
+*    • Maintains a list of experiments via check boxes, with select/clear functionality.
+*    • Allows configuration and persistence of settings (via PaintConfig, PaintPrefs).
+*    • Runs user-provided callback in a background thread with UI handling for start/stop.
+*
+*  AUTHOR:
+*    Hans Bakker
+*
+*  MODULE:
+*    paint-shared-utils
+*
+*  UPDATED:
+*    2025-10-28
+*
+*  COPYRIGHT:
+*    © 2025 Hans Bakker. All rights reserved.
+Give me all these ******************************************************************************/
+
 package paint.shared.dialogs;
 
 import paint.shared.config.GenerateSquaresConfig;
@@ -26,7 +61,7 @@ import java.util.List;
 
 import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
 
-public class ProjectDialog {
+public class   ProjectDialog {
 
     public enum DialogMode {
         TRACKMATE,
@@ -39,7 +74,13 @@ public class ProjectDialog {
         boolean run(Project project);
     }
 
-    private CalculationCallback calculationCallback;
+    private     CalculationCallback calculationCallback;
+
+    /**
+     * Sets the callback to be invoked when the user confirms and starts the operation.
+     *
+     * @param callback a {@link CalculationCallback} instance that performs the configured workflow.
+     */
     public void setCalculationCallback(CalculationCallback callback) { this.calculationCallback = callback; }
 
     // @formatter:off
@@ -85,6 +126,15 @@ public class ProjectDialog {
     private volatile Thread       workerThread = null;
     // @formatter:on
 
+    /**
+     * Dialog for selecting and running a project workflow for the Paint application.
+     *
+     * This dialog allows the user to choose a project root directory (and image directory
+     * if applicable), select experiments, optionally configure square-generation parameters,
+     * and then execute a callback for one of the supported modes: TRACKMATE, GENERATE_SQUARES,
+     * or VIEWER.
+     *
+     */
     public ProjectDialog(Frame owner, Path initialProjectPath, DialogMode mode) {
         this.projectPath = initialProjectPath;
         this.paintConfig = PaintConfig.instance();
@@ -463,9 +513,9 @@ public class ProjectDialog {
                     }
                 }
 
-                final boolean callbackSuccess = success;
-                final Exception callbackError = caught;
-                final boolean wasCancelled = cancelled || Thread.currentThread().isInterrupted();
+                final boolean   callbackSuccess = success;
+                final Exception callbackError   = caught;
+                final boolean   wasCancelled    = cancelled || Thread.currentThread().isInterrupted();
 
                 SwingUtilities.invokeLater(() -> {
                     setInputsEnabled(true);
@@ -528,24 +578,24 @@ public class ProjectDialog {
             java.util.function.Supplier<String> defaultValueSupplier,
             java.util.function.Consumer<File> onChosen
     ) {
-        gbc.gridx = 0;
-        gbc.gridy = row;
+        gbc.gridx   = 0;
+        gbc.gridy   = row;
         gbc.weightx = 0;
-        gbc.fill = GridBagConstraints.NONE;
-        JLabel lbl = new JLabel(labelText);
+        gbc.fill    = GridBagConstraints.NONE;
+        JLabel lbl  = new JLabel(labelText);
         lbl.setPreferredSize(labelSize);
         panel.add(lbl, gbc);
 
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx      = 1;
+        gbc.weightx   = 1.0;
+        gbc.fill      = GridBagConstraints.HORIZONTAL;
         JTextField tf = new JTextField(defaultValueSupplier.get(), 32);
         panel.add(tf, gbc);
         fieldOut.accept(tf);
 
-        gbc.gridx = 2;
-        gbc.weightx = 0;
-        gbc.fill = GridBagConstraints.NONE;
+        gbc.gridx     = 2;
+        gbc.weightx   = 0;
+        gbc.fill      = GridBagConstraints.NONE;
         JButton browse = new JButton("Browse...");
 
         // ✅ store reference for enabling/disabling later
@@ -606,7 +656,7 @@ public class ProjectDialog {
 
     private void reloadConfigForNewProject(Path newRoot) {
         this.projectPath = newRoot;
-        this.project = new Project(newRoot);
+        this.project     = new Project(newRoot);
         PaintLogger.infof("Switched project root to: %s", newRoot);
         PaintConfig.initialise(newRoot);
         populateCheckboxes();
@@ -616,7 +666,9 @@ public class ProjectDialog {
     }
 
     private void updateOkButtonState() {
-        if (okButton == null) return;
+        if (okButton == null) {
+            return;
+        }
 
         boolean anySelected = checkBoxes.stream().anyMatch(JCheckBox::isSelected);
 
@@ -698,10 +750,10 @@ public class ProjectDialog {
         // Experiments
         if (saveExperimentsCheckBox.isSelected()) {
             PaintConfig.removeSection("Experiments");
-            for (JCheckBox cb : checkBoxes)
+            for (JCheckBox cb : checkBoxes) {
                 PaintConfig.setBoolean("Experiments", cb.getText(), cb.isSelected());
+            }
         }
-
         paintConfig.save();
     }
 
@@ -745,6 +797,15 @@ public class ProjectDialog {
         );
     }
 
+    /**
+     * Displays the dialog. The method blocks until the user closes the dialog.
+     *
+     * After closing, the configured {@link Project} is returned, regardless of whether
+     * the user pressed OK or cancelled.
+     *
+     *
+     * @return the {@link Project} object representing user selections and configuration.
+     */
     public Project showDialog() {
         dialog.setVisible(true); // stays open until user closes it
         return getProject();
@@ -820,6 +881,11 @@ public class ProjectDialog {
                 throws BadLocationException { if (text.matches("\\d*(\\.\\d*)?")) super.replace(fb, offset,length, text, attrs); }
     }
 
+    /**
+     * Returns whether the user cancelled the dialog (or closed it without confirming).
+     *
+     * @return {@code true} if cancelled or closed without confirmation; {@code false} otherwise.
+     */
     public boolean isCancelled() {
         return cancelled;
     }
@@ -828,6 +894,11 @@ public class ProjectDialog {
         return dialog;
     }
 
+    /**
+     * Enables or disables the OK button of the dialog.
+     *
+     * @param enabled if {@code true}, the OK button is enabled; if {@code false}, disabled.
+     */
     public void setOkEnabled(boolean enabled) {
         if (okButton != null) okButton.setEnabled(enabled);
     }
@@ -838,6 +909,13 @@ public class ProjectDialog {
         PaintLogger.infof("Verbose mode %s.", enabled ? "enabled" : "disabled");
     }
 
+    /**
+     * Returns whether the “Sweep” mode checkbox is selected.
+     * <p>
+     * Only meaningful when mode is TRACKMATE; otherwise returns {@code false}.
+     *
+     * @return {@code true} if sweep mode is selected; {@code false} otherwise.
+     */
     public boolean isSweepSelected() {
         return sweepCheckBox != null && sweepCheckBox.isSelected();
     }

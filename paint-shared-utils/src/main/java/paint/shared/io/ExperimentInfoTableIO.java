@@ -1,3 +1,37 @@
+/******************************************************************************
+ *  Class:        ExperimentInfoTableIO.java
+ *  Package:      paint.shared.io
+ *
+ *  PURPOSE:
+ *    Provides table input/output utilities for {@link paint.shared.objects.ExperimentInfo}
+ *    records, enforcing the schema used for per-recording experiment metadata.
+ *
+ *  DESCRIPTION:
+ *    This class defines conversion logic between Tablesaw {@link tech.tablesaw.api.Table}
+ *    objects and {@link paint.shared.objects.ExperimentInfo} instances. It validates
+ *    and enforces the schema defined in {@code PaintConstants.EXPERIMENT_INFO_COLS}
+ *    and {@code PaintConstants.EXPERIMENT_INFO_TYPES}.
+ *
+ *  KEY FEATURES:
+ *    • Reads and validates Experiment Info CSV files against the expected schema.
+ *    • Converts between lists of {@link paint.shared.objects.ExperimentInfo} and Tablesaw tables.
+ *    • Creates empty Experiment Info tables with predefined columns.
+ *    • Supports type-safe row appending with automatic INTEGER→DOUBLE upcasting.
+ *    • Extends {@link BaseTableIO} for consistent schema validation and CSV handling.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.shared.io;
 
 import paint.shared.objects.ExperimentInfo;
@@ -189,7 +223,7 @@ public class ExperimentInfoTableIO extends BaseTableIO {
 
         for (Row srcRow : source) {
             Row dst = target.appendRow();
-            int r = srcRow.getRowNumber();
+            int r   = srcRow.getRowNumber();
 
             for (int i = 0; i < EXPERIMENT_INFO_COLS.length; i++) {
                 String col = EXPERIMENT_INFO_COLS[i];
@@ -204,7 +238,6 @@ public class ExperimentInfoTableIO extends BaseTableIO {
                     continue; // Leave as missing in the destination
                 }
 
-                // Java 8 style: use if/else instead of switch on enum
                 if (expected.equals(ColumnType.STRING)) {
                     dst.setString(col, source.stringColumn(col).get(r));
                 } else if (expected.equals(ColumnType.INTEGER)) {

@@ -27,10 +27,13 @@
  *    – paint.shared.utils.PaintPrefs
  *
  *  AUTHOR:
- *    Hans Bakker (jjabakker)
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-10-27
+ *    2025-10-28
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -39,68 +42,78 @@
 package paint.shared.utils;
 
 /**
- * The {@code PaintRuntime} class is a utility class that manages runtime settings
- * for controlling verbosity of logs and the logging level within the application.
- * It interacts with {@link PaintPrefs} to load and persist these settings in a
- * preference storage system.
- *
- * <p>This class is non-instantiable and consists entirely of static methods and fields.
- *
- * Core responsibilities:
- * <ul>
- *   <li>Manage the {@code verbose} setting to enable or disable verbose logging.</li>
- *   <li>Manage the {@code logLevel} setting to configure the desired logging level.</li>
- *   <li>Initialize these settings using default values or preferences stored via {@link PaintPrefs}.</li>
- * </ul>
+ * Provides centralized access to runtime configuration parameters
+ * such as verbosity and log level.
+ * <p>
+ * This class loads and persists its configuration using {@link PaintPrefs}
+ * and maintains thread-safe static access to global runtime flags.
+ * </p>
  */
 public final class PaintRuntime {
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // FIELDS
+    // ───────────────────────────────────────────────────────────────────────────────
 
     private static boolean verbose;
     private static String  logLevel;
 
+    /** Private constructor to prevent instantiation. */
     private PaintRuntime() {
-        // Prevent instantiation
+        // Deliberately left blank
     }
 
+    // ───────────────────────────────────────────────────────────────────────────────
+    // INITIALIZATION
+    // ───────────────────────────────────────────────────────────────────────────────
+
     /**
-     * Initializes the application runtime settings by loading values from preferences.
-     * Specifically:
+     * Initializes runtime settings by loading stored preferences.
      * <ul>
-     *   <li>{@code verbose}: whether verbose logging is enabled, defaulted to {@code false}
-     *       if the preference is not yet set.</li>
-     *   <li>{@code logLevel}: the logging level as a string, defaulting to {@code "INFO"} if
-     *       the preference is not yet set.</li>
+     *   <li>{@code verbose}: whether verbose logging is enabled
+     *       (default {@code false}).</li>
+     *   <li>{@code logLevel}: current log level string
+     *       (default {@code "INFO"}).</li>
      * </ul>
-     * <p>This method must be called during application startup to ensure correct
-     * initial behavior of logging and verbosity flags.
+     * <p>
+     * Should be called once during application startup.
+     * </p>
      */
     public static void initialiseFromPrefs() {
         verbose  = PaintPrefs.getBoolean("Runtime", "Verbose",   false);
         logLevel = PaintPrefs.getString ("Runtime", "Log Level", "INFO");
     }
 
+    // ───────────────────────────────────────────────────────────────────────────────
+    // ACCESSORS
+    // ───────────────────────────────────────────────────────────────────────────────
+
     /**
-     * Queries whether the application is currently in verbose mode.
+     * Checks whether verbose mode is currently active.
      *
-     * @return {@code true} if verbose logging is enabled; {@code false} otherwise.
+     * @return {@code true} if verbose logging is enabled; otherwise {@code false}
      */
     public static boolean isVerbose() {
         return verbose;
     }
 
     /**
-     * Retrieves the current logging level setting.
+     * Returns the current log level as a string (e.g. "INFO", "DEBUG", "WARN").
      *
-     * @return the log level string, e.g. {@code "INFO"}, {@code "DEBUG"}, etc.
+     * @return current log level string
      */
     public static String getLogLevel() {
         return logLevel;
     }
 
+    // ───────────────────────────────────────────────────────────────────────────────
+    // MUTATORS
+    // ───────────────────────────────────────────────────────────────────────────────
+
     /**
-     * Sets the verbose logging flag and persists the new value to preferences.
+     * Enables or disables verbose logging and persists the new value to preferences.
      *
-     * @param v The new verbose flag value; {@code true} to enable verbose logging, {@code false} to disable.
+     * @param v {@code true} to enable verbose logging; {@code false} to disable
      */
     public static void setVerbose(boolean v) {
         verbose = v;
@@ -108,9 +121,9 @@ public final class PaintRuntime {
     }
 
     /**
-     * Sets the log level and persists the new setting to preferences.
+     * Updates the global log level and persists the change to preferences.
      *
-     * @param level The new log level string to set, e.g. {@code "DEBUG"}, {@code "ERROR"}, etc.
+     * @param level new log level string (e.g. "DEBUG", "INFO", "WARN", "ERROR")
      */
     public static void setLogLevel(String level) {
         logLevel = level;

@@ -1,3 +1,40 @@
+/******************************************************************************
+ *  Class:        JarInfoLogger.java
+ *  Package:      paint.shared.utils
+ *
+ *  PURPOSE:
+ *    Provides functionality to inspect and log metadata from JAR manifest files.
+ *
+ *  DESCRIPTION:
+ *    The {@code JarInfoLogger} class extracts implementation and specification
+ *    metadata from JAR manifests. It supports both direct code-source access
+ *    and fallback scanning via the classpath. The retrieved information includes
+ *    build timestamps, titles, versions, and vendor data.
+ *
+ *    The class also provides a time conversion utility that formats UTC
+ *    timestamps into the Amsterdam timezone for standardized reporting.
+ *    Metadata is encapsulated in the immutable {@link JarInfo} nested class.
+ *
+ *  KEY FEATURES:
+ *    • Reads MANIFEST.MF files from JARs or classpath.
+ *    • Extracts key manifest attributes such as implementation and specification info.
+ *    • Converts UTC timestamps to localized Amsterdam time.
+ *    • Provides formatted summaries for console or log output.
+ *    • Fully static, non-instantiable design.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.shared.utils;
 
 import java.io.InputStream;
@@ -13,31 +50,41 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 /**
- * Utility class for logging or analyzing JAR manifest metadata.
- * Provides methods to extract essential information from the manifest files defined
- * within JAR archives, such as implementation details, specification details, and build timestamps.
- *
- * This class also includes functionality to format timestamps into a standardized output.
- * The retrieved information is returned encapsulated in the {@code JarInfo} nested class.
- *
- * Note: This is a static utility class and cannot be instantiated.
+ * Static utility for reading manifest metadata from JAR archives.
+ * <p>
+ * The {@code JarInfoLogger} reads manifest files, extracts implementation
+ * details (title, version, vendor, build date), and formats time data into
+ * Amsterdam time for uniform reporting. It can operate on any class
+ * contained in a JAR file.
  */
-public class JarInfoLogger {
+public final class JarInfoLogger {
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // CONSTANTS
+    // ───────────────────────────────────────────────────────────────────────────────
 
     private static final ZoneId AMS = ZoneId.of("Europe/Amsterdam");
     private static final DateTimeFormatter OUT_FMT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z").withZone(AMS);
 
-    /** Prevent instantiation of this static utility class. */
+    /** Prevents instantiation of this static utility class. */
     private JarInfoLogger() {
-        // static utility
+        // Prevent instantiation
     }
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // PUBLIC API
+    // ───────────────────────────────────────────────────────────────────────────────
 
     /**
      * Reads JAR manifest information for the given class.
+     * <p>
+     * The method first attempts to locate the manifest in the JAR containing
+     * the provided class. If not found, it scans the classpath for the first
+     * available {@code META-INF/MANIFEST.MF}.
      *
-     * @param clazz any class from the JAR whose manifest should be read
-     * @return a {@link JarInfo} record containing manifest data, or {@code null} if not found
+     * @param clazz the class from which to derive the JAR source
+     * @return a {@link JarInfo} object containing manifest metadata, or {@code null} if unavailable
      */
     public static JarInfo getJarInfo(Class<?> clazz) {
         try {
@@ -51,9 +98,9 @@ public class JarInfoLogger {
                 return null;
             }
 
-            Attributes attribute = manifest.getMainAttributes();
-            String ts = attribute.getValue("Build-Timestamp"); // optional
-            String formattedTs = formatAmsterdam(ts);
+            Attributes attribute   = manifest.getMainAttributes();
+            String     ts          = attribute.getValue("Build-Timestamp"); // optional
+            String     formattedTs = formatAmsterdam(ts);
 
             return new JarInfo(
                     attribute.getValue("Implementation-Title"),
@@ -70,22 +117,25 @@ public class JarInfoLogger {
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Internal helpers
-    // ---------------------------------------------------------------------
+    // ───────────────────────────────────────────────────────────────────────────────
+    // INTERNAL HELPERS
+    // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Attempts to read a manifest directly from the JAR file associated with the given class.
+     * Attempts to read a manifest directly from the JAR file that defined
+     * the specified class.
      *
-     * @param clazz the class whose code source will be used to locate the JAR
+     * @param clazz class whose code source will be used to locate the JAR
      * @return the parsed {@link Manifest}, or {@code null} if unavailable
      */
     private static Manifest manifestFromCodeSource(Class<?> clazz) {
         try {
             CodeSource cs = clazz.getProtectionDomain().getCodeSource();
-            if (cs == null) return null;
+            if (cs == null) {
+                return null;
+            }
 
-            URL loc = cs.getLocation(); // jar:file:/.../app.jar or file:/.../classes/
+            URL loc     = cs.getLocation();
             String path = loc.toString();
 
             if (path.endsWith(".jar") || path.contains(".jar!")) {
@@ -107,10 +157,10 @@ public class JarInfoLogger {
     }
 
     /**
-     * Attempts to read the first manifest file found on the classpath.
+     * Reads the first available {@code META-INF/MANIFEST.MF} from the classpath.
      *
-     * @param clazz the class providing a {@link ClassLoader} to search with
-     * @return the first {@link Manifest} found, or {@code null} if none
+     * @param clazz class whose {@link ClassLoader} will be used for resource lookup
+     * @return the first {@link Manifest} found, or {@code null} if none exist
      */
     private static Manifest manifestFromClasspath(Class<?> clazz) {
         try {
@@ -126,12 +176,17 @@ public class JarInfoLogger {
         return null;
     }
 
+    // ───────────────────────────────────────────────────────────────────────────────
+    // DATE/TIME UTILITIES
+    // ───────────────────────────────────────────────────────────────────────────────
+
     /**
-     * Converts a UTC timestamp string to Amsterdam local time.
+     * Converts a UTC timestamp string to Amsterdam local time, formatted as
+     * {@code yyyy-MM-dd HH:mm:ss z}.
      * <p>
      * Supported input formats:
      * <ul>
-     *   <li>ISO 8601 (e.g., {@code 2025-10-14T06:39:16Z})</li>
+     *   <li>ISO 8601 (e.g. {@code 2025-10-14T06:39:16Z})</li>
      *   <li>{@code yyyy-MM-dd HH:mm:ss} (assumed UTC)</li>
      *   <li>{@code yyyy-MM-dd'T'HH:mm:ssXXX}</li>
      * </ul>
@@ -140,7 +195,9 @@ public class JarInfoLogger {
      * @return formatted string (e.g., {@code "2025-10-14 08:39:16 CET"}), or {@code null} if invalid
      */
     public static String formatAmsterdam(String utcString) {
-        if (utcString == null || utcString.trim().isEmpty()) return null;
+        if (utcString == null || utcString.trim().isEmpty()) {
+            return null;
+        }
 
         // Try ISO 8601 (e.g. 2025-10-14T06:39:16Z)
         try {
@@ -165,8 +222,14 @@ public class JarInfoLogger {
         return null;
     }
 
+    // ───────────────────────────────────────────────────────────────────────────────
+    // MAIN (DEMO / TEST DRIVER)
+    // ───────────────────────────────────────────────────────────────────────────────
+
     /**
-     * Prints manifest information for this utility’s own class (for manual CLI testing).
+     * Prints manifest information for this utility’s own class.
+     *
+     * Intended for manual or command-line testing.
      *
      * @param args command-line arguments (unused)
      */
@@ -175,14 +238,15 @@ public class JarInfoLogger {
         System.out.println(Objects.toString(info, "No manifest information found."));
     }
 
-    // ---------------------------------------------------------------------
-    // Nested data record
-    // ---------------------------------------------------------------------
+    // ───────────────────────────────────────────────────────────────────────────────
+    // NESTED DATA STRUCTURE
+    // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Immutable data container for JAR manifest metadata.
+     * Immutable container class for JAR manifest metadata.
      */
-    public static class JarInfo {
+    public static final class JarInfo {
+
         public final String implementationTitle;
         public final String implementationVersion;
         public final String implementationVendor;
@@ -193,7 +257,7 @@ public class JarInfoLogger {
         public final String specificationVendor;
 
         /**
-         * Constructs a new {@code JarInfo} instance.
+         * Constructs a new {@code JarInfo} container with all metadata values.
          *
          * @param implTitle    implementation title
          * @param implVersion  implementation version
@@ -223,7 +287,7 @@ public class JarInfoLogger {
             // @formatter:on
         }
 
-        /** @return a human-readable short summary of implementation metadata. */
+        /** @return a concise human-readable summary of implementation metadata. */
         @Override
         public String toString() {
             return String.format(
@@ -236,7 +300,7 @@ public class JarInfoLogger {
             );
         }
 
-        /** @return a detailed summary including specification metadata. */
+        /** @return a detailed report including specification metadata. */
         public String toStringLONG() {
             return String.format(
                     "Implementation Title  : %s%n" +

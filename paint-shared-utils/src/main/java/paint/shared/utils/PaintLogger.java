@@ -1,3 +1,40 @@
+/******************************************************************************
+ *  Class:        PaintLogger.java
+ *  Package:      paint.shared.utils
+ *
+ *  PURPOSE:
+ *    Provides structured, color-coded logging functionality for the PAINT framework.
+ *
+ *  DESCRIPTION:
+ *    The {@code PaintLogger} class centralizes logging for both console and file
+ *    outputs. It supports multiple log levels (DEBUG, INFO, WARN, ERROR), color
+ *    display through {@link PaintConsoleWindow}, and persistent logging to disk.
+ *
+ *    Messages below the current log level threshold are automatically filtered.
+ *    Log files are created within a "Logs" directory under a specified project
+ *    path. This class also supports aligned documentation block output and
+ *    raw printing for unformatted data.
+ *
+ *  KEY FEATURES:
+ *    • Multi-level logging with severity filtering.
+ *    • Color-coded console output integrated with {@link PaintConsoleWindow}.
+ *    • Automatic log file rotation and initialization under a "Logs" folder.
+ *    • Thread-safe static API with Java 8 compatibility.
+ *    • Documentation-style formatted block printing for structured logs.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.shared.utils;
 
 import java.awt.*;
@@ -9,22 +46,27 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Manages logging functionality for the application, providing various log levels
- * and the ability to write log messages to a console and to a log file.
+ * Static logger class for color-coded console and file logging.
+ * <p>
+ * Supports multiple severity levels, formatted messages, and persistent
+ * log storage under a project’s "Logs" directory.
  */
-public class PaintLogger {
+public final class PaintLogger {
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // ENUM: LOG LEVEL
+    // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Represents a log level with associated severity rank and display color.
+     * Defines log levels with severity rank and display color.
      */
     public enum Level {
-
-        // @formatter: off
+        // @formatter:off
         DEBUG(0, Color.GRAY),
         INFO( 1, Color.BLACK),
         WARN( 2, Color.ORANGE.darker()),
         ERROR(3, Color.RED);
-        // @formatter: on
+        // @formatter:on
 
         private final int rank;
         private final Color color;
@@ -45,24 +87,26 @@ public class PaintLogger {
         }
     }
 
+    // ───────────────────────────────────────────────────────────────────────────────
+    // INTERNAL STATE
+    // ───────────────────────────────────────────────────────────────────────────────
+
     // @formatter:off
-    private static       BufferedWriter    writer;
-    private static       boolean           initialised    = false;
-    private static final DateTimeFormatter TIME_FMT       = DateTimeFormatter.ofPattern("HH:mm:ss");
-    private static       boolean           justPrintedRaw = false;
+    private static          BufferedWriter    writer;
+    private static          boolean           initialised    = false;
+    private static final    DateTimeFormatter TIME_FMT       = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private static          boolean           justPrintedRaw = false;
+    private static volatile Level             currentLevel   = Level.INFO;
     // @formatter:on
 
-    private static volatile Level currentLevel = Level.INFO;
-
-    // ---------------------------------------------------------------------
-    // Configuration
-    // ---------------------------------------------------------------------
+    // ───────────────────────────────────────────────────────────────────────────────
+    // CONFIGURATION
+    // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Sets the current log level.
-     * Messages below this level will be suppressed.
+     * Sets the current global log level. Messages below this level are suppressed.
      *
-     * @param level the desired {@link Level}
+     * @param level desired {@link Level}
      */
     public static void setLevel(Level level) {
         currentLevel = level;
@@ -70,8 +114,8 @@ public class PaintLogger {
     }
 
     /**
-     * Sets the log level from a string value.
-     * Accepts {@code "DEBUG"}, {@code "INFO"}, {@code "WARN"}, {@code "WARNING"}, or {@code "ERROR"}.
+     * Sets the log level using a string value. Accepts:
+     * {@code "DEBUG"}, {@code "INFO"}, {@code "WARN"}, {@code "WARNING"}, {@code "ERROR"}.
      * Defaults to INFO for unknown or null input.
      *
      * @param level textual level name
@@ -103,12 +147,11 @@ public class PaintLogger {
     }
 
     /**
-     * Initializes the logger by creating a logs directory and setting up a log file
-     * with a name based on the specified log base name. If the directory or file does
-     * not already exist, it will be created. Logs are written to the generated file.
+     * Initializes the logger by creating a "Logs" directory and a new numbered log file.
+     * Logs are written to both file and GUI console.
      *
-     * @param projectPath the base directory path under which the "Logs" folder will be created
-     * @param logBaseName the base name used to generate the log file name
+     * @param projectPath base directory under which the "Logs" folder will be created
+     * @param logBaseName base name used for the log file
      */
     public static void initialise(Path projectPath, String logBaseName) {
         try {
@@ -124,7 +167,7 @@ public class PaintLogger {
                 logFile = logsDir.resolve(String.format("%s-%d.log", logBaseName, index++));
             } while (logFile.toFile().exists());
 
-            writer = new BufferedWriter(new FileWriter(logFile.toFile(), true));
+            writer      = new BufferedWriter(new FileWriter(logFile.toFile(), true));
             initialised = true;
             infof("Logger initialised: %s", logFile);
         } catch (IOException e) {
@@ -132,28 +175,27 @@ public class PaintLogger {
         }
     }
 
-    /**
-     * Closes the current log writer, if open.
-     */
+    /** Closes the current log writer if open. */
     public static void close() {
         if (writer != null) {
             try {
                 writer.close();
             } catch (IOException ignored) {
+                // Deliberately empty
             }
         }
         initialised = false;
     }
 
-    // ---------------------------------------------------------------------
-    // Core logging
-    // ---------------------------------------------------------------------
+    // ───────────────────────────────────────────────────────────────────────────────
+    // CORE LOGGING
+    // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Core method performing the actual log output.
+     * Performs actual log output to both console and file.
      *
-     * @param level   log severity
-     * @param message message text
+     * @param level   log severity level
+     * @param message formatted message text
      */
     private static void log(Level level, String message) {
         if (level.rank() < currentLevel.rank()) {
@@ -181,16 +223,11 @@ public class PaintLogger {
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Public API
-    // ---------------------------------------------------------------------
+    // ───────────────────────────────────────────────────────────────────────────────
+    // PUBLIC LOGGING API
+    // ───────────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Logs an INFO message using {@link String#format(String, Object...)}.
-     *
-     * @param fmt  format string
-     * @param args arguments referenced by the format specifiers
-     */
+    /** Logs an INFO message with printf-style formatting. */
     public static void infof(String fmt, Object... args) {
         log(Level.INFO, String.format(fmt, args));
     }
@@ -200,12 +237,7 @@ public class PaintLogger {
         log(Level.INFO, "");
     }
 
-    /**
-     * Logs a DEBUG message using {@link String#format(String, Object...)}.
-     *
-     * @param fmt  format string
-     * @param args arguments referenced by the format specifiers
-     */
+    /** Logs a DEBUG message with printf-style formatting. */
     public static void debugf(String fmt, Object... args) {
         log(Level.DEBUG, String.format(fmt, args));
     }
@@ -215,12 +247,7 @@ public class PaintLogger {
         log(Level.DEBUG, "");
     }
 
-    /**
-     * Logs a WARN message using {@link String#format(String, Object...)}.
-     *
-     * @param fmt  format string
-     * @param args arguments referenced by the format specifiers
-     */
+    /** Logs a WARN message with printf-style formatting. */
     public static void warnf(String fmt, Object... args) {
         log(Level.WARN, String.format(fmt, args));
     }
@@ -230,21 +257,12 @@ public class PaintLogger {
         log(Level.WARN, "");
     }
 
-    /**
-     * Logs an ERROR message using {@link String#format(String, Object...)}.
-     *
-     * @param fmt  format string
-     * @param args arguments referenced by the format specifiers
-     */
+    /** Logs an ERROR message with printf-style formatting. */
     public static void errorf(String fmt, Object... args) {
         log(Level.ERROR, String.format(fmt, args));
     }
 
-    /**
-     * Logs a full stack trace for a throwable at {@link Level#ERROR}.
-     *
-     * @param t the thrown exception or error
-     */
+    /** Logs an ERROR stack trace for a {@link Throwable}. */
     public static void errorf(Throwable t) {
         log(Level.ERROR, getStackTrace(t));
     }
@@ -254,35 +272,22 @@ public class PaintLogger {
         log(Level.ERROR, "");
     }
 
-    /**
-     * Builds and returns a formatted stack trace string for the given throwable.
-     *
-     * @param t the exception or error
-     * @return formatted stack trace text
-     */
-    private static String getStackTrace(Throwable t) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(t.toString()).append("\n");
-        for (StackTraceElement el : t.getStackTrace()) {
-            sb.append("    at ").append(el.toString()).append("\n");
-        }
-        return sb.toString();
-    }
+    // ───────────────────────────────────────────────────────────────────────────────
+    // SPECIALIZED OUTPUT
+    // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Prints text directly to the console window without timestamp or level formatting.
-     * Useful for raw data output (e.g., progress bars).
+     * Prints text directly to console without timestamps or level formatting.
+     * Useful for inline output such as progress bars.
      *
-     * @param text the text to print
+     * @param text raw text to print
      */
     public static void raw(String text) {
         PaintConsoleWindow.print(text);
         justPrintedRaw = true;
     }
 
-    /**
-     * Inserts a blank line in both console and log file.
-     */
+    /** Inserts a blank line in the console and log file. */
     public static void blankline() {
         if (justPrintedRaw) {
             PaintConsoleWindow.print("\n");
@@ -301,30 +306,22 @@ public class PaintLogger {
     }
 
     /**
-     * Prints a formatted documentation block to the console and log file.
-     * <p>
-     * The header is logged with standard INFO formatting, followed by indented continuation lines.
-     * </p>
+     * Prints a structured documentation-style block to console and file.
      *
-     * @param header descriptive header line
-     * @param lines  iterable sequence of lines to print below the header
+     * @param header header text of the block
+     * @param lines  iterable list of lines to display below the header
      */
     public static void doc(String header, Iterable<String> lines) {
-        // Blank line before block
         blankline();
-
-        // Print the main header line using standard INFO formatting
         log(Level.INFO, header);
 
         // Compute indentation (exactly up to one space after [INFO ])
-        String prefix = String.format("%s [%-5s]",
-                                      LocalDateTime.now().format(TIME_FMT), Level.INFO);
+        String prefix = String.format("%s [%-5s]", LocalDateTime.now().format(TIME_FMT), Level.INFO);
         String indent = repeat(" ", prefix.length() + 1);
 
-        // Print continuation lines without timestamp, perfectly aligned
+        // Print continuation lines without the timestamp, perfectly aligned
         for (String line : lines) {
             String formatted = indent + line;
-
             PaintConsoleWindow.log(formatted, Level.INFO.color());
 
             if (initialised && writer != null) {
@@ -337,22 +334,29 @@ public class PaintLogger {
                 }
             }
         }
-
-        // Blank line after block
         blankline();
     }
 
-    /**
-     * Replacement for the Java 11 {@code String.repeat(int)} method
-     * to maintain Java 8 compatibility.
-     *
-     * @param s     string to repeat
-     * @param count number of repetitions
-     * @return concatenated string repeated {@code count} times
-     */
+    // ───────────────────────────────────────────────────────────────────────────────
+    // INTERNAL UTILITIES
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /** Returns formatted stack trace text for a given throwable. */
+    private static String getStackTrace(Throwable t) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(t.toString()).append("\n");
+        for (StackTraceElement el : t.getStackTrace()) {
+            sb.append("    at ").append(el.toString()).append("\n");
+        }
+        return sb.toString();
+    }
+
+    /** Java 8-compatible implementation of String.repeat(int). */
     private static String repeat(String s, int count) {
         StringBuilder sb = new StringBuilder(s.length() * count);
-        for (int i = 0; i < count; i++) sb.append(s);
+        for (int i = 0; i < count; i++) {
+            sb.append(s);
+        }
         return sb.toString();
     }
 }
