@@ -225,8 +225,9 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
             </activation>
             <build>
                 <plugins>
+
                     <plugin>
-                        <groupId>com.akathist.maven.plugins</groupId>
+                        <groupId>com.akathist.maven.plugins.launch4j</groupId>
                         <artifactId>launch4j-maven-plugin</artifactId>
                         <version>2.5.0</version>
                         <executions>
@@ -262,6 +263,7 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                             </execution>
                         </executions>
                     </plugin>
+
                 </plugins>
             </build>
         </profile>
