@@ -59,7 +59,7 @@ import static paint.shared.constants.PaintConstants.*;
  *
  * <p>This class manages reading, writing, and schema enforcement for
  * {@code recordings.csv} files. Each method ensures full consistency
- * with the column definitions in {@link PaintConstants}.</p>
+ * with the column definitions in PaintConstants.</p>
  */
 public class RecordingTableIO extends BaseTableIO {
 

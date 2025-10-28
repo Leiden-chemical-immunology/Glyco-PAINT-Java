@@ -99,7 +99,6 @@ public class SquaresCsvComparator {
         TOLERANCE_MAP.put("Median Max Speed",                 5.0);
         TOLERANCE_MAP.put("Max Max Speed",                    5.0);
         TOLERANCE_MAP.put("Max Track Duration",               5.0);
-        TOLERANCE_MAP.put("Total Track Duration",             5.0);
         TOLERANCE_MAP.put("Median Track Duration",            5.0);
         // @format:on
     }

@@ -50,12 +50,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Files;
-import java.io.File;
 import javax.imageio.ImageIO;
 import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import de.rototor.pdfbox.graphics2d.PdfBoxGraphics2D;
 import org.apache.pdfbox.pdmodel.PDDocument;

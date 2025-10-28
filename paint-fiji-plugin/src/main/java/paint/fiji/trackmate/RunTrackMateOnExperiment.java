@@ -338,7 +338,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                         numberOfSpots            = trackMateResults[0].getNumberOfSpots();
                         numberOfFilteredTracks   = trackMateResults[0].getNumberOfFilteredTracks();
                         numberOfFrames           = trackMateResults[0].getNumberOfFrames();
-                        numberOfSpotsInAllTracks = trackMateResults[0].getNumberOfSpotsInALlTracks();
+                        numberOfSpotsInAllTracks = trackMateResults[0].getNumberOfSpotsInAllTracks();
                         runTime                  = durationInSeconds;
                         timeStamp                = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 

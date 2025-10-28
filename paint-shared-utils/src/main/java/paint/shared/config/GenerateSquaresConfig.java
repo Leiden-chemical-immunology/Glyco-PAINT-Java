@@ -63,7 +63,7 @@ public class GenerateSquaresConfig {
 
     /**
      * Constructs a GenerateSquaresConfig by reading appropriate keys from the
-     * {@link PaintConfig} under section {@value SECTION_GENERATE_SQUARES}. If a
+     * {@link PaintConfig} under section SECTION_GENERATE_SQUARES. If a
      * value is missing, a default is applied:
      * <ul>
      *   <li>numberOfSquaresInRecording: 400</li>

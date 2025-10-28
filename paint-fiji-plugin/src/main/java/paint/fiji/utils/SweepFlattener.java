@@ -63,7 +63,7 @@ import java.util.List;
  * Automates flattening and consolidation of multi-parameter sweep data.
  * <p>
  * Scans a sweep root directory containing subdirectories for parameter cases,
- * processes each experiment, runs “Generate Squares”, and concatenates CSV
+ * processes each experiment, runs “Generate Squares” and concatenates CSV
  * outputs into flattened tables suitable for downstream Paint analysis.
  * </p>
  */

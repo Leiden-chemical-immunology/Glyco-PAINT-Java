@@ -22,7 +22,7 @@ import static paint.shared.constants.PaintConstants.SQUARES_CSV;
  *  <ul>
  *    <li>Removes trailing "-threshold-N" from Recording Name in the old file.</li>
  *    <li>Sets Tau &lt; 0 in old file to empty.</li>
- *    <li>A square is selected if all of the following are true:</li>
+ *    <li>A square is selected if all the following are true:</li>
  *    <li>&nbsp;&nbsp;&bull;&nbsp;Density Ratio &gt;= 2</li>
  *    <li>&nbsp;&nbsp;&bull;&nbsp;Variability &lt; 10</li>
  *    <li>&nbsp;&nbsp;&bull;&nbsp;R&nbsp;Squared &gt; 0.1</li>
