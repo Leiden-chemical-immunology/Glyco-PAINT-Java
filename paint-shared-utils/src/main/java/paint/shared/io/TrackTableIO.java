@@ -213,7 +213,7 @@ public class TrackTableIO extends BaseTableIO {
         track.setUniqueKey(                row.getString(  "Unique Key"));
         track.setExperimentName(           row.getString(  "Experiment Name"));
         track.setRecordingName(            row.getString(  "Recording Name"));
-        track.setTrackId(                  row.getInt(     "Track ID"));
+        track.setTrackId(                  row.getInt(     "Track Id"));
         track.setNumberOfSpots(            row.getInt(     "Number of Spots"));
         track.setNumberOfGaps(             row.getInt(     "Number of Gaps"));
         track.setLongestGap(               row.getInt(     "Longest Gap"));
