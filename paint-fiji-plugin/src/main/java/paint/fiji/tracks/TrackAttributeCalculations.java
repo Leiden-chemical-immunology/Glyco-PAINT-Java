@@ -22,15 +22,15 @@
  *                              .calculateTrackAttributes(trackModel, trackId, dtSeconds);
  *
  *  DEPENDENCIES:
- *    - fiji.plugin.trackmate.TrackModel
- *    - fiji.plugin.trackmate.Spot
- *    - paint.shared.utils.Miscellaneous (for rounding)
+ *    – fiji.plugin.trackmate.TrackModel
+ *    – fiji.plugin.trackmate.Spot
+ *    – paint.shared.utils.Miscellaneous (for rounding)
  *
  *  AUTHOR:
  *    Hans Bakker (jjabakker)
  *
  *  UPDATED:
- *    2025-10-27
+ *    2025-10-28
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -47,40 +47,52 @@ import java.util.List;
 
 import static paint.shared.utils.Miscellaneous.round;
 
-
+/**
+ * Provides static methods to compute motion-related attributes for a given
+ * TrackMate track, including total distance, diffusion coefficients,
+ * confinement ratio, and displacement.
+ * <p>
+ * Designed as a utility class — not instantiable.
+ * </p>
+ */
 public final class TrackAttributeCalculations {
 
+    /** Private constructor to prevent instantiation. */
     private TrackAttributeCalculations() {
         // Utility class; prevent instantiation
     }
 
     /**
-     * Computes the motion attributes of a single track based on the provided track model,
-     * track identifier, and time delta between frames.
-     * Attrubutes calculated are:
-     *     numberSpotsInTrack,
-     *     totalDistance
-     *     diffusionCoeff
-     *     diffusionCoeffExt
-     *     confinementRatio
-     *     displacement
+     * Computes motion and diffusion-related attributes for a single track.
+     * <p>
+     * Calculated attributes include:
+     * <ul>
+     *   <li>Number of spots in track</li>
+     *   <li>Total travel distance</li>
+     *   <li>Diffusion coefficients (standard and extended)</li>
+     *   <li>Confinement ratio</li>
+     *   <li>Net displacement</li>
+     * </ul>
      *
-     * @param trackModel the track model containing track data and associated spots
-     * @param trackId the unique identifier of the track to analyze
-     * @param dtSeconds the time interval between consecutive frames, in seconds
-     * @return a {@code TrackAttributes} object containing the computed attributes
-     *         such as total distance, diffusion coefficients, confinement ratio, and displacement
+     * @param trackModel the {@link TrackModel} containing track and spot data
+     * @param trackId    the unique identifier of the track to analyze
+     * @param dtSeconds  the time interval between consecutive frames, in seconds
+     * @return a {@link TrackAttributes} object containing all computed metrics
      */
     public static TrackAttributes calculateTrackAttributes(TrackModel trackModel, int trackId, double dtSeconds) {
 
-        // Collect & sort spots by FRAME
+        // ---------------------------------------------------------------------
+        // Step 1 – Collect and sort track spots
+        // ---------------------------------------------------------------------
         final List<Spot> spots = new ArrayList<>(trackModel.trackSpots(trackId));
         if (spots.size() < 2) {
             return new TrackAttributes();
         }
         spots.sort(Comparator.comparingInt(s -> (int) Math.round(s.getFeature(Spot.FRAME))));
 
-        // @formatter:off
+        // ---------------------------------------------------------------------
+        // Step 2 – Initialize variables
+        // ---------------------------------------------------------------------
         double totalDistance       = 0.0;
         double cumMsd              = 0.0;
         double cumMsdExt           = 0.0;
@@ -88,16 +100,18 @@ public final class TrackAttributeCalculations {
         double diffusionCoeffExt   = Double.NaN;
         double confinementRatio    = Double.NaN;
         int    numberSpotsInTrack  = spots.size();
-        // @formatter:on
 
-        // Reference first point (x0, y0)
-        final double x0 = get(spots.get(0), Spot.POSITION_X);
-        final double y0 = get(spots.get(0), Spot.POSITION_Y);
+        // ---------------------------------------------------------------------
+        // Step 3 – Reference coordinates
+        // ---------------------------------------------------------------------
+        final double x0     = get(spots.get(0), Spot.POSITION_X);
+        final double y0     = get(spots.get(0), Spot.POSITION_Y);
+        final double xLast  = get(spots.get(spots.size() - 1), Spot.POSITION_X);
+        final double yLast  = get(spots.get(spots.size() - 1), Spot.POSITION_Y);
 
-        // Reference last point (xLast, yLast)
-        final double xLast = get(spots.get(spots.size() - 1), Spot.POSITION_X);
-        final double yLast = get(spots.get(spots.size() - 1), Spot.POSITION_Y);
-
+        // ---------------------------------------------------------------------
+        // Step 4 – Compute distances and MSD values
+        // ---------------------------------------------------------------------
         for (int i = 1; i < spots.size(); i++) {
 
             // The previous point
@@ -148,28 +162,33 @@ public final class TrackAttributeCalculations {
             totalDistance = Double.NaN;
         }
 
-        return new TrackAttributes(numberSpotsInTrack,
-                                   totalDistance,
-                                   diffusionCoeff,
-                                   diffusionCoeffExt,
-                                   confinementRatio,
-                                   displacement
+        // ---------------------------------------------------------------------
+        // Step 6 – Return immutable result
+        // ---------------------------------------------------------------------
+        return new TrackAttributes(
+                numberSpotsInTrack,
+                totalDistance,
+                diffusionCoeff,
+                diffusionCoeffExt,
+                confinementRatio,
+                displacement
         );
     }
 
-    // ---- helpers ----
+    // -------------------------------------------------------------------------
+    // Helper methods
+    // -------------------------------------------------------------------------
 
     /**
-     * Retrieves the value of a specific feature for a given spot. If the feature value is not present,
-     * the method returns a default value of 0.0.
+     * Retrieves a numerical feature value from a {@link Spot}.
+     * Returns 0.0 if the feature is missing or {@code null}.
      *
-     * @param s the {@code Spot} object from which the feature value is obtained
-     * @param featureKey the key representing the feature to retrieve
-     * @return the value associated with the specified feature key, or 0.0 if the feature value is not available
+     * @param s the spot to read from
+     * @param featureKey the feature name (e.g. {@code Spot.POSITION_X})
+     * @return the feature value or 0.0 if unavailable
      */
     private static double get(Spot s, String featureKey) {
         final Double v = s.getFeature(featureKey);
         return v == null ? 0.0 : v;
     }
-
 }

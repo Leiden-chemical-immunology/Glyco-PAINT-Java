@@ -1,78 +1,111 @@
+/******************************************************************************
+ *  Class:        TrackMateResults.java
+ *  Package:      paint.fiji.trackmate
+ *
+ *  PURPOSE:
+ *    Represents the outcome of a TrackMate analysis run, encapsulating
+ *    success flags, detection statistics, frame counts, and runtime duration.
+ *
+ *  DESCRIPTION:
+ *    • Captures and stores per-recording results after TrackMate processing.
+ *    • Tracks number of detected spots, total and filtered tracks, and
+ *      the number of frames analyzed.
+ *    • Provides duration metrics for performance reporting.
+ *    • Used by {@link RunTrackMateOnRecording} and higher-level classes
+ *      to summarize execution results.
+ *
+ *  RESPONSIBILITIES:
+ *    • Store immutable TrackMate result data for one recording.
+ *    • Provide structured accessors for logging and reporting.
+ *    • Support consistent summary formatting via {@link #toString()}.
+ *
+ *  USAGE EXAMPLE:
+ *    TrackMateResults result = new TrackMateResults(
+ *        true, true, 452, 87, 73, 300, Duration.ofSeconds(28), 6124);
+ *
+ *  DEPENDENCIES:
+ *    – java.time.Duration
+ *    – paint.fiji.trackmate.RunTrackMateOnRecording
+ *
+ *  AUTHOR:
+ *    Hans Bakker (jjabakker)
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.fiji.trackmate;
 
 import java.time.Duration;
 
 /**
- * Represents the results of a TrackMate analysis.
- *
- * This class is designed to encapsulate the outcomes of a TrackMate analysis, such as
- * whether the analysis was successful, the number of detected spots, tracks,
- * filtered tracks, and various other statistics related to the analysis process,
- * including duration and frame count.
+ * Immutable container for the results of a TrackMate analysis.
+ * <p>
+ * Encapsulates statistics such as the number of detected spots,
+ * total and filtered tracks, number of analyzed frames, and
+ * runtime duration.
+ * </p>
  */
 public class TrackMateResults {
 
-    // @formatter: off
-    private final boolean success;                  // Whether the TrackMate analysis finished successfully.
-    private final boolean calculationPerformed;     // Whether the TrackMate analysis was performed
-    private final int numberOfSpots;            // Number of detected spots in the analysis
-    private final int numberOfTracks;           // Number of tracks generated from detected spots
-    private final int numberOfFilteredTracks;   // Number of tracks remaining after filtering.
-    private final int numberOFrames;            // Number of frames analyzed.
-    private final Duration duration;                 // Total runtime of the analysis
-    private final int numberOfSpotsInALlTracks; // Total number of spots contained in all tracks
-    // @formatter: on
+    // @formatter:off
+    private final boolean  success;
+    private final boolean  calculationPerformed;
+    private final int      numberOfSpots;
+    private final int      numberOfTracks;
+    private final int      numberOfFilteredTracks;
+    private final int      numberOfFrames;
+    private final Duration duration;
+    private final int      numberOfSpotsInAllTracks;
+    // @formatter:on
+
 
     /**
-     * Constructs a {@code TrackMateResults} instance with basic analysis results.
-     *
-     * @param success               whether the analysis succeeded
-     * @param calculationPerformed  whether the calculation was performed
+     * Default constructor.
+     * <p>
+     * Creates an immutable {@code TrackMateResults} instance with all
+     * values initialized to default (false, zero, or null).
+     * </p>
      */
-    public TrackMateResults(boolean success, boolean calculationPerformed) {
-
-        // @formatter: off
-        this.success = success;
-        this.calculationPerformed = calculationPerformed;
-        this.numberOfSpots = 0;
-        this.numberOfTracks = 0;
-        this.numberOfFilteredTracks = 0;
-        this.numberOFrames = 0;
-        this.duration = null;
-        this.numberOfSpotsInALlTracks = 0;
-        // @formatter: on
+    public TrackMateResults() {
+        this(false, false, 0, 0, 0, 0, null, 0);
     }
 
     /**
-     * Constructs a {@code TrackMateResults} instance with the specified success flag.
+     * Constructs a {@code TrackMateResults} instance with a success flag and
+     * calculation state only, setting all numeric values to zero.
+     *
+     * @param success              whether the analysis succeeded
+     * @param calculationPerformed whether the TrackMate pipeline was executed
+     */
+    public TrackMateResults(boolean success, boolean calculationPerformed) {
+        this(success, calculationPerformed, 0, 0, 0, 0, null, 0);
+    }
+
+    /**
+     * Constructs a {@code TrackMateResults} instance with only a success flag.
+     * Assumes no calculations were performed and sets all numeric fields to zero.
      *
      * @param success whether the analysis succeeded
      */
     public TrackMateResults(boolean success) {
-
-        // @formatter: off
-        this.success = success;
-        this.calculationPerformed = false;
-        this.numberOfSpots = 0;
-        this.numberOfTracks = 0;
-        this.numberOfFilteredTracks = 0;
-        this.numberOFrames = 0;
-        this.duration = null;
-        this.numberOfSpotsInALlTracks = 0;
-        // @formatter: on
+        this(success, false, 0, 0, 0, 0, null, 0);
     }
 
     /**
-     * Constructs a {@code TrackMateResults} instance with detailed analysis results.
+     * Constructs a fully detailed {@code TrackMateResults} instance.
      *
-     * @param success whether the analysis succeeded
-     * @param calculationPerformed whether the calculation was performed
-     * @param numberOfSpots the total number of detected spots
-     * @param numberOfTracks the total number of tracks identified
-     * @param numberOfFilteredTracks the number of tracks that passed filtering criteria
-     * @param numberOfFrames the total number of frames analyzed
-     * @param duration the time duration of the analysis
-     * @param numberOfSpotsInALlTracks the number of spots present across all tracks
+     * @param success                true if the analysis succeeded
+     * @param calculationPerformed   true if processing was executed
+     * @param numberOfSpots          number of detected spots
+     * @param numberOfTracks         total number of identified tracks
+     * @param numberOfFilteredTracks number of tracks after filtering
+     * @param numberOfFrames         total number of frames analyzed
+     * @param duration               runtime duration of analysis
+     * @param numberOfSpotsInAllTracks total number of spots in all tracks
      */
     public TrackMateResults(boolean success,
                             boolean calculationPerformed,
@@ -81,62 +114,80 @@ public class TrackMateResults {
                             int numberOfFilteredTracks,
                             int numberOfFrames,
                             Duration duration,
-                            int numberOfSpotsInALlTracks) {
-        this.success = success;
-        this.calculationPerformed = calculationPerformed;
-        this.numberOfSpots = numberOfSpots;
-        this.numberOfTracks = numberOfTracks;
-        this.numberOfFilteredTracks = numberOfFilteredTracks;
-        this.numberOFrames = numberOfFrames;
-        this.duration = duration;
-        this.numberOfSpotsInALlTracks = numberOfSpotsInALlTracks;
+                            int numberOfSpotsInAllTracks) {
+        this.success                  = success;
+        this.calculationPerformed     = calculationPerformed;
+        this.numberOfSpots            = numberOfSpots;
+        this.numberOfTracks           = numberOfTracks;
+        this.numberOfFilteredTracks   = numberOfFilteredTracks;
+        this.numberOfFrames           = numberOfFrames;
+        this.duration                 = duration;
+        this.numberOfSpotsInAllTracks = numberOfSpotsInAllTracks;
     }
 
-    public int getNumberOfSpots() {
-        return numberOfSpots;
-    }
+    // -------------------------------------------------------------------------
+    // Getters
+    // -------------------------------------------------------------------------
 
-    public int getNumberOfTracks() {
-        return numberOfTracks;
-    }
-
-    public int getNumberOfFilteredTracks() {
-        return numberOfFilteredTracks;
-    }
-
-    public int getNumberOfFrames() {
-        return numberOFrames;
-    }
-
-    public Duration getDuration() {
-        return duration;
-    }
-
-    public int getNumberOfSpotsInALlTracks() {
-        return numberOfSpotsInALlTracks;
-    }
-
+    /** @return true if the analysis completed successfully */
     public boolean isSuccess() {
         return success;
     }
 
+    /** @return true if the calculation was performed */
     public boolean isCalculationPerformed() {
         return calculationPerformed;
     }
 
+    /** @return total number of detected spots */
+    public int getNumberOfSpots() {
+        return numberOfSpots;
+    }
+
+    /** @return total number of generated tracks */
+    public int getNumberOfTracks() {
+        return numberOfTracks;
+    }
+
+    /** @return number of tracks that passed filtering */
+    public int getNumberOfFilteredTracks() {
+        return numberOfFilteredTracks;
+    }
+
+    /** @return number of frames analyzed */
+    public int getNumberOfFrames() {
+        return numberOfFrames;
+    }
+
+    /** @return duration of the analysis, or {@code null} if unavailable */
+    public Duration getDuration() {
+        return duration;
+    }
+
+    /** @return number of spots across all tracks */
+    public int getNumberOfSpotsInAllTracks() {
+        return numberOfSpotsInAllTracks;
+    }
+
+    // -------------------------------------------------------------------------
+    // Representation
+    // -------------------------------------------------------------------------
+
     /**
-     * Returns a formatted string summarizing the results.
+     * Returns a formatted summary string containing all key metrics.
      *
-     * @return human-readable string with success flag, counts, and duration
+     * @return a string summarizing TrackMate run results
      */
     @Override
     public String toString() {
-        return String.format("Success: %b, Spots: %d, Tracks: %d, Filtered Tracks: %d, Frames: %d, Milliseconds: %d",
-                             success,
-                             numberOfSpots,
-                             numberOfTracks,
-                             numberOfFilteredTracks,
-                             numberOFrames,
-                             duration != null ? duration.toMillis() : 0);
+        return String.format(
+                "Success: %b, Spots: %d, Tracks: %d, Filtered: %d, Frames: %d, Duration(ms): %d",
+                success,
+                numberOfSpots,
+                numberOfTracks,
+                numberOfFilteredTracks,
+                numberOfFrames,
+                duration != null ? duration.toMillis() : 0
+        );
     }
 }

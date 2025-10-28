@@ -1,3 +1,47 @@
+/******************************************************************************
+ *  Class:        TrackMateHeadless.java
+ *  Package:      paint.fiji.trackmate
+ *
+ *  PURPOSE:
+ *    Provides headless (non-interactive) execution of the TrackMate analysis
+ *    pipeline for Paint projects. Acts as the main command entry point for
+ *    Fiji/ImageJ environments or standalone execution.
+ *
+ *  DESCRIPTION:
+ *    • Reads the Paint project root and configuration files.
+ *    • Initializes PaintConfig and PaintLogger.
+ *    • Identifies selected experiments from configuration.
+ *    • Executes TrackMate on the selected experiments using
+ *      {@link RunTrackMateOnProject}.
+ *    • Logs all progress, warnings, and errors.
+ *
+ *  RESPONSIBILITIES:
+ *    • Serve as the main entry point for automated TrackMate runs.
+ *    • Integrate user preferences (PaintPrefs) and configuration (PaintConfig).
+ *    • Ensure safe initialization and cleanup in a headless environment.
+ *    • Provide meaningful user feedback via PaintLogger.
+ *
+ *  USAGE EXAMPLE:
+ *    Command cmd = new TrackMateHeadless();
+ *    cmd.run();  // Executes configured TrackMate experiments headlessly
+ *
+ *  DEPENDENCIES:
+ *    – paint.shared.config.PaintConfig
+ *    – paint.shared.utils.PaintPrefs
+ *    – paint.shared.utils.PaintLogger
+ *    – paint.shared.utils.PaintConsoleWindow
+ *    – paint.fiji.trackmate.RunTrackMateOnProject
+ *
+ *  AUTHOR:
+ *    Hans Bakker (jjabakker)
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.fiji.trackmate;
 
 import org.scijava.command.Command;
@@ -16,76 +60,68 @@ import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
 
 /**
- * The {@code TrackMateHeadless} class provides a way to execute the TrackMate functionality
- * in headless mode. It integrates with the PaintConfig and PaintPrefs configuration frameworks
- * to determine execution settings, logs progress and errors using PaintLogger, and processes
- * experiments based on the defined configuration.
+ * Executes the Paint TrackMate analysis in a headless (non-interactive)
+ * Fiji or ImageJ session. This class implements {@link Command} and can
+ * be invoked either manually or via plugin registration.
  *
- * This class implements the {@link Command} interface, enabling its usage as a plugin
- * in an ImageJ or Fiji environment.
- *
- * Key steps performed in the {@code run()} method:
- * 1. Reads and validates the project path from preferences.
- * 2. Initializes the PaintConfig using the project path and configuration file.
- * 3. Sets up logging for tracking progress and diagnostics.
- * 4. Gathers experiments marked as active in the configuration.
- * 5. Executes the TrackMate functionality in a headless environment.
- *
- * If no valid configuration or experiments are found, the execution is gracefully exited
- * with appropriate logging messages. Errors during execution are also logged.
+ * <p>Responsibilities include:</p>
+ * <ul>
+ *   <li>Validating the project root path.</li>
+ *   <li>Initializing PaintConfig and PaintLogger.</li>
+ *   <li>Identifying active experiments.</li>
+ *   <li>Executing the TrackMate pipeline on selected datasets.</li>
+ * </ul>
  */
-//@Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run (Headless)")
 public class TrackMateHeadless implements Command {
 
     /**
-     * Executes the main logic for running TrackMate in headless mode.
+     * Main command entry point — executes the TrackMate pipeline for all
+     * experiments marked as active in the Paint configuration file.
      *
-     * This method performs the following operations in sequence:
-     * 1. Reads the project path from preferences and validates it. If the path
-     *    is invalid, the execution stops and logs an error message.
-     * 2. Initializes the PaintConfig using the project path and validates the
-     *    existence of the configuration file (`paint-configuration.json`). If the
-     *    file is missing or invalid, the execution stops and logs an error message.
-     * 3. Sets up logging configuration, including creating a console window for
-     *    logging information and initializing PaintLogger for the session.
-     * 4. Retrieves a list of experiments marked as "selected" in the configuration
-     *    file and logs their details. If no experiments are selected, the
-     *    execution stops and logs a warning message.
-     * 5. Executes the TrackMate operation on the selected project, experiments,
-     *    and image path. Logs the success or failure status of the execution.
+     * <p>Execution steps:</p>
+     * <ol>
+     *   <li>Retrieve and validate project root path.</li>
+     *   <li>Initialize configuration and logging systems.</li>
+     *   <li>Identify all active experiments.</li>
+     *   <li>Run the TrackMate workflow using {@link RunTrackMateOnProject}.</li>
+     * </ol>
      *
-     * In case of an exception during the execution, an error message is logged with
-     * the exception details.
+     * <p>Logs all progress and exceptions via {@link PaintLogger}.</p>
      */
     @Override
     public void run() {
         try {
-
-            //  --- Step 1: read the project path from Prefs ---
+            // -----------------------------------------------------------------
+            // Step 1 — Validate project path
+            // -----------------------------------------------------------------
             Path projectPath = getValidProjectPath();
             if (projectPath == null) {
                 PaintLogger.errorf("No valid Project Root found.");
                 return;
             }
 
-            // --- Step 2: initialise PaintConfig  ---
-            // Check if the file exists
+            // -----------------------------------------------------------------
+            // Step 2 — Initialize configuration
+            // -----------------------------------------------------------------
             Path jsonPath = projectPath.resolve(PAINT_CONFIGURATION_JSON);
             if (!jsonPath.toFile().exists()) {
-                PaintLogger.errorf("Invalid or missing configuration file: %s. ", jsonPath );
+                PaintLogger.errorf("Invalid or missing configuration file: %s", jsonPath);
                 return;
             }
             PaintConfig.initialise(projectPath);
+            PaintConfig.reinitialise(projectPath);  // ensures consistent reload
 
-            // Reinitialise PaintConfig with the real project path
-            PaintConfig.reinitialise(projectPath);
             Path imagesPath = Paths.get(PaintPrefs.getString("Path", "Images Root", ""));
 
-            // --- Step 3: setup logging ---
+            // -----------------------------------------------------------------
+            // Step 3 — Initialize console and logging
+            // -----------------------------------------------------------------
             PaintConsoleWindow.createConsoleFor("TrackMate Headless");
             PaintLogger.initialise(projectPath, "TrackMateHeadless");
 
-            // --- Step 4: find experiments marked as true ---
+            // -----------------------------------------------------------------
+            // Step 4 — Identify active experiments
+            // -----------------------------------------------------------------
             List<String> experiments = getSelectedExperiments();
             if (experiments.isEmpty()) {
                 PaintLogger.warnf("No experiments marked as true in configuration. Nothing to process.");
@@ -97,11 +133,15 @@ public class TrackMateHeadless implements Command {
             PaintLogger.infof("Images root:  %s", imagesPath);
             PaintLogger.infof("Experiments:  %s", experiments);
 
+            // -----------------------------------------------------------------
+            // Step 5 — Execute TrackMate on project
+            // -----------------------------------------------------------------
             boolean success = RunTrackMateOnProject.runProject(projectPath, imagesPath, experiments, null, null);
-            if (success)
-                PaintLogger.infof("✅ TrackMate completed successfully.");
-            else
-                PaintLogger.errorf("⚠️ TrackMate encountered errors.");
+            if (success) {
+                PaintLogger.infof("TrackMate completed successfully.");
+            } else {
+                PaintLogger.errorf("TrackMate encountered errors.");
+            }
 
         } catch (Exception e) {
             PaintLogger.errorf("TrackMate headless execution failed: %s", e.getMessage());
@@ -109,18 +149,17 @@ public class TrackMateHeadless implements Command {
     }
 
     /**
-     * Retrieves a list of experiments that are marked as "selected" in the configuration.
-     * The method reads the "Experiments" section from the configuration file,
-     * checks each key for a boolean value of `true`, and adds the corresponding key
-     * to the list of selected experiments.
-     * If the "Experiments" section is not found, a warning is logged.
+     * Retrieves all experiment names from the Paint configuration that are
+     * explicitly marked as <code>true</code> in the "Experiments" section.
      *
-     * @return a list of selected experiment names, or an empty list if none are selected
-     *         or the "Experiments" section is missing or invalid.
+     * <p>If no valid section is found, or if all values are false, a warning is logged.</p>
+     *
+     * @return a list of selected experiment names; empty if none found
      */
     private static List<String> getSelectedExperiments() {
         List<String> selected = new ArrayList<>();
         JsonObject experiments = PaintConfig.instance().getSection("Experiments");
+
         if (experiments == null) {
             PaintLogger.warnf("No 'Experiments' section found in configuration.");
             return selected;
@@ -131,7 +170,9 @@ public class TrackMateHeadless implements Command {
                 if (experiments.get(key).getAsBoolean()) {
                     selected.add(key);
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+                // Ignore malformed entries (non-boolean)
+            }
         }
         return selected;
     }

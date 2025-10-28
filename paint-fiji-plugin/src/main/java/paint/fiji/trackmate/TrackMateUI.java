@@ -1,3 +1,44 @@
+/******************************************************************************
+ *  Class:        TrackMateUI.java
+ *  Package:      paint.fiji.trackmate
+ *
+ *  PURPOSE:
+ *    Provides the main interactive entry point for running TrackMate within
+ *    the PAINT environment. Integrates configuration handling, experiment
+ *    selection, and optional sweep or post-processing operations.
+ *
+ *  DESCRIPTION:
+ *    • Runs TrackMate interactively through the Fiji plugin menu.
+ *    • Validates project root and configuration state.
+ *    • Displays a user dialog for selecting and running experiments.
+ *    • Supports sweep configurations when enabled.
+ *    • Optionally executes "Generate Squares" after successful completion.
+ *    • Ensures only one processing instance runs at a time.
+ *
+ *  KEY FEATURES:
+ *    • Headless and GUI-compatible operation through {@link ProjectDialog}.
+ *    • Runtime configuration using {@link PaintConfig} and {@link PaintPrefs}.
+ *    • Integrated console logging via {@link PaintConsoleWindow}.
+ *    • Thread-safe execution with a static volatile lock flag.
+ *
+ *  USAGE EXAMPLE:
+ *    Plugin menu: Plugins → Glyco-PAINT → Run
+ *
+ *  DEPENDENCIES:
+ *    – paint.shared.utils.*, paint.shared.config.*
+ *    – paint.generatesquares.GenerateSquaresHeadless
+ *    – paint.fiji.trackmate.RunTrackMateOnProjectSweep
+ *
+ *  AUTHOR:
+ *    Hans Bakker (jjabakker)
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.fiji.trackmate;
 
 import org.scijava.command.Command;
@@ -21,57 +62,34 @@ import static paint.shared.constants.PaintConstants.PAINT_SWEEP_CONFIGURATION_JS
 import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
 
 /**
- * TrackMateUI is a command-line plugin implementation that integrates with the TrackMate
- * processing workflow. It provides a graphical user interface and user interaction
- * capabilities to manage the TrackMate operation. This class is responsible for
- * initializing configurations, logging, and triggering the processing of experimental
- * data within a specified project.
- *
- * Features include:
- *
- * - Ensuring only one instance of the process runs at a time.
- * - Retrieving and validating project root paths.
- * - Initializing logging capabilities and configurations.
- * - Displaying project dialogs for user interaction.
- * - Handling the execution of TrackMate processing with optional sweep support.
- * - Triggering secondary operations such as "Generate Squares" after the main process.
- *
- * Thread safety is maintained by managing a volatile static flag that ensures no
- * concurrent execution of the main processing logic.
+ * Main user interface class for running TrackMate interactively within the
+ * PAINT environment. Handles initialization, configuration, dialog management,
+ * and execution of TrackMate processes.
  */
 @Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run")
 public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
 
+    /** Prevents concurrent execution of multiple TrackMate runs. */
     private static volatile boolean running = false;
 
     /**
-     * Executes the primary workflow of the TrackMate plugin, setting up the environment,
-     * initializing logging, configuration, and displaying a dialog for user interaction.
-     *
-     * The method performs the following steps:
-     *
-     * 1. Configures a default uncaught exception handler to capture unhandled exceptions in threads.
-     * 2. Verifies if the TrackMate processing is already running. If so, notifies the user to wait
-     *    until the current process finishes.
-     * 3. Retrieves the valid project root path. If no valid path is provided, the method exits.
-     * 4. Initializes logging and configuration settings for TrackMate, including the console window,
-     *    log level, and runtime preferences. Logs version and timestamp details for diagnostics.
-     * 5. Launches a project selection dialog where users can configure and start the desired experiment.
-     * 6. Handles the logic when the user confirms the dialog:
-     *    - Verifies if processing is currently running and prevents initiating a parallel run.
-     *    - Retrieves necessary project details such as root directory, experiment names, and
-     *      configuration files.
-     *    - Supports optional sweep configurations. If selected, checks for the sweep configuration file
-     *      and runs the appropriate sweep workflow. Otherwise, executes the regular project workflow.
-     *    - Optionally triggers the "Generate Squares" process after a successful TrackMate run.
-     * 7. Ensures that exceptions during execution are logged, and resets the running state of the
-     *    application for subsequent runs.
-     *
-     * This method is the entry point for initiating TrackMate execution within the application.
+     * Executes the TrackMate workflow through an interactive GUI dialog.
+     * <p>
+     * The method:
+     * <ul>
+     *   <li>Ensures single-instance execution.</li>
+     *   <li>Initializes logging and configuration state.</li>
+     *   <li>Displays a project dialog for experiment selection.</li>
+     *   <li>Runs the appropriate TrackMate pipeline (sweep or standard).</li>
+     *   <li>Optionally triggers "Generate Squares" after completion.</li>
+     * </ul>
      */
     @Override
     public void run() {
 
+        // ---------------------------------------------------------------------
+        // Step 1 – Setup exception handler and concurrency lock
+        // ---------------------------------------------------------------------
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) ->
                                                           PaintLogger.debugf("AWT complained: %s", throwable.getMessage())
         );
@@ -81,22 +99,28 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
             return;
         }
 
-        // --- Retrieve project root ---
+        // ---------------------------------------------------------------------
+        // Step 2 – Retrieve project root
+        // ---------------------------------------------------------------------
         Path projectPath = getValidProjectPath();
         if (projectPath == null) {
             return;
         }
 
-        // --- Initialise logging and configuration ---
+        // ---------------------------------------------------------------------
+        // Step 3 – Initialize logging, configuration, and runtime settings
+        // ---------------------------------------------------------------------
         PaintConsoleWindow.createConsoleFor("TrackMate");
         PaintConfig.initialise(projectPath);
-        String debugLevel = PaintPrefs.getString("Runtime", "Log Level",  "INFO");
+
+        String debugLevel = PaintPrefs.getString("Runtime", "Log Level", "INFO");
         PaintLogger.setLevel(debugLevel);
         PaintLogger.initialise(projectPath, "TrackMateOnProject.log");
         PaintLogger.debugf("TrackMate plugin started (Interactive).");
+
         PaintRuntime.initialiseFromPrefs();
 
-        // --- Log version info ---
+        // Log version and timestamp
         JarInfoLogger.JarInfo info = JarInfoLogger.getJarInfo(TrackMateUI.class);
         if (info != null) {
             PaintLogger.infof("Compilation date: %s", info.implementationDate);
@@ -108,21 +132,19 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
         PaintLogger.infof("Current time: %s", formattedTime);
         PaintLogger.blankline();
 
-        // --- Experiment dialog ---
+        // ---------------------------------------------------------------------
+        // Step 4 – Show experiment dialog
+        // ---------------------------------------------------------------------
         ProjectDialog dialog = new ProjectDialog(null, projectPath, ProjectDialog.DialogMode.TRACKMATE);
         PaintConsoleWindow.closeOnDialogDispose(dialog.getDialog());
 
-        // --- What happens when user presses OK ---
+        // ---------------------------------------------------------------------
+        // Step 5 – Handle OK action callback
+        // ---------------------------------------------------------------------
         dialog.setCalculationCallback(project -> {
 
             if (running) {
-                JOptionPane optionPane = new JOptionPane(
-                        "TrackMate processing is already running.\nPlease wait until it finishes.",
-                        JOptionPane.WARNING_MESSAGE
-                );
-                JDialog warnDialog = optionPane.createDialog(null, "Already Running");
-                warnDialog.setAlwaysOnTop(true);
-                warnDialog.setVisible(true);
+                showWarning("TrackMate processing is already running.\nPlease wait until it finishes.");
                 return false;
             }
 
@@ -136,24 +158,24 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
 
                 if (debug) {
                     PaintLogger.debugf("TrackMate processing started.");
-                    PaintLogger.debugf("Experiments: %s", project.getExperimentNames().toString());
+                    PaintLogger.debugf("Experiments: %s", project.getExperimentNames());
                 }
 
                 boolean success;
-
                 boolean sweepEnabled = dialog.isSweepSelected();
                 Path sweepFile = currentProjectRoot.resolve(PAINT_SWEEP_CONFIGURATION_JSON);
 
                 if (sweepEnabled) {
                     if (Files.exists(sweepFile)) {
-                         success = RunTrackMateOnProjectSweep.runWithSweep(currentProjectRoot, imagesPath, project.getExperimentNames());
-                    }
-                    else {
+                        success = RunTrackMateOnProjectSweep.runWithSweep(
+                                currentProjectRoot, imagesPath, project.getExperimentNames());
+                    } else {
                         PaintLogger.infof("No Sweep configuration detected at %s", sweepFile);
                         return false;
                     }
                 } else {
-                    success = RunTrackMateOnProject.runProject(projectPath, imagesPath, project.getExperimentNames(), dialog, null);
+                    success = RunTrackMateOnProject.runProject(
+                            projectPath, imagesPath, project.getExperimentNames(), dialog, null);
 
                     if (success && PaintConfig.getBoolean("TrackMate", "Run Generate Squares After", true)) {
                         PaintLogger.infof("TrackMate finished successfully. Starting Generate Squares...");
@@ -170,24 +192,25 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
                 return false;
             } finally {
                 running = false;
-                //SwingUtilities.invokeLater(() -> dialog.setOkEnabled(true));
             }
         });
 
         dialog.showDialog();
     }
 
+    // -------------------------------------------------------------------------
+    // Utility Methods
+    // -------------------------------------------------------------------------
+
     /**
      * Displays a warning dialog with the specified message.
      *
-     * @param message the warning message to be displayed in the dialog
+     * @param message warning message text to display
      */
-    // --- Utility methods ---
     private void showWarning(String message) {
         JOptionPane optionPane = new JOptionPane(message, JOptionPane.WARNING_MESSAGE);
         JDialog warnDialog = optionPane.createDialog(null, "Warning");
         warnDialog.setAlwaysOnTop(true);
         warnDialog.setVisible(true);
     }
-
 }

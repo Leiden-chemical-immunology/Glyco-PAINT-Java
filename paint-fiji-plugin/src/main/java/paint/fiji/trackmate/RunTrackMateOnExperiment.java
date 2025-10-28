@@ -1,9 +1,53 @@
+/******************************************************************************
+ *  Class:        RunTrackMateOnExperiment.java
+ *  Package:      paint.fiji.trackmate
+ *
+ *  PURPOSE:
+ *    Executes the TrackMate analysis workflow for a single experiment within
+ *    the Paint project framework. Handles experiment-level validation,
+ *    configuration setup, per-recording execution, and aggregation of results.
+ *
+ *  DESCRIPTION:
+ *    • Reads and validates the experiment configuration and info files.
+ *    • Executes TrackMate on each recording defined in the experiment.
+ *    • Monitors progress using a watchdog with timeouts and user cancellation.
+ *    • Collects per-recording results and concatenates them into summary CSVs.
+ *    • Records execution parameters and logs runtime details.
+ *
+ *  RESPONSIBILITIES:
+ *    • Manage experiment-level execution lifecycle.
+ *    • Handle user interaction via {@link ProjectDialog}.
+ *    • Orchestrate per-recording analysis via {@link RunTrackMateOnRecording}.
+ *    • Maintain consistency in experiment result aggregation.
+ *
+ *  USAGE EXAMPLE:
+ *    Path experiment = Paths.get("/Paint Project/221108");
+ *    Path images     = Paths.get("/Omero/221108");
+ *    boolean ok = RunTrackMateOnExperiment.runTrackMateOnExperiment(
+ *                     experiment, images, dialog);
+ *
+ *  DEPENDENCIES:
+ *    – paint.fiji.trackmate.RunTrackMateOnRecording
+ *    – paint.shared.config.PaintConfig
+ *    – paint.shared.config.TrackMateConfig
+ *    – paint.shared.dialogs.ProjectDialog
+ *    – paint.shared.utils.PaintLogger
+ *    – paint.shared.utils.CsvUtils
+ *    – paint.shared.objects.ExperimentInfo
+ *
+ *  AUTHOR:
+ *    Hans Bakker (jjabakker)
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.fiji.trackmate;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.csv.*;
 import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.dialogs.ProjectDialog;
@@ -28,31 +72,38 @@ import static paint.shared.utils.CsvUtils.countProcessed;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 
 /**
- * The {@code RunTrackMateOnExperiment} class provides methods to run TrackMate on a given experiment.
- * It contains functionality to handle experiments, perform processing on provided paths,
- * and use a watchdog to manage timeouts or early cancellations.
- *
- * Core responsibilities:
- * - Run TrackMate on an experiment with the required configurations.
- * - Provide a watchdog to monitor and control the execution time or cancel the process if needed.
+ * Provides functionality to execute the TrackMate analysis workflow for a single
+ * experiment. Each experiment typically contains one or more recordings that
+ * are processed sequentially.
+ * <p>
+ * The workflow includes:
+ * <ul>
+ *   <li>Initializing configuration and runtime settings.</li>
+ *   <li>Running TrackMate per recording in a monitored thread.</li>
+ *   <li>Recording runtime statistics and aggregating results.</li>
+ *   <li>Supporting user cancellation and timeouts via watchdog control.</li>
+ * </ul>
  */
 public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
 
+    /** Verbosity flag derived from {@link PaintRuntime}. */
     static final boolean verbose = PaintRuntime.isVerbose();
 
     /**
-     * Executes a given task within a thread while monitoring its progress using a watchdog.
-     * The watchdog ensures that the task completes within the specified time limit, or is stopped gracefully if canceled.
+     * Executes a given task within a monitored thread using a watchdog.
+     * The watchdog ensures that the task completes within a specified time limit,
+     * or terminates early if the user cancels processing.
      *
-     * @param task the task to be executed inside a separate thread
-     * @param maxSecondsPerRecording the maximum duration (in seconds) the task is allowed to run before timing out
-     * @param dialog the user interface dialog that can indicate cancellation via user interaction; may be null
-     * @return {@code true} if the task completes successfully within the time limit, {@code false} if the task
-     *         is canceled by the user or exceeds the time limit
+     * @param task                  the {@link Runnable} task to execute
+     * @param maxSecondsPerRecording time limit for execution in seconds
+     * @param dialog                optional {@link ProjectDialog} that can signal cancellation
+     * @return {@code true} if the task completed successfully;
+     *         {@code false} if cancelled or timed out
      */
     private static boolean runWithWatchdog(Runnable task,
                                            int maxSecondsPerRecording,
                                            ProjectDialog dialog) {
+
         Thread thread = new Thread(task, "TrackMateThread");
         thread.start();
 
@@ -64,86 +115,81 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                 thread.join(1000); // check every second
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                PaintLogger.errorf("Watchdog thread itself was interrupted.");
+                PaintLogger.errorf("Watchdog thread was interrupted.");
                 return false;
             }
 
-            // ✅ TrackMate finished normally
+            // ✅ Finished normally
             if (!thread.isAlive()) {
                 return true;
             }
 
-            // ✅ User pressed cancel
+            // ✅ User requested cancellation
             if (dialog != null && dialog.isCancelled()) {
                 PaintLogger.warnf("User requested cancellation — stopping TrackMate gracefully...");
-                // ⚠️ Do NOT call thread.interrupt(), just mark as finished
                 return false;
             }
 
-            // progress dots
+            // Print progress dots
             numberOfInterrupts++;
-            int dotsAfterSecond = 1;
-            if (numberOfInterrupts >= dotsAfterSecond) {
+            if (numberOfInterrupts >= 1) {
                 PaintLogger.raw(".");
                 numberOfDotsOnline++;
                 numberOfInterrupts = 0;
             }
             if (numberOfDotsOnline >= 80) {
-                PaintLogger.raw("\n                                                    ")     ;
+                PaintLogger.raw("\n                                                    ");
                 numberOfDotsOnline = 0;
             }
         }
 
         // ⏱ Timeout reached
         PaintLogger.errorf("   TrackMate - exceeded time limit of %d seconds.", maxSecondsPerRecording);
-        // ⚠️ Instead of thread.interrupt(), just log and exit cleanly
-        // PaintLogger.warnf("Not interrupting TrackMate threads to avoid InterruptedException.");
         return false;
     }
 
     /**
-     * Executes the TrackMate processing workflow on the specified experiment, processing all related data files
-     * and generating output files. This method handles tasks such as configuration initialization, data analysis,
-     * and logging based on the experiment and its recordings.
+     * Runs the TrackMate workflow for a single experiment.
+     * Reads experiment configuration, processes each recording in sequence,
+     * and aggregates results into consolidated output files.
      *
-     * @param experimentPath The path to the root directory of the experiment. This directory should contain
-     *                       the necessary experiment-related data files, such as experiment information and recordings.
-     * @param imagesPath     The path to the directory containing image files associated with the experiment.
-     *                       These images are used during TrackMate processing.
-     * @param dialog         An optional {@link ProjectDialog} instance used to monitor the user's interaction
-     *                       (e.g., cancellation requests) during the processing. Can be null.
-     * @return               Returns true if the processing completes successfully for all recordings. Returns
-     *                       false if errors occur during file access, TrackMate execution, or other processing steps.
+     * @param experimentPath the directory of the experiment (contains CSV files)
+     * @param imagesPath     the directory containing corresponding image data
+     * @param dialog         optional {@link ProjectDialog} for user cancellation
+     * @return {@code true} if all recordings processed successfully;
+     *         {@code false} if errors or cancellations occurred
      */
     public static boolean runTrackMateOnExperiment(Path experimentPath,
                                                    Path imagesPath,
                                                    ProjectDialog dialog) {
 
-        // @formatter:off
+        // ---------------------------------------------------------------------
+        // Initial setup
+        // ---------------------------------------------------------------------
         Duration totalDuration           = Duration.ZERO;
         int numberRecordings             = 0;
         boolean status                   = true;
-        List<Path> processedTrackFiles = new ArrayList<>();
-        // @formatter:on
+        List<Path> processedTrackFiles   = new ArrayList<>();
 
-
-        // Read the Paint Config Info file and initialise trackMateConfig
+        // Initialize configuration
         Path configPath = experimentPath.getParent().resolve(PAINT_CONFIGURATION_JSON);
         if (Files.exists(configPath)) {
             PaintConfig.initialise(experimentPath.getParent());
         } else {
             PaintLogger.warnf("No PaintConfig.json found in %s, defaults will be used.",
-                                 experimentPath.getParent());
+                              experimentPath.getParent());
         }
+
         PaintConfig paintConfig         = PaintConfig.instance();
         TrackMateConfig trackMateConfig = new TrackMateConfig();
         int maxSecondsPerRecording      = trackMateConfig.getMaxNumberOfSecondsPerImage();
+
         PaintLogger.debugf(trackMateConfig.toString());
-        if (PaintRuntime.isVerbose()) {
+        if (verbose) {
             PaintLogger.infof(trackMateConfig.toString());
         }
 
-        // Write the parameters used to file, so that we know for sure what parameters have been used
+        // Save configuration snapshot
         try {
             Path filePath = experimentPath.resolve("Output").resolve("ParametersUsed.txt");
             Files.createDirectories(filePath.getParent());
@@ -152,40 +198,42 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
             PaintLogger.errorf("Could not write file '%s'", "ParametersUsed.txt");
         }
 
-
+        // ---------------------------------------------------------------------
+        // Validate input files
+        // ---------------------------------------------------------------------
         Path experimentFilePath   = experimentPath.resolve(EXPERIMENT_INFO_CSV);
         Path allRecordingFilePath = experimentPath.resolve(RECORDINGS_CSV);
+
         if (!Files.exists(experimentFilePath)) {
-            PaintLogger.errorf("Experiment info file does not exist in %s.", experimentFilePath);
+            PaintLogger.errorf("Experiment info file does not exist: %s", experimentFilePath);
             return false;
         }
 
-        // @formatter:off
         int numberRecordingsToProcess = countProcessed(experimentFilePath);
-        String experimentName         = experimentPath.getFileName().toString();             // TODO Dangerous?
+        String experimentName         = experimentPath.getFileName().toString();
         String projectName            = experimentPath.getParent().getFileName().toString();
-        // @formatter:on
 
         PaintLogger.blankline();
-        PaintLogger.infof("Processing %d %s in experiment '%s' in project '%s'.",
+        PaintLogger.infof("Processing %d %s in experiment '%s' (project '%s').",
                           numberRecordingsToProcess,
                           numberRecordingsToProcess == 1 ? "recording" : "recordings",
                           experimentName,
                           projectName);
         PaintLogger.blankline();
 
-        // Read the Experiment Info file
+        // ---------------------------------------------------------------------
+        // Process Experiment Info and Recordings
+        // ---------------------------------------------------------------------
         try (Reader experimentInfoReader = Files.newBufferedReader(experimentFilePath);
              CSVParser experimentInfoParser = new CSVParser(experimentInfoReader,
-                                              CSVFormat.DEFAULT.builder()
-                                                      .setHeader()
-                                                      .setSkipHeaderRecord(true)
-                                                      .build());
-
+                                                            CSVFormat.DEFAULT.builder()
+                                                                    .setHeader()
+                                                                    .setSkipHeaderRecord(true)
+                                                                    .build());
              BufferedWriter allRecordingsWriter = Files.newBufferedWriter(allRecordingFilePath);
              CSVPrinter allRecordingsPrinter = new CSVPrinter(allRecordingsWriter, CSVFormat.DEFAULT.builder().build())) {
 
-            // Extend the Experiment Info header for the RECORDINGS_CSV file
+            // Extend Experiment Info header for RECORDINGS_CSV
             List<String> header = new ArrayList<>(experimentInfoParser.getHeaderMap().keySet());
             header.addAll(Arrays.asList(
                     "Number of Spots",
@@ -204,7 +252,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
             ));
             allRecordingsPrinter.printRecord(header);
 
-            // Cycle through the Experiment Info file
+            // Iterate through experiment records
             for (CSVRecord experientInfoRecord : experimentInfoParser) {
 
                 if (dialog != null && dialog.isCancelled()) {
@@ -213,7 +261,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                 }
 
                 try {
-                    Map<String, String> row = new LinkedHashMap<String, String>();
+                    Map<String, String> row = new LinkedHashMap<>();
                     for (String key : experimentInfoParser.getHeaderMap().keySet()) {
                         row.put(key, experientInfoRecord.get(key));
                     }
@@ -243,7 +291,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                         // We pass the address of the array that does not change, but the contents can change.
                         final TrackMateResults[] trackMateResults = new TrackMateResults[1];
 
-                        // Hare we start the processing of the recording in a separate thread
+                        // Run TrackMate in a monitored thread
                         boolean finished = runWithWatchdog(() -> {
                             try {
                                 trackMateResults[0] = RunTrackMateOnRecording.runTrackMateOnRecording(
@@ -253,6 +301,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                             }
                         }, maxSecondsPerRecording, dialog);
 
+                        // Handle failures and cancellations
                         if (!finished) {
                             if (dialog != null && dialog.isCancelled()) {
                                 PaintLogger.infof("Recording '%s' cancelled cleanly.", recordingName);
@@ -265,6 +314,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                             }
                         }
 
+                        // Validate processing results
                         if (trackMateResults[0] == null || !trackMateResults[0].isSuccess()) {
                             PaintLogger.errorf("   TrackMate failed for '%s'.", recordingName);
                             status = false;
@@ -284,20 +334,20 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                         totalDuration = totalDuration.plus(trackMateResults[0].getDuration());
                         numberRecordings++;
 
-                        // @formatter:off
+                        // Extract output values
                         numberOfSpots            = trackMateResults[0].getNumberOfSpots();
                         numberOfFilteredTracks   = trackMateResults[0].getNumberOfFilteredTracks();
                         numberOfFrames           = trackMateResults[0].getNumberOfFrames();
                         numberOfSpotsInAllTracks = trackMateResults[0].getNumberOfSpotsInALlTracks();
                         runTime                  = durationInSeconds;
                         timeStamp                = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                        // @formatter:off
 
                     } else if (verbose) {
                         PaintLogger.infof("   Recording '%s' skipped.", recordingName);
                     }
 
-                    List<String> output = new ArrayList<String>();
+                    // Write summary output for this recording
+                    List<String> output = new ArrayList<>();
                     for (String key : experimentInfoParser.getHeaderMap().keySet()) {
                         output.add(row.get(key));
                     }
@@ -332,13 +382,16 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
             status = false;
         }
 
+        // ---------------------------------------------------------------------
+        // Finalize outputs and summaries
+        // ---------------------------------------------------------------------
         if (dialog != null && dialog.isCancelled()) {
             PaintLogger.warnf("Cancellation processed.");
             PaintLogger.blankline();
             return false;
         }
 
-        // Concatenate all tacks files that were just created into an All Tracks file
+        // Merge all per-recording tracks into a single CSV
         Path tracksFilePath = experimentPath.resolve(TRACKS_CSV);
         try {
             concatenateCsvFiles(processedTrackFiles, tracksFilePath, true);
@@ -347,6 +400,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
             status = false;
         }
 
+        // Log final summary
         PaintLogger.infof("Processed %d recordings in %s.",
                           numberRecordings, formatDuration((int) (totalDuration.toMillis() / 1000)));
         PaintLogger.blankline();
