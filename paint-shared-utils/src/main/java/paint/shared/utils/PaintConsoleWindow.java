@@ -67,7 +67,7 @@ public final class PaintConsoleWindow {
     private static JCheckBox scrollLock;
 
     private static final List<Integer> problemPositions = new ArrayList<>();
-    private static int currentProblemIndex = -1;
+    private static       int currentProblemIndex = -1;
 
     // ───────────────────────────────────────────────────────────────────────────────
     // PUBLIC LOGGING API
@@ -209,10 +209,10 @@ public final class PaintConsoleWindow {
         scrollLock.addActionListener(e -> updateTitleForScrollLock(scrollLock.isSelected()));
         controlPanel.add(scrollLock, BorderLayout.WEST);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel buttonPanel      = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton highlightButton = new JButton("Highlight Problems");
         highlightButton.addActionListener(e -> highlightProblemsOrNext());
-        JButton saveButton = new JButton("Save");
+        JButton saveButton  = new JButton("Save");
         JButton closeButton = new JButton("Close");
         saveButton.addActionListener(PaintConsoleWindow::saveConsoleContent);
         closeButton.addActionListener(e -> close());
@@ -256,8 +256,7 @@ public final class PaintConsoleWindow {
             File file = chooser.getSelectedFile();
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
                 writer.write(textPane.getText());
-                JOptionPane.showMessageDialog(frame,
-                                              "Console saved to " + file.getAbsolutePath());
+                JOptionPane.showMessageDialog(frame, "Console saved to " + file.getAbsolutePath());
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(frame,
                                               "Failed to save file:\n" + ex.getMessage(),
@@ -428,17 +427,8 @@ public final class PaintConsoleWindow {
     private static void selectProblem(int pos) {
         try {
             Highlighter highlighter = textPane.getHighlighter();
-            Highlighter.HighlightPainter focusPainter =
-                    new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
+            Highlighter.HighlightPainter focusPainter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
 
-            // Clear the previous yellow focus
-            for (Highlighter.Highlight h : highlighter.getHighlights()) {
-                if (h.getPainter() instanceof DefaultHighlighter.DefaultHighlightPainter) {
-                    // reset pink/orange/red remains; do not remove those
-                }
-            }
-
-            // Apply focus highlight
             for (Highlighter.Highlight h : highlighter.getHighlights()) {
                 if (h.getStartOffset() == pos) {
                     textPane.requestFocus();
@@ -460,7 +450,9 @@ public final class PaintConsoleWindow {
 
     /** Updates window title to reflect scroll lock state. */
     private static void updateTitleForScrollLock(boolean locked) {
-        if (frame == null) return;
+        if (frame == null) {
+            return;
+        }
         String baseTitle = frame.getTitle().replace(" [Scroll Locked]", "");
         frame.setTitle(locked ? baseTitle + " [Scroll Locked]" : baseTitle);
     }
