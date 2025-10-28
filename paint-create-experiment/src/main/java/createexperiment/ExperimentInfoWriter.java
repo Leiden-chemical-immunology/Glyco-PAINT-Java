@@ -1,8 +1,39 @@
-/**
- * Part of the Paint project.
- * Copyright (c) 2025 Hans Bakker.
- * Licensed under the MIT License.
- */
+/******************************************************************************
+ *  Class:        ExperimentInfoWriter.java
+ *  Package:      createexperiment
+ *
+ *  PURPOSE:
+ *    Generates and writes the "Experiment Info.csv" file based on selected ND2
+ *    recording files. Parses metadata such as condition and replicate numbers
+ *    directly from filenames and ensures unique output file naming.
+ *
+ *  DESCRIPTION:
+ *    This class automates the creation of experiment metadata tables by
+ *    transforming ND2 file selections into structured CSV records suitable for
+ *    downstream processing in the Paint workflow. Filenames are parsed using
+ *    regex patterns to extract condition and replicate identifiers, and
+ *    ExperimentInfo objects are serialized via Tablesaw utilities.
+ *
+ *  KEY FEATURES:
+ *    • Regex-based filename parsing for condition and replicate extraction.
+ *    • Automatic creation of experiment directories if missing.
+ *    • Guarantees non-overwriting output via unique filename generation.
+ *    • Integration with ExperimentInfoTableIO for CSV conversion.
+ *    • Lightweight, file-based I/O without GUI dependencies.
+ *
+ *  AUTHOR:
+ *    Hans Bakker (jjabakker)
+ *
+ *  MODULE:
+ *    paint-create-experiment
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *    Licensed under the MIT License.
+ ******************************************************************************/
 
 package createexperiment;
 
@@ -20,55 +51,46 @@ import java.util.regex.Pattern;
 import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
 
 /**
- * The {@code ExperimentInfoWriter} class provides functionality to generate
- * and write an experiment information CSV file based on a list of ND2 recording
- * files. It automatically parses and extracts condition and replicate numbers
- * from file names, and ensures unique file names to avoid overwriting.
+ * Provides functionality to generate and write an experiment information CSV file
+ * based on a list of ND2 recording files. Automatically parses and extracts condition
+ * and replicate numbers from filenames, and ensures unique file names to avoid overwriting.
  */
 public class ExperimentInfoWriter {
 
     /**
-     * A compiled regular expression pattern used to validate and extract metadata
-     * from filenames of experiment recording files.
-     *
-     * The expected filename format is:
-     * <code>[digits]-Exp-[digits]-[uppercase letter][digits]-[digits].nd2</code>
-     * where:
-     * - The initial digits segment represents a primary identifier.
-     * - "Exp" is a constant string in the filename.
-     * - The subsequent digits represent a secondary identifier.
-     * - The uppercase letter followed by digits is another segment of the metadata.
-     * - The final digits (before the file extension) represent an additional identifier.
-     *
-     * Groups within the pattern:
-     * 1. Captures part of the secondary identifier.
-     * 2. Captures the final identifier from the filename.
-     *
-     * This pattern is used to parse filenames and extract metadata for further processing
-     * when generating experiment information.
+     * Regular expression pattern for extracting metadata from filenames of experiment recordings.
+     * <p>
+     * Expected filename format:
+     * <pre>
+     * [digits]-Exp-[digits]-[uppercase letter][digits]-[digits].nd2
+     * </pre>
+     * Groups:
+     * <ul>
+     *   <li>Group 1 – Condition number</li>
+     *   <li>Group 2 – Replicate number</li>
+     * </ul>
      */
     private static final Pattern FILENAME_PATTERN =
             Pattern.compile("^\\d+-Exp-(\\d+)-[A-Z]\\d+-(\\d+)\\.nd2$");
 
     /**
-     * Writes information about a set of experiment recordings into a CSV file in the specified directory.
+     * Writes experiment recording metadata into a CSV file located in the specified experiment directory.
+     * <p>
+     * Each ND2 recording file is parsed into an {@link ExperimentInfo} instance containing structured
+     * metadata such as condition and replicate numbers. The resulting table is serialized as
+     * {@code Experiment Info.csv}, with numeric suffixing to avoid overwriting existing files.
      *
-     * The method processes a list of recording files to generate experiment information, such as condition
-     * numbers, replicate numbers, and other metadata. It wraps this information in a tabular format and
-     * writes it to a file named "Experiment Info.csv" (or a unique variant to avoid overwriting existing files).
-     *
-     * @param experimentDir the directory where the experiment information file will be created; if it does not
-     *                      exist, it will attempt to create the directory
-     * @param recordings    the list of recording files to process and extract metadata from
-     * @return a {@code File} object pointing to the written CSV file containing the experiment information
-     * @throws IOException if the experiment directory cannot be created, or if the file writing process fails
+     * @param experimentDir the directory where the experiment CSV will be created
+     * @param recordings    list of ND2 recording files to process
+     * @return the created {@code File} object pointing to the resulting CSV file
+     * @throws IOException if directory creation or file writing fails
      */
     public static File writeExperimentInfo(File experimentDir, List<File> recordings) throws IOException {
         if (!experimentDir.exists() && !experimentDir.mkdirs()) {
             throw new IOException("Failed to create experiment directory: " + experimentDir);
         }
 
-        // --- Create ExperimentInfo entities ---
+        // Build ExperimentInfo objects from filenames
         List<ExperimentInfo> infos = new ArrayList<>();
 
         for (File rec : recordings) {
@@ -109,13 +131,11 @@ public class ExperimentInfoWriter {
     }
 
     /**
-     * Creates a unique file within the specified directory by appending a numerical suffix to the file name if
-     * a file with the given name already exists. This ensures that the returned file does not overwrite any
-     * existing file in the directory.
+     * Ensures the output filename is unique by appending an incremented suffix if needed.
      *
-     * @param dir the directory in which the file will be created
-     * @param fileName the desired name of the file (including extension, if any)
-     * @return a {@code File} object representing the unique file within the specified directory
+     * @param dir      directory for the file
+     * @param fileName desired file name
+     * @return a unique file reference that does not overwrite existing files
      */
     private static File uniqueFile(File dir, String fileName) {
         int dot = fileName.lastIndexOf('.');

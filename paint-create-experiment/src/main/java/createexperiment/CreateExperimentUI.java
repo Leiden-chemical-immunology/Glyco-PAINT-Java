@@ -1,8 +1,38 @@
-/**
- * Part of the Paint project.
- * Copyright (c) 2025 Hans Bakker.
- * Licensed under the MIT License.
- */
+/******************************************************************************
+ *  Class:        CreateExperimentUI.java
+ *  Package:      createexperiment
+ *
+ *  PURPOSE:
+ *    Provides a complete Swing-based user interface for creating experiment
+ *    configuration files. It allows users to select directories, filter image
+ *    files by regular expression, and generate an "Experiment Info.csv" file.
+ *
+ *  DESCRIPTION:
+ *    This class defines a graphical desktop tool that enables users to manage
+ *    experiment setup through directory selection, regex-based filtering, and
+ *    automated CSV generation. Regex history, directory paths, and UI state
+ *    are stored in user preferences for convenience between sessions.
+ *
+ *  KEY FEATURES:
+ *    • Persistent regex and directory preferences using java.util.prefs.
+ *    • Interactive regex management (add, delete, apply filters).
+ *    • Automatic refresh of visible file lists when input or filters change.
+ *    • File processing workflow via ExperimentInfoWriter.
+ *    • Cross-platform compatibility (macOS, Windows, Linux).
+ *
+ *  AUTHOR:
+ *    Hans Bakker (jjabakker)
+ *
+ *  MODULE:
+ *    paint-create-experiment
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *    Licensed under the MIT License.
+ ******************************************************************************/
 
 package createexperiment;
 
