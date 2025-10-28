@@ -175,7 +175,9 @@ The Tau calculation is only performed if a minimum number of tracks is present (
 
 To calculate a Tau value for the entire recording, all tracks within squares that meet the specified selection criteria are considered. These criteria include the minimum required density ratio, maximum allowable variability and neighbour state. 
 
-Visual feedback on the fitting process is provided when the "Plot Curve Fitting" flag  (in the "Generate Squares" section) is set to true. In the 'Tau Fitting Plots' directory under the Experiment directories,  plots are gathered in 'Failed' and 'Success' sub directories. 
+Visual feedback on the fitting process is provided when the "Plot Curve Fitting" flag  (in the "Generate Squares" section) is set to true. In the 'Tau Fitting Plots' directory under the Experiment directories,  plots are gathered in 'Failed' and 'Success' sub directories. An example of such a plkot is shown below:
+
+![tau-fit-plot](/Users/hans/JavaPaintProjects/doc/Pictures/tau-fit-plot.png)
 
 The code can be found at: [Calculate Tau code](https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java/blob/main/paint-generate-squares/src/main/java/paint/generatesquares/calc/CalculateTau.java).
 
@@ -220,4 +222,10 @@ The code can be found at: [Calculate Diffusion Coefficient code](https://github.
 
 
 #### Calculation of background density
+
+One of tbe criteria applied to for square selection is the 'Density  ratio'. Simply said, squares are only considered if they contyain 'significantly' more tracks then the 'majority' of the squares. A statistical procedure is applied in which squares are iteratively filtered with track counts exceeding a dynamically calculated threshold (mean + 2 * standard deviation). The mean is then recalculated and the calcuklation repeated until the mean stabilizes or a maximum number of iterations is reached.
+
+![background](/Users/hans/JavaPaintProjects/doc/Pictures/background.png)
+
+
 
