@@ -258,6 +258,7 @@ public class SquareGridPanel extends JPanel {
                 "<html><body style='font-family:sans-serif;font-size:11px;'>"
                         + "<b>Square %d</b>"
                         + "<table style='margin-top:4px;'>"
+                        + "<tr><td style='padding-right:8px;'>Density:</td><td align='right'>%.4f</td></tr>"
                         + "<tr><td style='padding-right:8px;'>Density Ratio:</td><td align='right'>%.1f</td></tr>"
                         + "<tr><td>Variability:</td><td align='right'>%.1f</td></tr>"
                         + "<tr><td>R²:</td><td align='right'>%.2f</td></tr>"
@@ -268,6 +269,7 @@ public class SquareGridPanel extends JPanel {
                         + "</div>"
                         + "</body></html>",
                 square.getSquareNumber(),
+                square.getDensity(),
                 square.getDensityRatio(),
                 square.getVariability(),
                 square.getRSquared(),
