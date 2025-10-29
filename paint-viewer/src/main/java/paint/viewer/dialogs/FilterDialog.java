@@ -60,15 +60,13 @@ import java.util.stream.Collectors;
 public class FilterDialog extends JDialog {
 
     private final List<RecordingEntry> originalRecordings;
+    private final JList<String>  cellTypeList;
+    private final JList<String>  probeNameList;
+    private final JList<String>  probeTypeList;
+    private final JList<String>  adjuvantList;
+    private final JList<String>  concentrationList;
     private List<RecordingEntry> filteredRecordings;
-
-    private final JList<String> cellTypeList;
-    private final JList<String> probeNameList;
-    private final JList<String> probeTypeList;
-    private final JList<String> adjuvantList;
-    private final JList<String> concentrationList;
-
-    private boolean cancelled = true;
+    private boolean              cancelled = true;
 
     /**
      * Constructs a modal {@code FilterDialog} for filtering a list of
@@ -89,6 +87,7 @@ public class FilterDialog extends JDialog {
         // ─────────────────────────────────────────────────────────────────────
         // Collect distinct values for each attribute
         // ─────────────────────────────────────────────────────────────────────
+
         Set<String> cellTypes      = new TreeSet<>();
         Set<String> probeNames     = new TreeSet<>();
         Set<String> probeTypes     = new TreeSet<>();
@@ -103,13 +102,11 @@ public class FilterDialog extends JDialog {
             concentrations.add(String.valueOf(entry.getConcentration()));
         }
 
-        // @formatter:off
         cellTypeList      = createList(cellTypes);
         probeNameList     = createList(probeNames);
         probeTypeList     = createList(probeTypes);
         adjuvantList      = createList(adjuvants);
         concentrationList = createList(concentrations);
-        // @formatter:on
 
         JPanel listPanel = new JPanel(new GridLayout(1, 6, 10, 0));
         listPanel.add(createListBoxWithButtons("Cell Type", cellTypeList));
@@ -227,7 +224,9 @@ public class FilterDialog extends JDialog {
         updateLists();
     }
 
-    /** Resets all filters and restores the full unfiltered dataset. */
+    /**
+     * Resets all filters and restores the full unfiltered dataset.
+     */
     private void resetAllFilters() {
         filteredRecordings = new ArrayList<>(originalRecordings);
         updateLists();
@@ -236,9 +235,9 @@ public class FilterDialog extends JDialog {
     /**
      * Determines if a {@link RecordingEntry} matches the selected filter criteria.
      *
-     * @param entry     the recording being tested
-     * @param list      the {@code JList} defining the filter dimension
-     * @param selected  selected filter values
+     * @param entry    the recording being tested
+     * @param list     the {@code JList} defining the filter dimension
+     * @param selected selected filter values
      * @return {@code true} if the recording matches the criteria
      */
     private boolean matches(RecordingEntry entry, JList<String> list, List<String> selected) {
@@ -256,7 +255,9 @@ public class FilterDialog extends JDialog {
         return true;
     }
 
-    /** Updates each filter list based on the attributes of the filtered recordings. */
+    /**
+     * Updates each filter list based on the attributes of the filtered recordings.
+     */
     private void updateLists() {
         updateList(cellTypeList,      filteredRecordings.stream().map(RecordingEntry::getCellType).collect(Collectors.toSet()));
         updateList(probeNameList,     filteredRecordings.stream().map(RecordingEntry::getProbeName).collect(Collectors.toSet()));
@@ -265,17 +266,23 @@ public class FilterDialog extends JDialog {
         updateList(concentrationList, filteredRecordings.stream().map(e -> String.valueOf(e.getConcentration())).collect(Collectors.toSet()));
     }
 
-    /** Replaces the data model of a {@link JList} with a new set of values. */
+    /**
+     * Replaces the data model of a {@link JList} with a new set of values.
+     */
     private void updateList(JList<String> list, Set<String> values) {
         list.setListData(values.toArray(new String[0]));
     }
 
-    /** Returns the currently filtered list of recordings. */
+    /**
+     * Returns the currently filtered list of recordings.
+     */
     public List<RecordingEntry> getFilteredRecordings() {
         return filteredRecordings;
     }
 
-    /** Returns {@code true} if the user canceled the dialog. */
+    /**
+     * Returns {@code true} if the user canceled the dialog.
+     */
     public boolean isCancelled() {
         return cancelled;
     }

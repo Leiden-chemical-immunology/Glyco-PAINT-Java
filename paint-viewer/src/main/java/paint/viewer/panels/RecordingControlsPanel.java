@@ -48,15 +48,24 @@ import java.awt.*;
  */
 public class RecordingControlsPanel {
 
-    /** Defines callback methods for handling user actions triggered by this panel. */
+    /**
+     * Defines callback methods for handling user actions triggered by this panel.
+     */
     public interface Listener {
         void onFilterRequested();
+
         void onSelectSquaresRequested();
+
         void onAssignCellsRequested();
+
         void onPlayRecordingRequested();
+
         void onBordersToggled(boolean showBorders);
+
         void onShadingToggled(boolean showShading);
+
         void onNumberModeChanged(SquareGridPanel.NumberMode mode);
+
         void onApplySquareControl(String scope, SquareControlParams params);
     }
 

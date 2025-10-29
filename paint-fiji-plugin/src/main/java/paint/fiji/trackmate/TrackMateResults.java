@@ -129,42 +129,58 @@ public class TrackMateResults {
     // Getters
     // -------------------------------------------------------------------------
 
-    /** @return true if the analysis completed successfully */
+    /**
+     * @return true if the analysis completed successfully
+     */
     public boolean isSuccess() {
         return success;
     }
 
-    /** @return true if the calculation was performed */
+    /**
+     * @return true if the calculation was performed
+     */
     public boolean isCalculationPerformed() {
         return calculationPerformed;
     }
 
-    /** @return total number of detected spots */
+    /**
+     * @return total number of detected spots
+     */
     public int getNumberOfSpots() {
         return numberOfSpots;
     }
 
-    /** @return total number of generated tracks */
+    /**
+     * @return total number of generated tracks
+     */
     public int getNumberOfTracks() {
         return numberOfTracks;
     }
 
-    /** @return number of tracks that passed filtering */
+    /**
+     * @return number of tracks that passed filtering
+     */
     public int getNumberOfFilteredTracks() {
         return numberOfFilteredTracks;
     }
 
-    /** @return number of frames analyzed */
+    /**
+     * @return number of frames analyzed
+     */
     public int getNumberOfFrames() {
         return numberOfFrames;
     }
 
-    /** @return duration of the analysis, or {@code null} if unavailable */
+    /**
+     * @return duration of the analysis, or {@code null} if unavailable
+     */
     public Duration getDuration() {
         return duration;
     }
 
-    /** @return number of spots across all tracks */
+    /**
+     * @return number of spots across all tracks
+     */
     public int getNumberOfSpotsInAllTracks() {
         return numberOfSpotsInAllTracks;
     }

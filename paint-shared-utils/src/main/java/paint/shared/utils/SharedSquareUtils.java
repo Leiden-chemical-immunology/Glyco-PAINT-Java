@@ -64,8 +64,11 @@ import java.util.Set;
  */
 public final class SharedSquareUtils {
 
-    /** Private constructor to prevent instantiation. */
-    private SharedSquareUtils() {}
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private SharedSquareUtils() {
+    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // FILTER TRACKS BY SQUARE REGION

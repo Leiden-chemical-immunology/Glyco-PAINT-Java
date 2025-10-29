@@ -73,11 +73,9 @@ public class PaintConfig {
     // Section Name Constants
     // ============================================================================
 
-    // @formatter:off
     public static final String SECTION_GENERATE_SQUARES = "Generate Squares"; // Section name for Generate Squares configuration
     public static final String SECTION_TRACKMATE        = "TrackMate";        // Section name for TrackMate configuration.
     public static final String SECTION_DEBUG            = "Debug";            // Section name for Debug configuration.
-    // @formatter:on
 
     // ============================================================================
     // Singleton + Shared Resources
@@ -193,7 +191,7 @@ public class PaintConfig {
      * Debug, and any other defined configuration sections.
      */
     private void loadDefaults() {
-        // @formatter:off
+        
         JsonObject generateSquares = new JsonObject();
         generateSquares.addProperty(MIN_TRACKS_TO_CALCULATE_TAU,                           20);
         generateSquares.addProperty(MIN_REQUIRED_R_SQUARED,                                0.1);
@@ -226,7 +224,6 @@ public class PaintConfig {
         trackMate.addProperty(ALLOW_TRACK_SPLITTING,                                     false);
         trackMate.addProperty(ALLOW_TRACK_MERGING,                                       false);
         trackMate.addProperty(MERGING_MAX_DISTANCE,                                      15.0);
-
         configData.add(SECTION_TRACKMATE, trackMate);
 
         JsonObject debugFlags = new JsonObject();
@@ -234,7 +231,6 @@ public class PaintConfig {
         debugFlags.addProperty("Debug RunTrackMateOnRecording",                 false);
         configData.add(SECTION_DEBUG, debugFlags);
 
-        // @formatter:on
     }
 
     /**
@@ -256,27 +252,37 @@ public class PaintConfig {
     // Instance API: Getters and Setters
     // ============================================================================
 
-    /** Returns the String value for the given section/key, or defaultValue if missing. */
+    /**
+     * Returns the String value for the given section/key, or defaultValue if missing.
+     */
     public String getStringValue(String section, String key, String defaultValue) {
         return getStringInternal(section, key, defaultValue);
     }
 
-    /** Returns the int value for the given section/key, or defaultValue if missing. */
+    /**
+     * Returns the int value for the given section/key, or defaultValue if missing.
+     */
     public int getIntValue(String section, String key, int defaultValue) {
         return getIntInternal(section, key, defaultValue);
     }
 
-    /** Returns the double value for the given section/key, or defaultValue if missing. */
+    /**
+     * Returns the double value for the given section/key, or defaultValue if missing.
+     */
     public double getDoubleValue(String section, String key, double defaultValue) {
         return getDoubleInternal(section, key, defaultValue);
     }
 
-    /** Returns the boolean value for the given section/key, or defaultValue if missing. */
+    /**
+     * Returns the boolean value for the given section/key, or defaultValue if missing.
+     */
     public boolean getBooleanValue(String section, String key, boolean defaultValue) {
         return getBooleanInternal(section, key, defaultValue);
     }
 
-    /** Sets a String value in the specified section/key, optionally saving immediately. */
+    /**
+     * Sets a String value in the specified section/key, optionally saving immediately.
+     */
     public void setStringValue(String section, String key, String value, boolean autoSave) {
         ensureLoaded();
         getOrCreateSection(section).addProperty(key, value);
@@ -285,7 +291,9 @@ public class PaintConfig {
         }
     }
 
-    /** Sets an int value in the specified section/key, optionally saving immediately. */
+    /**
+     * Sets an int value in the specified section/key, optionally saving immediately.
+     */
     public void setIntValue(String section, String key, int value, boolean autoSave) {
         ensureLoaded();
         getOrCreateSection(section).addProperty(key, value);
@@ -294,7 +302,9 @@ public class PaintConfig {
         }
     }
 
-    /** Sets a double value in the specified section/key, optionally saving immediately. */
+    /**
+     * Sets a double value in the specified section/key, optionally saving immediately.
+     */
     public void setDoubleValue(String section, String key, double value, boolean autoSave) {
         ensureLoaded();
         getOrCreateSection(section).addProperty(key, value);
@@ -303,7 +313,9 @@ public class PaintConfig {
         }
     }
 
-    /** Sets a boolean value in the specified section/key, optionally saving immediately. */
+    /**
+     * Sets a boolean value in the specified section/key, optionally saving immediately.
+     */
     public void setBooleanValue(String section, String key, boolean value, boolean autoSave) {
         ensureLoaded();
         getOrCreateSection(section).addProperty(key, value);
@@ -379,8 +391,8 @@ public class PaintConfig {
      * Removes a value associated with a specified key from a given section.
      * If autoSave is true, the change is immediately persisted.
      *
-     * @param section the section from which the key-value pair is removed
-     * @param key     the key identifying the value to remove
+     * @param section  the section from which the key-value pair is removed
+     * @param key      the key identifying the value to remove
      * @param autoSave whether to immediately save changes after removal
      */
     public void removeValue(String section, String key, boolean autoSave) {
@@ -388,7 +400,9 @@ public class PaintConfig {
         JsonObject sec = getSection(section);
         if (sec != null) {
             sec.remove(key);
-            if (autoSave) save();
+            if (autoSave) {
+                save();
+            }
         }
     }
 
@@ -396,13 +410,15 @@ public class PaintConfig {
      * Removes a section from the configuration. If autoSave is true,
      * the configuration is saved immediately after removal.
      *
-     * @param section the name of the section to remove
+     * @param section  the name of the section to remove
      * @param autoSave if true, save changes immediately after removal
      */
     public void removeSectionValue(String section, boolean autoSave) {
         ensureLoaded();
         configData.remove(section);
-        if (autoSave) save();
+        if (autoSave) {
+            save();
+        }
     }
 
     /**
@@ -543,7 +559,8 @@ public class PaintConfig {
             if (realKey != null && sec.get(realKey).isJsonPrimitive()) {
                 try {
                     return sec.getAsJsonPrimitive(realKey).getAsBoolean();
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
         }
         PaintLogger.warnf("No value for '%s', default %b applied", key, defaultValue);
@@ -560,7 +577,9 @@ public class PaintConfig {
      * @return the real key in obj if found; null otherwise
      */
     private String findKeyIgnoreCase(JsonObject obj, String key) {
-        if (obj == null || key == null) return null;
+        if (obj == null || key == null) {
+            return null;
+        }
         for (String k : obj.keySet()) {
             if (k.equalsIgnoreCase(key)) {
                 return k;

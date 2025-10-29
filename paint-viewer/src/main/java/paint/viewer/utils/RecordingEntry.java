@@ -58,8 +58,6 @@ import java.nio.file.Path;
  * can be lazily fetched and cached from the experiment context.</p>
  */
 public class RecordingEntry {
-
-    // @formatter:off
     private final Recording     recording;
     private final String        experimentName;
 
@@ -71,19 +69,17 @@ public class RecordingEntry {
     private final ImageIcon     leftImage;
     private final ImageIcon     rightImage;
 
-    // @formatter:on
-
     /**
      * Constructs a new {@code RecordingEntry} with associated images and control parameters.
      *
-     * @param recording the underlying {@link Recording} metadata
-     * @param trackmateImagePath path to the TrackMate overlay image
-     * @param brightfieldImagePath path to the Brightfield reference image
-     * @param experimentName name of the parent experiment
+     * @param recording               the underlying {@link Recording} metadata
+     * @param trackmateImagePath      path to the TrackMate overlay image
+     * @param brightfieldImagePath    path to the Brightfield reference image
+     * @param experimentName          name of the parent experiment
      * @param minRequiredDensityRatio minimum required density ratio threshold
      * @param maxAllowableVariability maximum allowable variability threshold
-     * @param minRequiredRSquared minimum R² value (0.0–1.0)
-     * @param neighbourMode neighbour visibility mode as string
+     * @param minRequiredRSquared     minimum R² value (0.0–1.0)
+     * @param neighbourMode           neighbour visibility mode as string
      */
     public RecordingEntry(Recording recording,
                           Path      trackmateImagePath,
@@ -93,7 +89,6 @@ public class RecordingEntry {
                           double    maxAllowableVariability,
                           double    minRequiredRSquared,
                           String    neighbourMode) {
-        // @formatter:off
         this.recording               = recording;
         this.experimentName          = experimentName;
         this.minRequiredDensityRatio = minRequiredDensityRatio;
@@ -102,7 +97,6 @@ public class RecordingEntry {
         this.neighbourMode           = neighbourMode;
         this.leftImage               = loadImage(trackmateImagePath, "TrackMate");
         this.rightImage              = loadImage(brightfieldImagePath, "Brightfield");
-        // @formatter:on
     }
 
     // =========================================================================================
@@ -115,7 +109,7 @@ public class RecordingEntry {
      * suitable for Swing rendering or {@code null} if loading fails.
      *
      * @param imagePath path to the image file
-     * @param label descriptive label for logging
+     * @param label     descriptive label for logging
      * @return {@link ImageIcon} for the image, or {@code null} if load fails
      */
     private static ImageIcon loadImage(Path imagePath, String label) {
@@ -154,10 +148,12 @@ public class RecordingEntry {
     // =========================================================================================
 
     public String getRecordingName() {
-        return recording.getRecordingName(); }
+        return recording.getRecordingName();
+    }
 
     public String getExperimentName() {
-        return experimentName; }
+        return experimentName;
+    }
 
     public String getProbeName() {
         return recording.getProbeName();

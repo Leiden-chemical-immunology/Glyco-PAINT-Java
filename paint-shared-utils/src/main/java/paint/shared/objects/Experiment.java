@@ -49,10 +49,14 @@ public class Experiment {
     // FIELDS
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /** The name identifying this experiment. */
+    /**
+     * The name identifying this experiment.
+     */
     private String experimentName;
 
-    /** The collection of recordings associated with this experiment. */
+    /**
+     * The collection of recordings associated with this experiment.
+     */
     private final ArrayList<Recording> recordings;
 
     // ───────────────────────────────────────────────────────────────────────────────
@@ -140,7 +144,6 @@ public class Experiment {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-
         sb.append("\n\n");
         sb.append("----------------------------------------------------------------------\n");
         sb.append("Experiment: ").append(experimentName).append("\n");

@@ -67,7 +67,9 @@ public final class JarInfoLogger {
     private static final DateTimeFormatter OUT_FMT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z").withZone(AMS);
 
-    /** Prevents instantiation of this static utility class. */
+    /**
+     * Prevents instantiation of this static utility class.
+     */
     private JarInfoLogger() {
         // Prevent instantiation
     }
@@ -172,7 +174,8 @@ public final class JarInfoLogger {
                     return new Manifest(is);
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return null;
     }
 
@@ -203,21 +206,24 @@ public final class JarInfoLogger {
         try {
             Instant ins = Instant.parse(utcString.trim());
             return OUT_FMT.format(ins);
-        } catch (DateTimeParseException ignored) {}
+        } catch (DateTimeParseException ignored) {
+        }
 
         // Try "yyyy-MM-dd HH:mm:ss" (assume UTC)
         try {
             LocalDateTime ldt = LocalDateTime.parse(utcString.trim(),
                                                     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             return OUT_FMT.format(ldt.toInstant(ZoneOffset.UTC));
-        } catch (DateTimeParseException ignored) {}
+        } catch (DateTimeParseException ignored) {
+        }
 
         // Try "yyyy-MM-dd'T'HH:mm:ssXXX"
         try {
             OffsetDateTime odt = OffsetDateTime.parse(utcString.trim(),
                                                       DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"));
             return OUT_FMT.format(odt.toInstant());
-        } catch (DateTimeParseException ignored) {}
+        } catch (DateTimeParseException ignored) {
+        }
 
         return null;
     }
@@ -228,7 +234,7 @@ public final class JarInfoLogger {
 
     /**
      * Prints manifest information for this utility’s own class.
-     *
+     * <p>
      * Intended for manual or command-line testing.
      *
      * @param args command-line arguments (unused)
@@ -274,8 +280,6 @@ public final class JarInfoLogger {
                        String specTitle,
                        String specVersion,
                        String specVendor) {
-
-            // @formatter:off
             this.implementationTitle   = implTitle;
             this.implementationVersion = implVersion;
             this.implementationVendor  = implVendor;
@@ -284,10 +288,11 @@ public final class JarInfoLogger {
             this.specificationTitle    = specTitle;
             this.specificationVersion  = specVersion;
             this.specificationVendor   = specVendor;
-            // @formatter:on
         }
 
-        /** @return a concise human-readable summary of implementation metadata. */
+        /**
+         * @return a concise human-readable summary of implementation metadata.
+         */
         @Override
         public String toString() {
             return String.format(
@@ -300,7 +305,9 @@ public final class JarInfoLogger {
             );
         }
 
-        /** @return a detailed report including specification metadata. */
+        /**
+         * @return a detailed report including specification metadata.
+         */
         public String toStringLONG() {
             return String.format(
                     "Implementation Title  : %s%n" +

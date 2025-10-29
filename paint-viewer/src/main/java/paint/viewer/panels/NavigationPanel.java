@@ -46,7 +46,9 @@ import java.awt.*;
  */
 public class NavigationPanel {
 
-    /** Listener interface for responding to navigation button events. */
+    /**
+     * Listener interface for responding to navigation button events.
+     */
     public interface Listener {
         void onFirst();
         void onPrev();
@@ -54,7 +56,7 @@ public class NavigationPanel {
         void onLast();
     }
 
-    private final JPanel root;
+    private final JPanel  root;
     private final JButton firstBtn = new JButton("|<");
     private final JButton prevBtn  = new JButton("<");
     private final JButton nextBtn  = new JButton(">");
@@ -74,9 +76,9 @@ public class NavigationPanel {
         root.add(lastBtn);
 
         firstBtn.addActionListener(e -> listener.onFirst());
-        prevBtn.addActionListener(e -> listener.onPrev());
-        nextBtn.addActionListener(e -> listener.onNext());
-        lastBtn.addActionListener(e -> listener.onLast());
+        prevBtn.addActionListener( e -> listener.onPrev());
+        nextBtn.addActionListener( e -> listener.onNext());
+        lastBtn.addActionListener( e -> listener.onLast());
     }
 
     /**

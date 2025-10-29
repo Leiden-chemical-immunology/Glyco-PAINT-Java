@@ -69,7 +69,9 @@ import java.util.List;
  */
 public final class ImageRootValidator {
 
-    /** Standard file name for experiment metadata. */
+    /**
+     * Standard file name for experiment metadata.
+     */
     private static final String EXPERIMENT_INFO_CSV = "Experiment Info.csv";
 
     // ───────────────────────────────────────────────────────────────────────────────
@@ -124,7 +126,7 @@ public final class ImageRootValidator {
 
         for (String experiment : experimentNames) {
             Path experimentDir = projectRoot.resolve(experiment);
-            Path imageDir = imagesRoot.resolve(experiment);
+            Path imageDir      = imagesRoot.resolve(experiment);
 
             // ── 1. Check image directory existence
             if (!Files.isDirectory(imageDir)) {
@@ -149,7 +151,7 @@ public final class ImageRootValidator {
 
                 for (CSVRecord record : parser) {
                     String recordingName = record.get("Recording Name");
-                    String processFlag   = record.get("Process Flag").trim().toLowerCase();
+                    String processFlag = record.get("Process Flag").trim().toLowerCase();
 
                     if ("true".equals(processFlag)) {
                         Path recordingFile = imageDir.resolve(recordingName + ".nd2");
@@ -174,7 +176,9 @@ public final class ImageRootValidator {
         return result;
     }
 
-    /** Private constructor to prevent instantiation. */
+    /**
+     * Private constructor to prevent instantiation.
+     */
     private ImageRootValidator() {
         // Deliberately empty
     }

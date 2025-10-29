@@ -90,8 +90,6 @@ public class SquareTableIO extends BaseTableIO {
 
         for (Square square : squares) {
             Row tablesawRow = table.appendRow();
-
-            // @formatter:off
             tablesawRow.setString( "Unique Key",                       square.getUniqueKey());
             tablesawRow.setString( "Experiment Name",                  square.getExperimentName());
             tablesawRow.setString( "Recording Name",                   square.getRecordingName());
@@ -126,7 +124,6 @@ public class SquareTableIO extends BaseTableIO {
             tablesawRow.setDouble( "Max Track Duration",               square.getMaxTrackDuration());
             tablesawRow.setDouble( "Total Track Duration",             square.getTotalTrackDuration());
             tablesawRow.setDouble( "Median Track Duration",            square.getMedianTrackDuration());
-            // @formatter:on
         }
         return table;
     }
@@ -145,8 +142,6 @@ public class SquareTableIO extends BaseTableIO {
 
         for (Row tablesawRow : table) {
             Square square = new Square();
-
-            // @formatter:off
             square.setUniqueKey(                     tablesawRow.getString(  "Unique Key"));
             square.setExperimentName(                tablesawRow.getString(  "Experiment Name"));
             square.setRecordingName(                 tablesawRow.getString(  "Recording Name"));
@@ -181,8 +176,6 @@ public class SquareTableIO extends BaseTableIO {
             square.setMaxTrackDuration(              tablesawRow.getDouble(  "Max Track Duration"));
             square.setTotalTrackDuration(            tablesawRow.getDouble(  "Total Track Duration"));
             square.setMedianTrackDuration(           tablesawRow.getDouble(  "Median Track Duration"));
-            // @formatter:on
-
             squares.add(square);
         }
         return squares;
@@ -216,10 +209,8 @@ public class SquareTableIO extends BaseTableIO {
     public void appendInPlace(Table target, Table source) {
         for (Row row : source) {
             Row newRow = target.appendRow();
-
             for (String col : SQUARES_COLS) {
                 Column<?> targetCol = target.column(col);
-
                 if (targetCol.type() == ColumnType.STRING) {
                     newRow.setString(col, row.getString(col));
                 } else if (targetCol.type() == ColumnType.INTEGER) {

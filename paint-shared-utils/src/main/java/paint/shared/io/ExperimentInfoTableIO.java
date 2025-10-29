@@ -116,8 +116,6 @@ public class ExperimentInfoTableIO extends BaseTableIO {
         Table table = emptyTable();
         for (ExperimentInfo info : infos) {
             Row row = table.appendRow();
-
-            // @formatter:off
             row.setString("Experiment Name",  info.getExperimentName());
             row.setString("Recording Name",   info.getRecordingName());
             row.setInt(   "Condition Number", info.getConditionNumber());
@@ -129,7 +127,6 @@ public class ExperimentInfoTableIO extends BaseTableIO {
             row.setDouble("Concentration",    info.getConcentration());
             row.setBoolean("Process Flag",    info.isProcessFlag());
             row.setDouble("Threshold",        info.getThreshold());
-            // @formatter:on
         }
         return table;
     }
@@ -160,8 +157,6 @@ public class ExperimentInfoTableIO extends BaseTableIO {
         List<ExperimentInfo> infos = new ArrayList<>();
         for (Row tablesawRow : table) {
             ExperimentInfo experimentInfo = new ExperimentInfo();
-
-            // @formatter:off
             experimentInfo.setExperimentName(  tablesawRow.getString( "Experiment Name"));
             experimentInfo.setRecordingName(   tablesawRow.getString( "Recording Name"));
             experimentInfo.setConditionNumber( tablesawRow.getInt(    "Condition Number"));
@@ -173,8 +168,6 @@ public class ExperimentInfoTableIO extends BaseTableIO {
             experimentInfo.setConcentration(   tablesawRow.getDouble( "Concentration"));
             experimentInfo.setProcessFlag(     tablesawRow.getBoolean("Process Flag"));
             experimentInfo.setThreshold(       tablesawRow.getDouble( "Threshold"));
-            // @formatter:off
-
             infos.add(experimentInfo);
         }
         return infos;

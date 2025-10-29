@@ -1,37 +1,37 @@
 /******************************************************************************
-*  Class:        ProjectDialog.java
-*  Package:      paint.shared.dialogs
-*
-*  PURPOSE:
-*    Dialog for selecting and running a project workflow (TrackMate, Generate Squares,
-*    or Viewer mode).
-*
-*  DESCRIPTION:
-*    Displays a Swing dialog that allows the user to choose a project root directory,
-*    optionally set image directory, configure square-generation parameters, select
-*    experiments to include, and start the chosen workflow. Supports cancellation,
-*    verbose mode toggle, sweep mode (in TRACKMATE), and saving preferences.
-*
-*  KEY FEATURES:
-*    • Supports 3 modes: TRACKMATE, GENERATE_SQUARES, VIEWER.
-*    • Allows browsing for project root and images root with validation.
-*    • Presents square-generation parameter panel for TRACKMATE and GENERATE_SQUARES modes.
-*    • Maintains a list of experiments via check boxes, with select/clear functionality.
-*    • Allows configuration and persistence of settings (via PaintConfig, PaintPrefs).
-*    • Runs user-provided callback in a background thread with UI handling for start/stop.
-*
-*  AUTHOR:
-*    Hans Bakker
-*
-*  MODULE:
-*    paint-shared-utils
-*
-*  UPDATED:
-*    2025-10-28
-*
-*  COPYRIGHT:
-*    © 2025 Hans Bakker. All rights reserved.
-Give me all these ******************************************************************************/
+ *  Class:        ProjectDialog.java
+ *  Package:      paint.shared.dialogs
+ *
+ *  PURPOSE:
+ *    Dialog for selecting and running a project workflow (TrackMate, Generate Squares,
+ *    or Viewer mode).
+ *
+ *  DESCRIPTION:
+ *    Displays a Swing dialog that allows the user to choose a project root directory,
+ *    optionally set image directory, configure square-generation parameters, select
+ *    experiments to include, and start the chosen workflow. Supports cancellation,
+ *    verbose mode toggle, sweep mode (in TRACKMATE), and saving preferences.
+ *
+ *  KEY FEATURES:
+ *    • Supports 3 modes: TRACKMATE, GENERATE_SQUARES, VIEWER.
+ *    • Allows browsing for project root and images root with validation.
+ *    • Presents square-generation parameter panel for TRACKMATE and GENERATE_SQUARES modes.
+ *    • Maintains a list of experiments via check boxes, with select/clear functionality.
+ *    • Allows configuration and persistence of settings (via PaintConfig, PaintPrefs).
+ *    • Runs user-provided callback in a background thread with UI handling for start/stop.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-10-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ Give me all these ******************************************************************************/
 
 package paint.shared.dialogs;
 
@@ -40,8 +40,8 @@ import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.objects.Project;
 import paint.shared.utils.PaintConsoleWindow;
-import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.PaintLogger;
+import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.PaintRuntime;
 
 import javax.swing.*;
@@ -61,74 +61,43 @@ import java.util.List;
 
 import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
 
-public class   ProjectDialog {
+public class ProjectDialog {
 
-    public enum DialogMode {
-        TRACKMATE,
-        GENERATE_SQUARES,
-        VIEWER
-    }
+    
+    private final    JDialog              dialog;
+    private final    PaintConfig        paintConfig;
+    private final    JCheckBox           saveExperimentsCheckBox;
+    private final    JCheckBox           verboseCheckBox;
+    private final    JCheckBox           sweepCheckBox;
+    private final    JPanel              checkboxPanel = new JPanel();
+    private final    List<JCheckBox>     checkBoxes = new ArrayList<>();
+    private final    JButton             selectAllButton;
+    private final    JButton             clearAllButton;
+    private final    JButton             okButton;
+    private final    JButton             cancelButton;
+    private final    DialogMode          mode;
+    private          CalculationCallback calculationCallback;
+    private          Path                projectPath;
+    private          Project             project;
+    private          JTextField          projectRootField;
+    private          JTextField          imageDirectoryField;
 
-    @FunctionalInterface
-    public interface CalculationCallback {
-        boolean run(Project project);
-    }
-
-    private     CalculationCallback calculationCallback;
-
-    /**
-     * Sets the callback to be invoked when the user confirms and starts the operation.
-     *
-     * @param callback a {@link CalculationCallback} instance that performs the configured workflow.
-     */
-    public void setCalculationCallback(CalculationCallback callback) { this.calculationCallback = callback; }
-
-    // @formatter:off
-    private final JDialog         dialog;
-    private       Path            projectPath;
-    private final PaintConfig     paintConfig;
-    private       Project         project;
-
-    private JTextField            projectRootField;
-    private JTextField            imageDirectoryField;
-
-    // Squares params (shown in TRACKMATE + GENERATE_SQUARES)
-    private JPanel                paramsPanel;
-    private JCheckBox             runSquaresAfterTrackMateCheck; // only visible in TRACKMATE
-    private JComboBox<String>     gridSizeCombo;
-    private JTextField            minTracksField;
-    private JTextField            minRSquaredField;
-    private JTextField            minDensityRatioField;
-    private JTextField            maxVariabilityField;
-
-    private List<JLabel>          squareParamLabels = new ArrayList<>();
-
-    private final JCheckBox       saveExperimentsCheckBox;
-    private final JCheckBox       verboseCheckBox;
-    private final JCheckBox       sweepCheckBox;
-
-    private final JPanel          checkboxPanel = new JPanel();
-    private final List<JCheckBox> checkBoxes = new ArrayList<>();
-
-    private final JButton         selectAllButton;
-    private final JButton         clearAllButton;
-    private       JButton         projectBrowseButton;
-    private       JButton         imagesBrowseButton;
-
-    private final JButton         okButton;
-    private final JButton         cancelButton;
-
-    private volatile boolean      cancelled = false;
-    private          boolean      okPressed = false;
-
-    private final DialogMode      mode;
-
-    private volatile Thread       workerThread = null;
-    // @formatter:on
-
+    private          JPanel              paramsPanel;
+    private          JCheckBox           runSquaresAfterTrackMateCheck; // only visible in TRACKMATE
+    private          JComboBox<String>   gridSizeCombo;
+    private          JTextField          minTracksField;
+    private          JTextField          minRSquaredField;
+    private          JTextField          minDensityRatioField;
+    private          JTextField          maxVariabilityField;
+    private          List<JLabel>        squareParamLabels = new ArrayList<>();
+    private          JButton             projectBrowseButton;
+    private          JButton             imagesBrowseButton;
+    private volatile boolean             cancelled = false;
+    private          boolean             okPressed = false;
+    private volatile Thread              workerThread = null;
     /**
      * Dialog for selecting and running a project workflow for the Paint application.
-     *
+     * <p>
      * This dialog allows the user to choose a project root directory (and image directory
      * if applicable), select experiments, optionally configure square-generation parameters,
      * and then execute a callback for one of the supported modes: TRACKMATE, GENERATE_SQUARES,
@@ -147,9 +116,17 @@ public class   ProjectDialog {
 
         String dialogTitle;
         switch (mode) {
-            case TRACKMATE: dialogTitle = "Run TrackMate on Project - '" + projectName + "'"; break;
-            case VIEWER:    dialogTitle = "View Recordings for Project - '" + projectName + "'"; break;
-            default:        dialogTitle = "Generate Squares for Project - '" + projectName + "'";
+            case TRACKMATE: {
+                dialogTitle = "Run TrackMate on Project - '" + projectName + "'";
+                break;
+            }
+            case VIEWER: {
+                dialogTitle = "View Recordings for Project - '" + projectName + "'";
+                break;
+            }
+            default: {
+                dialogTitle = "Generate Squares for Project - '" + projectName + "'";
+            }
         }
 
         this.dialog = new JDialog(owner, dialogTitle, false);
@@ -223,13 +200,11 @@ public class   ProjectDialog {
             pg.insets = new Insets(5,5,5,5);
             pg.anchor = GridBagConstraints.WEST;
 
-            // @formatter:off
-            int   nrOfSquaresInRecording = PaintConfig.getInt(   "Generate Squares", "Number of Squares in Recording", 400);
-            int   minTracks              = PaintConfig.getInt(   "Generate Squares", "Min Tracks to Calculate Tau",    20);
-            double minRSquared           = PaintConfig.getDouble("Generate Squares", "Min Required R Squared",         0.1);
-            double minDensityRatio       = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio",     2.0);
-            double maxVariability        = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability",      10.0);
-            // @formatter:on
+            int    nrOfSquaresInRecording = PaintConfig.getInt(   "Generate Squares", "Number of Squares in Recording", 400);
+            int    minTracks              = PaintConfig.getInt(   "Generate Squares", "Min Tracks to Calculate Tau",    20);
+            double minRSquared            = PaintConfig.getDouble("Generate Squares", "Min Required R Squared",         0.1);
+            double minDensityRatio        = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio",     2.0);
+            double maxVariability         = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability",      10.0);
 
             Dimension narrowFieldSize = new Dimension(80, 24);
 
@@ -267,9 +242,9 @@ public class   ProjectDialog {
             paramsPanel.add(lblNumSquares, pg);
 
             pg.gridx = 1;
-            String[] gridOptions = {"5x5","10x10","15x15","20x20","25x25","30x30","35x35","40x40"};
+            String[] gridOptions = {"5x5", "10x10", "15x15", "20x20", "25x25", "30x30", "35x35", "40x40"};
             gridSizeCombo = new JComboBox<>(gridOptions);
-            int n = (int)Math.sqrt(nrOfSquaresInRecording);
+            int n = (int) Math.sqrt(nrOfSquaresInRecording);
             gridSizeCombo.setSelectedItem(n + "x" + n);
             paramsPanel.add(gridSizeCombo, pg);
             prow++;
@@ -344,7 +319,7 @@ public class   ProjectDialog {
             gbc.gridwidth  = 3;
             gbc.fill       = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
             formPanel.add(paramsPanel, gbc);
-            gbc.gridwidth  = 1; // reset
+            gbc.gridwidth = 1; // reset
         }
 
         dialog.add(formPanel, BorderLayout.NORTH);
@@ -358,9 +333,15 @@ public class   ProjectDialog {
         scrollPane.setBorder(BorderFactory.createEtchedBorder());
 
         selectAllButton = new JButton("Select All");
-        clearAllButton  = new JButton("Clear All");
-        selectAllButton.addActionListener(e -> { checkBoxes.forEach(cb -> cb.setSelected(true)); updateOkButtonState(); });
-        clearAllButton.addActionListener(e -> { checkBoxes.forEach(cb -> cb.setSelected(false)); updateOkButtonState(); });
+        clearAllButton = new JButton("Clear All");
+        selectAllButton.addActionListener(e -> {
+            checkBoxes.forEach(cb -> cb.setSelected(true));
+            updateOkButtonState();
+        });
+        clearAllButton.addActionListener(e -> {
+            checkBoxes.forEach(cb -> cb.setSelected(false));
+            updateOkButtonState();
+        });
 
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         controlPanel.add(selectAllButton);
@@ -374,7 +355,7 @@ public class   ProjectDialog {
         // ======= BOTTOM =======
 
         saveExperimentsCheckBox = new JCheckBox("Save Experiments", false);
-        verboseCheckBox         = new JCheckBox("Verbose", PaintRuntime.isVerbose());
+        verboseCheckBox = new JCheckBox("Verbose", PaintRuntime.isVerbose());
 
         // Only create the Sweep checkbox in TRACKMATE mode
         if (mode == DialogMode.TRACKMATE) {
@@ -398,7 +379,7 @@ public class   ProjectDialog {
             leftPanel.add(sweepCheckBox);
         }
 
-        okButton     = new JButton("OK");
+        okButton = new JButton("OK");
         cancelButton = new JButton("Cancel");
 
         // listeners affecting OK state
@@ -435,7 +416,8 @@ public class   ProjectDialog {
                 new Thread(() -> {
                     try {
                         workerThread.join(2000); // wait up to 2 seconds for the worker to die
-                    } catch (InterruptedException ignored) { }
+                    } catch (InterruptedException ignored) {
+                    }
 
                     SwingUtilities.invokeLater(() -> {
                         if (workerThread.isAlive()) {
@@ -463,7 +445,9 @@ public class   ProjectDialog {
                     okButton.setText("OK");
                     okButton.setEnabled(true);
                     JDialog dlg = getDialog();
-                    if (dlg != null && dlg.isDisplayable()) dlg.dispose();
+                    if (dlg != null && dlg.isDisplayable()) {
+                        dlg.dispose();
+                    }
                     try {
                         PaintConsoleWindow.closeIfVisible();
                     } catch (Throwable t) {
@@ -474,7 +458,7 @@ public class   ProjectDialog {
         });
 
         // size and show
-        int width  = 820;
+        int width = 820;
         int height = (mode == DialogMode.VIEWER) ? 600 : 680;
         dialog.setMinimumSize(new Dimension(width, height));
         dialog.setPreferredSize(new Dimension(width, height));
@@ -482,6 +466,32 @@ public class   ProjectDialog {
         dialog.setLocationRelativeTo(owner);
 
         updateOkButtonState(); // reflect current state
+    }
+
+    private static int parseIntSafe(String s, int def) {
+        try {
+            return Integer.parseInt(s.trim());
+        } catch (Exception e) {
+            return def;
+        }
+    }
+
+    private static double parseDoubleSafe(String s, double def) {
+        try {
+            return Double.parseDouble(s.trim());
+        } catch (Exception e) {
+            return def;
+        }
+    }
+    
+
+    /**
+     * Sets the callback to be invoked when the user confirms and starts the operation.
+     *
+     * @param callback a {@link CalculationCallback} instance that performs the configured workflow.
+     */
+    public void setCalculationCallback(CalculationCallback callback) {
+        this.calculationCallback = callback;
     }
 
     // ======= Actions =======
@@ -637,8 +647,9 @@ public class   ProjectDialog {
     private void setSquaresParamsEnabled(boolean enabled) {
         Color fg = enabled ? UIManager.getColor("Label.foreground") : Color.GRAY;
 
-        for (JLabel lbl : squareParamLabels)
+        for (JLabel lbl : squareParamLabels) {
             lbl.setForeground(fg);
+        }
 
         if (gridSizeCombo != null) {
             gridSizeCombo.setEnabled(enabled);
@@ -676,7 +687,7 @@ public class   ProjectDialog {
         boolean anySelected = checkBoxes.stream().anyMatch(JCheckBox::isSelected);
 
         File proj = new File(projectRootField.getText().trim());
-        File img  = new File(imageDirectoryField.getText().trim());
+        File img = new File(imageDirectoryField.getText().trim());
 
         boolean rootsValid = proj.isDirectory() && img.isDirectory();
 
@@ -734,16 +745,16 @@ public class   ProjectDialog {
                 }
             }
             if (minTracksField != null) {
-                PaintConfig.setInt(   "Generate Squares", "Min Tracks to Calculate Tau", parseIntSafe(minTracksField.getText(), 11));
+                PaintConfig.setInt("Generate Squares", "Min Tracks to Calculate Tau", parseIntSafe(minTracksField.getText(), 11));
             }
             if (minRSquaredField != null) {
-                PaintConfig.setDouble("Generate Squares", "Min Required R Squared",      parseDoubleSafe(minRSquaredField.getText(), 0.1));
+                PaintConfig.setDouble("Generate Squares", "Min Required R Squared", parseDoubleSafe(minRSquaredField.getText(), 0.1));
             }
             if (minDensityRatioField != null) {
-                PaintConfig.setDouble("Generate Squares", "Min Required Density Ratio",  parseDoubleSafe(minDensityRatioField.getText(), 2.0));
+                PaintConfig.setDouble("Generate Squares", "Min Required Density Ratio", parseDoubleSafe(minDensityRatioField.getText(), 2.0));
             }
             if (maxVariabilityField != null) {
-                PaintConfig.setDouble("Generate Squares", "Max Allowable Variability",   parseDoubleSafe(maxVariabilityField.getText(), 10.0));
+                PaintConfig.setDouble("Generate Squares", "Max Allowable Variability", parseDoubleSafe(maxVariabilityField.getText(), 10.0));
             }
             if (mode == DialogMode.TRACKMATE && runSquaresAfterTrackMateCheck != null) {
                 PaintConfig.setBoolean("TrackMate", "Run Generate Squares After", runSquaresAfterTrackMateCheck.isSelected());
@@ -760,33 +771,22 @@ public class   ProjectDialog {
         paintConfig.save();
     }
 
-    private static int parseIntSafe(String s, int def) {
-        try {
-            return Integer.parseInt(s.trim());
-        } catch (Exception e) {
-            return def;
-        }
-    }
-
-    private static double parseDoubleSafe(String s, double def) {
-        try {
-            return Double.parseDouble(s.trim());
-        } catch (Exception e) {
-            return def;
-        }
-    }
-
     private Project getProject() {
-        TrackMateConfig trackMateConfig     = new TrackMateConfig();
+        TrackMateConfig trackMateConfig = new TrackMateConfig();
         GenerateSquaresConfig squaresConfig = new GenerateSquaresConfig();
 
         List<String> experimentNames = new ArrayList<>();
-        for (JCheckBox cb : checkBoxes)
-            if (cb.isSelected()) experimentNames.add(cb.getText());
+        for (JCheckBox cb : checkBoxes) {
+            if (cb.isSelected()) {
+                experimentNames.add(cb.getText());
+            }
+        }
 
         Path imagesPath = null;
         String imgText = imageDirectoryField.getText().trim();
-        if (!imgText.isEmpty()) imagesPath = Paths.get(imgText);
+        if (!imgText.isEmpty()) {
+            imagesPath = Paths.get(imgText);
+        }
 
         return new Project(
                 okPressed,
@@ -802,10 +802,9 @@ public class   ProjectDialog {
 
     /**
      * Displays the dialog. The method blocks until the user closes the dialog.
-     *
+     * <p>
      * After closing, the configured {@link Project} is returned, regardless of whether
      * the user pressed OK or cancelled.
-     *
      *
      * @return the {@link Project} object representing user selections and configuration.
      */
@@ -866,22 +865,10 @@ public class   ProjectDialog {
     private JTextField createTightTextField(String value, DocumentFilter filter) {
         JTextField field = new JTextField(value);
         field.setColumns(8);
-        if (filter != null) ((AbstractDocument) field.getDocument()).setDocumentFilter(filter);
+        if (filter != null) {
+            ((AbstractDocument) field.getDocument()).setDocumentFilter(filter);
+        }
         return field;
-    }
-
-    static class IntegerDocumentFilter extends DocumentFilter {
-        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
-                throws BadLocationException { if (string.matches("\\d*")) super.insertString(fb, offset, string, attr); }
-        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
-                throws BadLocationException { if (text.matches("\\d*")) super.replace(fb, offset, length, text, attrs); }
-    }
-
-    static class FloatDocumentFilter extends DocumentFilter {
-        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
-                throws BadLocationException { if (string.matches("\\d*(\\.\\d*)?")) super.insertString(fb, offset, string, attr); }
-        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
-                throws BadLocationException { if (text.matches("\\d*(\\.\\d*)?")) super.replace(fb, offset,length, text, attrs); }
     }
 
     /**
@@ -903,7 +890,9 @@ public class   ProjectDialog {
      * @param enabled if {@code true}, the OK button is enabled; if {@code false}, disabled.
      */
     public void setOkEnabled(boolean enabled) {
-        if (okButton != null) okButton.setEnabled(enabled);
+        if (okButton != null) {
+            okButton.setEnabled(enabled);
+        }
     }
 
     private void onVerboseToggled(boolean enabled) {
@@ -923,16 +912,68 @@ public class   ProjectDialog {
         return sweepCheckBox != null && sweepCheckBox.isSelected();
     }
 
+    public boolean isCancelledOrInterrupted() {
+        return cancelled || (workerThread != null && workerThread.isInterrupted());
+    }
+
+    public enum DialogMode {
+        TRACKMATE,
+        GENERATE_SQUARES,
+        VIEWER
+    }
+
+    @FunctionalInterface
+    public interface CalculationCallback {
+        boolean run(Project project);
+    }
+
     // Simple lambda-friendly document listener
     @FunctionalInterface
     interface SimpleDocumentListener extends javax.swing.event.DocumentListener {
         void update(javax.swing.event.DocumentEvent e);
-        default void insertUpdate(javax.swing.event.DocumentEvent e) { update(e); }
-        default void removeUpdate(javax.swing.event.DocumentEvent e) { update(e); }
-        default void changedUpdate(javax.swing.event.DocumentEvent e) { update(e); }
+
+        default void insertUpdate(javax.swing.event.DocumentEvent e) {
+            update(e);
+        }
+
+        default void removeUpdate(javax.swing.event.DocumentEvent e) {
+            update(e);
+        }
+
+        default void changedUpdate(javax.swing.event.DocumentEvent e) {
+            update(e);
+        }
     }
 
-    public boolean isCancelledOrInterrupted() {
-        return cancelled || (workerThread != null && workerThread.isInterrupted());
+    static class IntegerDocumentFilter extends DocumentFilter {
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
+                throws BadLocationException {
+            if (string.matches("\\d*")) {
+                super.insertString(fb, offset, string, attr);
+            }
+        }
+
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
+                throws BadLocationException {
+            if (text.matches("\\d*")) {
+                super.replace(fb, offset, length, text, attrs);
+            }
+        }
+    }
+
+    static class FloatDocumentFilter extends DocumentFilter {
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
+                throws BadLocationException {
+            if (string.matches("\\d*(\\.\\d*)?")) {
+                super.insertString(fb, offset, string, attr);
+            }
+        }
+
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
+                throws BadLocationException {
+            if (text.matches("\\d*(\\.\\d*)?")) {
+                super.replace(fb, offset, length, text, attrs);
+            }
+        }
     }
 }

@@ -84,11 +84,11 @@ public final class TrackCsvWriter {
      * total distance, diffusion coefficients, and confinement ratio.
      * </p>
      *
-     * @param trackmate       TrackMate instance containing the model and features
-     * @param experimentName  experiment name for metadata tagging
-     * @param recordingName   recording name associated with the tracks
-     * @param csvFile         destination CSV file
-     * @param visibleOnly     if true, exports only visible tracks
+     * @param trackmate      TrackMate instance containing the model and features
+     * @param experimentName experiment name for metadata tagging
+     * @param recordingName  recording name associated with the tracks
+     * @param csvFile        destination CSV file
+     * @param visibleOnly    if true, exports only visible tracks
      * @return total number of spots across all exported tracks
      * @throws IOException if an error occurs during file writing
      */

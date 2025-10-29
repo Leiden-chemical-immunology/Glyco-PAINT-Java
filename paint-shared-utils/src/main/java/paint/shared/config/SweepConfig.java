@@ -84,7 +84,7 @@ public class SweepConfig {
 
     /**
      * Retrieves the active sweep values for a specified category.
-     *
+     * <p>
      * This method processes the JSON configuration to extract and return
      * a map containing the category attributes and their corresponding
      * active numeric values. Only enabled attributes (true) in the category
@@ -93,7 +93,7 @@ public class SweepConfig {
      * @param category the name of the category whose sweep values are to be fetched.
      *                 It corresponds to a key in the root JSON object.
      * @return a map of attributes to lists of numeric values. The map is empty
-     *         if the category does not exist or no active values are found.
+     * if the category does not exist or no active values are found.
      */
     public Map<String, List<Number>> getActiveSweepValues(String category) {
         Map<String, List<Number>> activeValues = new LinkedHashMap<>();

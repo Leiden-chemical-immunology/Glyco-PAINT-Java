@@ -65,7 +65,9 @@ import java.util.*;
  */
 public final class ConditionConsistencyChecker {
 
-    /** Required columns used for consistency comparison. */
+    /**
+     * Required columns used for consistency comparison.
+     */
     private static final List<String> REQUIRED = Arrays.asList(
             "Condition Number", "Probe Name", "Probe Type",
             "Cell Type", "Adjuvant", "Concentration"
@@ -84,13 +86,12 @@ public final class ConditionConsistencyChecker {
      * as an error. Duplicate errors are suppressed to reduce log noise.
      * </p>
      *
-     * @param file            the experiment CSV file to validate
-     * @param experimentName  the name of the experiment (for reporting context)
+     * @param file           the experiment CSV file to validate
      * @return {@link ValidationResult} containing all consistency check results
      */
-    public static ValidationResult check(File file, String experimentName) {
+    public static ValidationResult check(File file) {
         ValidationResult result = new ValidationResult();
-        Set<String> seenErrors  = new HashSet<>(); // <-- prevent duplicates
+        Set<String> seenErrors = new HashSet<>(); // <-- prevent duplicates
 
         try (FileReader reader = new FileReader(file);
              CSVParser parser = CSVFormat.DEFAULT.builder()
@@ -110,10 +111,10 @@ public final class ConditionConsistencyChecker {
                 String concentration  = record.get("Concentration");
 
                 Map<String, String> current = new LinkedHashMap<>();
-                current.put("Probe Name", probeName);
-                current.put("Probe Type", probeType);
-                current.put("Cell Type", cellType);
-                current.put("Adjuvant", adjuvant);
+                current.put("Probe Name",    probeName);
+                current.put("Probe Type",    probeType);
+                current.put("Cell Type",     cellType);
+                current.put("Adjuvant",      adjuvant);
                 current.put("Concentration", concentration);
 
                 // First occurrence of condition — record as baseline
@@ -124,8 +125,8 @@ public final class ConditionConsistencyChecker {
                     Map<String, String> baseline = conditionGroups.get(condition);
 
                     for (Map.Entry<String, String> entry : current.entrySet()) {
-                        String col = entry.getKey();
-                        String value = entry.getValue();
+                        String col      = entry.getKey();
+                        String value    = entry.getValue();
                         String expected = baseline.get(col);
 
                         if (!Objects.equals(expected, value)) {
@@ -149,6 +150,9 @@ public final class ConditionConsistencyChecker {
         return result;
     }
 
-    /** Private constructor to prevent instantiation. */
-    private ConditionConsistencyChecker() {}
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ConditionConsistencyChecker() {
+    }
 }

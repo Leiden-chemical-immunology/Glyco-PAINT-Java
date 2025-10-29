@@ -63,8 +63,11 @@ import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
  */
 public final class ExperimentDataLoader {
 
-    /** Private constructor to prevent instantiation. */
-    private ExperimentDataLoader() {}
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ExperimentDataLoader() {
+    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // EXPERIMENT LOADER

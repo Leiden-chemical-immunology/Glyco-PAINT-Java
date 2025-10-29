@@ -94,13 +94,18 @@ public class GetOmeroUI extends JFrame {
         browseButton.setMargin(new Insets(2, 8, 2, 8));
         browseButton.addActionListener(this::onBrowse);
 
-        gbc.gridx = 0; gbc.anchor = GridBagConstraints.WEST;
+        gbc.gridx  = 0;
+        gbc.anchor = GridBagConstraints.WEST;
         dirPanel.add(dirLabel, gbc);
 
-        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
+        gbc.gridx   = 1;
+        gbc.fill    = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
         dirPanel.add(directoryField, gbc);
 
-        gbc.gridx = 2; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0.0;
+        gbc.gridx   = 2;
+        gbc.fill    = GridBagConstraints.NONE;
+        gbc.weightx = 0.0;
         dirPanel.add(browseButton, gbc);
 
         // --- Action buttons ---
@@ -200,7 +205,9 @@ public class GetOmeroUI extends JFrame {
         }
     }
 
-    /** Launches the Get Omero GUI. */
+    /**
+     * Launches the Get Omero GUI.
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(GetOmeroUI::new);
     }

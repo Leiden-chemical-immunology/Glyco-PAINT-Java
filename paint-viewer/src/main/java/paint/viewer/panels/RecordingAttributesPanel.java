@@ -73,7 +73,9 @@ public class RecordingAttributesPanel {
         root.setPreferredSize(new Dimension(240, 0));
 
         model = new DefaultTableModel(new Object[]{"Attr", "Val"}, 0) {
-            public boolean isCellEditable(int r, int c) { return false; }
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
         };
         table = new JTable(model);
         table.setRowHeight(22);
@@ -133,14 +135,15 @@ public class RecordingAttributesPanel {
      * @param minRSquared     minimum R² threshold
      * @param neighbourMode   neighbour mode label (“Free”, “Relaxed”, “Strict”)
      */
-    public void updatePreview(RecordingEntry recordingEntry,
-                              int            numSquares,
-                              double         tau,
-                              double         density,
-                              double         minDensityRatio,
-                              double         maxVariability,
-                              double         minRSquared,
-                              String         neighbourMode) {
+    public void updatePreview(
+            RecordingEntry recordingEntry,
+            int            numSquares,
+            double         tau,
+            double         density,
+            double         minDensityRatio,
+            double         maxVariability,
+            double         minRSquared,
+            String         neighbourMode) {
 
         model.setRowCount(0);
         model.addRow(new Object[]{"Probe",               recordingEntry.getProbeName()});

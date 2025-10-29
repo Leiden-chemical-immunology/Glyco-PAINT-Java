@@ -42,13 +42,9 @@
 
 package paint.fiji.utils;
 
-import paint.generatesquares.GenerateSquaresHeadless;
 import org.apache.commons.io.FileUtils;
+import paint.generatesquares.GenerateSquaresHeadless;
 import paint.shared.utils.PaintLogger;
-
-import static paint.shared.constants.PaintConstants.*;
-import static paint.shared.utils.CsvUtils.addCase;
-import static paint.shared.utils.CsvUtils.concatenateNamedCsvFiles;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -58,6 +54,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.utils.CsvUtils.addCase;
+import static paint.shared.utils.CsvUtils.concatenateNamedCsvFiles;
 
 /**
  * Automates flattening and consolidation of multi-parameter sweep data.
@@ -69,7 +69,9 @@ import java.util.List;
  */
 public final class SweepFlattener {
 
-    /** Private constructor to prevent instantiation. */
+    /**
+     * Private constructor to prevent instantiation.
+     */
     private SweepFlattener() {
         // Utility class; prevent instantiation
     }
@@ -87,9 +89,9 @@ public final class SweepFlattener {
      *   <li>Finally, merges all parameter-level CSVs into a global flattened output.</li>
      * </ol>
      *
-     * @param sweepPath        root directory containing the parameter subdirectories
-     * @param experimentNames  list of experiment subdirectories to process per parameter
-     * @param deleteSubdirs    true to remove experiment folders after processing
+     * @param sweepPath       root directory containing the parameter subdirectories
+     * @param experimentNames list of experiment subdirectories to process per parameter
+     * @param deleteSubdirs   true to remove experiment folders after processing
      * @throws IOException if I/O operations fail during flattening
      */
     public static void flattenSweep(Path sweepPath,

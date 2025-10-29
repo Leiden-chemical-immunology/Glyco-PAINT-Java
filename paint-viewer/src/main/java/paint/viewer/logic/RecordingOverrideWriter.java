@@ -48,8 +48,8 @@ package paint.viewer.logic;
 import paint.shared.objects.Track;
 import paint.shared.utils.CalculateTau;
 import paint.shared.utils.PaintLogger;
-import paint.viewer.utils.RecordingEntry;
 import paint.viewer.shared.SquareControlParams;
+import paint.viewer.utils.RecordingEntry;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -109,10 +109,10 @@ public class RecordingOverrideWriter {
      * @param recordings   the list of available recording entries in the current session
      * @param currentIndex the index of the currently active recording
      */
-    public void applyAndWrite(String               scope,
-                              SquareControlParams  params,
+    public void applyAndWrite(String scope,
+                              SquareControlParams params,
                               List<RecordingEntry> recordings,
-                              int                  currentIndex) {
+                              int currentIndex) {
         String timestamp = LocalDateTime.now().toString();
 
         if ("Recording".equals(scope)) {
@@ -147,9 +147,9 @@ public class RecordingOverrideWriter {
      * @param params        the parameter values to be persisted
      * @param timestamp     the ISO-formatted timestamp of the override entry
      */
-    private void writeOverrideRecord(String              recordingName,
+    private void writeOverrideRecord(String recordingName,
                                      SquareControlParams params,
-                                     String              timestamp) {
+                                     String timestamp) {
         PaintLogger.infof(
                 "Override for '%s': MinRequiredDensityRatio=%.0f, MaxAllowableVariability=%.0f, MinRequiredRSquared=%.2f, NeighbourMode=%s",
                 recordingName, params.minRequiredDensityRatio, params.maxAllowableVariability, params.minRequiredRSquared, params.neighbourMode
@@ -167,7 +167,7 @@ public class RecordingOverrideWriter {
                 lines.add("recordingName,timestamp,MinRequiredDensityRatio,MaxAllowableVariability,minRequiredRSquared,neighbourMode");
             }
 
-            String prefix  = recordingName + ",";
+            String prefix = recordingName + ",";
             String newLine = recordingName + "," + timestamp + "," +
                     params.minRequiredDensityRatio + "," + params.maxAllowableVariability + "," +
                     params.minRequiredRSquared + "," + params.neighbourMode;
@@ -203,7 +203,7 @@ public class RecordingOverrideWriter {
      * @param recordingEntry the recording entry to update
      * @param params         the parameter set containing updated control values
      */
-    private void update(RecordingEntry      recordingEntry,
+    private void update(RecordingEntry recordingEntry,
                         SquareControlParams params) {
 
         List<Track> tracksFromSelectedSquares = getTracksFromSelectedSquares(

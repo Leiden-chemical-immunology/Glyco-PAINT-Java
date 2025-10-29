@@ -64,8 +64,11 @@ import static paint.shared.utils.Miscellaneous.friendlyMessage;
  */
 public final class HelperIO {
 
-    /** Private constructor to prevent instantiation. */
-    private HelperIO() {}
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private HelperIO() {
+    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // RECORDINGS
@@ -180,7 +183,6 @@ public final class HelperIO {
     public static void writeAllSquares(Path experimentPath, Table squaresTable) {
 
         SquareTableIO squareTableIO = new SquareTableIO();
-
         try {
             Path path = experimentPath.resolve(SQUARES_CSV);
             squareTableIO.writeCsv(squaresTable, path);
@@ -279,6 +281,9 @@ public final class HelperIO {
         List<Recording> recordings     = readAllRecordings(experimentPath);
         List<Square>    squares        = readAllSquares(experimentPath);
         List<Track>     tracks         = readAllTracks(experimentPath);
-        int i = 1; // breakpoint marker for inspection
+
+        if (recordings == null || squares == null || tracks == null) {
+            int i = 1; // breakpoint marker for inspection
+        }
     }
 }

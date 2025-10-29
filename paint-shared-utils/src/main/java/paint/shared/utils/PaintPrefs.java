@@ -91,7 +91,9 @@ public final class PaintPrefs {
         }
     }
 
-    /** Private constructor to prevent instantiation. */
+    /**
+     * Private constructor to prevent instantiation.
+     */
     private PaintPrefs() {
         // Deliberately empty
     }
@@ -154,7 +156,9 @@ public final class PaintPrefs {
     // PUT METHODS (SECTIONED)
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /** Stores a boolean value within a named section and persists the change. */
+    /**
+     * Stores a boolean value within a named section and persists the change.
+     */
     public static synchronized void putBoolean(String section,
                                                String key,
                                                boolean value) {
@@ -167,7 +171,9 @@ public final class PaintPrefs {
         save();
     }
 
-    /** Stores a string value within a named section and persists the change. */
+    /**
+     * Stores a string value within a named section and persists the change.
+     */
     public static synchronized void putString(String section,
                                               String key,
                                               String value) {
@@ -184,19 +190,25 @@ public final class PaintPrefs {
     // PUT METHODS (TOP-LEVEL)
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /** Stores a string at the top-level (no section) and persists it. */
+    /**
+     * Stores a string at the top-level (no section) and persists it.
+     */
     public static synchronized void putString(String key, String value) {
         plist.put(key, value);
         save();
     }
 
-    /** Stores a boolean at the top-level (no section) and persists it. */
+    /**
+     * Stores a boolean at the top-level (no section) and persists it.
+     */
     public static synchronized void putBoolean(String key, boolean value) {
         plist.put(key, value);
         save();
     }
 
-    /** Stores an integer at the top-level (no section) and persists it. */
+    /**
+     * Stores an integer at the top-level (no section) and persists it.
+     */
     public static synchronized void putInt(String key, int value) {
         plist.put(key, value);
         save();

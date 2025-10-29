@@ -14,19 +14,19 @@ import java.util.Map;
  * The PaintLauncher class provides functionality for launching and managing
  * a graphical user interface (GUI) designed to assist users in navigating through
  * workflow-related applications in the Glyco-PAINT software suite.
- *
+ * <p>
  * The GUI includes components like buttons, labels, and panels arranged in a specific layout
  * to represent a workflow. The class utilizes mappings between user-friendly labels
  * and associated application identifiers, enabling the conditional display of actionable
  * buttons or visual-only workflow steps based on the map contents.
- *
+ * <p>
  * Features:
  * - Customized GUI appearance with consistent sizing, fonts, and colors.
  * - Creation of customizable buttons and section labels with hover effects and styling.
  * - Dynamic rendering of workflow paths using arrows and defined visual elements.
  * - Integration to external application launching using associated identifiers.
  * - Non-resizable, centered application window with a footer.
- *
+ * <p>
  * The GUI is intended to provide a user-friendly gateway for interacting
  * with Glyco-PAINT tools or associated processes.
  */
@@ -132,7 +132,7 @@ public class PaintLauncher {
 
     /**
      * Creates a styled JButton with custom appearance and behavior.
-     *
+     * <p>
      * This method sets properties such as font, colors, size, cursor, and border
      * to create a visually consistent button. It also adds mouse listeners to
      * provide a hover effect by adjusting the background color.
@@ -197,7 +197,7 @@ public class PaintLauncher {
 
     /**
      * Creates a JLabel representing a bold arrow with customized appearance.
-     *
+     * <p>
      * The arrow is displayed as a large, bold, and centered downward arrow ("↓")
      * with a shadow effect, using the specified main and shadow colors. This method
      * customizes the label's font, alignment, border, and preferred size.

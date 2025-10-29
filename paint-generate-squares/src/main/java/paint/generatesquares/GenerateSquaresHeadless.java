@@ -41,8 +41,8 @@
 
 package paint.generatesquares;
 
-import paint.shared.config.PaintConfig;
 import paint.shared.config.GenerateSquaresConfig;
+import paint.shared.config.PaintConfig;
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Project;
 import paint.shared.utils.PaintLogger;
@@ -153,15 +153,21 @@ public class GenerateSquaresHeadless {
 
             PaintLogger.infof("   Creating %s", projectPath.resolve(SQUARES_CSV));
             concatenateNamedCsvFiles(projectPath, SQUARES_CSV, experimentNames);
-            if (Thread.currentThread().isInterrupted()) return;
+            if (Thread.currentThread().isInterrupted()) {
+                return;
+            }
 
             PaintLogger.infof("   Creating %s", projectPath.resolve(RECORDINGS_CSV));
             concatenateNamedCsvFiles(projectPath, RECORDINGS_CSV, experimentNames);
-            if (Thread.currentThread().isInterrupted()) return;
+            if (Thread.currentThread().isInterrupted()) {
+                return;
+            }
 
             PaintLogger.infof("   Creating %s", projectPath.resolve(EXPERIMENT_INFO_CSV));
             concatenateNamedCsvFiles(projectPath, EXPERIMENT_INFO_CSV, experimentNames);
-            if (Thread.currentThread().isInterrupted()) return;
+            if (Thread.currentThread().isInterrupted()) {
+                return;
+            }
 
             PaintLogger.infof("   Creating %s", projectPath.resolve(TRACKS_CSV));
             concatenateNamedCsvFiles(projectPath, TRACKS_CSV, experimentNames);

@@ -76,10 +76,14 @@ public abstract class AbstractFileValidator {
     // INTERNAL STATE
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /** Tracks which column type errors have already been reported to avoid duplicates. */
+    /**
+     * Tracks which column type errors have already been reported to avoid duplicates.
+     */
     private final Set<String> reportedTypeErrors = new HashSet<>();
 
-    /** Flexible timestamp parser supporting multiple formats with optional fractions. */
+    /**
+     * Flexible timestamp parser supporting multiple formats with optional fractions.
+     */
     private static final DateTimeFormatter FLEXIBLE_DATE_TIME = new DateTimeFormatterBuilder()
             .appendPattern("[yyyy-MM-dd'T'HH:mm:ss][dd/MM/yyyy'T'HH:mm:ss]")
             .optionalStart()
@@ -125,7 +129,7 @@ public abstract class AbstractFileValidator {
 
             for (int i = 0; i < records.size(); i++) {
                 CSVRecord record = records.get(i);
-                String[]  row    = new String[header.size()];
+                String[] row = new String[header.size()];
 
                 for (int j = 0; j < header.size(); j++) {
                     row[j] = record.get(j);
@@ -234,11 +238,11 @@ public abstract class AbstractFileValidator {
     /**
      * Checks whether all row values conform to expected column types.
      *
-     * @param row       string array of CSV values
-     * @param types     expected column types
-     * @param headers   header names
-     * @param rowIndex  row index (1-based)
-     * @param result    validation accumulator
+     * @param row      string array of CSV values
+     * @param types    expected column types
+     * @param headers  header names
+     * @param rowIndex row index (1-based)
+     * @param result   validation accumulator
      * @return {@code true} if all types match; otherwise {@code false}
      */
     protected boolean rowMatchesTypes(String[]         row,

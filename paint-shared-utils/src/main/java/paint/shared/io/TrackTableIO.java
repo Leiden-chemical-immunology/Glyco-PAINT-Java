@@ -84,11 +84,8 @@ public class TrackTableIO extends BaseTableIO {
      */
     public Table toTable(List<Track> tracks) {
         Table table = emptyTable();
-
         for (Track track : tracks) {
             Row tablesawRow = table.appendRow();
-
-            // @formatter:off
             tablesawRow.setString( "Unique Key",                track.getUniqueKey());
             tablesawRow.setString( "Experiment Name",           track.getExperimentName());
             tablesawRow.setString( "Recording Name",            track.getRecordingName());
@@ -108,7 +105,6 @@ public class TrackTableIO extends BaseTableIO {
             tablesawRow.setDouble( "Confinement Ratio",         track.getConfinementRatio());
             tablesawRow.setInt(    "Square Number",             track.getSquareNumber());
             tablesawRow.setInt(    "Label Number",              track.getLabelNumber());
-            // @formatter:on
         }
         return table;
     }
@@ -121,11 +117,8 @@ public class TrackTableIO extends BaseTableIO {
      */
     public List<Track> toEntities(Table table) {
         List<Track> tracks = new ArrayList<>();
-
         for (Row row : table) {
             Track track = new Track();
-
-            // @formatter:off
             track.setUniqueKey(              row.getString( "Unique Key"));
             track.setExperimentName(         row.getString( "Experiment Name"));
             track.setRecordingName(          row.getString( "Recording Name"));
@@ -145,8 +138,6 @@ public class TrackTableIO extends BaseTableIO {
             track.setConfinementRatio(       row.getDouble( "Confinement Ratio"));
             track.setSquareNumber(           row.getInt(    "Square Number"));
             track.setLabelNumber(            row.getInt(    "Label Number"));
-            // @formatter:on
-
             tracks.add(track);
         }
         return tracks;
@@ -179,7 +170,6 @@ public class TrackTableIO extends BaseTableIO {
     public void appendInPlace(Table target, Table source) {
         for (Row row : source) {
             Row newRow = target.appendRow();
-
             for (String col : TRACKS_COLS) {
                 Column<?> targetCol = target.column(col);
 
@@ -208,8 +198,6 @@ public class TrackTableIO extends BaseTableIO {
      */
     public Track rowToEntity(Row row) {
         Track track = new Track();
-
-        // @formatter:off
         track.setUniqueKey(                row.getString(  "Unique Key"));
         track.setExperimentName(           row.getString(  "Experiment Name"));
         track.setRecordingName(            row.getString(  "Recording Name"));
@@ -229,8 +217,6 @@ public class TrackTableIO extends BaseTableIO {
         track.setConfinementRatio(         row.getDouble(  "Confinement Ratio"));
         track.setSquareNumber(             row.getInt(     "Square Number"));
         track.setLabelNumber(              row.getInt(     "Label Number"));
-        // @formatter:on
-
         return track;
     }
 }

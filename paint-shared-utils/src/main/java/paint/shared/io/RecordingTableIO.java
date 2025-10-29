@@ -89,11 +89,8 @@ public class RecordingTableIO extends BaseTableIO {
      */
     public Table toTable(List<Recording> recordings) {
         Table table = emptyTable();
-
         for (Recording recording : recordings) {
             Row row = table.appendRow();
-
-            // @formatter:off
             row.setString(  "Experiment Name",                   recording.getExperimentName());
             row.setString(  "Recording Name",                    recording.getRecordingName());
             row.setInt(     "Condition Number",                  recording.getConditionNumber());
@@ -118,7 +115,6 @@ public class RecordingTableIO extends BaseTableIO {
             row.setDouble(  "Tau",                               recording.getTau());
             row.setDouble(  "R Squared",                         recording.getRSquared());
             row.setDouble(  "Density",                           recording.getDensity());
-            // @formatter:on
         }
         return table;
     }
@@ -135,11 +131,8 @@ public class RecordingTableIO extends BaseTableIO {
      */
     public List<Recording> toEntities(Table table) {
         List<Recording> recordings = new ArrayList<>();
-
         for (Row tablesawRow : table) {
             Recording recording = new Recording();
-
-            // @formatter:off
             recording.setExperimentName(              tablesawRow.getString(   "Experiment Name"));
             recording.setRecordingName(               tablesawRow.getString(   "Recording Name"));
             recording.setConditionNumber(             tablesawRow.getInt(      "Condition Number"));
@@ -164,8 +157,6 @@ public class RecordingTableIO extends BaseTableIO {
             recording.setTau(                         tablesawRow.getDouble(   "Tau"));
             recording.setRSquared(                    tablesawRow.getDouble(   "R Squared"));
             recording.setDensity(                     tablesawRow.getDouble(   "Density"));
-            // @formatter:on
-
             recordings.add(recording);
         }
         return recordings;

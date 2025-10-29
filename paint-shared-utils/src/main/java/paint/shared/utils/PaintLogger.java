@@ -51,7 +51,7 @@ import java.time.format.DateTimeFormatter;
  * Supports multiple severity levels, formatted messages, and persistent
  * log storage under a project’s "Logs" directory.
  */
-public final class PaintLogger {
+public final class  PaintLogger {
 
     // ───────────────────────────────────────────────────────────────────────────────
     // ENUM: LOG LEVEL
@@ -61,27 +61,31 @@ public final class PaintLogger {
      * Defines log levels with severity rank and display color.
      */
     public enum Level {
-        // @formatter:off
+        
         DEBUG(0, Color.GRAY),
         INFO( 1, Color.BLACK),
         WARN( 2, Color.ORANGE.darker()),
         ERROR(3, Color.RED);
-        // @formatter:on
+        
 
-        private final int rank;
+        private final int   rank;
         private final Color color;
 
         Level(int rank, Color color) {
-            this.rank = rank;
+            this.rank  = rank;
             this.color = color;
         }
 
-        /** @return numeric severity rank (lower = less severe). */
+        /**
+         * @return numeric severity rank (lower = less severe).
+         */
         public int rank() {
             return rank;
         }
 
-        /** @return color associated with this log level for GUI display. */
+        /**
+         * @return color associated with this log level for GUI display.
+         */
         public Color color() {
             return color;
         }
@@ -91,13 +95,13 @@ public final class PaintLogger {
     // INTERNAL STATE
     // ───────────────────────────────────────────────────────────────────────────────
 
-    // @formatter:off
+    
     private static          BufferedWriter    writer;
     private static          boolean           initialised    = false;
     private static final    DateTimeFormatter TIME_FMT       = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static          boolean           justPrintedRaw = false;
     private static volatile Level             currentLevel   = Level.INFO;
-    // @formatter:on
+    
 
     // ───────────────────────────────────────────────────────────────────────────────
     // CONFIGURATION
@@ -167,7 +171,7 @@ public final class PaintLogger {
                 logFile = logsDir.resolve(String.format("%s-%d.log", logBaseName, index++));
             } while (logFile.toFile().exists());
 
-            writer      = new BufferedWriter(new FileWriter(logFile.toFile(), true));
+            writer = new BufferedWriter(new FileWriter(logFile.toFile(), true));
             initialised = true;
             infof("Logger initialised: %s", logFile);
         } catch (IOException e) {
@@ -175,7 +179,9 @@ public final class PaintLogger {
         }
     }
 
-    /** Closes the current log writer if open. */
+    /**
+     * Closes the current log writer if open.
+     */
     public static void close() {
         if (writer != null) {
             try {
@@ -227,47 +233,65 @@ public final class PaintLogger {
     // PUBLIC LOGGING API
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /** Logs an INFO message with printf-style formatting. */
+    /**
+     * Logs an INFO message with printf-style formatting.
+     */
     public static void infof(String fmt, Object... args) {
         log(Level.INFO, String.format(fmt, args));
     }
 
-    /** Logs an empty INFO line. */
+    /**
+     * Logs an empty INFO line.
+     */
     public static void infof() {
         log(Level.INFO, "");
     }
 
-    /** Logs a DEBUG message with printf-style formatting. */
+    /**
+     * Logs a DEBUG message with printf-style formatting.
+     */
     public static void debugf(String fmt, Object... args) {
         log(Level.DEBUG, String.format(fmt, args));
     }
 
-    /** Logs an empty DEBUG line. */
+    /**
+     * Logs an empty DEBUG line.
+     */
     public static void debugf() {
         log(Level.DEBUG, "");
     }
 
-    /** Logs a WARN message with printf-style formatting. */
+    /**
+     * Logs a WARN message with printf-style formatting.
+     */
     public static void warnf(String fmt, Object... args) {
         log(Level.WARN, String.format(fmt, args));
     }
 
-    /** Logs an empty WARN line. */
+    /**
+     * Logs an empty WARN line.
+     */
     public static void warnf() {
         log(Level.WARN, "");
     }
 
-    /** Logs an ERROR message with printf-style formatting. */
+    /**
+     * Logs an ERROR message with printf-style formatting.
+     */
     public static void errorf(String fmt, Object... args) {
         log(Level.ERROR, String.format(fmt, args));
     }
 
-    /** Logs an ERROR stack trace for a {@link Throwable}. */
+    /**
+     * Logs an ERROR stack trace for a {@link Throwable}.
+     */
     public static void errorf(Throwable t) {
         log(Level.ERROR, getStackTrace(t));
     }
 
-    /** Logs an empty ERROR line. */
+    /**
+     * Logs an empty ERROR line.
+     */
     public static void errorf() {
         log(Level.ERROR, "");
     }
@@ -287,7 +311,9 @@ public final class PaintLogger {
         justPrintedRaw = true;
     }
 
-    /** Inserts a blank line in the console and log file. */
+    /**
+     * Inserts a blank line in the console and log file.
+     */
     public static void blankline() {
         if (justPrintedRaw) {
             PaintConsoleWindow.print("\n");
@@ -341,7 +367,9 @@ public final class PaintLogger {
     // INTERNAL UTILITIES
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /** Returns formatted stack trace text for a given throwable. */
+    /**
+     * Returns formatted stack trace text for a given throwable.
+     */
     private static String getStackTrace(Throwable t) {
         StringBuilder sb = new StringBuilder();
         sb.append(t.toString()).append("\n");
@@ -351,7 +379,9 @@ public final class PaintLogger {
         return sb.toString();
     }
 
-    /** Java 8-compatible implementation of String.repeat(int). */
+    /**
+     * Java 8-compatible implementation of String.repeat(int).
+     */
     private static String repeat(String s, int count) {
         StringBuilder sb = new StringBuilder(s.length() * count);
         for (int i = 0; i < count; i++) {

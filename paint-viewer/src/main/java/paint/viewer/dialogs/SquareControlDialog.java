@@ -40,9 +40,9 @@
 
 package paint.viewer.dialogs;
 
-import paint.viewer.shared.SquareControlParams;
 import paint.viewer.panels.RecordingControlsPanel;
 import paint.viewer.panels.SquareGridPanel;
+import paint.viewer.shared.SquareControlParams;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -58,36 +58,29 @@ import java.text.DecimalFormat;
  * viewer; pressing an Apply button commits and saves the configuration.
  */
 public class SquareControlDialog extends JDialog {
-
-    private final JSlider densityRatioSlider;
-    private final JSlider variabilitySlider;
-    private final JSlider rSquaredSlider;
-
-    private final JLabel densityRatioValue;
-    private final JLabel variabilityValue;
-    private final JLabel rSquaredValue;
-
-    private final JRadioButton neighbourFree;
-    private final JRadioButton neighbourRelaxed;
-    private final JRadioButton neighbourStrict;
-
-    private final RecordingControlsPanel.Listener listener;
-
-    private final double origDensityRatio;
-    private final double origVariability;
-    private final double origRSquared;
-    private final String origNeighbourMode;
-
     private static final DecimalFormat ONE_DEC = new DecimalFormat("0.0");
-
+    private final JSlider                         densityRatioSlider;
+    private final JSlider                         variabilitySlider;
+    private final JSlider                         rSquaredSlider;
+    private final JLabel                          densityRatioValue;
+    private final JLabel                          variabilityValue;
+    private final JLabel                          rSquaredValue;
+    private final JRadioButton                    neighbourFree;
+    private final JRadioButton                    neighbourRelaxed;
+    private final JRadioButton                    neighbourStrict;
+    private final RecordingControlsPanel.Listener listener;
+    private final double                          origDensityRatio;
+    private final double                          origVariability;
+    private final double                          origRSquared;
+    private final String                          origNeighbourMode;
     /**
      * Constructs a dialog that enables interactive adjustment of square grid
      * parameters such as Density Ratio, Variability, and R² thresholds.
      *
-     * @param owner       the parent frame that owns this dialog
-     * @param gridPanel   the grid panel to update visually during preview
-     * @param listener    listener receiving apply and preview callbacks
-     * @param initParams  the initial square control parameters
+     * @param owner      the parent frame that owns this dialog
+     * @param gridPanel  the grid panel to update visually during preview
+     * @param listener   listener receiving apply and preview callbacks
+     * @param initParams the initial square control parameters
      */
     public SquareControlDialog(JFrame owner,
                                SquareGridPanel gridPanel,
@@ -115,12 +108,13 @@ public class SquareControlDialog extends JDialog {
         JPanel slidersPanel = new JPanel(new GridLayout(1, 3, 15, 0));
         slidersPanel.setBorder(BorderFactory.createTitledBorder("Square Filters"));
         slidersPanel.add(wrapSlider(densityRatioSlider, "Min Density Ratio", densityRatioValue));
-        slidersPanel.add(wrapSlider(variabilitySlider,  "Max Variability",   variabilityValue));
-        slidersPanel.add(wrapSlider(rSquaredSlider,     "Min R²",            rSquaredValue));
+        slidersPanel.add(wrapSlider(variabilitySlider, "Max Variability", variabilityValue));
+        slidersPanel.add(wrapSlider(rSquaredSlider, "Min R²", rSquaredValue));
 
         // ─────────────────────────────────────────────────────────────────────
         // Neighbour mode radio buttons
         // ─────────────────────────────────────────────────────────────────────
+
         neighbourFree    = new JRadioButton("Free");
         neighbourRelaxed = new JRadioButton("Relaxed");
         neighbourStrict  = new JRadioButton("Strict");
@@ -151,6 +145,7 @@ public class SquareControlDialog extends JDialog {
         // ─────────────────────────────────────────────────────────────────────
         // Apply / Cancel controls
         // ─────────────────────────────────────────────────────────────────────
+
         JPanel applyPanel       = new JPanel(new FlowLayout(FlowLayout.LEFT));
         applyPanel.setBorder(BorderFactory.createTitledBorder("Apply Changes"));
         JButton applyRecording  = new JButton("Apply to Recording");
@@ -218,6 +213,7 @@ public class SquareControlDialog extends JDialog {
         // ─────────────────────────────────────────────────────────────────────
         // Preserve original values for cancel/restore
         // ─────────────────────────────────────────────────────────────────────
+
         origDensityRatio  = initParams.minRequiredDensityRatio;
         origVariability   = initParams.maxAllowableVariability;
         origRSquared      = initParams.minRequiredRSquared;
@@ -230,7 +226,9 @@ public class SquareControlDialog extends JDialog {
         setLocationRelativeTo(owner);
     }
 
-    /** Creates a vertical slider with labeled ticks. */
+    /**
+     * Creates a vertical slider with labeled ticks.
+     */
     private JSlider createSlider(int min, int max, int value) {
         JSlider slider = new JSlider(JSlider.VERTICAL, min, max, Math.min(max, Math.max(min, value)));
         slider.setMajorTickSpacing(Math.max(1, (max - min) / 5));
@@ -252,7 +250,9 @@ public class SquareControlDialog extends JDialog {
         return slider;
     }
 
-    /** Wraps a slider and value label inside a titled panel. */
+    /**
+     * Wraps a slider and value label inside a titled panel.
+     */
     private JPanel wrapSlider(JSlider slider, String title, JLabel valueLabel) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder(title));
@@ -262,43 +262,62 @@ public class SquareControlDialog extends JDialog {
         return panel;
     }
 
-    /** Updates the numeric labels to reflect current slider values. */
+    /**
+     * Updates the numeric labels to reflect current slider values.
+     */
     private void updateValueLabels() {
         densityRatioValue.setText(ONE_DEC.format(densityRatioSlider.getValue() / 10.0));
         variabilityValue.setText(ONE_DEC.format(variabilitySlider.getValue() / 10.0));
         rSquaredValue.setText(ONE_DEC.format(rSquaredSlider.getValue() / 100.0));
     }
 
-    /** Sends live parameter updates for real-time preview without persistence. */
+    /**
+     * Sends live parameter updates for real-time preview without persistence.
+     */
     private void propagatePreview() {
         SquareControlParams params = collectParams();
         listener.onApplySquareControl("Preview", params);
     }
 
-    /** Returns the currently selected neighbour mode string. */
+    /**
+     * Returns the currently selected neighbour mode string.
+     */
     private String getNeighbourMode() {
-        if (neighbourFree.isSelected()) return "Free";
-        if (neighbourRelaxed.isSelected()) return "Relaxed";
+        if (neighbourFree.isSelected()) {
+            return "Free";
+        }
+        if (neighbourRelaxed.isSelected()) {
+            return "Relaxed";
+        }
         return "Strict";
     }
 
-    /** Restores original slider and neighbour mode values, updating the preview. */
+    /**
+     * Restores original slider and neighbour mode values, updating the preview.
+     */
     private void restoreOriginals() {
         densityRatioSlider.setValue((int) Math.round(origDensityRatio * 10));
         variabilitySlider.setValue((int) Math.round(origVariability * 10));
         rSquaredSlider.setValue((int) Math.round(origRSquared * 100));
 
         switch (origNeighbourMode) {
-            case "Relaxed": neighbourRelaxed.setSelected(true); break;
-            case "Strict":  neighbourStrict.setSelected(true);  break;
-            default:        neighbourFree.setSelected(true);
+            case "Relaxed":
+                neighbourRelaxed.setSelected(true);
+                break;
+            case "Strict":
+                neighbourStrict.setSelected(true);
+                break;
+            default:
+                neighbourFree.setSelected(true);
         }
 
         updateValueLabels();
         propagatePreview();
     }
 
-    /** Collects the current slider and neighbour mode state into a parameter object. */
+    /**
+     * Collects the current slider and neighbour mode state into a parameter object.
+     */
     private SquareControlParams collectParams() {
         return new SquareControlParams(
                 densityRatioSlider.getValue() / 10.0,

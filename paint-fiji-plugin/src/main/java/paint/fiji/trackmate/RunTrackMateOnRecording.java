@@ -61,7 +61,6 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.io.FileSaver;
 import loci.common.DebugTools;
-
 import paint.fiji.tracks.TrackCsvWriter;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.dialogs.ProjectDialog;
@@ -90,7 +89,9 @@ import static paint.shared.config.PaintConfig.getBoolean;
  */
 public class RunTrackMateOnRecording extends TrackMateHeadless {
 
-    /** Debug flag used for conditional runtime logging. */
+    /**
+     * Debug flag used for conditional runtime logging.
+     */
     static final boolean debug = true;
 
     /**
@@ -374,12 +375,16 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
     // Utility methods
     // -------------------------------------------------------------------------
 
-    /** Checks for thread interruption or user cancellation. */
+    /**
+     * Checks for thread interruption or user cancellation.
+     */
     private static boolean isCancelled(Thread t, ProjectDialog dialog) {
         return t.isInterrupted() || (dialog != null && dialog.isCancelled());
     }
 
-    /** Safely closes visible images. */
+    /**
+     * Safely closes visible images.
+     */
     private static void closeImages(ImagePlus... images) {
         for (ImagePlus img : images) {
             try {
@@ -392,7 +397,9 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
         }
     }
 
-    /** Cancels processing early and closes images. */
+    /**
+     * Cancels processing early and closes images.
+     */
     private static TrackMateResults cancelEarly(ImagePlus... images) {
         closeImages(images);
         PaintLogger.warnf("   Recording cancelled.");

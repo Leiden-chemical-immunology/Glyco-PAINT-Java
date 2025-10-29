@@ -66,7 +66,6 @@ import static paint.shared.constants.PaintConstants.*;
  */
 public class TrackMateConfig {
 
-    // @formatter:off
     private final int     maxFrameGap;
     private final double  alternativeLinkingCostFactor;
     private final boolean doSubpixelLocalization;
@@ -84,7 +83,6 @@ public class TrackMateConfig {
     private final boolean allowTrackSplitting;
     private final boolean allowTrackMerging;
     private final double  mergingMaxDistance;
-    // @formatter:on
 
     /**
      * Constructs a configuration object for TrackMate with various parameters used for
@@ -110,7 +108,6 @@ public class TrackMateConfig {
      */
     private TrackMateConfig(
 
-            // @formatter:off
             int     maxFrameGap,
             double  alternativeLinkingCostFactor,
             boolean doSubpixelLocalization,
@@ -146,7 +143,7 @@ public class TrackMateConfig {
         this.allowTrackSplitting          = allowTrackSplitting;
         this.allowTrackMerging            = allowTrackMerging;
         this.mergingMaxDistance           = mergingMaxDistance;
-        // @formatter:on
+        
     }
 
     /**
@@ -156,7 +153,7 @@ public class TrackMateConfig {
      * and visualization.
      */
     public TrackMateConfig() {
-        // @formatter:off
+        
         this.maxFrameGap                  = PaintConfig.getInt(    SECTION_TRACKMATE, MAX_FRAME_GAP, 3);
         this.alternativeLinkingCostFactor = PaintConfig.getDouble( SECTION_TRACKMATE, ALTERNATIVE_LINKING_COST_FACTOR,2.0);
         this.doSubpixelLocalization       = PaintConfig.getBoolean(SECTION_TRACKMATE, DO_SUBPIXEL_LOCALIZATION,       true);
@@ -174,7 +171,7 @@ public class TrackMateConfig {
         this.allowTrackSplitting          = PaintConfig.getBoolean(SECTION_TRACKMATE, ALLOW_TRACK_SPLITTING,          false);
         this.allowTrackMerging            = PaintConfig.getBoolean(SECTION_TRACKMATE, ALLOW_TRACK_MERGING,            false);
         this.mergingMaxDistance           = PaintConfig.getDouble( SECTION_TRACKMATE, MERGING_MAX_DISTANCE,           1.0);
-        // @formatter:on
+        
     }
 
 
@@ -250,7 +247,7 @@ public class TrackMateConfig {
 
     @Override
     public String toString() {
-        // @formatter:off
+        
         return "TrackMateConfig" + "\n" +
                 "                  Max Frame Gap                   = "  + maxFrameGap + "\n" +
                 "                  Alternative Linking Cost Factor = "  + alternativeLinkingCostFactor + "\n" +
@@ -269,7 +266,6 @@ public class TrackMateConfig {
                 "                  Allow Track Splitting           = "  + allowTrackSplitting + "\n" +
                 "                  Allow Track Merging             = "  + allowTrackMerging + "\n" +
                 "                  Merging Max Distance            = "  + mergingMaxDistance + "\n";
-        // @formatter:on
     }
 
     /**

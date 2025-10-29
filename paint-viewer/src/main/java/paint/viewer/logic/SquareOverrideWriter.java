@@ -55,7 +55,7 @@ import java.util.Map;
  * a CSV file named {@code Square Override.csv} located in the Viewer folder
  * of the project. Each record links a specific square to a user-assigned
  * cell ID, allowing persistent tracking of manual cell assignments.
- *
+ * <p>
  * Columns:
  * <ul>
  *   <li>experimentName</li>
@@ -64,7 +64,7 @@ import java.util.Map;
  *   <li>cellId</li>
  *   <li>timestamp</li>
  * </ul>
- *
+ * <p>
  * The writer ensures the Viewer directory exists, headers are created if
  * missing, and each update replaces any previous record for the same square.
  * This mirrors {@link paint.viewer.logic.RecordingOverrideWriter} in structure
@@ -98,7 +98,7 @@ public class SquareOverrideWriter {
      * recorded with an associated timestamp. If an entry for a square already
      * exists, it is replaced with the new cell ID.
      *
-     * @param recordingEntry  the recording containing the relevant squares
+     * @param recordingEntry    the recording containing the relevant squares
      * @param squareAssignments the list of squares that have been assigned to a cell
      */
     public void writeSquareOverrides(RecordingEntry recordingEntry,

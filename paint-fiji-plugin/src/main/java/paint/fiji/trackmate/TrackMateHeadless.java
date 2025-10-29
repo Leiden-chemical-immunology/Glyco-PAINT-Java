@@ -44,12 +44,12 @@
 
 package paint.fiji.trackmate;
 
+import com.google.gson.JsonObject;
 import org.scijava.command.Command;
 import paint.shared.config.PaintConfig;
-import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
-import com.google.gson.JsonObject;
+import paint.shared.utils.PaintPrefs;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

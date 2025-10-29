@@ -43,6 +43,7 @@ package paint.fiji.trackmate;
 
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
+import paint.generatesquares.GenerateSquaresHeadless;
 import paint.shared.config.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
 import paint.shared.utils.PaintPrefs;
@@ -69,7 +70,9 @@ import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
 @Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run")
 public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
 
-    /** Prevents concurrent execution of multiple TrackMate runs. */
+    /**
+     * Prevents concurrent execution of multiple TrackMate runs.
+     */
     private static volatile boolean running = false;
 
     /**

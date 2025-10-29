@@ -45,28 +45,27 @@
 
 package paint.generatesquares.calc;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Files;
-import javax.imageio.ImageIO;
-import java.util.*;
-import java.util.List;
-
 import de.rototor.pdfbox.graphics2d.PdfBoxGraphics2D;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
-
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
 import paint.shared.objects.Track;
 import paint.shared.utils.CalculateTau;
 import paint.shared.utils.PaintLogger;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.List;
 
 import static paint.generatesquares.calc.SquareUtils.calculateBackgroundDensity;
 
@@ -79,12 +78,12 @@ public class PlotUtils {
     /**
      * Renders a Tau plot with given data points, fit curve, axes, labels, and annotations.
      *
-     * @param x          the array of x-coordinate values for the data points to be plotted
-     * @param y          the array of y-coordinate values for the data points to be plotted
-     * @param result     the calculated result containing the Tau value and R² value for the exponential fit
-     * @param fitFailed  a flag indicating whether the exponential fit failed
-     * @param width      the width of the generated image in pixels
-     * @param height     the height of the generated image in pixels
+     * @param x         the array of x-coordinate values for the data points to be plotted
+     * @param y         the array of y-coordinate values for the data points to be plotted
+     * @param result    the calculated result containing the Tau value and R² value for the exponential fit
+     * @param fitFailed a flag indicating whether the exponential fit failed
+     * @param width     the width of the generated image in pixels
+     * @param height    the height of the generated image in pixels
      * @return a BufferedImage representing the rendered Tau plot
      */
     public static BufferedImage renderTauPlot(double[] x, double[] y,

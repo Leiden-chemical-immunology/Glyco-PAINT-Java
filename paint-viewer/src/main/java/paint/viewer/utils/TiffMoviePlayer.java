@@ -135,14 +135,12 @@ public class TiffMoviePlayer {
                 imagePanel.add(imageLabel, BorderLayout.CENTER);
                 frame.add(imagePanel, BorderLayout.CENTER);
 
-                // @formatter:off
                 final int totalFrames         = imp.getStackSize();
                 final JSlider frameSlider     = new JSlider(1, totalFrames, 1);
                 final JLabel frameLabel       = new JLabel("Frame: 1");
                 final JButton playPauseButton = new JButton("⏸ Pause");
                 final JSlider speedSlider     = new JSlider(50, 400, 100);
                 final JLabel speedLabel       = new JLabel("Speed: 1.0×");
-                // @formatter:on
 
                 JPanel controls = new JPanel(new GridLayout(2, 1, 0, 3));
                 controls.setBorder(new EmptyBorder(6, 6, 6, 6));

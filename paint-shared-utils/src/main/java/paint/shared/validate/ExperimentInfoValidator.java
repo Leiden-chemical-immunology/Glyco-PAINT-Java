@@ -110,7 +110,7 @@ public final class ExperimentInfoValidator extends AbstractFileValidator {
     public ValidationResult validateWithConsistency(File file, String experimentName) {
         ValidationResult result = validate(file);
         if (result.isValid()) {
-            result.merge(ConditionConsistencyChecker.check(file, experimentName));
+            result.merge(ConditionConsistencyChecker.check(file));
         }
         return result;
     }

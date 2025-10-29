@@ -47,7 +47,10 @@
 
 package paint.fiji.trackmate;
 
-import org.apache.commons.csv.*;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 import paint.shared.config.PaintConfig;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.dialogs.ProjectDialog;
@@ -86,7 +89,9 @@ import static paint.shared.utils.Miscellaneous.formatDuration;
  */
 public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
 
-    /** Verbosity flag derived from {@link PaintRuntime}. */
+    /**
+     * Verbosity flag derived from {@link PaintRuntime}.
+     */
     static final boolean verbose = PaintRuntime.isVerbose();
 
     /**
@@ -94,11 +99,11 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
      * The watchdog ensures that the task completes within a specified time limit,
      * or terminates early if the user cancels processing.
      *
-     * @param task                  the {@link Runnable} task to execute
+     * @param task                   the {@link Runnable} task to execute
      * @param maxSecondsPerRecording time limit for execution in seconds
-     * @param dialog                optional {@link ProjectDialog} that can signal cancellation
+     * @param dialog                 optional {@link ProjectDialog} that can signal cancellation
      * @return {@code true} if the task completed successfully;
-     *         {@code false} if cancelled or timed out
+     * {@code false} if cancelled or timed out
      */
     private static boolean runWithWatchdog(Runnable task,
                                            int maxSecondsPerRecording,

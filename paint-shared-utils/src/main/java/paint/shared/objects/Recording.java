@@ -48,7 +48,7 @@ import java.util.List;
 public class Recording {
 
     // --- Core fields (columns in Recordings/Experiment Info) ---
-    // @formatter:off
+    
     private String        experimentName;
     private String        recordingName;
     private int           conditionNumber;
@@ -86,7 +86,7 @@ public class Recording {
     private List<Square> squares = new ArrayList<>();
     private List<Track>  tracks  = new ArrayList<>();
     private Table        tracksTable;
-    // @formatter:on
+    
 
 
     // ───────────────────────────────────────────────────────────────────────────────
@@ -115,127 +115,274 @@ public class Recording {
      * @param processFlag     whether this recording should be processed
      * @param threshold       threshold value for analysis
      */
-    public Recording(String experimentName,
-                     String recordingName,
-                     int conditionNumber,
-                     int replicateNumber,
-                     String probeName,
-                     String probeType,
-                     String cellType,
-                     String adjuvant,
-                     double concentration,
+    public Recording(String  experimentName,
+                     String  recordingName,
+                     int     conditionNumber,
+                     int     replicateNumber,
+                     String  probeName,
+                     String  probeType,
+                     String  cellType,
+                     String  adjuvant,
+                     double  concentration,
                      boolean processFlag,
-                     double threshold) {
-        this.experimentName = experimentName;
-        this.recordingName = recordingName;
+                     double  threshold) {
+        this.experimentName  = experimentName;
+        this.recordingName   = recordingName;
         this.conditionNumber = conditionNumber;
         this.replicateNumber = replicateNumber;
-        this.probeName = probeName;
-        this.probeType = probeType;
-        this.cellType = cellType;
-        this.adjuvant = adjuvant;
-        this.concentration = concentration;
-        this.processFlag = processFlag;
-        this.threshold = threshold;
+        this.probeName       = probeName;
+        this.probeType       = probeType;
+        this.cellType        = cellType;
+        this.adjuvant        = adjuvant;
+        this.concentration   = concentration;
+        this.processFlag     = processFlag;
+        this.threshold       = threshold;
     }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // ACCESSORS AND MUTATORS
     // ───────────────────────────────────────────────────────────────────────────────
 
-    public String getExperimentName() { return experimentName; }
-    public void setExperimentName(String experimentName) { this.experimentName = experimentName; }
+    public String getExperimentName() {
+        return experimentName;
+    }
 
-    public String getRecordingName() { return recordingName; }
-    public void setRecordingName(String recordingName) { this.recordingName = recordingName; }
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
+    }
 
-    public int getConditionNumber() { return conditionNumber; }
-    public void setConditionNumber(int conditionNumber) { this.conditionNumber = conditionNumber; }
+    public String getRecordingName() {
+        return recordingName;
+    }
 
-    public int getReplicateNumber() { return replicateNumber; }
-    public void setReplicateNumber(int replicateNumber) { this.replicateNumber = replicateNumber; }
+    public void setRecordingName(String recordingName) {
+        this.recordingName = recordingName;
+    }
 
-    public String getProbeName() { return probeName; }
-    public void setProbeName(String probeName) { this.probeName = probeName; }
+    public int getConditionNumber() {
+        return conditionNumber;
+    }
 
-    public String getProbeType() { return probeType; }
-    public void setProbeType(String probeType) { this.probeType = probeType; }
+    public void setConditionNumber(int conditionNumber) {
+        this.conditionNumber = conditionNumber;
+    }
 
-    public String getCellType() { return cellType; }
-    public void setCellType(String cellType) { this.cellType = cellType; }
+    public int getReplicateNumber() {
+        return replicateNumber;
+    }
 
-    public String getAdjuvant() { return adjuvant; }
-    public void setAdjuvant(String adjuvant) { this.adjuvant = adjuvant; }
+    public void setReplicateNumber(int replicateNumber) {
+        this.replicateNumber = replicateNumber;
+    }
 
-    public double getConcentration() { return concentration; }
-    public void setConcentration(double concentration) { this.concentration = concentration; }
+    public String getProbeName() {
+        return probeName;
+    }
 
-    public boolean isProcessFlag() { return processFlag; }
-    public void setProcessFlag(boolean processFlag) { this.processFlag = processFlag; }
+    public void setProbeName(String probeName) {
+        this.probeName = probeName;
+    }
 
-    public double getThreshold() { return threshold; }
-    public void setThreshold(double threshold) { this.threshold = threshold; }
+    public String getProbeType() {
+        return probeType;
+    }
 
-    public int getNumberOfSpots() { return numberOfSpots; }
-    public void setNumberOfSpots(int numberOfSpots) { this.numberOfSpots = numberOfSpots; }
+    public void setProbeType(String probeType) {
+        this.probeType = probeType;
+    }
 
-    public int getNumberOfTracks() { return numberOfTracks; }
-    public void setNumberOfTracks(int numberOfTracks) { this.numberOfTracks = numberOfTracks; }
+    public String getCellType() {
+        return cellType;
+    }
 
-    public int getNumberOfTracksInBackground() { return numberOfTracksInBackground; }
-    public void setNumberOfTracksInBackground(int numberOfTracksInBackground) { this.numberOfTracksInBackground = numberOfTracksInBackground; }
+    public void setCellType(String cellType) {
+        this.cellType = cellType;
+    }
 
-    public int getNumberOfSquaresInBackground() { return numberOfSquaresInBackground; }
-    public void setNumberOfSquaresInBackground(int numberOfSquaresInBackground) { this.numberOfSquaresInBackground = numberOfSquaresInBackground; }
+    public String getAdjuvant() {
+        return adjuvant;
+    }
 
-    public double getAverageTracksInBackGround() { return averageTracksInBackGround; }
-    public void setAverageTracksInBackGround(double averageTracksInBackGround) { this.averageTracksInBackGround = averageTracksInBackGround; }
+    public void setAdjuvant(String adjuvant) {
+        this.adjuvant = adjuvant;
+    }
 
-    public int getNumberOfSpotsInAllTracks() { return numberOfSpotsInAllTracks; }
-    public void setNumberOfSpotsInAllTracks(int numberOfSpotsInAllTracks) { this.numberOfSpotsInAllTracks = numberOfSpotsInAllTracks; }
+    public double getConcentration() {
+        return concentration;
+    }
 
-    public int getNumberOfFrames() { return numberOfFrames; }
-    public void setNumberOfFrames(int numberOfFrames) { this.numberOfFrames = numberOfFrames; }
+    public void setConcentration(double concentration) {
+        this.concentration = concentration;
+    }
 
-    public double getRunTime() { return runTime; }
-    public void setRunTime(double runTime) { this.runTime = runTime; }
+    public boolean isProcessFlag() {
+        return processFlag;
+    }
 
-    public LocalDateTime getTimeStamp() { return timeStamp; }
-    public void setTimeStamp(LocalDateTime timeStamp) { this.timeStamp = timeStamp; }
+    public void setProcessFlag(boolean processFlag) {
+        this.processFlag = processFlag;
+    }
 
-    public boolean isExclude() { return exclude; }
-    public void setExclude(boolean exclude) { this.exclude = exclude; }
+    public double getThreshold() {
+        return threshold;
+    }
 
-    public double getTau() { return tau; }
-    public void setTau(double tau) { this.tau = tau; }
+    public void setThreshold(double threshold) {
+        this.threshold = threshold;
+    }
 
-    public double getRSquared() { return rSquared; }
-    public void setRSquared(double rSquared) { this.rSquared = rSquared; }
+    public int getNumberOfSpots() {
+        return numberOfSpots;
+    }
 
-    public double getDensity() { return density; }
-    public void setDensity(double density) { this.density = density; }
+    public void setNumberOfSpots(int numberOfSpots) {
+        this.numberOfSpots = numberOfSpots;
+    }
 
-    public List<Square> getSquaresOfRecording() { return squares; }
-    public void setSquaresOfRecording(List<Square> squares) { this.squares = squares; }
+    public int getNumberOfTracks() {
+        return numberOfTracks;
+    }
 
-    public List<Track> getTracks() { return tracks; }
-    public void setTracks(List<Track> tracks) { this.tracks = tracks; }
+    public void setNumberOfTracks(int numberOfTracks) {
+        this.numberOfTracks = numberOfTracks;
+    }
 
-    public Table getTracksTable() { return tracksTable; }
-    public void setTracksTable(Table tracksTable) { this.tracksTable = tracksTable; }
+    public int getNumberOfTracksInBackground() {
+        return numberOfTracksInBackground;
+    }
+
+    public void setNumberOfTracksInBackground(int numberOfTracksInBackground) {
+        this.numberOfTracksInBackground = numberOfTracksInBackground;
+    }
+
+    public int getNumberOfSquaresInBackground() {
+        return numberOfSquaresInBackground;
+    }
+
+    public void setNumberOfSquaresInBackground(int numberOfSquaresInBackground) {
+        this.numberOfSquaresInBackground = numberOfSquaresInBackground;
+    }
+
+    public double getAverageTracksInBackGround() {
+        return averageTracksInBackGround;
+    }
+
+    public void setAverageTracksInBackGround(double averageTracksInBackGround) {
+        this.averageTracksInBackGround = averageTracksInBackGround;
+    }
+
+    public int getNumberOfSpotsInAllTracks() {
+        return numberOfSpotsInAllTracks;
+    }
+
+    public void setNumberOfSpotsInAllTracks(int numberOfSpotsInAllTracks) {
+        this.numberOfSpotsInAllTracks = numberOfSpotsInAllTracks;
+    }
+
+    public int getNumberOfFrames() {
+        return numberOfFrames;
+    }
+
+    public void setNumberOfFrames(int numberOfFrames) {
+        this.numberOfFrames = numberOfFrames;
+    }
+
+    public double getRunTime() {
+        return runTime;
+    }
+
+    public void setRunTime(double runTime) {
+        this.runTime = runTime;
+    }
+
+    public LocalDateTime getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(LocalDateTime timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+
+    public boolean isExclude() {
+        return exclude;
+    }
+
+    public void setExclude(boolean exclude) {
+        this.exclude = exclude;
+    }
+
+    public double getTau() {
+        return tau;
+    }
+
+    public void setTau(double tau) {
+        this.tau = tau;
+    }
+
+    public double getRSquared() {
+        return rSquared;
+    }
+
+    public void setRSquared(double rSquared) {
+        this.rSquared = rSquared;
+    }
+
+    public double getDensity() {
+        return density;
+    }
+
+    public void setDensity(double density) {
+        this.density = density;
+    }
+
+    public List<Square> getSquaresOfRecording() {
+        return squares;
+    }
+
+    public void setSquaresOfRecording(List<Square> squares) {
+        this.squares = squares;
+    }
+
+    public List<Track> getTracks() {
+        return tracks;
+    }
+
+    public void setTracks(List<Track> tracks) {
+        this.tracks = tracks;
+    }
+
+    public Table getTracksTable() {
+        return tracksTable;
+    }
+
+    public void setTracksTable(Table tracksTable) {
+        this.tracksTable = tracksTable;
+    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // CONVENIENCE METHODS
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /** Adds a {@link Square} to this recording. */
-    public void addSquare(Square square) { this.squares.add(square); }
+    /**
+     * Adds a {@link Square} to this recording.
+     */
+    public void addSquare(Square square) {
+        this.squares.add(square);
+    }
 
-    /** Adds a list of {@link Square} objects to this recording. */
-    public void addSquares(List<Square> squares) { this.squares.addAll(squares); }
+    /**
+     * Adds a list of {@link Square} objects to this recording.
+     */
+    public void addSquares(List<Square> squares) {
+        this.squares.addAll(squares);
+    }
 
-    /** Adds a {@link Track} to this recording. */
-    public void addTrack(Track track) { this.tracks.add(track); }
+    /**
+     * Adds a {@link Track} to this recording.
+     */
+    public void addTrack(Track track) {
+        this.tracks.add(track);
+    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // STRING REPRESENTATION

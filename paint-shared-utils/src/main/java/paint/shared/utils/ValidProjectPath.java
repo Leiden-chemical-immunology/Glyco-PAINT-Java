@@ -68,8 +68,11 @@ import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
  */
 public final class ValidProjectPath {
 
-    /** Private constructor to prevent instantiation. */
-    private ValidProjectPath() {}
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private ValidProjectPath() {
+    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // MAIN VALIDATION LOGIC
@@ -142,7 +145,6 @@ public final class ValidProjectPath {
                 return null; // Abort startup
             }
         }
-
         return projectPath;
     }
 }

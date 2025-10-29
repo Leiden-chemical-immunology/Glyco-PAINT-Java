@@ -7,12 +7,10 @@ import java.lang.reflect.Field;
  * recorded during an experiment. It contains various analytical properties such as displacement,
  * speed, and diffusion coefficients as well as associated metadata like experiment and recording
  * details.
- *
+ * <p>
  * This class provides the necessary getters and setters for accessing and modifying its fields.
  */
 public class Track {
-
-    // @formatter:off
     private String uniqueKey;
     private String experimentName;
     private String recordingName;
@@ -32,7 +30,6 @@ public class Track {
     private double confinementRatio;
     private int    squareNumber;
     private int    labelNumber;
-    // @formatter:on
 
     /**
      * Default no-argument constructor. Initializes unset values.
@@ -65,7 +62,6 @@ public class Track {
      * @param labelNumber             label index used for annotation
      */
 
-    // @formatter:off
     public Track(String uniqueKey,
                  String experimentName,
                  String recordingName,
@@ -85,9 +81,7 @@ public class Track {
                  double confinementRatio,
                  int    squareNumber,
                  int    labelNumber) {
-
         initialiseDoublesToNaN();
-
         this.uniqueKey               = uniqueKey;
         this.experimentName          = experimentName;
         this.recordingName           = recordingName;
@@ -107,7 +101,6 @@ public class Track {
         this.confinementRatio        = confinementRatio;
         this.squareNumber            = squareNumber;
         this.labelNumber             = labelNumber;
-        // @formatter:on
     }
 
     // --- Getters and Setters ---

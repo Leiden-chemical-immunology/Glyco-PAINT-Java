@@ -35,8 +35,8 @@
 
 package paint.viewer.logic;
 
-import paint.viewer.shared.SquareControlParams;
 import paint.viewer.panels.SquareGridPanel;
+import paint.viewer.shared.SquareControlParams;
 
 /**
  * Handles configuration and control of a {@link SquareGridPanel}

@@ -45,7 +45,9 @@
 package paint.shared.utils;
 
 import org.apache.commons.math3.fitting.leastsquares.*;
-import org.apache.commons.math3.linear.*;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.DiagonalMatrix;
 import org.apache.commons.math3.util.FastMath;
 import paint.shared.objects.Track;
 
@@ -66,13 +68,12 @@ public class CalculateTau {
      * The method performs a series of checks and validations, fits the data to a model,
      * and evaluates the quality of the fit to decide the result status.
      *
-     * @param tracks the list of Track objects from which durations are extracted. Each Track represents a single time measurement.
-     * @param minTracksForTau the minimum number of tracks required to perform the calculation. If the size of {@code tracks} is below this value, the method will return an insufficient
-     *  points status.
+     * @param tracks              the list of Track objects from which durations are extracted. Each Track represents a single time measurement.
+     *                            points status.
      * @param minRequiredRSquared the minimum allowable value for the R-squared of the fit. If the computed R-squared is less than this threshold, the method will return a too-low
-     *  R-squared status.
+     *                            R-squared status.
      * @return a {@code CalculateTauResult} object containing the calculated tau, R-squared value, and the status of the calculation. Possible statuses include success, insufficient
-     *  points, no fit, or R-squared too low.
+     * points, no fit, or R-squared too low.
      */
     public static CalculateTauResult calculateTau(List<Track> tracks,
                                                   double minRequiredRSquared) {
@@ -121,7 +122,7 @@ public class CalculateTau {
     /**
      * Represents the result of the tau calculation process, containing the
      * tau value, R-squared value, and the status of the calculation.
-     *
+     * <p>
      * This result is produced after performing an exponential decay model
      * fitting on given track durations, evaluating the quality of the fit,
      * and determining if the computation meets the required conditions.
@@ -133,12 +134,9 @@ public class CalculateTau {
         private final Status status;
 
         public CalculateTauResult(double tau, double rsquared, Status status) {
-
-            // @formatter:off
             this.tau      = tau;
             this.rsquared = rsquared;
             this.status   = status;
-            // @formatter:on
         }
 
         public enum Status {
@@ -170,7 +168,7 @@ public class CalculateTau {
      * @param trackDurations an array of double values representing track durations.
      *                       If the array is null, an empty map is returned.
      * @return a map containing unique track durations as keys and their
-     *         corresponding frequencies as values.
+     * corresponding frequencies as values.
      */
     private static Map<Double, Integer> createFrequencyDistribution(double[] trackDurations) {
         Map<Double, Integer> frequencyDistribution = new TreeMap<>();
@@ -192,15 +190,18 @@ public class CalculateTau {
      */
     private static class CalculateTauExpDecayFitter {
 
-        private CalculateTauExpDecayFitter() {}
+        private CalculateTauExpDecayFitter() {
+        }
 
-        /** Immutable fit result. */
+        /**
+         * Immutable fit result.
+         */
         private static final class FitResult {
             final double tauMs;
             final double rSquared;
 
             FitResult(double tauMs, double rSquared) {
-                this.tauMs = tauMs;
+                this.tauMs    = tauMs;
                 this.rSquared = rSquared;
             }
         }
@@ -296,9 +297,9 @@ public class CalculateTau {
             double b = Math.max(0.0, minY);
             double m = Math.max(1e-6, maxY - b);
 
-            double eps = Math.max(1e-6, 0.01 * m);
+            double eps  = Math.max(1e-6, 0.01 * m);
             double sumX = 0, sumXX = 0, sumY = 0, sumXY = 0;
-            int n = 0;
+            int    n    = 0;
 
             for (int i = 0; i < x.length; i++) {
                 double yiAdj = y[i] - b;
@@ -348,8 +349,9 @@ public class CalculateTau {
          *         Returns NaN if the total sum of squares is zero.
          */
         private static double computeRSquared(double[] x, double[] y, double m, double t, double b) {
-            double meanY = Arrays.stream(y).average().orElse(0);
-            double ssRes = 0.0, ssTot = 0.0;
+            double meanY  = Arrays.stream(y).average().orElse(0);
+            double ssRes  = 0.0;
+            double  ssTot = 0.0;
             for (int i = 0; i < y.length; i++) {
                 double predicted = m * FastMath.exp(-t * x[i]) + b;
                 ssRes += Math.pow(y[i] - predicted, 2);
@@ -374,6 +376,6 @@ public class CalculateTau {
      */
     public static double[] debugFit(double[] x, double[] y) {
         CalculateTauExpDecayFitter.FitResult result = CalculateTauExpDecayFitter.fit(x, y);
-        return new double[]{ result.tauMs, result.rSquared };
+        return new double[]{result.tauMs, result.rSquared};
     }
 }

@@ -47,7 +47,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Provides a Swing-based console window for real-time message output.
@@ -61,46 +62,57 @@ public final class PaintConsoleWindow {
     // FIELDS
     // ───────────────────────────────────────────────────────────────────────────────
 
-    private static JFrame frame;
-    private static JTextPane textPane;
-    private static StyledDocument doc;
-    private static JCheckBox scrollLock;
-
-    private static final List<Integer> problemPositions = new ArrayList<>();
-    private static       int currentProblemIndex = -1;
+    private static       JFrame         frame;
+    private static       JTextPane      textPane;
+    private static       StyledDocument doc;
+    private static       JCheckBox      scrollLock;
+    private static final List<Integer>  problemPositions = new ArrayList<>();
+    private static       int            currentProblemIndex = -1;
 
     // ───────────────────────────────────────────────────────────────────────────────
     // PUBLIC LOGGING API
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /** Logs a message in black text. */
+    /**
+     * Logs a message in black text.
+     */
     public static synchronized void log(String message) {
         log(message, Color.BLACK);
     }
 
-    /** Logs a message with a specified color. */
+    /**
+     * Logs a message with a specified color.
+     */
     public static synchronized void log(String message, Color color) {
         ensureConsoleCreated();
         SwingUtilities.invokeLater(() -> appendText(message + "\n", color));
     }
 
-    /** Prints a message in black text without newline. */
+    /**
+     * Prints a message in black text without newline.
+     */
     public static synchronized void print(String message) {
         print(message, Color.BLACK);
     }
 
-    /** Prints a message with the specified color without newline. */
+    /**
+     * Prints a message with the specified color without newline.
+     */
     public static synchronized void print(String message, Color color) {
         ensureConsoleCreated();
         SwingUtilities.invokeLater(() -> appendText(message, color));
     }
 
-    /** Prints a single character in black. */
+    /**
+     * Prints a single character in black.
+     */
     public static synchronized void printChar(char c) {
         printChar(c, Color.BLACK);
     }
 
-    /** Prints a single character with the specified color. */
+    /**
+     * Prints a single character with the specified color.
+     */
     public static synchronized void printChar(char c, Color color) {
         ensureConsoleCreated();
         SwingUtilities.invokeLater(() -> appendText(String.valueOf(c), color));
@@ -127,7 +139,9 @@ public final class PaintConsoleWindow {
         }
     }
 
-    /** Attaches automatic console closure when a given dialog is disposed. */
+    /**
+     * Attaches automatic console closure when a given dialog is disposed.
+     */
     public static void closeOnDialogDispose(JDialog dialog) {
         dialog.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
@@ -137,7 +151,9 @@ public final class PaintConsoleWindow {
         });
     }
 
-    /** Closes the console window if currently visible. */
+    /**
+     * Closes the console window if currently visible.
+     */
     public static void closeIfVisible() {
         if (frame != null && frame.isDisplayable()) {
             SwingUtilities.invokeLater(() -> {
@@ -157,14 +173,18 @@ public final class PaintConsoleWindow {
     // TITLE MANAGEMENT
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /** Sets the title of the console window. */
+    /**
+     * Sets the title of the console window.
+     */
     public static synchronized void setConsoleTitle(String title) {
         if (frame != null) {
             SwingUtilities.invokeLater(() -> frame.setTitle(title != null ? title : "Paint Console"));
         }
     }
 
-    /** Creates or updates the console window for a specific creator name. */
+    /**
+     * Creates or updates the console window for a specific creator name.
+     */
     public static synchronized void createConsoleFor(String creatorName) {
         if (frame == null) {
             createConsole("Paint Console – " + (creatorName != null ? creatorName : "Unknown"));
@@ -187,7 +207,9 @@ public final class PaintConsoleWindow {
         createConsole("Paint Console");
     }
 
-    /** Creates and displays the console window with default components and layout. */
+    /**
+     * Creates and displays the console window with default components and layout.
+     */
     private static void createConsole(String title) {
         frame = new JFrame(title != null ? title : "Paint Console");
         frame.setSize(1200, 400);
@@ -232,7 +254,9 @@ public final class PaintConsoleWindow {
     // TEXT HANDLING AND SAVING
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /** Appends colored text to the console. */
+    /**
+     * Appends colored text to the console.
+     */
     private static void appendText(String text, Color color) {
         try {
             Style style = textPane.addStyle("Style", null);
@@ -247,7 +271,9 @@ public final class PaintConsoleWindow {
         }
     }
 
-    /** Saves console output to a user-selected file. */
+    /**
+     * Saves console output to a user-selected file.
+     */
     private static void saveConsoleContent(ActionEvent e) {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Save Console Output");
@@ -271,27 +297,27 @@ public final class PaintConsoleWindow {
 
     /**
      * Highlights detected problems in the console output or navigates to the next highlighted problem.
-     *
+     * <p>
      * This method performs two primary actions:
      * 1. If no problems have been highlighted yet, it identifies problems in the text output
-     *    (e.g., errors, warnings, exceptions) and highlights them.
+     * (e.g., errors, warnings, exceptions) and highlights them.
      * 2. If problems are already highlighted, it navigates to the next problem in the list,
-     *    looping back to the first problem when the end of the list is reached.
-     *
+     * looping back to the first problem when the end of the list is reached.
+     * <p>
      * Behavior:
      * - If the scroll lock button is present and not already selected, it is activated to
-     *   ensure that the highlighting and navigation operate properly.
+     * ensure that the highlighting and navigation operate properly.
      * - Problems are identified using a predefined pattern (e.g., "Error", "Warning", "Exception").
      * - If no problems are found during the initial search, a dialog is displayed informing
-     *   the user that no issues were detected.
+     * the user that no issues were detected.
      * - Navigation across detected problems is cyclical, wrapping around to the first
-     *   problem after reaching the last one.
-     *
+     * problem after reaching the last one.
+     * <p>
      * Thread Safety:
      * This method is not explicitly synchronized and may require synchronization if called
      * in a multithreaded environment to ensure that shared state (such as problemPositions
      * and currentProblemIndex) is safely updated.
-     *
+     * <p>
      * Effects:
      * - Updates the scroll lock state and the console title if necessary.
      * - Highlights newly identified problem areas in the console output.
@@ -324,33 +350,33 @@ public final class PaintConsoleWindow {
 
     /**
      * Highlights problems in the console output based on predefined patterns.
-     *
+     * <p>
      * This method scans the console's text content and highlights specific terms
      * that indicate potential problems, such as "error", "warning", and "exception".
      * The method uses regular expressions to identify these terms, including
      * variations in capitalization and tolerance for ANSI color codes.
-     *
+     * <p>
      * The detected terms are highlighted with different colors:
      * - "Error" and "Exception" are highlighted in pink.
      * - "Warning" and "Warn" are highlighted in orange.
-     *
+     * <p>
      * Detected problem positions are stored in a list for further navigation or processing.
-     *
+     * <p>
      * Functionality:
      * - Removes all existing highlights before applying new ones.
      * - Clears the previously recorded problem positions and resets the current
-     *   problem index to indicate no problem is currently selected.
+     * problem index to indicate no problem is currently selected.
      * - Performs a case-insensitive search, tolerating leading/trailing spaces
-     *   and ANSI formatting codes.
+     * and ANSI formatting codes.
      * - Marks detected terms with appropriate highlight colors.
      * - Adds the start position of each detected problem to the list for future reference.
-     *
+     * <p>
      * Design notes:
      * - The method is private and applies highlights within the text pane associated
-     *   with the console.
+     * with the console.
      * - If an exception occurs while applying highlights (due to invalid positions),
-     *   it is logged but does not interrupt execution.
-     *
+     * it is logged but does not interrupt execution.
+     * <p>
      * Thread Safety:
      * This method is not thread-safe and should be externally synchronized if
      * accessed from multiple threads, as shared structures like problemPositions
@@ -448,7 +474,9 @@ public final class PaintConsoleWindow {
     // TITLE AND SCROLL LOCK STATUS
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /** Updates window title to reflect scroll lock state. */
+    /**
+     * Updates window title to reflect scroll lock state.
+     */
     private static void updateTitleForScrollLock(boolean locked) {
         if (frame == null) {
             return;

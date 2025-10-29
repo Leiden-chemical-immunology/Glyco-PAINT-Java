@@ -236,7 +236,7 @@ public final class ValidationHandler {
                 "221012",
                 "221101",
                 "221108"
-                );
+        );
 
         List<String> fileNames = Arrays.asList(
                 "Experiment Info.csv",

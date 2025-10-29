@@ -57,9 +57,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Arrays;
 
 import static paint.fiji.utils.SweepFlattener.flattenSweep;
 import static paint.shared.constants.PaintConstants.*;
@@ -87,9 +87,9 @@ public class RunTrackMateOnProjectSweep {
      *   <li>Logs results and restores the original configuration afterward.</li>
      * </ul>
      *
-     * @param projectPath      the root directory of the Paint project
-     * @param imagesPath       the directory containing experiment image data
-     * @param experimentNames  list of experiments to include in the sweep
+     * @param projectPath     the root directory of the Paint project
+     * @param imagesPath      the directory containing experiment image data
+     * @param experimentNames list of experiments to include in the sweep
      * @return {@code true} if all sweep combinations complete successfully;
      *         {@code false} otherwise
      * @throws IOException if any file or directory operation fails

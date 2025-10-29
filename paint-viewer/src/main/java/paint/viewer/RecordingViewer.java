@@ -43,8 +43,8 @@ package paint.viewer;
 import paint.shared.config.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
 import paint.shared.dialogs.ProjectDialog.DialogMode;
-import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.PaintLogger;
+import paint.shared.utils.PaintPrefs;
 import paint.viewer.utils.RecordingEntry;
 import paint.viewer.utils.RecordingLoader;
 

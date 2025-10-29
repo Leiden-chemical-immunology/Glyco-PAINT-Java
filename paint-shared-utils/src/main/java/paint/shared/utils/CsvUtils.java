@@ -36,11 +36,23 @@
 
 package paint.shared.utils;
 
-import org.apache.commons.csv.*;
-import java.io.*;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import static paint.shared.constants.PaintConstants.RECORDINGS_CSV;
 
@@ -52,7 +64,9 @@ import static paint.shared.constants.PaintConstants.RECORDINGS_CSV;
  */
 public final class CsvUtils {
 
-    /** Prevents instantiation of this utility class. */
+    /**
+     * Prevents instantiation of this utility class.
+     */
     private CsvUtils() {
         // Prevent instantiation
     }
@@ -165,7 +179,9 @@ public final class CsvUtils {
                 }
             }
 
-            if (printer != null) printer.flush();
+            if (printer != null) {
+                printer.flush();
+            }
         }
 
         if (deleteInputs) {

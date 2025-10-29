@@ -36,18 +36,18 @@ import tech.tablesaw.api.ColumnType;
  * It includes constants related to file names, directories, geometry, timing, and
  * schema definitions for tracks, squares, and recordings. This utility class is
  * final and cannot be instantiated.
- *
+ * <p>
  * Purpose:
  * - Provides a centralized location for all constant values used across the application.
  * - Ensures consistency and avoids hard-coding of values throughout the codebase.
- *
+ * <p>
  * Structure:
  * 1. File Names: Constants for default file names used for storing and retrieving data.
  * 2. Directories: Paths for storing specific categories of files.
  * 3. Geometry: Constants related to pixel dimensions and image sizes.
  * 4. Timing: Constants specifying intervals, frame counts, and durations.
  * 5. Schema Definitions: Column names and their data types for track, square, and recording metadata.
- *
+ * <p>
  * Usage:
  * - The constants in this class can be accessed directly as they are declared public static final.
  * - Modifications to these values require adjustments only in this class, promoting maintainability.
@@ -58,8 +58,6 @@ public final class PaintConstants {
         // Prevent instantiation
     }
 
-
-    // @formatter:off
 
     // =====================
     // Filenames
@@ -131,8 +129,6 @@ public final class PaintConstants {
     public static final String NEIGHBOUR_MODE                  = "Neighbour Mode";
     public static final String MIN_TRACK_DURATION              = "Min Track Duration";
     public static final String MAX_TRACK_DURATION              = "Max Track Duration";
-
-    // @formatter:on
 
     // =====================
     // Track schema

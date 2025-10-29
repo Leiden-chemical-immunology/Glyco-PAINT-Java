@@ -56,21 +56,22 @@ import java.util.Collections;
 import java.util.List;
 
 import static paint.shared.config.PaintConfig.getBoolean;
-import static paint.shared.constants.PaintConstants.*;
-import static paint.shared.io.HelperIO.*;
+import static paint.shared.constants.PaintConstants.IMAGE_HEIGHT;
+import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
 import static paint.shared.io.ExperimentDataLoader.loadExperiment;
+import static paint.shared.io.HelperIO.*;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
 
 
 public class GenerateSquaresProcessor {
 
-    // @formatter:off
+    
     private static int     numberOfSquaresInRecording;     // Total number of squares per recording.
     private static int     numberOfSquaresInOneDimension;  // Total number of squares per on one dimension.
     private static Path    projectPath;
     private static boolean plotFittingCurves;
-    // @formatter:on
+    
 
     /**
      * Processes an experiment to generate square regions for each recording, compute attributes,
@@ -78,21 +79,17 @@ public class GenerateSquaresProcessor {
      * assigns tracks to the generated squares, and calculates additional square and recording-level attributes.
      * Finally, it writes compiled results to the file system.
      *
-     * @param project the project containing configurations and experiment data
+     * @param project        the project containing configurations and experiment data
      * @param experimentName the name of the experiment to process
      * @return {@code true} if the experiment was successfully processed and saved, {@code false} otherwise
      */
     public static boolean generateSquaresForExperiment(Project project, String experimentName) {
-
-        // @formatter:off
         GenerateSquaresConfig generateSquaresConfig = project.getGenerateSquaresConfig();
         Experiment            experiment            = null;
         List<Recording>       recordings            = null;
 
         projectPath                                 = project.getProjectRootPath();
         plotFittingCurves                           = getBoolean("Generate Squares", "Plot Curve Fitting", false);
-
-        // @formatter:on
 
         LocalDateTime start = LocalDateTime.now();
         PaintLogger.debugf("Loading Experiment '%s'", experimentName);
@@ -157,7 +154,7 @@ public class GenerateSquaresProcessor {
 
         // Compile all squares and write
         Table allSquaresTable = compileAllSquares(experiment);
-        Path  experimentPath  = project.getProjectRootPath().resolve(experiment.getExperimentName());
+        Path experimentPath = project.getProjectRootPath().resolve(experiment.getExperimentName());
         writeAllSquares(experimentPath, allSquaresTable);
 
         // Write recordings
@@ -175,20 +172,20 @@ public class GenerateSquaresProcessor {
      * Generates a list of {@code Square} objects for the given recording. Each square corresponds to a
      * segment of the recording area based on the configuration provided.
      *
-     * @param recording the recording for which squares are to be generated
+     * @param recording             the recording for which squares are to be generated
      * @param generateSquaresConfig the configuration specifying the number of squares and related parameters
      * @return a list of {@code Square} objects representing the segmented areas of the recording
      */
     public static List<Square> generateSquaresForRecording(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
 
-        numberOfSquaresInRecording    = generateSquaresConfig.getNumberOfSquaresInRecording();
+        numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
         numberOfSquaresInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);   // Number of squares in one dimension (e.g. 20 for 20x20).
 
-        // @formatter:off
+        
         List<Square> squares = new ArrayList<>();
         double squareWidth   = IMAGE_WIDTH / numberOfSquaresInOneDimension;
         double squareHeight  = IMAGE_HEIGHT / numberOfSquaresInOneDimension;
-        // @formatter:on
+        
 
         int squareNumber = 0;
         for (int rowNumber = 0; rowNumber < numberOfSquaresInOneDimension; rowNumber++) {
@@ -226,12 +223,9 @@ public class GenerateSquaresProcessor {
      *                  and updating their track-related attributes.
      */
     public static void assignTracksToSquares(Recording recording) {
-
-        // @formatter:off
         Table tracksOfRecording   = recording.getTracksTable();
         TrackTableIO trackTableIO = new TrackTableIO();
         Table recordingTrackTable = trackTableIO.emptyTable();
-        // @formatter:on
 
         int lastRowCol            = numberOfSquaresInOneDimension - 1;
         int labelNumber           = 0;
@@ -329,8 +323,7 @@ public class GenerateSquaresProcessor {
             Table table = recording.getTracksTable();
             if (table != null) {
                 trackTableIO.appendInPlace(allTracksTable, table);
-            }
-            else {
+            } else {
                 PaintLogger.errorf("compileAllSquares - squares table does not exist for '%s'", recording.getRecordingName());
             }
         }

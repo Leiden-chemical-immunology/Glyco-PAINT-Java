@@ -55,7 +55,6 @@ public class Project {
     // ATTRIBUTES
     // ───────────────────────────────────────────────────────────────────────────────
 
-    // @formatter:off
     private boolean                status;
     private Path                   projectRootPath;
     private Path                   imagesRootPath;
@@ -65,7 +64,6 @@ public class Project {
     private GenerateSquaresConfig  generateSquaresConfig;
     private List<String>           experimentNames;
     private List<Experiment>       experiments;
-    // @formatter:on
 
     // ───────────────────────────────────────────────────────────────────────────────
     // CONSTRUCTORS
@@ -91,7 +89,6 @@ public class Project {
                    GenerateSquaresConfig generateSquaresConfig,
                    TrackMateConfig       trackMateConfig,
                    List<Experiment>      experiments) {
-
         this.status                = status;
         this.projectRootPath       = projectRootPath;
         this.imagesRootPath        = imagesRootPath;
@@ -152,31 +149,70 @@ public class Project {
      */
     public void setProjectRootPath(Path projectRootPath) {
         this.projectRootPath = projectRootPath;
-        if (projectRootPath != null)
+        if (projectRootPath != null) {
             this.projectName = projectRootPath.getFileName().toString();
+        }
     }
-    public Path getProjectRootPath() { return projectRootPath; }
 
-    public Path getImagesRootPath() { return imagesRootPath; }
-    public void setImagesRootPath(Path imagesRootPath) { this.imagesRootPath = imagesRootPath; }
+    public Path getProjectRootPath() {
+        return projectRootPath;
+    }
 
-    public String getProjectName() { return projectName; }
-    public void setProjectName(String projectName) { this.projectName = projectName; }
+    public Path getImagesRootPath() {
+        return imagesRootPath;
+    }
 
-    public PaintConfig getPaintConfig() { return paintConfig; }
-    public void setPaintConfig(PaintConfig paintConfig) { this.paintConfig = paintConfig; }
+    public void setImagesRootPath(Path imagesRootPath) {
+        this.imagesRootPath = imagesRootPath;
+    }
 
-    public TrackMateConfig getTrackMateConfig() { return trackMateConfig; }
-    public void setTrackMateConfig(TrackMateConfig trackMateConfig) { this.trackMateConfig = trackMateConfig; }
+    public String getProjectName() {
+        return projectName;
+    }
 
-    public GenerateSquaresConfig getGenerateSquaresConfig() { return generateSquaresConfig; }
-    public void setGenerateSquaresConfig(GenerateSquaresConfig generateSquaresConfig) { this.generateSquaresConfig = generateSquaresConfig; }
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
 
-    public List<String> getExperimentNames() { return experimentNames; }
-    public void setExperimentNames(List<String> experimentNames) { this.experimentNames = experimentNames; }
+    public PaintConfig getPaintConfig() {
+        return paintConfig;
+    }
 
-    public List<Experiment> getExperiments() { return experiments; }
-    public void setExperiments(List<Experiment> experiments) { this.experiments = experiments; }
+    public void setPaintConfig(PaintConfig paintConfig) {
+        this.paintConfig = paintConfig;
+    }
+
+    public TrackMateConfig getTrackMateConfig() {
+        return trackMateConfig;
+    }
+
+    public void setTrackMateConfig(TrackMateConfig trackMateConfig) {
+        this.trackMateConfig = trackMateConfig;
+    }
+
+    public GenerateSquaresConfig getGenerateSquaresConfig() {
+        return generateSquaresConfig;
+    }
+
+    public void setGenerateSquaresConfig(GenerateSquaresConfig generateSquaresConfig) {
+        this.generateSquaresConfig = generateSquaresConfig;
+    }
+
+    public List<String> getExperimentNames() {
+        return experimentNames;
+    }
+
+    public void setExperimentNames(List<String> experimentNames) {
+        this.experimentNames = experimentNames;
+    }
+
+    public List<Experiment> getExperiments() {
+        return experiments;
+    }
+
+    public void setExperiments(List<Experiment> experiments) {
+        this.experiments = experiments;
+    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // EXPERIMENT MANAGEMENT
@@ -188,8 +224,9 @@ public class Project {
      * @param experiment the experiment to add
      */
     public void addExperiment(Experiment experiment) {
-        if (this.experiments == null)
+        if (this.experiments == null) {
             this.experiments = new ArrayList<>();
+        }
         this.experiments.add(experiment);
     }
 
@@ -200,7 +237,9 @@ public class Project {
      * @return the matching experiment, or {@code null} if not found
      */
     public Experiment getExperiment(String experimentName) {
-        if (experiments == null) return null;
+        if (experiments == null) {
+            return null;
+        }
         for (Experiment experiment : experiments) {
             if (experimentName.equals(experiment.getExperimentName())) {
                 return experiment;
@@ -222,7 +261,6 @@ public class Project {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-
         sb.append("\n\n");
         sb.append("----------------------------------------------------------------------\n");
         sb.append("Project: ").append(projectName).append("\n");

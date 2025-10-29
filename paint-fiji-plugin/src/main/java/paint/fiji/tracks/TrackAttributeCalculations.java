@@ -57,7 +57,9 @@ import static paint.shared.utils.Miscellaneous.round;
  */
 public final class TrackAttributeCalculations {
 
-    /** Private constructor to prevent instantiation. */
+    /**
+     * Private constructor to prevent instantiation.
+     */
     private TrackAttributeCalculations() {
         // Utility class; prevent instantiation
     }
@@ -142,7 +144,7 @@ public final class TrackAttributeCalculations {
         final int nSteps = spots.size() - 1;
 
         if (nSteps > 0 && dtSeconds > 0.0) {
-            final double msd    = cumMsd / nSteps;
+            final double msd = cumMsd / nSteps;
             final double msdExt = cumMsdExt / nSteps;
 
             diffusionCoeff    = round(msd / (4.0 * dtSeconds), 2);
@@ -183,7 +185,7 @@ public final class TrackAttributeCalculations {
      * Retrieves a numerical feature value from a {@link Spot}.
      * Returns 0.0 if the feature is missing or {@code null}.
      *
-     * @param s the spot to read from
+     * @param s          the spot to read from
      * @param featureKey the feature name (e.g. {@code Spot.POSITION_X})
      * @return the feature value or 0.0 if unavailable
      */

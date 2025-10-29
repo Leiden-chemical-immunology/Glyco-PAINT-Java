@@ -41,8 +41,12 @@
 
 package paint.validation;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class SquaresCsvComparatorPythonJava {
@@ -51,7 +55,7 @@ public class SquaresCsvComparatorPythonJava {
      * A static and final map that serves as a key-value data structure
      * for storing mappings of strings. The map is initialized as a
      * LinkedHashMap to ensure that the order of insertion is preserved.
-     *
+     * <p>
      * This map is intended to be immutable, meaning it cannot be modified
      * after its initialization. It is used to represent predefined mappings
      * between string keys and string values, likely for configuration,
@@ -59,6 +63,7 @@ public class SquaresCsvComparatorPythonJava {
      * the application.
      */
     private static final Map<String, String> FIELD_MAP = new LinkedHashMap<>();
+
     static {
         FIELD_MAP.put("Row Nr", "Row Number");
         FIELD_MAP.put("Col Nr", "Column Number");
@@ -110,29 +115,43 @@ public class SquaresCsvComparatorPythonJava {
             "Median Diffusion Coefficient Ext"
     );
 
-    /** Quick lookup set version of numeric fields. */
+    /**
+     * Quick lookup set version of numeric fields.
+     */
     private static final Set<String> NUMERIC_FIELDS = new HashSet<>(NUMERIC_FIELDS_LIST);
 
     // These fields are used for counting and collecting results
     Set<String> squaresWithDiffs = new HashSet<>();
 
-    /** Default rounding precision if nothing better is detected. */
+    /**
+     * Default rounding precision if nothing better is detected.
+     */
     private static final Map<String, Integer> ROUNDING_MAP = new HashMap<>();
+
     static {
-        for (String f : NUMERIC_FIELDS) ROUNDING_MAP.put(f, 3);
+        for (String f : NUMERIC_FIELDS) {
+            ROUNDING_MAP.put(f, 3);
+        }
         ROUNDING_MAP.put("Variability", 1);
         ROUNDING_MAP.put("Tau", 2);
         ROUNDING_MAP.put("Density Ratio", 2);
         ROUNDING_MAP.put("R Squared", 2);
     }
 
-    /** Default per-field tolerance in % (used for "WITHIN X%" comparison). */
+    /**
+     * Default per-field tolerance in % (used for "WITHIN X%" comparison).
+     */
     private static final Map<String, Double> TOLERANCE_MAP = new HashMap<>();
+
     static {
-        for (String f : NUMERIC_FIELDS) TOLERANCE_MAP.put(f, 5.0);
+        for (String f : NUMERIC_FIELDS) {
+            TOLERANCE_MAP.put(f, 5.0);
+        }
     }
 
-    /** Shared numeric precision determined from both files. */
+    /**
+     * Shared numeric precision determined from both files.
+     */
     private static final Map<String, Integer> EFFECTIVE_PRECISION_MAP = new HashMap<>();
 
     // ---------------------------- Main ----------------------------
@@ -197,7 +216,10 @@ public class SquaresCsvComparatorPythonJava {
             writeSelectedOverview(normOld, normNew, selectedCsv);
 
             // Step 8: Optional short pause for file flush on some systems
-            try { Thread.sleep(150); } catch (InterruptedException ignored) {}
+            try {
+                Thread.sleep(150);
+            } catch (InterruptedException ignored) {
+            }
 
             // Step 9: Suggest optimized tolerance levels based on data
             System.out.println("Optimizing tolerances...");
@@ -228,11 +250,15 @@ public class SquaresCsvComparatorPythonJava {
         List<Map<String, String>> rows = new ArrayList<>();
         try (BufferedReader br = Files.newBufferedReader(p)) {
             String header = br.readLine();
-            if (header == null) return rows;
+            if (header == null) {
+                return rows;
+            }
             String[] h = header.split(",", -1);
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.trim().isEmpty()) continue;
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
                 String[] parts = line.split(",", -1);
                 Map<String, String> m = new LinkedHashMap<>();
                 for (int i = 0; i < h.length; i++) {
@@ -254,7 +280,9 @@ public class SquaresCsvComparatorPythonJava {
      * @throws IOException if an I/O error occurs during file creation or writing.
      */
     private static void writeCsv(List<Map<String, String>> rows, Path file) throws IOException {
-        if (rows.isEmpty()) return;
+        if (rows.isEmpty()) {
+            return;
+        }
         Files.createDirectories(file.getParent());
 
         // Determine whether this is the "old" file (Python source)
@@ -316,8 +344,12 @@ public class SquaresCsvComparatorPythonJava {
      * @return a CSV-safe version of the input string, or an empty string if the input is null
      */
     private static String escapeCsv(String s) {
-        if (s == null) return "";
-        if (s.contains(",") || s.contains("\"")) return "\"" + s.replace("\"", "\"\"") + "\"";
+        if (s == null) {
+            return "";
+        }
+        if (s.contains(",") || s.contains("\"")) {
+            return "\"" + s.replace("\"", "\"\"") + "\"";
+        }
         return s;
     }
 
@@ -347,7 +379,12 @@ public class SquaresCsvComparatorPythonJava {
             for (String f : FIELD_MAP.keySet()) {
                 String v = r.getOrDefault(f, "").trim();
                 if (f.equals("Tau")) {
-                    try { if (!v.isEmpty() && Double.parseDouble(v) < 0) v = ""; } catch (Exception ignored) {}
+                    try {
+                        if (!v.isEmpty() && Double.parseDouble(v) < 0) {
+                            v = "";
+                        }
+                    } catch (Exception ignored) {
+                    }
                 }
                 n.put(f, v);
             }
@@ -375,8 +412,9 @@ public class SquaresCsvComparatorPythonJava {
         for (Map<String, String> r : newRows) {
             Map<String, String> n = new LinkedHashMap<>();
             n.put("Recording Name", r.getOrDefault("Recording Name", ""));
-            for (Map.Entry<String, String> e : FIELD_MAP.entrySet())
+            for (Map.Entry<String, String> e : FIELD_MAP.entrySet()) {
                 n.put(e.getKey(), r.getOrDefault(e.getValue(), ""));
+            }
             n.put("Selected", String.valueOf(isSelected(n)));
             out.add(n);
         }
@@ -396,7 +434,8 @@ public class SquaresCsvComparatorPythonJava {
                 int i = (int) Double.parseDouble(v);
                 m.put(k, String.valueOf(i - 1));
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     /**
@@ -465,14 +504,18 @@ public class SquaresCsvComparatorPythonJava {
 
         // Build lookup map for new dataset
         Map<String, Map<String, String>> newMap = new HashMap<>();
-        for (Map<String, String> n : newN) newMap.put(key(n), n);
+        for (Map<String, String> n : newN) {
+            newMap.put(key(n), n);
+        }
 
         // Iterate all old records and compare with matching new record
         for (Map<String, String> o : oldN) {
             total++;
             String k = key(o);
             Map<String, String> n = newMap.get(k);
-            if (n == null) continue;
+            if (n == null) {
+                continue;
+            }
 
             for (String f : FIELD_MAP.keySet()) {
                 String ov = o.getOrDefault(f, "");
@@ -482,11 +525,17 @@ public class SquaresCsvComparatorPythonJava {
                 if (isOptionalZeroField(f) && (isZeroOrEmpty(ov) || isZeroOrEmpty(nv))) {
                     boolean ovEmpty = isZeroOrEmpty(ov);
                     boolean nvEmpty = isZeroOrEmpty(nv);
-                    if (ovEmpty && nvEmpty) continue; // both empty → skip
+                    if (ovEmpty && nvEmpty) {
+                        continue; // both empty → skip
+                    }
 
                     // One side missing → record as "MISSING"
-                    if (ovEmpty) ov = "";
-                    if (nvEmpty) nv = "";
+                    if (ovEmpty) {
+                        ov = "";
+                    }
+                    if (nvEmpty) {
+                        nv = "";
+                    }
                     diffs.add(new String[]{o.get("Recording Name"), o.get("Square Nr"), f, ov, nv, "", "", "MISSING"});
                     missingByField.merge(f, 1, Integer::sum);
                     squaresWithDiffs.add(k);
@@ -498,11 +547,17 @@ public class SquaresCsvComparatorPythonJava {
                     Double da = parseDouble(ov);
                     Double db = parseDouble(nv);
 
-                    if ((da == null || isZeroOrEmpty(ov)) && (db == null || isZeroOrEmpty(nv))) continue;
+                    if ((da == null || isZeroOrEmpty(ov)) && (db == null || isZeroOrEmpty(nv))) {
+                        continue;
+                    }
 
                     if ((da == null || isZeroOrEmpty(ov)) || (db == null || isZeroOrEmpty(nv))) {
-                        if (isZeroOrEmpty(ov)) ov = "";
-                        if (isZeroOrEmpty(nv)) nv = "";
+                        if (isZeroOrEmpty(ov)) {
+                            ov = "";
+                        }
+                        if (isZeroOrEmpty(nv)) {
+                            nv = "";
+                        }
                         diffs.add(new String[]{o.get("Recording Name"), o.get("Square Nr"), f, ov, nv, "", "", "MISSING"});
                         missingByField.merge(f, 1, Integer::sum);
                         squaresWithDiffs.add(k);
@@ -514,7 +569,9 @@ public class SquaresCsvComparatorPythonJava {
                     double tol = TOLERANCE_MAP.getOrDefault(f, 5.0);
                     int prec = EFFECTIVE_PRECISION_MAP.getOrDefault(f, ROUNDING_MAP.getOrDefault(f, 3));
 
-                    if (Double.isNaN(dev)) continue;
+                    if (Double.isNaN(dev)) {
+                        continue;
+                    }
 
                     String status;
                     if (Math.abs(da - db) < 1e-12) {
@@ -545,13 +602,17 @@ public class SquaresCsvComparatorPythonJava {
                 squaresWithDiffs.add(k);
             }
 
-            if (total % 1000 == 0) System.out.printf("   ...processed %,d%n", total);
+            if (total % 1000 == 0) {
+                System.out.printf("   ...processed %,d%n", total);
+            }
         }
 
         // Write the comparison file
         try (PrintWriter pw = new PrintWriter(out.toFile())) {
             pw.println("Recording Name,Square Nr,Field,Old Value,New Value,Precision Used,Relative Diff (%),Status");
-            for (String[] r : diffs) pw.println(String.join(",", r));
+            for (String[] r : diffs) {
+                pw.println(String.join(",", r));
+            }
             pw.println();
             pw.printf("SUMMARY,,,,,,,%nDifferences,%d%n", diffCount);
 
@@ -561,7 +622,7 @@ public class SquaresCsvComparatorPythonJava {
                 pw.println("Field Difference Overview (Status=DIFFERENT):");
                 pw.println("Field,Count");
                 diffByField.entrySet().stream()
-                        .sorted(Map.Entry.<String,Integer>comparingByValue().reversed())
+                        .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                         .forEach(e -> pw.printf("%s,%d%n", e.getKey(), e.getValue()));
             }
             if (!missingByField.isEmpty()) {
@@ -569,7 +630,7 @@ public class SquaresCsvComparatorPythonJava {
                 pw.println("Field Missing Overview (one side empty):");
                 pw.println("Field,Count");
                 missingByField.entrySet().stream()
-                        .sorted(Map.Entry.<String,Integer>comparingByValue().reversed())
+                        .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                         .forEach(e -> pw.printf("%s,%d%n", e.getKey(), e.getValue()));
             }
         }
@@ -592,14 +653,18 @@ public class SquaresCsvComparatorPythonJava {
      */
     private static void writeDetailed(List<Map<String, String>> oldN, List<Map<String, String>> newN, Path outFile) throws IOException {
         Map<String, Map<String, String>> newMap = new HashMap<>();
-        for (Map<String, String> n : newN) newMap.put(key(n), n);
+        for (Map<String, String> n : newN) {
+            newMap.put(key(n), n);
+        }
 
         List<List<String>> rows = new ArrayList<>();
         int matched = 0, total = oldN.size();
 
         for (Map<String, String> o : oldN) {
             Map<String, String> n = newMap.get(key(o));
-            if (n == null) continue;
+            if (n == null) {
+                continue;
+            }
             matched++;
 
             List<String> line = new ArrayList<>();
@@ -638,7 +703,9 @@ public class SquaresCsvComparatorPythonJava {
                 h.add(""); // separator
             }
             pw.println(String.join(",", h));
-            for (List<String> r : rows) pw.println(String.join(",", r));
+            for (List<String> r : rows) {
+                pw.println(String.join(",", r));
+            }
         }
 
         System.out.printf("Detailed numeric rows written: %d (matched from %d)%n", matched, total);
@@ -658,11 +725,17 @@ public class SquaresCsvComparatorPythonJava {
      */
     private static void writeSelectedOverview(List<Map<String, String>> oldN, List<Map<String, String>> newN, Path outFile) throws IOException {
         Map<String, Map<String, String>> newMap = new HashMap<>();
-        for (Map<String, String> n : newN) newMap.put(key(n), n);
+        for (Map<String, String> n : newN) {
+            newMap.put(key(n), n);
+        }
 
         Set<String> allKeys = new TreeSet<>();
-        for (Map<String, String> o : oldN) allKeys.add(key(o));
-        for (Map<String, String> n : newN) allKeys.add(key(n));
+        for (Map<String, String> o : oldN) {
+            allKeys.add(key(o));
+        }
+        for (Map<String, String> n : newN) {
+            allKeys.add(key(n));
+        }
 
         try (PrintWriter pw = new PrintWriter(outFile.toFile())) {
             pw.println("Recording Name,Square Nr,Selected(Old),Selected(New),Both,Only Old,Only New,Tau(Old),Tau(New),DensityRatio(Old),DensityRatio(New),Variability(Old),Variability(New)");
@@ -689,7 +762,9 @@ public class SquaresCsvComparatorPythonJava {
      * @param k key to extract
      * @return value or empty string
      */
-    private static String val(Map<String, String> m, String k) { return m == null ? "" : m.getOrDefault(k, ""); }
+    private static String val(Map<String, String> m, String k) {
+        return m == null ? "" : m.getOrDefault(k, "");
+    }
 
     // ---------------------------- Tolerance Optimization ----------------------------
 
@@ -714,16 +789,23 @@ public class SquaresCsvComparatorPythonJava {
             String header = br.readLine();
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.trim().isEmpty() || line.startsWith("SUMMARY")) continue;
+                if (line.trim().isEmpty() || line.startsWith("SUMMARY")) {
+                    continue;
+                }
                 String[] parts = line.split(",", -1);
-                if (parts.length < 7) continue;
+                if (parts.length < 7) {
+                    continue;
+                }
                 String field = parts[2].trim();
                 String rel = parts[6].trim();
-                if (rel.isEmpty() || rel.equalsIgnoreCase("NaN")) continue;
+                if (rel.isEmpty() || rel.equalsIgnoreCase("NaN")) {
+                    continue;
+                }
                 try {
                     double d = Double.parseDouble(rel);
                     diffsByField.computeIfAbsent(field, k -> new ArrayList<>()).add(d);
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
         }
 
@@ -743,7 +825,9 @@ public class SquaresCsvComparatorPythonJava {
                 String field = e.getKey();
                 List<Double> diffs = e.getValue();
                 diffs.removeIf(d -> !Double.isFinite(d));
-                if (diffs.isEmpty()) continue;
+                if (diffs.isEmpty()) {
+                    continue;
+                }
 
                 int total = diffs.size();
                 double within5 = percentWithin(diffs, 5.0);
@@ -752,7 +836,9 @@ public class SquaresCsvComparatorPythonJava {
                 // Find the smallest tolerance that still keeps ≥98% within range
                 for (double tol : testLevels) {
                     double keep = percentWithin(diffs, tol);
-                    if (keep < targetKeep) break;
+                    if (keep < targetKeep) {
+                        break;
+                    }
                     bestTol = tol;
                     bestKeep = keep;
                 }
@@ -847,9 +933,15 @@ public class SquaresCsvComparatorPythonJava {
     private static double relativeDeviation(String oldVal, String newVal) {
         Double oldNum = parseDouble(oldVal);
         Double newNum = parseDouble(newVal);
-        if (oldNum == null || newNum == null) return Double.NaN;
-        if (oldNum == 0.0 && newNum == 0.0) return 0.0;
-        if (oldNum == 0.0) return Double.POSITIVE_INFINITY;
+        if (oldNum == null || newNum == null) {
+            return Double.NaN;
+        }
+        if (oldNum == 0.0 && newNum == 0.0) {
+            return 0.0;
+        }
+        if (oldNum == 0.0) {
+            return Double.POSITIVE_INFINITY;
+        }
         return Math.abs((newNum - oldNum) / oldNum) * 100.0;
     }
 
@@ -865,7 +957,7 @@ public class SquaresCsvComparatorPythonJava {
      * @return {@code true} if selected, otherwise {@code false}
      */
     private static boolean isSelected(Map<String, String> r) {
-        Double dr = parseDouble(r.get("Density Ratio"));
+        Double dr  = parseDouble(r.get("Density Ratio"));
         Double var = parseDouble(r.get("Variability"));
         Double r2  = parseDouble(r.get("R Squared"));
         return dr != null && var != null && r2 != null && dr >= 2.0 && var < 10.0 && r2 > 0.1;
@@ -899,7 +991,9 @@ public class SquaresCsvComparatorPythonJava {
      * @return {@code true} if empty or numerically zero; otherwise {@code false}
      */
     private static boolean isZeroOrEmpty(String s) {
-        if (s == null || s.trim().isEmpty()) return true;
+        if (s == null || s.trim().isEmpty()) {
+            return true;
+        }
         try {
             return Double.parseDouble(s.trim()) == 0.0;
         } catch (Exception e) {

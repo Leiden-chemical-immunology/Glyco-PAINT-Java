@@ -90,7 +90,7 @@ public class RunTrackMateOnProject extends RunTrackMateOnExperiment {
      * @param sweepDir        optional override directory for writing analysis results
      *                        (defaults to {@code projectPath} if {@code null})
      * @return {@code true} if all experiments processed successfully;
-     *         {@code false} if any validation or runtime errors occurred
+     * {@code false} if any validation or runtime errors occurred
      */
     public static boolean runProject(Path projectPath,
                                      Path imagesPath,

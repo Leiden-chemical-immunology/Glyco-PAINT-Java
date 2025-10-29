@@ -45,7 +45,9 @@ import tech.tablesaw.api.Table;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
@@ -63,7 +65,6 @@ public class ExperimentInfo {
     // CORE FIELDS
     // ───────────────────────────────────────────────────────────────────────────────
 
-    // @formatter:off
     private String  experimentName;
     private String  recordingName;
     private int     conditionNumber;
@@ -75,12 +76,14 @@ public class ExperimentInfo {
     private double  concentration;
     private boolean processFlag;               // renamed from doProcess
     private double  threshold;
-    // @formatter:on
+    
     // ───────────────────────────────────────────────────────────────────────────────
     // ASSOCIATED OBJECTS
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /** The collection of squares associated with this experiment. */
+    /**
+     * The collection of squares associated with this experiment.
+     */
     private List<Square> squares = new ArrayList<>();
     private List<Track>  tracks   = new ArrayList<>();
     private Table        tracksTable;
@@ -120,8 +123,7 @@ public class ExperimentInfo {
                           String  adjuvant,
                           double  concentration,
                           boolean processFlag,
-                          double  threshold) {
-
+                          double threshold) {
         this.experimentName  = experimentName;
         this.recordingName   = recordingName;
         this.conditionNumber = conditionNumber;
@@ -133,7 +135,6 @@ public class ExperimentInfo {
         this.concentration   = concentration;
         this.processFlag     = processFlag;
         this.threshold       = threshold;
-        // @formatter:on
     }
 
     /**
@@ -158,7 +159,6 @@ public class ExperimentInfo {
      */
     public ExperimentInfo(Map<String, String> row) {
         try {
-            // @formatter:off
             this.experimentName  = row.get("Experiment Name");
             this.recordingName   = row.get("Recording Name");
             this.conditionNumber = parseInt(row.get("Condition Number"));
@@ -170,7 +170,6 @@ public class ExperimentInfo {
             this.concentration   = parseDouble(row.get("Concentration"));
             this.processFlag     = Miscellaneous.isBooleanTrue(row.get("Process Flag"));
             this.threshold       = parseDouble(row.get("Threshold"));
-            // @formatter:on
         } catch (Exception e) {
             PaintLogger.errorf("Problem parsing Experiment Info");
             PaintLogger.errorf(row.toString());
@@ -184,47 +183,117 @@ public class ExperimentInfo {
     // ACCESSORS AND MUTATORS
     // ───────────────────────────────────────────────────────────────────────────────
 
-    public String getExperimentName() { return experimentName; }
-    public void setExperimentName(String experimentName) { this.experimentName = experimentName; }
+    public String getExperimentName() {
+        return experimentName;
+    }
 
-    public String getRecordingName() { return recordingName; }
-    public void setRecordingName(String recordingName) { this.recordingName = recordingName; }
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
+    }
 
-    public int getConditionNumber() { return conditionNumber; }
-    public void setConditionNumber(int conditionNumber) { this.conditionNumber = conditionNumber; }
+    public String getRecordingName() {
+        return recordingName;
+    }
 
-    public int getReplicateNumber() { return replicateNumber; }
-    public void setReplicateNumber(int replicateNumber) { this.replicateNumber = replicateNumber; }
+    public void setRecordingName(String recordingName) {
+        this.recordingName = recordingName;
+    }
 
-    public String getProbeName() { return probeName; }
-    public void setProbeName(String probeName) { this.probeName = probeName; }
+    public int getConditionNumber() {
+        return conditionNumber;
+    }
 
-    public String getProbeType() { return probeType; }
-    public void setProbeType(String probeType) { this.probeType = probeType; }
+    public void setConditionNumber(int conditionNumber) {
+        this.conditionNumber = conditionNumber;
+    }
 
-    public String getCellType() { return cellType; }
-    public void setCellType(String cellType) { this.cellType = cellType; }
+    public int getReplicateNumber() {
+        return replicateNumber;
+    }
 
-    public String getAdjuvant() { return adjuvant; }
-    public void setAdjuvant(String adjuvant) { this.adjuvant = adjuvant; }
+    public void setReplicateNumber(int replicateNumber) {
+        this.replicateNumber = replicateNumber;
+    }
 
-    public double getConcentration() { return concentration; }
-    public void setConcentration(double concentration) { this.concentration = concentration; }
+    public String getProbeName() {
+        return probeName;
+    }
 
-    public boolean isProcessFlag() { return processFlag; }
-    public void setProcessFlag(boolean processFlag) { this.processFlag = processFlag; }
+    public void setProbeName(String probeName) {
+        this.probeName = probeName;
+    }
 
-    public double getThreshold() { return threshold; }
-    public void setThreshold(double threshold) { this.threshold = threshold; }
+    public String getProbeType() {
+        return probeType;
+    }
 
-    public List<Square> getSquares() { return squares; }
-    public void setSquares(List<Square> squares) { this.squares = squares; }
+    public void setProbeType(String probeType) {
+        this.probeType = probeType;
+    }
 
-    public List<Track> getTracks() { return tracks; }
-    public void setTracks(List<Track> tracks) { this.tracks = tracks; }
+    public String getCellType() {
+        return cellType;
+    }
 
-    public Table getTracksTable() { return tracksTable; }
-    public void setTracksTable(Table tracksTable) { this.tracksTable = tracksTable; }
+    public void setCellType(String cellType) {
+        this.cellType = cellType;
+    }
+
+    public String getAdjuvant() {
+        return adjuvant;
+    }
+
+    public void setAdjuvant(String adjuvant) {
+        this.adjuvant = adjuvant;
+    }
+
+    public double getConcentration() {
+        return concentration;
+    }
+
+    public void setConcentration(double concentration) {
+        this.concentration = concentration;
+    }
+
+    public boolean isProcessFlag() {
+        return processFlag;
+    }
+
+    public void setProcessFlag(boolean processFlag) {
+        this.processFlag = processFlag;
+    }
+
+    public double getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(double threshold) {
+        this.threshold = threshold;
+    }
+
+    public List<Square> getSquares() {
+        return squares;
+    }
+
+    public void setSquares(List<Square> squares) {
+        this.squares = squares;
+    }
+
+    public List<Track> getTracks() {
+        return tracks;
+    }
+
+    public void setTracks(List<Track> tracks) {
+        this.tracks = tracks;
+    }
+
+    public Table getTracksTable() {
+        return tracksTable;
+    }
+
+    public void setTracksTable(Table tracksTable) {
+        this.tracksTable = tracksTable;
+    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // CONVENIENCE METHODS
@@ -235,21 +304,27 @@ public class ExperimentInfo {
      *
      * @param square the square to add
      */
-    public void addSquare(Square square) { this.squares.add(square); }
+    public void addSquare(Square square) {
+        this.squares.add(square);
+    }
 
     /**
      * Adds a list of {@link Square} instances to this experiment.
      *
      * @param squares list of squares to add
      */
-    public void addSquares(List<Square> squares) { this.squares.addAll(squares); }
+    public void addSquares(List<Square> squares) {
+        this.squares.addAll(squares);
+    }
 
     /**
      * Adds a single {@link Track} to this experiment.
      *
      * @param track the track to add
      */
-    public void addTrack(Track track) { this.tracks.add(track); }
+    public void addTrack(Track track) {
+        this.tracks.add(track);
+    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // STRING REPRESENTATION
@@ -263,7 +338,6 @@ public class ExperimentInfo {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-
         sb.append("\tExperiment Info");
         sb.append(String.format("\t              Experiment Name               : %s\n", experimentName));
         sb.append(String.format("\t              Recording Name                : %s%n", recordingName));
@@ -275,7 +349,6 @@ public class ExperimentInfo {
         sb.append(String.format("\t              Adjuvant                      : %s%n", adjuvant));
         sb.append(String.format("\t              Concentration                 : %.2f%n", concentration));
         sb.append(String.format("\t              Threshold                     : %.2f%n", threshold));
-
         if (tracks != null) {
             sb.append(String.format("\t              Number of tracks              : %d%n", tracks.size()));
         }

@@ -42,7 +42,9 @@
 package paint.generatesquares.calc;
 
 import paint.shared.config.GenerateSquaresConfig;
-import paint.shared.objects.*;
+import paint.shared.objects.Recording;
+import paint.shared.objects.Square;
+import paint.shared.objects.Track;
 import paint.shared.utils.CalculateTau;
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.DoubleColumn;
@@ -51,13 +53,13 @@ import tech.tablesaw.api.Table;
 import java.nio.file.Path;
 import java.util.List;
 
-import static paint.shared.utils.CalculateTau.calculateTau;
 import static paint.generatesquares.calc.PlotUtils.saveTauFitPlot;
+import static paint.generatesquares.calc.SquareUtils.*;
 import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
 import static paint.shared.constants.PaintConstants.RECORDING_DURATION;
 import static paint.shared.objects.Square.calculateSquareArea;
+import static paint.shared.utils.CalculateTau.calculateTau;
 import static paint.shared.utils.Miscellaneous.round;
-import static paint.generatesquares.calc.SquareUtils.*;
 import static paint.shared.utils.SharedSquareUtils.*;
 
 public class CalculateSquareAttributes {
@@ -73,8 +75,6 @@ public class CalculateSquareAttributes {
     public static void calculateSquareAttributes(Path experimentPath,
                                                  Recording recording,
                                                  GenerateSquaresConfig generateSquaresConfig) {
-
-        // @formatter:off
         double       minRequiredRSquared        = generateSquaresConfig.getMinRequiredRSquared();
         int          minTracksForTau            = generateSquaresConfig.getMinTracksToCalculateTau();
         double       maxAllowableVariability    = generateSquaresConfig.getMaxAllowableVariability();
@@ -84,7 +84,6 @@ public class CalculateSquareAttributes {
         double       squareArea                 = calculateSquareArea(numberOfSquaresInRecording);    // Here we look at the single square
         double       concentration              = recording.getConcentration();
         List<Square> squaresOfRecording         = recording.getSquaresOfRecording();
-        // @formatter:on
 
         SquareUtils.BackgroundEstimationResult result = calculateBackgroundDensity(squaresOfRecording);
         double meanBackgroundTracks                   = result.getBackgroundMean();
@@ -94,13 +93,10 @@ public class CalculateSquareAttributes {
                            meanBackgroundTracks, result.getBackgroundSquares().size());
 
         for (Square square : squaresOfRecording) {
-
-            // @formatter:off
             List<Track> tracksInSquare  = square.getTracks();
             Table       table           = square.getTracksTable();
             int         squareNumber    = square.getSquareNumber();
             Table tracksInSquareTable   = square.getTracksTable();
-            // @formatter:on
 
             if (tracksInSquare == null || tracksInSquare.isEmpty()) {
                 continue;
@@ -213,12 +209,10 @@ public class CalculateSquareAttributes {
         recording.setDensity(round(density, 2));
     }
 
-    public static double calculateDensityRatio(int numberOfTracksInSquare, double numberOfTracksInBackgroundSquare)
-    {
+    public static double calculateDensityRatio(int numberOfTracksInSquare, double numberOfTracksInBackgroundSquare) {
         if (numberOfTracksInBackgroundSquare == 0) {
             return 0;
-        }
-        else {
+        } else {
             return numberOfTracksInSquare / numberOfTracksInBackgroundSquare;
         }
     }
@@ -326,15 +320,15 @@ public class CalculateSquareAttributes {
      * The method determines the location of the point in a finer grid inside the square,
      * based on the specified granularity.
      *
-     * @param x1                the x-coordinate of the point in the global coordinate system
-     * @param y1                the y-coordinate of the point in the global coordinate system
-     * @param width             the width of each square in the grid
-     * @param height            the height of each square in the grid
-     * @param squareSeqNr       the sequence number of the square in the grid
-     * @param nrOfSquaresInRow  the total number of squares in a single row of the grid
-     * @param granularity       the number of subdivisions along one axis within a square
+     * @param x1               the x-coordinate of the point in the global coordinate system
+     * @param y1               the y-coordinate of the point in the global coordinate system
+     * @param width            the width of each square in the grid
+     * @param height           the height of each square in the grid
+     * @param squareSeqNr      the sequence number of the square in the grid
+     * @param nrOfSquaresInRow the total number of squares in a single row of the grid
+     * @param granularity      the number of subdivisions along one axis within a square
      * @return an array of two integers, where the first value is the x-index (column index)
-     *         and the second value is the y-index (row index) of the point in the finer grid
+     * and the second value is the y-index (row index) of the point in the finer grid
      */
     private static int[] getIndices(double x1,
                                     double y1,

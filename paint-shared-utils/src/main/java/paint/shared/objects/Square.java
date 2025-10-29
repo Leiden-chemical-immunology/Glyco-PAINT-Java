@@ -57,7 +57,7 @@ public class Square {
     // ATTRIBUTES
     // ───────────────────────────────────────────────────────────────────────────────
 
-    // @formatter:off
+    
     private String  uniqueKey;                       // 0
     private String  experimentName;                  // 1
     private String  recordingName;                   // 2
@@ -130,16 +130,16 @@ public class Square {
                   double y1) {
 
         initialiseDoublesToNaN();
-        this.uniqueKey                     = uniqueKey;
-        this.experimentName                = experimentName;
-        this.recordingName                 = recordingName;
-        this.squareNumber                  = squareNumber;
-        this.rowNumber                     = rowNumber;
-        this.colNumber                     = colNumber;
-        this.x0                            = round(x0, 2);
-        this.y0                            = round(y0, 2);
-        this.x1                            = round(x1, 2);
-        this.y1                            = round(y1, 2);
+        this.uniqueKey       = uniqueKey;
+        this.experimentName  = experimentName;
+        this.recordingName  = recordingName;
+        this.squareNumber    = squareNumber;
+        this.rowNumber       = rowNumber;
+        this.colNumber       = colNumber;
+        this.x0              = round(x0, 2);
+        this.y0              = round(y0, 2);
+        this.x1              = round(x1, 2);
+        this.y1              = round(y1, 2);
     }
 
     /**

@@ -109,14 +109,11 @@ public class CellAssignmentDialog extends JDialog {
         add(scroll, BorderLayout.CENTER);
 
         // --- Controls ---
-
-        // @formatter:off
         JPanel buttons    = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton assignBtn = new JButton("Assign");
         JButton undoBtn   = new JButton("Undo");
         JButton cancelBtn = new JButton("Cancel");
         JButton closeBtn  = new JButton("Close");
-        // @formatter:on
 
         assignBtn.addActionListener(e -> listener.onAssign(getSelectedCellId()));
         undoBtn.addActionListener(  e -> listener.onUndo());
@@ -226,5 +223,4 @@ public class CellAssignmentDialog extends JDialog {
         }
         repaint();
     }
-
 }

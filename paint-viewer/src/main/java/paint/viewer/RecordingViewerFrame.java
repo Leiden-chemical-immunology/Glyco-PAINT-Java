@@ -43,18 +43,16 @@ package paint.viewer;
 
 import paint.shared.config.PaintConfig;
 import paint.shared.objects.Project;
-
 import paint.shared.objects.Track;
 import paint.shared.utils.CalculateTau;
-import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.PaintLogger;
-
+import paint.shared.utils.PaintPrefs;
 import paint.viewer.dialogs.CellAssignmentDialog;
 import paint.viewer.dialogs.FilterDialog;
 import paint.viewer.dialogs.SquareControlDialog;
 import paint.viewer.logic.CellAssignmentManager;
-import paint.viewer.logic.SquareControlHandler;
 import paint.viewer.logic.RecordingOverrideWriter;
+import paint.viewer.logic.SquareControlHandler;
 import paint.viewer.logic.SquareOverrideWriter;
 import paint.viewer.panels.NavigationPanel;
 import paint.viewer.panels.RecordingAttributesPanel;
@@ -83,7 +81,7 @@ import static paint.shared.utils.SharedSquareUtils.*;
  * The {@code RecordingViewerFrame} class defines the main window of the PAINT Viewer.
  * It combines left and right image panels, navigation controls, and metadata panels into
  * a cohesive interface for browsing, filtering, and analyzing experiment recordings.
- *
+ * <p>
  * Functionally, the class manages synchronization between user interactions and the
  * underlying model objects — specifically {@link paint.viewer.utils.RecordingEntry}
  * and {@link paint.shared.objects.Recording}. It enables users to:
@@ -94,14 +92,12 @@ import static paint.shared.utils.SharedSquareUtils.*;
  *   <li>Play TIFF/ND2 recordings directly from disk.</li>
  *   <li>Preview live recalculations of Tau, R², and density metrics.</li>
  * </ul>
- *
+ * <p>
  * This class is instantiated by {@link paint.viewer.RecordingViewer} after successful
  * project initialization. All UI updates occur on the Swing event dispatch thread.
  */
 public class RecordingViewerFrame extends JFrame
         implements RecordingControlsPanel.Listener, NavigationPanel.Listener {
-
-    //  @formatter:off
     private final Project                  project;
     private final List<RecordingEntry>     recordingEntries;   // The main data structure containing all recordings
     private       int                      currentIndex      = 0;
@@ -119,14 +115,13 @@ public class RecordingViewerFrame extends JFrame
     private final RecordingOverrideWriter  recordingOverrideWriter;
     private final SquareOverrideWriter     squareOverrideWriter;
     private final SquareControlHandler     controlHandler    = new SquareControlHandler();
-    //  @formatter:on
 
     /**
      * Constructs a {@code RecordingViewerFrame} that initializes and displays the complete
      * recording viewer environment. The frame sets up grid visualization, navigation,
      * control, and attribute panels while establishing event connections for user actions.
      *
-     * @param project the {@link Project} object providing experiment context and paths.
+     * @param project          the {@link Project} object providing experiment context and paths.
      * @param recordingEntries list of {@link RecordingEntry} objects representing loaded recordings.
      */
     public RecordingViewerFrame(Project project, List<RecordingEntry> recordingEntries) {
@@ -163,7 +158,7 @@ public class RecordingViewerFrame extends JFrame
         controlHandler.attach(leftGridPanel);
 
         attributesPanel = new RecordingAttributesPanel();
-        controlsPanel   = new RecordingControlsPanel(this);
+        controlsPanel = new RecordingControlsPanel(this);
         navigationPanel = new NavigationPanel(this);
 
         // --- Build the main layout ---
@@ -219,7 +214,10 @@ public class RecordingViewerFrame extends JFrame
      */
     private JPanel createSquareImagePanel(JComponent comp) {
         JPanel panel = new JPanel(new BorderLayout()) {
-            public Dimension getPreferredSize() { return new Dimension(NUMBER_PIXELS_WIDTH, NUMBER_PIXELS_HEIGHT); }
+            public Dimension getPreferredSize() {
+                return new Dimension(NUMBER_PIXELS_WIDTH, NUMBER_PIXELS_HEIGHT);
+            }
+
             public void setBounds(int x, int y, int w, int h) {
                 int size = Math.min(w, h);
                 super.setBounds(x, y, size, size);
@@ -261,7 +259,9 @@ public class RecordingViewerFrame extends JFrame
      * @param index the target recording index to display.
      */
     private void showRecordingEntry(int index) {
-        if (index < 0 || index >= recordingEntries.size()) return;
+        if (index < 0 || index >= recordingEntries.size()) {
+            return;
+        }
         currentIndex = index;
 
         RecordingEntry recordingEntry = recordingEntries.get(index);
@@ -284,25 +284,33 @@ public class RecordingViewerFrame extends JFrame
     // NAVIGATION LISTENER IMPLEMENTATION
     // =========================================================================================
 
-    /** Navigates to the first available recording entry in the list. */
+    /**
+     * Navigates to the first available recording entry in the list.
+     */
     @Override
     public void onFirst() {
         showRecordingEntry(0);
     }
 
-    /** Navigates to the previous recording entry, if available. */
+    /**
+     * Navigates to the previous recording entry, if available.
+     */
     @Override
     public void onPrev() {
         showRecordingEntry(Math.max(0, currentIndex - 1));
     }
 
-    /** Navigates to the next recording entry, if available. */
+    /**
+     * Navigates to the next recording entry, if available.
+     */
     @Override
     public void onNext() {
         showRecordingEntry(Math.min(recordingEntries.size() - 1, currentIndex + 1));
     }
 
-    /** Navigates directly to the final recording entry in the project. */
+    /**
+     * Navigates directly to the final recording entry in the project.
+     */
     @Override
     public void onLast() {
         showRecordingEntry(recordingEntries.size() - 1);
@@ -374,9 +382,9 @@ public class RecordingViewerFrame extends JFrame
                 // --- Persist cell assignments to Square Override.csv ---
                 RecordingEntry currentRecording = recordingEntries.get(currentIndex);
 
-               if (!userSelectedSquares.isEmpty()) {
-                   squareOverrideWriter.writeSquareOverrides(currentRecording, userSelectedSquares);
-               }
+                if (!userSelectedSquares.isEmpty()) {
+                    squareOverrideWriter.writeSquareOverrides(currentRecording, userSelectedSquares);
+                }
             }
 
             public void onUndo() {

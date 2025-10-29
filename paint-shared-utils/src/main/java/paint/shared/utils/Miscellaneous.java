@@ -49,7 +49,9 @@ import java.util.Set;
  */
 public final class Miscellaneous {
 
-    /** Prevents instantiation of this static utility class. */
+    /**
+     * Prevents instantiation of this static utility class.
+     */
     private Miscellaneous() {
         // Prevent instantiation
     }
@@ -166,10 +168,10 @@ public final class Miscellaneous {
      */
     public static boolean isBooleanValue(String value) {
         if (value.equals("true") || value.equals("1") ||
-                value.equals("yes")  || value.equals("y") || value.equals("t")) {
+                value.equals("yes") || value.equals("y") || value.equals("t")) {
             return true;
         } else if (value.equals("false") || value.equals("0") ||
-                value.equals("no")    || value.equals("n") || value.equals("f")) {
+                value.equals("no") || value.equals("n") || value.equals("f")) {
             return false;
         } else {
             PaintLogger.errorf("Invalid boolean value: %s", value);

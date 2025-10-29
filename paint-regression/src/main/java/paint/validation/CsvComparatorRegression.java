@@ -44,8 +44,13 @@
 
 package paint.validation;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -105,6 +110,7 @@ public class CsvComparatorRegression {
     }
 
     // ----------------------------------------------------------------------
+
     /**
      * Compares two CSV files for differences based on their content, generates
      * a detailed comparison report, and returns the total number of detected differences.
@@ -156,14 +162,14 @@ public class CsvComparatorRegression {
 
                 if (o == null && n != null) {
                     String rec = safe(n.get("Recording Name"));
-                    String sq  = n.containsKey("Square Number") ? safe(n.get("Square Number")) : "";
-                    diffs.add(new String[]{ rec, sq, String.valueOf(i + 1), "", "", "", "Extra in NEW" });
+                    String sq = n.containsKey("Square Number") ? safe(n.get("Square Number")) : "";
+                    diffs.add(new String[]{rec, sq, String.valueOf(i + 1), "", "", "", "Extra in NEW"});
                     diffCount++;
                     continue;
                 } else if (o != null && n == null) {
                     String rec = safe(o.get("Recording Name"));
-                    String sq  = o.containsKey("Square Number") ? safe(o.get("Square Number")) : "";
-                    diffs.add(new String[]{ rec, sq, String.valueOf(i + 1), "", "", "", "Missing in NEW" });
+                    String sq = o.containsKey("Square Number") ? safe(o.get("Square Number")) : "";
+                    diffs.add(new String[]{rec, sq, String.valueOf(i + 1), "", "", "", "Missing in NEW"});
                     diffCount++;
                     continue;
                 }
@@ -174,23 +180,29 @@ public class CsvComparatorRegression {
                 fields.addAll(n.keySet());
 
                 String rec = safe(o.get("Recording Name"));
-                String sq  = o.containsKey("Square Number") ? safe(o.get("Square Number")) : "";
+                String sq = o.containsKey("Square Number") ? safe(o.get("Square Number")) : "";
 
                 for (String f : fields) {
-                    if (f == null || f.trim().isEmpty()) continue;
-                    if (IGNORE_COLUMNS.contains(f)) continue;
+                    if (f == null || f.trim().isEmpty()) {
+                        continue;
+                    }
+                    if (IGNORE_COLUMNS.contains(f)) {
+                        continue;
+                    }
 
                     String ov = clean(o.get(f));
                     String nv = clean(n.get(f));
 
-                    if (valuesEqual(ov, nv)) continue;
+                    if (valuesEqual(ov, nv)) {
+                        continue;
+                    }
 
                     Double od = parseDouble(ov);
                     Double nd = parseDouble(nv);
                     String status = (od != null && nd != null)
                             ? "NUMERIC DIFFERENCE" : "TEXT DIFFERENCE";
 
-                    diffs.add(new String[]{ rec, sq, String.valueOf(i + 1), f, ov, nv, status });
+                    diffs.add(new String[]{rec, sq, String.valueOf(i + 1), f, ov, nv, status});
                     diffCount++;
                 }
             }
@@ -209,7 +221,7 @@ public class CsvComparatorRegression {
             Map<String, Map<String, List<String[]>>> grouped = new LinkedHashMap<>();
             for (String[] row : diffs) {
                 String rec = row[0];
-                String sq  = row[1].isEmpty() ? "—" : row[1];
+                String sq = row[1].isEmpty() ? "—" : row[1];
                 grouped.computeIfAbsent(rec, r -> new LinkedHashMap<>())
                         .computeIfAbsent(sq, s -> new ArrayList<>())
                         .add(row);
@@ -231,7 +243,9 @@ public class CsvComparatorRegression {
                 System.out.println("Recording: " + recEntry.getKey());
                 for (Map.Entry<String, List<String[]>> sqEntry : recEntry.getValue().entrySet()) {
                     String sq = sqEntry.getKey();
-                    if (!sq.equals("—")) squaresWithDiffs.add(sq);
+                    if (!sq.equals("—")) {
+                        squaresWithDiffs.add(sq);
+                    }
                     List<String[]> entries = sqEntry.getValue();
 
                     System.out.println("  ▫ Square " + sq + ":");
@@ -263,7 +277,7 @@ public class CsvComparatorRegression {
     // ----------------------------------------------------------------------
     private static String buildKey(Map<String, String> r) {
         String rec = safe(r.get("Recording Name"));
-        String sq  = r.containsKey("Square Number") ? safe(r.get("Square Number")) : "";
+        String sq = r.containsKey("Square Number") ? safe(r.get("Square Number")) : "";
         return sq.isEmpty() ? rec : rec + " - " + sq;
     }
 
@@ -280,14 +294,20 @@ public class CsvComparatorRegression {
         List<Map<String, String>> rows = new ArrayList<>();
         try (BufferedReader br = Files.newBufferedReader(path)) {
             String headerLine = br.readLine();
-            if (headerLine == null) return rows;
+            if (headerLine == null) {
+                return rows;
+            }
 
             String[] headers = headerLine.split(",", -1);
-            for (int i = 0; i < headers.length; i++) headers[i] = headers[i].trim();
+            for (int i = 0; i < headers.length; i++) {
+                headers[i] = headers[i].trim();
+            }
 
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.isEmpty()) continue;
+                if (line.isEmpty()) {
+                    continue;
+                }
                 String[] vals = line.split(",", -1);
                 Map<String, String> row = new LinkedHashMap<>();
                 for (int i = 0; i < headers.length; i++) {
@@ -302,14 +322,20 @@ public class CsvComparatorRegression {
     }
 
     private static String clean(String s) {
-        if (s == null) return "";
+        if (s == null) {
+            return "";
+        }
         String t = s.trim();
-        if (t.equalsIgnoreCase("nan") || t.equalsIgnoreCase("null")) return "";
+        if (t.equalsIgnoreCase("nan") || t.equalsIgnoreCase("null")) {
+            return "";
+        }
         return t;
     }
 
     private static boolean valuesEqual(String a, String b) {
-        if (Objects.equals(a, b)) return true;
+        if (Objects.equals(a, b)) {
+            return true;
+        }
         Double da = parseDouble(a);
         Double db = parseDouble(b);
         if (da != null && db != null) {
@@ -321,7 +347,9 @@ public class CsvComparatorRegression {
     }
 
     private static Double parseDouble(String s) {
-        if (s == null || s.isEmpty()) return null;
+        if (s == null || s.isEmpty()) {
+            return null;
+        }
         try {
             double v = Double.parseDouble(s);
             return Double.isNaN(v) ? null : v;
