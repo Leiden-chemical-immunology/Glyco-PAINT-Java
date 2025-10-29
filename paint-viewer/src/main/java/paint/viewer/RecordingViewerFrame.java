@@ -43,7 +43,7 @@ package paint.viewer;
 
 import paint.shared.config.PaintConfig;
 import paint.shared.objects.Project;
-import paint.shared.objects.Square;
+
 import paint.shared.objects.Track;
 import paint.shared.utils.CalculateTau;
 import paint.shared.utils.PaintPrefs;

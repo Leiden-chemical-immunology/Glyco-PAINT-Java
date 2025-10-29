@@ -333,16 +333,6 @@ public class SquareGridPanel extends JPanel {
         return new HashSet<>(selectedSquaresNumbers);
     }
 
-    /** @return a copy of the currently selected square IDs. */
-    public List<Square> getSelectedSquares() {
-        List<Square> selectedSquares = new ArrayList<>();
-        for (Square sq : squares) {
-            if (sq.isSelected()) {
-            }
-        }
-        return squares;
-    }
-
     /** Clears all selections and refreshes the panel. */
     public void clearSelection() {
         selectedSquaresNumbers.clear();
