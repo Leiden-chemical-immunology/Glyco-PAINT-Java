@@ -1,3 +1,43 @@
+/******************************************************************************
+ *  Class:        RecordingEntry.java
+ *  Package:      paint.viewer.utils
+ *
+ *  PURPOSE:
+ *    Represents a single recording entry within an experiment, encapsulating
+ *    metadata, image references, and square-level visibility control parameters.
+ *
+ *  DESCRIPTION:
+ *    Each {@code RecordingEntry} provides access to both image representations
+ *    (TrackMate and Brightfield) and data-related parameters such as minimum
+ *    density ratio, maximum variability, R² threshold, and neighbour mode.
+ *
+ *    It also provides a high-level interface for retrieving {@link paint.shared.objects.Square}
+ *    data associated with a recording, as well as convenience methods for
+ *    metadata access (probe type, adjuvant, cell type, etc.).
+ *
+ *    Images are preloaded using either {@code ImageIO} or ImageJ’s {@code Opener}
+ *    for compatibility with both standard and scientific formats.
+ *
+ *  KEY FEATURES:
+ *    • Encapsulates per-recording configuration and visibility parameters.
+ *    • Loads and caches TrackMate and Brightfield images automatically.
+ *    • Provides structured access to recording metadata and square data.
+ *    • Performs consistency validation against expected square counts.
+ *    • Fully integrated with PAINT’s logging framework ({@link paint.shared.utils.PaintLogger}).
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-viewer
+ *
+ *  UPDATED:
+ *    2025-10-29
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.viewer.utils;
 
 import paint.shared.objects.Project;
@@ -14,10 +54,10 @@ import java.util.List;
 /**
  * Represents a single recording entry within an experiment.
  * Each {@code RecordingEntry} encapsulates metadata, image paths, and adjustable
- * visibility control parameters (e.g., density ratio, variability, R² threshold).
+ * visibility control parameters (e.g., density ratio, variability, and R² threshold).
  *
- * Images are preloaded via ImageIO or ImageJ Opener, and associated square data
- * can be lazily fetched and cached from the experiment.
+ * <p>Images are preloaded via ImageIO or ImageJ Opener, and associated square data
+ * can be lazily fetched and cached from the experiment context.</p>
  */
 public class RecordingEntry {
 
@@ -37,7 +77,16 @@ public class RecordingEntry {
     // @formatter:on
 
     /**
-     * Constructs a new {@code RecordingEntry}.
+     * Constructs a new {@code RecordingEntry} with associated images and control parameters.
+     *
+     * @param recording the underlying {@link Recording} metadata
+     * @param trackmateImagePath path to the TrackMate overlay image
+     * @param brightfieldImagePath path to the Brightfield reference image
+     * @param experimentName name of the parent experiment
+     * @param minRequiredDensityRatio minimum required density ratio threshold
+     * @param maxAllowableVariability maximum allowable variability threshold
+     * @param minRequiredRSquared minimum R² value (0.0–1.0)
+     * @param neighbourMode neighbour visibility mode as string
      */
     public RecordingEntry(Recording recording,
                           Path      trackmateImagePath,
@@ -63,6 +112,15 @@ public class RecordingEntry {
     // IMAGE LOADING
     // =========================================================================================
 
+    /**
+     * Attempts to load an image from disk using {@code ImageIO}, falling back to
+     * ImageJ’s {@code Opener} for extended format support. Returns an {@link ImageIcon}
+     * suitable for Swing rendering or {@code null} if loading fails.
+     *
+     * @param imagePath path to the image file
+     * @param label descriptive label for logging
+     * @return {@link ImageIcon} for the image, or {@code null} if load fails
+     */
     private static ImageIcon loadImage(Path imagePath, String label) {
         if (imagePath == null) {
             return null;
@@ -195,12 +253,13 @@ public class RecordingEntry {
     /**
      * Retrieves the list of {@link Square} objects associated with this recording.
      * <p>
-     * Since the experiment and all recordings are fully loaded at startup via
-     * {@link paint.shared.io.ExperimentDataLoader}, this method simply delegates to
-     * the associated {@link Recording}. No external cache or file I/O is used.
+     * The experiment and all recordings are fully loaded at startup via
+     * {@link paint.shared.io.ExperimentDataLoader}, so this method directly
+     * delegates to the associated {@link Recording}.
+     * </p>
      *
-     * @param project the project context (unused, kept for signature compatibility)
-     * @param expectedNumberOfSquares expected number of squares (for layout validation)
+     * @param project the project context (unused; maintained for compatibility)
+     * @param expectedNumberOfSquares expected number of squares for layout validation
      * @return list of {@link Square} objects for this recording
      */
     public List<Square> getSquares(Project project, int expectedNumberOfSquares) {

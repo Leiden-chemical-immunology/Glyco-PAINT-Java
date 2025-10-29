@@ -1,3 +1,42 @@
+/******************************************************************************
+ *  Class:        RecordingLoader.java
+ *  Package:      paint.viewer.utils
+ *
+ *  PURPOSE:
+ *    Loads and validates recording data and associated images from a PAINT
+ *    project directory, constructing {@link RecordingEntry} instances that
+ *    represent complete experiment recordings.
+ *
+ *  DESCRIPTION:
+ *    The {@code RecordingLoader} iterates over all experiment folders within
+ *    a project, loads each experiment using {@link paint.shared.io.ExperimentDataLoader},
+ *    and constructs {@link RecordingEntry} objects for all recordings that meet
+ *    process and file-availability requirements.
+ *
+ *    Each recording entry combines metadata, images (TrackMate and Brightfield),
+ *    and configuration thresholds loaded from {@link paint.shared.config.PaintConfig}.
+ *    Invalid or incomplete recordings are skipped with diagnostic logging.
+ *
+ *  KEY FEATURES:
+ *    • Loads complete experiments with squares and track data.
+ *    • Validates existence of TrackMate and Brightfield images.
+ *    • Reads density, variability, and R² thresholds from configuration.
+ *    • Constructs structured {@link RecordingEntry} objects for UI or analysis use.
+ *    • Provides detailed logging via {@link paint.shared.utils.PaintLogger}.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-viewer
+ *
+ *  UPDATED:
+ *    2025-10-29
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.viewer.utils;
 
 import paint.shared.config.PaintConfig;
@@ -15,23 +54,25 @@ import java.util.List;
 import static paint.shared.io.HelperIO.readAllRecordings;
 
 /**
- * The RecordingLoader class provides functionality for loading and filtering
- * recordings from a project directory structure. It ensures that the recordings
- * meet specific process requirements and that necessary file dependencies exist.
+ * Provides functionality for loading and filtering recordings from a project directory.
+ * <p>
+ * The {@code RecordingLoader} ensures that required images and metadata exist for each
+ * recording, applying configuration-defined thresholds to build {@link RecordingEntry}
+ * instances ready for visualization or further processing.
+ * </p>
  */
 public class RecordingLoader {
 
     /**
-     * Loads a list of recording entries from the specified project. The method iterates
-     * through all experiment names in the project, reads recordings, and constructs
-     * valid recording entries based on specific conditions and configurations.
+     * Loads all {@link RecordingEntry} instances from the specified {@link Project}.
+     * <p>
+     * This method iterates over all experiment directories, loads their full content
+     * (including squares and tracks), and constructs valid entries only for recordings
+     * meeting both process requirements and file availability conditions.
+     * </p>
      *
-     * @param project the project from which recordings and their associated data will be loaded.
-     *                This project is expected to contain a root path, experiment names,
-     *                and relevant directories or files required for constructing recording entries.
-     * @return a list of {@link RecordingEntry} objects representing the recordings and their
-     *         associated metadata loaded from the project. The list will be empty if no valid
-     *         recording entries are found.
+     * @param project the project context containing experiments, recordings, and file data
+     * @return list of valid {@link RecordingEntry} instances; empty if no valid recordings found
      */
     public static List<RecordingEntry> loadFromProject(Project project) {
 

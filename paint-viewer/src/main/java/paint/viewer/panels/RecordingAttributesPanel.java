@@ -1,3 +1,40 @@
+/******************************************************************************
+ *  Class:        RecordingAttributesPanel.java
+ *  Package:      paint.viewer.panels
+ *
+ *  PURPOSE:
+ *    Displays the attributes of a {@link paint.viewer.utils.RecordingEntry}
+ *    in a structured tabular format within the PAINT viewer interface.
+ *
+ *  DESCRIPTION:
+ *    Provides a graphical panel for visualizing the key metadata of a
+ *    recording entry, including probe characteristics, experiment parameters,
+ *    and derived statistics such as Tau, Density, and R² thresholds.
+ *
+ *    The panel uses a non-editable {@link JTable} backed by a
+ *    {@link javax.swing.table.DefaultTableModel}, allowing data to be
+ *    refreshed dynamically from a given {@link RecordingEntry}.
+ *    It supports both permanent updates and transient previews of
+ *    parameter changes.
+ *
+ *  KEY FEATURES:
+ *    • Displays probe, cell type, and recording statistics in a table view.
+ *    • Supports real-time preview updates without altering data objects.
+ *    • Formats numeric fields with configurable decimal precision.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-viewer
+ *
+ *  UPDATED:
+ *    2025-10-29
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.viewer.panels;
 
 import paint.viewer.utils.RecordingEntry;
@@ -7,33 +44,25 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 /**
- * A panel that displays the attributes of a `RecordingEntry` in a tabular format.
- *
- * This class provides a graphical user interface component to visualize key details
- * of a given `RecordingEntry`, such as probe properties, experiment parameters, and
- * statistical information. The panel is updated dynamically based on the data provided
- * through the `updateFromEntry` method.
+ * A Swing panel that presents attributes of a {@link RecordingEntry} in tabular form.
+ * <p>
+ * The panel includes a scrollable, non-editable table showing probe, experiment,
+ * and computed parameters for the active recording. It supports both static
+ * updates (via {@link #updateFromEntry}) and temporary previews
+ * (via {@link #updatePreview}).
  */
 public class RecordingAttributesPanel {
+
     private final JPanel            root;
     private final DefaultTableModel model;
     private final JTable            table;
 
     /**
-     * Constructs a RecordingAttributesPanel for displaying attributes of a recording in a tabular format.
-     *
-     * This constructor initializes the graphical components, including a table to display the attributes,
-     * and sets their layout and styles. The table is non-editable and displays attributes in two columns:
-     * "Attr" for attribute names and "Val" for their corresponding values. The visualization is designed
-     * to be embedded into a parent component, such that it is scrollable and visually organized.
-     *
-     * The root panel uses a BorderLayout and applies a compound border for better visual distinction.
-     * Its preferred width is configured while allowing flexible height adjustments.
-     *
-     * Key features include:
-     * - A scrollable table for displaying attributes.
-     * - A non-editable table model to ensure data integrity.
-     * - Styled table headers for better readability.
+     * Constructs a new {@code RecordingAttributesPanel}.
+     * <p>
+     * Initializes a styled, non-editable table for displaying recording attributes.
+     * The layout uses a {@link BorderLayout} with compound borders and a scroll pane
+     * for readability and integration within parent components.
      */
     public RecordingAttributesPanel() {
         root = new JPanel(new BorderLayout());
@@ -56,16 +85,20 @@ public class RecordingAttributesPanel {
         root.add(scroll, BorderLayout.CENTER);
     }
 
+    /**
+     * Returns the root Swing component representing this panel.
+     *
+     * @return the root {@link JComponent}
+     */
     public JComponent getComponent() {
         return root;
     }
 
     /**
-     * Updates the table model with attributes from the provided {@link RecordingEntry} instance and the given number of squares.
-     * The method resets the table data and populates it with key attributes related to the recording.
+     * Updates the displayed attributes using data from the specified recording entry.
      *
-     * @param recordingEntry           the {@link RecordingEntry} object containing details about a recording
-     * @param numSquares  the number of squares associated with the recording
+     * @param recordingEntry the {@link RecordingEntry} containing the data
+     * @param numSquares     the number of squares associated with this recording
      */
     public void updateFromEntry(RecordingEntry recordingEntry, int numSquares) {
         model.setRowCount(0);
@@ -87,17 +120,18 @@ public class RecordingAttributesPanel {
     }
 
     /**
-     * Temporarily updates the attribute table to preview parameter changes
-     * without modifying the underlying {@link RecordingEntry}.
+     * Temporarily updates the displayed attributes to preview parameter changes.
+     * <p>
+     * This does not modify the underlying {@link RecordingEntry}.
      *
-     * @param recordingEntry                the current recording entry (for static fields like Probe, Adjuvant, etc.)
-     * @param numSquares       number of squares in this recording
-     * @param tau              Tau value to preview
-     * @param density          Density value to preview
-     * @param minDensityRatio  minimum density ratio threshold
-     * @param maxVariability   maximum variability threshold
-     * @param minRSquared      minimum R² threshold
-     * @param neighbourMode    neighbour mode string ("Free", "Relaxed", "Strict")
+     * @param recordingEntry  the current recording entry (for static attributes)
+     * @param numSquares      number of squares for the recording
+     * @param tau             Tau value to preview
+     * @param density         Density value to preview
+     * @param minDensityRatio minimum density ratio threshold
+     * @param maxVariability  maximum variability threshold
+     * @param minRSquared     minimum R² threshold
+     * @param neighbourMode   neighbour mode label (“Free”, “Relaxed”, “Strict”)
      */
     public void updatePreview(RecordingEntry recordingEntry,
                               int            numSquares,
@@ -108,7 +142,6 @@ public class RecordingAttributesPanel {
                               double         minRSquared,
                               String         neighbourMode) {
 
-        // rebuild the model with the new transient values
         model.setRowCount(0);
         model.addRow(new Object[]{"Probe",               recordingEntry.getProbeName()});
         model.addRow(new Object[]{"Probe Type",          recordingEntry.getProbeType()});
@@ -128,14 +161,11 @@ public class RecordingAttributesPanel {
     }
 
     /**
-     * Formats the given double value to a string with a specified number of decimal places.
-     * If the value is NaN (Not a Number), it returns "NaN".
-     * If the value is infinite, it returns "∞" for positive infinity or "-∞" for negative infinity.
+     * Formats a numeric value to the specified precision, handling NaN and infinity cases.
      *
-     * @param v the double value to format
-     * @param p the number of decimal places to include in the formatted string
-     * @return a string representation of the given double value formatted to the specified precision,
-     *         or "NaN"/"∞"/"-∞" for special cases
+     * @param v the value to format
+     * @param p number of decimal places
+     * @return formatted string representation of the value
      */
     private static String format(double v, int p) {
         if (Double.isNaN(v)) {

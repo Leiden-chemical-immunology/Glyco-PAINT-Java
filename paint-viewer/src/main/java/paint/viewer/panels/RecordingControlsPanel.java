@@ -1,3 +1,40 @@
+/******************************************************************************
+ *  Class:        RecordingControlsPanel.java
+ *  Package:      paint.viewer.panels
+ *
+ *  PURPOSE:
+ *    Provides a control panel for managing recordings and display options
+ *    in the PAINT viewer. Enables actions such as filtering, square selection,
+ *    cell assignment, playback, and visualization toggling.
+ *
+ *  DESCRIPTION:
+ *    The panel offers grouped user interface controls for interacting with
+ *    recording data and the square grid display. It supports both functional
+ *    controls (filter, select, assign, play) and visual toggles (borders,
+ *    shading, numbering modes).
+ *
+ *    A {@link Listener} interface defines callback methods for handling
+ *    user-triggered events such as filtering or display state changes.
+ *    The panel layout uses vertical grouping for clarity and accessibility.
+ *
+ *  KEY FEATURES:
+ *    • Centralized control panel for recording-related actions.
+ *    • Live toggles for borders, shading, and numeric label modes.
+ *    • Integrated listener interface for external event handling.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-viewer
+ *
+ *  UPDATED:
+ *    2025-10-29
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.viewer.panels;
 
 import paint.viewer.shared.SquareControlParams;
@@ -6,15 +43,12 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * The RecordingControlsPanel class represents a user interface panel that provides
- * various controls for managing and interacting with recorded data or grid-based operations.
- * It contains buttons, checkboxes, and radio buttons organized to allow users to
- * perform actions such as filtering recordings, selecting squares, assigning cells,
- * playing recordings, toggling display settings, and changing number display modes.
- *
- * Listeners can be registered to handle user interactions with these controls.
+ * A user interface panel containing interactive controls for managing recordings
+ * and grid visualization options within the PAINT viewer.
  */
 public class RecordingControlsPanel {
+
+    /** Defines callback methods for handling user actions triggered by this panel. */
     public interface Listener {
         void onFilterRequested();
         void onSelectSquaresRequested();
@@ -29,11 +63,10 @@ public class RecordingControlsPanel {
     private final JPanel root;
 
     /**
-     * Constructs a new RecordingControlsPanel, providing an interface for controlling
-     * the recording features such as filtering, selecting squares, assigning cells,
-     * and toggling display options like borders, shading, and number modes.
+     * Constructs a {@code RecordingControlsPanel} providing buttons, checkboxes,
+     * and radio buttons for managing recording and grid behavior.
      *
-     * @param listener the event listener that handles the actions triggered by the controls
+     * @param listener the {@link Listener} that handles user actions
      */
     public RecordingControlsPanel(final Listener listener) {
         root = new JPanel(new BorderLayout());
@@ -46,6 +79,7 @@ public class RecordingControlsPanel {
         JPanel content = new JPanel();
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
+        // === Action buttons ===
         JButton filterButton = new JButton("Filter recordings");
         JButton squareButton = new JButton("Select Squares");
         JButton cellButton   = new JButton("Assign Cells");
@@ -56,7 +90,6 @@ public class RecordingControlsPanel {
             b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28)); // stretch horizontally
         }
 
-        // === Controls panel ===
         JPanel controls = new JPanel();
         controls.setLayout(new BoxLayout(controls, BoxLayout.Y_AXIS));
         controls.setBorder(BorderFactory.createTitledBorder("Controls"));
@@ -71,9 +104,10 @@ public class RecordingControlsPanel {
         controls.add(Box.createVerticalStrut(10));
         controls.add(playButton);
 
-        // === Borders and shading ===
+        // === Borders and shading toggles ===
         JCheckBox showBorders = new JCheckBox("Show borders", true);
         JCheckBox showShading = new JCheckBox("Show shading", true);
+
         JPanel borders = new JPanel();
         borders.setLayout(new BoxLayout(borders, BoxLayout.Y_AXIS));
         borders.setBorder(BorderFactory.createTitledBorder("Borders and Shading"));
@@ -83,10 +117,11 @@ public class RecordingControlsPanel {
         borders.add(Box.createVerticalStrut(5));
         borders.add(showShading);
 
-        // === Number display ===
-        JRadioButton none = new JRadioButton("None", true);
-        JRadioButton label = new JRadioButton("Label");
+        // === Number display options ===
+        JRadioButton none   = new JRadioButton("None", true);
+        JRadioButton label  = new JRadioButton("Label");
         JRadioButton square = new JRadioButton("Square");
+
         ButtonGroup g = new ButtonGroup();
         g.add(none);
         g.add(label);
@@ -125,6 +160,11 @@ public class RecordingControlsPanel {
         root.add(content, BorderLayout.NORTH);
     }
 
+    /**
+     * Returns the root Swing component representing this panel.
+     *
+     * @return the root {@link JComponent}
+     */
     public JComponent getComponent() {
         return root;
     }

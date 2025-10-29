@@ -1,3 +1,43 @@
+/******************************************************************************
+ *  Class:        RecordingViewer.java
+ *  Package:      paint.viewer
+ *
+ *  PURPOSE:
+ *    Serves as the entry point for the PAINT Viewer application, initializing
+ *    preferences, logging, and configuration before launching the recording
+ *    visualization interface.
+ *
+ *  DESCRIPTION:
+ *    The {@code RecordingViewer} initializes application components such as
+ *    {@link paint.shared.utils.PaintPrefs}, {@link paint.shared.config.PaintConfig},
+ *    and {@link paint.shared.utils.PaintLogger}, and presents the user with a
+ *    {@link paint.shared.dialogs.ProjectDialog} for project selection.
+ *
+ *    Upon confirmation, it loads experiment data via
+ *    {@link paint.viewer.utils.RecordingLoader}, and if valid recordings are found,
+ *    launches the {@link paint.viewer.RecordingViewerFrame} interface.
+ *
+ *  KEY FEATURES:
+ *    • Loads the last used project directory from user preferences.
+ *    • Initializes configuration and logging systems.
+ *    • Presents a project selection dialog for the user.
+ *    • Loads and validates recordings for display.
+ *    • Launches the main viewer interface if data is valid.
+ *    • Displays error or warning dialogs when necessary.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-viewer
+ *
+ *  UPDATED:
+ *    2025-10-29
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.viewer;
 
 import paint.shared.config.PaintConfig;
@@ -14,44 +54,33 @@ import java.nio.file.Paths;
 import java.util.List;
 
 /**
- * The RecordingViewer class serves as the entry point for the viewer application.
- * It initializes application preferences, logging, and configuration before
- * launching the recording viewer interface.
+ * Entry point for the PAINT Viewer application.
+ * <p>
+ * Initializes preferences, logging, and configuration before launching the
+ * recording viewer interface. The viewer enables users to inspect and
+ * interact with experiment recordings loaded from a project.
+ * </p>
  *
- * Responsibilities:
- * - Load the last used project root directory using PaintPrefs.
- * - Initialize application-specific configuration and logging using PaintConfig and PaintLogger.
- * - Launch a project specification dialog for user interaction and project selection.
- * - Display recordings in a viewer frame if valid recordings are detected in the selected project.
- *
- * Behavior:
- * - If no valid recordings are found in the selected project, it notifies the user via a dialog.
- * - Provides error handling for failures during the launch of the viewer.
- *
- * Key Components:
- * - PaintPrefs: Used to load application preferences, such as the last used project directory.
- * - PaintConfig: Handles initialization of application-specific configurations.
- * - PaintLogger: Manages logging for the viewer application.
- * - ProjectDialog: Displays a dialog for project selection and captures user input.
- * - RecordingLoader: Loads recordings from the selected project and provides a list of entries.
- * - RecordingViewerFrame: Presents the user interface for viewing the loaded recordings.
- *
- * This class utilizes Swing for its graphical user interface components and ensures
- * the application launches on the Event Dispatch Thread (EDT) for thread safety.
+ * <p><strong>Responsibilities:</strong></p>
+ * <ul>
+ *   <li>Load the last used project root directory via {@link PaintPrefs}.</li>
+ *   <li>Initialize configuration and logging via {@link PaintConfig} and {@link PaintLogger}.</li>
+ *   <li>Display a project specification dialog for user selection.</li>
+ *   <li>Load recordings from the selected project using {@link RecordingLoader}.</li>
+ *   <li>Launch the {@link RecordingViewerFrame} interface if valid recordings are found.</li>
+ * </ul>
  */
 public class RecordingViewer {
 
     /**
-     * The main method serves as the entry point for the application. It initializes
-     * application settings, logging, and other configurations. Upon startup, it attempts
-     * to load the last used project root, configures the logging system, and opens the
-     * project specification dialog. The dialog enables users to select projects to
-     * proceed with, and on confirmation, launches the recording viewer if valid recordings
-     * are found.
+     * Main entry point for the PAINT Viewer application.
+     * <p>
+     * This method initializes preferences, configuration, and logging, then
+     * opens the project dialog for user input. If valid recordings are loaded,
+     * it launches the viewer frame for visualization.
+     * </p>
      *
-     * @param args Command-line arguments passed to the application. These are not used
-     *             in the current implementation but exist to comply with the standard
-     *             main method signature.
+     * @param args command-line arguments (unused)
      */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {

@@ -1,3 +1,41 @@
+/******************************************************************************
+ *  Class:        FilterDialog.java
+ *  Package:      paint.viewer.dialogs
+ *
+ *  PURPOSE:
+ *    Provides a modal dialog for filtering a list of {@link paint.viewer.utils.RecordingEntry}
+ *    objects by metadata attributes such as Cell Type, Probe Name, Probe Type,
+ *    Adjuvant, and Concentration.
+ *
+ *  DESCRIPTION:
+ *    The dialog presents a column-based interface with multi-selectable lists
+ *    for each attribute category. Each column allows users to apply or reset
+ *    filters independently, while global “Apply”, “Reset All”, and “Cancel”
+ *    controls manage overall filter state.
+ *
+ *    The dialog dynamically updates available values based on active filters
+ *    and always reflects the distinct attribute values in the filtered set.
+ *
+ *  KEY FEATURES:
+ *    • Filter {@code RecordingEntry} objects by any combination of attributes.
+ *    • Multi-select filtering lists with per-column Filter/Reset buttons.
+ *    • “Apply”, “Reset All”, and “Cancel” global controls.
+ *    • Dynamic list updates based on current filtered results.
+ *    • Modal operation blocking interaction with the parent frame.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-viewer
+ *
+ *  UPDATED:
+ *    2025-10-29
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.viewer.dialogs;
 
 import paint.viewer.utils.RecordingEntry;
@@ -11,20 +49,13 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
- * The FilterDialog class provides a modal dialog for filtering a list of
- * RecordingEntry objects based on various attributes such as cell type,
- * probe name, probe type, adjuvant, and concentration.
+ * A modal dialog for filtering a list of {@link RecordingEntry} objects
+ * based on attributes such as cell type, probe name, probe type,
+ * adjuvant, and concentration.
  *
- * This class extends JDialog and uses JList components for user input,
- * allowing multiple filter criteria to be selected. Users can apply filters,
- * reset individual filters, reset all filters, or cancel the operation.
- *
- * Key Features:
- * 1. Displays various filtering options as lists, each grouped in separate
- *    panels with filter and reset buttons.
- * 2. Allows multi-selection in each filter list for flexible filtering.
- * 3. Updates the displayed options dynamically based on the filtered results.
- * 4. Provides options to apply filters, reset all filters, or cancel the actions.
+ * <p>Each filter category is displayed in a column with its own JList,
+ * “Filter” and “Reset” buttons. Users can apply individual filters,
+ * reset them, reset all filters, or cancel the operation.</p>
  */
 public class FilterDialog extends JDialog {
 
@@ -40,12 +71,12 @@ public class FilterDialog extends JDialog {
     private boolean cancelled = true;
 
     /**
-     * Constructs a FilterDialog for filtering a list of RecordingEntry objects. The dialog
-     * provides a user interface for selecting and applying various filtering options
-     * based on attributes such as cell type, probe name, probe type, adjuvants, and concentrations.
+     * Constructs a modal {@code FilterDialog} for filtering a list of
+     * {@link RecordingEntry} objects. The dialog allows the user to select
+     * and apply filters on key attributes of the recordings.
      *
-     * @param owner the parent frame that owns this dialog
-     * @param recordings the list of RecordingEntry objects to be filtered
+     * @param owner      the parent frame that owns this dialog
+     * @param recordings the list of {@code RecordingEntry} objects to be filtered
      */
     public FilterDialog(Frame owner, List<RecordingEntry> recordings) {
         super(owner, "Filter Recordings", true);
@@ -55,14 +86,14 @@ public class FilterDialog extends JDialog {
         setLayout(new BorderLayout(10, 10));
         setResizable(false);
 
+        // ─────────────────────────────────────────────────────────────────────
         // Collect distinct values for each attribute
-        // @formatter:off
+        // ─────────────────────────────────────────────────────────────────────
         Set<String> cellTypes      = new TreeSet<>();
         Set<String> probeNames     = new TreeSet<>();
         Set<String> probeTypes     = new TreeSet<>();
         Set<String> adjuvants      = new TreeSet<>();
         Set<String> concentrations = new TreeSet<>();
-        // @formatter:on
 
         for (RecordingEntry entry : recordings) {
             cellTypes.add(entry.getCellType());
@@ -87,13 +118,15 @@ public class FilterDialog extends JDialog {
         listPanel.add(createListBoxWithButtons("Adjuvant", adjuvantList));
         listPanel.add(createListBoxWithButtons("Concentration", concentrationList));
 
-        // Global Apply / Reset All / Cancel buttons (right side, aligned top)
+        // ─────────────────────────────────────────────────────────────────────
+        // Global Apply / Reset All / Cancel controls
+        // ─────────────────────────────────────────────────────────────────────
         JPanel rightButtonPanel = new JPanel();
         rightButtonPanel.setLayout(new BoxLayout(rightButtonPanel, BoxLayout.Y_AXIS));
 
-        JButton applyButton = new JButton("Apply");
+        JButton applyButton    = new JButton("Apply");
         JButton resetAllButton = new JButton("Reset All");
-        JButton cancelButton = new JButton("Cancel");
+        JButton cancelButton   = new JButton("Cancel");
 
         Dimension btnSize = new Dimension(100, 30);
         applyButton.setMaximumSize(btnSize);
@@ -104,7 +137,6 @@ public class FilterDialog extends JDialog {
             cancelled = false;
             dispose();
         });
-
         resetAllButton.addActionListener(e -> resetAllFilters());
         cancelButton.addActionListener(e -> {
             cancelled = true;
@@ -127,12 +159,10 @@ public class FilterDialog extends JDialog {
     }
 
     /**
-     * Creates a JList from the provided set of string values.
-     * The JList is configured to support multiple interval selection
-     * and displays a maximum of five visible rows.
+     * Creates a multi-select {@link JList} populated with a given set of values.
      *
-     * @param values the set of string values to populate the JList
-     * @return a JList containing the given values
+     * @param values the distinct string values to populate the list
+     * @return a configured {@code JList} instance
      */
     private JList<String> createList(Set<String> values) {
         JList<String> list = new JList<>(values.toArray(new String[0]));
@@ -142,14 +172,12 @@ public class FilterDialog extends JDialog {
     }
 
     /**
-     * Creates a JPanel containing a titled border, a scrollable JList,
-     * and two buttons ("Filter" and "Reset") with attached functionality.
-     * The "Filter" button applies filters based on selected items in the JList,
-     * and the "Reset" button resets the filters.
+     * Creates a bordered panel containing a labeled {@link JList} and
+     * two buttons (“Filter” and “Reset”) that act on that list.
      *
-     * @param title the title to be displayed on the JPanel border
-     * @param list  the JList component to be added to the panel; used for filtering and resetting functionality
-     * @return a JPanel that integrates the JList and associated buttons in a structured layout
+     * @param title the title for the panel border
+     * @param list  the {@code JList} instance to be displayed
+     * @return the assembled panel
      */
     private JPanel createListBoxWithButtons(String title, JList<String> list) {
         JPanel panel = new JPanel(new BorderLayout());
@@ -159,29 +187,23 @@ public class FilterDialog extends JDialog {
         scrollPane.setPreferredSize(new Dimension(120, 160));
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        // @formatter:off
         JPanel btnPanel   = new JPanel(new GridLayout(2, 1, 0, 5));
         JButton filterBtn = new JButton("Filter");
         JButton resetBtn  = new JButton("Reset");
-        // @formatter:on
 
         filterBtn.addActionListener(e -> applySingleFilter(list));
         resetBtn.addActionListener(e -> resetSingleFilter(list));
 
         btnPanel.add(filterBtn);
         btnPanel.add(resetBtn);
-
         panel.add(btnPanel, BorderLayout.SOUTH);
         return panel;
     }
 
     /**
-     * Applies a filter to the list of recordings based on the selected items
-     * in the provided JList. The method modifies the filteredRecordings field by
-     * retaining only the entries that match the selected criteria in the JList.
-     * Updates the UI lists after applying the filter.
+     * Applies filtering logic using the selected values from a specific list.
      *
-     * @param list the JList component containing selectable filter criteria
+     * @param list the {@code JList} containing selected filter criteria
      */
     private void applySingleFilter(JList<String> list) {
         List<String> selected = list.getSelectedValuesList();
@@ -192,42 +214,33 @@ public class FilterDialog extends JDialog {
         filteredRecordings = filteredRecordings.stream()
                 .filter(entry -> matches(entry, list, selected))
                 .collect(Collectors.toList());
-
         updateLists();
     }
 
     /**
-     * Resets the filtered recordings list to its original unfiltered state and updates the UI
-     * components based on the full set of original recordings. This action corresponds
-     * to resetting a single filter associated with the provided JList.
+     * Resets a single filter by restoring {@code filteredRecordings}
+     * to its original state and updating UI lists.
      *
-     * @param list the JList representing the filter criteria to be reset
+     * @param list the list whose filter is being reset
      */
     private void resetSingleFilter(JList<String> list) {
         filteredRecordings = new ArrayList<>(originalRecordings);
         updateLists();
     }
 
-    /**
-     * Resets all applied filters and restores the filtered recordings to the original unfiltered state.
-     * This method resets the filteredRecordings list to match the originalRecordings list, ensuring
-     * that no filtering constraints are applied. After resetting the filters, it updates the associated
-     * UI lists to reflect the full set of available recordings and their attributes.
-     */
+    /** Resets all filters and restores the full unfiltered dataset. */
     private void resetAllFilters() {
         filteredRecordings = new ArrayList<>(originalRecordings);
         updateLists();
     }
 
     /**
-     * Checks if a given RecordingEntry matches the selected filter criteria in the specified JList.
-     * The method evaluates the relevant attribute of the RecordingEntry based on the type of JList
-     * provided (e.g., cell type, probe name, etc.) and determines whether it is included in the selected criteria.
+     * Determines if a {@link RecordingEntry} matches the selected filter criteria.
      *
-     * @param entry the RecordingEntry to be evaluated against the filter criteria
-     * @param list the JList representing the filter criteria (e.g., cell type list, probe name list)
-     * @param selected the list of selected filter criteria corresponding to the JList
-     * @return true if the RecordingEntry matches the selected criteria; false otherwise
+     * @param entry     the recording being tested
+     * @param list      the {@code JList} defining the filter dimension
+     * @param selected  selected filter values
+     * @return {@code true} if the recording matches the criteria
      */
     private boolean matches(RecordingEntry entry, JList<String> list, List<String> selected) {
         if (list == cellTypeList) {
@@ -244,37 +257,26 @@ public class FilterDialog extends JDialog {
         return true;
     }
 
-    /**
-     * Updates the contents of several UI lists (cellTypeList, probeNameList, probeTypeList, adjuvantList, and concentrationList)
-     * based on the unique attribute values present in the filteredRecordings list.
-     *
-     * This method utilizes the updateList helper method to populate each JList with the corresponding
-     * set of distinct values derived from the attributes of the filtered recordings.
-     *
-     * Specific attributes of RecordingEntry objects are extracted, including cell type, probe name, probe type,
-     * adjuvant, and concentration. The extracted values are converted to sets to ensure uniqueness, and
-     * the UI lists are updated accordingly.
-     */
+    /** Updates each filter list based on the attributes of the filtered recordings. */
     private void updateLists() {
-
-        //@formatter:off
         updateList(cellTypeList,      filteredRecordings.stream().map(RecordingEntry::getCellType).collect(Collectors.toSet()));
         updateList(probeNameList,     filteredRecordings.stream().map(RecordingEntry::getProbeName).collect(Collectors.toSet()));
         updateList(probeTypeList,     filteredRecordings.stream().map(RecordingEntry::getProbeType).collect(Collectors.toSet()));
         updateList(adjuvantList,      filteredRecordings.stream().map(RecordingEntry::getAdjuvant).collect(Collectors.toSet()));
         updateList(concentrationList, filteredRecordings.stream().map(e -> String.valueOf(e.getConcentration())).collect(Collectors.toSet()));
-        //@formatter:off
-
     }
 
+    /** Replaces the data model of a {@link JList} with a new set of values. */
     private void updateList(JList<String> list, Set<String> values) {
         list.setListData(values.toArray(new String[0]));
     }
 
+    /** Returns the currently filtered list of recordings. */
     public List<RecordingEntry> getFilteredRecordings() {
         return filteredRecordings;
     }
 
+    /** Returns {@code true} if the user canceled the dialog. */
     public boolean isCancelled() {
         return cancelled;
     }

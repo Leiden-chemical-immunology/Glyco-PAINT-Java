@@ -1,31 +1,65 @@
+/******************************************************************************
+ *  Class:        SquareControlParams.java
+ *  Package:      paint.viewer.shared
+ *
+ *  PURPOSE:
+ *    Encapsulates the control parameters for square configuration within the
+ *    PAINT viewer system, defining thresholds and neighbor interaction modes.
+ *
+ *  DESCRIPTION:
+ *    The {@code SquareControlParams} class provides an immutable structure that
+ *    stores numerical and categorical parameters controlling visibility and
+ *    filtering behavior of square grids. It includes threshold values for
+ *    density ratio, variability, and R², as well as a string-based neighbour mode.
+ *
+ *    These parameters are typically passed to handlers such as
+ *    {@link paint.viewer.logic.SquareControlHandler} to apply filtering logic
+ *    and update visibility across square grids.
+ *
+ *  KEY FEATURES:
+ *    • Immutable container for visibility and control parameters.
+ *    • Defines thresholds for density ratio, variability, and R².
+ *    • Encodes neighbour visibility mode as a string.
+ *    • Provides an informative string representation for debugging or logging.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-viewer
+ *
+ *  UPDATED:
+ *    2025-10-29
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.viewer.shared;
 
 /**
- * The SquareControlParams class encapsulates parameters used to control the behavior
- * and properties of a square configuration system. It provides a structure for
- * managing density ratio, variability, correlation coefficient, and neighborhood mode.
- *
- * Each field represents a distinct parameter:
- * - densityRatio: Represents the density ratio value as a double.
- * - variability: Represents the variability value as a double.
- * - rSquared: Represents the R-squared correlation coefficient, constrained to the range 0.0–1.0.
- * - neighbourMode: Specifies the mode of neighborhood interaction as a String.
- *
- * Instances of this class are immutable once created.
+ * The {@code SquareControlParams} class encapsulates parameters used to control the
+ * behavior and filtering of square grid configurations within the PAINT viewer.
+ * <p>
+ * It defines numerical thresholds for density ratio, variability, and R², and
+ * specifies the neighborhood mode as a string parameter. Instances of this class
+ * are immutable.
+ * </p>
  */
 public class SquareControlParams {
-    public final double minRequiredDensityRatio;   // now double
-    public final double maxAllowableVariability;    // now double
-    public final double minRequiredRSquared;       // double 0.0–1.0
+    public final double minRequiredDensityRatio;
+    public final double maxAllowableVariability;
+    public final double minRequiredRSquared;
     public final String neighbourMode;
 
     /**
-     * Constructs a new instance of {@code SquareControlParams} with the specified parameters.
+     * Constructs a new immutable {@code SquareControlParams} instance with the
+     * specified control parameter values.
      *
-     * @param minRequiredDensityRatio the density ratio value representing the density configuration of the square system
-     * @param maxAllowableVariability the variability value indicating the degree of variation in the system
-     * @param minRequiredRSquared the R-squared correlation coefficient, constrained between 0.0 and 1.0, representing the statistical measure of fit
-     * @param neighbourMode the mode of neighborhood interaction specified as a string
+     * @param minRequiredDensityRatio minimum required density ratio threshold
+     * @param maxAllowableVariability maximum allowable variability threshold
+     * @param minRequiredRSquared minimum R² value (0.0–1.0) representing statistical fit
+     * @param neighbourMode the neighborhood interaction mode
      */
     public SquareControlParams(double minRequiredDensityRatio,
                                double maxAllowableVariability,
@@ -38,10 +72,10 @@ public class SquareControlParams {
     }
 
     /**
-     * Returns a string representation of the SquareControlParams object. The returned string
-     * includes the values of the density ratio, variability, R-squared, and neighbor mode.
+     * Returns a formatted string representation of this parameter set,
+     * including density ratio, variability, R², and neighbour mode values.
      *
-     * @return a string representation of the SquareControlParams instance, including all its parameters
+     * @return string representation of this {@code SquareControlParams} instance
      */
     @Override
     public String toString() {

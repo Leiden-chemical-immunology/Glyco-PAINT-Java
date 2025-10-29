@@ -1,15 +1,52 @@
+/******************************************************************************
+ *  Class:        NavigationPanel.java
+ *  Package:      paint.viewer.panels
+ *
+ *  PURPOSE:
+ *    Provides a reusable navigation control panel with buttons for moving
+ *    between records, images, or pages in the PAINT viewer interface.
+ *
+ *  DESCRIPTION:
+ *    Displays a simple four-button layout for navigation:
+ *      • “|<” — Jump to the first item
+ *      • “<”  — Move to the previous item
+ *      • “>”  — Move to the next item
+ *      • “>|” — Jump to the last item
+ *
+ *    A listener interface is used to connect navigation actions to custom
+ *    logic in the parent component. Button enabled states can be updated
+ *    dynamically to reflect navigation bounds.
+ *
+ *  KEY FEATURES:
+ *    • Simple reusable navigation panel.
+ *    • Listener-based event handling for flexibility.
+ *    • Dynamic enable/disable control for navigation limits.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-viewer
+ *
+ *  UPDATED:
+ *    2025-10-29
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.viewer.panels;
 
 import javax.swing.*;
 import java.awt.*;
 
 /**
- * The NavigationPanel class provides a graphical user interface component that allows users
- * to navigate between items (e.g., pages or records) using first, previous, next, and last buttons.
- * It is a reusable panel designed for navigation purposes and requires a Listener implementation
- * to handle navigation events.
+ * A simple reusable navigation component providing First, Previous, Next,
+ * and Last buttons for paging or record traversal within the viewer.
  */
 public class NavigationPanel {
+
+    /** Listener interface for responding to navigation button events. */
     public interface Listener {
         void onFirst();
         void onPrev();
@@ -24,12 +61,10 @@ public class NavigationPanel {
     private final JButton lastBtn  = new JButton(">|");
 
     /**
-     * Constructs a NavigationPanel with a set of buttons for navigation (first, previous, next, last)
-     * and wires them to the provided listener to handle navigation actions.
+     * Constructs a NavigationPanel with navigation buttons wired to a listener.
      *
-     * @param listener an implementation of the Listener interface, used to handle actions triggered
-     *                 by the navigation buttons. This listener defines the behavior for the first,
-     *                 previous, next, and last actions.
+     * @param listener a {@link Listener} implementation handling First, Previous,
+     *                 Next, and Last button events
      */
     public NavigationPanel(final Listener listener) {
         root = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
@@ -44,17 +79,20 @@ public class NavigationPanel {
         lastBtn.addActionListener(e -> listener.onLast());
     }
 
+    /**
+     * Returns the root Swing component representing this navigation panel.
+     *
+     * @return the root {@link JComponent}
+     */
     public JComponent getComponent() {
         return root;
     }
 
     /**
-     * Updates the enabled state of the navigation buttons based on the given parameters.
+     * Updates the enabled/disabled state of the navigation buttons.
      *
-     * @param hasPrev a boolean indicating whether the first and previous buttons should be enabled.
-     *                If true, the buttons are enabled; if false, they are disabled.
-     * @param hasNext a boolean indicating whether the next and last buttons should be enabled.
-     *                If true, the buttons are enabled; if false, they are disabled.
+     * @param hasPrev {@code true} to enable the First and Previous buttons
+     * @param hasNext {@code true} to enable the Next and Last buttons
      */
     public void setEnabledState(boolean hasPrev, boolean hasNext) {
         firstBtn.setEnabled(hasPrev);

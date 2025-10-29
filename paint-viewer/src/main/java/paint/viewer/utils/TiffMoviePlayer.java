@@ -1,3 +1,39 @@
+/******************************************************************************
+ *  Class:        TiffMoviePlayer.java
+ *  Package:      paint.viewer.utils
+ *
+ *  PURPOSE:
+ *    Provides an interactive viewer for playing multi-frame TIFF recordings
+ *    as time-lapse movies within a graphical interface.
+ *
+ *  DESCRIPTION:
+ *    The {@code TiffMoviePlayer} loads and displays multi-frame TIFF image
+ *    stacks using ImageJ’s core libraries, allowing users to control playback
+ *    speed, pause, and navigate through frames.
+ *
+ *    It combines ImageJ for data handling with Swing for GUI rendering,
+ *    featuring lightweight playback controls and frame navigation.
+ *
+ *  KEY FEATURES:
+ *    • Loads and plays multi-frame TIFF image stacks.
+ *    • Adjustable playback speed and pause/resume control.
+ *    • Manual frame navigation via a slider.
+ *    • Displays a simple loading dialog during image preparation.
+ *    • Uses ImageJ for robust TIFF handling and calibration-based timing.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-viewer
+ *
+ *  UPDATED:
+ *    2025-10-29
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.viewer.utils;
 
 import ij.IJ;
@@ -14,27 +50,18 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 
 /**
- * TiffMoviePlayer is responsible for playing multi-frame TIFF image files as
- * a movie-like sequence in a graphical user interface. The player provides
- * options for pausing, adjusting playback speed, and navigating through frames.
- *
- * This class uses ImageJ for loading and processing image data and
- * Swing for creating the user interface. It ensures a smooth viewing
- * experience with simple controls and error handling.
- *
- * Features:
- * - Loads and displays multi-frame TIFF files using ImageJ.
- * - Adjustable playback speed through a slider.
- * - Pause/play functionality.
- * - Frame navigation via a slider.
- * - Displays a simple loading dialog while processing the TIFF file.
+ * Provides functionality for playing multi-frame TIFF files as movie-like sequences.
+ * <p>
+ * The {@code TiffMoviePlayer} uses ImageJ for image handling and Swing for the GUI.
+ * It includes playback controls such as play/pause, speed adjustment, and frame navigation.
+ * </p>
  */
 public class TiffMoviePlayer {
 
     /**
-     * Plays a TIFF movie file specified by the provided path.
+     * Plays a multi-frame TIFF file as a movie sequence.
      *
-     * @param tiffPath the file path of the TIFF movie to be played
+     * @param tiffPath the absolute or relative file path of the TIFF image stack
      */
     public void playMovie(String tiffPath) {
         final String fileName = new File(tiffPath).getName();
@@ -75,9 +102,12 @@ public class TiffMoviePlayer {
             SwingUtilities.invokeLater(loadingDialog::dispose);
 
             if (imp == null) {
-                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null,
-                                                                               "Failed to open image file:\n" + tiffPath,
-                                                                               "Error", JOptionPane.ERROR_MESSAGE));
+                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                        null,
+                        "Failed to open image file:\n" + tiffPath,
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                ));
                 return;
             }
 
@@ -232,6 +262,9 @@ public class TiffMoviePlayer {
         }, "TiffLoaderThread").start();
     }
 
+    /**
+     * Manual test entry point for running the TIFF player independently.
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new TiffMoviePlayer().playMovie("/Volumes/Extreme Pro/Omero/221012/221012-Exp-3-A4-3.tif"));
     }
