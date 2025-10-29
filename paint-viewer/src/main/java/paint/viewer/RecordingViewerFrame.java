@@ -486,7 +486,7 @@ public class RecordingViewerFrame extends JFrame
                     density,
                     params.minRequiredDensityRatio,
                     params.maxAllowableVariability,
-                    results.getRSquared(),
+                    params.minRequiredRSquared,
                     params.neighbourMode
             );
 
