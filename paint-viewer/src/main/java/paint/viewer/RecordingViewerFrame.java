@@ -442,7 +442,7 @@ public class RecordingViewerFrame extends JFrame
 
         // --- Apply buttons: full apply + write overrides ---
         controlHandler.apply(params, leftGridPanel);
-        overrideWriter.applyAndWrite(scope, params, recordings, currentIndex, project);
+        overrideWriter.applyAndWrite(scope, params, recordingEntries, currentIndex);
         leftGridPanel.repaint();
     }
 

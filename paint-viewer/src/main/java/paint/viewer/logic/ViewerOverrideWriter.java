@@ -38,13 +38,11 @@ public class ViewerOverrideWriter {
      * @param params the parameters to be written as override values
      * @param recordings the list of recording entries from which the data will be determined
      * @param currentIndex the index of the current recording entry being processed in the recordings list
-     * @param project the project within which the operation is being performed
      */
-    public void applyAndWrite(String scope,
-                              SquareControlParams params,
+    public void applyAndWrite(String               scope,
+                              SquareControlParams  params,
                               List<RecordingEntry> recordings,
-                              int currentIndex,
-                              Project project) {
+                              int                  currentIndex) {
         String timestamp = LocalDateTime.now().toString();
 
         if ("Recording".equals(scope)) {
