@@ -184,9 +184,9 @@ public class CalculateSquareAttributes {
 
         double minRequiredRSquared = generateSquaresConfig.getMinRequiredRSquared();
 
-        SquareUtils.BackgroundEstimationResult result = SquareUtils.calculateBackgroundDensity(recording.getSquaresOfRecording());
-        double meanBackgroundTracks = result.getBackgroundMean();
-        int backgroundTracks = result.getBackgroundSquares().stream().mapToInt(Square::getNumberOfTracks).sum();
+        BackgroundEstimationResult result = SquareUtils.calculateBackgroundDensity(recording.getSquaresOfRecording());
+        double       meanBackgroundTracks = result.getBackgroundMean();
+        int          backgroundTracks     = result.getBackgroundSquares().stream().mapToInt(Square::getNumberOfTracks).sum();
 
         PaintLogger.debugf("Estimated Background track count = %.2f, n = %d%n",
                            meanBackgroundTracks, result.getBackgroundSquares().size());
@@ -196,11 +196,7 @@ public class CalculateSquareAttributes {
         recording.setAverageTracksInBackGround(round(meanBackgroundTracks, 3));
 
         List<Track> tracksFromSelectedSquares = getTracksFromSelectedSquares(recording.getSquaresOfRecording());
-        int numberOfSelectedSquares           = getNumberOfSelectedSquares(recording);
-
-        CalculateTau.CalculateTauResult results =
-                calculateTau(tracksFromSelectedSquares, minRequiredRSquared);
-
+        CalculateTau.CalculateTauResult results = calculateTau(tracksFromSelectedSquares, minRequiredRSquared);
         if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
             recording.setTau(round(results.getTau(), 0));
             recording.setRSquared(round(results.getRSquared(), 3));

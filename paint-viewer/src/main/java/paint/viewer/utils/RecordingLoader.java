@@ -1,6 +1,8 @@
 package paint.viewer.utils;
 
 import paint.shared.config.PaintConfig;
+import paint.shared.io.ExperimentDataLoader;
+import paint.shared.objects.Experiment;
 import paint.shared.objects.Project;
 import paint.shared.objects.Recording;
 import paint.shared.utils.PaintLogger;
@@ -110,6 +112,7 @@ public class RecordingLoader {
                 recordingEntries.add(entry);
             }
         }
+
         return recordingEntries;
     }
 }

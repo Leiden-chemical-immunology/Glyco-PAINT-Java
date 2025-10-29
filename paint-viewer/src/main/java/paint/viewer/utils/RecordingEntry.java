@@ -196,8 +196,15 @@ public class RecordingEntry {
     // =========================================================================================
 
     /**
-     * Retrieves a list of Square objects associated with this recording.
-     * Squares are cached per experiment for performance efficiency.
+     * Retrieves the list of {@link Square} objects associated with this recording.
+     * <p>
+     * Since the experiment and all recordings are fully loaded at startup via
+     * {@link paint.shared.io.ExperimentDataLoader}, this method simply delegates to
+     * the associated {@link Recording}. No external cache or file I/O is used.
+     *
+     * @param project the project context (unused, kept for signature compatibility)
+     * @param expectedNumberOfSquares expected number of squares (for layout validation)
+     * @return list of {@link Square} objects for this recording
      */
     public List<Square> getSquares(Project project, int expectedNumberOfSquares) {
         if (squares == null) {
@@ -216,6 +223,7 @@ public class RecordingEntry {
         } else {
             PaintLogger.debugf("Returning cached squares for recording: %s", getRecordingName());
         }
+
         return squares;
     }
 }

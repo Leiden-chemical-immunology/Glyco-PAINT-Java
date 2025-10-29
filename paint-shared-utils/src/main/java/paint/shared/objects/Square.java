@@ -303,11 +303,11 @@ public class Square {
     /**
      * Calculates the theoretical square area for a given recording grid size.
      *
-     * @param nrSquaresInRecording total number of squares in the recording
+     * @param nrSquares total number of squares in the recording
      * @return area of one square (in image units)
      */
-    public static double calculateSquareArea(int nrSquaresInRecording) {
-        return IMAGE_WIDTH * IMAGE_HEIGHT / nrSquaresInRecording;
+    public static double calculateSquareArea(int nrSquares) {
+        return IMAGE_WIDTH * IMAGE_HEIGHT / nrSquares;
     }
 
     // ───────────────────────────────────────────────────────────────────────────────
