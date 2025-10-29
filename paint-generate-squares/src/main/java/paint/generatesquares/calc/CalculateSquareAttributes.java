@@ -96,10 +96,10 @@ public class CalculateSquareAttributes {
         for (Square square : squaresOfRecording) {
 
             // @formatter:off
-            List<Track> tracksInSquare       = square.getTracks();
-            Table       table        = square.getTracksTable();
-            int         squareNumber = square.getSquareNumber();
-            Table tracksInSquareTable = square.getTracksTable();
+            List<Track> tracksInSquare  = square.getTracks();
+            Table       table           = square.getTracksTable();
+            int         squareNumber    = square.getSquareNumber();
+            Table tracksInSquareTable   = square.getTracksTable();
             // @formatter:on
 
             if (tracksInSquare == null || tracksInSquare.isEmpty()) {

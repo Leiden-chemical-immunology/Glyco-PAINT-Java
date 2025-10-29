@@ -157,7 +157,7 @@ public class GenerateSquaresProcessor {
 
         // Compile all squares and write
         Table allSquaresTable = compileAllSquares(experiment);
-        Path experimentPath = project.getProjectRootPath().resolve(experiment.getExperimentName());
+        Path  experimentPath  = project.getProjectRootPath().resolve(experiment.getExperimentName());
         writeAllSquares(experimentPath, allSquaresTable);
 
         // Write recordings
