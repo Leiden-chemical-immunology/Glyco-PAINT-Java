@@ -77,7 +77,7 @@ public class RecordingViewerFrame extends JFrame
      * @param recordingEntries a {@code List} of {@code RecordingEntry} objects representing the recordings
      *                   to be displayed and navigated within the viewer.
      */
-    public RecordingViewerFrame(Project project, List<RecordingEntry> recordings) {
+    public RecordingViewerFrame(Project project, List<RecordingEntry> recordingEntries) {
         super("Recording Viewer - " + project.getProjectRootPath().getFileName());
         this.project          = project;
         this.recordingEntries = recordingEntries;  // All the information is maintained here
@@ -236,8 +236,11 @@ public class RecordingViewerFrame extends JFrame
 
 
         // Load the leftGridPanel with the information from recordingEntries indicated by the index
+        leftGridPanel.setRecording(recordingEntry.getRecording());                                 // Get the Recording from recordingEntry
+        leftGridPanel.setBackgroundImage(recordingEntry.getLeftImage());                           // Get the leftImage from recordingEntry
 
         int numberOfSquaresInRecording = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
+        leftGridPanel.setSquares(recordingEntry.getSquares(project, numberOfSquaresInRecording));  // Get the squares from recordingEntry
 
         // Display the right image
         rightImageLabel.setIcon(scaleToFit(recordingEntry.getRightImage(), NUMBER_PIXELS_WIDTH, NUMBER_PIXELS_HEIGHT));
@@ -246,9 +249,8 @@ public class RecordingViewerFrame extends JFrame
         experimentLabel.setText("Experiment: " + recordingEntry.getExperimentName() + "   [Overall: " + (currentIndex + 1) + "/" + recordingEntries.size() + "]");
         recordingLabel.setText("Recording: " + recordingEntry.getRecordingName());
 
-        experimentLabel.setText("Experiment: " + entry.getExperimentName() +
-                                        "   [Overall: " + (currentIndex + 1) + "/" + recordings.size() + "]");
-        recordingLabel.setText("Recording: " + entry.getRecordingName());
+        // Display all the details of the recording in the attributes panel on the left
+        attributesPanel.updateFromEntry(recordingEntry, numberOfSquaresInRecording);
 
         // Make sure that buttons are disabled of we are at the first or last image
         updateNavButtons();
