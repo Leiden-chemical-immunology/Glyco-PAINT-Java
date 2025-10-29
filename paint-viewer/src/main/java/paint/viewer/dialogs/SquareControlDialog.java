@@ -145,15 +145,17 @@ public class SquareControlDialog extends JDialog {
             public void stateChanged(ChangeEvent e) {
                 updateValueLabels();
                 propagateValues();
+                propagatePreview();
+                SwingUtilities.invokeLater(() -> gridPanel.repaint());
             }
         };
         densityRatioSlider.addChangeListener(sliderListener);
         variabilitySlider.addChangeListener(sliderListener);
         rSquaredSlider.addChangeListener(sliderListener);
 
-        neighbourFree.addActionListener(e -> propagateValues());
-        neighbourRelaxed.addActionListener(e -> propagateValues());
-        neighbourStrict.addActionListener(e -> propagateValues());
+        neighbourFree.addActionListener(e -> propagatePreview());
+        neighbourRelaxed.addActionListener(e -> propagatePreview());
+        neighbourStrict.addActionListener(e -> propagatePreview());
 
         // --- Apply buttons (commit + write to file) ---
         applyRecording.addActionListener(e -> {
@@ -180,7 +182,7 @@ public class SquareControlDialog extends JDialog {
         origNeighbourMode = initParams.neighbourMode;
 
         updateValueLabels();
-        propagateValues();
+        propagatePreview();
 
         pack();
         setLocationRelativeTo(owner);
@@ -261,7 +263,7 @@ public class SquareControlDialog extends JDialog {
         }
 
         updateValueLabels();
-        propagateValues();
+        propagatePreview();
     }
 
     /** Collects the current dialog settings into a parameter object. */
