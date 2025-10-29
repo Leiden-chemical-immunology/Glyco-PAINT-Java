@@ -21,26 +21,21 @@ import java.util.List;
  */
 public class RecordingEntry {
 
-    /**
-     * Represents a recording associated with a specific entry in a recording-based experiment.
-     * This field stores metadata and data pertaining to the recording, which can be accessed
-     * or manipulated through the associated methods and properties of the {@code RecordingEntry} class.
-     * <p>
-     * The {@code recording} is used to retrieve or analyze information related to the experiment
-     * it belongs to, such as the recording's name, probe data, and other parameters.
-     */
     // @formatter:off
     private final Recording recording;
-    private final Path         trackmateImagePath;
-    private final Path         brightfieldImagePath;
-    private final String       experimentName;
-    private final double       minRequiredDensityRatio;
-    private final double       maxAllowableVariability;
-    private final double       minRequiredRSquared;
-    private final String       neighbourMode;
-    private final ImageIcon    leftImage;
-    private final ImageIcon    rightImage;
-    private       List<Square> squares;
+    private final Path          trackmateImagePath;
+    private final Path          brightfieldImagePath;
+    private final String        experimentName;
+
+    private       double        minRequiredDensityRatio;
+    private       double        maxAllowableVariability;
+    private       double        minRequiredRSquared;
+    private       String        neighbourMode;
+
+    private final ImageIcon     leftImage;
+    private final ImageIcon     rightImage;
+
+    private       List<Square>  squares;
     // @formatter:on
 
     /**
@@ -109,73 +104,57 @@ public class RecordingEntry {
 
     public String getRecordingName() { return recording.getRecordingName(); }
 
-    public String getExperimentName() {
-        return experimentName;
+    public String getExperimentName() { return experimentName; }
+
+    public String getProbeName() { return recording.getProbeName(); }
+
+    public String getProbeType() { return recording.getProbeType(); }
+
+    public String getAdjuvant() { return recording.getAdjuvant(); }
+
+    public String getCellType() { return recording.getCellType(); }
+
+    public double getConcentration() { return recording.getConcentration(); }
+
+    public int getNumberOfSpots() { return recording.getNumberOfSpots(); }
+
+    public int getNumberOfTracks() { return recording.getNumberOfTracks(); }
+
+    public double getThreshold() { return recording.getThreshold(); }
+
+    public double getTau() { return recording.getTau(); }
+
+    public double getDensity() { return recording.getDensity(); }
+
+    public double getMinRequiredDensityRatio() { return minRequiredDensityRatio; }
+
+    public void setMinRequiredDensityRatio(double minRequiredDensityRatio) {
+        this.minRequiredDensityRatio = minRequiredDensityRatio;
     }
 
-    public String getProbeName() {
-        return recording.getProbeName();
+    public double getMaxAllowableVariability() { return maxAllowableVariability; }
+
+    public void setMaxAllowableVariability(double maxAllowableVariability) {
+        this.maxAllowableVariability = maxAllowableVariability;
     }
 
-    public String getProbeType() {
-        return recording.getProbeType();
+    public double getMinRequiredRSquared() { return minRequiredRSquared; }
+
+    public void setMinRequiredRSquared(double minRequiredRSquared) {
+        this.minRequiredRSquared = minRequiredRSquared;
     }
 
-    public String getAdjuvant() {
-        return recording.getAdjuvant();
+    public String getNeighbourMode() { return neighbourMode; }
+
+    public void setNeighbourMode(String neighbourMode) {
+        this.neighbourMode = neighbourMode;
     }
 
-    public String getCellType() {
-        return recording.getCellType();
-    }
+    public ImageIcon getLeftImage() { return leftImage; }
 
-    public double getConcentration() {
-        return recording.getConcentration();
-    }
+    public ImageIcon getRightImage() { return rightImage; }
 
-    public int getNumberOfSpots() {
-        return recording.getNumberOfSpots();
-    }
-
-    public int getNumberOfTracks() {
-        return recording.getNumberOfTracks();
-    }
-
-    public double getThreshold() {
-        return recording.getThreshold();
-    }
-
-    public double getTau() {
-        return recording.getTau();
-    }
-
-    public double getDensity() {
-        return recording.getDensity();
-    }
-
-    public double getMinRequiredDensityRatio() {
-        return minRequiredDensityRatio;
-    }
-
-    public double getMaxAllowableVariability() {
-        return maxAllowableVariability;
-    }
-
-    public double getMinRequiredRSquared() {
-        return minRequiredRSquared;
-    }
-
-    public String getNeighbourMode() {
-        return neighbourMode;
-    }
-
-    public ImageIcon getLeftImage() {
-        return leftImage;
-    }
-
-    public ImageIcon getRightImage() {
-        return rightImage;
-    }
+    public Recording getRecording() { return recording; }
 
     // =========================================================================================
     // SQUARE MANAGEMENT
