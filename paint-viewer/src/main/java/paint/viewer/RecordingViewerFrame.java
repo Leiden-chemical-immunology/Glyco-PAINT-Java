@@ -54,6 +54,7 @@ import paint.viewer.dialogs.SquareControlDialog;
 import paint.viewer.logic.CellAssignmentManager;
 import paint.viewer.logic.SquareControlHandler;
 import paint.viewer.logic.ViewerOverrideWriter;
+import paint.viewer.logic.SquareOverrideWriter;
 import paint.viewer.panels.NavigationPanel;
 import paint.viewer.panels.RecordingAttributesPanel;
 import paint.viewer.panels.RecordingControlsPanel;
@@ -114,6 +115,7 @@ public class RecordingViewerFrame extends JFrame
 
     private final CellAssignmentManager    assignmentManager = new CellAssignmentManager();
     private final ViewerOverrideWriter     overrideWriter;
+    private final SquareOverrideWriter     squareOverrideWriter;
     private final SquareControlHandler     controlHandler    = new SquareControlHandler();
     //  @formatter:on
 
@@ -132,6 +134,7 @@ public class RecordingViewerFrame extends JFrame
         this.overrideWriter   = new ViewerOverrideWriter(project.getProjectRootPath());
         this.project                 = project;
         this.recordingEntries        = recordingEntries;  // All the information is maintained here
+        this.squareOverrideWriter    = new SquareOverrideWriter(project.getProjectRootPath());
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -365,7 +368,14 @@ public class RecordingViewerFrame extends JFrame
         CellAssignmentDialog dialog = new CellAssignmentDialog(owner, new CellAssignmentDialog.Listener() {
 
             public void onAssign(int cellId) {
-                assignmentManager.assignSelectedSquares(cellId, leftGridPanel);
+                Map<Integer, Integer> userSelectedSquares = assignmentManager.assignUserSelectedSquares(cellId, leftGridPanel);   // This has filled CellAssignmentManager.squareAssignments
+
+                // --- Persist cell assignments to Square Override.csv ---
+                RecordingEntry currentRecording = recordingEntries.get(currentIndex);
+
+               if (!userSelectedSquares.isEmpty()) {
+                   squareOverrideWriter.writeSquareOverrides(currentRecording, userSelectedSquares);
+               }
             }
 
             public void onUndo() {
