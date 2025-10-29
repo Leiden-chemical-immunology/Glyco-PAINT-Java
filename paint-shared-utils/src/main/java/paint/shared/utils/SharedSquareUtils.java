@@ -45,7 +45,6 @@
 
 package paint.shared.utils;
 
-import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.Table;
@@ -131,19 +130,18 @@ public final class SharedSquareUtils {
      *   <li>“Strict” → edge adjacency only (dr = 1 & dc = 0 or vice versa)</li>
      * </ul>
      *
-     * @param recording       recording containing the list of squares
+     * @param squares         the list of squares
      * @param minDensityRatio minimum density ratio for selection
      * @param maxVariability  maximum allowed variability
      * @param minRSquared     minimum R² value for selection
      * @param neighbourMode   neighbour logic: "Free", "Relaxed", or "Strict"
      */
-    public static void applyVisibilityFilter(Recording recording,
+    public static void applyVisibilityFilter(List<Square> squares,
                                              double minDensityRatio,
                                              double maxVariability,
                                              double minRSquared,
                                              String neighbourMode) {
 
-        List<Square> squares = recording.getSquaresOfRecording();
         if (squares == null || squares.isEmpty()) {
             return;
         }
@@ -194,7 +192,7 @@ public final class SharedSquareUtils {
                         break;
                     }
                 } else if ("Strict".equalsIgnoreCase(neighbourMode)) {
-                    // Only direct edge adjacency allowed
+                    // Only direct-edge adjacency allowed
                     if ((dr == 1 && dc == 0) || (dr == 0 && dc == 1)) {
                         hasNeighbour = true;
                         break;

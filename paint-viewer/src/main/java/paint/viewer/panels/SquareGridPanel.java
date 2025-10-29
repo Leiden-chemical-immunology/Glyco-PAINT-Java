@@ -542,7 +542,7 @@ public class SquareGridPanel extends JPanel {
     /** Re-applies square visibility filtering using the current control parameters. */
     public void applyVisibilityFilter() {
         SharedSquareUtils.applyVisibilityFilter(
-                recording,
+                squares,
                 ctrlMinDensityRatio,
                 ctrlMaxVariability,
                 ctrlMinRSquared,

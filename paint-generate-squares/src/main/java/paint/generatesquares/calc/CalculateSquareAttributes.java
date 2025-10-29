@@ -155,7 +155,7 @@ public class CalculateSquareAttributes {
 
         }
 
-        applyVisibilityFilter(recording,
+        applyVisibilityFilter(squaresOfRecording,
                               minRequiredDensityRatio,
                               maxAllowableVariability,
                               minRequiredRSquared,
