@@ -74,15 +74,14 @@ public class RecordingViewerFrame extends JFrame
      *
      * @param project    the {@code Project} instance associated with this viewer, providing the
      *                   project context and directory structure needed for initialization.
-     * @param recordings a {@code List} of {@code RecordingEntry} objects representing the recordings
+     * @param recordingEntries a {@code List} of {@code RecordingEntry} objects representing the recordings
      *                   to be displayed and navigated within the viewer.
      */
     public RecordingViewerFrame(Project project, List<RecordingEntry> recordings) {
         super("Recording Viewer - " + project.getProjectRootPath().getFileName());
-        this.project = project;
-        this.recordings = recordings;
-        this.overrideWriter = new ViewerOverrideWriter(
-                new File(new File(project.getProjectRootPath().toFile(), "Out"), "Viewer Override.csv"));
+        this.project          = project;
+        this.recordingEntries = recordingEntries;  // All the information is maintained here
+        this.overrideWriter   = new ViewerOverrideWriter(new File(new File(project.getProjectRootPath().toFile(), "Out"), "Viewer Override.csv"));
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -223,9 +222,9 @@ public class RecordingViewerFrame extends JFrame
      * @param index the index of the recording entry to be displayed; must be
      *              within the bounds of the recordings list.
      */
-    private void showEntry(int index) {
+    private void showRecordingEntry(int index) {
 
-        if (index < 0 || index >= recordings.size()) {
+        if (index < 0 || index >= recordingEntries.size()) {
             return;
         }
 
@@ -260,22 +259,22 @@ public class RecordingViewerFrame extends JFrame
 
     @Override
     public void onFirst() {
-        showEntry(0);
+        showRecordingEntry(0);
     }
 
     @Override
     public void onPrev() {
-        showEntry(Math.max(0, currentIndex - 1));
+        showRecordingEntry(Math.max(0, currentIndex - 1));
     }
 
     @Override
     public void onNext() {
-        showEntry(Math.min(recordings.size() - 1, currentIndex + 1));
+        showRecordingEntry(Math.min(recordingEntries.size() - 1, currentIndex + 1));
     }
 
     @Override
     public void onLast() {
-        showEntry(recordings.size() - 1);
+        showRecordingEntry(recordingEntries.size() - 1);
     }
 
     /**
@@ -292,13 +291,14 @@ public class RecordingViewerFrame extends JFrame
      */
     @Override
     public void onFilterRequested() {
-        FilterDialog dialog = new FilterDialog(this, recordings);
+        leftGridPanel.hideSquareInfoIfVisible();  // Close any popup first
+        FilterDialog dialog = new FilterDialog(this, recordingEntries);
         dialog.setVisible(true);
         if (!dialog.isCancelled()) {
             List<RecordingEntry> filtered = dialog.getFilteredRecordings();
             if (!filtered.isEmpty()) {
                 currentIndex = 0;
-                showEntry(0);
+                showRecordingEntry(0);
             }
         }
     }
@@ -319,7 +319,8 @@ public class RecordingViewerFrame extends JFrame
      */
     @Override
     public void onSelectSquaresRequested() {
-        RecordingEntry current = recordings.get(currentIndex);
+        leftGridPanel.hideSquareInfoIfVisible();  // Close any popup first
+        RecordingEntry current = recordingEntries.get(currentIndex);
 
         SquareControlDialog dialog = new SquareControlDialog(
                 this,          // parent JFrame
@@ -465,7 +466,9 @@ public class RecordingViewerFrame extends JFrame
      */
     @Override
     public void onPlayRecordingRequested() {
-        if (recordings.isEmpty() || currentIndex < 0 || currentIndex >= recordings.size()) {
+        leftGridPanel.hideSquareInfoIfVisible();  // Close any popup first
+
+        if (recordingEntries.isEmpty() || currentIndex < 0 || currentIndex >= recordingEntries.size()) {
             PaintLogger.warnf("No recording selected to play.");
             JOptionPane.showMessageDialog(this,
                                           "No recording selected to play.",
@@ -474,9 +477,9 @@ public class RecordingViewerFrame extends JFrame
             return;
         }
 
-        RecordingEntry entry = recordings.get(currentIndex);
-        String experimentName = entry.getExperimentName();
-        String recordingName  = entry.getRecordingName();
+        RecordingEntry entry          = recordingEntries.get(currentIndex);
+        String         experimentName = entry.getExperimentName();
+        String         recordingName  = entry.getRecordingName();
 
         Path imagesRoot = project.getImagesRootPath();
         if (imagesRoot == null) {

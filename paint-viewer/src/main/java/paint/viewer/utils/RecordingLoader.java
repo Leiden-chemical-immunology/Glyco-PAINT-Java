@@ -33,7 +33,7 @@ public class RecordingLoader {
      */
     public static List<RecordingEntry> loadFromProject(Project project) {
 
-        List<RecordingEntry> entries = new ArrayList<>();
+        List<RecordingEntry> recordingEntries = new ArrayList<>();
 
         for (String experimentName : project.getExperimentNames()) {
 
@@ -107,9 +107,9 @@ public class RecordingLoader {
                         neighbourMode
                 );
 
-                entries.add(entry);
+                recordingEntries.add(entry);
             }
         }
-        return entries;
+        return recordingEntries;
     }
 }

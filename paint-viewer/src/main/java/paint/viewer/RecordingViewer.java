@@ -71,8 +71,9 @@ public class RecordingViewer {
             // ✅ Callback for the OK button — launches the viewer
             specificationDialog.setCalculationCallback(project -> {
                 try {
-                    List<RecordingEntry> entries = RecordingLoader.loadFromProject(project);
-                    if (entries.isEmpty()) {
+                    // Load the data for experiments (images, squares, etc.)
+                    List<RecordingEntry> recordingEntries = RecordingLoader.loadFromProject(project);
+                    if (recordingEntries.isEmpty()) {
                         JOptionPane.showMessageDialog(null,
                                                       "No valid recordings found in selected experiments.",
                                                       "No Recordings",
