@@ -87,6 +87,47 @@ public class RecordingAttributesPanel {
     }
 
     /**
+     * Temporarily updates the attribute table to preview parameter changes
+     * without modifying the underlying {@link RecordingEntry}.
+     *
+     * @param recordingEntry                the current recording entry (for static fields like Probe, Adjuvant, etc.)
+     * @param numSquares       number of squares in this recording
+     * @param tau              Tau value to preview
+     * @param density          Density value to preview
+     * @param minDensityRatio  minimum density ratio threshold
+     * @param maxVariability   maximum variability threshold
+     * @param minRSquared      minimum R² threshold
+     * @param neighbourMode    neighbour mode string ("Free", "Relaxed", "Strict")
+     */
+    public void updatePreview(RecordingEntry recordingEntry,
+                              int            numSquares,
+                              double         tau,
+                              double         density,
+                              double         minDensityRatio,
+                              double         maxVariability,
+                              double         minRSquared,
+                              String         neighbourMode) {
+
+        // rebuild the model with the new transient values
+        model.setRowCount(0);
+        model.addRow(new Object[]{"Probe",               recordingEntry.getProbeName()});
+        model.addRow(new Object[]{"Probe Type",          recordingEntry.getProbeType()});
+        model.addRow(new Object[]{"Adjuvant",            recordingEntry.getAdjuvant()});
+        model.addRow(new Object[]{"Cell Type",           recordingEntry.getCellType()});
+        model.addRow(new Object[]{"Concentration",       recordingEntry.getConcentration()});
+        model.addRow(new Object[]{"Number of Spots",     recordingEntry.getNumberOfSpots()});
+        model.addRow(new Object[]{"Number of Tracks",    recordingEntry.getNumberOfTracks()});
+        model.addRow(new Object[]{"Number of Squares",   numSquares});
+        model.addRow(new Object[]{"Threshold",           recordingEntry.getThreshold()});
+        model.addRow(new Object[]{"Tau",                 format(tau, 1)});
+        model.addRow(new Object[]{"Density",             format(density, 2)});
+        model.addRow(new Object[]{"Min Density Ratio",   format(minDensityRatio, 1)});
+        model.addRow(new Object[]{"Max Variability",     format(maxVariability, 1)});
+        model.addRow(new Object[]{"Min R²",              format(minRSquared, 2)});
+        model.addRow(new Object[]{"Neighbour Mode",      neighbourMode});
+    }
+
+    /**
      * Formats the given double value to a string with a specified number of decimal places.
      * If the value is NaN (Not a Number), it returns "NaN".
      * If the value is infinite, it returns "∞" for positive infinity or "-∞" for negative infinity.

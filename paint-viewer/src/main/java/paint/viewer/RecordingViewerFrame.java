@@ -436,6 +436,22 @@ public class RecordingViewerFrame extends JFrame
         if ("Preview".equals(scope)) {
             controlHandler.apply(params, leftGridPanel);
             leftGridPanel.applyVisibilityFilter();  // <── recompute which squares are visible
+
+            RecordingEntry cur = recordingEntries.get(currentIndex);
+            int numSquares = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
+
+            // Preview updated thresholds, tau, density, etc., without changing the model
+            attributesPanel.updatePreview(
+                    recordingEntries.get(currentIndex),
+                    numSquares,
+                    recordingEntries.get(currentIndex).getTau(),                // current tau
+                    recordingEntries.get(currentIndex).getDensity(),            // current density
+                    params.densityRatio,         // previewed values
+                    params.variability,
+                    params.rSquared,
+                    params.neighbourMode
+            );
+
             leftGridPanel.repaint();
             return;
         }
