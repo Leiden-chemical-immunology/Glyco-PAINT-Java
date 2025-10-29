@@ -188,8 +188,7 @@ public class CalculateSquareAttributes {
         double       meanBackgroundTracks = result.getBackgroundMean();
         int          backgroundTracks     = result.getBackgroundSquares().stream().mapToInt(Square::getNumberOfTracks).sum();
 
-        PaintLogger.debugf("Estimated Background track count = %.2f, n = %d%n",
-                           meanBackgroundTracks, result.getBackgroundSquares().size());
+        PaintLogger.debugf("Estimated Background track count = %.2f, n = %d%n", meanBackgroundTracks, result.getBackgroundSquares().size());
 
         recording.setNumberOfSquaresInBackground(result.getBackgroundSquares().size());
         recording.setNumberOfTracksInBackground(backgroundTracks);
