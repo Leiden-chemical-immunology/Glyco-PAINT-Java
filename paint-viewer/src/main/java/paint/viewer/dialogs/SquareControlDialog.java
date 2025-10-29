@@ -39,7 +39,6 @@ public class SquareControlDialog extends JDialog {
     private final JRadioButton neighbourStrict;
 
     private final RecordingControlsPanel.Listener listener;
-    private final SquareGridPanel gridPanel;
 
     private final double origDensityRatio;
     private final double origVariability;
@@ -63,7 +62,6 @@ public class SquareControlDialog extends JDialog {
                                SquareControlParams initParams) {
         super(owner, "Square Controls", false);
         this.listener = listener;
-        this.gridPanel = gridPanel;
 
         setLayout(new BorderLayout(10, 10));
 
@@ -198,7 +196,7 @@ public class SquareControlDialog extends JDialog {
         boolean isRSquared = (max == 100);
         double divisor = isRSquared ? 100.0 : 10.0;
 
-        java.util.Hashtable<Integer, JLabel> table = new java.util.Hashtable<Integer, JLabel>();
+        java.util.Hashtable<Integer, JLabel> table = new java.util.Hashtable<>();
         int major = Math.max(1, (max - min) / 5);
         for (int v = min; v <= max; v += major) {
             String text = isRSquared ? ONE_DEC.format(v / divisor)
