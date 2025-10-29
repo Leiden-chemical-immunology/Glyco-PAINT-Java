@@ -51,8 +51,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static paint.shared.io.HelperIO.readAllRecordings;
-
 /**
  * Provides functionality for loading and filtering recordings from a project directory.
  * <p>
