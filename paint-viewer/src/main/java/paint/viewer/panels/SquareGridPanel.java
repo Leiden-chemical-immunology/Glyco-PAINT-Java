@@ -78,9 +78,8 @@ public class SquareGridPanel extends JPanel {
     private final int          cols;
 
     private       Image        backgroundImage;
-    private       List<Square> squares             = new ArrayList<>();
-    private final Set<Integer> selectedSquares     = new HashSet<>();
     private       List<Square> squares                 = new ArrayList<>();
+    private final Set<Integer> selectedSquaresNumbers  = new HashSet<>();
 
     private       boolean      showBorders             = true;
     private       boolean      showShading             = true;
@@ -172,9 +171,9 @@ public class SquareGridPanel extends JPanel {
                             boolean newSel = !sq.isSelected();
                             sq.setSelected(newSel);
                             if (newSel) {
-                                selectedSquares.add(sq.getSquareNumber());
+                                selectedSquaresNumbers.add(sq.getSquareNumber());
                             } else {
-                                selectedSquares.remove(sq.getSquareNumber());
+                                selectedSquaresNumbers.remove(sq.getSquareNumber());
                             }
                             SquareGridPanel.this.repaint();
                             break;
@@ -316,7 +315,7 @@ public class SquareGridPanel extends JPanel {
             );
             if (rect.intersects(r)) {
                 sq.setSelected(true);
-                selectedSquares.add(sq.getSquareNumber());
+                selectedSquaresNumbers.add(sq.getSquareNumber());
                 dragSelectedSquares.add(sq.getSquareNumber());
             }
         }
@@ -330,13 +329,23 @@ public class SquareGridPanel extends JPanel {
     }
 
     /** @return a copy of the currently selected square IDs. */
-    public Set<Integer> getSelectedSquares() {
-        return new HashSet<>(selectedSquares);
+    public Set<Integer> getUserSelectedSquaresNumbers() {
+        return new HashSet<>(selectedSquaresNumbers);
+    }
+
+    /** @return a copy of the currently selected square IDs. */
+    public List<Square> getSelectedSquares() {
+        List<Square> selectedSquares = new ArrayList<>();
+        for (Square sq : squares) {
+            if (sq.isSelected()) {
+            }
+        }
+        return squares;
     }
 
     /** Clears all selections and refreshes the panel. */
     public void clearSelection() {
-        selectedSquares.clear();
+        selectedSquaresNumbers.clear();
         for (Square sq : squares) {
             sq.setSelected(false);
         }
@@ -380,16 +389,7 @@ public class SquareGridPanel extends JPanel {
             int x = sq.getColNumber() * squareW;
             int y = sq.getRowNumber() * squareH;
 
-            if (showShading && sq.getCellId() <= 0) {
-                if (selectedSquares.contains(sq.getSquareNumber())) {
-                    g2.setColor(new Color(255, 235, 0, 200));
-                    g2.fillRect(x, y, squareW, squareH);
-                } else if (sq.isSelected()) {
-                    g2.setColor(new Color(255, 255, 255, 80));
-                    g2.fillRect(x, y, squareW, squareH);
-                }
-            }
-
+            // 1) Assigned-cell shading (base layer)
             if (sq.getCellId() > 0 && showShading) {
                 Color baseColor = getColorForCell(sq.getCellId());
                 int rVal = Math.min(255, baseColor.getRed() + 40);
@@ -399,8 +399,20 @@ public class SquareGridPanel extends JPanel {
                 g2.fillRect(x, y, squareW, squareH);
             }
 
+            // 2) User-selection highlight (always on top of any assigned shading)
+            if (showShading) {
+                if (selectedSquaresNumbers.contains(sq.getSquareNumber())) {
+                    g2.setColor(new Color(255, 235, 0, 200));
+                    g2.fillRect(x, y, squareW, squareH);
+                } else if (sq.isSelected()) {
+                    g2.setColor(new Color(255, 255, 255, 80));
+                    g2.fillRect(x, y, squareW, squareH);
+                }
+            }
+
+            // 3) Borders (only if enabled)
             if (showBorders) {
-                if (sq.getCellId() > 0 || sq.isSelected()) {
+                if (sq.getCellId() > 0 || sq.isSelected() || selectedSquaresNumbers.contains(sq.getSquareNumber())) {
                     g2.setStroke(new BasicStroke(1.0f));
                     g2.setColor(Color.WHITE);
                     g2.drawRect(x, y, squareW, squareH);
@@ -509,7 +521,7 @@ public class SquareGridPanel extends JPanel {
 
     /** Clears all mouse-based selection highlights. */
     public void clearMouseSelection() {
-        selectedSquares.clear();
+        selectedSquaresNumbers.clear();
         dragSelectedSquares.clear();
         selectionRect = null;
         dragStart = null;

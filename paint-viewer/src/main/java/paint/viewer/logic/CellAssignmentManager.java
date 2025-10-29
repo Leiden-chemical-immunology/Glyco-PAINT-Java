@@ -71,7 +71,7 @@ public class CellAssignmentManager {
         undoStack.push(new HashMap<>(squareAssignments));
 
         for (Square square : grid.getSquares()) {
-            if (selected.contains(square.getSquareNumber())) {
+            if (userSelectedSquaresNumbers.contains(square.getSquareNumber())) {
                 square.setCellId(cellId);
                 squareAssignments.put(square.getSquareNumber(), cellId);    // Adds (or updates) the pair
             }
@@ -79,6 +79,7 @@ public class CellAssignmentManager {
 
         grid.clearMouseSelection();
         grid.repaint();
+        return Collections.unmodifiableMap(squareAssignments);
     }
 
     /**

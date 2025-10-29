@@ -92,6 +92,7 @@ public class RecordingOverrideWriter {
             try {
                 Files.createDirectories(viewerPath);          // creates all missing parents too
             } catch (IOException e) {
+                PaintLogger.warnf("Failed to create Viewer directory: %s", e.getMessage());
             }
         }
         this.csvFilePath = viewerPath.resolve("Recording Override.csv");
@@ -184,12 +185,13 @@ public class RecordingOverrideWriter {
                 lines.add(newLine);
             }
 
-            Path tmpFilePath = csvFilePath.resolveSibling(csvFilePath.getFileName().toString() + ".tmp");Files.write(tmpFilePath, lines);
             // Atomic write using a temporary file for reliability
+            Path tmpFilePath = csvFilePath.resolveSibling(csvFilePath.getFileName().toString() + ".tmp");
             Files.write(tmpFilePath, lines);
             Files.move(tmpFilePath, csvFilePath, StandardCopyOption.REPLACE_EXISTING);
 
         } catch (IOException ex) {
+            PaintLogger.errorf("Error writing recording override: %s", ex.getMessage());
             ex.printStackTrace();
         }
     }
