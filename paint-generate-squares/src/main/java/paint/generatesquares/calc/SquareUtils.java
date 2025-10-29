@@ -53,31 +53,7 @@ public class SquareUtils {
     private SquareUtils() {
     }
 
-    /**
-     * Calculates the density of tracks in a specified area over time and considering a concentration factor.
-     *
-     * The density is computed as the number of tracks divided by the area,
-     * then divided by the time, and finally divided by the concentration.
-     * If any of the area, time, or concentration values are non-positive, an IllegalArgumentException is thrown.
-     *
-     * @param nrTracks      The total number of tracks to calculate density for.
-     * @param area          The area over which the density is calculated. Must be positive.
-     * @param time          The time period over which the density is calculated. Must be positive.
-     * @param concentration The concentration factor to apply to the density calculation. Must be positive.
-     * @return The calculated density as a double.
-     * @throws IllegalArgumentException if area, time, or concentration is less than or equal to zero.
-     */
-    public static double calculateDensity(int nrTracks, double area, double time, double concentration) {
-        if (area <= 0 || time <= 0 || concentration <= 0) {
-            throw new IllegalArgumentException("Area, time, and concentration must be positive");
-        }
 
-        double density  = nrTracks / area;
-        density        /= time;
-        density        /= concentration;
-
-        return density;
-    }
 
 
     /**
