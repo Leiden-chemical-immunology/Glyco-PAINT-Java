@@ -8,6 +8,7 @@ import paint.viewer.shared.SquareControlParams;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -26,10 +27,17 @@ import static paint.shared.utils.SharedSquareUtils.getTracksFromSelectedSquares;
  * existing entries based on the recording names.
  */
 public class ViewerOverrideWriter {
-    private final File csvFile;
+    private final Path csvFilePath;
 
-    public ViewerOverrideWriter(File csvFile) {
-        this.csvFile = csvFile;
+    public ViewerOverrideWriter(Path projectPath) {
+        Path viewerPath = projectPath.resolve("Viewer");
+        if (Files.notExists(viewerPath)) {
+            try {
+                Files.createDirectories(viewerPath);          // creates all missing parents too
+            } catch (IOException e) {
+            }
+        }
+        this.csvFilePath = viewerPath.resolve("Recording Override.csv");
     }
 
     /**
@@ -83,21 +91,21 @@ public class ViewerOverrideWriter {
      */
     private void writeOverrideRecord(String              recordingName,
                                      SquareControlParams params,
-                                     String timestamp) {
+                                     String              timestamp) {
         PaintLogger.infof(
-                "Override for '%s': MinDensityRatio=%.0f, MaxVariability=%.0f, MinRSquared=%.2f, NeighbourMode=%s",
+                "Override for '%s': MinRequiredDensityRatio=%.0f, MaxAllowableVariability=%.0f, MinRequiredRSquared=%.2f, NeighbourMode=%s",
                 recordingName, params.minRequiredDensityRatio, params.maxAllowableVariability, params.minRequiredRSquared, params.neighbourMode
         );
 
         try {
-            List<String> lines = new ArrayList<String>();
-            if (csvFile.exists()) {
-                lines = Files.readAllLines(csvFile.toPath());
+            List<String> lines = new ArrayList<>();
+            if (Files.exists(csvFilePath)) {
+                lines = Files.readAllLines(csvFilePath);
             }
 
             if (lines.isEmpty() || !lines.get(0).startsWith("recordingName,")) {
                 lines.clear();
-                lines.add("recordingName,timestamp,densityRatio,variability,rSquared,neighbourMode");
+                lines.add("recordingName,timestamp,MinRequiredDensityRatio,MaxAllowableVariability,minRequiredRSquared,neighbourMode");
             }
 
             String prefix = recordingName + ",";
@@ -118,9 +126,8 @@ public class ViewerOverrideWriter {
                 lines.add(newLine);
             }
 
-            File tmp = new File(csvFile.getParentFile(), csvFile.getName() + ".tmp");
-            Files.write(tmp.toPath(), lines);
-            Files.move(tmp.toPath(), csvFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Path tmpFilePath = csvFilePath.resolveSibling(csvFilePath.getFileName().toString() + ".tmp");Files.write(tmpFilePath, lines);
+            Files.move(tmpFilePath, csvFilePath, StandardCopyOption.REPLACE_EXISTING);
 
         } catch (IOException ex) {
             ex.printStackTrace();

@@ -129,7 +129,7 @@ public class RecordingViewerFrame extends JFrame
         super("Recording Viewer - " + project.getProjectRootPath().getFileName());
         this.project          = project;
         this.recordingEntries = recordingEntries;  // All the information is maintained here
-        this.overrideWriter   = new ViewerOverrideWriter(new File(new File(project.getProjectRootPath().toFile(), "Out"), "Viewer Override.csv"));
+        this.overrideWriter   = new ViewerOverrideWriter(project.getProjectRootPath());
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
