@@ -69,9 +69,9 @@ public class SquareControlDialog extends JDialog {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
         // --- Sliders ---
-        densityRatioSlider = createSlider(0, 20000, (int) Math.round(initParams.densityRatio * 10));
-        variabilitySlider  = createSlider(0, 200,   (int) Math.round(initParams.variability * 10));
-        rSquaredSlider     = createSlider(0, 100,   (int) Math.round(initParams.rSquared * 100));
+        densityRatioSlider = createSlider(0, 20000, (int) Math.round(initParams.minRequiredDensityRatio * 10));
+        variabilitySlider  = createSlider(0, 200,   (int) Math.round(initParams.maxAllowableVariability * 10));
+        rSquaredSlider     = createSlider(0, 100,   (int) Math.round(initParams.minRequiredRSquared * 100));
 
         densityRatioValue = new JLabel();
         variabilityValue  = new JLabel();
@@ -173,9 +173,9 @@ public class SquareControlDialog extends JDialog {
         });
 
         // --- Save originals for Cancel ---
-        origDensityRatio = initParams.densityRatio;
-        origVariability  = initParams.variability;
-        origRSquared     = initParams.rSquared;
+        origDensityRatio  = initParams.minRequiredDensityRatio;
+        origVariability   = initParams.maxAllowableVariability;
+        origRSquared      = initParams.minRequiredRSquared;
         origNeighbourMode = initParams.neighbourMode;
 
         updateValueLabels();

@@ -36,9 +36,9 @@ public class SquareControlHandler {
         }
 
         grid.setControlParameters(
-                params.densityRatio,
-                params.variability,
-                params.rSquared,
+                params.minRequiredDensityRatio,
+                params.maxAllowableVariability,
+                params.minRequiredRSquared,
                 params.neighbourMode
         );
         grid.applyVisibilityFilter();

@@ -87,7 +87,7 @@ public class ViewerOverrideWriter {
                                      String timestamp) {
         PaintLogger.infof(
                 "Override for '%s': MinDensityRatio=%.0f, MaxVariability=%.0f, MinRSquared=%.2f, NeighbourMode=%s",
-                recordingName, params.densityRatio, params.variability, params.rSquared, params.neighbourMode
+                recordingName, params.minRequiredDensityRatio, params.maxAllowableVariability, params.minRequiredRSquared, params.neighbourMode
         );
 
         try {
@@ -103,8 +103,8 @@ public class ViewerOverrideWriter {
 
             String prefix = recordingName + ",";
             String newLine = recordingName + "," + timestamp + "," +
-                    params.densityRatio + "," + params.variability + "," +
-                    params.rSquared + "," + params.neighbourMode;
+                    params.minRequiredDensityRatio + "," + params.maxAllowableVariability + "," +
+                    params.minRequiredRSquared + "," + params.neighbourMode;
 
             boolean replaced = false;
             for (int i = 1; i < lines.size(); i++) {
@@ -131,13 +131,15 @@ public class ViewerOverrideWriter {
     private void update(RecordingEntry      recordingEntry,
                         SquareControlParams params) {
 
-        List<Track> tracksFromSelectedSquares = getTracksFromSelectedSquares(recordingEntry.getSquares());
+        List<Track> tracksFromSelectedSquares = getTracksFromSelectedSquares(recordingEntry.getRecording().getSquaresOfRecording());
 
-        CalculateTau.CalculateTauResult results = calculateTau(tracksFromSelectedSquares, params.rSquared);
+        CalculateTau.CalculateTauResult results = calculateTau(tracksFromSelectedSquares, params.minRequiredRSquared);
 
         recordingEntry.setMaxAllowableVariability(params.variability);
         recordingEntry.setMinRequiredDensityRatio(params.densityRatio);
+        recordingEntry.setMaxAllowableVariability(params.maxAllowableVariability);
+        recordingEntry.setMinRequiredDensityRatio(params.minRequiredDensityRatio);
         recordingEntry.setNeighbourMode(params.neighbourMode);
-        recordingEntry.setMinRequiredRSquared(params.rSquared);
+        recordingEntry.setMinRequiredRSquared(params.minRequiredRSquared);
     }
 }

@@ -14,27 +14,27 @@ package paint.viewer.shared;
  * Instances of this class are immutable once created.
  */
 public class SquareControlParams {
-    public final double densityRatio;   // now double
-    public final double variability;    // now double
-    public final double rSquared;       // double 0.0–1.0
+    public final double minRequiredDensityRatio;   // now double
+    public final double maxAllowableVariability;    // now double
+    public final double minRequiredRSquared;       // double 0.0–1.0
     public final String neighbourMode;
 
     /**
      * Constructs a new instance of {@code SquareControlParams} with the specified parameters.
      *
-     * @param densityRatio the density ratio value representing the density configuration of the square system
-     * @param variability the variability value indicating the degree of variation in the system
-     * @param rSquared the R-squared correlation coefficient, constrained between 0.0 and 1.0, representing the statistical measure of fit
+     * @param minRequiredDensityRatio the density ratio value representing the density configuration of the square system
+     * @param maxAllowableVariability the variability value indicating the degree of variation in the system
+     * @param minRequiredRSquared the R-squared correlation coefficient, constrained between 0.0 and 1.0, representing the statistical measure of fit
      * @param neighbourMode the mode of neighborhood interaction specified as a string
      */
-    public SquareControlParams(double densityRatio,
-                               double variability,
-                               double rSquared,
+    public SquareControlParams(double minRequiredDensityRatio,
+                               double maxAllowableVariability,
+                               double minRequiredRSquared,
                                String neighbourMode) {
-        this.densityRatio  = densityRatio;
-        this.variability   = variability;
-        this.rSquared      = rSquared;
-        this.neighbourMode = neighbourMode;
+        this.minRequiredDensityRatio = minRequiredDensityRatio;
+        this.maxAllowableVariability = maxAllowableVariability;
+        this.minRequiredRSquared     = minRequiredRSquared;
+        this.neighbourMode           = neighbourMode;
     }
 
     /**
@@ -46,9 +46,9 @@ public class SquareControlParams {
     @Override
     public String toString() {
         return "SquareControlParams{" +
-                "densityRatio=" + densityRatio +
-                ", variability=" + variability +
-                ", rSquared=" + rSquared +
+                "densityRatio="     + minRequiredDensityRatio +
+                ", variability="    + maxAllowableVariability +
+                ", rSquared="       + minRequiredRSquared +
                 ", neighbourMode='" + neighbourMode + '\'' +
                 '}';
     }
