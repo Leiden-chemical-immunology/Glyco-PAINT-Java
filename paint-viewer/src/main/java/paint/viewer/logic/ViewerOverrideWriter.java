@@ -46,20 +46,24 @@ public class ViewerOverrideWriter {
         String timestamp = LocalDateTime.now().toString();
 
         if ("Recording".equals(scope)) {
-            RecordingEntry current = recordings.get(currentIndex);
-            writeOverrideRecord(current.getRecordingName(), params, timestamp);
+            RecordingEntry recordingEntry = recordings.get(currentIndex);
+            writeOverrideRecord(recordingEntry.getRecordingName(), params, timestamp);
+            update(recordingEntry, params);
 
         } else if ("Experiment".equals(scope)) {
-            RecordingEntry cur = recordings.get(currentIndex);
-            for (RecordingEntry r : recordings) {
-                if (r.getExperimentName().equals(cur.getExperimentName())) {
-                    writeOverrideRecord(r.getRecordingName(), params, timestamp);
+            RecordingEntry currentRecordingEntry = recordings.get(currentIndex);
+            for (RecordingEntry recordingEntry : recordings) {
+                if (recordingEntry.getExperimentName().equals(currentRecordingEntry.getExperimentName())) {
+                    writeOverrideRecord(recordingEntry.getRecordingName(), params, timestamp);
+                    update(recordingEntry, params);
+                    // TODO: calcTau
                 }
             }
 
         } else if ("Project".equals(scope)) {
-            for (RecordingEntry r : recordings) {
-                writeOverrideRecord(r.getRecordingName(), params, timestamp);
+            for (RecordingEntry recordingEntry : recordings) {
+                writeOverrideRecord(recordingEntry.getRecordingName(), params, timestamp);
+                update(recordingEntry, params);
             }
         }
     }
@@ -119,5 +123,13 @@ public class ViewerOverrideWriter {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    private void update(RecordingEntry recordingEntry,
+                        SquareControlParams params) {
+        recordingEntry.setMaxAllowableVariability(params.variability);
+        recordingEntry.setMinRequiredDensityRatio(params.densityRatio);
+        recordingEntry.setNeighbourMode(params.neighbourMode);
+        recordingEntry.setMinRequiredRSquared(params.rSquared);
     }
 }

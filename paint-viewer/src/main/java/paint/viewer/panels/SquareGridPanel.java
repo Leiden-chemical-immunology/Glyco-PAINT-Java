@@ -86,12 +86,12 @@ public class SquareGridPanel extends JPanel {
     private       Rectangle    selectionRect       = null;
     private       Point        dragStart           = null;
 
-    private       double       ctrlMinDensityRatio = 0.0;
-    private       double       ctrlMaxVariability  = Double.MAX_VALUE;
-    private       double       ctrlMinRSquared     = 0.0;
-    private       String       ctrlNeighbourMode   = "Free";
-    private       boolean      selectionEnabled    = false;
-    private final Set<Integer> dragSelectedSquares = new HashSet<>();
+    private       double       minRequiredDensityRatio = 0.0;
+    private       double       maxAllowableVariability = Double.MAX_VALUE;
+    private       double       minRequiredRSquared     = 0.0;
+    private       String       neighbourMode           = "Free";
+    private       boolean      selectionEnabled        = false;
+    private final Set<Integer> dragSelectedSquares     = new HashSet<>();
     // @formatter:on
 
     /**
@@ -251,8 +251,8 @@ public class SquareGridPanel extends JPanel {
             return;
         }
 
-        Square sq = squares.get(index);
-        int trackCount = sq.getNumberOfTracks();
+        Square square = squares.get(index);
+        int trackCount = square.getNumberOfTracks();
 
         String html = String.format(
                 "<html><body style='font-family:sans-serif;font-size:11px;'>"
@@ -267,10 +267,10 @@ public class SquareGridPanel extends JPanel {
                         + "Right-click anywhere to close"
                         + "</div>"
                         + "</body></html>",
-                sq.getSquareNumber(),
-                sq.getDensityRatio(),
-                sq.getVariability(),
-                sq.getRSquared(),
+                square.getSquareNumber(),
+                square.getDensityRatio(),
+                square.getVariability(),
+                square.getRSquared(),
                 trackCount
         );
 
