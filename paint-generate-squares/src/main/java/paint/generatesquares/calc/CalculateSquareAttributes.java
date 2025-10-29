@@ -81,7 +81,7 @@ public class CalculateSquareAttributes {
         double       minRequiredDensityRatio    = generateSquaresConfig.getMinRequiredDensityRatio();
         String       neighbourMode              = generateSquaresConfig.getNeighbourMode();
         int          numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
-        double       area                       = calculateSquareArea(getNumberOfSelectedSquares(recording));
+        double       squareArea                 = calculateSquareArea(numberOfSquaresInRecording);    // Here we look at the single square
         double       concentration              = recording.getConcentration();
         List<Square> squaresOfRecording         = recording.getSquaresOfRecording();
         // @formatter:on
@@ -131,27 +131,27 @@ public class CalculateSquareAttributes {
             }
 
             // @format:off
-            square.setVariability(                   round(calcVariability(table, squareNumber, numberOfSquaresInRecording, 10),    2));
-            square.setDensity(                       round(calculateDensity(tracksInSquare.size(), area, RECORDING_DURATION, concentration),  3));
-            square.setDensityRatio(                  round(calculateDensityRatio(tracksInSquare.size(), meanBackgroundTracks),                2));
-            square.setDensityRatioOri(               round(calculateDensityRatio(tracksInSquare.size(), backgroundTracksOri),                 2));
+            square.setVariability(                   round(calcVariability(table, squareNumber, numberOfSquaresInRecording, 10),         2));
+            square.setDensity(                       round(calculateDensity(tracksInSquare.size(), squareArea, RECORDING_DURATION, concentration), 3));
+            square.setDensityRatio(                  round(calculateDensityRatio(tracksInSquare.size(), meanBackgroundTracks),                     2));
+            square.setDensityRatioOri(               round(calculateDensityRatio(tracksInSquare.size(), backgroundTracksOri),                      2));
 
-            square.setMedianDiffusionCoefficient(    round(tracksInSquareTable.doubleColumn("Diffusion Coefficient").median(),    2));
-            square.setMedianDiffusionCoefficientExt( round(tracksInSquareTable.doubleColumn("Diffusion Coefficient Ext").median(),2));
+            square.setMedianDiffusionCoefficient(    round(tracksInSquareTable.doubleColumn("Diffusion Coefficient").median(),         2));
+            square.setMedianDiffusionCoefficientExt( round(tracksInSquareTable.doubleColumn("Diffusion Coefficient Ext").median(),     2));
 
-            square.setMedianDisplacement(            round(tracksInSquareTable.doubleColumn("Track Displacement").median(),       1));
-            square.setMaxDisplacement(               round(tracksInSquareTable.doubleColumn("Track Displacement").max(),          1));
-            square.setTotalDisplacement(             round(tracksInSquareTable.doubleColumn("Track Displacement").sum(),          1));
+            square.setMedianDisplacement(            round(tracksInSquareTable.doubleColumn("Track Displacement").median(),            1));
+            square.setMaxDisplacement(               round(tracksInSquareTable.doubleColumn("Track Displacement").max(),               1));
+            square.setTotalDisplacement(             round(tracksInSquareTable.doubleColumn("Track Displacement").sum(),               1));
 
-            square.setMedianMaxSpeed(                round(tracksInSquareTable.doubleColumn("Track Max Speed").median(),          1));
-            square.setMaxMaxSpeed(                   round(tracksInSquareTable.doubleColumn("Track Max Speed").max(),             1));
+            square.setMedianMaxSpeed(                round(tracksInSquareTable.doubleColumn("Track Max Speed").median(),               1));
+            square.setMaxMaxSpeed(                   round(tracksInSquareTable.doubleColumn("Track Max Speed").max(),                  1));
 
-            square.setMedianMedianSpeed(             round(tracksInSquareTable.doubleColumn("Track Median Speed").median(),       1));
-            square.setMaxMedianSpeed(                round(tracksInSquareTable.doubleColumn("Track Median Speed").max(),          1));
+            square.setMedianMedianSpeed(             round(tracksInSquareTable.doubleColumn("Track Median Speed").median(),            1));
+            square.setMaxMedianSpeed(                round(tracksInSquareTable.doubleColumn("Track Median Speed").max(),               1));
 
-            square.setMaxTrackDuration(              round(tracksInSquareTable.doubleColumn("Track Duration").max(),              1));
-            square.setTotalTrackDuration(            round(tracksInSquareTable.doubleColumn("Track Duration").sum(),              1));
-            square.setMedianTrackDuration(           round(tracksInSquareTable.doubleColumn("Track Duration").median(),           1));
+            square.setMaxTrackDuration(              round(tracksInSquareTable.doubleColumn("Track Duration").max(),                   1));
+            square.setTotalTrackDuration(            round(tracksInSquareTable.doubleColumn("Track Duration").sum(),                   1));
+            square.setMedianTrackDuration(           round(tracksInSquareTable.doubleColumn("Track Duration").median(),                1));
             // @format:on
 
         }
