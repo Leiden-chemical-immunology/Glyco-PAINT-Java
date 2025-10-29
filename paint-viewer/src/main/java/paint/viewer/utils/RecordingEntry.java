@@ -40,16 +40,14 @@
 
 package paint.viewer.utils;
 
-import paint.shared.objects.Project;
+
 import paint.shared.objects.Recording;
-import paint.shared.objects.Square;
 import paint.shared.utils.PaintLogger;
 
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
+
 
 /**
  * Represents a single recording entry within an experiment.

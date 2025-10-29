@@ -224,11 +224,11 @@ public class   ProjectDialog {
             pg.anchor = GridBagConstraints.WEST;
 
             // @formatter:off
-            int nrOfSquaresInRecording = PaintConfig.getInt(   "Generate Squares", "Number of Squares in Recording", 400);
-            int minTracks              = PaintConfig.getInt(   "Generate Squares", "Min Tracks to Calculate Tau",    20);
-            double minRSquared         = PaintConfig.getDouble("Generate Squares", "Min Required R Squared",         0.1);
-            double minDensityRatio     = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio",     2.0);
-            double maxVariability      = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability",      10.0);
+            int   nrOfSquaresInRecording = PaintConfig.getInt(   "Generate Squares", "Number of Squares in Recording", 400);
+            int   minTracks              = PaintConfig.getInt(   "Generate Squares", "Min Tracks to Calculate Tau",    20);
+            double minRSquared           = PaintConfig.getDouble("Generate Squares", "Min Required R Squared",         0.1);
+            double minDensityRatio       = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio",     2.0);
+            double maxVariability        = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability",      10.0);
             // @formatter:on
 
             Dimension narrowFieldSize = new Dimension(80, 24);
@@ -699,7 +699,7 @@ public class   ProjectDialog {
                         continue;
                     }
 
-                    // There may be a sweep directory that contains an Experiment Infro file, but skip still
+                    // There may be a sweep directory that contains an Experiment Info file, but skip still
                     if (sub.getName().equals("Sweep")) {
                         continue;
                     }

@@ -64,7 +64,6 @@ import paint.viewer.utils.TiffMoviePlayer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;

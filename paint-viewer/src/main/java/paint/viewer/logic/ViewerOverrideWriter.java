@@ -6,7 +6,6 @@ import paint.shared.utils.PaintLogger;
 import paint.viewer.utils.RecordingEntry;
 import paint.viewer.shared.SquareControlParams;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -41,7 +40,7 @@ public class ViewerOverrideWriter {
      * @param scope the scope of the operation, either "Recording", "Experiment", or "Project"
      * @param params the parameters to be written as override values
      * @param recordings the list of recording entries from which the data will be determined
-     * @param currentIndex the index of the current recording entry being processed in the recordings list
+     * @param currentIndex the index of the current recording entry being processed in the recording list
      */
     public void applyAndWrite(String               scope,
                               SquareControlParams  params,
@@ -82,7 +81,7 @@ public class ViewerOverrideWriter {
      *               R-squared value, and neighbour mode
      * @param timestamp the timestamp associated with the override record
      */
-    private void writeOverrideRecord(String recordingName,
+    private void writeOverrideRecord(String              recordingName,
                                      SquareControlParams params,
                                      String timestamp) {
         PaintLogger.infof(
