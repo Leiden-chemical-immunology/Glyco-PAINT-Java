@@ -211,7 +211,7 @@ public class RecordingViewerFrame extends JFrame
      *   index of the last recording.
      */
     private void updateNavButtons() {
-        navigationPanel.setEnabledState(currentIndex > 0, currentIndex < recordings.size() - 1);
+        navigationPanel.setEnabledState(currentIndex > 0, currentIndex < recordingEntries.size() - 1);
     }
 
     /**
