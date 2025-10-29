@@ -41,12 +41,18 @@ public class RecordingLoader {
 
             Path experimentPath = project.getProjectRootPath().resolve(experimentName);
 
-            List<Recording> recordings = readAllRecordings(experimentPath);
-            if (recordings == null || recordings.isEmpty()) {
+            // ✅ Load full experiment (recordings + tracks + squares)
+            Experiment experiment = ExperimentDataLoader.loadExperiment(
+                    project.getProjectRootPath(),
+                    experimentName,
+                    true // matureProject: includes squares + tracks
+            );
+
+            if (experiment == null || experiment.getRecordings().isEmpty()) {
                 continue;
             }
 
-            for (Recording recording : recordings) {
+            for (Recording recording : experiment.getRecordings()) {
                 String recordingName = recording.getRecordingName();
                 if (!recording.isProcessFlag()) {
                     continue;
