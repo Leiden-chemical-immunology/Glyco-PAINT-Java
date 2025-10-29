@@ -141,13 +141,13 @@ public class RecordingControlsPanel {
         // === Action listeners ===
         filterButton.addActionListener(e -> listener.onFilterRequested());
         squareButton.addActionListener(e -> listener.onSelectSquaresRequested());
-        cellButton.addActionListener(e -> listener.onAssignCellsRequested());
-        playButton.addActionListener(e -> listener.onPlayRecordingRequested());
-        showBorders.addActionListener(e -> listener.onBordersToggled(showBorders.isSelected()));
-        showShading.addActionListener(e -> listener.onShadingToggled(showShading.isSelected()));
-        none.addActionListener(e -> listener.onNumberModeChanged(SquareGridPanel.NumberMode.NONE));
-        label.addActionListener(e -> listener.onNumberModeChanged(SquareGridPanel.NumberMode.LABEL));
-        square.addActionListener(e -> listener.onNumberModeChanged(SquareGridPanel.NumberMode.SQUARE));
+        cellButton.addActionListener(  e -> listener.onAssignCellsRequested());
+        playButton.addActionListener(  e -> listener.onPlayRecordingRequested());
+        showBorders.addActionListener( e -> listener.onBordersToggled(showBorders.isSelected()));
+        showShading.addActionListener( e -> listener.onShadingToggled(showShading.isSelected()));
+        none.addActionListener(        e -> listener.onNumberModeChanged(SquareGridPanel.NumberMode.NONE));
+        label.addActionListener(       e -> listener.onNumberModeChanged(SquareGridPanel.NumberMode.LABEL));
+        square.addActionListener(      e -> listener.onNumberModeChanged(SquareGridPanel.NumberMode.SQUARE));
 
         // === Layout order ===
         content.add(controls);

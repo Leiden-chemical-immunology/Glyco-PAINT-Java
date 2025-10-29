@@ -119,9 +119,9 @@ public class CellAssignmentDialog extends JDialog {
         // @formatter:on
 
         assignBtn.addActionListener(e -> listener.onAssign(getSelectedCellId()));
-        undoBtn.addActionListener(e -> listener.onUndo());
+        undoBtn.addActionListener(  e -> listener.onUndo());
         cancelBtn.addActionListener(e -> listener.onCancelSelection());
-        closeBtn.addActionListener(e -> dispose());
+        closeBtn.addActionListener( e -> dispose());
 
         buttons.add(assignBtn);
         buttons.add(undoBtn);
@@ -227,23 +227,4 @@ public class CellAssignmentDialog extends JDialog {
         repaint();
     }
 
-//  Above is the working version, but it does not do anything. Maybe this was meant?
-//    private void updateVisualSelection() {
-//        for (Map.Entry<JRadioButton, JPanel> e : squareByRadio.entrySet()) {
-//            JRadioButton rb = e.getKey();
-//            JPanel square = e.getValue();
-//
-//            int id = (Integer) rb.getClientProperty("cellId");
-//            Color base = (id == 0) ? Color.GRAY : SquareGridPanel.getColorForCell(id);
-//
-//            if (rb.isSelected()) {
-//                square.setBackground(base);
-//                square.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
-//            } else {
-//                square.setBackground(Color.WHITE);
-//                square.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
-//            }
-//        }
-//        repaint();
-//    }
 }

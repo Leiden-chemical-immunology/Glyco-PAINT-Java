@@ -130,6 +130,8 @@ public class RecordingViewerFrame extends JFrame
         this.project          = project;
         this.recordingEntries = recordingEntries;  // All the information is maintained here
         this.overrideWriter   = new ViewerOverrideWriter(project.getProjectRootPath());
+        this.project                 = project;
+        this.recordingEntries        = recordingEntries;  // All the information is maintained here
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -361,6 +363,7 @@ public class RecordingViewerFrame extends JFrame
 
         final JFrame owner = this;
         CellAssignmentDialog dialog = new CellAssignmentDialog(owner, new CellAssignmentDialog.Listener() {
+
             public void onAssign(int cellId) {
                 assignmentManager.assignSelectedSquares(cellId, leftGridPanel);
             }
@@ -375,6 +378,7 @@ public class RecordingViewerFrame extends JFrame
                 leftGridPanel.repaint();
             }
         });
+
         dialog.addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent e) {
                 leftGridPanel.setSelectionEnabled(false);
@@ -429,7 +433,7 @@ public class RecordingViewerFrame extends JFrame
      * <p>
      * When invoked in "Preview" mode, recalculates Tau, R², and density values dynamically
      * without committing them to disk. For full application, thresholds are persisted via
-     * {@link paint.viewer.logic.ViewerOverrideWriter}.
+     * {@link RecordingOverrideWriter}.
      *
      * @param scope  the operational scope ("Preview" or "Apply").
      * @param params parameter bundle defining the visibility thresholds and neighbour mode.

@@ -1,3 +1,48 @@
+/******************************************************************************
+ *  Class:        RecordingOverrideWriter.java
+ *  Package:      paint.viewer.logic
+ *
+ *  PURPOSE:
+ *    Manages persistence of recording-level parameter overrides in the
+ *    PAINT viewer, enabling density ratio, variability, R² threshold,
+ *    and neighbour mode adjustments to be stored, updated, and restored
+ *    across sessions.
+ *
+ *  DESCRIPTION:
+ *    The {@code RecordingOverrideWriter} class writes and maintains a
+ *    structured CSV file named {@code Recording Override.csv} that
+ *    contains control parameter overrides for each recording. Each
+ *    entry represents a distinct configuration of user-applied square
+ *    control parameters, written with a timestamp and recording name.
+ *
+ *    The writer supports three levels of application scope:
+ *      • Recording — Applies overrides to the currently active recording.
+ *      • Experiment — Applies overrides to all recordings in an experiment.
+ *      • Project — Applies overrides globally to all recordings in a project.
+ *
+ *    The writer automatically creates the Viewer directory if missing,
+ *    validates the CSV header, replaces existing entries for the same
+ *    recording, and performs atomic write operations to ensure file safety.
+ *
+ *  KEY FEATURES:
+ *    • Persists per-recording parameter overrides in a consistent CSV format.
+ *    • Automatically creates and maintains headers and directory structure.
+ *    • Supports Recording, Experiment, and Project scopes.
+ *    • Performs atomic writes to prevent data corruption.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-viewer
+ *
+ *  UPDATED:
+ *    2025-10-29
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 package paint.viewer.logic;
 
 import paint.shared.objects.Track;
@@ -18,18 +63,29 @@ import static paint.shared.utils.CalculateTau.calculateTau;
 import static paint.shared.utils.SharedSquareUtils.getTracksFromSelectedSquares;
 
 /**
- * A utility class for managing and recording viewer override configurations in a CSV file.
- * The ViewerOverrideWriter is designed to log and persist parameter overrides at different
- * scoping levels: Recording, Experiment, and Project.
+ * Handles the writing of per-recording override configurations for the
+ * PAINT viewer. The {@code RecordingOverrideWriter} manages the creation
+ * and updating of a CSV file that stores user-defined control parameters
+ * (density ratio, variability, R², and neighbour mode) for each recording.
  *
- * The class ensures that recording-specific override configurations are saved in a managed
- * structured way within the specified CSV file, and it handles both appending and replacing
- * existing entries based on the recording names.
+ * <p>Each record is timestamped and replaces any previous entry for the
+ * same recording. The file is stored in the {@code Viewer} directory
+ * under the project root.
+ *
+ * <p>This class mirrors {@link paint.viewer.logic.SquareOverrideWriter}
+ * but operates at the recording scope instead of per-square granularity.
  */
 public class ViewerOverrideWriter {
     private final Path csvFilePath;
 
-    public ViewerOverrideWriter(Path projectPath) {
+    /**
+     * Constructs a new {@code RecordingOverrideWriter} for the specified
+     * project. Ensures that the Viewer directory exists and initializes
+     * the target file path for the override CSV.
+     *
+     * @param projectPath the root project path where the Viewer directory resides
+     */
+    public RecordingOverrideWriter(Path projectPath) {
         Path viewerPath = projectPath.resolve("Viewer");
         if (Files.notExists(viewerPath)) {
             try {
@@ -41,14 +97,15 @@ public class ViewerOverrideWriter {
     }
 
     /**
-     * Applies the given parameters and writes override records based on the specified scope.
-     * The scope determines the granularity at which the override is applied:
-     * "Recording", "Experiment", or "Project".
+     * Applies the provided parameters and writes overrides based on the
+     * specified scope. The scope determines whether overrides are applied
+     * at the Recording, Experiment, or Project level.
      *
-     * @param scope the scope of the operation, either "Recording", "Experiment", or "Project"
-     * @param params the parameters to be written as override values
-     * @param recordings the list of recording entries from which the data will be determined
-     * @param currentIndex the index of the current recording entry being processed in the recording list
+     * @param scope        the override scope ("Recording", "Experiment", or "Project")
+     * @param params       the parameter set containing density ratio, variability,
+     *                     R², and neighbour mode values
+     * @param recordings   the list of available recording entries in the current session
+     * @param currentIndex the index of the currently active recording
      */
     public void applyAndWrite(String               scope,
                               SquareControlParams  params,
@@ -79,15 +136,14 @@ public class ViewerOverrideWriter {
     }
 
     /**
-     * Writes an override record into the CSV file based on the provided recording name,
-     * control parameters, and timestamp. If the recording already exists in the file,
-     * its entry is updated; otherwise, a new record is added. If the file does not
-     * exist or does not have valid headers, the necessary headers are added.
+     * Writes a single override record into the CSV file using the provided
+     * recording name, parameters, and timestamp. Existing entries for the
+     * same recording are replaced. Headers are automatically added if
+     * missing or invalid.
      *
-     * @param recordingName the name of the recording for which the override is written
-     * @param params the control parameters containing density ratio, variability,
-     *               R-squared value, and neighbour mode
-     * @param timestamp the timestamp associated with the override record
+     * @param recordingName the name of the recording to which the override applies
+     * @param params        the parameter values to be persisted
+     * @param timestamp     the ISO-formatted timestamp of the override entry
      */
     private void writeOverrideRecord(String              recordingName,
                                      SquareControlParams params,
@@ -103,12 +159,13 @@ public class ViewerOverrideWriter {
                 lines = Files.readAllLines(csvFilePath);
             }
 
+            // Initialize header if missing or malformed
             if (lines.isEmpty() || !lines.get(0).startsWith("recordingName,")) {
                 lines.clear();
                 lines.add("recordingName,timestamp,MinRequiredDensityRatio,MaxAllowableVariability,minRequiredRSquared,neighbourMode");
             }
 
-            String prefix = recordingName + ",";
+            String prefix  = recordingName + ",";
             String newLine = recordingName + "," + timestamp + "," +
                     params.minRequiredDensityRatio + "," + params.maxAllowableVariability + "," +
                     params.minRequiredRSquared + "," + params.neighbourMode;
@@ -127,6 +184,8 @@ public class ViewerOverrideWriter {
             }
 
             Path tmpFilePath = csvFilePath.resolveSibling(csvFilePath.getFileName().toString() + ".tmp");Files.write(tmpFilePath, lines);
+            // Atomic write using a temporary file for reliability
+            Files.write(tmpFilePath, lines);
             Files.move(tmpFilePath, csvFilePath, StandardCopyOption.REPLACE_EXISTING);
 
         } catch (IOException ex) {
@@ -134,12 +193,21 @@ public class ViewerOverrideWriter {
         }
     }
 
+    /**
+     * Updates the in-memory recording entry based on the provided parameters
+     * and recalculates Tau and R² values from the selected squares.
+     *
+     * @param recordingEntry the recording entry to update
+     * @param params         the parameter set containing updated control values
+     */
     private void update(RecordingEntry      recordingEntry,
                         SquareControlParams params) {
 
-        List<Track> tracksFromSelectedSquares = getTracksFromSelectedSquares(recordingEntry.getRecording().getSquaresOfRecording());
+        List<Track> tracksFromSelectedSquares = getTracksFromSelectedSquares(
+                recordingEntry.getRecording().getSquaresOfRecording());
 
-        CalculateTau.CalculateTauResult results = calculateTau(tracksFromSelectedSquares, params.minRequiredRSquared);
+        CalculateTau.CalculateTauResult results = calculateTau(
+                tracksFromSelectedSquares, params.minRequiredRSquared);
 
         recordingEntry.getRecording().setTau(results.getTau());
         recordingEntry.getRecording().setRSquared(results.getRSquared());

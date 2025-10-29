@@ -80,11 +80,12 @@ public class SquareGridPanel extends JPanel {
     private       Image        backgroundImage;
     private       List<Square> squares             = new ArrayList<>();
     private final Set<Integer> selectedSquares     = new HashSet<>();
+    private       List<Square> squares                 = new ArrayList<>();
 
-    private       boolean      showBorders         = true;
-    private       boolean      showShading         = true;
-    private       Rectangle    selectionRect       = null;
-    private       Point        dragStart           = null;
+    private       boolean      showBorders             = true;
+    private       boolean      showShading             = true;
+    private       Rectangle    selectionRect           = null;
+    private       Point        dragStart               = null;
 
     private       double       minRequiredDensityRatio = 0.0;
     private       double       maxAllowableVariability = Double.MAX_VALUE;
