@@ -22,9 +22,7 @@ import java.util.List;
 public class RecordingEntry {
 
     // @formatter:off
-    private final Recording recording;
-    private final Path          trackmateImagePath;
-    private final Path          brightfieldImagePath;
+    private final Recording     recording;
     private final String        experimentName;
 
     private       double        minRequiredDensityRatio;
@@ -51,8 +49,6 @@ public class RecordingEntry {
                           String    neighbourMode) {
         // @formatter:off
         this.recording               = recording;
-        this.trackmateImagePath      = trackmateImagePath;
-        this.brightfieldImagePath    = brightfieldImagePath;
         this.experimentName          = experimentName;
         this.minRequiredDensityRatio = minRequiredDensityRatio;
         this.maxAllowableVariability = maxAllowableVariability;
@@ -102,59 +98,95 @@ public class RecordingEntry {
     // GETTERS AND SETTERS
     // =========================================================================================
 
-    public String getRecordingName() { return recording.getRecordingName(); }
+    public String getRecordingName() {
+        return recording.getRecordingName(); }
 
-    public String getExperimentName() { return experimentName; }
+    public String getExperimentName() {
+        return experimentName; }
 
-    public String getProbeName() { return recording.getProbeName(); }
+    public String getProbeName() {
+        return recording.getProbeName();
+    }
 
-    public String getProbeType() { return recording.getProbeType(); }
+    public String getProbeType() {
+        return recording.getProbeType();
+    }
 
-    public String getAdjuvant() { return recording.getAdjuvant(); }
+    public String getAdjuvant() {
+        return recording.getAdjuvant();
+    }
 
-    public String getCellType() { return recording.getCellType(); }
+    public String getCellType() {
+        return recording.getCellType();
+    }
 
-    public double getConcentration() { return recording.getConcentration(); }
+    public double getConcentration() {
+        return recording.getConcentration();
+    }
 
-    public int getNumberOfSpots() { return recording.getNumberOfSpots(); }
+    public int getNumberOfSpots() {
+        return recording.getNumberOfSpots();
+    }
 
-    public int getNumberOfTracks() { return recording.getNumberOfTracks(); }
+    public int getNumberOfTracks() {
+        return recording.getNumberOfTracks();
+    }
 
-    public double getThreshold() { return recording.getThreshold(); }
+    public double getThreshold() {
+        return recording.getThreshold();
+    }
 
-    public double getTau() { return recording.getTau(); }
+    public double getTau() {
+        return recording.getTau();
+    }
 
-    public double getDensity() { return recording.getDensity(); }
+    public double getDensity() {
+        return recording.getDensity();
+    }
 
-    public double getMinRequiredDensityRatio() { return minRequiredDensityRatio; }
+    public double getMinRequiredDensityRatio() {
+        return minRequiredDensityRatio;
+    }
 
     public void setMinRequiredDensityRatio(double minRequiredDensityRatio) {
         this.minRequiredDensityRatio = minRequiredDensityRatio;
     }
 
-    public double getMaxAllowableVariability() { return maxAllowableVariability; }
+    public double getMaxAllowableVariability() {
+        return maxAllowableVariability;
+    }
 
     public void setMaxAllowableVariability(double maxAllowableVariability) {
         this.maxAllowableVariability = maxAllowableVariability;
     }
 
-    public double getMinRequiredRSquared() { return minRequiredRSquared; }
+    public double getMinRequiredRSquared() {
+        return minRequiredRSquared;
+    }
 
     public void setMinRequiredRSquared(double minRequiredRSquared) {
         this.minRequiredRSquared = minRequiredRSquared;
     }
 
-    public String getNeighbourMode() { return neighbourMode; }
+    public String getNeighbourMode() {
+        return neighbourMode;
+    }
 
     public void setNeighbourMode(String neighbourMode) {
         this.neighbourMode = neighbourMode;
     }
 
-    public ImageIcon getLeftImage() { return leftImage; }
+    public ImageIcon getLeftImage() {
+        return leftImage;
+    }
 
-    public ImageIcon getRightImage() { return rightImage; }
+    public ImageIcon getRightImage() {
+        return rightImage;
+    }
 
-    public Recording getRecording() { return recording; }
+    public Recording getRecording() {
+        return recording;
+    }
 
     // =========================================================================================
     // SQUARE MANAGEMENT
