@@ -43,6 +43,7 @@ package paint.viewer;
 
 import paint.shared.config.PaintConfig;
 import paint.shared.objects.Project;
+import paint.shared.objects.Square;
 import paint.shared.objects.Track;
 import paint.shared.utils.CalculateTau;
 import paint.shared.utils.PaintPrefs;
@@ -69,6 +70,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.Float.NaN;
 import static paint.shared.constants.PaintConstants.*;
@@ -133,6 +135,7 @@ public class RecordingViewerFrame extends JFrame
         this.recordingEntries        = recordingEntries;  // All the information is maintained here
         this.recordingOverrideWriter = new RecordingOverrideWriter(project.getProjectRootPath());
         this.squareOverrideWriter    = new SquareOverrideWriter(project.getProjectRootPath());
+
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());

@@ -50,8 +50,8 @@ import java.util.*;
  */
 public class CellAssignmentManager {
 
-    private final Map<Integer, Integer> squareAssignments = new HashMap<>();
-    private final Deque<Map<Integer, Integer>> undoStack   = new ArrayDeque<>();
+    private final Map<Integer, Integer>        squareAssignments = new HashMap<>();   // This holds the pairs cellId and SquareNumber
+    private final Deque<Map<Integer, Integer>> undoStack         = new ArrayDeque<>();
 
     /**
      * Assigns the specified cell ID to all currently selected squares in the grid.
@@ -73,7 +73,7 @@ public class CellAssignmentManager {
         for (Square square : grid.getSquares()) {
             if (selected.contains(square.getSquareNumber())) {
                 square.setCellId(cellId);
-                squareAssignments.put(square.getSquareNumber(), cellId);
+                squareAssignments.put(square.getSquareNumber(), cellId);    // Adds (or updates) the pair
             }
         }
 
