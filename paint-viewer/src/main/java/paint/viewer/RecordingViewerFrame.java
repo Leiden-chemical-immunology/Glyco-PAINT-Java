@@ -362,10 +362,17 @@ public class RecordingViewerFrame extends JFrame
 
         final JFrame owner = this;
         CellAssignmentDialog dialog = new CellAssignmentDialog(owner, new CellAssignmentDialog.Listener() {
-            public void onAssign(int cellId) { assignmentManager.assignSelectedSquares(cellId, leftGridPanel); }
-            public void onUndo() { assignmentManager.undo(leftGridPanel); }
+            public void onAssign(int cellId) {
+                assignmentManager.assignSelectedSquares(cellId, leftGridPanel);
+            }
+
+            public void onUndo() {
+                assignmentManager.undo(leftGridPanel);
+            }
+
             public void onCancelSelection() {
                 leftGridPanel.clearSelection();
+                leftGridPanel.applyVisibilityFilter();
                 leftGridPanel.repaint();
             }
         });
