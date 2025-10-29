@@ -192,7 +192,7 @@ public class FilterDialog extends JDialog {
         JButton resetBtn  = new JButton("Reset");
 
         filterBtn.addActionListener(e -> applySingleFilter(list));
-        resetBtn.addActionListener(e -> resetSingleFilter(list));
+        resetBtn.addActionListener(e -> resetSingleFilter());
 
         btnPanel.add(filterBtn);
         btnPanel.add(resetBtn);
@@ -221,9 +221,8 @@ public class FilterDialog extends JDialog {
      * Resets a single filter by restoring {@code filteredRecordings}
      * to its original state and updating UI lists.
      *
-     * @param list the list whose filter is being reset
      */
-    private void resetSingleFilter(JList<String> list) {
+    private void resetSingleFilter() {
         filteredRecordings = new ArrayList<>(originalRecordings);
         updateLists();
     }
