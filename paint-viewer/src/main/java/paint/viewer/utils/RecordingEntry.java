@@ -11,6 +11,14 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Represents a single recording entry within an experiment.
+ * Each {@code RecordingEntry} encapsulates metadata, image paths, and adjustable
+ * visibility control parameters (e.g., density ratio, variability, R² threshold).
+ *
+ * Images are preloaded via ImageIO or ImageJ Opener, and associated square data
+ * can be lazily fetched and cached from the experiment.
+ */
 public class RecordingEntry {
 
     /**
@@ -36,27 +44,16 @@ public class RecordingEntry {
     // @formatter:on
 
     /**
-     * Constructs a new RecordingEntry with the given parameters.
-     *
-     * @param recording the recording object that contains data related to the recording.
-     * @param trackmateImagePath the file path to the TrackMate image.
-     * @param brightfieldImagePath the file path to the Brightfield image.
-     * @param experimentName the name of the experiment associated with this entry.
-     * @param minRequiredDensityRatio the minimum required density ratio for processing or validation.
-     * @param maxAllowableVariability the maximum allowable variability level accepted.
-     * @param minRequiredRSquared the minimum required R-squared value for model fitting or analysis.
-     * @param neighbourMode the mode defining neighbor calculation or analysis strategy.
+     * Constructs a new {@code RecordingEntry}.
      */
-    public RecordingEntry(
-            Recording recording,
-            Path      trackmateImagePath,
-            Path      brightfieldImagePath,
-            String    experimentName,
-            double    minRequiredDensityRatio,
-            double    maxAllowableVariability,
-            double    minRequiredRSquared,
-            String    neighbourMode
-    ) {
+    public RecordingEntry(Recording recording,
+                          Path      trackmateImagePath,
+                          Path      brightfieldImagePath,
+                          String    experimentName,
+                          double    minRequiredDensityRatio,
+                          double    maxAllowableVariability,
+                          double    minRequiredRSquared,
+                          String    neighbourMode) {
         // @formatter:off
         this.recording               = recording;
         this.trackmateImagePath      = trackmateImagePath;
@@ -71,20 +68,14 @@ public class RecordingEntry {
         // @formatter:on
     }
 
-    /**
-     * Loads an image from the given file path. If the image cannot be loaded using standard
-     * ImageIO methods, it attempts to load the image using ImageJ's Opener. In case of a
-     * failure to load the image, an error is logged, and null is returned.
-     *
-     * @param imagePath the file path of the image to be loaded; must not be null.
-     * @param label a descriptive label used for logging, providing context about the image being loaded.
-     * @return an ImageIcon instance representing the loaded image, or null if the image could not be loaded.
-     */
+    // =========================================================================================
+    // IMAGE LOADING
+    // =========================================================================================
+
     private static ImageIcon loadImage(Path imagePath, String label) {
         if (imagePath == null) {
             return null;
         }
-
         try {
             BufferedImage img = javax.imageio.ImageIO.read(imagePath.toFile());
             if (img != null) {
@@ -112,10 +103,11 @@ public class RecordingEntry {
         return null;
     }
 
-    // === Getters ===
-    public String getRecordingName() {
-        return recording.getRecordingName();
-    }
+    // =========================================================================================
+    // GETTERS AND SETTERS
+    // =========================================================================================
+
+    public String getRecordingName() { return recording.getRecordingName(); }
 
     public String getExperimentName() {
         return experimentName;
@@ -185,22 +177,13 @@ public class RecordingEntry {
         return rightImage;
     }
 
-    public Recording getRecording() {
-        return recording;
-    }
+    // =========================================================================================
+    // SQUARE MANAGEMENT
+    // =========================================================================================
 
     /**
-     * Retrieves a list of Square objects associated with the current recording. This method
-     * caches the fetched squares per experiment to optimize performance. If the squares have
-     * already been cached, it returns the cached version; otherwise, it fetches them from
-     * the experiment-level cache and caches them for future use.
-     *
-     * @param project the project object representing the context of the current operation,
-     *                used for retrieving the experiment-related data.
-     * @param expectedNumberOfSquares the expected number of Square objects to retrieve,
-     *                                helping ensure consistency in the loaded data.
-     * @return a list of Square objects associated with the current recording. If an error
-     *         occurs during retrieval, an empty list is returned.
+     * Retrieves a list of Square objects associated with this recording.
+     * Squares are cached per experiment for performance efficiency.
      */
     public List<Square> getSquares(Project project, int expectedNumberOfSquares) {
         if (squares == null) {

@@ -524,29 +524,29 @@ public class SquareGridPanel extends JPanel {
     /**
      * Updates the internal visibility control parameters.
      *
-     * @param densityRatio minimum required density ratio
-     * @param variability maximum allowed variability
-     * @param rSquared minimum required R² value
+     * @param minRequiredDensityRatio minimum required density ratio
+     * @param maxAllowableVariability maximum allowed variability
+     * @param minRequiredRSquared minimum required R² value
      * @param neighbourMode neighbour visibility mode
      */
-    public void setControlParameters(double densityRatio,
-                                     double variability,
-                                     double rSquared,
+    public void setControlParameters(double minRequiredDensityRatio,
+                                     double maxAllowableVariability,
+                                     double minRequiredRSquared,
                                      String neighbourMode) {
-        this.ctrlMinDensityRatio = densityRatio;
-        this.ctrlMaxVariability = variability;
-        this.ctrlMinRSquared = rSquared;
-        this.ctrlNeighbourMode = (neighbourMode != null) ? neighbourMode : "Free";
+        this.minRequiredDensityRatio = minRequiredDensityRatio;
+        this.maxAllowableVariability = maxAllowableVariability;
+        this.minRequiredRSquared = minRequiredRSquared;
+        this.neighbourMode = (neighbourMode != null) ? neighbourMode : "Free";
     }
 
     /** Re-applies square visibility filtering using the current control parameters. */
     public void applyVisibilityFilter() {
         SharedSquareUtils.applyVisibilityFilter(
                 squares,
-                ctrlMinDensityRatio,
-                ctrlMaxVariability,
-                ctrlMinRSquared,
-                ctrlNeighbourMode);
+                minRequiredDensityRatio,
+                maxAllowableVariability,
+                minRequiredRSquared,
+                neighbourMode);
         this.repaint();
     }
 

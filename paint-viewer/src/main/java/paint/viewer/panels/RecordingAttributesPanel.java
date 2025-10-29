@@ -15,9 +15,9 @@ import java.awt.*;
  * through the `updateFromEntry` method.
  */
 public class RecordingAttributesPanel {
-    private final JPanel root;
+    private final JPanel            root;
     private final DefaultTableModel model;
-    private final JTable table;
+    private final JTable            table;
 
     /**
      * Constructs a RecordingAttributesPanel for displaying attributes of a recording in a tabular format.
@@ -64,26 +64,26 @@ public class RecordingAttributesPanel {
      * Updates the table model with attributes from the provided {@link RecordingEntry} instance and the given number of squares.
      * The method resets the table data and populates it with key attributes related to the recording.
      *
-     * @param e           the {@link RecordingEntry} object containing details about a recording
+     * @param recordingEntry           the {@link RecordingEntry} object containing details about a recording
      * @param numSquares  the number of squares associated with the recording
      */
-    public void updateFromEntry(RecordingEntry e, int numSquares) {
+    public void updateFromEntry(RecordingEntry recordingEntry, int numSquares) {
         model.setRowCount(0);
-        model.addRow(new Object[]{"Probe", e.getProbeName()});
-        model.addRow(new Object[]{"Probe Type", e.getProbeType()});
-        model.addRow(new Object[]{"Adjuvant", e.getAdjuvant()});
-        model.addRow(new Object[]{"Cell Type", e.getCellType()});
-        model.addRow(new Object[]{"Concentration", e.getConcentration()});
-        model.addRow(new Object[]{"Number of Spots", e.getNumberOfSpots()});
-        model.addRow(new Object[]{"Number of Tracks", e.getNumberOfTracks()});
+        model.addRow(new Object[]{"Probe",             recordingEntry.getProbeName()});
+        model.addRow(new Object[]{"Probe Type",        recordingEntry.getProbeType()});
+        model.addRow(new Object[]{"Adjuvant",          recordingEntry.getAdjuvant()});
+        model.addRow(new Object[]{"Cell Type",         recordingEntry.getCellType()});
+        model.addRow(new Object[]{"Concentration",     recordingEntry.getConcentration()});
+        model.addRow(new Object[]{"Number of Spots",   recordingEntry.getNumberOfSpots()});
+        model.addRow(new Object[]{"Number of Tracks",  recordingEntry.getNumberOfTracks()});
         model.addRow(new Object[]{"Number of Squares", numSquares});
-        model.addRow(new Object[]{"Threshold", e.getThreshold()});
-        model.addRow(new Object[]{"Tau", format(e.getTau(), 1)});
-        model.addRow(new Object[]{"Density", e.getDensity()});
-        model.addRow(new Object[]{"Min Density Ratio", e.getMinRequiredDensityRatio()});
-        model.addRow(new Object[]{"Max Variability", e.getMaxAllowableVariability()});
-        model.addRow(new Object[]{"Min R²", e.getMinRequiredRSquared()});
-        model.addRow(new Object[]{"Neighbour Mode", e.getNeighbourMode()});
+        model.addRow(new Object[]{"Threshold",         recordingEntry.getThreshold()});
+        model.addRow(new Object[]{"Tau",               format(recordingEntry.getTau(), 1)});
+        model.addRow(new Object[]{"Density",           recordingEntry.getDensity()});
+        model.addRow(new Object[]{"Min Density Ratio", recordingEntry.getMinRequiredDensityRatio()});
+        model.addRow(new Object[]{"Max Variability",   recordingEntry.getMaxAllowableVariability()});
+        model.addRow(new Object[]{"Min R²",            recordingEntry.getMinRequiredRSquared()});
+        model.addRow(new Object[]{"Neighbour Mode",    recordingEntry.getNeighbourMode()});
     }
 
     /**
