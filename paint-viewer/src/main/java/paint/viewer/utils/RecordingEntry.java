@@ -188,9 +188,6 @@ public class RecordingEntry {
         return recording;
     }
 
-    public List<Square> getSquares() {
-        return squares;
-    }
     // =========================================================================================
     // SQUARE MANAGEMENT
     // =========================================================================================
@@ -207,21 +204,15 @@ public class RecordingEntry {
      * @return list of {@link Square} objects for this recording
      */
     public List<Square> getSquares(Project project, int expectedNumberOfSquares) {
+        List<Square> squares = recording.getSquaresOfRecording();
         if (squares == null) {
-            try {
-                PaintLogger.debugf("Fetching squares (cached per experiment) for recording: %s", getRecordingName());
-                squares = ExperimentSquareCache.getSquaresForRecording(
-                        project.getProjectRootPath(),
-                        getExperimentName(),
-                        getRecordingName(),
-                        expectedNumberOfSquares
-                );
-            } catch (Exception e) {
-                e.printStackTrace();
-                squares = Collections.emptyList();
-            }
-        } else {
-            PaintLogger.debugf("Returning cached squares for recording: %s", getRecordingName());
+            PaintLogger.warnf("Recording %s has no squares loaded.", getRecordingName());
+            return Collections.emptyList();
+        }
+
+        if (expectedNumberOfSquares > 0 && squares.size() != expectedNumberOfSquares) {
+            PaintLogger.warnf("Recording %s expected %d squares but has %d",
+                              getRecordingName(), expectedNumberOfSquares, squares.size());
         }
 
         return squares;
