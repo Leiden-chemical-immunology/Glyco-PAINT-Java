@@ -91,13 +91,13 @@ public class RecordingViewerFrame extends JFrame
         int[]   validSquareLayouts         = {25, 100, 225, 400, 900};
         boolean isValidSquareLayout        = false;
 
-        for (int valid : validLayouts) {
+        for (int valid : validSquareLayouts) {
             if (numberOfSquaresInRecording == valid) {
-                isValid = true;
+                isValidSquareLayout = true;
                 break;
             }
         }
-        if (!isValid) {
+        if (!isValidSquareLayout) {
             PaintLogger.errorf("Invalid square layout (d x d)");
             return;
         }
