@@ -81,7 +81,7 @@ public class CalculateSquareAttributes {
         double       minRequiredDensityRatio    = generateSquaresConfig.getMinRequiredDensityRatio();
         String       neighbourMode              = generateSquaresConfig.getNeighbourMode();
         int          numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
-        double       area                       = calculateSquareArea(numberOfSquaresInRecording);
+        double       area                       = calculateSquareArea(getNumberOfSelectedSquares(recording));
         double       concentration              = recording.getConcentration();
         List<Square> squaresOfRecording         = recording.getSquaresOfRecording();
         // @formatter:on
@@ -207,7 +207,7 @@ public class CalculateSquareAttributes {
 
         double density = calculateDensity(
                 tracksFromSelectedSquares.size(),
-                calculateSquareArea(numberOfSelectedSquares),
+                calculateSquareArea(getNumberOfSelectedSquares(recording)),
                 RECORDING_DURATION,
                 recording.getConcentration()
         );
