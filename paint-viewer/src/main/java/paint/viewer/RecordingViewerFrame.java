@@ -46,22 +46,26 @@ import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH;
 public class RecordingViewerFrame extends JFrame
         implements RecordingControlsPanel.Listener, NavigationPanel.Listener {
 
-    private final Project project;
-    private final List<RecordingEntry> recordings;
-    private int currentIndex = 0;
+    //  @formatter:off
 
-    private SquareGridPanel leftGridPanel;
-    private final JLabel rightImageLabel = new JLabel("", SwingConstants.CENTER);
-    private final JLabel experimentLabel = new JLabel("", SwingConstants.CENTER);
-    private final JLabel recordingLabel = new JLabel("", SwingConstants.CENTER);
+    private final Project                  project;
+    private final List<RecordingEntry>     recordingEntries;   // This is the main datastructure for the viewer
+    private       int                      currentIndex      = 0;
 
-    private RecordingAttributesPanel attributesPanel;
-    private RecordingControlsPanel controlsPanel;
-    private NavigationPanel navigationPanel;
+    private       SquareGridPanel          leftGridPanel;
+    private final JLabel                   rightImageLabel   = new JLabel("", SwingConstants.CENTER);
+    private final JLabel                   experimentLabel   = new JLabel("", SwingConstants.CENTER);
+    private final JLabel                   recordingLabel    = new JLabel("", SwingConstants.CENTER);
 
-    private final CellAssignmentManager assignmentManager = new CellAssignmentManager();
-    private final ViewerOverrideWriter overrideWriter;
-    private final SquareControlHandler controlHandler = new SquareControlHandler();
+    private       RecordingAttributesPanel attributesPanel;
+    private       RecordingControlsPanel   controlsPanel;
+    private       NavigationPanel          navigationPanel;
+
+    private final CellAssignmentManager    assignmentManager = new CellAssignmentManager();
+    private final ViewerOverrideWriter     overrideWriter;
+    private final SquareControlHandler     controlHandler    = new SquareControlHandler();
+
+    //  @formatter:on
 
     /**
      * Constructs a {@code RecordingViewerFrame} that initializes and displays the recording viewer UI.
@@ -84,9 +88,9 @@ public class RecordingViewerFrame extends JFrame
         setLayout(new BorderLayout());
         setResizable(false);
 
-        int numberOfSquaresInRecording = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
-        int[] validLayouts = {25, 100, 225, 400, 900};
-        boolean isValid = false;
+        int     numberOfSquaresInRecording = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
+        int[]   validSquareLayouts         = {25, 100, 225, 400, 900};
+        boolean isValidSquareLayout        = false;
 
         for (int valid : validLayouts) {
             if (numberOfSquaresInRecording == valid) {
@@ -100,11 +104,12 @@ public class RecordingViewerFrame extends JFrame
         }
         int numberOfSquareInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);
 
+        // Create the panel in which the grid will be displayed
         leftGridPanel = new SquareGridPanel(numberOfSquareInOneDimension, numberOfSquareInOneDimension);
         controlHandler.attach(leftGridPanel);
 
         attributesPanel = new RecordingAttributesPanel();
-        controlsPanel = new RecordingControlsPanel(this);
+        controlsPanel   = new RecordingControlsPanel(this);
         navigationPanel = new NavigationPanel(this);
 
         JPanel imagesInner = new JPanel(new GridLayout(1, 2, 15, 0));
@@ -146,7 +151,10 @@ public class RecordingViewerFrame extends JFrame
         setSize(1500, 700);
         setLocationRelativeTo(null);
 
-        if (!recordings.isEmpty()) showEntry(0);
+        // Assuming there are recordingEntries to be shown, show, the first one
+        if (!recordingEntries.isEmpty()) {
+            showRecordingEntry(0);
+        }
     }
 
     /**
@@ -220,23 +228,33 @@ public class RecordingViewerFrame extends JFrame
         if (index < 0 || index >= recordings.size()) {
             return;
         }
+
+        // Store the index so that is available for other methods
         currentIndex = index;
-        RecordingEntry entry = recordings.get(index);
+
+        // Retrieve the current recordingEntry from recordingEntries
+        RecordingEntry recordingEntry = recordingEntries.get(index);
+
+
+        // Load the leftGridPanel with the information from recordingEntries indicated by the index
 
         int numberOfSquaresInRecording = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
 
-        leftGridPanel.setRecording(entry.getRecording());
-        leftGridPanel.setBackgroundImage(entry.getLeftImage());
-        leftGridPanel.setSquares(entry.getSquares(project, numberOfSquaresInRecording));
+        // Display the right image
+        rightImageLabel.setIcon(scaleToFit(recordingEntry.getRightImage(), NUMBER_PIXELS_WIDTH, NUMBER_PIXELS_HEIGHT));
 
-        rightImageLabel.setIcon(scaleToFit(entry.getRightImage(), NUMBER_PIXELS_WIDTH, NUMBER_PIXELS_HEIGHT));
+        // Update the Experiment and Recording information (undetr the left and right image)
+        experimentLabel.setText("Experiment: " + recordingEntry.getExperimentName() + "   [Overall: " + (currentIndex + 1) + "/" + recordingEntries.size() + "]");
+        recordingLabel.setText("Recording: " + recordingEntry.getRecordingName());
 
         experimentLabel.setText("Experiment: " + entry.getExperimentName() +
                                         "   [Overall: " + (currentIndex + 1) + "/" + recordings.size() + "]");
         recordingLabel.setText("Recording: " + entry.getRecordingName());
 
-        attributesPanel.updateFromEntry(entry, numberOfSquaresInRecording);
+        // Make sure that buttons are disabled of we are at the first or last image
         updateNavButtons();
+
+        //  Display the leftGridpanel
         leftGridPanel.repaint();
     }
 

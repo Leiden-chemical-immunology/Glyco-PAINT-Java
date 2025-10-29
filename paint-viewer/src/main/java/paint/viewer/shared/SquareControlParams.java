@@ -31,9 +31,9 @@ public class SquareControlParams {
                                double variability,
                                double rSquared,
                                String neighbourMode) {
-        this.densityRatio = densityRatio;
-        this.variability = variability;
-        this.rSquared = rSquared;
+        this.densityRatio  = densityRatio;
+        this.variability   = variability;
+        this.rSquared      = rSquared;
         this.neighbourMode = neighbourMode;
     }
 

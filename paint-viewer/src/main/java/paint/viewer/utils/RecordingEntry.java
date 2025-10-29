@@ -23,18 +23,17 @@ public class RecordingEntry {
      */
     // @formatter:off
     private final Recording recording;
-    private final Path      trackmateImagePath;
-    private final Path      brightfieldImagePath;
-    private final String    experimentName;
-    private final double    minRequiredDensityRatio;
-    private final double    maxAllowableVariability;
-    private final double    minRequiredRSquared;
-    private final String    neighbourMode;
+    private final Path         trackmateImagePath;
+    private final Path         brightfieldImagePath;
+    private final String       experimentName;
+    private final double       minRequiredDensityRatio;
+    private final double       maxAllowableVariability;
+    private final double       minRequiredRSquared;
+    private final String       neighbourMode;
+    private final ImageIcon    leftImage;
+    private final ImageIcon    rightImage;
+    private       List<Square> squares;
     // @formatter:on
-
-    private final ImageIcon leftImage;
-    private final ImageIcon rightImage;
-    private List<Square> squares;
 
     /**
      * Constructs a new RecordingEntry with the given parameters.
@@ -50,13 +49,13 @@ public class RecordingEntry {
      */
     public RecordingEntry(
             Recording recording,
-            Path trackmateImagePath,
-            Path brightfieldImagePath,
-            String experimentName,
-            double minRequiredDensityRatio,
-            double maxAllowableVariability,
-            double minRequiredRSquared,
-            String neighbourMode
+            Path      trackmateImagePath,
+            Path      brightfieldImagePath,
+            String    experimentName,
+            double    minRequiredDensityRatio,
+            double    maxAllowableVariability,
+            double    minRequiredRSquared,
+            String    neighbourMode
     ) {
         // @formatter:off
         this.recording               = recording;
@@ -67,10 +66,9 @@ public class RecordingEntry {
         this.maxAllowableVariability = maxAllowableVariability;
         this.minRequiredRSquared     = minRequiredRSquared;
         this.neighbourMode           = neighbourMode;
+        this.leftImage               = loadImage(trackmateImagePath, "TrackMate");
+        this.rightImage              = loadImage(brightfieldImagePath, "Brightfield");
         // @formatter:on
-
-        this.leftImage = loadImage(trackmateImagePath, "TrackMate");
-        this.rightImage = loadImage(brightfieldImagePath, "Brightfield");
     }
 
     /**
@@ -223,5 +221,4 @@ public class RecordingEntry {
         }
         return squares;
     }
-
 }

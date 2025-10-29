@@ -78,25 +78,21 @@ public class SquareGridPanel extends JPanel {
     private final int          cols;
 
     private       Image        backgroundImage;
-    private       List<Square> squares         = new ArrayList<>();
-    private final Set<Integer> selectedSquares = new HashSet<>();
+    private       List<Square> squares             = new ArrayList<>();
+    private final Set<Integer> selectedSquares     = new HashSet<>();
 
-    private boolean   showBorders   = true;
-    private boolean   showShading   = true;
-    private Rectangle selectionRect = null;
-    private Point     dragStart     = null;
-    // @formatter:on
+    private       boolean      showBorders         = true;
+    private       boolean      showShading         = true;
+    private       Rectangle    selectionRect       = null;
+    private       Point        dragStart           = null;
 
-    // --- Control parameters (set externally) ---
-    // @formatter:off
-    private double ctrlMinDensityRatio = 0.0;
-    private double ctrlMaxVariability  = Double.MAX_VALUE;
-    private double ctrlMinRSquared     = 0.0;
-    private String ctrlNeighbourMode   = "Free";
-    // @formatter:on
-
-    private boolean selectionEnabled = false;
+    private       double       ctrlMinDensityRatio = 0.0;
+    private       double       ctrlMaxVariability  = Double.MAX_VALUE;
+    private       double       ctrlMinRSquared     = 0.0;
+    private       String       ctrlNeighbourMode   = "Free";
+    private       boolean      selectionEnabled    = false;
     private final Set<Integer> dragSelectedSquares = new HashSet<>();
+    // @formatter:on
 
     /**
      * The NumberMode enumeration defines the modes for displaying numbers
@@ -112,7 +108,6 @@ public class SquareGridPanel extends JPanel {
      * within the grid managed by the containing panel.
      */
     public enum NumberMode {
-
         NONE,    // No numbers are drawn on squares.
         LABEL,   // Draws label numbers on selected squares.
         SQUARE   // Draws square numbers on selected squares.
@@ -406,11 +401,13 @@ public class SquareGridPanel extends JPanel {
         if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
         }
-        if (squares == null) return;
+        if (squares == null) {
+            return;
+        }
 
-        int squareW = getWidth() / cols;
-        int squareH = getHeight() / rows;
-        Graphics2D g2 = (Graphics2D) g;
+        int        squareW = getWidth() / cols;
+        int        squareH = getHeight() / rows;
+        Graphics2D g2      = (Graphics2D) g;
 
         // --- Draw cells, shading, and borders ---
         for (Square sq : squares) {

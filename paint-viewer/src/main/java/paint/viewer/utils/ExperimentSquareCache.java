@@ -25,6 +25,7 @@ public final class ExperimentSquareCache {
     private static final Map<String, Map<String, List<Square>>> experimentCache = new HashMap<>();
 
     private ExperimentSquareCache() {
+        // Left empty intentionally
     }
 
     /**
@@ -44,7 +45,6 @@ public final class ExperimentSquareCache {
             String experimentName,
             String recordingName,
             int expectedNumberOfSquares) {
-
 
         // If experiment not yet cached, load and split
         if (!experimentCache.containsKey(experimentName)) {
@@ -66,7 +66,7 @@ public final class ExperimentSquareCache {
         }
 
         Map<String, List<Square>> expMap = experimentCache.get(experimentName);
-        List<Square> result = expMap.getOrDefault(recordingName, Collections.emptyList());
+        List<Square>              result = expMap.getOrDefault(recordingName, Collections.emptyList());
 
         if (expectedNumberOfSquares != 0 && result.size() != expectedNumberOfSquares) {
             PaintLogger.warnf(

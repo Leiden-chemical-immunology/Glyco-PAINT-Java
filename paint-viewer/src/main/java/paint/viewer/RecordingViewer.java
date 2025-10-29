@@ -80,7 +80,8 @@ public class RecordingViewer {
                         return false;
                     }
 
-                    RecordingViewerFrame viewer = new RecordingViewerFrame(project, entries);
+                    // With the recordingEntries info available, the viewer can be started
+                    RecordingViewerFrame viewer = new RecordingViewerFrame(project, recordingEntries);
                     viewer.setVisible(true);
                     return true;
                 } catch (Exception ex) {

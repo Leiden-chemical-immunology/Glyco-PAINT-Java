@@ -48,8 +48,8 @@ public class RecordingControlsPanel {
 
         JButton filterButton = new JButton("Filter recordings");
         JButton squareButton = new JButton("Select Squares");
-        JButton cellButton = new JButton("Assign Cells");
-        JButton playButton = new JButton("Play Recording");
+        JButton cellButton   = new JButton("Assign Cells");
+        JButton playButton   = new JButton("Play Recording");
 
         for (JButton b : new JButton[]{filterButton, squareButton, cellButton, playButton}) {
             b.setAlignmentX(Component.CENTER_ALIGNMENT);

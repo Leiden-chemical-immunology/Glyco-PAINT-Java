@@ -25,15 +25,17 @@ public class CellAssignmentManager {
      */
     public void assignSelectedSquares(int cellId, SquareGridPanel grid) {
         Set<Integer> selected = grid.getSelectedSquares();
-        if (selected.isEmpty()) return;
+        if (selected.isEmpty()) {
+            return;
+        }
 
-        // Save current state for undo
+        // Save the current state for undo
         undoStack.push(new HashMap<Integer, Integer>(squareAssignments));
 
-        for (Square sq : grid.getSquares()) {
-            if (selected.contains(sq.getSquareNumber())) {
-                sq.setCellId(cellId);
-                squareAssignments.put(sq.getSquareNumber(), cellId);
+        for (Square square : grid.getSquares()) {
+            if (selected.contains(square.getSquareNumber())) {
+                square.setCellId(cellId);
+                squareAssignments.put(square.getSquareNumber(), cellId);
             }
         }
         grid.clearMouseSelection();
