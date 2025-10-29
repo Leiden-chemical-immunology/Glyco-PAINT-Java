@@ -90,9 +90,9 @@ public class RecordingLoader {
                 // --- Thresholds from config ---
                 // @formatter:off
                 double minDensityRatio = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
-                double maxVariability  = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
-                double minRSquared     = PaintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
-                String neighbourMode   = PaintConfig.getString("Generate Squares", "Neighbour Mode", "Free");
+                double maxVariability  = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability",  10.0);
+                double minRSquared     = PaintConfig.getDouble("Generate Squares", "Min Required R Squared",     0.1);
+                String neighbourMode   = PaintConfig.getString("Generate Squares", "Neighbour Mode",             "Free");
                 // @formatter:on
 
                 // --- Build final entry ---

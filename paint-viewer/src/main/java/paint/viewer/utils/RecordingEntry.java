@@ -188,6 +188,9 @@ public class RecordingEntry {
         return recording;
     }
 
+    public List<Square> getSquares() {
+        return squares;
+    }
     // =========================================================================================
     // SQUARE MANAGEMENT
     // =========================================================================================

@@ -41,15 +41,15 @@ public final class ExperimentSquareCache {
      * @return a list of squares corresponding to the specified recording, or an empty list if no such recording exists
      */
     public static synchronized List<Square> getSquaresForRecording(
-            Path projectPath,
+            Path   projectPath,
             String experimentName,
             String recordingName,
-            int expectedNumberOfSquares) {
+            int    expectedNumberOfSquares) {
 
         // If experiment not yet cached, load and split
         if (!experimentCache.containsKey(experimentName)) {
             PaintLogger.debugf("Loading all squares for experiment: %s", experimentName);
-            Path experimentPath = projectPath.resolve(experimentName);
+            Path experimentPath     = projectPath.resolve(experimentName);
             List<Square> allSquares = readAllSquares(experimentPath);
 
             if  (allSquares == null) {

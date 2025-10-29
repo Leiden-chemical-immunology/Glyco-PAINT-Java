@@ -128,12 +128,10 @@ public class ViewerOverrideWriter {
         }
     }
 
-    private void update(RecordingEntry recordingEntry,
+    private void update(RecordingEntry      recordingEntry,
                         SquareControlParams params) {
-         //CalculateTau.CalculateTauResult calculateTauResult = calculateTau(recordingEntry.getSquares(), params.rSquared);
 
         List<Track> tracksFromSelectedSquares = getTracksFromSelectedSquares(recordingEntry.getSquares());
-        // int numberOfSelectedSquares           = getNumberOfSelectedSquares(recordingEntry.getRecording());
 
         CalculateTau.CalculateTauResult results = calculateTau(tracksFromSelectedSquares, params.rSquared);
 
