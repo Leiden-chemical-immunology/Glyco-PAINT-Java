@@ -75,7 +75,8 @@ import static paint.shared.utils.SharedSquareUtils.getTracksFromSelectedSquares;
  * <p>This class mirrors {@link paint.viewer.logic.SquareOverrideWriter}
  * but operates at the recording scope instead of per-square granularity.
  */
-public class ViewerOverrideWriter {
+public class RecordingOverrideWriter {
+
     private final Path csvFilePath;
 
     /**

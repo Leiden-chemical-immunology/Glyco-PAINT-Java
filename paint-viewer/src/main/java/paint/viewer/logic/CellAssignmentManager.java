@@ -60,10 +60,11 @@ public class CellAssignmentManager {
      * @param cellId the identifier to assign to the selected squares
      * @param grid   the grid panel containing the squares to be modified
      */
-    public void assignSelectedSquares(int cellId, SquareGridPanel grid) {
-        Set<Integer> selected = grid.getSelectedSquares();
-        if (selected.isEmpty()) {
-            return;
+    public Map<Integer, Integer> assignUserSelectedSquares(int cellId, SquareGridPanel grid) {
+        Set<Integer> userSelectedSquaresNumbers = grid.getUserSelectedSquaresNumbers();
+
+        if (userSelectedSquaresNumbers.isEmpty()) {
+            return Collections.unmodifiableMap(squareAssignments);
         }
 
         // Save the current state for undo

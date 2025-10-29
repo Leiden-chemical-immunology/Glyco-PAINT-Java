@@ -53,7 +53,7 @@ import paint.viewer.dialogs.FilterDialog;
 import paint.viewer.dialogs.SquareControlDialog;
 import paint.viewer.logic.CellAssignmentManager;
 import paint.viewer.logic.SquareControlHandler;
-import paint.viewer.logic.ViewerOverrideWriter;
+import paint.viewer.logic.RecordingOverrideWriter;
 import paint.viewer.logic.SquareOverrideWriter;
 import paint.viewer.panels.NavigationPanel;
 import paint.viewer.panels.RecordingAttributesPanel;
@@ -114,7 +114,7 @@ public class RecordingViewerFrame extends JFrame
     private       NavigationPanel          navigationPanel;
 
     private final CellAssignmentManager    assignmentManager = new CellAssignmentManager();
-    private final ViewerOverrideWriter     overrideWriter;
+    private final RecordingOverrideWriter  recordingOverrideWriter;
     private final SquareOverrideWriter     squareOverrideWriter;
     private final SquareControlHandler     controlHandler    = new SquareControlHandler();
     //  @formatter:on
@@ -129,11 +129,9 @@ public class RecordingViewerFrame extends JFrame
      */
     public RecordingViewerFrame(Project project, List<RecordingEntry> recordingEntries) {
         super("Recording Viewer - " + project.getProjectRootPath().getFileName());
-        this.project          = project;
-        this.recordingEntries = recordingEntries;  // All the information is maintained here
-        this.overrideWriter   = new ViewerOverrideWriter(project.getProjectRootPath());
         this.project                 = project;
         this.recordingEntries        = recordingEntries;  // All the information is maintained here
+        this.recordingOverrideWriter = new RecordingOverrideWriter(project.getProjectRootPath());
         this.squareOverrideWriter    = new SquareOverrideWriter(project.getProjectRootPath());
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -495,7 +493,7 @@ public class RecordingViewerFrame extends JFrame
 
         // --- Full application: persist thresholds and repaint ---
         controlHandler.apply(params, leftGridPanel);
-        overrideWriter.applyAndWrite(scope, params, recordingEntries, currentIndex);
+        recordingOverrideWriter.applyAndWrite(scope, params, recordingEntries, currentIndex);
         leftGridPanel.repaint();
     }
 
