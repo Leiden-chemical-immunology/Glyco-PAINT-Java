@@ -172,7 +172,7 @@ public class SquareGridPanel extends JPanel {
                 if (selectionRect != null) {
                     selectSquaresInRect(selectionRect);
                     selectionRect = null;
-                    repaint();
+                    SquareGridPanel.this.repaint();
                 }
             }
 
@@ -193,7 +193,7 @@ public class SquareGridPanel extends JPanel {
                             } else {
                                 selectedSquares.remove(sq.getSquareNumber());
                             }
-                            repaint();
+                            SquareGridPanel.this.repaint();
                             break;
                         }
                     }
@@ -220,7 +220,7 @@ public class SquareGridPanel extends JPanel {
                 int w = Math.abs(dragStart.x - e.getX());
                 int h = Math.abs(dragStart.y - e.getY());
                 selectionRect = new Rectangle(x, y, w, h);
-                repaint();
+                SquareGridPanel.this.repaint();
             }
         });
     }
@@ -345,7 +345,7 @@ public class SquareGridPanel extends JPanel {
             }
         }
 
-        repaint();
+        this.repaint();
     }
 
     // === Public API ===
@@ -366,7 +366,7 @@ public class SquareGridPanel extends JPanel {
         for (Square sq : squares) {
             sq.setSelected(false);
         }
-        repaint();
+        this.repaint();
     }
 
     /** @return the list of {@link Square} objects currently displayed */
@@ -390,7 +390,7 @@ public class SquareGridPanel extends JPanel {
      */
     public void setBackgroundImage(ImageIcon icon) {
         this.backgroundImage = (icon != null) ? icon.getImage() : null;
-        repaint();
+        this.repaint();
     }
 
     /** Paints the square grid, overlays, numbers, and selection box. */
@@ -494,13 +494,13 @@ public class SquareGridPanel extends JPanel {
     /** Enables or disables border drawing. */
     public void setShowBorders(boolean show) {
         this.showBorders = show;
-        repaint();
+        this.repaint();
     }
 
     /** Sets the numeric display mode for selected squares. */
     public void setNumberMode(NumberMode mode) {
         this.numberMode = mode;
-        repaint();
+        this.repaint();
     }
 
     /** @return number of supported cell colors */
@@ -547,7 +547,7 @@ public class SquareGridPanel extends JPanel {
                 ctrlMaxVariability,
                 ctrlMinRSquared,
                 ctrlNeighbourMode);
-        repaint();
+        this.repaint();
     }
 
     /**
@@ -564,7 +564,7 @@ public class SquareGridPanel extends JPanel {
                 sq.setCellId(cellId);
             }
         }
-        repaint();
+        this.repaint();
     }
 
     /** Clears all mouse-based selection highlights. */
@@ -573,13 +573,13 @@ public class SquareGridPanel extends JPanel {
         dragSelectedSquares.clear();
         selectionRect = null;
         dragStart = null;
-        repaint();
+        this.repaint();
     }
 
     /** Enables or disables shading overlays. */
     public void setShowShading(boolean show) {
         this.showShading = show;
-        repaint();
+        this.repaint();
     }
 
     public void setRecording(Recording recording) {
