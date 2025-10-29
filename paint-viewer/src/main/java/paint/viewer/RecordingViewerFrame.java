@@ -2,6 +2,8 @@ package paint.viewer;
 
 import paint.shared.config.PaintConfig;
 import paint.shared.objects.Project;
+import paint.shared.objects.Track;
+import paint.shared.utils.CalculateTau;
 import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.PaintLogger;
 
@@ -27,8 +29,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_HEIGHT;
-import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH;
+import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.objects.Square.calculateSquareArea;
+import static paint.shared.utils.CalculateTau.CalculateTauResult.Status.TAU_SUCCESS;
+import static paint.shared.utils.CalculateTau.calculateTau;
+import static paint.shared.utils.SharedSquareUtils.*;
 
 /**
  * The RecordingViewerFrame class manages the GUI frame for visualizing and interacting with
@@ -439,18 +444,36 @@ public class RecordingViewerFrame extends JFrame
             controlHandler.apply(params, leftGridPanel);
             leftGridPanel.applyVisibilityFilter();  // <── recompute which squares are visible
 
-            RecordingEntry cur = recordingEntries.get(currentIndex);
-            int numSquares = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
+            RecordingEntry currentRecordingEntry = recordingEntries.get(currentIndex);
+            int numSquares                       = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
+
+            // Calculate the new Tau
+            List<Track> tracksFromSelectedSquares   = getTracksFromSelectedSquares(currentRecordingEntry.getRecording().getSquaresOfRecording());
+            CalculateTau.CalculateTauResult results = calculateTau(tracksFromSelectedSquares, params.minRequiredRSquared);
+            if (results != null && results.getStatus() == TAU_SUCCESS ) {
+                currentRecordingEntry.getRecording().setTau(results.getTau());
+                currentRecordingEntry.getRecording().setRSquared(results.getRSquared());
+            }
+            else {
+            }
+
+            // Calculate the new Density
+            double density = calculateDensity(
+                    tracksFromSelectedSquares.size(),
+                    calculateSquareArea(getNumberOfSelectedSquares(currentRecordingEntry.getRecording())),
+                    RECORDING_DURATION,
+                    currentRecordingEntry.getRecording().getConcentration()
+            );
 
             // Preview updated thresholds, tau, density, etc., without changing the model
             attributesPanel.updatePreview(
-                    recordingEntries.get(currentIndex),
+                    currentRecordingEntry,
                     numSquares,
-                    recordingEntries.get(currentIndex).getTau(),                // current tau
-                    recordingEntries.get(currentIndex).getDensity(),            // current density
-                    params.densityRatio,         // previewed values
-                    params.variability,
-                    params.rSquared,
+                    results.getTau(),                     // current tau
+                    density,                              // current density
+                    params.minRequiredDensityRatio,                  // previewed values
+                    params.maxAllowableVariability,
+                    results.getRSquared(),
                     params.neighbourMode
             );
 

@@ -135,8 +135,8 @@ public class ViewerOverrideWriter {
 
         CalculateTau.CalculateTauResult results = calculateTau(tracksFromSelectedSquares, params.minRequiredRSquared);
 
-        recordingEntry.setMaxAllowableVariability(params.variability);
-        recordingEntry.setMinRequiredDensityRatio(params.densityRatio);
+        recordingEntry.getRecording().setTau(results.getTau());
+        recordingEntry.getRecording().setRSquared(results.getRSquared());
         recordingEntry.setMaxAllowableVariability(params.maxAllowableVariability);
         recordingEntry.setMinRequiredDensityRatio(params.minRequiredDensityRatio);
         recordingEntry.setNeighbourMode(params.neighbourMode);
