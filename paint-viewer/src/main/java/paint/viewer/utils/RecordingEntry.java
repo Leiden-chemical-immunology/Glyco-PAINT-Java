@@ -73,7 +73,6 @@ public class RecordingEntry {
     private final ImageIcon     leftImage;
     private final ImageIcon     rightImage;
 
-    private       List<Square>  squares;
     // @formatter:on
 
     /**
@@ -244,36 +243,5 @@ public class RecordingEntry {
 
     public Recording getRecording() {
         return recording;
-    }
-
-    // =========================================================================================
-    // SQUARE MANAGEMENT
-    // =========================================================================================
-
-    /**
-     * Retrieves the list of {@link Square} objects associated with this recording.
-     * <p>
-     * The experiment and all recordings are fully loaded at startup via
-     * {@link paint.shared.io.ExperimentDataLoader}, so this method directly
-     * delegates to the associated {@link Recording}.
-     * </p>
-     *
-     * @param project the project context (unused; maintained for compatibility)
-     * @param expectedNumberOfSquares expected number of squares for layout validation
-     * @return list of {@link Square} objects for this recording
-     */
-    public List<Square> getSquares(Project project, int expectedNumberOfSquares) {
-        List<Square> squares = recording.getSquaresOfRecording();
-        if (squares == null) {
-            PaintLogger.warnf("Recording %s has no squares loaded.", getRecordingName());
-            return Collections.emptyList();
-        }
-
-        if (expectedNumberOfSquares > 0 && squares.size() != expectedNumberOfSquares) {
-            PaintLogger.warnf("Recording %s expected %d squares but has %d",
-                              getRecordingName(), expectedNumberOfSquares, squares.size());
-        }
-
-        return squares;
     }
 }

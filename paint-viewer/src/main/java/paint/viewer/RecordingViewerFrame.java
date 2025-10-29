@@ -264,7 +264,7 @@ public class RecordingViewerFrame extends JFrame
         leftGridPanel.setBackgroundImage(recordingEntry.getLeftImage());
 
         int numberOfSquaresInRecording = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
-        leftGridPanel.setSquares(recordingEntry.getSquares(project, numberOfSquaresInRecording));
+        leftGridPanel.setSquares(recordingEntry.getRecording().getSquaresOfRecording());
 
         rightImageLabel.setIcon(scaleToFit(recordingEntry.getRightImage(), NUMBER_PIXELS_WIDTH, NUMBER_PIXELS_HEIGHT));
         experimentLabel.setText("Experiment: " + recordingEntry.getExperimentName() + "   [Overall: " + (currentIndex + 1) + "/" + recordingEntries.size() + "]");
