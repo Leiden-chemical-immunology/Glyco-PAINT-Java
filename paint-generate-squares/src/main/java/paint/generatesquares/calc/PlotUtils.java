@@ -65,6 +65,7 @@ import paint.shared.objects.Experiment;
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
 import paint.shared.objects.Track;
+import paint.shared.utils.CalculateTau;
 import paint.shared.utils.PaintLogger;
 
 import static paint.generatesquares.calc.SquareUtils.calculateBackgroundDensity;

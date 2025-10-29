@@ -1,6 +1,7 @@
 package paint.viewer.logic;
 
-import paint.shared.objects.Project;
+import paint.shared.objects.Track;
+import paint.shared.utils.CalculateTau;
 import paint.shared.utils.PaintLogger;
 import paint.viewer.utils.RecordingEntry;
 import paint.viewer.shared.SquareControlParams;
@@ -12,6 +13,9 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import static paint.shared.utils.CalculateTau.calculateTau;
+import static paint.shared.utils.SharedSquareUtils.getTracksFromSelectedSquares;
 
 /**
  * A utility class for managing and recording viewer override configurations in a CSV file.
@@ -56,7 +60,6 @@ public class ViewerOverrideWriter {
                 if (recordingEntry.getExperimentName().equals(currentRecordingEntry.getExperimentName())) {
                     writeOverrideRecord(recordingEntry.getRecordingName(), params, timestamp);
                     update(recordingEntry, params);
-                    // TODO: calcTau
                 }
             }
 
@@ -127,6 +130,13 @@ public class ViewerOverrideWriter {
 
     private void update(RecordingEntry recordingEntry,
                         SquareControlParams params) {
+         //CalculateTau.CalculateTauResult calculateTauResult = calculateTau(recordingEntry.getSquares(), params.rSquared);
+
+        List<Track> tracksFromSelectedSquares = getTracksFromSelectedSquares(recordingEntry.getSquares());
+        // int numberOfSelectedSquares           = getNumberOfSelectedSquares(recordingEntry.getRecording());
+
+        CalculateTau.CalculateTauResult results = calculateTau(tracksFromSelectedSquares, params.rSquared);
+
         recordingEntry.setMaxAllowableVariability(params.variability);
         recordingEntry.setMinRequiredDensityRatio(params.densityRatio);
         recordingEntry.setNeighbourMode(params.neighbourMode);

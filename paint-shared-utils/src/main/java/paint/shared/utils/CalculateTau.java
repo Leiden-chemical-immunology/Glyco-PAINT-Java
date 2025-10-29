@@ -42,7 +42,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
  ******************************************************************************/
 
-package paint.generatesquares.calc;
+package paint.shared.utils;
 
 import org.apache.commons.math3.fitting.leastsquares.*;
 import org.apache.commons.math3.linear.*;
@@ -75,7 +75,6 @@ public class CalculateTau {
      *  points, no fit, or R-squared too low.
      */
     public static CalculateTauResult calculateTau(List<Track> tracks,
-                                                  int minTracksForTau,
                                                   double minRequiredRSquared) {
 
         // 1) Extract durations

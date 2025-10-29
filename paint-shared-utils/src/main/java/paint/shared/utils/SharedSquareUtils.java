@@ -45,11 +45,14 @@
 
 package paint.shared.utils;
 
+import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
+import paint.shared.objects.Track;
 import tech.tablesaw.api.DoubleColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.selection.Selection;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -215,5 +218,38 @@ public final class SharedSquareUtils {
 
         PaintLogger.debugf("NeighbourMode [%s] neighbour-filtered: %d / %d retained",
                            neighbourMode, keptCount, visibleBasic);
+    }
+
+    /**
+     * Retrieves a list of tracks from all selected squares in the provided recording.
+     * If a square is selected and contains tracks, those tracks are added to the result.
+     *
+     * @param squares The squares to be checked.
+     * @return A list of tracks from all selected squares in the recording.
+     */
+    public static List<Track> getTracksFromSelectedSquares(List<Square> squares) {
+        List<Track> selectedTracks = new ArrayList<>();
+        for (Square square : squares) {
+            if (square.isSelected() && square.getTracks() != null) {
+                selectedTracks.addAll(square.getTracks());
+            }
+        }
+        return selectedTracks;
+    }
+
+    /**
+     * Counts the number of squares marked as selected in the provided recording.
+     *
+     * @param recording The recording object containing a collection of squares.
+     * @return The count of squares that are marked as selected.
+     */
+    public static int getNumberOfSelectedSquares(Recording recording) {
+        int count = 0;
+        for (Square square : recording.getSquaresOfRecording()) {
+            if (square.isSelected()) {
+                count++;
+            }
+        }
+        return count;
     }
 }

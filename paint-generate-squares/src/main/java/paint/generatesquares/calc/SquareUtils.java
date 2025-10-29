@@ -146,38 +146,6 @@ public class SquareUtils {
         return new BackgroundEstimationResult(mean, current);
     }
 
-    /**
-     * Retrieves a list of tracks from all selected squares in the provided recording.
-     * If a square is selected and contains tracks, those tracks are added to the result.
-     *
-     * @param recording The recording object containing the squares to be checked.
-     * @return A list of tracks from all selected squares in the recording.
-     */
-    public static List<Track> getTracksFromSelectedSquares(Recording recording) {
-        List<Track> selectedTracks = new ArrayList<>();
-        for (Square square : recording.getSquaresOfRecording()) {
-            if (square.isSelected() && square.getTracks() != null) {
-                selectedTracks.addAll(square.getTracks());
-            }
-        }
-        return selectedTracks;
-    }
-
-    /**
-     * Counts the number of squares marked as selected in the provided recording.
-     *
-     * @param recording The recording object containing a collection of squares.
-     * @return The count of squares that are marked as selected.
-     */
-    public static int getNumberOfSelectedSquares(Recording recording) {
-        int count = 0;
-        for (Square square : recording.getSquaresOfRecording()) {
-            if (square.isSelected()) {
-                count++;
-            }
-        }
-        return count;
-    }
 
     /**
      * Represents the result of a background estimation process for track counts.

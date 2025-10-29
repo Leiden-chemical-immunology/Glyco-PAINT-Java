@@ -1,6 +1,6 @@
 package generatesquares.calc;
 
-import paint.generatesquares.calc.CalculateTau;
+import paint.shared.utils.CalculateTau;
 
 import javax.swing.*;
 import java.awt.*;
