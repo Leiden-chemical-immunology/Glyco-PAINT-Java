@@ -144,7 +144,6 @@ public class SquareControlDialog extends JDialog {
             @Override
             public void stateChanged(ChangeEvent e) {
                 updateValueLabels();
-                propagateValues();
                 propagatePreview();
                 SwingUtilities.invokeLater(() -> gridPanel.repaint());
             }
@@ -231,16 +230,9 @@ public class SquareControlDialog extends JDialog {
      * Sends live parameter updates to the listener for preview
      * without writing anything to disk.
      */
-    private void propagateValues() {
-        // directly update grid while sliding, no call to RecordingViewerFrame
-        gridPanel.setControlParameters(
-                densityRatioSlider.getValue() / 10.0,
-                variabilitySlider.getValue() / 10.0,
-                rSquaredSlider.getValue() / 100.0,
-                getNeighbourMode()
-        );
-        gridPanel.applyVisibilityFilter();
-        gridPanel.repaint();
+    private void propagatePreview() {
+        SquareControlParams params = collectParams();        // Get the slider and Neighbour Mode parameters
+        listener.onApplySquareControl("Preview", params);    // Make them available to the RecordingViewerFrame (Preview because nothing is saved yet)
     }
 
     /** Returns the selected neighbour mode string. */

@@ -430,6 +430,15 @@ public class RecordingViewerFrame extends JFrame
      */
     @Override
     public void onApplySquareControl(String scope, SquareControlParams params) {
+        // --- Live preview (while moving sliders) ---
+        if ("Preview".equals(scope)) {
+            controlHandler.apply(params, leftGridPanel);
+            leftGridPanel.applyVisibilityFilter();  // <── recompute which squares are visible
+            leftGridPanel.repaint();
+            return;
+        }
+
+        // --- Apply buttons: full apply + write overrides ---
         controlHandler.apply(params, leftGridPanel);
         overrideWriter.applyAndWrite(scope, params, recordings, currentIndex, project);
         leftGridPanel.repaint();
