@@ -356,6 +356,8 @@ public class RecordingViewerFrame extends JFrame
      */
     @Override
     public void onAssignCellsRequested() {
+
+        leftGridPanel.hideSquareInfoIfVisible();  // Close any popup first
         leftGridPanel.setSelectionEnabled(true);
         final JFrame owner = this;
         CellAssignmentDialog dialog = new CellAssignmentDialog(owner, new CellAssignmentDialog.Listener() {

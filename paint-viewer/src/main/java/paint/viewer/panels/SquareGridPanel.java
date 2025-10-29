@@ -589,4 +589,12 @@ public class SquareGridPanel extends JPanel {
     public Recording getRecording() {
         return recording;
     }
+
+    public void hideSquareInfoIfVisible() {
+        if (infoPopup != null) {
+            infoPopup.setVisible(false);
+            infoPopup.dispose();
+            infoPopup = null;
+        }
+    }
 }
