@@ -1,9 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- ===================================================================== -->
+<!--  PAINT GET OMERO MODULE                                              -->
+<!-- ===================================================================== -->
+<!--
+  PURPOSE:
+    Builds the "Get Omero" standalone desktop application.
+    This module produces a self-contained fat JAR and optionally
+    a macOS .app bundle for local installation.
+
+  AUTHOR:
+    Hans Bakker (jjabakker)
+
+  MODULE:
+    paint-get-omero
+
+  UPDATED:
+    2025-10-30
+
+  NOTES:
+    • To build the macOS .app bundle:
+          mvn clean package -Pmacos-appbundle
+    • The resulting app is installed to:
+          ~/Applications/Glyco-PAINT/Get Omero.app
+-->
+<!-- ===================================================================== -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <!-- =============================================================== -->
+    <!-- Project hierarchy                                               -->
+    <!-- =============================================================== -->
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -16,9 +45,15 @@
     <artifactId>paint-get-omero</artifactId>
     <packaging>jar</packaging>
 
+    <!-- =============================================================== -->
+    <!-- Metadata                                                       -->
+    <!-- =============================================================== -->
     <name>Paint Get Omero</name>
     <description>Standalone desktop app for loading Omero data</description>
 
+    <!-- =============================================================== -->
+    <!-- Application properties                                         -->
+    <!-- =============================================================== -->
     <properties>
         <project.build.outputTimestamp>2025-10-27T20:31:50Z</project.build.outputTimestamp>
         <app.name>Get Omero</app.name>
@@ -27,28 +62,38 @@
         <fat.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</fat.jar>
     </properties>
 
+    <!-- =============================================================== -->
+    <!-- Dependencies                                                    -->
+    <!-- =============================================================== -->
     <dependencies>
+        <!-- CSV utilities -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
             <version>1.9.0</version>
         </dependency>
+
+        <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
             <version>1.7.36</version>
             <scope>runtime</scope>
         </dependency>
+
     </dependencies>
 
+    <!-- =============================================================== -->
+    <!-- Build configuration                                             -->
+    <!-- =============================================================== -->
     <build>
         <plugins>
-
-            <!-- Fat JAR build -->
+            <!-- Build fat JAR with dependencies -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.7.1</version>
+
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -59,6 +104,7 @@
                         </manifest>
                     </archive>
                 </configuration>
+
                 <executions>
                     <execution>
                         <id>make-assembly</id>
@@ -68,12 +114,16 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
 
+            </plugin>
         </plugins>
     </build>
 
+    <!-- =============================================================== -->
+    <!-- OS-specific build profiles                                      -->
+    <!-- =============================================================== -->
     <profiles>
+        <!-- macOS .app bundle profile -->
         <profile>
             <id>macos-appbundle</id>
             <activation>
@@ -96,18 +146,24 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <echo message="🍎 Creating macOS app bundle at ${app.bundle}"/>
+                                        <echo message="Creating macOS app bundle at ${app.bundle}"/>
                                         <delete dir="${app.bundle}" failonerror="false"/>
                                         <delete file="${project.build.directory}/${app.name}.app.zip" failonerror="false"/>
+
+                                        <!-- Create app bundle structure -->
                                         <mkdir dir="${app.bundle}/Contents/MacOS"/>
                                         <mkdir dir="${app.bundle}/Contents/Java"/>
                                         <mkdir dir="${app.bundle}/Contents/Resources"/>
+
+                                        <!-- Copy required files -->
                                         <copy file="${fat.jar}"
                                               todir="${app.bundle}/Contents/Java"
                                               overwrite="true" failonerror="false"/>
                                         <copy file="${app.icon.macos}"
                                               todir="${app.bundle}/Contents/Resources"
                                               overwrite="true" failonerror="false"/>
+
+                                        <!-- Create Info.plist -->
                                         <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -122,18 +178,24 @@
 </dict>
 </plist>
                                         ]]></echo>
+
+                                        <!-- Create launch script -->
                                         <echo file="${app.bundle}/Contents/MacOS/launch"><![CDATA[
 #!/bin/bash
 DIR="$( cd "$( dirname "$0" )" && cd ../Java && pwd )"
 exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-jar-with-dependencies.jar"
                                         ]]></echo>
+
                                         <fixcrlf file="${app.bundle}/Contents/MacOS/launch" eol="unix"/>
                                         <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
+
+                                        <!-- Zip and install -->
                                         <exec executable="zip">
                                             <arg value="-r"/>
                                             <arg value="${project.build.directory}/${app.name}.app.zip"/>
                                             <arg value="${app.bundle}"/>
                                         </exec>
+
                                         <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
                                         <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
                                         <copy todir="${user.home}/Applications/Glyco-PAINT"
@@ -142,11 +204,13 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                                                 <include name="${app.name}.app/**"/>
                                             </fileset>
                                         </copy>
+
                                         <exec executable="chmod" failonerror="false">
                                             <arg value="755"/>
                                             <arg value="${user.home}/Applications/Glyco-PAINT/${app.name}.app/Contents/MacOS/launch"/>
                                         </exec>
-                                        <echo message="✅ Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
+
+                                        <echo message="Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
                                     </target>
                                 </configuration>
                             </execution>
@@ -157,6 +221,9 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
         </profile>
     </profiles>
 
+    <!-- =============================================================== -->
+    <!-- External repositories                                           -->
+    <!-- =============================================================== -->
     <repositories>
         <repository>
             <id>scijava.public</id>

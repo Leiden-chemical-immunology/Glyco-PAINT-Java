@@ -1,8 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- ===================================================================== -->
+<!--  PAINT CREATE EXPERIMENT MODULE                                      -->
+<!-- ===================================================================== -->
+<!--
+  PURPOSE:
+    Builds the "Create Experiment" standalone desktop application.
+    This module packages a fat JAR and optionally bundles it into a macOS .app.
+
+  AUTHOR:
+    Hans Bakker (jjabakker)
+
+  MODULE:
+    paint-create-experiment
+
+  UPDATED:
+    2025-10-30
+
+  NOTES:
+    • To build the macOS .app bundle:
+          mvn clean package -Pmacos-appbundle
+    • The resulting app is automatically installed to:
+          ~/Applications/Glyco-PAINT/Create Experiment.app
+-->
+<!-- ===================================================================== -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <!-- =============================================================== -->
+    <!-- Project hierarchy                                               -->
+    <!-- =============================================================== -->
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -15,9 +43,15 @@
     <artifactId>paint-create-experiment</artifactId>
     <packaging>jar</packaging>
 
+    <!-- =============================================================== -->
+    <!-- Metadata                                                       -->
+    <!-- =============================================================== -->
     <name>Paint Create Experiment</name>
     <description>Standalone desktop app for creating experiments</description>
 
+    <!-- =============================================================== -->
+    <!-- Application properties                                         -->
+    <!-- =============================================================== -->
     <properties>
         <project.build.outputTimestamp>2025-10-27T20:31:50Z</project.build.outputTimestamp>
         <app.name>Create Experiment</app.name>
@@ -27,33 +61,46 @@
         <fat.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</fat.jar>
     </properties>
 
+    <!-- =============================================================== -->
+    <!-- Dependencies                                                    -->
+    <!-- =============================================================== -->
     <dependencies>
+        <!-- Shared utilities -->
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <!-- CSV utilities -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
             <version>1.9.0</version>
         </dependency>
+
+        <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
             <version>1.7.36</version>
             <scope>runtime</scope>
         </dependency>
+
     </dependencies>
 
+    <!-- =============================================================== -->
+    <!-- Build configuration                                             -->
+    <!-- =============================================================== -->
     <build>
         <plugins>
 
-            <!-- Fat JAR -->
+            <!-- Build fat JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.7.1</version>
+
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -64,6 +111,7 @@
                         </manifest>
                     </archive>
                 </configuration>
+
                 <executions>
                     <execution>
                         <id>make-assembly</id>
@@ -73,12 +121,17 @@
                         </goals>
                     </execution>
                 </executions>
+
             </plugin>
 
         </plugins>
     </build>
 
+    <!-- =============================================================== -->
+    <!-- OS-specific build profiles                                      -->
+    <!-- =============================================================== -->
     <profiles>
+        <!-- macOS .app bundle profile -->
         <profile>
             <id>macos-appbundle</id>
             <activation>
@@ -92,66 +145,65 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <version>3.1.0</version>
+
                         <executions>
+
                             <execution>
                                 <id>create-app-bundle</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
+
                                 <configuration>
                                     <target>
-                                        <echo message="🍎 Creating macOS app bundle at ${app.bundle}"/>
+                                        <echo message="Creating macOS app bundle at ${app.bundle}"/>
                                         <delete dir="${app.bundle}" failonerror="false"/>
                                         <delete file="${project.build.directory}/${app.name}.app.zip" failonerror="false"/>
 
+                                        <!-- Create bundle structure -->
                                         <mkdir dir="${app.bundle}/Contents/MacOS"/>
                                         <mkdir dir="${app.bundle}/Contents/Java"/>
                                         <mkdir dir="${app.bundle}/Contents/Resources"/>
 
-                                        <copy file="${fat.jar}"
-                                              todir="${app.bundle}/Contents/Java"
-                                              overwrite="true" failonerror="false"/>
-                                        <copy file="${app.icon.macos}"
-                                              todir="${app.bundle}/Contents/Resources"
-                                              overwrite="true" failonerror="false"/>
+                                        <!-- Copy binaries and resources -->
+                                        <copy file="${fat.jar}" todir="${app.bundle}/Contents/Java" overwrite="true" failonerror="false"/>
+                                        <copy file="${app.icon.macos}" todir="${app.bundle}/Contents/Resources" overwrite="true" failonerror="false"/>
 
+                                        <!-- Create Info.plist -->
                                         <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>CFBundleName</key>
-  <string>${app.name}</string>
-  <key>CFBundleExecutable</key>
-  <string>launch</string>
-  <key>CFBundleIdentifier</key>
-  <string>com.github.jjabakker.PaintCreateExperiment</string>
-  <key>CFBundlePackageType</key>
-  <string>APPL</string>
-  <key>CFBundleVersion</key>
-  <string>${project.version}</string>
-  <key>CFBundleIconFile</key>
-  <string>paint-create-experiment</string>
+  <key>CFBundleName</key><string>${app.name}</string>
+  <key>CFBundleExecutable</key><string>launch</string>
+  <key>CFBundleIdentifier</key><string>com.github.jjabakker.PaintCreateExperiment</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleVersion</key><string>${project.version}</string>
+  <key>CFBundleIconFile</key><string>paint-create-experiment</string>
 </dict>
 </plist>
-                                    ]]></echo>
+                                        ]]></echo>
 
+                                        <!-- Create launch script -->
                                         <echo file="${app.bundle}/Contents/MacOS/launch"><![CDATA[
 #!/bin/bash
 DIR="$( cd "$( dirname "$0" )" && cd ../Java && pwd )"
 exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-jar-with-dependencies.jar"
-                                    ]]></echo>
+                                        ]]></echo>
 
                                         <fixcrlf file="${app.bundle}/Contents/MacOS/launch" eol="unix"/>
                                         <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
 
+                                        <!-- Zip bundle -->
                                         <exec executable="zip">
                                             <arg value="-r"/>
                                             <arg value="${project.build.directory}/${app.name}.app.zip"/>
                                             <arg value="${app.bundle}"/>
                                         </exec>
 
+                                        <!-- Install to Glyco-PAINT folder -->
                                         <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
                                         <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
                                         <copy todir="${user.home}/Applications/Glyco-PAINT"
@@ -166,17 +218,23 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                                             <arg value="${user.home}/Applications/Glyco-PAINT/${app.name}.app/Contents/MacOS/launch"/>
                                         </exec>
 
-                                        <echo message="✅ Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
+                                        <echo message="Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
                                     </target>
                                 </configuration>
+
                             </execution>
+
                         </executions>
+
                     </plugin>
                 </plugins>
             </build>
         </profile>
     </profiles>
 
+    <!-- =============================================================== -->
+    <!-- External repositories                                           -->
+    <!-- =============================================================== -->
     <repositories>
         <repository>
             <id>scijava.public</id>

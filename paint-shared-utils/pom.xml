@@ -1,8 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- ===================================================================== -->
+<!--  PAINT SHARED UTILS MODULE                                           -->
+<!-- ===================================================================== -->
+<!--
+  PURPOSE:
+    Provides shared utility classes used across all Paint modules.
+    This includes core I/O, data management, PDF utilities, and plist parsing.
+
+  AUTHOR:
+    Hans Bakker (jjabakker)
+
+  MODULE:
+    paint-shared-utils
+
+  UPDATED:
+    2025-10-30
+
+  NOTES:
+    • By default, this module copies its built JAR into Fiji’s plugin folder
+      on macOS to simplify local plugin development.
+    • To disable this behavior, set:
+          -Dskip.copy.to.fiji=true
+    • On CI builds (where CI=true), the copy is automatically skipped.
+-->
+<!-- ===================================================================== -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <!-- =============================================================== -->
+    <!-- Project hierarchy                                               -->
+    <!-- =============================================================== -->
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -15,47 +44,56 @@
     <artifactId>paint-shared-utils</artifactId>
     <packaging>jar</packaging>
 
+    <!-- =============================================================== -->
+    <!-- Metadata                                                       -->
+    <!-- =============================================================== -->
     <name>Paint Shared Utils</name>
     <description>Shared utilities for the Paint project</description>
 
+    <!-- =============================================================== -->
+    <!-- Properties                                                     -->
+    <!-- =============================================================== -->
     <properties>
-        <!-- reproducible builds -->
+        <!-- Reproducible builds -->
         <project.build.outputTimestamp>2025-10-27T20:31:50Z</project.build.outputTimestamp>
 
-        <!-- default: local build copies to Fiji -->
+        <!-- Controls whether the built JAR is copied into Fiji.app/plugins -->
         <skip.copy.to.fiji>false</skip.copy.to.fiji>
     </properties>
 
+    <!-- =============================================================== -->
+    <!-- Dependencies                                                    -->
+    <!-- =============================================================== -->
     <dependencies>
-        <!-- JSON -->
+        <!-- JSON parsing -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.11.0</version>
         </dependency>
 
-        <!-- Tablesaw -->
+        <!-- Tablesaw for data frames -->
         <dependency>
             <groupId>tech.tablesaw</groupId>
             <artifactId>tablesaw-core</artifactId>
             <version>0.43.1</version>
         </dependency>
 
-        <!-- CSV -->
+        <!-- Commons CSV -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
             <version>1.10.0</version>
         </dependency>
 
-        <!-- Image I/O -->
+        <!-- TIFF Image I/O -->
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-tiff</artifactId>
             <version>3.10.1</version>
         </dependency>
 
-        <!-- PDF generation -->
+        <!-- PDF generation utilities -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
@@ -76,18 +114,29 @@
         </dependency>
     </dependencies>
 
+    <!-- =============================================================== -->
+    <!-- Build configuration                                             -->
+    <!-- =============================================================== -->
     <build>
         <plugins>
-            <!-- Copy JAR into Fiji’s plugins folder (only on macOS, local builds) -->
+            <!-- ======================================================= -->
+            <!-- Copy JAR into Fiji’s plugins folder on macOS builds     -->
+            <!-- ======================================================= -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
+
                 <executions>
+
                     <execution>
                         <id>copy-jar-to-fiji</id>
                         <phase>package</phase>
-                        <goals><goal>run</goal></goals>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+
                         <configuration>
+                            <!-- Allow skipping with -Dskip.copy.to.fiji=true -->
                             <skip>${skip.copy.to.fiji}</skip>
                             <target>
                                 <!-- Detect macOS -->
@@ -95,25 +144,33 @@
                                     <os family="mac"/>
                                 </condition>
 
-                                <!-- Only copy if on macOS -->
-                                <echo message="ℹ️ Checking OS before Fiji copy..."/>
+                                <!-- Only copy if running on macOS -->
+                                <echo message="Checking OS before Fiji copy..."/>
                                 <fail unless="is.macos" message="Skipping Fiji copy (not macOS)."/>
 
+                                <!-- Copy jar to Fiji plugin folder -->
                                 <copy file="${project.build.directory}/${project.build.finalName}.jar"
                                       todir="/Applications/Fiji.app/plugins"
                                       overwrite="true"
                                       failonerror="false"/>
-                                <echo message="✅ Copied ${project.build.finalName}.jar to Fiji plugins folder"/>
+
+                                <echo message="Copied ${project.build.finalName}.jar to Fiji plugins folder."/>
                             </target>
                         </configuration>
+
                     </execution>
+
                 </executions>
+
             </plugin>
         </plugins>
     </build>
 
-    <!-- 👇 CI profile: automatically skips copy when CI=true -->
+    <!-- =============================================================== -->
+    <!-- CI build profile                                                -->
+    <!-- =============================================================== -->
     <profiles>
+        <!-- Automatically skips Fiji copy when building under CI -->
         <profile>
             <id>ci-build</id>
             <activation>

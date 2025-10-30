@@ -1,10 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- ===================================================================== -->
+<!--  PAINT REGRESSION MODULE                                             -->
+<!-- ===================================================================== -->
+<!--
+  PURPOSE:
+    Builds the PAINT Regression module, used for regression testing
+    of all Squares and Tracks data. This module ensures data consistency
+    and validation across different experimental runs.
+
+  AUTHOR:
+    Hans Bakker (jjabakker)
+
+  MODULE:
+    paint-regression
+
+  UPDATED:
+    2025-10-30
+
+  NOTES:
+    • Produces a standalone executable JAR including all dependencies.
+    • Run via:
+          java -jar paint-regression-<version>-jar-with-dependencies.jar
+    • Includes JUnit 5 for test execution.
+-->
+<!-- ===================================================================== -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <!-- =============================================================== -->
+    <!-- Project hierarchy                                               -->
+    <!-- =============================================================== -->
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
@@ -13,17 +43,25 @@
     </parent>
 
     <artifactId>paint-regression</artifactId>
-    <name>PAINT Regression</name>
-    <description>Regression for all Squares and Tracks</description>
     <packaging>jar</packaging>
 
+    <!-- =============================================================== -->
+    <!-- Metadata                                                       -->
+    <!-- =============================================================== -->
+    <name>PAINT Regression</name>
+    <description>Regression for all Squares and Tracks</description>
+
+    <!-- =============================================================== -->
+    <!-- Dependencies                                                    -->
+    <!-- =============================================================== -->
     <dependencies>
-        <!-- No internal dependencies needed; standalone Swing app -->
+        <!-- Shared utilities -->
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
         </dependency>
 
+        <!-- JUnit 5 (for testing) -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -31,16 +69,19 @@
             <scope>test</scope>
         </dependency>
 
-
     </dependencies>
 
+    <!-- =============================================================== -->
+    <!-- Build configuration                                             -->
+    <!-- =============================================================== -->
     <build>
         <plugins>
-            <!-- Build fat JAR with dependencies -->
+            <!-- Create executable fat JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.7.1</version>
+
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -51,6 +92,7 @@
                         </manifest>
                     </archive>
                 </configuration>
+
                 <executions>
                     <execution>
                         <id>make-assembly</id>
@@ -60,6 +102,7 @@
                         </goals>
                     </execution>
                 </executions>
+
             </plugin>
         </plugins>
     </build>
