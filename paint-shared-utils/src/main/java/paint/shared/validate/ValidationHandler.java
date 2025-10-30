@@ -127,7 +127,7 @@ public final class ValidationHandler {
                     continue;
                 }
 
-                ValidationResult res = runValidator(fileName, filePath.toFile(), expName);
+                ValidationResult res = runValidator(fileName, filePath.toFile());
 
                 if (!res.isValid()) {
                     for (String err : res.getErrors()) {
@@ -159,15 +159,14 @@ public final class ValidationHandler {
      *
      * @param fileName        the CSV file name
      * @param file            the {@link File} object to validate
-     * @param experimentName  the experiment name for context
      * @return a {@link ValidationResult} containing file-specific validation output
      */
-    private static ValidationResult runValidator(String fileName, File file, String experimentName) {
+    private static ValidationResult runValidator(String fileName, File file) {
         String lower = fileName.toLowerCase();
         if (lower.contains("experiment")) {
-            return new ExperimentInfoValidator().validateWithConsistency(file, experimentName);
+            return new ExperimentInfoValidator().validateWithConsistency(file);
         } else if (lower.contains("recording")) {
-            return new RecordingsValidator().validateWithConsistency(file, experimentName);
+            return new RecordingsValidator().validateWithConsistency(file);
         } else if (lower.contains("track")) {
             return new TracksValidator().validate(file);
         } else if (lower.contains("square")) {

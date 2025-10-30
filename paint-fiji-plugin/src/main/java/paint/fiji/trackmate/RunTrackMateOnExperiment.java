@@ -185,7 +185,6 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                               experimentPath.getParent());
         }
 
-        PaintConfig paintConfig         = PaintConfig.instance();
         TrackMateConfig trackMateConfig = new TrackMateConfig();
         int maxSecondsPerRecording      = trackMateConfig.getMaxNumberOfSecondsPerImage();
 

@@ -90,11 +90,6 @@ import static paint.shared.config.PaintConfig.getBoolean;
 public class RunTrackMateOnRecording extends TrackMateHeadless {
 
     /**
-     * Debug flag used for conditional runtime logging.
-     */
-    static final boolean debug = true;
-
-    /**
      * Executes the TrackMate pipeline on a given recording.
      * Loads the ND2 image, applies analysis parameters, and writes results.
      *

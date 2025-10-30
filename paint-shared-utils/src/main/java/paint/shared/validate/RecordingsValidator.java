@@ -101,10 +101,9 @@ public final class RecordingsValidator extends AbstractFileValidator {
      * Performs full validation — including header, type, and condition-based consistency checks.
      *
      * @param file           the {@code recordings.csv} file to validate
-     * @param experimentName the experiment name (for context in error messages)
      * @return {@link ValidationResult} summarizing detected issues or confirming validity
      */
-    public ValidationResult validateWithConsistency(File file, String experimentName) {
+    public ValidationResult validateWithConsistency(File file) {
         ValidationResult result = validate(file);
         if (result.isValid()) {
             result.merge(ConditionConsistencyChecker.check(file));

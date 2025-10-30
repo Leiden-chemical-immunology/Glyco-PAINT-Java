@@ -104,10 +104,9 @@ public final class ExperimentInfoValidator extends AbstractFileValidator {
      * all rows with the same "Condition Number" have identical associated attributes.
      *
      * @param file           the {@code experiment_info.csv} file to validate
-     * @param experimentName the experiment name (for context in error messages)
      * @return a {@link ValidationResult} summarizing all detected issues
      */
-    public ValidationResult validateWithConsistency(File file, String experimentName) {
+    public ValidationResult validateWithConsistency(File file) {
         ValidationResult result = validate(file);
         if (result.isValid()) {
             result.merge(ConditionConsistencyChecker.check(file));

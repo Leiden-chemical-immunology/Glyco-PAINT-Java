@@ -786,7 +786,6 @@ public class SquaresCsvComparatorPythonJava {
 
         // Read all numeric differences from comparison file
         try (BufferedReader br = Files.newBufferedReader(comparisonCsv, java.nio.charset.StandardCharsets.UTF_8)) {
-            String header = br.readLine();
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.trim().isEmpty() || line.startsWith("SUMMARY")) {
