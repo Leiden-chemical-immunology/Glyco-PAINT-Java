@@ -1,4 +1,4 @@
 Experiment Name,Recording Name,Condition Number,Replicate Number,Probe Name,Probe Type,Cell Type,Adjuvant,Concentration,Process Flag,Threshold
-221012,221012-Exp-1-A1-1,1,1,6 Tri,Simple,CHO-MR,No,1,1,5
+221012,221012-Exp-1-A1-1,1,1,6 Tri,Simple,CHO-MR,No,1,TRUE,5
 221012,221012-Exp-1-A1-2,1,2,6 Tri,Simple,CHO-MR,No,1,TRUE,5
 221012,221012-Exp-1-A1-3,1,3,6 Tri,Simple,CHO-MR,No,1,TRUE,5
