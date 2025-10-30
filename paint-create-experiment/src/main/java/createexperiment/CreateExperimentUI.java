@@ -320,7 +320,7 @@ public class CreateExperimentUI {
             }
         });
 
-        // Regex combo + filter refresh
+        // Regex combo and filter refresh
         regexCombo.addActionListener(e -> refresh.run());
         filterButton.addActionListener(e -> refresh.run());
 

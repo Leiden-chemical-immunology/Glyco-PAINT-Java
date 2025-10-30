@@ -315,7 +315,7 @@ public class ProjectDialog {
 
             // add the params panel to the form
             gbc.gridx      = 0;
-            gbc.gridy      = row++;
+            gbc.gridy      = row;
             gbc.gridwidth  = 3;
             gbc.fill       = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
             formPanel.add(paramsPanel, gbc);

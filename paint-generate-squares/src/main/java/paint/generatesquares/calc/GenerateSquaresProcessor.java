@@ -86,7 +86,7 @@ public class GenerateSquaresProcessor {
     public static boolean generateSquaresForExperiment(Project project, String experimentName) {
         GenerateSquaresConfig generateSquaresConfig = project.getGenerateSquaresConfig();
         Experiment            experiment            = null;
-        List<Recording>       recordings            = null;
+        List<Recording>       recordings;
 
         projectPath                                 = project.getProjectRootPath();
         plotFittingCurves                           = getBoolean("Generate Squares", "Plot Curve Fitting", false);

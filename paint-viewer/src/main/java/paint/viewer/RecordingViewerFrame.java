@@ -469,7 +469,7 @@ public class RecordingViewerFrame extends JFrame
             // --- Compute Tau and R² for preview ---
             List<Track> tracksFromSelectedSquares = getTracksFromSelectedSquares(currentRecordingEntry.getRecording().getSquaresOfRecording());
             CalculateTau.CalculateTauResult results = calculateTau(tracksFromSelectedSquares, params.minRequiredRSquared);
-            if (results != null && results.getStatus() == TAU_SUCCESS) {
+            if (results.getStatus() == TAU_SUCCESS) {
                 currentRecordingEntry.getRecording().setTau(results.getTau());
                 currentRecordingEntry.getRecording().setRSquared(results.getRSquared());
             } else {
