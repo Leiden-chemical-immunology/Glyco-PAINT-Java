@@ -74,7 +74,6 @@ public class ProjectDialog {
     private final    JButton             selectAllButton;
     private final    JButton             clearAllButton;
     private final    JButton             okButton;
-    private final    JButton             cancelButton;
     private final    DialogMode          mode;
     private          CalculationCallback calculationCallback;
     private          Path                projectPath;
@@ -379,8 +378,8 @@ public class ProjectDialog {
             leftPanel.add(sweepCheckBox);
         }
 
-        okButton = new JButton("OK");
-        cancelButton = new JButton("Cancel");
+        okButton             = new JButton("OK");
+        JButton cancelButton = new JButton("Cancel");
 
         // listeners affecting OK state
         for (JCheckBox cb : checkBoxes) {

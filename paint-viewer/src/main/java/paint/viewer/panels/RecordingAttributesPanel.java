@@ -55,7 +55,6 @@ public class RecordingAttributesPanel {
 
     private final JPanel            root;
     private final DefaultTableModel model;
-    private final JTable            table;
 
     /**
      * Constructs a new {@code RecordingAttributesPanel}.
@@ -77,7 +76,7 @@ public class RecordingAttributesPanel {
                 return false;
             }
         };
-        table = new JTable(model);
+        JTable table = new JTable(model);
         table.setRowHeight(22);
         table.setFocusable(false);
         table.setRowSelectionAllowed(false);

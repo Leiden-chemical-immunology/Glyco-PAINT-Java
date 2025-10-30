@@ -66,12 +66,9 @@ import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
 
 public class GenerateSquaresProcessor {
 
-    
-    private static int     numberOfSquaresInRecording;     // Total number of squares per recording.
+
     private static int     numberOfSquaresInOneDimension;  // Total number of squares per on one dimension.
-    private static Path    projectPath;
-    private static boolean plotFittingCurves;
-    
+
 
     /**
      * Processes an experiment to generate square regions for each recording, compute attributes,
@@ -88,8 +85,8 @@ public class GenerateSquaresProcessor {
         Experiment            experiment            = null;
         List<Recording>       recordings;
 
-        projectPath                                 = project.getProjectRootPath();
-        plotFittingCurves                           = getBoolean("Generate Squares", "Plot Curve Fitting", false);
+        Path    projectPath       = project.getProjectRootPath();
+        boolean plotFittingCurves = getBoolean("Generate Squares", "Plot Curve Fitting", false);
 
         LocalDateTime start = LocalDateTime.now();
         PaintLogger.debugf("Loading Experiment '%s'", experimentName);
@@ -178,7 +175,8 @@ public class GenerateSquaresProcessor {
      */
     public static List<Square> generateSquaresForRecording(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
 
-        numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
+        // Total number of squares per recording.
+        int numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
         numberOfSquaresInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);   // Number of squares in one dimension (e.g., 20 for 20x20).
 
         

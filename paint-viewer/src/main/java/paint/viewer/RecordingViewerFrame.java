@@ -108,7 +108,6 @@ public class RecordingViewerFrame extends JFrame
     private final JLabel                   recordingLabel    = new JLabel("", SwingConstants.CENTER);
 
     private       RecordingAttributesPanel attributesPanel;
-    private       RecordingControlsPanel   controlsPanel;
     private       NavigationPanel          navigationPanel;
 
     private final CellAssignmentManager    assignmentManager = new CellAssignmentManager();
@@ -158,8 +157,8 @@ public class RecordingViewerFrame extends JFrame
         controlHandler.attach(leftGridPanel);
 
         attributesPanel = new RecordingAttributesPanel();
-        controlsPanel = new RecordingControlsPanel(this);
         navigationPanel = new NavigationPanel(this);
+        RecordingControlsPanel controlsPanel = new RecordingControlsPanel(this);
 
         // --- Build the main layout ---
         JPanel imagesInner = new JPanel(new GridLayout(1, 2, 15, 0));
