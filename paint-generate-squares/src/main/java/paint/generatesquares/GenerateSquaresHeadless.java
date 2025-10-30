@@ -71,7 +71,7 @@ import static paint.shared.validate.ValidationHandler.validateExperiments;
  */
 public class GenerateSquaresHeadless {
 
-    public static void run(Path projectPath, List<String> experimentNames) throws Exception {
+    public static void run(Path projectPath, List<String> experimentNames)  {
 
         // --- Early abort check ---
         if (Thread.currentThread().isInterrupted()) {

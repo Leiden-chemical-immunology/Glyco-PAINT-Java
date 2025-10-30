@@ -63,7 +63,6 @@ import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
 
 public class ProjectDialog {
 
-    
     private final    JDialog              dialog;
     private final    PaintConfig        paintConfig;
     private final    JCheckBox           saveExperimentsCheckBox;
@@ -807,9 +806,8 @@ public class ProjectDialog {
      *
      * @return the {@link Project} object representing user selections and configuration.
      */
-    public Project showDialog() {
+    public void showDialog() {
         dialog.setVisible(true); // stays open until user closes it
-        return getProject();
     }
 
     private void setInputsEnabled(boolean enabled) {

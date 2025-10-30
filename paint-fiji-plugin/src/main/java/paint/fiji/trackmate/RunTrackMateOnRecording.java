@@ -68,7 +68,6 @@ import paint.shared.objects.ExperimentInfo;
 import paint.shared.utils.PaintLogger;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -101,14 +100,13 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
      * @param dialog               optional dialog for user cancellation
      * @return {@link TrackMateResults} containing analysis statistics,
      *         or a cancellation result if aborted
-     * @throws IOException if file operations fail
      */
     public static TrackMateResults runTrackMateOnRecording(Path experimentPath,
                                                            Path imagesPath,
                                                            TrackMateConfig trackMateConfig,
                                                            double threshold,
                                                            ExperimentInfo experimentInfoRecord,
-                                                           ProjectDialog dialog) throws IOException {
+                                                           ProjectDialog dialog) {
 
         final boolean debugFlag = getBoolean("Debug", "Debug RunTrackMateOnRecording", false);
         LocalDateTime start = LocalDateTime.now();
@@ -333,7 +331,7 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
                         experimentInfoRecord.getRecordingName(),
                         tracksPath.toFile(),
                         true);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 PaintLogger.errorf("Failed to write tracks to '%s'", tracksPath);
             }
 

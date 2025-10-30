@@ -300,8 +300,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                             try {
                                 trackMateResults[0] = RunTrackMateOnRecording.runTrackMateOnRecording(
                                         experimentPath, imagesPath, trackMateConfig, threshold, experimentInfo, dialog);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
+                            } catch (Exception e) {
                             }
                         }, maxSecondsPerRecording, dialog);
 

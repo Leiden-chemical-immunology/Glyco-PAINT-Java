@@ -66,9 +66,7 @@ import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
 
 public class GenerateSquaresProcessor {
 
-
-    private static int     numberOfSquaresInOneDimension;  // Total number of squares per on one dimension.
-
+    private static int  numberOfSquaresInOneDimension;  // Total number of squares per on one dimension.
 
     /**
      * Processes an experiment to generate square regions for each recording, compute attributes,
@@ -78,9 +76,8 @@ public class GenerateSquaresProcessor {
      *
      * @param project        the project containing configurations and experiment data
      * @param experimentName the name of the experiment to process
-     * @return {@code true} if the experiment was successfully processed and saved, {@code false} otherwise
      */
-    public static boolean generateSquaresForExperiment(Project project, String experimentName) {
+    public static void generateSquaresForExperiment(Project project, String experimentName) {
         GenerateSquaresConfig generateSquaresConfig = project.getGenerateSquaresConfig();
         Experiment            experiment            = null;
         List<Recording>       recordings;
@@ -94,7 +91,7 @@ public class GenerateSquaresProcessor {
         // Early Exit if the user cancelled before we start
         if (Thread.currentThread().isInterrupted()) {
             PaintLogger.infof("Cancelled before starting experiment %s", experimentName);
-            return false;
+            return;
         }
         try {
             experiment = loadExperiment(project.getProjectRootPath(), experimentName, false);
@@ -104,7 +101,7 @@ public class GenerateSquaresProcessor {
 
         if (experiment == null) {
             PaintLogger.errorf("Failed to load experiment: %s", experimentName);
-            return false;
+            return;
         }
 
         PaintLogger.infof("Starting processing experiment '%s'", experimentName);
@@ -115,7 +112,7 @@ public class GenerateSquaresProcessor {
             // CHECK before starting each recording
             if (Thread.currentThread().isInterrupted()) {
                 PaintLogger.infof("Cancelled before processing recording %s", recording.getRecordingName());
-                return false;
+                return;
             }
             PaintLogger.infof("   Processing: %s", recording.getRecordingName());
             PaintLogger.debugf(recording.toString());
@@ -130,7 +127,7 @@ public class GenerateSquaresProcessor {
             // CHECK mid-work before calculating attributes
             if (Thread.currentThread().isInterrupted()) {
                 PaintLogger.infof("Cancelled before attribute calculation for %s", recording.getRecordingName());
-                return false;
+                return;
             }
 
             // Calculate square-level and recording-level attributes
@@ -146,7 +143,7 @@ public class GenerateSquaresProcessor {
         // CHECK before writing output files
         if (Thread.currentThread().isInterrupted()) {
             PaintLogger.infof("Cancelled before writing output for %s", experimentName);
-            return false;
+            return;
         }
 
         // Compile all squares and write
@@ -162,7 +159,6 @@ public class GenerateSquaresProcessor {
         allTracksTable = allTracksTable.sortOn("Recording Name", "Track Id");
         writeAllTracks(experimentPath, allTracksTable);
 
-        return true;
     }
 
     /**

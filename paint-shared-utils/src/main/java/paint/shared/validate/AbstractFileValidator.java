@@ -202,11 +202,10 @@ public abstract class AbstractFileValidator {
      * @param expected expected header names
      * @param actual   actual header names
      * @param result   validation result for error reporting
-     * @return {@code true} if headers match exactly; otherwise {@code false}
      */
-    protected boolean headersMatch(List<String> expected, List<String> actual, ValidationResult result) {
+    protected void headersMatch(List<String> expected, List<String> actual, ValidationResult result) {
         if (expected.equals(actual)) {
-            return true;
+            return;
         }
 
         List<String> missing = expected.stream()
@@ -228,7 +227,6 @@ public abstract class AbstractFileValidator {
         }
 
         result.addError(error.toString());
-        return false;
     }
 
     /**
@@ -239,9 +237,8 @@ public abstract class AbstractFileValidator {
      * @param headers  header names
      * @param rowIndex row index (1-based)
      * @param result   validation accumulator
-     * @return {@code true} if all types match; otherwise {@code false}
-     */
-    protected boolean rowMatchesTypes(String[]         row,
+      */
+    protected void rowMatchesTypes(String[]         row,
                                       ColumnType[]     types,
                                       List<String>     headers,
                                       int              rowIndex,
@@ -259,7 +256,6 @@ public abstract class AbstractFileValidator {
                 }
             }
         }
-        return true;
     }
 
     /**

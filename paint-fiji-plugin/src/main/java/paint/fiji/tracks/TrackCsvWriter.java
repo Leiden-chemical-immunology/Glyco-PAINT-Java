@@ -55,7 +55,6 @@ import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -90,13 +89,12 @@ public final class TrackCsvWriter {
      * @param csvFile        destination CSV file
      * @param visibleOnly    if true, exports only visible tracks
      * @return total number of spots across all exported tracks
-     * @throws IOException if an error occurs during file writing
      */
     public static int writeTracksCsv(final TrackMate trackmate,
                                      final String experimentName,
                                      final String recordingName,
                                      final File csvFile,
-                                     final boolean visibleOnly) throws IOException {
+                                     final boolean visibleOnly) {
 
         // ---------------------------------------------------------------------
         // Step 1 – Extract TrackMate components

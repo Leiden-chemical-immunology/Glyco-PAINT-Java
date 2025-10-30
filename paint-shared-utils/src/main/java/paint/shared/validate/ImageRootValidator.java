@@ -84,7 +84,7 @@ public final class ImageRootValidator {
      * @param args command-line arguments (unused)
      * @throws IOException if any I/O error occurs while reading CSV files
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         List<String> experiments = Arrays.asList("221108", "221122");
 
         ValidationResult result = ImageRootValidator.validateImageRoot(
