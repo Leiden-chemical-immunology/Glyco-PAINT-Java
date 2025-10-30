@@ -166,7 +166,7 @@ public class SquaresCsvComparatorPythonJava {
      */
     public static void main(String[] args) {
         try {
-            // Prepare output directory under ~/Downloads/Validate/Squares
+            // Prepare the output directory under ~/Downloads/Validate/Squares
             Path outDir = Paths.get(System.getProperty("user.home"), "Downloads", "Validate", "Squares");
             Files.createDirectories(outDir);
 
@@ -205,17 +205,17 @@ public class SquaresCsvComparatorPythonJava {
             Path comparisonCsv = outDir.resolve("Squares Validation - Comparison.csv");
             compareStatus(normOld, normNew, outDir);
 
-            // Step 6: Write detailed numeric difference table
+            // Step 6: Write the detailed numeric difference table
             System.out.println("Writing detailed numeric diff...");
             Path detailedCsv = outDir.resolve("Squares Validation - Detailed.csv");
             writeDetailed(normOld, normNew, detailedCsv);
 
-            // Step 7: Write overview of selected (included) squares
+            // Step 7: Write the overview of selected (included) squares
             System.out.println("Writing selected overview...");
             Path selectedCsv = outDir.resolve("Squares Validation - Selected Overview.csv");
             writeSelectedOverview(normOld, normNew, selectedCsv);
 
-            // Step 8: Optional short pause for file flush on some systems
+            // Step 8: Optional short pause for a file flush on some systems
             try {
                 Thread.sleep(150);
             } catch (InterruptedException ignored) {
@@ -272,7 +272,7 @@ public class SquaresCsvComparatorPythonJava {
 
     /**
      * Writes a list of rows represented as key-value pairs into a CSV file at the specified location.
-     * The method creates necessary directories if they do not exist and processes special formatting
+     * The method creates the necessary directories if they do not exist and processes special formatting
      * requirements for numeric fields and headers.
      *
      * @param rows a list of maps where each map represents a row of the CSV. Keys are column names, and values are cell data.
@@ -316,7 +316,7 @@ public class SquaresCsvComparatorPythonJava {
                                     "Density",
                                     "Density Ratio"
                             ).contains(col)) {
-                                // Blank these zeros in old file
+                                // Blank these zeros in the old file
                                 val = "";
                             } else {
                                 int prec = EFFECTIVE_PRECISION_MAP.getOrDefault(
@@ -422,7 +422,7 @@ public class SquaresCsvComparatorPythonJava {
     }
 
     /**
-     * Converts a 1-based integer field to 0-based, if it parses as a number.
+     * Converts a 1-based integer field to 0-based if it parses as a number.
      *
      * @param m row map to mutate
      * @param k key whose value should be decremented (Row Nr / Col Nr)
@@ -591,7 +591,7 @@ public class SquaresCsvComparatorPythonJava {
                 }
             }
 
-            // Compare "Selected" field between old/new
+            // Compare the "Selected" field between old/new
             String sOld = o.get("Selected");
             String sNew = n.get("Selected");
             if (!Objects.equals(sOld, sNew)) {
@@ -715,7 +715,7 @@ public class SquaresCsvComparatorPythonJava {
     // ---------------------------- Selected Overview ----------------------------
 
     /**
-     * Writes a compact overview comparing selection status (old vs new) per square,
+     * Writes a compact overview comparing selection status (old vs. new) per square,
      * including Tau, Density Ratio, and Variability values.
      *
      * @param oldN    normalized old data
@@ -784,7 +784,7 @@ public class SquaresCsvComparatorPythonJava {
 
         Map<String, List<Double>> diffsByField = new LinkedHashMap<>();
 
-        // Read all numeric differences from comparison file
+        // Read all numeric differences from the comparison file
         try (BufferedReader br = Files.newBufferedReader(comparisonCsv, java.nio.charset.StandardCharsets.UTF_8)) {
             String line;
             while ((line = br.readLine()) != null) {

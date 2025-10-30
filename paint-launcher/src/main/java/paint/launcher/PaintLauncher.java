@@ -116,7 +116,7 @@ public class PaintLauncher {
             }
         }
 
-        // Add vertical glue to keep bottom visible
+        // Add vertical glue to keep the bottom visible
         flowPanel.add(Box.createVerticalGlue());
         root.add(flowPanel, BorderLayout.CENTER);
 
@@ -138,7 +138,7 @@ public class PaintLauncher {
      * provide a hover effect by adjusting the background color.
      *
      * @param text   The text to be displayed on the button.
-     * @param accent The primary accent color for the button (used as background color).
+     * @param accent The primary accent color for the button (used as the background color).
      * @param fg     The color for the button's text.
      * @param bg     The color for the background (though not directly set here, it may be relevant for overridden methods).
      * @param size   The dimensions of the button.

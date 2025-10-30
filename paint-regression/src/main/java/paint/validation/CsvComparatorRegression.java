@@ -82,7 +82,7 @@ public class CsvComparatorRegression {
 
         // use original, not System.out
         // ----------------------------------------------------------------------
-        // Dual logging: console + file
+        // Dual logging: console and file
         PrintStream dualOut = new PrintStream(new OutputStream() {
             @Override
             public void write(int b) {

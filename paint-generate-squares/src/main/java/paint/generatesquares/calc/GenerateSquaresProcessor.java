@@ -130,7 +130,7 @@ public class GenerateSquaresProcessor {
             // Assign the recording tracks to the squares
             assignTracksToSquares(recording);
 
-            // CHECK mid-work, before calculating attributes
+            // CHECK mid-work before calculating attributes
             if (Thread.currentThread().isInterrupted()) {
                 PaintLogger.infof("Cancelled before attribute calculation for %s", recording.getRecordingName());
                 return false;
@@ -179,7 +179,7 @@ public class GenerateSquaresProcessor {
     public static List<Square> generateSquaresForRecording(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
 
         numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
-        numberOfSquaresInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);   // Number of squares in one dimension (e.g. 20 for 20x20).
+        numberOfSquaresInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);   // Number of squares in one dimension (e.g., 20 for 20x20).
 
         
         List<Square> squares = new ArrayList<>();

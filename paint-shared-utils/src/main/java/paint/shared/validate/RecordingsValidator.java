@@ -69,7 +69,7 @@ public final class RecordingsValidator extends AbstractFileValidator {
     /**
      * Validates that the header matches {@link PaintConstants#RECORDINGS_COLS}.
      *
-     * @param actualHeader the CSV header read from file
+     * @param actualHeader the CSV header read from the file
      * @param result       validation result collector
      */
     @Override

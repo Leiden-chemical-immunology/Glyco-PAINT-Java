@@ -96,7 +96,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
 
     /**
      * Executes a given task within a monitored thread using a watchdog.
-     * The watchdog ensures that the task completes within a specified time limit,
+     * The watchdog ensures that the task completes within a specified time limit
      * or terminates early if the user cancels processing.
      *
      * @param task                   the {@link Runnable} task to execute
@@ -237,7 +237,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
              BufferedWriter allRecordingsWriter = Files.newBufferedWriter(allRecordingFilePath);
              CSVPrinter allRecordingsPrinter = new CSVPrinter(allRecordingsWriter, CSVFormat.DEFAULT.builder().build())) {
 
-            // Extend Experiment Info header for RECORDINGS_CSV
+            // Extend the Experiment Info header for RECORDINGS_CSV
             List<String> header = new ArrayList<>(experimentInfoParser.getHeaderMap().keySet());
             header.addAll(Arrays.asList(
                     "Number of Spots",

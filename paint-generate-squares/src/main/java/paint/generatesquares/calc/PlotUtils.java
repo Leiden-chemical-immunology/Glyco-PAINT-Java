@@ -310,7 +310,6 @@ public class PlotUtils {
      * @param experimentPath the base path of the experiment directory
      * @param recordingName  the name of the recording
      * @param squareIndex    the index of the square region (used to name the file)
-     * @throws IOException   if an error occurs while creating directories or writing the file
      */
     public static void saveTauFitPlot(List<Track> tracks,
                                       CalculateTau.CalculateTauResult tauResult,

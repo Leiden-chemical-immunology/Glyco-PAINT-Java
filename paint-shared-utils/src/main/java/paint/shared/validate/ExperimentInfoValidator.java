@@ -71,7 +71,7 @@ public final class ExperimentInfoValidator extends AbstractFileValidator {
     /**
      * Validates that the CSV header matches {@link PaintConstants#EXPERIMENT_INFO_COLS}.
      *
-     * @param actualHeader actual CSV header read from file
+     * @param actualHeader actual CSV header read from the file
      * @param result       validation result collector
      */
     @Override
