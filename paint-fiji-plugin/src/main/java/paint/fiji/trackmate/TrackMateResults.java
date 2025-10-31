@@ -50,8 +50,6 @@ import java.time.Duration;
  * </p>
  */
 public class TrackMateResults {
-
-    // @formatter:off
     private final boolean  success;
     private final boolean  calculationPerformed;
     private final int      numberOfSpots;
@@ -60,7 +58,6 @@ public class TrackMateResults {
     private final int      numberOfFrames;
     private final Duration duration;
     private final int      numberOfSpotsInAllTracks;
-    // @formatter:on
 
 
     /**

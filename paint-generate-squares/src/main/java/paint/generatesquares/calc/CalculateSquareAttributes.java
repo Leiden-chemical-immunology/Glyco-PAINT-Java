@@ -127,7 +127,7 @@ public class CalculateSquareAttributes {
             }
 
             // @format:off
-            square.setVariability(                   round(calcVariability(table, squareNumber, numberOfSquaresInRecording, 10),         2));
+            square.setVariability(                   round(calculateVariability(table, squareNumber, numberOfSquaresInRecording, 10),    2));
             square.setDensity(                       round(calculateDensity(tracksInSquare.size(), squareArea, RECORDING_DURATION, concentration), 3));
             square.setDensityRatio(                  round(calculateDensityRatio(tracksInSquare.size(), meanBackgroundTracks),                     2));
             square.setDensityRatioOri(               round(calculateDensityRatio(tracksInSquare.size(), backgroundTracksOri),                      2));
@@ -230,10 +230,10 @@ public class CalculateSquareAttributes {
      * @return                           The coefficient of variation (σ / μ) of the grid-cell counts;
      *                                   returns 0.0 if the mean cell count is zero (no tracks).
      */
-    public static double calcVariability(Table tracks,
-                                         int squareNumber,
-                                         int numberOfSquaresInRecording,
-                                         int granularity) {
+    public static double calculateVariability(Table tracks,
+                                              int   squareNumber,
+                                              int   numberOfSquaresInRecording,
+                                              int   granularity) {
 
         // Matrix for variability analysis
         int[][] matrix = new int[granularity][granularity];

@@ -270,17 +270,14 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                         row.put(key, experientInfoRecord.get(key));
                     }
 
-                    ExperimentInfo experimentInfo = new ExperimentInfo(row);
-                    String recordingName          = experimentInfo.getRecordingName();
-
-                    // @formatter:off
-                    int    numberOfSpots            = 0;
-                    int    numberOfFilteredTracks   = 0;
-                    int    numberOfSpotsInAllTracks = 0;
-                    int    numberOfFrames           = 0;
-                    int    runTime                  = 0;
-                    String timeStamp                = "";
-                    // @formatter:on
+                    ExperimentInfo experimentInfo           = new ExperimentInfo(row);
+                    String         recordingName            = experimentInfo.getRecordingName();
+                    int            numberOfSpots            = 0;
+                    int            numberOfFilteredTracks   = 0;
+                    int            numberOfSpotsInAllTracks = 0;
+                    int            numberOfFrames           = 0;
+                    int            runTime                  = 0;
+                    String         timeStamp                = "";
 
                     if (experimentInfo.isProcessFlag()) {
                         double threshold = experimentInfo.getThreshold();

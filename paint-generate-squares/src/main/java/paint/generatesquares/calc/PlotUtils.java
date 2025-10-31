@@ -228,8 +228,7 @@ public class PlotUtils {
                 int totalTracks  = squares.stream().mapToInt(Square::getNumberOfTracks).sum();
                 int backgroundTracksTotal = backgroundSet.stream().mapToInt(Square::getNumberOfTracks).sum();
 
-                int maxTracks = squares.stream()
-                        .mapToInt(Square::getNumberOfTracks).max().orElse(0);
+                int maxTracks = squares.stream().mapToInt(Square::getNumberOfTracks).max().orElse(0);
                 int binSize   = Math.max(1, maxTracks / 20);
                 int binCount  = (maxTracks / binSize) + 1;
 
@@ -348,11 +347,17 @@ public class PlotUtils {
             int plotHeight = 600;
             BufferedImage img = new BufferedImage(plotWidth, plotHeight, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = img.createGraphics();
-            drawHistogram(g2, plotWidth, plotHeight,
-                          allBins, bgBins, binSize,
+            drawHistogram(g2,
+                          plotWidth,
+                          plotHeight,
+                          allBins,
+                          bgBins,
+                          binSize,
                           recording.getRecordingName(),
-                          totalSquares, totalTracks,
-                          nBackground, backgroundTracksTotal,
+                          totalSquares,
+                          totalTracks,
+                          nBackground,
+                          backgroundTracksTotal,
                           backgroundTracksPerSquare);
             g2.dispose();
 
@@ -497,10 +502,10 @@ public class PlotUtils {
         int textX = w - 370;
         int textY = marginTop + 20;
 
-        g2.drawString(String.format("Number of squares in recording: %d", totalSquares),      textX, textY);
-        g2.drawString(String.format("Number of tracks in recording: %d", totalTracks),     textX, textY + 20);
-        g2.drawString(String.format("Number of background squares: %d", nBackground),      textX, textY + 40);
-        g2.drawString(String.format("Number of tracks in background: %d", backgroundTracksTotal), textX, textY + 60);
-        g2.drawString(String.format("Average number of tracks in the background: %.3f", avgTracksInBackground), textX, textY + 80);
+        g2.drawString(String.format("Number of squares in recording             : %d", totalSquares),      textX, textY);
+        g2.drawString(String.format("Number of tracks in recording              : %d", totalTracks),     textX, textY + 20);
+        g2.drawString(String.format("Number of background squares               : %d", nBackground),      textX, textY + 40);
+        g2.drawString(String.format("Number of tracks in background             : %d", backgroundTracksTotal), textX, textY + 60);
+        g2.drawString(String.format("Average number of tracks in the background : %.3f", avgTracksInBackground), textX, textY + 80);
     }
 }

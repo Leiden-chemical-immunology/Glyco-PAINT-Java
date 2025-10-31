@@ -57,11 +57,9 @@ import java.util.regex.PatternSyntaxException;
 public class CreateExperimentUI {
 
     // === Preferences keys ===
-    // @formatter:off
     private static final String PREF_NODE   = "paint/create-experiment";
     private static final String KEY_IMAGES  = "lastImagesDir";
     private static final String KEY_PROJECT = "lastProjectDir";
-    // @formatter:on
 
     // Default baseline regexes (always included)
     private static final String[] DEFAULT_REGEXES = {

@@ -56,7 +56,6 @@ public class SquareUtils {
     private SquareUtils() {
     }
 
-
     /**
      * Estimates the background density of track counts from a list of squares.
      * The method iteratively filters squares with track counts exceeding a dynamically
@@ -123,7 +122,6 @@ public class SquareUtils {
         return new BackgroundEstimationResult(mean, current);
     }
 
-
     /**
      * Represents the result of a background estimation process for track counts.
      * Contains the mean track count of the estimated background and the list of
@@ -141,7 +139,7 @@ public class SquareUtils {
          * @param backgroundSquares the list of squares identified as background
          */
         public BackgroundEstimationResult(double backgroundMean, List<Square> backgroundSquares) {
-            this.backgroundMean = backgroundMean;
+            this.backgroundMean    = backgroundMean;
             this.backgroundSquares = backgroundSquares;
         }
 

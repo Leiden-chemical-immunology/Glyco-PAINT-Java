@@ -885,14 +885,11 @@ public class TracksCsvComparatorPythonJava {
      * of the respective metric in the matching evaluation.
      */
     private static final class MatchConfig {
-
-        // @formatter:off
         final boolean useDuration     = true;
         final boolean useDisplacement = true;
         final boolean useSpeed        = true;
         final boolean useDistance     = true;
         final boolean useXY           = true;
         final boolean useConfinement  = true;
-        // @formatter:on
     }
 }
