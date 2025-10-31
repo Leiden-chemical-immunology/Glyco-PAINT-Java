@@ -115,6 +115,7 @@ public class RecordingViewerFrame extends JFrame
     private final SquareOverrideWriter     squareOverrideWriter;
     private final SquareControlHandler     controlHandler    = new SquareControlHandler();
 
+    private       JDialog                  activeDialog      = null;
     /**
      * Constructs a {@code RecordingViewerFrame} that initializes and displays the complete
      * recording viewer environment. The frame sets up grid visualization, navigation,
@@ -326,18 +327,33 @@ public class RecordingViewerFrame extends JFrame
      */
     @Override
     public void onFilterRequested() {
-        leftGridPanel.hideSquareInfoIfVisible();  // Close any popup first
-        FilterDialog dialog = new FilterDialog(this, recordingEntries);
-        dialog.setVisible(true);
+        if (activeDialog != null && activeDialog.isShowing()) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
 
-        if (!dialog.isCancelled()) {
-            List<RecordingEntry> filtered = dialog.getFilteredRecordings();
+        leftGridPanel.hideSquareInfoIfVisible();
+        activeDialog = new FilterDialog(this, recordingEntries);
+        setGridEnabled(false); // 🔹 Disable grid interaction
+
+        activeDialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent e) {
+                setGridEnabled(true); // 🔹 Re-enable grid
+                activeDialog = null;
+            }
+        });
+        activeDialog.setVisible(true);
+
+        FilterDialog fd = (FilterDialog) activeDialog;
+        if (!fd.isCancelled()) {
+            List<RecordingEntry> filtered = fd.getFilteredRecordings();
             if (!filtered.isEmpty()) {
                 currentIndex = 0;
                 showRecordingEntry(0);
             }
         }
     }
+
 
     /**
      * Opens the Square Control dialog for adjusting visibility thresholds on the grid.
@@ -346,10 +362,15 @@ public class RecordingViewerFrame extends JFrame
      */
     @Override
     public void onSelectSquaresRequested() {
+        if (activeDialog != null && activeDialog.isShowing()) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+
         leftGridPanel.hideSquareInfoIfVisible();
         RecordingEntry current = recordingEntries.get(currentIndex);
 
-        SquareControlDialog dialog = new SquareControlDialog(
+        activeDialog = new SquareControlDialog(
                 this,
                 leftGridPanel,
                 this,
@@ -360,7 +381,15 @@ public class RecordingViewerFrame extends JFrame
                         "Free"
                 )
         );
-        dialog.setVisible(true);
+        setGridEnabled(false); // 🔹 Disable grid
+
+        activeDialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent e) {
+                setGridEnabled(true); // 🔹 Re-enable grid
+                activeDialog = null;
+            }
+        });
+        activeDialog.setVisible(true);
     }
 
     /**
@@ -369,18 +398,23 @@ public class RecordingViewerFrame extends JFrame
      */
     @Override
     public void onAssignCellsRequested() {
+        if (activeDialog != null && activeDialog.isShowing()) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+
         leftGridPanel.hideSquareInfoIfVisible();
         leftGridPanel.setSelectionEnabled(true);
+        leftGridPanel.setInfoPopupsEnabled(false); // 🔸 keep selection, suppress info popups
 
         final JFrame owner = this;
-        CellAssignmentDialog dialog = new CellAssignmentDialog(owner, new CellAssignmentDialog.Listener() {
+        activeDialog = new CellAssignmentDialog(owner, new CellAssignmentDialog.Listener() {
 
             public void onAssign(int cellId) {
-                Map<Integer, Integer> userSelectedSquares = assignmentManager.assignUserSelectedSquares(cellId, leftGridPanel);   // This has filled CellAssignmentManager.squareAssignments
+                Map<Integer, Integer> userSelectedSquares =
+                        assignmentManager.assignUserSelectedSquares(cellId, leftGridPanel);
 
-                // --- Persist cell assignments to Square Override.csv ---
                 RecordingEntry currentRecording = recordingEntries.get(currentIndex);
-
                 if (!userSelectedSquares.isEmpty()) {
                     squareOverrideWriter.writeSquareOverrides(currentRecording, userSelectedSquares);
                 }
@@ -397,12 +431,15 @@ public class RecordingViewerFrame extends JFrame
             }
         });
 
-        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+        activeDialog.addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent e) {
                 leftGridPanel.setSelectionEnabled(false);
+                leftGridPanel.setInfoPopupsEnabled(true); // 🔸 re-enable popups
+                activeDialog = null;
             }
         });
-        dialog.setVisible(true);
+
+        activeDialog.setVisible(true);
     }
 
     // =========================================================================================
@@ -518,6 +555,12 @@ public class RecordingViewerFrame extends JFrame
      */
     @Override
     public void onPlayRecordingRequested() {
+        // Silently block playback while any dialog is open
+        if (activeDialog != null && activeDialog.isShowing()) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+
         leftGridPanel.hideSquareInfoIfVisible();
 
         if (recordingEntries.isEmpty() || currentIndex < 0 || currentIndex >= recordingEntries.size()) {
@@ -533,7 +576,6 @@ public class RecordingViewerFrame extends JFrame
         String         experimentName = entry.getExperimentName();
         String         recordingName  = entry.getRecordingName();
 
-        // Determine the path for image playback
         Path imagesRoot = project.getImagesRootPath();
         if (imagesRoot == null) {
             String stored = PaintPrefs.getString("Path", "Images Root", "");
@@ -557,7 +599,6 @@ public class RecordingViewerFrame extends JFrame
             return;
         }
 
-        // Launch movie playback on a background thread
         Thread movieThread = new Thread(() -> {
             try {
                 TiffMoviePlayer player = new TiffMoviePlayer();
@@ -571,5 +612,9 @@ public class RecordingViewerFrame extends JFrame
         movieThread.setDaemon(true);
         movieThread.start();
         PaintLogger.infof("Playing recording: %s / %s", experimentName, recordingName);
+    }
+
+    private void setGridEnabled(boolean enabled) {
+        leftGridPanel.setInteractionEnabled(enabled);  // we'll add this method below if it doesn’t exist
     }
 }

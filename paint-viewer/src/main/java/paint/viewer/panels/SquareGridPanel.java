@@ -91,6 +91,9 @@ public class SquareGridPanel extends JPanel {
     private       String       neighbourMode           = "Free";
     private       boolean      selectionEnabled        = false;
     private final Set<Integer> dragSelectedSquares     = new HashSet<>();
+    private       boolean      interactionEnabled      = true;
+    private       boolean      infoPopupsEnabled       = true;
+
 
     /**
      * Enumeration defining numeric display modes for squares.
@@ -214,6 +217,10 @@ public class SquareGridPanel extends JPanel {
      * @param mouseY y-coordinate of the mouse
      */
     private void showSquareInfo(int mouseX, int mouseY) {
+        if (!infoPopupsEnabled) {
+            return;
+        }
+
         if (squares == null || squares.isEmpty()) {
             return;
         }
@@ -580,5 +587,31 @@ public class SquareGridPanel extends JPanel {
             infoPopup.dispose();
             infoPopup = null;
         }
+    }
+
+    public void setInteractionEnabled(boolean enabled) {
+        this.interactionEnabled = enabled;
+        if (!enabled) {
+            hideSquareInfoIfVisible(); // Ensure any info popup is closed
+        }
+    }
+
+    @Override
+    protected void processMouseEvent(MouseEvent e) {
+        if (!interactionEnabled) return;
+        super.processMouseEvent(e);
+    }
+
+    @Override
+    protected void processMouseMotionEvent(MouseEvent e) {
+        if (!interactionEnabled) return;
+        super.processMouseMotionEvent(e);
+    }
+
+    public void setInfoPopupsEnabled(boolean enabled) {
+        if (!enabled) {
+            hideSquareInfoIfVisible();
+        }
+        this.infoPopupsEnabled = enabled;
     }
 }
