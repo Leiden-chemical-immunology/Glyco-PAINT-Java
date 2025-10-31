@@ -298,6 +298,70 @@ public class PlotUtils {
         }
     }
 
+    /**
+     * Exports histograms of the experimental data as individual PNG images.
+     * Each recording is rendered to a separate file under:
+     *    Output/Background Plots/<recordingName>.png
+     *
+     * @param experiment The experiment containing recordings with track count data.
+     * @param experimentPath The root directory of the experiment (used to resolve Output path).
+     * @throws IOException If any image cannot be written.
+     */
+    public static void exportExperimentHistogramsToPngs(Experiment experiment, Path experimentPath) throws IOException {
+        Path outputDir = experimentPath.resolve("Output").resolve("Background Plots");
+        Files.createDirectories(outputDir);
+
+        for (Recording recording : experiment.getRecordings()) {
+            List<Square> squares = recording.getSquaresOfRecording();
+            if (squares == null || squares.isEmpty()) {
+                PaintLogger.debugf("Recording '%s': no squares%n", recording.getRecordingName());
+                continue;
+            }
+
+            SquareUtils.BackgroundEstimationResult backgroundResult = calculateBackgroundDensity(squares);
+            Set<Square> backgroundSet = new HashSet<>(backgroundResult.getBackgroundSquares());
+            double backgroundTracksPerSquare = backgroundResult.getBackgroundMean();
+
+            int totalSquares = squares.size();
+            int nBackground  = backgroundSet.size();
+            int totalTracks  = squares.stream().mapToInt(Square::getNumberOfTracks).sum();
+            int backgroundTracksTotal = backgroundSet.stream().mapToInt(Square::getNumberOfTracks).sum();
+
+            int maxTracks = squares.stream()
+                    .mapToInt(Square::getNumberOfTracks).max().orElse(0);
+            int binSize   = Math.max(1, maxTracks / 20);
+            int binCount  = (maxTracks / binSize) + 1;
+
+            int[] allBins = new int[binCount];
+            int[] bgBins  = new int[binCount];
+
+            for (Square sq : squares) {
+                int n   = sq.getNumberOfTracks();
+                int bin = Math.min(n / binSize, binCount - 1);
+                allBins[bin]++;
+                if (backgroundSet.contains(sq)) {
+                    bgBins[bin]++;
+                }
+            }
+
+            int plotWidth  = 900;
+            int plotHeight = 600;
+            BufferedImage img = new BufferedImage(plotWidth, plotHeight, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = img.createGraphics();
+            drawHistogram(g2, plotWidth, plotHeight,
+                          allBins, bgBins, binSize,
+                          recording.getRecordingName(),
+                          totalSquares, totalTracks,
+                          nBackground, backgroundTracksTotal,
+                          backgroundTracksPerSquare);
+            g2.dispose();
+
+            Path outFile = outputDir.resolve(recording.getRecordingName() + ".png");
+            ImageIO.write(img, "png", outFile.toFile());
+            PaintLogger.debugf("Wrote background histogram to %s%n", outFile);
+        }
+    }
+
     // ========== Tau-fit PNG output ==========
 
     /**
