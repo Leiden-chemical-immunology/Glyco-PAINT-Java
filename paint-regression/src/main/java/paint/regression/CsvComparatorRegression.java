@@ -42,7 +42,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
  ******************************************************************************/
 
-package paint.validation;
+package paint.regression;
 
 import java.io.BufferedReader;
 import java.io.IOException;

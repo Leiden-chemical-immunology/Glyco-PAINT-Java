@@ -1,4 +1,4 @@
-package paint.validation.old;
+package paint.regression.old;
 
 import java.io.*;
 import java.nio.file.*;
