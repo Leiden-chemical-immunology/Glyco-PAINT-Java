@@ -88,7 +88,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>paint.validation.CompareAllSquares</mainClass>
+                            <mainClass>paint.regression.CompareAllSquares</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
