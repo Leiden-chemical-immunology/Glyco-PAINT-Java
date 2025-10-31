@@ -1,0 +1,324 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/******************************************************************************<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  Class:        ExperimentInfoTableIO.java<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  Package:      paint.shared.io<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *  PURPOSE:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *    Provides table input/output utilities for {@link paint.shared.objects.ExperimentInfo}<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *    records, enforcing the schema used for per-recording experiment metadata.<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *  DESCRIPTION:<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *    This class defines conversion logic between Tablesaw {@link tech.tablesaw.api.Table}<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    objects and {@link paint.shared.objects.ExperimentInfo} instances. It validates<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    and enforces the schema defined in {@code PaintConstants.EXPERIMENT_INFO_COLS}<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *    and {@code PaintConstants.EXPERIMENT_INFO_TYPES}.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *  KEY FEATURES:<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *    • Reads and validates Experiment Info CSV files against the expected schema.<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *    • Converts between lists of {@link paint.shared.objects.ExperimentInfo} and Tablesaw tables.<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *    • Creates empty Experiment Info tables with predefined columns.<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *    • Supports type-safe row appending with automatic INTEGER→DOUBLE upcasting.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *    • Extends {@link BaseTableIO} for consistent schema validation and CSV handling.<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *  AUTHOR:<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *    Hans Bakker<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *  MODULE:<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *    paint-shared-utils<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *  UPDATED:<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *    2025-10-28<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *  COPYRIGHT:<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *    © 2025 Hans Bakker. All rights reserved.<a name="line.32"></a>
+<span class="sourceLineNo">033</span> ******************************************************************************/<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>package paint.shared.io;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>import paint.shared.objects.ExperimentInfo;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import tech.tablesaw.api.ColumnType;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import tech.tablesaw.api.Row;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import tech.tablesaw.api.Table;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import tech.tablesaw.columns.Column;<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>import java.io.IOException;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import java.nio.file.Path;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import java.util.ArrayList;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import java.util.List;<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_COLS;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_TYPES;<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span>/**<a name="line.51"></a>
+<span class="sourceLineNo">052</span> * Provides table input/output utilities for {@code ExperimentInfo}<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * records (per-recording metadata).<a name="line.53"></a>
+<span class="sourceLineNo">054</span> *<a name="line.54"></a>
+<span class="sourceLineNo">055</span> * &lt;p&gt;This class enforces a fixed schema defined by<a name="line.55"></a>
+<span class="sourceLineNo">056</span> * {@code EXPERIMENT_INFO_COLS} and {@code EXPERIMENT_INFO_TYPES}.<a name="line.56"></a>
+<span class="sourceLineNo">057</span> * It supports:&lt;/p&gt;<a name="line.57"></a>
+<span class="sourceLineNo">058</span> * &lt;ul&gt;<a name="line.58"></a>
+<span class="sourceLineNo">059</span> *   &lt;li&gt;Creating an empty table with the correct schema<a name="line.59"></a>
+<span class="sourceLineNo">060</span> *       via {@link #emptyTable()}.&lt;/li&gt;<a name="line.60"></a>
+<span class="sourceLineNo">061</span> *   &lt;li&gt;Converting between lists of {@link ExperimentInfo} objects<a name="line.61"></a>
+<span class="sourceLineNo">062</span> *       and a {@link tech.tablesaw.api.Table}<a name="line.62"></a>
+<span class="sourceLineNo">063</span> *       via {@link #toTable(java.util.List)} and<a name="line.63"></a>
+<span class="sourceLineNo">064</span> *       {@link #toEntities(tech.tablesaw.api.Table)}.&lt;/li&gt;<a name="line.64"></a>
+<span class="sourceLineNo">065</span> *   &lt;li&gt;Reading CSV files into validated tables<a name="line.65"></a>
+<span class="sourceLineNo">066</span> *       via {@link #readCsv(java.nio.file.Path)}.&lt;/li&gt;<a name="line.66"></a>
+<span class="sourceLineNo">067</span> *   &lt;li&gt;Appending rows from one table to another with type-safe coercion<a name="line.67"></a>
+<span class="sourceLineNo">068</span> *       via {@link #appendInPlace(tech.tablesaw.api.Table, tech.tablesaw.api.Table)}.&lt;/li&gt;<a name="line.68"></a>
+<span class="sourceLineNo">069</span> * &lt;/ul&gt;<a name="line.69"></a>
+<span class="sourceLineNo">070</span> *<a name="line.70"></a>
+<span class="sourceLineNo">071</span> * &lt;p&gt;Validation ensures that column order, names, and types match the expected<a name="line.71"></a>
+<span class="sourceLineNo">072</span> * schema, while allowing some flexibility (e.g. {@code INTEGER -&gt; DOUBLE} upcasts).&lt;/p&gt;<a name="line.72"></a>
+<span class="sourceLineNo">073</span> */<a name="line.73"></a>
+<span class="sourceLineNo">074</span>public class ExperimentInfoTableIO extends BaseTableIO {<a name="line.74"></a>
+<span class="sourceLineNo">075</span><a name="line.75"></a>
+<span class="sourceLineNo">076</span>    /**<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     * Creates an empty {@link Table} with the {@code Experiment Info} schema.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     *<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     * &lt;p&gt;The table has all expected columns defined by<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     * {@code EXPERIMENT_INFO_COLS} and {@code EXPERIMENT_INFO_TYPES}, but<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * contains zero rows.&lt;/p&gt;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     * @return a new empty {@code Table} ready to receive rows with the<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     * Experiment Info schema<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     */<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    public Table emptyTable() {<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        return newEmptyTable("Experiment Info", EXPERIMENT_INFO_COLS, EXPERIMENT_INFO_TYPES);<a name="line.87"></a>
+<span class="sourceLineNo">088</span>    }<a name="line.88"></a>
+<span class="sourceLineNo">089</span><a name="line.89"></a>
+<span class="sourceLineNo">090</span>    /**<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     * Converts a list of {@link ExperimentInfo} objects into a {@link Table}<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     * with a fixed schema.<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     *<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     * &lt;p&gt;Each {@code ExperimentInfo} is mapped to a single row in the table with<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     * the following columns:&lt;/p&gt;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     * &lt;ul&gt;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     *   &lt;li&gt;{@code Recording Name} (String)&lt;/li&gt;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     *   &lt;li&gt;{@code Condition Number} (int)&lt;/li&gt;<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     *   &lt;li&gt;{@code Replicate Number} (int)&lt;/li&gt;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     *   &lt;li&gt;{@code Probe Name} (String)&lt;/li&gt;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     *   &lt;li&gt;{@code Probe Type} (String)&lt;/li&gt;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     *   &lt;li&gt;{@code Cell Type} (String)&lt;/li&gt;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     *   &lt;li&gt;{@code Adjuvant} (String)&lt;/li&gt;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     *   &lt;li&gt;{@code Concentration} (double)&lt;/li&gt;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *   &lt;li&gt;{@code Process Flag} (boolean)&lt;/li&gt;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *   &lt;li&gt;{@code Threshold} (double)&lt;/li&gt;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     * &lt;/ul&gt;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     *<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     * &lt;p&gt;The schema is enforced by starting from an {@link #emptyTable()} with all<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     * expected columns pre-defined.&lt;/p&gt;<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     * @param infos the list of {@code ExperimentInfo} objects to convert<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     * @return a {@code Table} containing one row per experiment<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     */<a name="line.114"></a>
+<span class="sourceLineNo">115</span>    public Table toTable(List&lt;ExperimentInfo&gt; infos) {<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        Table table = emptyTable();<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        for (ExperimentInfo info : infos) {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>            Row row = table.appendRow();<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            row.setString("Experiment Name",  info.getExperimentName());<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            row.setString("Recording Name",   info.getRecordingName());<a name="line.120"></a>
+<span class="sourceLineNo">121</span>            row.setInt(   "Condition Number", info.getConditionNumber());<a name="line.121"></a>
+<span class="sourceLineNo">122</span>            row.setInt(   "Replicate Number", info.getReplicateNumber());<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            row.setString("Probe Name",       info.getProbeName());<a name="line.123"></a>
+<span class="sourceLineNo">124</span>            row.setString("Probe Type",       info.getProbeType());<a name="line.124"></a>
+<span class="sourceLineNo">125</span>            row.setString("Cell Type",        info.getCellType());<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            row.setString("Adjuvant",         info.getAdjuvant());<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            row.setDouble("Concentration",    info.getConcentration());<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            row.setBoolean("Process Flag",    info.isProcessFlag());<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            row.setDouble("Threshold",        info.getThreshold());<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        }<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        return table;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>    }<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>    /**<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     * Converts a {@link Table} into a list of {@link ExperimentInfo} objects.<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     *<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     * &lt;p&gt;The table is expected to have already been validated against the<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     * experiment schema. Each row is mapped to a new {@code ExperimentInfo}<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     * instance, with values extracted from the following columns:&lt;/p&gt;<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     * &lt;ul&gt;<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     *   &lt;li&gt;{@code Recording Name} → {@code ExperimentInfo.setRecordingName(String)}&lt;/li&gt;<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     *   &lt;li&gt;{@code Condition Number} → {@code ExperimentInfo.setConditionNumber(int)}&lt;/li&gt;<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     *   &lt;li&gt;{@code Replicate Number} → {@code ExperimentInfo.setReplicateNumber(int)}&lt;/li&gt;<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     *   &lt;li&gt;{@code Probe Name} → {@code ExperimentInfo.setProbeName(String)}&lt;/li&gt;<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *   &lt;li&gt;{@code Probe Type} → {@code ExperimentInfo.setProbeType(String)}&lt;/li&gt;<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     *   &lt;li&gt;{@code Cell Type} → {@code ExperimentInfo.setCellType(String)}&lt;/li&gt;<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     *   &lt;li&gt;{@code Adjuvant} → {@code ExperimentInfo.setAdjuvant(String)}&lt;/li&gt;<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     *   &lt;li&gt;{@code Concentration} → {@code ExperimentInfo.setConcentration(double)}&lt;/li&gt;<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     *   &lt;li&gt;{@code Process Flag} → {@code ExperimentInfo.setProcessFlag(boolean)}&lt;/li&gt;<a name="line.149"></a>
+<span class="sourceLineNo">150</span>     *   &lt;li&gt;{@code Threshold} → {@code ExperimentInfo.setThreshold(double)}&lt;/li&gt;<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     * &lt;/ul&gt;<a name="line.151"></a>
+<span class="sourceLineNo">152</span>     *<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     * @param table the validated table to convert<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     * @return a list of {@code ExperimentInfo} objects populated from the table rows<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     */<a name="line.155"></a>
+<span class="sourceLineNo">156</span>    public List&lt;ExperimentInfo&gt; toEntities(Table table) {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        List&lt;ExperimentInfo&gt; infos = new ArrayList&lt;&gt;();<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        for (Row tablesawRow : table) {<a name="line.158"></a>
+<span class="sourceLineNo">159</span>            ExperimentInfo experimentInfo = new ExperimentInfo();<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            experimentInfo.setExperimentName(  tablesawRow.getString( "Experiment Name"));<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            experimentInfo.setRecordingName(   tablesawRow.getString( "Recording Name"));<a name="line.161"></a>
+<span class="sourceLineNo">162</span>            experimentInfo.setConditionNumber( tablesawRow.getInt(    "Condition Number"));<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            experimentInfo.setReplicateNumber( tablesawRow.getInt(    "Replicate Number"));<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            experimentInfo.setProbeName(       tablesawRow.getString( "Probe Name"));<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            experimentInfo.setProbeType(       tablesawRow.getString( "Probe Type"));<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            experimentInfo.setCellType(        tablesawRow.getString( "Cell Type"));<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            experimentInfo.setAdjuvant(        tablesawRow.getString( "Adjuvant"));<a name="line.167"></a>
+<span class="sourceLineNo">168</span>            experimentInfo.setConcentration(   tablesawRow.getDouble( "Concentration"));<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            experimentInfo.setProcessFlag(     tablesawRow.getBoolean("Process Flag"));<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            experimentInfo.setThreshold(       tablesawRow.getDouble( "Threshold"));<a name="line.170"></a>
+<span class="sourceLineNo">171</span>            infos.add(experimentInfo);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        }<a name="line.172"></a>
+<span class="sourceLineNo">173</span>        return infos;<a name="line.173"></a>
+<span class="sourceLineNo">174</span>    }<a name="line.174"></a>
+<span class="sourceLineNo">175</span><a name="line.175"></a>
+<span class="sourceLineNo">176</span>    /**<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     * Reads a CSV file as a {@link Table}, enforcing the<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     * {@code Experiment Info} schema.<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     *<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     * &lt;p&gt;The schema is defined by {@code EXPERIMENT_INFO_COLS} (column names) and<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     * {@code EXPERIMENT_INFO_TYPES} (column types). Header order and types are<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     * validated before returning the table.&lt;/p&gt;<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     *<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     * @param csvPath the path to the CSV file<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     * @return a {@code Table} containing the experiment info data<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     * @throws IOException if the file cannot be read or parsed<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     */<a name="line.187"></a>
+<span class="sourceLineNo">188</span>    public Table readCsv(Path csvPath) throws IOException {<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        return readCsvWithSchema(csvPath, "Experiment Info",<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                                 EXPERIMENT_INFO_COLS, EXPERIMENT_INFO_TYPES, false);<a name="line.190"></a>
+<span class="sourceLineNo">191</span>    }<a name="line.191"></a>
+<span class="sourceLineNo">192</span><a name="line.192"></a>
+<span class="sourceLineNo">193</span>    /**<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     * Appends all rows from a source {@link Table} into a target {@link Table},<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     * enforcing the {@code Experiment Info} schema.<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     *<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     * &lt;p&gt;Behavior:&lt;/p&gt;<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     * &lt;ul&gt;<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     *   &lt;li&gt;Rows are appended one by one to the {@code target}.&lt;/li&gt;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     *   &lt;li&gt;Columns are matched against {@code EXPERIMENT_INFO_COLS} with types from<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     *       {@code EXPERIMENT_INFO_TYPES}.&lt;/li&gt;<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     *   &lt;li&gt;If the source table is missing a column, that column is skipped.&lt;/li&gt;<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     *   &lt;li&gt;Missing cell values in the source remain missing in the destination.&lt;/li&gt;<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     *   &lt;li&gt;{@code INTEGER -&gt; DOUBLE} upcasts are allowed when the schema expects a double.&lt;/li&gt;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     *   &lt;li&gt;Other type mismatches throw an {@link IllegalArgumentException}.&lt;/li&gt;<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     * &lt;/ul&gt;<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     *<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     * @param target the destination table to which rows will be appended<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     * @param source the source table providing rows and column values<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     * @throws IllegalArgumentException if the source contains an unsupported column type<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     */<a name="line.211"></a>
+<span class="sourceLineNo">212</span>    public void appendInPlace(Table target, Table source) {<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        if (source.isEmpty()) {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            return; // nothing to do<a name="line.214"></a>
+<span class="sourceLineNo">215</span>        }<a name="line.215"></a>
+<span class="sourceLineNo">216</span><a name="line.216"></a>
+<span class="sourceLineNo">217</span>        for (Row srcRow : source) {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>            Row dst = target.appendRow();<a name="line.218"></a>
+<span class="sourceLineNo">219</span>            int r   = srcRow.getRowNumber();<a name="line.219"></a>
+<span class="sourceLineNo">220</span><a name="line.220"></a>
+<span class="sourceLineNo">221</span>            for (int i = 0; i &lt; EXPERIMENT_INFO_COLS.length; i++) {<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                String col = EXPERIMENT_INFO_COLS[i];<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                ColumnType expected = EXPERIMENT_INFO_TYPES[i];<a name="line.223"></a>
+<span class="sourceLineNo">224</span><a name="line.224"></a>
+<span class="sourceLineNo">225</span>                if (!source.columnNames().contains(col)) {<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                    continue; // Source missing the column — skip<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                }<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span>                Column&lt;?&gt; sCol = source.column(col);<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                if (sCol.isMissing(r)) {<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                    continue; // Leave as missing in the destination<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                }<a name="line.232"></a>
+<span class="sourceLineNo">233</span><a name="line.233"></a>
+<span class="sourceLineNo">234</span>                if (expected.equals(ColumnType.STRING)) {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                    dst.setString(col, source.stringColumn(col).get(r));<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                } else if (expected.equals(ColumnType.INTEGER)) {<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                    dst.setInt(col, source.intColumn(col).getInt(r));<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                } else if (expected.equals(ColumnType.DOUBLE)) {<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                    if (sCol.type().equals(ColumnType.INTEGER)) {<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                        dst.setDouble(col, source.intColumn(col).getInt(r));<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                    } else {<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                        dst.setDouble(col, source.doubleColumn(col).getDouble(r));<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                    }<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                } else if (expected.equals(ColumnType.BOOLEAN)) {<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                    dst.setBoolean(col, source.booleanColumn(col).get(r));<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                } else {<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                    throw new IllegalArgumentException("Unsupported type: " + expected);<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                }<a name="line.248"></a>
+<span class="sourceLineNo">249</span>            }<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        }<a name="line.250"></a>
+<span class="sourceLineNo">251</span>    }<a name="line.251"></a>
+<span class="sourceLineNo">252</span>}<a name="line.252"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

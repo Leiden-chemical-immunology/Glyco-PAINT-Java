@@ -1,0 +1,681 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package paint.regression.old;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import java.io.*;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import java.nio.file.*;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import java.util.*;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>import static paint.shared.constants.PaintConstants.SQUARES_CSV;<a name="line.7"></a>
+<span class="sourceLineNo">008</span><a name="line.8"></a>
+<span class="sourceLineNo">009</span>/**<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * ============================================================================<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *  SquaresSidebySideComparator.java<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *  Part of the Paint Regression module.<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *  &lt;p&gt;&lt;b&gt;Purpose:&lt;/b&gt;&lt;br&gt;<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *  Compares legacy (Python) and new (Java) Squares CSVs side by side,<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *  aligning matching rows and applying tolerance-based field comparison.<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *  Handles numeric rounding, missing-value normalization, and per-field<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *  difference reporting.<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *  &lt;/p&gt;<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *  &lt;p&gt;&lt;b&gt;Key Rules:&lt;/b&gt;&lt;/p&gt;<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *  &lt;ul&gt;<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *    &lt;li&gt;Removes trailing "-threshold-N" from Recording Name in the old file.&lt;/li&gt;<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *    &lt;li&gt;Sets Tau &amp;lt; 0 in old file to empty.&lt;/li&gt;<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *    &lt;li&gt;A square is selected if all the following are true:&lt;/li&gt;<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *    &lt;li&gt;&amp;nbsp;&amp;nbsp;&amp;bull;&amp;nbsp;Density Ratio &amp;gt;= 2&lt;/li&gt;<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *    &lt;li&gt;&amp;nbsp;&amp;nbsp;&amp;bull;&amp;nbsp;Variability &amp;lt; 10&lt;/li&gt;<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *    &lt;li&gt;&amp;nbsp;&amp;nbsp;&amp;bull;&amp;nbsp;R&amp;nbsp;Squared &amp;gt; 0.1&lt;/li&gt;<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *  &lt;/ul&gt;<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *  &lt;p&gt;Generates several diagnostic CSVs in the validation output directory.&lt;/p&gt;<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *  &lt;p&gt;&lt;b&gt;Author:&lt;/b&gt; Hans&amp;nbsp;Bakker&lt;br&gt;<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *  &lt;b&gt;Module:&lt;/b&gt; paint-regression&lt;/p&gt;<a name="line.34"></a>
+<span class="sourceLineNo">035</span> * ============================================================================<a name="line.35"></a>
+<span class="sourceLineNo">036</span> */<a name="line.36"></a>
+<span class="sourceLineNo">037</span>public class SquaresSidebySideComparator {<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>    private static final Map&lt;String, String&gt; FIELD_MAP = new LinkedHashMap&lt;&gt;();<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>    static {<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        FIELD_MAP.put("Row Nr", "Row Number");<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        FIELD_MAP.put("Col Nr", "Column Number");<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        FIELD_MAP.put("Nr Tracks", "Number of Tracks");<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        FIELD_MAP.put("X0", "X0");<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        FIELD_MAP.put("Y0", "Y0");<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        FIELD_MAP.put("X1", "X1");<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        FIELD_MAP.put("Y1", "Y1");<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        FIELD_MAP.put("Variability", "Variability");<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        FIELD_MAP.put("Density", "Density");<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        FIELD_MAP.put("Density Ratio", "Density Ratio Ori");<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        FIELD_MAP.put("Tau", "Tau");<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        FIELD_MAP.put("R Squared", "R Squared");<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        FIELD_MAP.put("Median Diffusion Coefficient", "Median Diffusion Coefficient");<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        FIELD_MAP.put("Median Diffusion Coefficient Ext", "Median Diffusion Coefficient Ext");<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        FIELD_MAP.put("Median Long Track Duration", "Median Long Track Duration");<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        FIELD_MAP.put("Median Short Track Duration", "Median Short Track Duration");<a name="line.57"></a>
+<span class="sourceLineNo">058</span>        FIELD_MAP.put("Median Displacement", "Median Displacement");<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        FIELD_MAP.put("Max Displacement", "Max Displacement");<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        FIELD_MAP.put("Total Displacement", "Total Displacement");<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        FIELD_MAP.put("Median Max Speed", "Median Max Speed");<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        FIELD_MAP.put("Max Max Speed", "Max Max Speed");<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        FIELD_MAP.put("Max Track Duration", "Max Track Duration");<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        FIELD_MAP.put("Total Track Duration", "Total Track Duration");<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        FIELD_MAP.put("Median Track Duration", "Median Track Duration");<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        FIELD_MAP.put("Square Nr", "Square Number");<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        // "Selected" is computed; not part of FIELD_MAP on purpose<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    }<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>    private static final Set&lt;String&gt; DOUBLE_FIELDS = new HashSet&lt;&gt;(Arrays.asList(<a name="line.70"></a>
+<span class="sourceLineNo">071</span>            "X0", "Y0", "X1", "Y1",<a name="line.71"></a>
+<span class="sourceLineNo">072</span>            "Variability", "Density", "Density Ratio",<a name="line.72"></a>
+<span class="sourceLineNo">073</span>            "Tau", "R Squared",<a name="line.73"></a>
+<span class="sourceLineNo">074</span>            "Median Diffusion Coefficient", "Median Diffusion Coefficient Ext",<a name="line.74"></a>
+<span class="sourceLineNo">075</span>            "Median Long Track Duration", "Median Short Track Duration",<a name="line.75"></a>
+<span class="sourceLineNo">076</span>            "Median Displacement", "Max Displacement", "Total Displacement",<a name="line.76"></a>
+<span class="sourceLineNo">077</span>            "Median Max Speed", "Max Max Speed",<a name="line.77"></a>
+<span class="sourceLineNo">078</span>            "Max Track Duration", "Total Track Duration", "Median Track Duration"<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    ));<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>    private static final Map&lt;String, Integer&gt; ROUNDING_MAP = new HashMap&lt;&gt;();<a name="line.81"></a>
+<span class="sourceLineNo">082</span>    static {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        ROUNDING_MAP.put("X0", 4);<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        ROUNDING_MAP.put("Y0", 4);<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        ROUNDING_MAP.put("X1", 4);<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        ROUNDING_MAP.put("Y1", 4);<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        ROUNDING_MAP.put("Variability", 1);<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        ROUNDING_MAP.put("Density", 3);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        ROUNDING_MAP.put("Density Ratio", 2);<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        ROUNDING_MAP.put("Tau", 2);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        ROUNDING_MAP.put("R Squared", 2);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        ROUNDING_MAP.put("Median Diffusion Coefficient", 1);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        ROUNDING_MAP.put("Median Diffusion Coefficient Ext", 1);<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        ROUNDING_MAP.put("Median Long Track Duration", 0);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        ROUNDING_MAP.put("Median Short Track Duration", 0);<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        ROUNDING_MAP.put("Median Displacement", 0);<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        ROUNDING_MAP.put("Max Displacement", 0);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        ROUNDING_MAP.put("Total Displacement", 0);<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        ROUNDING_MAP.put("Median Max Speed", 0);<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        ROUNDING_MAP.put("Max Max Speed", 0);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        ROUNDING_MAP.put("Max Track Duration", 0);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        ROUNDING_MAP.put("Total Track Duration", 0);<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        ROUNDING_MAP.put("Median Track Duration", 0);<a name="line.103"></a>
+<span class="sourceLineNo">104</span>    }<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>    private static final Map&lt;String, Integer&gt; EFFECTIVE_PRECISION_MAP = new HashMap&lt;&gt;();<a name="line.106"></a>
+<span class="sourceLineNo">107</span><a name="line.107"></a>
+<span class="sourceLineNo">108</span>    // ----------------------------------------------------------------------<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    private static List&lt;Map&lt;String, String&gt;&gt; readCsv(Path path) throws IOException {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        List&lt;Map&lt;String, String&gt;&gt; rows = new ArrayList&lt;&gt;();<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        try (BufferedReader reader = new BufferedReader(new FileReader(path.toFile()))) {<a name="line.111"></a>
+<span class="sourceLineNo">112</span>            String headerLine = reader.readLine();<a name="line.112"></a>
+<span class="sourceLineNo">113</span>            if (headerLine == null) return rows;<a name="line.113"></a>
+<span class="sourceLineNo">114</span>            String[] headers = headerLine.split(",", -1);<a name="line.114"></a>
+<span class="sourceLineNo">115</span>            String line;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            while ((line = reader.readLine()) != null) {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                String[] values = line.split(",", -1);<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                Map&lt;String, String&gt; row = new LinkedHashMap&lt;&gt;();<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                for (int i = 0; i &lt; Math.min(headers.length, values.length); i++) {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                    row.put(headers[i].trim(), values[i].trim());<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                }<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                rows.add(row);<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            }<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        }<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        return rows;<a name="line.125"></a>
+<span class="sourceLineNo">126</span>    }<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span>    // ----------------------------------------------------------------------<a name="line.128"></a>
+<span class="sourceLineNo">129</span>    private static List&lt;Map&lt;String, String&gt;&gt; normalizeOld(List&lt;Map&lt;String, String&gt;&gt; oldRows) {<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        List&lt;Map&lt;String, String&gt;&gt; norm = new ArrayList&lt;&gt;();<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        for (Map&lt;String, String&gt; row : oldRows) {<a name="line.131"></a>
+<span class="sourceLineNo">132</span>            Map&lt;String, String&gt; n = new LinkedHashMap&lt;&gt;();<a name="line.132"></a>
+<span class="sourceLineNo">133</span>            n.put("Recording Name", row.getOrDefault("Ext Recording Name", ""));<a name="line.133"></a>
+<span class="sourceLineNo">134</span><a name="line.134"></a>
+<span class="sourceLineNo">135</span>            // Remove trailing "-threshold-&lt;number&gt;"<a name="line.135"></a>
+<span class="sourceLineNo">136</span>            String recName = n.get("Recording Name");<a name="line.136"></a>
+<span class="sourceLineNo">137</span>            if (recName != null) {<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                recName = recName.replaceAll("-threshold-\\d+$", "").trim();<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                n.put("Recording Name", recName);<a name="line.139"></a>
+<span class="sourceLineNo">140</span>            }<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>            for (String oldCol : FIELD_MAP.keySet()) {<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                String val = row.getOrDefault(oldCol, "").trim();<a name="line.143"></a>
+<span class="sourceLineNo">144</span><a name="line.144"></a>
+<span class="sourceLineNo">145</span>                // Tau normalization<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                if (oldCol.equalsIgnoreCase("Tau")) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                    try {<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        if (!val.isEmpty() &amp;&amp; Double.parseDouble(val) &lt; 0)<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                            val = "";<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                    } catch (NumberFormatException ignored) {}<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                }<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>                // 0-to-empty normalization<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                if (oldCol.equalsIgnoreCase("R Squared")<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                        || oldCol.equalsIgnoreCase("Median Long Track Duration")<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                        || oldCol.equalsIgnoreCase("Median Short Track Duration")<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                        || oldCol.equalsIgnoreCase("Total Track Duration")<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                        || oldCol.equalsIgnoreCase("Density")<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        || oldCol.equalsIgnoreCase("Density Ratio")<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                        || oldCol.equalsIgnoreCase("Variability")<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                        || oldCol.equalsIgnoreCase("Total Displacement")) {<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                    try {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        if (!val.isEmpty() &amp;&amp; Double.parseDouble(val) == 0.0)<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                            val = "";<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                    } catch (NumberFormatException ignored) {}<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                }<a name="line.166"></a>
+<span class="sourceLineNo">167</span><a name="line.167"></a>
+<span class="sourceLineNo">168</span>                n.put(oldCol, val);<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            }<a name="line.169"></a>
+<span class="sourceLineNo">170</span><a name="line.170"></a>
+<span class="sourceLineNo">171</span>            // Normalize Row/Col to 0-based<a name="line.171"></a>
+<span class="sourceLineNo">172</span>            try {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                String rowVal = n.get("Row Nr");<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                if (rowVal != null &amp;&amp; !rowVal.isEmpty()) {<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                    int rowNum = (int) Double.parseDouble(rowVal);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                    n.put("Row Nr", String.valueOf(rowNum - 1));<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                }<a name="line.177"></a>
+<span class="sourceLineNo">178</span>            } catch (NumberFormatException ignored) {}<a name="line.178"></a>
+<span class="sourceLineNo">179</span>            try {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                String colVal = n.get("Col Nr");<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                if (colVal != null &amp;&amp; !colVal.isEmpty()) {<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                    int colNum = (int) Double.parseDouble(colVal);<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                    n.put("Col Nr", String.valueOf(colNum - 1));<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                }<a name="line.184"></a>
+<span class="sourceLineNo">185</span>            } catch (NumberFormatException ignored) {}<a name="line.185"></a>
+<span class="sourceLineNo">186</span><a name="line.186"></a>
+<span class="sourceLineNo">187</span>            // Compute Selected<a name="line.187"></a>
+<span class="sourceLineNo">188</span>            n.put("Selected", String.valueOf(isSelected(n)));<a name="line.188"></a>
+<span class="sourceLineNo">189</span><a name="line.189"></a>
+<span class="sourceLineNo">190</span>            norm.add(n);<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        }<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        return norm;<a name="line.192"></a>
+<span class="sourceLineNo">193</span>    }<a name="line.193"></a>
+<span class="sourceLineNo">194</span><a name="line.194"></a>
+<span class="sourceLineNo">195</span>    private static List&lt;Map&lt;String, String&gt;&gt; normalizeNew(List&lt;Map&lt;String, String&gt;&gt; newRows) {<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        List&lt;Map&lt;String, String&gt;&gt; norm = new ArrayList&lt;&gt;();<a name="line.196"></a>
+<span class="sourceLineNo">197</span>        for (Map&lt;String, String&gt; row : newRows) {<a name="line.197"></a>
+<span class="sourceLineNo">198</span>            Map&lt;String, String&gt; n = new LinkedHashMap&lt;&gt;();<a name="line.198"></a>
+<span class="sourceLineNo">199</span>            n.put("Recording Name", row.getOrDefault("Recording Name", ""));<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            for (Map.Entry&lt;String, String&gt; entry : FIELD_MAP.entrySet()) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                String oldCol = entry.getKey();<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                String newCol = entry.getValue();<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                n.put(oldCol, row.getOrDefault(newCol, ""));<a name="line.203"></a>
+<span class="sourceLineNo">204</span>            }<a name="line.204"></a>
+<span class="sourceLineNo">205</span>            // NEW is already 0-based; nothing to adjust for row/col<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            // Compute Selected<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            n.put("Selected", String.valueOf(isSelected(n)));<a name="line.207"></a>
+<span class="sourceLineNo">208</span><a name="line.208"></a>
+<span class="sourceLineNo">209</span>            norm.add(n);<a name="line.209"></a>
+<span class="sourceLineNo">210</span>        }<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        return norm;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>    }<a name="line.212"></a>
+<span class="sourceLineNo">213</span><a name="line.213"></a>
+<span class="sourceLineNo">214</span>    // ----------------------------------------------------------------------<a name="line.214"></a>
+<span class="sourceLineNo">215</span>    private static Map&lt;String, Integer&gt; computeEffectivePrecisions(<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            List&lt;Map&lt;String, String&gt;&gt; oldRows,<a name="line.216"></a>
+<span class="sourceLineNo">217</span>            List&lt;Map&lt;String, String&gt;&gt; newRows,<a name="line.217"></a>
+<span class="sourceLineNo">218</span>            Set&lt;String&gt; numericFields) {<a name="line.218"></a>
+<span class="sourceLineNo">219</span><a name="line.219"></a>
+<span class="sourceLineNo">220</span>        Map&lt;String, Integer&gt; precisionMap = new HashMap&lt;&gt;();<a name="line.220"></a>
+<span class="sourceLineNo">221</span>        for (String field : numericFields) {<a name="line.221"></a>
+<span class="sourceLineNo">222</span>            int oldPrec = detectPrecision(oldRows, field);<a name="line.222"></a>
+<span class="sourceLineNo">223</span>            int newPrec = detectPrecision(newRows, field);<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            precisionMap.put(field, Math.min(oldPrec, newPrec));<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>        return precisionMap;<a name="line.226"></a>
+<span class="sourceLineNo">227</span>    }<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span>    private static int detectPrecision(List&lt;Map&lt;String, String&gt;&gt; rows, String field) {<a name="line.229"></a>
+<span class="sourceLineNo">230</span>        int best = 0;<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        for (Map&lt;String, String&gt; row : rows) {<a name="line.231"></a>
+<span class="sourceLineNo">232</span>            String s = row.get(field);<a name="line.232"></a>
+<span class="sourceLineNo">233</span>            if (s != null) {<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                s = s.trim();<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                if (s.matches("^-?\\d+\\.\\d+$")) {<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                    int p = s.length() - s.indexOf('.') - 1;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                    if (p &gt; best) best = p;<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                }<a name="line.238"></a>
+<span class="sourceLineNo">239</span>            }<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        }<a name="line.240"></a>
+<span class="sourceLineNo">241</span>        return best;<a name="line.241"></a>
+<span class="sourceLineNo">242</span>    }<a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span>    // ----------------------------------------------------------------------<a name="line.244"></a>
+<span class="sourceLineNo">245</span>    private static String compositeKey(Map&lt;String, String&gt; row) {<a name="line.245"></a>
+<span class="sourceLineNo">246</span>        return row.getOrDefault("Recording Name", "").trim() + " - " +<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                row.getOrDefault("Square Nr", "").trim();<a name="line.247"></a>
+<span class="sourceLineNo">248</span>    }<a name="line.248"></a>
+<span class="sourceLineNo">249</span><a name="line.249"></a>
+<span class="sourceLineNo">250</span>    private static void writeCsv(List&lt;Map&lt;String, String&gt;&gt; rows, Path file) throws IOException {<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        if (rows.isEmpty()) return;<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        Files.createDirectories(file.getParent());<a name="line.252"></a>
+<span class="sourceLineNo">253</span>        try (PrintWriter pw = new PrintWriter(file.toFile())) {<a name="line.253"></a>
+<span class="sourceLineNo">254</span>            // Ensure "Selected" exists and appears last in header (after FIELD_MAP)<a name="line.254"></a>
+<span class="sourceLineNo">255</span>            List&lt;String&gt; header = new ArrayList&lt;&gt;();<a name="line.255"></a>
+<span class="sourceLineNo">256</span>            header.add("Recording Name");<a name="line.256"></a>
+<span class="sourceLineNo">257</span>            header.addAll(FIELD_MAP.keySet());<a name="line.257"></a>
+<span class="sourceLineNo">258</span>            if (!header.contains("Selected")) header.add("Selected");<a name="line.258"></a>
+<span class="sourceLineNo">259</span>            pw.println(String.join(",", header));<a name="line.259"></a>
+<span class="sourceLineNo">260</span><a name="line.260"></a>
+<span class="sourceLineNo">261</span>            for (Map&lt;String, String&gt; r : rows) {<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                List&lt;String&gt; vals = new ArrayList&lt;&gt;();<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                for (String c : header) {<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                    String val = r.get(c);<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                    if (val == null) val = "";<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                    String out = val;<a name="line.266"></a>
+<span class="sourceLineNo">267</span><a name="line.267"></a>
+<span class="sourceLineNo">268</span>                    if (DOUBLE_FIELDS.contains(c)) {<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                        Double num = parseDouble(val);<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                        if (num != null) {<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                            int digits = EFFECTIVE_PRECISION_MAP.getOrDefault(<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                                    c, ROUNDING_MAP.getOrDefault(c, 3));<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                            double factor = Math.pow(10, digits);<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                            double rounded = Math.round(num * factor) / factor;<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                            out = String.format(Locale.US, "%." + digits + "f", rounded);<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                        }<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                    }<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                    vals.add(escapeCsv(out));<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                }<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                pw.println(String.join(",", vals));<a name="line.280"></a>
+<span class="sourceLineNo">281</span>            }<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        }<a name="line.282"></a>
+<span class="sourceLineNo">283</span>    }<a name="line.283"></a>
+<span class="sourceLineNo">284</span><a name="line.284"></a>
+<span class="sourceLineNo">285</span>    // ----------------------------------------------------------------------<a name="line.285"></a>
+<span class="sourceLineNo">286</span>    private static boolean compareDoubles(String field, String a, String b) {<a name="line.286"></a>
+<span class="sourceLineNo">287</span>        String ta = (a == null) ? "" : a.trim();<a name="line.287"></a>
+<span class="sourceLineNo">288</span>        String tb = (b == null) ? "" : b.trim();<a name="line.288"></a>
+<span class="sourceLineNo">289</span><a name="line.289"></a>
+<span class="sourceLineNo">290</span>        boolean aSpecial = isZeroNaNOrEmpty(ta);<a name="line.290"></a>
+<span class="sourceLineNo">291</span>        boolean bSpecial = isZeroNaNOrEmpty(tb);<a name="line.291"></a>
+<span class="sourceLineNo">292</span>        if (aSpecial &amp;&amp; bSpecial) return true;<a name="line.292"></a>
+<span class="sourceLineNo">293</span><a name="line.293"></a>
+<span class="sourceLineNo">294</span>        if (field.equalsIgnoreCase("Tau")) {<a name="line.294"></a>
+<span class="sourceLineNo">295</span>            try {<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                if (!ta.isEmpty() &amp;&amp; Double.parseDouble(ta) &lt; 0 &amp;&amp; isZeroNaNOrEmpty(tb))<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                    return true;<a name="line.297"></a>
+<span class="sourceLineNo">298</span>            } catch (NumberFormatException ignored) {}<a name="line.298"></a>
+<span class="sourceLineNo">299</span>        }<a name="line.299"></a>
+<span class="sourceLineNo">300</span><a name="line.300"></a>
+<span class="sourceLineNo">301</span>        Double dx = parseDouble(ta);<a name="line.301"></a>
+<span class="sourceLineNo">302</span>        Double dy = parseDouble(tb);<a name="line.302"></a>
+<span class="sourceLineNo">303</span>        if (dx != null &amp;&amp; dy != null) {<a name="line.303"></a>
+<span class="sourceLineNo">304</span>            int d = EFFECTIVE_PRECISION_MAP.getOrDefault(field, ROUNDING_MAP.getOrDefault(field, 3));<a name="line.304"></a>
+<span class="sourceLineNo">305</span>            double f = Math.pow(10, d);<a name="line.305"></a>
+<span class="sourceLineNo">306</span>            double rx = Math.round(dx * f) / f;<a name="line.306"></a>
+<span class="sourceLineNo">307</span>            double ry = Math.round(dy * f) / f;<a name="line.307"></a>
+<span class="sourceLineNo">308</span>            return Double.compare(rx, ry) == 0;<a name="line.308"></a>
+<span class="sourceLineNo">309</span>        }<a name="line.309"></a>
+<span class="sourceLineNo">310</span>        return false;<a name="line.310"></a>
+<span class="sourceLineNo">311</span>    }<a name="line.311"></a>
+<span class="sourceLineNo">312</span><a name="line.312"></a>
+<span class="sourceLineNo">313</span>    private static boolean isZeroNaNOrEmpty(String s) {<a name="line.313"></a>
+<span class="sourceLineNo">314</span>        if (s == null) return true;<a name="line.314"></a>
+<span class="sourceLineNo">315</span>        String t = s.trim();<a name="line.315"></a>
+<span class="sourceLineNo">316</span>        if (t.isEmpty()) return true;<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        if (t.equalsIgnoreCase("NaN")) return true;<a name="line.317"></a>
+<span class="sourceLineNo">318</span>        try {<a name="line.318"></a>
+<span class="sourceLineNo">319</span>            double v = Double.parseDouble(t);<a name="line.319"></a>
+<span class="sourceLineNo">320</span>            return Math.abs(v) &lt; 1e-12 || Double.isNaN(v);<a name="line.320"></a>
+<span class="sourceLineNo">321</span>        } catch (Exception e) {<a name="line.321"></a>
+<span class="sourceLineNo">322</span>            return false;<a name="line.322"></a>
+<span class="sourceLineNo">323</span>        }<a name="line.323"></a>
+<span class="sourceLineNo">324</span>    }<a name="line.324"></a>
+<span class="sourceLineNo">325</span><a name="line.325"></a>
+<span class="sourceLineNo">326</span>    private static Double parseDouble(String s) {<a name="line.326"></a>
+<span class="sourceLineNo">327</span>        if (s == null || s.isEmpty() || s.equalsIgnoreCase("NaN")) return null;<a name="line.327"></a>
+<span class="sourceLineNo">328</span>        try {<a name="line.328"></a>
+<span class="sourceLineNo">329</span>            double v = Double.parseDouble(s);<a name="line.329"></a>
+<span class="sourceLineNo">330</span>            return Double.isNaN(v) ? null : v;<a name="line.330"></a>
+<span class="sourceLineNo">331</span>        } catch (Exception e) {<a name="line.331"></a>
+<span class="sourceLineNo">332</span>            return null;<a name="line.332"></a>
+<span class="sourceLineNo">333</span>        }<a name="line.333"></a>
+<span class="sourceLineNo">334</span>    }<a name="line.334"></a>
+<span class="sourceLineNo">335</span><a name="line.335"></a>
+<span class="sourceLineNo">336</span>    /** Selected := (Density Ratio &gt;= 2) AND (Variability &lt; 10) AND (R Squared &gt; 0.1) */<a name="line.336"></a>
+<span class="sourceLineNo">337</span>    private static boolean isSelected(Map&lt;String, String&gt; row) {<a name="line.337"></a>
+<span class="sourceLineNo">338</span>        Double densityRatio = parseDouble(row.get("Density Ratio"));<a name="line.338"></a>
+<span class="sourceLineNo">339</span>        Double variability  = parseDouble(row.get("Variability"));<a name="line.339"></a>
+<span class="sourceLineNo">340</span>        Double rSquared     = parseDouble(row.get("R Squared"));<a name="line.340"></a>
+<span class="sourceLineNo">341</span>        if (densityRatio == null || variability == null || rSquared == null) return false;<a name="line.341"></a>
+<span class="sourceLineNo">342</span>        return densityRatio &gt;= 2.0 &amp;&amp; variability &lt; 10.0 &amp;&amp; rSquared &gt; 0.1;<a name="line.342"></a>
+<span class="sourceLineNo">343</span>    }<a name="line.343"></a>
+<span class="sourceLineNo">344</span><a name="line.344"></a>
+<span class="sourceLineNo">345</span>    private static String quote(String s) {<a name="line.345"></a>
+<span class="sourceLineNo">346</span>        if (s == null) return "";<a name="line.346"></a>
+<span class="sourceLineNo">347</span>        String t = s.replace("\"", "\"\"");<a name="line.347"></a>
+<span class="sourceLineNo">348</span>        if (t.contains(",") || t.contains("\"") || t.contains(" ")) return "\"" + t + "\"";<a name="line.348"></a>
+<span class="sourceLineNo">349</span>        return t;<a name="line.349"></a>
+<span class="sourceLineNo">350</span>    }<a name="line.350"></a>
+<span class="sourceLineNo">351</span><a name="line.351"></a>
+<span class="sourceLineNo">352</span>    private static String escapeCsv(String s) {<a name="line.352"></a>
+<span class="sourceLineNo">353</span>        if (s == null) return "";<a name="line.353"></a>
+<span class="sourceLineNo">354</span>        if (s.contains(",") || s.contains("\"")) return "\"" + s.replace("\"", "\"\"") + "\"";<a name="line.354"></a>
+<span class="sourceLineNo">355</span>        return s;<a name="line.355"></a>
+<span class="sourceLineNo">356</span>    }<a name="line.356"></a>
+<span class="sourceLineNo">357</span><a name="line.357"></a>
+<span class="sourceLineNo">358</span><a name="line.358"></a>
+<span class="sourceLineNo">359</span>    // ----------------------------------------------------------------------<a name="line.359"></a>
+<span class="sourceLineNo">360</span>    private static void compare(List&lt;Map&lt;String, String&gt;&gt; oldNorm, List&lt;Map&lt;String, String&gt;&gt; newNorm) throws IOException {<a name="line.360"></a>
+<span class="sourceLineNo">361</span>        Path reportFile = Paths.get("/Users/Hans/Desktop/Squares Validation - Comparison.csv");<a name="line.361"></a>
+<span class="sourceLineNo">362</span><a name="line.362"></a>
+<span class="sourceLineNo">363</span>        // Sort inputs<a name="line.363"></a>
+<span class="sourceLineNo">364</span>        Comparator&lt;Map&lt;String, String&gt;&gt; sorter = Comparator<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                .comparing((Map&lt;String, String&gt; r) -&gt; r.get("Recording Name"))<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                .thenComparing(r -&gt; {<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                    String s = r.get("Square Nr");<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                    try { return Integer.parseInt(s); } catch (Exception e) { return 0; }<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                });<a name="line.369"></a>
+<span class="sourceLineNo">370</span>        oldNorm.sort(sorter);<a name="line.370"></a>
+<span class="sourceLineNo">371</span>        newNorm.sort(sorter);<a name="line.371"></a>
+<span class="sourceLineNo">372</span><a name="line.372"></a>
+<span class="sourceLineNo">373</span>        Map&lt;String, Map&lt;String, String&gt;&gt; newMap = new HashMap&lt;&gt;();<a name="line.373"></a>
+<span class="sourceLineNo">374</span>        for (Map&lt;String, String&gt; n : newNorm) newMap.put(compositeKey(n), n);<a name="line.374"></a>
+<span class="sourceLineNo">375</span><a name="line.375"></a>
+<span class="sourceLineNo">376</span>        List&lt;String[]&gt; reportRows = new ArrayList&lt;&gt;();<a name="line.376"></a>
+<span class="sourceLineNo">377</span><a name="line.377"></a>
+<span class="sourceLineNo">378</span>        int matched = 0, mismatched = 0, missing = 0, extra = 0, selectedMismatches = 0;<a name="line.378"></a>
+<span class="sourceLineNo">379</span><a name="line.379"></a>
+<span class="sourceLineNo">380</span>        for (Map&lt;String, String&gt; oldRow : oldNorm) {<a name="line.380"></a>
+<span class="sourceLineNo">381</span>            String key = compositeKey(oldRow);<a name="line.381"></a>
+<span class="sourceLineNo">382</span>            Map&lt;String, String&gt; newRow = newMap.get(key);<a name="line.382"></a>
+<span class="sourceLineNo">383</span><a name="line.383"></a>
+<span class="sourceLineNo">384</span>            if (newRow == null) {<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                reportRows.add(new String[]{ oldRow.get("Recording Name"), oldRow.get("Square Nr"),<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                        "", "", "", "", "", "Missing in NEW" });<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                missing++;<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                continue;<a name="line.388"></a>
+<span class="sourceLineNo">389</span>            }<a name="line.389"></a>
+<span class="sourceLineNo">390</span><a name="line.390"></a>
+<span class="sourceLineNo">391</span>            boolean diff = false;<a name="line.391"></a>
+<span class="sourceLineNo">392</span><a name="line.392"></a>
+<span class="sourceLineNo">393</span>            // Compare numeric &amp; mapped fields<a name="line.393"></a>
+<span class="sourceLineNo">394</span>            for (String field : FIELD_MAP.keySet()) {<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                String oldVal = oldRow.getOrDefault(field, "");<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                String newVal = newRow.getOrDefault(field, "");<a name="line.396"></a>
+<span class="sourceLineNo">397</span><a name="line.397"></a>
+<span class="sourceLineNo">398</span>                boolean equal = DOUBLE_FIELDS.contains(field)<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                        ? compareDoubles(field, oldVal, newVal)<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                        : Objects.equals(oldVal, newVal);<a name="line.400"></a>
+<span class="sourceLineNo">401</span><a name="line.401"></a>
+<span class="sourceLineNo">402</span>                if (!equal) {<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                    diff = true;<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                    int prec = EFFECTIVE_PRECISION_MAP.getOrDefault(field, ROUNDING_MAP.getOrDefault(field, -1));<a name="line.404"></a>
+<span class="sourceLineNo">405</span><a name="line.405"></a>
+<span class="sourceLineNo">406</span>                    // Relative difference<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                    String relDiffStr = "";<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                    Double dx = parseDouble(oldVal);<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                    Double dy = parseDouble(newVal);<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                    if (dx != null &amp;&amp; dy != null &amp;&amp; Math.abs(dx) &gt; 1e-12) {<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                        double relDiff = Math.abs((dy - dx) / dx) * 100.0;<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                        relDiffStr = String.format(Locale.US, "%.2f", relDiff);<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                    }<a name="line.413"></a>
+<span class="sourceLineNo">414</span><a name="line.414"></a>
+<span class="sourceLineNo">415</span>                    reportRows.add(new String[]{<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                            oldRow.get("Recording Name"),<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                            oldRow.get("Square Nr"),<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                            field,<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                            oldVal,<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                            newVal,<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                            String.valueOf(prec),<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                            relDiffStr,<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                            "DIFFERENT"<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                    });<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                }<a name="line.425"></a>
+<span class="sourceLineNo">426</span>            }<a name="line.426"></a>
+<span class="sourceLineNo">427</span><a name="line.427"></a>
+<span class="sourceLineNo">428</span>            // Compare Selected flag<a name="line.428"></a>
+<span class="sourceLineNo">429</span>            String selOld = String.valueOf(isSelected(oldRow));<a name="line.429"></a>
+<span class="sourceLineNo">430</span>            String selNew = String.valueOf(isSelected(newRow));<a name="line.430"></a>
+<span class="sourceLineNo">431</span>            if (!selOld.equalsIgnoreCase(selNew)) {<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                diff = true;<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                selectedMismatches++;<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                reportRows.add(new String[]{<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                        oldRow.get("Recording Name"),<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                        oldRow.get("Square Nr"),<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                        "Selected",<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                        selOld,<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                        selNew,<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                        "",         // precision N/A<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                        "",         // relative diff N/A<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                        "DIFFERENT"<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                });<a name="line.443"></a>
+<span class="sourceLineNo">444</span>            }<a name="line.444"></a>
+<span class="sourceLineNo">445</span><a name="line.445"></a>
+<span class="sourceLineNo">446</span>            if (diff) mismatched++; else matched++;<a name="line.446"></a>
+<span class="sourceLineNo">447</span>        }<a name="line.447"></a>
+<span class="sourceLineNo">448</span><a name="line.448"></a>
+<span class="sourceLineNo">449</span>        // Extra rows in NEW<a name="line.449"></a>
+<span class="sourceLineNo">450</span>        Set&lt;String&gt; oldKeys = new HashSet&lt;&gt;();<a name="line.450"></a>
+<span class="sourceLineNo">451</span>        for (Map&lt;String, String&gt; o : oldNorm) oldKeys.add(compositeKey(o));<a name="line.451"></a>
+<span class="sourceLineNo">452</span>        for (Map&lt;String, String&gt; n : newNorm) {<a name="line.452"></a>
+<span class="sourceLineNo">453</span>            if (!oldKeys.contains(compositeKey(n))) {<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                reportRows.add(new String[]{<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                        n.get("Recording Name"), n.get("Square Nr"),<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                        "", "", "", "", "", "Extra in NEW"<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                });<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                extra++;<a name="line.458"></a>
+<span class="sourceLineNo">459</span>            }<a name="line.459"></a>
+<span class="sourceLineNo">460</span>        }<a name="line.460"></a>
+<span class="sourceLineNo">461</span><a name="line.461"></a>
+<span class="sourceLineNo">462</span>        // Sort report rows by key<a name="line.462"></a>
+<span class="sourceLineNo">463</span>        reportRows.sort(Comparator<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                                .comparing((String[] r) -&gt; r[0] == null ? "" : r[0])<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                                .thenComparing(r -&gt; {<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                                    try { return Integer.parseInt(r[1]); } catch (Exception e) { return 0; }<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                                }));<a name="line.467"></a>
+<span class="sourceLineNo">468</span><a name="line.468"></a>
+<span class="sourceLineNo">469</span>        // Write report<a name="line.469"></a>
+<span class="sourceLineNo">470</span>        try (PrintWriter report = new PrintWriter(reportFile.toFile())) {<a name="line.470"></a>
+<span class="sourceLineNo">471</span>            report.println("Recording Name,Square Nr,Field,Old Value,New Value,Precision Used,Relative Difference (%),Status");<a name="line.471"></a>
+<span class="sourceLineNo">472</span>            for (String[] row : reportRows) {<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                List&lt;String&gt; escaped = new ArrayList&lt;&gt;();<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                for (String v : row) escaped.add(quote(v));<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                report.println(String.join(",", escaped));<a name="line.475"></a>
+<span class="sourceLineNo">476</span>            }<a name="line.476"></a>
+<span class="sourceLineNo">477</span>            report.println();<a name="line.477"></a>
+<span class="sourceLineNo">478</span>            report.println("SUMMARY,,,,,,,");<a name="line.478"></a>
+<span class="sourceLineNo">479</span>            report.printf("Matched,%d,,,,,,%n", matched);<a name="line.479"></a>
+<span class="sourceLineNo">480</span>            report.printf("Mismatched,%d,,,,,,%n", mismatched);<a name="line.480"></a>
+<span class="sourceLineNo">481</span>            report.printf("Missing,%d,,,,,,%n", missing);<a name="line.481"></a>
+<span class="sourceLineNo">482</span>            report.printf("Extra,%d,,,,,,%n", extra);<a name="line.482"></a>
+<span class="sourceLineNo">483</span>            report.printf("Selected mismatches,%d,,,,,,%n", selectedMismatches);<a name="line.483"></a>
+<span class="sourceLineNo">484</span>            report.flush();<a name="line.484"></a>
+<span class="sourceLineNo">485</span>        }<a name="line.485"></a>
+<span class="sourceLineNo">486</span><a name="line.486"></a>
+<span class="sourceLineNo">487</span>        // Console summary<a name="line.487"></a>
+<span class="sourceLineNo">488</span>        System.out.printf("✅ Comparison complete. Report: %s%n", reportFile);<a name="line.488"></a>
+<span class="sourceLineNo">489</span>        System.out.printf("Matched: %d, Mismatched: %d, Missing: %d, Extra: %d, Selected mismatches: %d%n",<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                          matched, mismatched, missing, extra, selectedMismatches);<a name="line.490"></a>
+<span class="sourceLineNo">491</span>    }<a name="line.491"></a>
+<span class="sourceLineNo">492</span><a name="line.492"></a>
+<span class="sourceLineNo">493</span>    // ADD at the bottom of the file, before the final closing brace of the class:<a name="line.493"></a>
+<span class="sourceLineNo">494</span><a name="line.494"></a>
+<span class="sourceLineNo">495</span>    // ----------------------------------------------------------------------<a name="line.495"></a>
+<span class="sourceLineNo">496</span>    /**<a name="line.496"></a>
+<span class="sourceLineNo">497</span>     * Write an overview CSV listing for each square:<a name="line.497"></a>
+<span class="sourceLineNo">498</span>     * Selected (old/new), Tau, Density Ratio, and Variability,<a name="line.498"></a>
+<span class="sourceLineNo">499</span>     * plus combined selection state (Both/OnlyOld/OnlyNew).<a name="line.499"></a>
+<span class="sourceLineNo">500</span>     */<a name="line.500"></a>
+<span class="sourceLineNo">501</span>    private static void writeSelectedOverview(List&lt;Map&lt;String, String&gt;&gt; oldNorm,<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                                              List&lt;Map&lt;String, String&gt;&gt; newNorm) throws IOException {<a name="line.502"></a>
+<span class="sourceLineNo">503</span>        Path overviewFile = Paths.get("/Users/Hans/Desktop/Squares Validation - Selected Overview.csv");<a name="line.503"></a>
+<span class="sourceLineNo">504</span><a name="line.504"></a>
+<span class="sourceLineNo">505</span>        Comparator&lt;Map&lt;String, String&gt;&gt; sorter = Comparator<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                .comparing((Map&lt;String, String&gt; r) -&gt; r.get("Recording Name"))<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                .thenComparing(r -&gt; {<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                    String s = r.get("Square Nr");<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                    try { return Integer.parseInt(s); } catch (Exception e) { return 0; }<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                });<a name="line.510"></a>
+<span class="sourceLineNo">511</span>        oldNorm.sort(sorter);<a name="line.511"></a>
+<span class="sourceLineNo">512</span>        newNorm.sort(sorter);<a name="line.512"></a>
+<span class="sourceLineNo">513</span><a name="line.513"></a>
+<span class="sourceLineNo">514</span>        Map&lt;String, Map&lt;String, String&gt;&gt; newMap = new HashMap&lt;&gt;();<a name="line.514"></a>
+<span class="sourceLineNo">515</span>        for (Map&lt;String, String&gt; n : newNorm) newMap.put(compositeKey(n), n);<a name="line.515"></a>
+<span class="sourceLineNo">516</span><a name="line.516"></a>
+<span class="sourceLineNo">517</span>        Set&lt;String&gt; allKeys = new TreeSet&lt;&gt;();<a name="line.517"></a>
+<span class="sourceLineNo">518</span>        for (Map&lt;String, String&gt; o : oldNorm) allKeys.add(compositeKey(o));<a name="line.518"></a>
+<span class="sourceLineNo">519</span>        for (Map&lt;String, String&gt; n : newNorm) allKeys.add(compositeKey(n));<a name="line.519"></a>
+<span class="sourceLineNo">520</span><a name="line.520"></a>
+<span class="sourceLineNo">521</span>        try (PrintWriter pw = new PrintWriter(overviewFile.toFile())) {<a name="line.521"></a>
+<span class="sourceLineNo">522</span>            pw.println("Recording Name,Square Nr,"<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                               + "Selected (Old),Selected (New),Both Selected,Only Old Selected,Only New Selected,"<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                               + "Tau (Old),Tau (New),Density Ratio (Old),Density Ratio (New),Variability (Old),Variability (New)");<a name="line.524"></a>
+<span class="sourceLineNo">525</span><a name="line.525"></a>
+<span class="sourceLineNo">526</span>            for (String key : allKeys) {<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                String rec = key.split(" - ")[0];<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                String sq  = key.split(" - ").length &gt; 1 ? key.split(" - ")[1] : "";<a name="line.528"></a>
+<span class="sourceLineNo">529</span><a name="line.529"></a>
+<span class="sourceLineNo">530</span>                Map&lt;String, String&gt; oldRow = oldNorm.stream()<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                        .filter(r -&gt; compositeKey(r).equals(key)).findFirst().orElse(null);<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                Map&lt;String, String&gt; newRow = newMap.get(key);<a name="line.532"></a>
+<span class="sourceLineNo">533</span><a name="line.533"></a>
+<span class="sourceLineNo">534</span>                boolean selOldBool = oldRow != null &amp;&amp; isSelected(oldRow);<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                boolean selNewBool = newRow != null &amp;&amp; isSelected(newRow);<a name="line.535"></a>
+<span class="sourceLineNo">536</span><a name="line.536"></a>
+<span class="sourceLineNo">537</span>                String selOld = oldRow != null ? String.valueOf(selOldBool) : "";<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                String selNew = newRow != null ? String.valueOf(selNewBool) : "";<a name="line.538"></a>
+<span class="sourceLineNo">539</span><a name="line.539"></a>
+<span class="sourceLineNo">540</span>                // Combined flags<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                String bothSelected = (selOldBool &amp;&amp; selNewBool) ? "true" : "";<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                String onlyOldSelected = (selOldBool &amp;&amp; !selNewBool) ? "true" : "";<a name="line.542"></a>
+<span class="sourceLineNo">543</span>                String onlyNewSelected = (!selOldBool &amp;&amp; selNewBool) ? "true" : "";<a name="line.543"></a>
+<span class="sourceLineNo">544</span><a name="line.544"></a>
+<span class="sourceLineNo">545</span>                String tauOld = oldRow != null ? oldRow.getOrDefault("Tau", "") : "";<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                String tauNew = newRow != null ? newRow.getOrDefault("Tau", "") : "";<a name="line.546"></a>
+<span class="sourceLineNo">547</span><a name="line.547"></a>
+<span class="sourceLineNo">548</span>                String drOld = oldRow != null ? oldRow.getOrDefault("Density Ratio", "") : "";<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                String drNew = newRow != null ? newRow.getOrDefault("Density Ratio", "") : "";<a name="line.549"></a>
+<span class="sourceLineNo">550</span><a name="line.550"></a>
+<span class="sourceLineNo">551</span>                String varOld = oldRow != null ? oldRow.getOrDefault("Variability", "") : "";<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                String varNew = newRow != null ? newRow.getOrDefault("Variability", "") : "";<a name="line.552"></a>
+<span class="sourceLineNo">553</span><a name="line.553"></a>
+<span class="sourceLineNo">554</span>                pw.printf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s%n",<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                          quote(rec), quote(sq),<a name="line.555"></a>
+<span class="sourceLineNo">556</span>                          quote(selOld), quote(selNew),<a name="line.556"></a>
+<span class="sourceLineNo">557</span>                          quote(bothSelected), quote(onlyOldSelected), quote(onlyNewSelected),<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                          quote(tauOld), quote(tauNew),<a name="line.558"></a>
+<span class="sourceLineNo">559</span>                          quote(drOld), quote(drNew),<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                          quote(varOld), quote(varNew));<a name="line.560"></a>
+<span class="sourceLineNo">561</span>            }<a name="line.561"></a>
+<span class="sourceLineNo">562</span>        }<a name="line.562"></a>
+<span class="sourceLineNo">563</span><a name="line.563"></a>
+<span class="sourceLineNo">564</span>        System.out.printf("📊 Selected overview written: %s%n", overviewFile);<a name="line.564"></a>
+<span class="sourceLineNo">565</span>    }<a name="line.565"></a>
+<span class="sourceLineNo">566</span><a name="line.566"></a>
+<span class="sourceLineNo">567</span>    // ----------------------------------------------------------------------<a name="line.567"></a>
+<span class="sourceLineNo">568</span>    public static void main(String[] args) throws IOException {<a name="line.568"></a>
+<span class="sourceLineNo">569</span><a name="line.569"></a>
+<span class="sourceLineNo">570</span>        Path downloadsPath = Paths.get(System.getProperty("user.home"), "Downloads");<a name="line.570"></a>
+<span class="sourceLineNo">571</span>        Path validatePath  = downloadsPath.resolve("Validate").resolve("Squares");<a name="line.571"></a>
+<span class="sourceLineNo">572</span><a name="line.572"></a>
+<span class="sourceLineNo">573</span>        try {<a name="line.573"></a>
+<span class="sourceLineNo">574</span>            Files.createDirectories(validatePath);<a name="line.574"></a>
+<span class="sourceLineNo">575</span>        } catch (IOException ignored) {<a name="line.575"></a>
+<span class="sourceLineNo">576</span>        }<a name="line.576"></a>
+<span class="sourceLineNo">577</span><a name="line.577"></a>
+<span class="sourceLineNo">578</span>        Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/" + SQUARES_CSV);<a name="line.578"></a>
+<span class="sourceLineNo">579</span>        Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/" + SQUARES_CSV);<a name="line.579"></a>
+<span class="sourceLineNo">580</span><a name="line.580"></a>
+<span class="sourceLineNo">581</span>        List&lt;Map&lt;String, String&gt;&gt; oldRows = readCsv(oldCsv);<a name="line.581"></a>
+<span class="sourceLineNo">582</span>        List&lt;Map&lt;String, String&gt;&gt; newRows = readCsv(newCsv);<a name="line.582"></a>
+<span class="sourceLineNo">583</span><a name="line.583"></a>
+<span class="sourceLineNo">584</span>        List&lt;Map&lt;String, String&gt;&gt; normOld = normalizeOld(oldRows);<a name="line.584"></a>
+<span class="sourceLineNo">585</span>        List&lt;Map&lt;String, String&gt;&gt; normNew = normalizeNew(newRows);<a name="line.585"></a>
+<span class="sourceLineNo">586</span><a name="line.586"></a>
+<span class="sourceLineNo">587</span>        Path normOldPath = validatePath.resolve("Squares Validation - Old normalized.csv");<a name="line.587"></a>
+<span class="sourceLineNo">588</span>        Path normNewPath = validatePath.resolve("Squares Validation - New Normalized.csv");<a name="line.588"></a>
+<span class="sourceLineNo">589</span><a name="line.589"></a>
+<span class="sourceLineNo">590</span>        // Effective precision must be computed BEFORE writing normalized CSVs (so rounding matches)<a name="line.590"></a>
+<span class="sourceLineNo">591</span>        EFFECTIVE_PRECISION_MAP.putAll(computeEffectivePrecisions(normOld, normNew, DOUBLE_FIELDS));<a name="line.591"></a>
+<span class="sourceLineNo">592</span><a name="line.592"></a>
+<span class="sourceLineNo">593</span>        System.out.println("🔍 Effective precisions per field:");<a name="line.593"></a>
+<span class="sourceLineNo">594</span>        for (Map.Entry&lt;String, Integer&gt; e : EFFECTIVE_PRECISION_MAP.entrySet()) {<a name="line.594"></a>
+<span class="sourceLineNo">595</span>            System.out.printf("   %-35s → %d%n", e.getKey(), e.getValue());<a name="line.595"></a>
+<span class="sourceLineNo">596</span>        }<a name="line.596"></a>
+<span class="sourceLineNo">597</span><a name="line.597"></a>
+<span class="sourceLineNo">598</span>        writeCsv(normOld, normOldPath);<a name="line.598"></a>
+<span class="sourceLineNo">599</span>        writeCsv(normNew, normNewPath);<a name="line.599"></a>
+<span class="sourceLineNo">600</span><a name="line.600"></a>
+<span class="sourceLineNo">601</span>        System.out.println("🧩 Normalized files written:");<a name="line.601"></a>
+<span class="sourceLineNo">602</span>        System.out.println("   - " + normOldPath);<a name="line.602"></a>
+<span class="sourceLineNo">603</span>        System.out.println("   - " + normNewPath);<a name="line.603"></a>
+<span class="sourceLineNo">604</span><a name="line.604"></a>
+<span class="sourceLineNo">605</span>        compare(normOld, normNew);<a name="line.605"></a>
+<span class="sourceLineNo">606</span>        writeSelectedOverview(normOld, normNew);<a name="line.606"></a>
+<span class="sourceLineNo">607</span>    }<a name="line.607"></a>
+<span class="sourceLineNo">608</span><a name="line.608"></a>
+<span class="sourceLineNo">609</span>}<a name="line.609"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

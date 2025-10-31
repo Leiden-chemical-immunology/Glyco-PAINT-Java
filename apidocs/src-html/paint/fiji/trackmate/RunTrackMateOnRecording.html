@@ -1,0 +1,473 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/******************************************************************************<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  Class:        RunTrackMateOnRecording.java<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  Package:      paint.fiji.trackmate<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *  PURPOSE:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *    Executes the TrackMate tracking pipeline for a single microscopy recording.<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *    Handles image loading, brightfield snapshot generation, TrackMate<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *    configuration setup, execution, visualization, and CSV result export.<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  DESCRIPTION:<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    • Loads the ND2 image and optional brightfield reference.<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    • Configures and runs TrackMate in deterministic, headless mode.<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *    • Applies spot and track filtering based on configuration parameters.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *    • Exports per-recording images and tracking data to the experiment directory.<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *    • Supports cancellation and safe cleanup of ImagePlus instances.<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *  RESPONSIBILITIES:<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *    • Manage end-to-end TrackMate processing for a single recording.<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *    • Integrate Paint configuration and runtime parameters.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *    • Handle user cancellation gracefully during processing.<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *    • Collect and summarize analysis results in {@link TrackMateResults}.<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *  USAGE EXAMPLE:<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *    TrackMateResults result = RunTrackMateOnRecording.runTrackMateOnRecording(<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *        experimentPath,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *        imagesPath,<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *        trackMateConfig,<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *        threshold,<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *        experimentInfo,<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *        dialog);<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *  DEPENDENCIES:<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *    – fiji.plugin.trackmate.*<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *    – paint.shared.config.TrackMateConfig<a name="line.34"></a>
+<span class="sourceLineNo">035</span> *    – paint.shared.objects.ExperimentInfo<a name="line.35"></a>
+<span class="sourceLineNo">036</span> *    – paint.shared.dialogs.ProjectDialog<a name="line.36"></a>
+<span class="sourceLineNo">037</span> *    – paint.shared.utils.PaintLogger<a name="line.37"></a>
+<span class="sourceLineNo">038</span> *    – paint.fiji.tracks.TrackCsvWriter<a name="line.38"></a>
+<span class="sourceLineNo">039</span> *<a name="line.39"></a>
+<span class="sourceLineNo">040</span> *  AUTHOR:<a name="line.40"></a>
+<span class="sourceLineNo">041</span> *    Hans Bakker (jjabakker)<a name="line.41"></a>
+<span class="sourceLineNo">042</span> *<a name="line.42"></a>
+<span class="sourceLineNo">043</span> *  UPDATED:<a name="line.43"></a>
+<span class="sourceLineNo">044</span> *    2025-10-28<a name="line.44"></a>
+<span class="sourceLineNo">045</span> *<a name="line.45"></a>
+<span class="sourceLineNo">046</span> *  COPYRIGHT:<a name="line.46"></a>
+<span class="sourceLineNo">047</span> *    © 2025 Hans Bakker. All rights reserved.<a name="line.47"></a>
+<span class="sourceLineNo">048</span> ******************************************************************************/<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span>package paint.fiji.trackmate;<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>import fiji.plugin.trackmate.*;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import fiji.plugin.trackmate.action.CaptureOverlayAction;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import fiji.plugin.trackmate.detection.LogDetectorFactory;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import fiji.plugin.trackmate.features.FeatureFilter;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import fiji.plugin.trackmate.gui.displaysettings.DisplaySettings;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import fiji.plugin.trackmate.gui.displaysettings.DisplaySettingsIO;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import fiji.plugin.trackmate.tracking.jaqaman.SparseLAPTrackerFactory;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>import fiji.plugin.trackmate.visualization.hyperstack.HyperStackDisplayer;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>import ij.IJ;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>import ij.ImagePlus;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>import ij.io.FileSaver;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>import loci.common.DebugTools;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>import paint.fiji.tracks.TrackCsvWriter;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>import paint.shared.config.TrackMateConfig;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>import paint.shared.dialogs.ProjectDialog;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>import paint.shared.objects.ExperimentInfo;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>import paint.shared.utils.PaintLogger;<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>import java.io.File;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>import java.nio.file.Files;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>import java.nio.file.Path;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>import java.time.Duration;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>import java.time.LocalDateTime;<a name="line.74"></a>
+<span class="sourceLineNo">075</span>import java.util.Arrays;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>import java.util.List;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>import java.util.Locale;<a name="line.77"></a>
+<span class="sourceLineNo">078</span><a name="line.78"></a>
+<span class="sourceLineNo">079</span>import static paint.shared.config.PaintConfig.getBoolean;<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>/**<a name="line.81"></a>
+<span class="sourceLineNo">082</span> * Provides functionality to run TrackMate analysis for a single microscopy<a name="line.82"></a>
+<span class="sourceLineNo">083</span> * recording. Handles setup, detection, tracking, visualization, and export.<a name="line.83"></a>
+<span class="sourceLineNo">084</span> * &lt;p&gt;<a name="line.84"></a>
+<span class="sourceLineNo">085</span> * This class is typically invoked by {@link RunTrackMateOnExperiment} as part<a name="line.85"></a>
+<span class="sourceLineNo">086</span> * of batch processing within a Paint project.<a name="line.86"></a>
+<span class="sourceLineNo">087</span> * &lt;/p&gt;<a name="line.87"></a>
+<span class="sourceLineNo">088</span> */<a name="line.88"></a>
+<span class="sourceLineNo">089</span>public class RunTrackMateOnRecording extends TrackMateHeadless {<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>    /**<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     * Executes the TrackMate pipeline on a given recording.<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     * Loads the ND2 image, applies analysis parameters, and writes results.<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     *<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     * @param experimentPath       directory where results will be written<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     * @param imagesPath           directory containing the ND2 image<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     * @param trackMateConfig      configuration object with TrackMate parameters<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     * @param threshold            threshold for spot detection<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     * @param experimentInfoRecord metadata describing this recording<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     * @param dialog               optional dialog for user cancellation<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     * @return {@link TrackMateResults} containing analysis statistics,<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     *         or a cancellation result if aborted<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     */<a name="line.103"></a>
+<span class="sourceLineNo">104</span>    public static TrackMateResults runTrackMateOnRecording(Path experimentPath,<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                                                           Path imagesPath,<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                                                           TrackMateConfig trackMateConfig,<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                                                           double threshold,<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                                                           ExperimentInfo experimentInfoRecord,<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                                                           ProjectDialog dialog) {<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>        final boolean debugFlag = getBoolean("Debug", "Debug RunTrackMateOnRecording", false);<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        LocalDateTime start = LocalDateTime.now();<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        DebugTools.setRootLevel("OFF");<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>        ImagePlus imp            = null;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        ImagePlus impBrightfield = null;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        ImagePlus capture        = null;<a name="line.117"></a>
+<span class="sourceLineNo">118</span><a name="line.118"></a>
+<span class="sourceLineNo">119</span>        try {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            // -----------------------------------------------------------------<a name="line.120"></a>
+<span class="sourceLineNo">121</span>            // Step 1 – Load ND2 image<a name="line.121"></a>
+<span class="sourceLineNo">122</span>            // -----------------------------------------------------------------<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            PaintLogger.raw("                       TrackMate - Image Loading:   ");<a name="line.123"></a>
+<span class="sourceLineNo">124</span>            if (isCancelled(Thread.currentThread(), dialog)) {<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                return cancelEarly(imp, impBrightfield);<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            }<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span>            File nd2File = new File(imagesPath.toFile(), experimentInfoRecord.getRecordingName() + ".nd2");<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            if (!nd2File.exists()) {<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                if (!isCancelled(Thread.currentThread(), dialog)) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                    PaintLogger.errorf("Could not open image file: %s", nd2File.getAbsolutePath());<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                }<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                return cancelEarly(imp, impBrightfield);<a name="line.133"></a>
+<span class="sourceLineNo">134</span>            }<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>            try {<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                imp = IJ.openImage(nd2File.getAbsolutePath());<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            } catch (Exception e) {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                if (!isCancelled(Thread.currentThread(), dialog)) {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                    PaintLogger.errorf("Could not load image file: %s", nd2File.getAbsolutePath());<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                }<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                return cancelEarly(imp, impBrightfield);<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            }<a name="line.143"></a>
+<span class="sourceLineNo">144</span><a name="line.144"></a>
+<span class="sourceLineNo">145</span>            if (isCancelled(Thread.currentThread(), dialog)) {<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                return cancelEarly(imp, impBrightfield);<a name="line.146"></a>
+<span class="sourceLineNo">147</span>            }<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>            if (imp == null) {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                if (!isCancelled(Thread.currentThread(), dialog)) {<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                    PaintLogger.errorf("Unsupported format or file not found: %s", nd2File);<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                }<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                return cancelEarly(imp, impBrightfield);<a name="line.153"></a>
+<span class="sourceLineNo">154</span>            }<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>            imp.show();<a name="line.156"></a>
+<span class="sourceLineNo">157</span>            IJ.wait(100);<a name="line.157"></a>
+<span class="sourceLineNo">158</span><a name="line.158"></a>
+<span class="sourceLineNo">159</span>            IJ.run(imp, "Enhance Contrast", "saturated=0.35");<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            IJ.run("Grays");<a name="line.160"></a>
+<span class="sourceLineNo">161</span><a name="line.161"></a>
+<span class="sourceLineNo">162</span>            // -----------------------------------------------------------------<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            // Step 2 – Save Brightfield snapshot<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            // -----------------------------------------------------------------<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            Path jpgPath = experimentPath.resolve("Brightfield Images")<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                    .resolve(experimentInfoRecord.getRecordingName() + ".jpg");<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            if (Files.notExists(jpgPath.getParent())) {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                Files.createDirectories(jpgPath.getParent());<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            }<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            if (isCancelled(Thread.currentThread(), dialog)) {<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                return cancelEarly(imp, impBrightfield);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>            }<a name="line.172"></a>
+<span class="sourceLineNo">173</span><a name="line.173"></a>
+<span class="sourceLineNo">174</span>            Path brightFieldPath = null;<a name="line.174"></a>
+<span class="sourceLineNo">175</span>            String baseName = experimentInfoRecord.getRecordingName();<a name="line.175"></a>
+<span class="sourceLineNo">176</span><a name="line.176"></a>
+<span class="sourceLineNo">177</span>            List&lt;String&gt; candidates = Arrays.asList(<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                    baseName + "-BF.nd2",<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                    baseName + "-BF1.nd2",<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                    baseName + "-BF2.nd2");<a name="line.180"></a>
+<span class="sourceLineNo">181</span>            try {<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                brightFieldPath = candidates.stream()<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                        .map(imagesPath::resolve)<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                        .filter(Files::exists)<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                        .findFirst()<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                        .orElse(null);<a name="line.186"></a>
+<span class="sourceLineNo">187</span>            } catch (Exception e) {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                PaintLogger.errorf("Could not locate brightfield file: %s", candidates);<a name="line.188"></a>
+<span class="sourceLineNo">189</span>            }<a name="line.189"></a>
+<span class="sourceLineNo">190</span><a name="line.190"></a>
+<span class="sourceLineNo">191</span>            if (brightFieldPath == null || Files.notExists(brightFieldPath)) {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                PaintLogger.warnf("      Could not open brightfield file: %s",<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                                  brightFieldPath == null ? "none found" : brightFieldPath.toString());<a name="line.193"></a>
+<span class="sourceLineNo">194</span>            } else {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                try {<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                    impBrightfield = IJ.openImage(brightFieldPath.toString());<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                    IJ.run(impBrightfield, "Enhance Contrast", "saturated=0.35");<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                    IJ.saveAs(impBrightfield, "Jpeg", jpgPath.toString());<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                } catch (Exception e) {<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                    PaintLogger.errorf("Error handling brightfield file: %s", e.getMessage());<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                }<a name="line.201"></a>
+<span class="sourceLineNo">202</span>            }<a name="line.202"></a>
+<span class="sourceLineNo">203</span><a name="line.203"></a>
+<span class="sourceLineNo">204</span>            // -----------------------------------------------------------------<a name="line.204"></a>
+<span class="sourceLineNo">205</span>            // Step 3 – Configure TrackMate<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            // -----------------------------------------------------------------<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            Model model = new Model();<a name="line.207"></a>
+<span class="sourceLineNo">208</span>            model.setLogger(Logger.VOID_LOGGER);<a name="line.208"></a>
+<span class="sourceLineNo">209</span><a name="line.209"></a>
+<span class="sourceLineNo">210</span>            Settings settings = new Settings(imp);<a name="line.210"></a>
+<span class="sourceLineNo">211</span>            // Detector configuration<a name="line.211"></a>
+<span class="sourceLineNo">212</span>            settings.detectorFactory   = new LogDetectorFactory();<a name="line.212"></a>
+<span class="sourceLineNo">213</span>            settings.detectorSettings  = settings.detectorFactory.getDefaultSettings();<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            settings.detectorSettings.put("TARGET_CHANNEL",           trackMateConfig.getTargetChannel());<a name="line.214"></a>
+<span class="sourceLineNo">215</span>            settings.detectorSettings.put("RADIUS",                   trackMateConfig.getRadius());<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            settings.detectorSettings.put("DO_SUBPIXEL_LOCALIZATION", trackMateConfig.isDoSubpixelLocalization());<a name="line.216"></a>
+<span class="sourceLineNo">217</span>            settings.detectorSettings.put("THRESHOLD",                threshold);<a name="line.217"></a>
+<span class="sourceLineNo">218</span>            settings.detectorSettings.put("DO_MEDIAN_FILTERING",      trackMateConfig.isMedianFiltering());<a name="line.218"></a>
+<span class="sourceLineNo">219</span><a name="line.219"></a>
+<span class="sourceLineNo">220</span>            // Tracker configuration<a name="line.220"></a>
+<span class="sourceLineNo">221</span>            settings.trackerFactory    = new SparseLAPTrackerFactory();<a name="line.221"></a>
+<span class="sourceLineNo">222</span>            settings.trackerSettings   = settings.trackerFactory.getDefaultSettings();<a name="line.222"></a>
+<span class="sourceLineNo">223</span>            settings.trackerSettings.put("LINKING_MAX_DISTANCE",            trackMateConfig.getLinkingMaxDistance());<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            settings.trackerSettings.put("ALTERNATIVE_LINKING_COST_FACTOR", trackMateConfig.getAlternativeLinkingCostFactor());<a name="line.224"></a>
+<span class="sourceLineNo">225</span>            settings.trackerSettings.put("ALLOW_GAP_CLOSING",               trackMateConfig.isAllowGapClosing());<a name="line.225"></a>
+<span class="sourceLineNo">226</span>            settings.trackerSettings.put("GAP_CLOSING_MAX_DISTANCE",        trackMateConfig.getGapClosingMaxDistance());<a name="line.226"></a>
+<span class="sourceLineNo">227</span>            settings.trackerSettings.put("MAX_FRAME_GAP",                   trackMateConfig.getMaxFrameGap());<a name="line.227"></a>
+<span class="sourceLineNo">228</span>            settings.trackerSettings.put("ALLOW_TRACK_SPLITTING",           trackMateConfig.isAllowTrackSplitting());<a name="line.228"></a>
+<span class="sourceLineNo">229</span>            settings.trackerSettings.put("SPLITTING_MAX_DISTANCE",          trackMateConfig.getSplittingMaxDistance());<a name="line.229"></a>
+<span class="sourceLineNo">230</span>            settings.trackerSettings.put("ALLOW_TRACK_MERGING",             trackMateConfig.isAllowTrackMerging());<a name="line.230"></a>
+<span class="sourceLineNo">231</span>            settings.trackerSettings.put("MERGING_MAX_DISTANCE",            trackMateConfig.getMergingMaxDistance());<a name="line.231"></a>
+<span class="sourceLineNo">232</span><a name="line.232"></a>
+<span class="sourceLineNo">233</span>            // Deterministic execution<a name="line.233"></a>
+<span class="sourceLineNo">234</span>            Locale.setDefault(Locale.US);<a name="line.234"></a>
+<span class="sourceLineNo">235</span>            System.setProperty("user.language", "en");<a name="line.235"></a>
+<span class="sourceLineNo">236</span>            System.setProperty("user.country", "US");<a name="line.236"></a>
+<span class="sourceLineNo">237</span>            System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "1");  // Disable JVM-level parallelism (limits common pool threads to 1)<a name="line.237"></a>
+<span class="sourceLineNo">238</span>            System.setProperty("trackmate.deterministic", "true");                            // Request deterministic behavior from TrackMate if supportedSo where I<a name="line.238"></a>
+<span class="sourceLineNo">239</span><a name="line.239"></a>
+<span class="sourceLineNo">240</span>            settings.addSpotFilter(new FeatureFilter("QUALITY", 0, true));<a name="line.240"></a>
+<span class="sourceLineNo">241</span>            settings.addAllAnalyzers();<a name="line.241"></a>
+<span class="sourceLineNo">242</span>            settings.addTrackFilter(new FeatureFilter("NUMBER_SPOTS", trackMateConfig.getMinNumberOfSpotsInTrack(), true));<a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span>            // -----------------------------------------------------------------<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            // Step 4 – Execute TrackMate<a name="line.245"></a>
+<span class="sourceLineNo">246</span>            // -----------------------------------------------------------------<a name="line.246"></a>
+<span class="sourceLineNo">247</span><a name="line.247"></a>
+<span class="sourceLineNo">248</span>            if (isCancelled(Thread.currentThread(), dialog)) {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                return cancelEarly(imp, impBrightfield);<a name="line.249"></a>
+<span class="sourceLineNo">250</span>            }<a name="line.250"></a>
+<span class="sourceLineNo">251</span><a name="line.251"></a>
+<span class="sourceLineNo">252</span>            TrackMate trackmate = new TrackMate(model, settings);<a name="line.252"></a>
+<span class="sourceLineNo">253</span>            if (!trackmate.checkInput()) {<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                PaintLogger.errorf("TrackMate input check failed: %s", trackmate.getErrorMessage());<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                return cancelEarly(imp, impBrightfield);<a name="line.255"></a>
+<span class="sourceLineNo">256</span>            }<a name="line.256"></a>
+<span class="sourceLineNo">257</span><a name="line.257"></a>
+<span class="sourceLineNo">258</span>            PaintLogger.raw("\n                       TrackMate - spot detection:  ");<a name="line.258"></a>
+<span class="sourceLineNo">259</span>            try {<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                if (!trackmate.execDetection()) {<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                    PaintLogger.errorf("TrackMate - execDetection failed: %s", trackmate.getErrorMessage());<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                    return cancelEarly(imp, impBrightfield);<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                }<a name="line.263"></a>
+<span class="sourceLineNo">264</span>            } catch (Exception e) {<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                PaintLogger.errorf("Unexpected error during detection: %s", e.getMessage());<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                return cancelEarly(imp, impBrightfield);<a name="line.266"></a>
+<span class="sourceLineNo">267</span>            }<a name="line.267"></a>
+<span class="sourceLineNo">268</span><a name="line.268"></a>
+<span class="sourceLineNo">269</span>            int numberOfSpots = model.getSpots().getNSpots(false);<a name="line.269"></a>
+<span class="sourceLineNo">270</span>            if (numberOfSpots &gt; trackMateConfig.getMaxNumberOfSpotsInImage()) {<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                PaintLogger.warnf("   TrackMate - Too many spots detected (%d). Limit is %d.",<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                                  numberOfSpots, trackMateConfig.getMaxNumberOfSpotsInImage());<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                return cancelEarly(imp, impBrightfield);<a name="line.273"></a>
+<span class="sourceLineNo">274</span>            } else {<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                String numberOfSpotsString = " (" + numberOfSpots + " spots detected).";<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                PaintLogger.raw(numberOfSpotsString);<a name="line.276"></a>
+<span class="sourceLineNo">277</span>            }<a name="line.277"></a>
+<span class="sourceLineNo">278</span><a name="line.278"></a>
+<span class="sourceLineNo">279</span>            if (isCancelled(Thread.currentThread(), dialog)) {<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                return cancelEarly(imp, impBrightfield);<a name="line.280"></a>
+<span class="sourceLineNo">281</span>            }<a name="line.281"></a>
+<span class="sourceLineNo">282</span><a name="line.282"></a>
+<span class="sourceLineNo">283</span>            PaintLogger.raw("\n                       TrackMate - track detection: ");<a name="line.283"></a>
+<span class="sourceLineNo">284</span>            try {<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                if (!trackmate.process()) {<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                    PaintLogger.errorf("TrackMate process failed: %s", trackmate.getErrorMessage());<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                    return cancelEarly(imp, impBrightfield);<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                }<a name="line.288"></a>
+<span class="sourceLineNo">289</span>            } catch (Exception e) {<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                PaintLogger.errorf("Unexpected error during TrackMate process: %s", e.getMessage());<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                return cancelEarly(imp, impBrightfield);<a name="line.291"></a>
+<span class="sourceLineNo">292</span>            }<a name="line.292"></a>
+<span class="sourceLineNo">293</span><a name="line.293"></a>
+<span class="sourceLineNo">294</span>            // -----------------------------------------------------------------<a name="line.294"></a>
+<span class="sourceLineNo">295</span>            // Step 5 – Visualization<a name="line.295"></a>
+<span class="sourceLineNo">296</span>            // -----------------------------------------------------------------<a name="line.296"></a>
+<span class="sourceLineNo">297</span>            if (isCancelled(Thread.currentThread(), dialog)) {<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                return cancelEarly(imp, impBrightfield);<a name="line.298"></a>
+<span class="sourceLineNo">299</span>            }<a name="line.299"></a>
+<span class="sourceLineNo">300</span><a name="line.300"></a>
+<span class="sourceLineNo">301</span>            final SelectionModel  selectionModel = new SelectionModel(model);<a name="line.301"></a>
+<span class="sourceLineNo">302</span>            final DisplaySettings ds             = DisplaySettingsIO.readUserDefault();<a name="line.302"></a>
+<span class="sourceLineNo">303</span>            ds.setSpotVisible(false);<a name="line.303"></a>
+<span class="sourceLineNo">304</span>            ds.setTrackColorBy(DisplaySettings.TrackMateObject.TRACKS,<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                               trackMateConfig.getTrackColoring());<a name="line.305"></a>
+<span class="sourceLineNo">306</span>            final HyperStackDisplayer displayer = new HyperStackDisplayer(model, selectionModel, imp, ds);<a name="line.306"></a>
+<span class="sourceLineNo">307</span>            displayer.render();<a name="line.307"></a>
+<span class="sourceLineNo">308</span>            displayer.refresh();<a name="line.308"></a>
+<span class="sourceLineNo">309</span><a name="line.309"></a>
+<span class="sourceLineNo">310</span>            capture = CaptureOverlayAction.capture(imp, -1, 1, null);<a name="line.310"></a>
+<span class="sourceLineNo">311</span>            Path imagePath = experimentPath.resolve("TrackMate Images")<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                    .resolve(experimentInfoRecord.getRecordingName() + ".jpg");<a name="line.312"></a>
+<span class="sourceLineNo">313</span>            if (capture != null) {<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                if (!new FileSaver(capture).saveAsTiff(String.valueOf(imagePath))) {<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                    PaintLogger.errorf("Failed to save TIFF to: %s", imagePath);<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                }<a name="line.316"></a>
+<span class="sourceLineNo">317</span>            }<a name="line.317"></a>
+<span class="sourceLineNo">318</span>            IJ.wait(2000);<a name="line.318"></a>
+<span class="sourceLineNo">319</span><a name="line.319"></a>
+<span class="sourceLineNo">320</span>            // -----------------------------------------------------------------<a name="line.320"></a>
+<span class="sourceLineNo">321</span>            // Step 6 – Write tracks CSV<a name="line.321"></a>
+<span class="sourceLineNo">322</span>            // -----------------------------------------------------------------<a name="line.322"></a>
+<span class="sourceLineNo">323</span>            String tracksName = experimentInfoRecord.getRecordingName() + "-tracks.csv";<a name="line.323"></a>
+<span class="sourceLineNo">324</span>            Path tracksPath = experimentPath.resolve(tracksName);<a name="line.324"></a>
+<span class="sourceLineNo">325</span>            int totalSpotsInAllTracks = 0;<a name="line.325"></a>
+<span class="sourceLineNo">326</span><a name="line.326"></a>
+<span class="sourceLineNo">327</span>            try {<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                totalSpotsInAllTracks = TrackCsvWriter.writeTracksCsv(<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                        trackmate,<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                        experimentInfoRecord.getExperimentName(),<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                        experimentInfoRecord.getRecordingName(),<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                        tracksPath.toFile(),<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                        true);<a name="line.333"></a>
+<span class="sourceLineNo">334</span>            } catch (Exception e) {<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                PaintLogger.errorf("Failed to write tracks to '%s'", tracksPath);<a name="line.335"></a>
+<span class="sourceLineNo">336</span>            }<a name="line.336"></a>
+<span class="sourceLineNo">337</span><a name="line.337"></a>
+<span class="sourceLineNo">338</span>            // -----------------------------------------------------------------<a name="line.338"></a>
+<span class="sourceLineNo">339</span>            // Step 7 – Summarize and return results<a name="line.339"></a>
+<span class="sourceLineNo">340</span>            // -----------------------------------------------------------------<a name="line.340"></a>
+<span class="sourceLineNo">341</span>            int numberOfSpotsTotal     = model.getSpots().getNSpots(true);<a name="line.341"></a>
+<span class="sourceLineNo">342</span>            int numberOfTracks         = model.getTrackModel().nTracks(false);<a name="line.342"></a>
+<span class="sourceLineNo">343</span>            int numberOfFilteredTracks = model.getTrackModel().nTracks(true);<a name="line.343"></a>
+<span class="sourceLineNo">344</span>            int numberOfFrames         = imp.getNFrames();<a name="line.344"></a>
+<span class="sourceLineNo">345</span><a name="line.345"></a>
+<span class="sourceLineNo">346</span>            Duration duration = Duration.between(start, LocalDateTime.now());<a name="line.346"></a>
+<span class="sourceLineNo">347</span><a name="line.347"></a>
+<span class="sourceLineNo">348</span>            closeImages(imp, impBrightfield, capture);<a name="line.348"></a>
+<span class="sourceLineNo">349</span><a name="line.349"></a>
+<span class="sourceLineNo">350</span>            return new TrackMateResults(true,<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                                        true,<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                                        numberOfSpotsTotal,<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                                        numberOfTracks,<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                                        numberOfFilteredTracks,<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                                        numberOfFrames,<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                                        duration,<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                                        totalSpotsInAllTracks);<a name="line.357"></a>
+<span class="sourceLineNo">358</span><a name="line.358"></a>
+<span class="sourceLineNo">359</span>        } catch (Exception e) {<a name="line.359"></a>
+<span class="sourceLineNo">360</span>            PaintLogger.errorf("Exception during TrackMate processing: %s", e.getMessage());<a name="line.360"></a>
+<span class="sourceLineNo">361</span>            return cancelEarly(imp, impBrightfield);<a name="line.361"></a>
+<span class="sourceLineNo">362</span>        } finally {<a name="line.362"></a>
+<span class="sourceLineNo">363</span>            closeImages(imp, impBrightfield, capture);<a name="line.363"></a>
+<span class="sourceLineNo">364</span>        }<a name="line.364"></a>
+<span class="sourceLineNo">365</span>    }<a name="line.365"></a>
+<span class="sourceLineNo">366</span><a name="line.366"></a>
+<span class="sourceLineNo">367</span>    // -------------------------------------------------------------------------<a name="line.367"></a>
+<span class="sourceLineNo">368</span>    // Utility methods<a name="line.368"></a>
+<span class="sourceLineNo">369</span>    // -------------------------------------------------------------------------<a name="line.369"></a>
+<span class="sourceLineNo">370</span><a name="line.370"></a>
+<span class="sourceLineNo">371</span>    /**<a name="line.371"></a>
+<span class="sourceLineNo">372</span>     * Checks for thread interruption or user cancellation.<a name="line.372"></a>
+<span class="sourceLineNo">373</span>     */<a name="line.373"></a>
+<span class="sourceLineNo">374</span>    private static boolean isCancelled(Thread t, ProjectDialog dialog) {<a name="line.374"></a>
+<span class="sourceLineNo">375</span>        return t.isInterrupted() || (dialog != null &amp;&amp; dialog.isCancelled());<a name="line.375"></a>
+<span class="sourceLineNo">376</span>    }<a name="line.376"></a>
+<span class="sourceLineNo">377</span><a name="line.377"></a>
+<span class="sourceLineNo">378</span>    /**<a name="line.378"></a>
+<span class="sourceLineNo">379</span>     * Safely closes visible images.<a name="line.379"></a>
+<span class="sourceLineNo">380</span>     */<a name="line.380"></a>
+<span class="sourceLineNo">381</span>    private static void closeImages(ImagePlus... images) {<a name="line.381"></a>
+<span class="sourceLineNo">382</span>        for (ImagePlus img : images) {<a name="line.382"></a>
+<span class="sourceLineNo">383</span>            try {<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                if (img != null &amp;&amp; img.isVisible()) {<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                    img.close();<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                }<a name="line.386"></a>
+<span class="sourceLineNo">387</span>            } catch (Exception e) {<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                PaintLogger.warnf("Error closing image: %s", e.getMessage());<a name="line.388"></a>
+<span class="sourceLineNo">389</span>            }<a name="line.389"></a>
+<span class="sourceLineNo">390</span>        }<a name="line.390"></a>
+<span class="sourceLineNo">391</span>    }<a name="line.391"></a>
+<span class="sourceLineNo">392</span><a name="line.392"></a>
+<span class="sourceLineNo">393</span>    /**<a name="line.393"></a>
+<span class="sourceLineNo">394</span>     * Cancels processing early and closes images.<a name="line.394"></a>
+<span class="sourceLineNo">395</span>     */<a name="line.395"></a>
+<span class="sourceLineNo">396</span>    private static TrackMateResults cancelEarly(ImagePlus... images) {<a name="line.396"></a>
+<span class="sourceLineNo">397</span>        closeImages(images);<a name="line.397"></a>
+<span class="sourceLineNo">398</span>        PaintLogger.warnf("   Recording cancelled.");<a name="line.398"></a>
+<span class="sourceLineNo">399</span>        return new TrackMateResults(false);<a name="line.399"></a>
+<span class="sourceLineNo">400</span>    }<a name="line.400"></a>
+<span class="sourceLineNo">401</span>}<a name="line.401"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

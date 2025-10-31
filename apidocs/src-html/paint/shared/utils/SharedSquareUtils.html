@@ -1,0 +1,356 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/******************************************************************************<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  Class:        SharedSquareUtils.java<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  Package:      paint.shared.utils<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *  PURPOSE:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *    Provides common utilities for operations on square regions within<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *    recordings, including filtering track data to a given spatial square<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *    and applying visibility-based selection criteria across squares.<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  DESCRIPTION:<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    • filterTracksInSquare: Restricts a table of track coordinates to those<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *      that fall within the bounds of a specified square (taking into account<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *      boundary inclusivity for last row/column).<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *    • applyVisibilityFilter: Filters a list of squares in a recording based<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *      on numeric thresholds (density ratio, variability, R²) and optionally<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *      applies neighbour-based retention logic (Free, Relaxed, Strict).<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *  RESPONSIBILITIES:<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *    • Provide static methods for spatial filtering of track data.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *    • Apply selection and neighbour-mode logic to visible squares.<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *  USAGE EXAMPLE:<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *    Table filtered = SharedSquareUtils.filterTracksInSquare(tracksTable, square, lastRowCol);<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *    SharedSquareUtils.applyVisibilityFilter(recording, minDensityRatio, maxVariability, minRSq, neighbourMode);<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *  DEPENDENCIES:<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *    – paint.shared.objects.Recording<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *    – paint.shared.objects.Square<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *    – tech.tablesaw.api.Table, DoubleColumn<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *    – tech.tablesaw.selection.Selection<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *    – java.util.List, java.util.Set, java.util.HashSet<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *  AUTHOR:<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *    Hans Bakker<a name="line.34"></a>
+<span class="sourceLineNo">035</span> *<a name="line.35"></a>
+<span class="sourceLineNo">036</span> *  MODULE:<a name="line.36"></a>
+<span class="sourceLineNo">037</span> *    paint-shared-utils<a name="line.37"></a>
+<span class="sourceLineNo">038</span> *<a name="line.38"></a>
+<span class="sourceLineNo">039</span> *  UPDATED:<a name="line.39"></a>
+<span class="sourceLineNo">040</span> *    2025-10-28<a name="line.40"></a>
+<span class="sourceLineNo">041</span> *<a name="line.41"></a>
+<span class="sourceLineNo">042</span> *  COPYRIGHT:<a name="line.42"></a>
+<span class="sourceLineNo">043</span> *    © 2025 Hans Bakker. All rights reserved.<a name="line.43"></a>
+<span class="sourceLineNo">044</span> ******************************************************************************/<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>package paint.shared.utils;<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>import paint.shared.objects.Recording;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import paint.shared.objects.Square;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import paint.shared.objects.Track;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import tech.tablesaw.api.DoubleColumn;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import tech.tablesaw.api.Table;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import tech.tablesaw.selection.Selection;<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span>import java.util.ArrayList;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import java.util.HashSet;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import java.util.List;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import java.util.Set;<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>/**<a name="line.60"></a>
+<span class="sourceLineNo">061</span> * Utility class providing methods for filtering and evaluating square regions<a name="line.61"></a>
+<span class="sourceLineNo">062</span> * in PAINT recordings. Supports both spatial filtering of track coordinates<a name="line.62"></a>
+<span class="sourceLineNo">063</span> * and multi-criteria visibility selection of squares.<a name="line.63"></a>
+<span class="sourceLineNo">064</span> */<a name="line.64"></a>
+<span class="sourceLineNo">065</span>public final class SharedSquareUtils {<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>    /**<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     * Private constructor to prevent instantiation.<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     */<a name="line.69"></a>
+<span class="sourceLineNo">070</span>    private SharedSquareUtils() {<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    }<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    // FILTER TRACKS BY SQUARE REGION<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>    /**<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     * Filters track coordinates to include only those within the specified square.<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     * &lt;p&gt;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     * This method handles inclusive or exclusive boundaries depending on whether<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * the square is in the last column or row. It operates on a Tablesaw table<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     * containing at least "Track X Location" and "Track Y Location" columns.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     * &lt;/p&gt;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     *<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     * @param tracks     table of track data with X/Y coordinate columns<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     * @param square     the square region defining coordinate boundaries<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     * @param lastRowCol index of the last row/column in the grid (for boundary handling)<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     * @return new {@link Table} containing only the tracks located within the specified square<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     */<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    public static Table filterTracksInSquare(Table tracks, Square square, int lastRowCol) {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        double x0 = square.getX0();<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        double y0 = square.getY0();<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        double x1 = square.getX1();<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        double y1 = square.getY1();<a name="line.94"></a>
+<span class="sourceLineNo">095</span><a name="line.95"></a>
+<span class="sourceLineNo">096</span>        boolean isLastCol = square.getColNumber() == lastRowCol;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        boolean isLastRow = square.getRowNumber() == lastRowCol;<a name="line.97"></a>
+<span class="sourceLineNo">098</span><a name="line.98"></a>
+<span class="sourceLineNo">099</span>        double left   = Math.min(x0, x1);<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        double right  = Math.max(x0, x1);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        double top    = Math.min(y0, y1);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        double bottom = Math.max(y0, y1);<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>        DoubleColumn x = tracks.doubleColumn("Track X Location");<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        DoubleColumn y = tracks.doubleColumn("Track Y Location");<a name="line.105"></a>
+<span class="sourceLineNo">106</span><a name="line.106"></a>
+<span class="sourceLineNo">107</span>        Selection selX = isLastCol<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                ? x.isBetweenInclusive(left, right)<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                : x.isGreaterThanOrEqualTo(left).and(x.isLessThan(right));<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>        Selection selY = isLastRow<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                ? y.isBetweenInclusive(top, bottom)<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                : y.isGreaterThanOrEqualTo(top).and(y.isLessThan(bottom));<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>        return tracks.where(selX.and(selY));<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    }<a name="line.116"></a>
+<span class="sourceLineNo">117</span><a name="line.117"></a>
+<span class="sourceLineNo">118</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.118"></a>
+<span class="sourceLineNo">119</span>    // VISIBILITY FILTERING ACROSS SQUARES<a name="line.119"></a>
+<span class="sourceLineNo">120</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.120"></a>
+<span class="sourceLineNo">121</span><a name="line.121"></a>
+<span class="sourceLineNo">122</span>    /**<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     * Applies a visibility filter to all squares in a recording based on numeric<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     * thresholds and optional neighbour-based retention logic.<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     * &lt;p&gt;<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     * &lt;b&gt;Pass 1:&lt;/b&gt; Marks each square selected if it meets:<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     * &lt;ul&gt;<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     *   &lt;li&gt;Density ratio ≥ minDensityRatio&lt;/li&gt;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     *   &lt;li&gt;Variability ≤ maxVariability&lt;/li&gt;<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     *   &lt;li&gt;R² ≥ minRSquared and not NaN&lt;/li&gt;<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     * &lt;/ul&gt;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     * &lt;b&gt;Pass 2:&lt;/b&gt; If {@code neighbourMode != "Free"}, keeps only squares having<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     * at least one selected neighbour:<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     * &lt;ul&gt;<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     *   &lt;li&gt;“Relaxed” → corner or edge adjacency allowed (dr ≤ 1 &amp; dc ≤ 1)&lt;/li&gt;<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     *   &lt;li&gt;“Strict” → edge adjacency only (dr = 1 &amp; dc = 0 or vice versa)&lt;/li&gt;<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     * &lt;/ul&gt;<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     *<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     * @param squares         the list of squares<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     * @param minDensityRatio minimum density ratio for selection<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     * @param maxVariability  maximum allowed variability<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     * @param minRSquared     minimum R² value for selection<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     * @param neighbourMode   neighbour logic: "Free", "Relaxed", or "Strict"<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     */<a name="line.144"></a>
+<span class="sourceLineNo">145</span>    public static void applyVisibilityFilter(List&lt;Square&gt; squares,<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                                             double minDensityRatio,<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                                             double maxVariability,<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                                             double minRSquared,<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                                             String neighbourMode) {<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>        if (squares == null || squares.isEmpty()) {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>            return;<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        }<a name="line.153"></a>
+<span class="sourceLineNo">154</span><a name="line.154"></a>
+<span class="sourceLineNo">155</span>        int visibleBasic = 0;<a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
+<span class="sourceLineNo">157</span>        // Pass 1 — Numeric filter<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        for (Square square : squares) {<a name="line.158"></a>
+<span class="sourceLineNo">159</span>            boolean passes = square.getDensityRatio() &gt;= minDensityRatio<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                    &amp;&amp; square.getVariability() &lt;= maxVariability<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                    &amp;&amp; square.getRSquared() &gt;= minRSquared<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                    &amp;&amp; !Double.isNaN(square.getRSquared());<a name="line.162"></a>
+<span class="sourceLineNo">163</span><a name="line.163"></a>
+<span class="sourceLineNo">164</span>            square.setSelected(passes);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            if (passes) {<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                visibleBasic++;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            }<a name="line.167"></a>
+<span class="sourceLineNo">168</span>        }<a name="line.168"></a>
+<span class="sourceLineNo">169</span><a name="line.169"></a>
+<span class="sourceLineNo">170</span>        // Pass 2 — Neighbour-based refinement<a name="line.170"></a>
+<span class="sourceLineNo">171</span>        if ("Free".equalsIgnoreCase(neighbourMode)) {<a name="line.171"></a>
+<span class="sourceLineNo">172</span>            return; // No neighbour constraints<a name="line.172"></a>
+<span class="sourceLineNo">173</span>        }<a name="line.173"></a>
+<span class="sourceLineNo">174</span><a name="line.174"></a>
+<span class="sourceLineNo">175</span>        Set&lt;Square&gt; keep     = new HashSet&lt;&gt;();<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        int keptCount        = 0;<a name="line.176"></a>
+<span class="sourceLineNo">177</span><a name="line.177"></a>
+<span class="sourceLineNo">178</span>        for (Square square : squares) {<a name="line.178"></a>
+<span class="sourceLineNo">179</span>            if (!square.isSelected()) {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                continue;<a name="line.180"></a>
+<span class="sourceLineNo">181</span>            }<a name="line.181"></a>
+<span class="sourceLineNo">182</span><a name="line.182"></a>
+<span class="sourceLineNo">183</span>            boolean hasNeighbour = false;<a name="line.183"></a>
+<span class="sourceLineNo">184</span>            int r = square.getRowNumber();<a name="line.184"></a>
+<span class="sourceLineNo">185</span>            int c = square.getColNumber();<a name="line.185"></a>
+<span class="sourceLineNo">186</span><a name="line.186"></a>
+<span class="sourceLineNo">187</span>            for (Square other : squares) {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                if (other == square || !other.isSelected()) {<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                    continue;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                }<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                int dr = Math.abs(other.getRowNumber() - r);<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                int dc = Math.abs(other.getColNumber() - c);<a name="line.192"></a>
+<span class="sourceLineNo">193</span><a name="line.193"></a>
+<span class="sourceLineNo">194</span>                if ("Relaxed".equalsIgnoreCase(neighbourMode)) {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                    // Corner or edge adjacency allowed<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                    if (dr &lt;= 1 &amp;&amp; dc &lt;= 1 &amp;&amp; (dr + dc) &gt; 0) {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                        hasNeighbour = true;<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                        break;<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                    }<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                } else if ("Strict".equalsIgnoreCase(neighbourMode)) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                    // Only direct-edge adjacency allowed<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                    if ((dr == 1 &amp;&amp; dc == 0) || (dr == 0 &amp;&amp; dc == 1)) {<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                        hasNeighbour = true;<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                        break;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                    }<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                }<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            }<a name="line.207"></a>
+<span class="sourceLineNo">208</span><a name="line.208"></a>
+<span class="sourceLineNo">209</span>            if (hasNeighbour) {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                keep.add(square);<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                keptCount++;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>            }<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        }<a name="line.213"></a>
+<span class="sourceLineNo">214</span><a name="line.214"></a>
+<span class="sourceLineNo">215</span>        // --- Apply neighbour filtering result ---<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        for (Square sq : squares) {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>            if (!keep.contains(sq)) {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                sq.setSelected(false);<a name="line.218"></a>
+<span class="sourceLineNo">219</span>            }<a name="line.219"></a>
+<span class="sourceLineNo">220</span>        }<a name="line.220"></a>
+<span class="sourceLineNo">221</span><a name="line.221"></a>
+<span class="sourceLineNo">222</span>        PaintLogger.debugf("NeighbourMode [%s] neighbour-filtered: %d / %d retained",<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                           neighbourMode, keptCount, visibleBasic);<a name="line.223"></a>
+<span class="sourceLineNo">224</span>    }<a name="line.224"></a>
+<span class="sourceLineNo">225</span><a name="line.225"></a>
+<span class="sourceLineNo">226</span>    /**<a name="line.226"></a>
+<span class="sourceLineNo">227</span>     * Retrieves a list of tracks from all selected squares in the provided recording.<a name="line.227"></a>
+<span class="sourceLineNo">228</span>     * If a square is selected and contains tracks, those tracks are added to the result.<a name="line.228"></a>
+<span class="sourceLineNo">229</span>     *<a name="line.229"></a>
+<span class="sourceLineNo">230</span>     * @param squares The squares to be checked.<a name="line.230"></a>
+<span class="sourceLineNo">231</span>     * @return A list of tracks from all selected squares in the recording.<a name="line.231"></a>
+<span class="sourceLineNo">232</span>     */<a name="line.232"></a>
+<span class="sourceLineNo">233</span>    public static List&lt;Track&gt; getTracksFromSelectedSquares(List&lt;Square&gt; squares) {<a name="line.233"></a>
+<span class="sourceLineNo">234</span>        List&lt;Track&gt; selectedTracks = new ArrayList&lt;&gt;();<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        for (Square square : squares) {<a name="line.235"></a>
+<span class="sourceLineNo">236</span>            if (square.isSelected() &amp;&amp; square.getTracks() != null) {<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                selectedTracks.addAll(square.getTracks());<a name="line.237"></a>
+<span class="sourceLineNo">238</span>            }<a name="line.238"></a>
+<span class="sourceLineNo">239</span>        }<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        return selectedTracks;<a name="line.240"></a>
+<span class="sourceLineNo">241</span>    }<a name="line.241"></a>
+<span class="sourceLineNo">242</span><a name="line.242"></a>
+<span class="sourceLineNo">243</span>    /**<a name="line.243"></a>
+<span class="sourceLineNo">244</span>     * Counts the number of squares marked as selected in the provided recording.<a name="line.244"></a>
+<span class="sourceLineNo">245</span>     *<a name="line.245"></a>
+<span class="sourceLineNo">246</span>     * @param recording The recording object containing a collection of squares.<a name="line.246"></a>
+<span class="sourceLineNo">247</span>     * @return The count of squares that are marked as selected.<a name="line.247"></a>
+<span class="sourceLineNo">248</span>     */<a name="line.248"></a>
+<span class="sourceLineNo">249</span>    public static int getNumberOfSelectedSquares(Recording recording) {<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        int count = 0;<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        for (Square square : recording.getSquaresOfRecording()) {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>            if (square.isSelected()) {<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                count++;<a name="line.253"></a>
+<span class="sourceLineNo">254</span>            }<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        }<a name="line.255"></a>
+<span class="sourceLineNo">256</span>        return count;<a name="line.256"></a>
+<span class="sourceLineNo">257</span>    }<a name="line.257"></a>
+<span class="sourceLineNo">258</span><a name="line.258"></a>
+<span class="sourceLineNo">259</span>    /**<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     * Calculates the density of tracks in a specified area over time and considering a concentration factor.<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     *<a name="line.261"></a>
+<span class="sourceLineNo">262</span>     * The density is computed as the number of tracks divided by the area,<a name="line.262"></a>
+<span class="sourceLineNo">263</span>     * then divided by the time, and finally divided by the concentration.<a name="line.263"></a>
+<span class="sourceLineNo">264</span>     * If any of the area, time, or concentration values are non-positive, an IllegalArgumentException is thrown.<a name="line.264"></a>
+<span class="sourceLineNo">265</span>     *<a name="line.265"></a>
+<span class="sourceLineNo">266</span>     * @param nrTracks      The total number of tracks to calculate density for.<a name="line.266"></a>
+<span class="sourceLineNo">267</span>     * @param area          The area over which the density is calculated. Must be positive.<a name="line.267"></a>
+<span class="sourceLineNo">268</span>     * @param time          The time period over which the density is calculated. Must be positive.<a name="line.268"></a>
+<span class="sourceLineNo">269</span>     * @param concentration The concentration factor to apply to the density calculation. Must be positive.<a name="line.269"></a>
+<span class="sourceLineNo">270</span>     * @return The calculated density as a double.<a name="line.270"></a>
+<span class="sourceLineNo">271</span>     * @throws IllegalArgumentException if area, time, or concentration is less than or equal to zero.<a name="line.271"></a>
+<span class="sourceLineNo">272</span>     */<a name="line.272"></a>
+<span class="sourceLineNo">273</span>    public static double calculateDensity(int nrTracks, double area, double time, double concentration) {<a name="line.273"></a>
+<span class="sourceLineNo">274</span>        if (area &lt;= 0 || time &lt;= 0 || concentration &lt;= 0) {<a name="line.274"></a>
+<span class="sourceLineNo">275</span>            throw new IllegalArgumentException("Area, time, and concentration must be positive");<a name="line.275"></a>
+<span class="sourceLineNo">276</span>        }<a name="line.276"></a>
+<span class="sourceLineNo">277</span><a name="line.277"></a>
+<span class="sourceLineNo">278</span>        double density  = nrTracks / area;<a name="line.278"></a>
+<span class="sourceLineNo">279</span>        density        /= time;<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        density        /= concentration;<a name="line.280"></a>
+<span class="sourceLineNo">281</span><a name="line.281"></a>
+<span class="sourceLineNo">282</span>        return density;<a name="line.282"></a>
+<span class="sourceLineNo">283</span>    }<a name="line.283"></a>
+<span class="sourceLineNo">284</span>}<a name="line.284"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

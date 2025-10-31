@@ -1,0 +1,203 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/******************************************************************************<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  Class:        RecordingViewer.java<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  Package:      paint.viewer<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *  PURPOSE:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *    Serves as the entry point for the PAINT Viewer application, initializing<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *    preferences, logging, and configuration before launching the recording<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *    visualization interface.<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  DESCRIPTION:<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    The {@code RecordingViewer} initializes application components such as<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    {@link paint.shared.utils.PaintPrefs}, {@link paint.shared.config.PaintConfig},<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *    and {@link paint.shared.utils.PaintLogger}, and presents the user with a<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *    {@link paint.shared.dialogs.ProjectDialog} for project selection.<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *    Upon confirmation, it loads experiment data via<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *    {@link paint.viewer.utils.RecordingLoader}, and if valid recordings are found,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *    launches the {@link paint.viewer.RecordingViewerFrame} interface.<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *  KEY FEATURES:<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *    • Loads the last used project directory from user preferences.<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *    • Initializes configuration and logging systems.<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *    • Presents a project selection dialog for the user.<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *    • Loads and validates recordings for display.<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *    • Launches the main viewer interface if data is valid.<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *    • Displays error or warning dialogs when necessary.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *  AUTHOR:<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *    Hans Bakker<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *  MODULE:<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *    paint-viewer<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *  UPDATED:<a name="line.34"></a>
+<span class="sourceLineNo">035</span> *    2025-10-29<a name="line.35"></a>
+<span class="sourceLineNo">036</span> *<a name="line.36"></a>
+<span class="sourceLineNo">037</span> *  COPYRIGHT:<a name="line.37"></a>
+<span class="sourceLineNo">038</span> *    © 2025 Hans Bakker. All rights reserved.<a name="line.38"></a>
+<span class="sourceLineNo">039</span> ******************************************************************************/<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>package paint.viewer;<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>import paint.shared.config.PaintConfig;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import paint.shared.dialogs.ProjectDialog;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import paint.shared.dialogs.ProjectDialog.DialogMode;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import paint.shared.utils.PaintLogger;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import paint.shared.utils.PaintPrefs;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import paint.viewer.utils.RecordingEntry;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import paint.viewer.utils.RecordingLoader;<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span>import javax.swing.*;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import java.nio.file.Path;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import java.nio.file.Paths;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import java.util.List;<a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span>/**<a name="line.56"></a>
+<span class="sourceLineNo">057</span> * Entry point for the PAINT Viewer application.<a name="line.57"></a>
+<span class="sourceLineNo">058</span> * &lt;p&gt;<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * Initializes preferences, logging, and configuration before launching the<a name="line.59"></a>
+<span class="sourceLineNo">060</span> * recording viewer interface. The viewer enables users to inspect and<a name="line.60"></a>
+<span class="sourceLineNo">061</span> * interact with experiment recordings loaded from a project.<a name="line.61"></a>
+<span class="sourceLineNo">062</span> * &lt;/p&gt;<a name="line.62"></a>
+<span class="sourceLineNo">063</span> *<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * &lt;p&gt;&lt;strong&gt;Responsibilities:&lt;/strong&gt;&lt;/p&gt;<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * &lt;ul&gt;<a name="line.65"></a>
+<span class="sourceLineNo">066</span> *   &lt;li&gt;Load the last used project root directory via {@link PaintPrefs}.&lt;/li&gt;<a name="line.66"></a>
+<span class="sourceLineNo">067</span> *   &lt;li&gt;Initialize configuration and logging via {@link PaintConfig} and {@link PaintLogger}.&lt;/li&gt;<a name="line.67"></a>
+<span class="sourceLineNo">068</span> *   &lt;li&gt;Display a project specification dialog for user selection.&lt;/li&gt;<a name="line.68"></a>
+<span class="sourceLineNo">069</span> *   &lt;li&gt;Load recordings from the selected project using {@link RecordingLoader}.&lt;/li&gt;<a name="line.69"></a>
+<span class="sourceLineNo">070</span> *   &lt;li&gt;Launch the {@link RecordingViewerFrame} interface if valid recordings are found.&lt;/li&gt;<a name="line.70"></a>
+<span class="sourceLineNo">071</span> * &lt;/ul&gt;<a name="line.71"></a>
+<span class="sourceLineNo">072</span> */<a name="line.72"></a>
+<span class="sourceLineNo">073</span>public class RecordingViewer {<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>    /**<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     * Main entry point for the PAINT Viewer application.<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     * &lt;p&gt;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     * This method initializes preferences, configuration, and logging, then<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     * opens the project dialog for user input. If valid recordings are loaded,<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     * it launches the viewer frame for visualization.<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * &lt;/p&gt;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     * @param args command-line arguments (unused)<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     */<a name="line.84"></a>
+<span class="sourceLineNo">085</span>    public static void main(String[] args) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        SwingUtilities.invokeLater(() -&gt; {<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>            // --- Step 1: Load the last used project root from preferences ---<a name="line.88"></a>
+<span class="sourceLineNo">089</span>            String lastProject = PaintPrefs.getString("Path", "Project Root", System.getProperty("user.home"));<a name="line.89"></a>
+<span class="sourceLineNo">090</span>            Path projectPath = Paths.get(lastProject);<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span>            // --- Step 2: Initialise logging/config ---<a name="line.92"></a>
+<span class="sourceLineNo">093</span>            PaintConfig.initialise(projectPath);<a name="line.93"></a>
+<span class="sourceLineNo">094</span>            PaintLogger.initialise(projectPath, "Viewer");<a name="line.94"></a>
+<span class="sourceLineNo">095</span><a name="line.95"></a>
+<span class="sourceLineNo">096</span>            // --- Step 3: Open the Project Specification dialog directly ---<a name="line.96"></a>
+<span class="sourceLineNo">097</span>            ProjectDialog specificationDialog =<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                    new ProjectDialog(null, projectPath, DialogMode.VIEWER);<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span>            // ✅ Callback for the OK button — launches the viewer<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            specificationDialog.setCalculationCallback(project -&gt; {<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                try {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                    // Load the data for experiments (images, squares, etc.)<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                    List&lt;RecordingEntry&gt; recordingEntries = RecordingLoader.loadFromProject(project);<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                    if (recordingEntries.isEmpty()) {<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                        JOptionPane.showMessageDialog(null,<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                                                      "No valid recordings found in selected experiments.",<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                                                      "No Recordings",<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                                                      JOptionPane.WARNING_MESSAGE);<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                        return false;<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                    }<a name="line.111"></a>
+<span class="sourceLineNo">112</span><a name="line.112"></a>
+<span class="sourceLineNo">113</span>                    // With the recordingEntries info available, the viewer can be started<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                    RecordingViewerFrame viewer = new RecordingViewerFrame(project, recordingEntries);<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                    viewer.setVisible(true);<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                    return true;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                } catch (Exception ex) {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                    PaintLogger.errorf("Viewer launch failed: %s", ex.getMessage());<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                    JOptionPane.showMessageDialog(null,<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                                                  "Viewer launch failed:\n" + ex.getMessage(),<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                                                  "Error",<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                                                  JOptionPane.ERROR_MESSAGE);<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                    return false;<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                }<a name="line.124"></a>
+<span class="sourceLineNo">125</span>            });<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>            // --- Step 4: Show dialog and keep it open ---<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            specificationDialog.showDialog();<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        });<a name="line.129"></a>
+<span class="sourceLineNo">130</span>    }<a name="line.130"></a>
+<span class="sourceLineNo">131</span>}<a name="line.131"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

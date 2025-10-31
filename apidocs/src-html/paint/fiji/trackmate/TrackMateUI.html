@@ -1,0 +1,290 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/******************************************************************************<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  Class:        TrackMateUI.java<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  Package:      paint.fiji.trackmate<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *  PURPOSE:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *    Provides the main interactive entry point for running TrackMate within<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *    the PAINT environment. Integrates configuration handling, experiment<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *    selection, and optional sweep or post-processing operations.<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  DESCRIPTION:<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    • Runs TrackMate interactively through the Fiji plugin menu.<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    • Validates project root and configuration state.<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *    • Displays a user dialog for selecting and running experiments.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *    • Supports sweep configurations when enabled.<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *    • Optionally executes "Generate Squares" after successful completion.<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *    • Ensures only one processing instance runs at a time.<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *  KEY FEATURES:<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *    • Headless and GUI-compatible operation through {@link ProjectDialog}.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *    • Runtime configuration using {@link PaintConfig} and {@link PaintPrefs}.<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *    • Integrated console logging via {@link PaintConsoleWindow}.<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *    • Thread-safe execution with a static volatile lock flag.<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *  USAGE EXAMPLE:<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *    Plugin menu: Plugins → Glyco-PAINT → Run<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *  DEPENDENCIES:<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *    – paint.shared.utils.*, paint.shared.config.*<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *    – paint.generatesquares.GenerateSquaresHeadless<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *    – paint.fiji.trackmate.RunTrackMateOnProjectSweep<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *  AUTHOR:<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *    Hans Bakker (jjabakker)<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *<a name="line.34"></a>
+<span class="sourceLineNo">035</span> *  UPDATED:<a name="line.35"></a>
+<span class="sourceLineNo">036</span> *    2025-10-28<a name="line.36"></a>
+<span class="sourceLineNo">037</span> *<a name="line.37"></a>
+<span class="sourceLineNo">038</span> *  COPYRIGHT:<a name="line.38"></a>
+<span class="sourceLineNo">039</span> *    © 2025 Hans Bakker. All rights reserved.<a name="line.39"></a>
+<span class="sourceLineNo">040</span> ******************************************************************************/<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span>package paint.fiji.trackmate;<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span>import org.scijava.command.Command;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import org.scijava.plugin.Plugin;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import paint.generatesquares.GenerateSquaresHeadless;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import paint.shared.config.PaintConfig;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import paint.shared.dialogs.ProjectDialog;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import paint.shared.utils.PaintPrefs;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import paint.shared.utils.JarInfoLogger;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import paint.shared.utils.PaintConsoleWindow;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import paint.shared.utils.PaintLogger;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import paint.shared.utils.PaintRuntime;<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span>import javax.swing.*;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import java.nio.file.Files;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import java.nio.file.Path;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import java.time.LocalDateTime;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>import java.time.format.DateTimeFormatter;<a name="line.59"></a>
+<span class="sourceLineNo">060</span><a name="line.60"></a>
+<span class="sourceLineNo">061</span>import static paint.shared.constants.PaintConstants.PAINT_SWEEP_CONFIGURATION_JSON;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>import static paint.shared.utils.ValidProjectPath.getValidProjectPath;<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span>/**<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * Main user interface class for running TrackMate interactively within the<a name="line.65"></a>
+<span class="sourceLineNo">066</span> * PAINT environment. Handles initialization, configuration, dialog management,<a name="line.66"></a>
+<span class="sourceLineNo">067</span> * and execution of TrackMate processes.<a name="line.67"></a>
+<span class="sourceLineNo">068</span> */<a name="line.68"></a>
+<span class="sourceLineNo">069</span>@Plugin(type = Command.class, menuPath = "Plugins&gt;Glyco-PAINT&gt;Run")<a name="line.69"></a>
+<span class="sourceLineNo">070</span>public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>    /**<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     * Prevents concurrent execution of multiple TrackMate runs.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     */<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    private static volatile boolean running = false;<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>    /**<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     * Executes the TrackMate workflow through an interactive GUI dialog.<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     * &lt;p&gt;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     * The method:<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * &lt;ul&gt;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *   &lt;li&gt;Ensures single-instance execution.&lt;/li&gt;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     *   &lt;li&gt;Initializes logging and configuration state.&lt;/li&gt;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     *   &lt;li&gt;Displays a project dialog for experiment selection.&lt;/li&gt;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     *   &lt;li&gt;Runs the appropriate TrackMate pipeline (sweep or standard).&lt;/li&gt;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     *   &lt;li&gt;Optionally triggers "Generate Squares" after completion.&lt;/li&gt;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     * &lt;/ul&gt;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     */<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    @Override<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    public void run() {<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span>        // ---------------------------------------------------------------------<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        // Step 1 – Setup exception handler and concurrency lock<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        // ---------------------------------------------------------------------<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -&gt;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                                                          PaintLogger.debugf("AWT complained: %s", throwable.getMessage())<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        );<a name="line.97"></a>
+<span class="sourceLineNo">098</span><a name="line.98"></a>
+<span class="sourceLineNo">099</span>        if (running) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            showWarning("TrackMate processing is already running.\nPlease wait until it finishes.");<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            return;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        }<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>        // ---------------------------------------------------------------------<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        // Step 2 – Retrieve project root<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        // ---------------------------------------------------------------------<a name="line.106"></a>
+<span class="sourceLineNo">107</span>        Path projectPath = getValidProjectPath();<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        if (projectPath == null) {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>            return;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        }<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>        // ---------------------------------------------------------------------<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        // Step 3 – Initialize logging, configuration, and runtime settings<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        // ---------------------------------------------------------------------<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        PaintConsoleWindow.createConsoleFor("TrackMate");<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        PaintConfig.initialise(projectPath);<a name="line.116"></a>
+<span class="sourceLineNo">117</span><a name="line.117"></a>
+<span class="sourceLineNo">118</span>        String debugLevel = PaintPrefs.getString("Runtime", "Log Level", "INFO");<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        PaintLogger.setLevel(debugLevel);<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        PaintLogger.initialise(projectPath, "TrackMateOnProject.log");<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        PaintLogger.debugf("TrackMate plugin started (Interactive).");<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>        PaintRuntime.initialiseFromPrefs();<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>        // Log version and timestamp<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        JarInfoLogger.JarInfo info = JarInfoLogger.getJarInfo(TrackMateUI.class);<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        if (info != null) {<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            PaintLogger.infof("Compilation date: %s", info.implementationDate);<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            PaintLogger.infof("Version: %s", info.implementationVersion);<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        }<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>        LocalDateTime now = LocalDateTime.now();<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        String formattedTime = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        PaintLogger.infof("Current time: %s", formattedTime);<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        PaintLogger.blankline();<a name="line.135"></a>
+<span class="sourceLineNo">136</span><a name="line.136"></a>
+<span class="sourceLineNo">137</span>        // ---------------------------------------------------------------------<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        // Step 4 – Show experiment dialog<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        // ---------------------------------------------------------------------<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        ProjectDialog dialog = new ProjectDialog(null, projectPath, ProjectDialog.DialogMode.TRACKMATE);<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        PaintConsoleWindow.closeOnDialogDispose(dialog.getDialog());<a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span>        // ---------------------------------------------------------------------<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        // Step 5 – Handle OK action callback<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        // ---------------------------------------------------------------------<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        dialog.setCalculationCallback(project -&gt; {<a name="line.146"></a>
+<span class="sourceLineNo">147</span><a name="line.147"></a>
+<span class="sourceLineNo">148</span>            if (running) {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                showWarning("TrackMate processing is already running.\nPlease wait until it finishes.");<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                return false;<a name="line.150"></a>
+<span class="sourceLineNo">151</span>            }<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>            running = true;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>            dialog.setOkEnabled(false);<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>            try {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                boolean debug = PaintConfig.getBoolean("Debug", "Debug RunTrackMateOnProject", false);<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                Path imagesPath = project.getImagesRootPath();<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                Path currentProjectRoot = project.getProjectRootPath();<a name="line.159"></a>
+<span class="sourceLineNo">160</span><a name="line.160"></a>
+<span class="sourceLineNo">161</span>                if (debug) {<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                    PaintLogger.debugf("TrackMate processing started.");<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                    PaintLogger.debugf("Experiments: %s", project.getExperimentNames());<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                }<a name="line.164"></a>
+<span class="sourceLineNo">165</span><a name="line.165"></a>
+<span class="sourceLineNo">166</span>                boolean success;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                boolean sweepEnabled = dialog.isSweepSelected();<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                Path sweepFile = currentProjectRoot.resolve(PAINT_SWEEP_CONFIGURATION_JSON);<a name="line.168"></a>
+<span class="sourceLineNo">169</span><a name="line.169"></a>
+<span class="sourceLineNo">170</span>                if (sweepEnabled) {<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                    if (Files.exists(sweepFile)) {<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                        success = RunTrackMateOnProjectSweep.runWithSweep(<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                                currentProjectRoot, imagesPath, project.getExperimentNames());<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                    } else {<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                        PaintLogger.infof("No Sweep configuration detected at %s", sweepFile);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                        return false;<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                    }<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                } else {<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                    success = RunTrackMateOnProject.runProject(<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                            projectPath, imagesPath, project.getExperimentNames(), dialog, null);<a name="line.180"></a>
+<span class="sourceLineNo">181</span><a name="line.181"></a>
+<span class="sourceLineNo">182</span>                    if (success &amp;&amp; PaintConfig.getBoolean("TrackMate", "Run Generate Squares After", true)) {<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                        PaintLogger.infof("TrackMate finished successfully. Starting Generate Squares...");<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                        PaintLogger.blankline();<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                        GenerateSquaresHeadless.run(currentProjectRoot, project.getExperimentNames());<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                        PaintLogger.infof("Generate Squares completed successfully.");<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                    }<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                }<a name="line.188"></a>
+<span class="sourceLineNo">189</span><a name="line.189"></a>
+<span class="sourceLineNo">190</span>                return success;<a name="line.190"></a>
+<span class="sourceLineNo">191</span><a name="line.191"></a>
+<span class="sourceLineNo">192</span>            } catch (Exception e) {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                PaintLogger.errorf("Error during TrackMate execution: %s", e.getMessage());<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                return false;<a name="line.194"></a>
+<span class="sourceLineNo">195</span>            } finally {<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                running = false;<a name="line.196"></a>
+<span class="sourceLineNo">197</span>            }<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        });<a name="line.198"></a>
+<span class="sourceLineNo">199</span><a name="line.199"></a>
+<span class="sourceLineNo">200</span>        dialog.showDialog();<a name="line.200"></a>
+<span class="sourceLineNo">201</span>    }<a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>    // -------------------------------------------------------------------------<a name="line.203"></a>
+<span class="sourceLineNo">204</span>    // Utility Methods<a name="line.204"></a>
+<span class="sourceLineNo">205</span>    // -------------------------------------------------------------------------<a name="line.205"></a>
+<span class="sourceLineNo">206</span><a name="line.206"></a>
+<span class="sourceLineNo">207</span>    /**<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     * Displays a warning dialog with the specified message.<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     *<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     * @param message warning message text to display<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     */<a name="line.211"></a>
+<span class="sourceLineNo">212</span>    private void showWarning(String message) {<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        JOptionPane optionPane = new JOptionPane(message, JOptionPane.WARNING_MESSAGE);<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        JDialog warnDialog = optionPane.createDialog(null, "Warning");<a name="line.214"></a>
+<span class="sourceLineNo">215</span>        warnDialog.setAlwaysOnTop(true);<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        warnDialog.setVisible(true);<a name="line.216"></a>
+<span class="sourceLineNo">217</span>    }<a name="line.217"></a>
+<span class="sourceLineNo">218</span>}<a name="line.218"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

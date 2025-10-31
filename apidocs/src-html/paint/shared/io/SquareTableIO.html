@@ -1,0 +1,298 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/******************************************************************************<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  Class:        SquareTableIO.java<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  Package:      paint.shared.io<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *  PURPOSE:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *    Provides table input/output utilities for {@link paint.shared.objects.Square}<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *    entities, handling CSV schema validation, entity conversion, and append<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *    operations for the “Squares” data layer.<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  DESCRIPTION:<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    This class defines I/O behavior for {@code squares.csv}, enforcing the<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    schema defined in {@link paint.shared.constants.PaintConstants#SQUARES_COLS}<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *    and {@link paint.shared.constants.PaintConstants#SQUARES_TYPES}.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *    It supports:<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *      • Creating schema-compliant Tablesaw tables.<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *      • Converting between {@link Square} objects and {@link tech.tablesaw.api.Table}.<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *      • Reading validated CSV files into tables.<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *      • Appending one table into another with safe type handling.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *  KEY FEATURES:<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *    • Enforces consistent schema across all square operations.<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *    • Converts bi-directionally between tables and Java entities.<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *    • Handles INTEGER→DOUBLE coercion where applicable.<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *    • Robust for batch import/export workflows.<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *    • Fully compatible with Java 8 and Tablesaw 0.43+.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *  AUTHOR:<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *    Hans Bakker<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *  MODULE:<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *    paint-shared-utils<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *  UPDATED:<a name="line.34"></a>
+<span class="sourceLineNo">035</span> *    2025-10-28<a name="line.35"></a>
+<span class="sourceLineNo">036</span> *<a name="line.36"></a>
+<span class="sourceLineNo">037</span> *  COPYRIGHT:<a name="line.37"></a>
+<span class="sourceLineNo">038</span> *    © 2025 Hans Bakker. All rights reserved.<a name="line.38"></a>
+<span class="sourceLineNo">039</span> ******************************************************************************/<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>package paint.shared.io;<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>import paint.shared.objects.Square;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import tech.tablesaw.api.ColumnType;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import tech.tablesaw.api.Row;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import tech.tablesaw.api.Table;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import tech.tablesaw.columns.Column;<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>import java.io.IOException;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import java.nio.file.Path;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import java.util.ArrayList;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import java.util.List;<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>import static paint.shared.constants.PaintConstants.*;<a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span>/**<a name="line.56"></a>
+<span class="sourceLineNo">057</span> * Provides all CSV input/output operations for {@link Square} entities.<a name="line.57"></a>
+<span class="sourceLineNo">058</span> *<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * &lt;p&gt;Handles CSV reading, schema validation, entity conversion, and table<a name="line.59"></a>
+<span class="sourceLineNo">060</span> * appending in a consistent manner across PAINT’s square-level datasets.&lt;/p&gt;<a name="line.60"></a>
+<span class="sourceLineNo">061</span> */<a name="line.61"></a>
+<span class="sourceLineNo">062</span>public class SquareTableIO extends BaseTableIO {<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    // TABLE CREATION<a name="line.65"></a>
+<span class="sourceLineNo">066</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.66"></a>
+<span class="sourceLineNo">067</span><a name="line.67"></a>
+<span class="sourceLineNo">068</span>    /**<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     * Creates an empty {@link Table} for square data with the defined schema.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     *<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     * @return a new empty table named “Squares”<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     */<a name="line.72"></a>
+<span class="sourceLineNo">073</span>    public Table emptyTable() {<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        return newEmptyTable("Squares", SQUARES_COLS, SQUARES_TYPES);<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    }<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    // ENTITY ⇄ TABLE CONVERSION<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>    /**<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     * Converts a list of {@link Square} entities into a {@link Table}<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     * matching the {@code squares.csv} schema.<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     *<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     * @param squares list of {@link Square} objects to convert<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     * @return a schema-compliant {@link Table} populated with square data<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     */<a name="line.87"></a>
+<span class="sourceLineNo">088</span>    public Table toTable(List&lt;Square&gt; squares) {<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        Table table = emptyTable();<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>        for (Square square : squares) {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>            Row tablesawRow = table.appendRow();<a name="line.92"></a>
+<span class="sourceLineNo">093</span>            tablesawRow.setString( "Unique Key",                       square.getUniqueKey());<a name="line.93"></a>
+<span class="sourceLineNo">094</span>            tablesawRow.setString( "Experiment Name",                  square.getExperimentName());<a name="line.94"></a>
+<span class="sourceLineNo">095</span>            tablesawRow.setString( "Recording Name",                   square.getRecordingName());<a name="line.95"></a>
+<span class="sourceLineNo">096</span>            tablesawRow.setInt(    "Square Number",                    square.getSquareNumber());<a name="line.96"></a>
+<span class="sourceLineNo">097</span>            tablesawRow.setInt(    "Row Number",                       square.getRowNumber());<a name="line.97"></a>
+<span class="sourceLineNo">098</span>            tablesawRow.setInt(    "Column Number",                    square.getColNumber());<a name="line.98"></a>
+<span class="sourceLineNo">099</span>            tablesawRow.setInt(    "Label Number",                     square.getLabelNumber());<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            tablesawRow.setInt(    "Cell ID",                          square.getCellId());<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            tablesawRow.setBoolean("Selected",                         square.isSelected());<a name="line.101"></a>
+<span class="sourceLineNo">102</span>            tablesawRow.setBoolean("Square Manually Excluded",         square.isSquareManuallyExcluded());<a name="line.102"></a>
+<span class="sourceLineNo">103</span>            tablesawRow.setBoolean("Image Excluded",                   square.isImageExcluded());<a name="line.103"></a>
+<span class="sourceLineNo">104</span>            tablesawRow.setDouble( "X0",                               square.getX0());<a name="line.104"></a>
+<span class="sourceLineNo">105</span>            tablesawRow.setDouble( "Y0",                               square.getY0());<a name="line.105"></a>
+<span class="sourceLineNo">106</span>            tablesawRow.setDouble( "X1",                               square.getX1());<a name="line.106"></a>
+<span class="sourceLineNo">107</span>            tablesawRow.setDouble( "Y1",                               square.getY1());<a name="line.107"></a>
+<span class="sourceLineNo">108</span>            tablesawRow.setInt(    "Number of Tracks",                 square.getNumberOfTracks());<a name="line.108"></a>
+<span class="sourceLineNo">109</span>            tablesawRow.setDouble( "Variability",                      square.getVariability());<a name="line.109"></a>
+<span class="sourceLineNo">110</span>            tablesawRow.setDouble( "Density",                          square.getDensity());<a name="line.110"></a>
+<span class="sourceLineNo">111</span>            tablesawRow.setDouble( "Density Ratio",                    square.getDensityRatio());<a name="line.111"></a>
+<span class="sourceLineNo">112</span>            tablesawRow.setDouble( "Density Ratio Ori",                square.getDensityRatioOri());<a name="line.112"></a>
+<span class="sourceLineNo">113</span>            tablesawRow.setDouble( "Tau",                              square.getTau());<a name="line.113"></a>
+<span class="sourceLineNo">114</span>            tablesawRow.setDouble( "R Squared",                        square.getRSquared());<a name="line.114"></a>
+<span class="sourceLineNo">115</span>            tablesawRow.setDouble( "Median Diffusion Coefficient",     square.getMedianDiffusionCoefficient());<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            tablesawRow.setDouble( "Median Diffusion Coefficient Ext", square.getMedianDiffusionCoefficientExt());<a name="line.116"></a>
+<span class="sourceLineNo">117</span>            tablesawRow.setDouble( "Median Displacement",              square.getMedianDisplacement());<a name="line.117"></a>
+<span class="sourceLineNo">118</span>            tablesawRow.setDouble( "Max Displacement",                 square.getMaxDisplacement());<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            tablesawRow.setDouble( "Total Displacement",               square.getTotalDisplacement());<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            tablesawRow.setDouble( "Median Max Speed",                 square.getMedianMaxSpeed());<a name="line.120"></a>
+<span class="sourceLineNo">121</span>            tablesawRow.setDouble( "Max Max Speed",                    square.getMaxMaxSpeed());<a name="line.121"></a>
+<span class="sourceLineNo">122</span>            tablesawRow.setDouble( "Median Mean Speed",                square.getMedianMedianSpeed());<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            tablesawRow.setDouble( "Max Mean Speed",                   square.getMaxMedianSpeed());<a name="line.123"></a>
+<span class="sourceLineNo">124</span>            tablesawRow.setDouble( "Max Track Duration",               square.getMaxTrackDuration());<a name="line.124"></a>
+<span class="sourceLineNo">125</span>            tablesawRow.setDouble( "Total Track Duration",             square.getTotalTrackDuration());<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            tablesawRow.setDouble( "Median Track Duration",            square.getMedianTrackDuration());<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        }<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        return table;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>    }<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>    /**<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     * Converts a {@link Table} into a list of {@link Square} entities.<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     *<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     * &lt;p&gt;The table must conform to the {@code squares.csv} schema.<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     * Each row is mapped directly to a {@code Square} instance.&lt;/p&gt;<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     *<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     * @param table the validated table to convert<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     * @return a list of {@link Square} entities<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     */<a name="line.139"></a>
+<span class="sourceLineNo">140</span>    public List&lt;Square&gt; toEntities(Table table) {<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        List&lt;Square&gt; squares = new ArrayList&lt;&gt;();<a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span>        for (Row tablesawRow : table) {<a name="line.143"></a>
+<span class="sourceLineNo">144</span>            Square square = new Square();<a name="line.144"></a>
+<span class="sourceLineNo">145</span>            square.setUniqueKey(                     tablesawRow.getString(  "Unique Key"));<a name="line.145"></a>
+<span class="sourceLineNo">146</span>            square.setExperimentName(                tablesawRow.getString(  "Experiment Name"));<a name="line.146"></a>
+<span class="sourceLineNo">147</span>            square.setRecordingName(                 tablesawRow.getString(  "Recording Name"));<a name="line.147"></a>
+<span class="sourceLineNo">148</span>            square.setSquareNumber(                  tablesawRow.getInt(     "Square Number"));<a name="line.148"></a>
+<span class="sourceLineNo">149</span>            square.setRowNumber(                     tablesawRow.getInt(     "Row Number"));<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            square.setColNumber(                     tablesawRow.getInt(     "Column Number"));<a name="line.150"></a>
+<span class="sourceLineNo">151</span>            square.setLabelNumber(                   tablesawRow.getInt(     "Label Number"));<a name="line.151"></a>
+<span class="sourceLineNo">152</span>            square.setCellId(                        tablesawRow.getInt(     "Cell ID"));<a name="line.152"></a>
+<span class="sourceLineNo">153</span>            square.setSelected(                      tablesawRow.getBoolean( "Selected"));<a name="line.153"></a>
+<span class="sourceLineNo">154</span>            square.setSquareManuallyExcluded(        tablesawRow.getBoolean( "Square Manually Excluded"));<a name="line.154"></a>
+<span class="sourceLineNo">155</span>            square.setImageExcluded(                 tablesawRow.getBoolean( "Image Excluded"));<a name="line.155"></a>
+<span class="sourceLineNo">156</span>            square.setX0(                            tablesawRow.getDouble(  "X0"));<a name="line.156"></a>
+<span class="sourceLineNo">157</span>            square.setY0(                            tablesawRow.getDouble(  "Y0"));<a name="line.157"></a>
+<span class="sourceLineNo">158</span>            square.setX1(                            tablesawRow.getDouble(  "X1"));<a name="line.158"></a>
+<span class="sourceLineNo">159</span>            square.setY1(                            tablesawRow.getDouble(  "Y1"));<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            square.setNumberOfTracks(                tablesawRow.getInt(     "Number of Tracks"));<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            square.setVariability(                   tablesawRow.getDouble(  "Variability"));<a name="line.161"></a>
+<span class="sourceLineNo">162</span>            square.setDensity(                       tablesawRow.getDouble(  "Density"));<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            square.setDensityRatio(                  tablesawRow.getDouble(  "Density Ratio"));<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            square.setDensityRatioOri(               tablesawRow.getDouble(  "Density Ratio Ori"));<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            square.setTau(                           tablesawRow.getDouble(  "Tau"));<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            square.setRSquared(                      tablesawRow.getDouble(  "R Squared"));<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            square.setMedianDiffusionCoefficient(    tablesawRow.getDouble(  "Median Diffusion Coefficient"));<a name="line.167"></a>
+<span class="sourceLineNo">168</span>            square.setMedianDiffusionCoefficientExt( tablesawRow.getDouble(  "Median Diffusion Coefficient Ext"));<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            square.setMedianDisplacement(            tablesawRow.getDouble(  "Median Displacement"));<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            square.setMaxDisplacement(               tablesawRow.getDouble(  "Max Displacement"));<a name="line.170"></a>
+<span class="sourceLineNo">171</span>            square.setTotalDisplacement(             tablesawRow.getDouble(  "Total Displacement"));<a name="line.171"></a>
+<span class="sourceLineNo">172</span>            square.setMedianMaxSpeed(                tablesawRow.getDouble(  "Median Max Speed"));<a name="line.172"></a>
+<span class="sourceLineNo">173</span>            square.setMaxMaxSpeed(                   tablesawRow.getDouble(  "Max Max Speed"));<a name="line.173"></a>
+<span class="sourceLineNo">174</span>            square.setMedianMedianSpeed(             tablesawRow.getDouble(  "Median Mean Speed"));<a name="line.174"></a>
+<span class="sourceLineNo">175</span>            square.setMaxMedianSpeed(                tablesawRow.getDouble(  "Max Mean Speed"));<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            square.setMaxTrackDuration(              tablesawRow.getDouble(  "Max Track Duration"));<a name="line.176"></a>
+<span class="sourceLineNo">177</span>            square.setTotalTrackDuration(            tablesawRow.getDouble(  "Total Track Duration"));<a name="line.177"></a>
+<span class="sourceLineNo">178</span>            square.setMedianTrackDuration(           tablesawRow.getDouble(  "Median Track Duration"));<a name="line.178"></a>
+<span class="sourceLineNo">179</span>            squares.add(square);<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        }<a name="line.180"></a>
+<span class="sourceLineNo">181</span>        return squares;<a name="line.181"></a>
+<span class="sourceLineNo">182</span>    }<a name="line.182"></a>
+<span class="sourceLineNo">183</span><a name="line.183"></a>
+<span class="sourceLineNo">184</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.184"></a>
+<span class="sourceLineNo">185</span>    // CSV READ / APPEND<a name="line.185"></a>
+<span class="sourceLineNo">186</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>    /**<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     * Reads a {@code squares.csv} file and validates its schema.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     *<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     * @param csvPath the path to the CSV file<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     * @return a schema-compliant {@link Table} of square data<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     * @throws IOException if the file cannot be read or validated<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     */<a name="line.194"></a>
+<span class="sourceLineNo">195</span>    public Table readCsv(Path csvPath) throws IOException {<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        return readCsvWithSchema(csvPath, SQUARES, SQUARES_COLS, SQUARES_TYPES, false);<a name="line.196"></a>
+<span class="sourceLineNo">197</span>    }<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span>    /**<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     * Appends all rows from a source {@link Table} into a target {@link Table},<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     * enforcing the {@code squares.csv} schema.<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     *<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     * &lt;p&gt;Performs basic type handling (STRING, INTEGER, DOUBLE, BOOLEAN) and<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     * preserves missing values.&lt;/p&gt;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     *<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     * @param target the destination table<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     * @param source the source table to append<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     */<a name="line.208"></a>
+<span class="sourceLineNo">209</span>    public void appendInPlace(Table target, Table source) {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>        for (Row row : source) {<a name="line.210"></a>
+<span class="sourceLineNo">211</span>            Row newRow = target.appendRow();<a name="line.211"></a>
+<span class="sourceLineNo">212</span>            for (String col : SQUARES_COLS) {<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                Column&lt;?&gt; targetCol = target.column(col);<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                if (targetCol.type() == ColumnType.STRING) {<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                    newRow.setString(col, row.getString(col));<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                } else if (targetCol.type() == ColumnType.INTEGER) {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                    newRow.setInt(col, row.getInt(col));<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                } else if (targetCol.type() == ColumnType.DOUBLE) {<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                    newRow.setDouble(col, row.getDouble(col));<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                } else if (targetCol.type() == ColumnType.BOOLEAN) {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                    newRow.setBoolean(col, row.getBoolean(col));<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                }<a name="line.222"></a>
+<span class="sourceLineNo">223</span>            }<a name="line.223"></a>
+<span class="sourceLineNo">224</span>        }<a name="line.224"></a>
+<span class="sourceLineNo">225</span>    }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>}<a name="line.226"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

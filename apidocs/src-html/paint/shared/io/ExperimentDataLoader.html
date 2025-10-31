@@ -1,0 +1,286 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/******************************************************************************<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  Class:        ExperimentDataLoader.java<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  Package:      paint.shared.io<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *  PURPOSE:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *    Loads experiment data including recordings, tracks, and (for mature projects)<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *    squares from CSV files into structured {@link paint.shared.objects.Experiment}<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *    objects.<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  DESCRIPTION:<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    Reads Tablesaw CSV files for recordings, tracks, and optionally squares using<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    schema validation provided by their respective TableIO classes. Constructs<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *    {@link paint.shared.objects.Recording} and {@link paint.shared.objects.Square}<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *    entities, associates tracks with recordings, and maps tracks to individual<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *    squares based on spatial filtering.<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *  KEY FEATURES:<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *    • Reads and validates CSV data for recordings, tracks, and squares.<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *    • Builds complete {@link paint.shared.objects.Experiment} structures ready<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *      for processing.<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *    • Supports “mature project” mode that includes square-level mapping.<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *    • Performs schema enforcement via BaseTableIO-derived classes.<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *    • Integrates with PaintLogger for debug/error tracking.<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *  AUTHOR:<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *    Hans Bakker<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *  MODULE:<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *    paint-shared-utils<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *  UPDATED:<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *    2025-10-28<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *  COPYRIGHT:<a name="line.34"></a>
+<span class="sourceLineNo">035</span> *    © 2025 Hans Bakker. All rights reserved.<a name="line.35"></a>
+<span class="sourceLineNo">036</span> ******************************************************************************/<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>package paint.shared.io;<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>import paint.shared.objects.Experiment;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import paint.shared.objects.Recording;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import paint.shared.objects.Square;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import paint.shared.utils.PaintLogger;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import tech.tablesaw.api.Table;<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>import java.nio.file.Path;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import java.util.List;<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>import static paint.shared.constants.PaintConstants.*;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>/**<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * Provides centralized functionality for loading all experiment-related data:<a name="line.53"></a>
+<span class="sourceLineNo">054</span> * recordings, tracks, and (for mature projects) squares.<a name="line.54"></a>
+<span class="sourceLineNo">055</span> *<a name="line.55"></a>
+<span class="sourceLineNo">056</span> * &lt;p&gt;The class orchestrates reading and schema validation of CSV files into<a name="line.56"></a>
+<span class="sourceLineNo">057</span> * structured {@link Experiment} objects. It leverages the specialized<a name="line.57"></a>
+<span class="sourceLineNo">058</span> * {@link RecordingTableIO}, {@link TrackTableIO}, and {@link SquareTableIO}<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * classes to ensure consistent I/O and validation logic.&lt;/p&gt;<a name="line.59"></a>
+<span class="sourceLineNo">060</span> *<a name="line.60"></a>
+<span class="sourceLineNo">061</span> * &lt;p&gt;This class is a static-only loader with a single entry point<a name="line.61"></a>
+<span class="sourceLineNo">062</span> * {@link #loadExperiment(Path, String, boolean)}.&lt;/p&gt;<a name="line.62"></a>
+<span class="sourceLineNo">063</span> */<a name="line.63"></a>
+<span class="sourceLineNo">064</span>public final class ExperimentDataLoader {<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span>    /**<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     * Private constructor to prevent instantiation.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     */<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    private ExperimentDataLoader() {<a name="line.69"></a>
+<span class="sourceLineNo">070</span>    }<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.72"></a>
+<span class="sourceLineNo">073</span>    // EXPERIMENT LOADER<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.74"></a>
+<span class="sourceLineNo">075</span><a name="line.75"></a>
+<span class="sourceLineNo">076</span>    /**<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     * Loads an entire experiment from a given project folder.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     *<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     * &lt;p&gt;This method sequentially performs the following steps:&lt;/p&gt;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     * &lt;ol&gt;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     *   &lt;li&gt;Loads and validates {@code recordings.csv}, converting rows into<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *       {@link Recording} entities.&lt;/li&gt;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     *   &lt;li&gt;Loads and validates {@code tracks.csv}, associating tracks with each<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     *       recording based on the “Recording Name” column.&lt;/li&gt;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     *   &lt;li&gt;If {@code matureProject} is {@code true}, loads and validates<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     *       {@code squares.csv}, mapping tracks into squares using the spatial<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     *       boundaries defined for each recording.&lt;/li&gt;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     * &lt;/ol&gt;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     *<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     * &lt;p&gt;All CSVs are validated for column names, order, and data types<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     * according to schema definitions in {@link paint.shared.constants.PaintConstants}.&lt;/p&gt;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     *<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     * @param projectPath   the root project directory<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     * @param experimentName the name of the experiment folder (relative to the project path)<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     * @param matureProject  {@code true} to include square-level loading and mapping<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     * @return a fully populated {@link Experiment} object, or {@code null} if any<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     *         data file fails to load or validate<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     */<a name="line.98"></a>
+<span class="sourceLineNo">099</span>    public static Experiment loadExperiment(Path projectPath,<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                                            String experimentName,<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                                            boolean matureProject) {<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>        Path experimentPath   = projectPath.resolve(experimentName);<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        Experiment experiment = new Experiment(experimentName);<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>        // ─── Recordings ───────────────────────────────────────────────────────<a name="line.106"></a>
+<span class="sourceLineNo">107</span>        RecordingTableIO recIO = new RecordingTableIO();<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        List&lt;Recording&gt; recordings;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        try {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>            Table recTable = recIO.readCsvWithSchema(<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                    experimentPath.resolve(RECORDINGS_CSV),<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                    RECORDINGS,<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                    RECORDINGS_COLS,<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                    RECORDINGS_TYPES,<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                    false<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            );<a name="line.116"></a>
+<span class="sourceLineNo">117</span>            recordings = recIO.toEntities(recTable);<a name="line.117"></a>
+<span class="sourceLineNo">118</span>            recordings.forEach(experiment::addRecording);<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        } catch (Exception e) {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            PaintLogger.errorf("Failed to read %s in %s", RECORDINGS_CSV, experimentName);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>            return null;<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        }<a name="line.122"></a>
+<span class="sourceLineNo">123</span><a name="line.123"></a>
+<span class="sourceLineNo">124</span>        // ─── Tracks ───────────────────────────────────────────────────────────<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        TrackTableIO trackIO = new TrackTableIO();<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        Table tracksTable;<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        try {<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            tracksTable = trackIO.readCsvWithSchema(<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                    experimentPath.resolve(TRACKS_CSV),<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                    TRACKS,<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                    TRACKS_COLS,<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                    TRACKS_TYPES,<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                    false<a name="line.133"></a>
+<span class="sourceLineNo">134</span>            );<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        } catch (Exception e) {<a name="line.135"></a>
+<span class="sourceLineNo">136</span>            PaintLogger.errorf("Failed to read %s in %s", TRACKS_CSV, experimentName);<a name="line.136"></a>
+<span class="sourceLineNo">137</span>            return null;<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        }<a name="line.138"></a>
+<span class="sourceLineNo">139</span><a name="line.139"></a>
+<span class="sourceLineNo">140</span>        // ─── Attach tracks to recordings ──────────────────────────────────────<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        PaintLogger.debugf("Found %d tracks", tracksTable.rowCount());<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        for (Recording recording : recordings) {<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            if (!recording.isProcessFlag()) {<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                continue; // skip non-processed recordings<a name="line.144"></a>
+<span class="sourceLineNo">145</span>            }<a name="line.145"></a>
+<span class="sourceLineNo">146</span><a name="line.146"></a>
+<span class="sourceLineNo">147</span>            Table recTracks = tracksTable.where(<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                    tracksTable.stringColumn("Recording Name")<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                            .isEqualTo(recording.getRecordingName()));<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>            PaintLogger.debugf("Found %d tracks for recording '%s'",<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                               recTracks.rowCount(), recording.getRecordingName());<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>            recording.setTracks(trackIO.toEntities(recTracks));<a name="line.154"></a>
+<span class="sourceLineNo">155</span>            recording.setTracksTable(recTracks);<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        }<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>        // ─── Squares (only for mature projects) ───────────────────────────────<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        if (matureProject) {<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            SquareTableIO squareIO = new SquareTableIO();<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            Table squaresTable;<a name="line.161"></a>
+<span class="sourceLineNo">162</span>            try {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                squaresTable = squareIO.readCsvWithSchema(<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                        experimentPath.resolve(SQUARES_CSV),<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                        SQUARES,<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                        SQUARES_COLS,<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                        SQUARES_TYPES,<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                        false<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                );<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            } catch (Exception e) {<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                PaintLogger.errorf("Failed to read %s in %s", SQUARES_CSV, experimentName);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                return null;<a name="line.172"></a>
+<span class="sourceLineNo">173</span>            }<a name="line.173"></a>
+<span class="sourceLineNo">174</span><a name="line.174"></a>
+<span class="sourceLineNo">175</span>            int numberOfRecordings          = recordings.size();<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            int numberOfSquares             = squaresTable.rowCount();<a name="line.176"></a>
+<span class="sourceLineNo">177</span>            int numberOfSquaresPerRecording = (numberOfRecordings == 0) ? 0 : numberOfSquares / numberOfRecordings;<a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>            int numberOfRows;<a name="line.179"></a>
+<span class="sourceLineNo">180</span>            if (numberOfSquaresPerRecording &gt; 0) {<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                numberOfRows = (int) Math.round(Math.sqrt(numberOfSquaresPerRecording));<a name="line.181"></a>
+<span class="sourceLineNo">182</span>            } else {<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                numberOfRows = 0;<a name="line.183"></a>
+<span class="sourceLineNo">184</span>            }<a name="line.184"></a>
+<span class="sourceLineNo">185</span><a name="line.185"></a>
+<span class="sourceLineNo">186</span>            // Validate square layout geometry<a name="line.186"></a>
+<span class="sourceLineNo">187</span>            if (numberOfRows &gt; 0 &amp;&amp; numberOfRows * numberOfRows != numberOfSquaresPerRecording) {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                PaintLogger.errorf("Invalid squares layout in experiment '%s'", experimentName);<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                System.exit(-1);<a name="line.189"></a>
+<span class="sourceLineNo">190</span>            }<a name="line.190"></a>
+<span class="sourceLineNo">191</span><a name="line.191"></a>
+<span class="sourceLineNo">192</span>            // ─── Assign squares and map tracks into them ──────────────────────<a name="line.192"></a>
+<span class="sourceLineNo">193</span>            for (Recording rec : recordings) {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                Table recSquares = squaresTable.where(<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                        squaresTable.stringColumn("Recording Name")<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                                .matchesRegex("^" + rec.getRecordingName() + "(?:-threshold-\\d{1,3})?$"));<a name="line.196"></a>
+<span class="sourceLineNo">197</span><a name="line.197"></a>
+<span class="sourceLineNo">198</span>                rec.addSquares(squareIO.toEntities(recSquares));<a name="line.198"></a>
+<span class="sourceLineNo">199</span><a name="line.199"></a>
+<span class="sourceLineNo">200</span>                if (numberOfRows &gt; 0) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                    int lastRowCol = numberOfRows - 1;<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                    Table recTracks = rec.getTracksTable();<a name="line.202"></a>
+<span class="sourceLineNo">203</span><a name="line.203"></a>
+<span class="sourceLineNo">204</span>                    for (Square square : rec.getSquaresOfRecording()) {<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                        Table squareTracks = filterTracksInSquare(recTracks, square, lastRowCol);<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                        square.setTracks(trackIO.toEntities(squareTracks));<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                    }<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                }<a name="line.208"></a>
+<span class="sourceLineNo">209</span>            }<a name="line.209"></a>
+<span class="sourceLineNo">210</span>        }<a name="line.210"></a>
+<span class="sourceLineNo">211</span><a name="line.211"></a>
+<span class="sourceLineNo">212</span>        return experiment;<a name="line.212"></a>
+<span class="sourceLineNo">213</span>    }<a name="line.213"></a>
+<span class="sourceLineNo">214</span>}<a name="line.214"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

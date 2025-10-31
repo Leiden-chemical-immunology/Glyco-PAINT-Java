@@ -1,0 +1,453 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/******************************************************************************<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  Class:        CalculateTau.java<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  Package:      generatesquares.calc<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *  PURPOSE:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *    Computes the exponential decay time constant (Tau) and R² value from<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *    track duration data using non-linear least squares fitting.<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *  DESCRIPTION:<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *    This class provides static methods for fitting mono-exponential decay<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    models to track lifetime distributions. It evaluates the quality of<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    the fit through the R² metric and classifies outcomes by fit status.<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *    The class is non-instantiable and intended as a computational utility<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *    used by higher-level analysis classes such as CalculateAttributes.<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *  RESPONSIBILITIES:<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *    • Build frequency distributions of track durations<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *    • Perform exponential decay fitting using Levenberg–Marquardt optimization<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *    • Estimate Tau and R² metrics<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *    • Return structured results with fit status indicators<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *  USAGE EXAMPLE:<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *    CalculateTauResult result = CalculateTau.calcTau(tracks, 50, 0.95);<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *    if (result.getStatus() == CalculateTauResult.Status.TAU_SUCCESS) {<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *        double tau = result.getTau();<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *        double r2  = result.getRSquared();<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *    }<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *  DEPENDENCIES:<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *    - org.apache.commons.math3.fitting.leastsquares.*<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *    - org.apache.commons.math3.linear.*<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *    - org.apache.commons.math3.util.FastMath<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *    - paint.shared.objects.Track<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *<a name="line.34"></a>
+<span class="sourceLineNo">035</span> *  AUTHOR:<a name="line.35"></a>
+<span class="sourceLineNo">036</span> *    Hans Bakker (jjabakker)<a name="line.36"></a>
+<span class="sourceLineNo">037</span> *<a name="line.37"></a>
+<span class="sourceLineNo">038</span> *  UPDATED:<a name="line.38"></a>
+<span class="sourceLineNo">039</span> *    2025-10-23<a name="line.39"></a>
+<span class="sourceLineNo">040</span> *<a name="line.40"></a>
+<span class="sourceLineNo">041</span> *  COPYRIGHT:<a name="line.41"></a>
+<span class="sourceLineNo">042</span> *    © 2025 Hans Bakker. All rights reserved.<a name="line.42"></a>
+<span class="sourceLineNo">043</span> ******************************************************************************/<a name="line.43"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">045</span>package paint.shared.utils;<a name="line.45"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span>import org.apache.commons.math3.fitting.leastsquares.*;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import org.apache.commons.math3.linear.Array2DRowRealMatrix;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import org.apache.commons.math3.linear.ArrayRealVector;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import org.apache.commons.math3.linear.DiagonalMatrix;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import org.apache.commons.math3.util.FastMath;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import paint.shared.objects.Track;<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>import java.util.Arrays;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import java.util.List;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import java.util.Map;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import java.util.TreeMap;<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>import static java.lang.Double.NaN;<a name="line.59"></a>
+<span class="sourceLineNo">060</span><a name="line.60"></a>
+<span class="sourceLineNo">061</span>public class CalculateTau {<a name="line.61"></a>
+<span class="sourceLineNo">062</span><a name="line.62"></a>
+<span class="sourceLineNo">063</span>    private CalculateTau() {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    }<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span>    /**<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     * Calculates the tau (time constant) and goodness-of-fit (R-squared) from a given set of track durations using an exponential decay model.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     * The method performs a series of checks and validations, fits the data to a model,<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     * and evaluates the quality of the fit to decide the result status.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     *<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     * @param tracks              the list of Track objects from which durations are extracted. Each Track represents a single time measurement.<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *                            points status.<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     * @param minRequiredRSquared the minimum allowable value for the R-squared of the fit. If the computed R-squared is less than this threshold, the method will return a too-low<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *                            R-squared status.<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     * @return a {@code CalculateTauResult} object containing the calculated tau, R-squared value, and the status of the calculation. Possible statuses include success, insufficient<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     * points, no fit, or R-squared too low.<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     */<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    public static CalculateTauResult calculateTau(List&lt;Track&gt; tracks,<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                                                  double minRequiredRSquared) {<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>        // 1) Extract durations<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        final int n = tracks.size();<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        double[] durations = new double[n];<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        for (int i = 0; i &lt; n; i++) {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>            durations[i] = tracks.get(i).getTrackDuration();<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        }<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>        // 2) Build frequency distribution (sorted by duration)<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        Map&lt;Double, Integer&gt; freq = createFrequencyDistribution(durations);<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>        // Need at least 2 distinct x-values to fit<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        if (freq.size() &lt; 2) {<a name="line.92"></a>
+<span class="sourceLineNo">093</span>            return new CalculateTauResult(0.0, 0.0, CalculateTauResult.Status.TAU_NO_FIT);<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        }<a name="line.94"></a>
+<span class="sourceLineNo">095</span><a name="line.95"></a>
+<span class="sourceLineNo">096</span>        // 3) Convert to arrays for fitting<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        double[] x = new double[freq.size()];<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        double[] y = new double[freq.size()];<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        int k = 0;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        for (Map.Entry&lt;Double, Integer&gt; e : freq.entrySet()) {<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            x[k] = e.getKey();<a name="line.101"></a>
+<span class="sourceLineNo">102</span>            y[k] = e.getValue();<a name="line.102"></a>
+<span class="sourceLineNo">103</span>            k++;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        }<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>        // 4) Fit and evaluate quality<a name="line.106"></a>
+<span class="sourceLineNo">107</span>        CalculateTauExpDecayFitter.FitResult fitResult = CalculateTauExpDecayFitter.fit(x, y);<a name="line.107"></a>
+<span class="sourceLineNo">108</span><a name="line.108"></a>
+<span class="sourceLineNo">109</span>        // 5) Reject non-finite results<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        if (!Double.isFinite(fitResult.rSquared) || !Double.isFinite(fitResult.tauMs)) {<a name="line.110"></a>
+<span class="sourceLineNo">111</span>            return new CalculateTauResult(fitResult.tauMs, fitResult.rSquared, CalculateTauResult.Status.TAU_NO_FIT);<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        }<a name="line.112"></a>
+<span class="sourceLineNo">113</span><a name="line.113"></a>
+<span class="sourceLineNo">114</span>        // 6) Apply threshold<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        if (fitResult.rSquared &lt; minRequiredRSquared) {<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            return new CalculateTauResult(fitResult.tauMs, fitResult.rSquared, CalculateTauResult.Status.TAU_RSQUARED_TOO_LOW);<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        }<a name="line.117"></a>
+<span class="sourceLineNo">118</span><a name="line.118"></a>
+<span class="sourceLineNo">119</span>        return new CalculateTauResult(fitResult.tauMs, fitResult.rSquared, CalculateTauResult.Status.TAU_SUCCESS);<a name="line.119"></a>
+<span class="sourceLineNo">120</span>    }<a name="line.120"></a>
+<span class="sourceLineNo">121</span><a name="line.121"></a>
+<span class="sourceLineNo">122</span>    /**<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     * Represents the result of the tau calculation process, containing the<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     * tau value, R-squared value, and the status of the calculation.<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     * &lt;p&gt;<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     * This result is produced after performing an exponential decay model<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     * fitting on given track durations, evaluating the quality of the fit,<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     * and determining if the computation meets the required conditions.<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     */<a name="line.129"></a>
+<span class="sourceLineNo">130</span>    public static class CalculateTauResult {<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>        private final double tau;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        private final double rsquared;<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        private final Status status;<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>        public CalculateTauResult(double tau, double rsquared, Status status) {<a name="line.136"></a>
+<span class="sourceLineNo">137</span>            this.tau      = tau;<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            this.rsquared = rsquared;<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            this.status   = status;<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        }<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>        public enum Status {<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            TAU_SUCCESS,<a name="line.143"></a>
+<span class="sourceLineNo">144</span>            TAU_INSUFFICIENT_POINTS,<a name="line.144"></a>
+<span class="sourceLineNo">145</span>            TAU_RSQUARED_TOO_LOW,<a name="line.145"></a>
+<span class="sourceLineNo">146</span>            TAU_NO_FIT<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        }<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>        public double getTau() {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            return tau;<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        }<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>        public double getRSquared() {<a name="line.153"></a>
+<span class="sourceLineNo">154</span>            return rsquared;<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        }<a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
+<span class="sourceLineNo">157</span>        public Status getStatus() {<a name="line.157"></a>
+<span class="sourceLineNo">158</span>            return status;<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        }<a name="line.159"></a>
+<span class="sourceLineNo">160</span>    }<a name="line.160"></a>
+<span class="sourceLineNo">161</span><a name="line.161"></a>
+<span class="sourceLineNo">162</span>    /**<a name="line.162"></a>
+<span class="sourceLineNo">163</span>     * Creates a frequency distribution from an array of track durations.<a name="line.163"></a>
+<span class="sourceLineNo">164</span>     * The method calculates the number of occurrences for each unique duration<a name="line.164"></a>
+<span class="sourceLineNo">165</span>     * and stores the result in a map where the keys are unique durations and<a name="line.165"></a>
+<span class="sourceLineNo">166</span>     * the values are their respective frequencies.<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     *<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     * @param trackDurations an array of double values representing track durations.<a name="line.168"></a>
+<span class="sourceLineNo">169</span>     *                       If the array is null, an empty map is returned.<a name="line.169"></a>
+<span class="sourceLineNo">170</span>     * @return a map containing unique track durations as keys and their<a name="line.170"></a>
+<span class="sourceLineNo">171</span>     * corresponding frequencies as values.<a name="line.171"></a>
+<span class="sourceLineNo">172</span>     */<a name="line.172"></a>
+<span class="sourceLineNo">173</span>    private static Map&lt;Double, Integer&gt; createFrequencyDistribution(double[] trackDurations) {<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        Map&lt;Double, Integer&gt; frequencyDistribution = new TreeMap&lt;&gt;();<a name="line.174"></a>
+<span class="sourceLineNo">175</span>        if (trackDurations == null) {<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            return frequencyDistribution;<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        }<a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>        for (double duration : trackDurations) {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>            Integer prev = frequencyDistribution.get(duration);<a name="line.180"></a>
+<span class="sourceLineNo">181</span>            frequencyDistribution.put(duration, (prev == null ? 1 : prev + 1));<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        }<a name="line.182"></a>
+<span class="sourceLineNo">183</span>        return frequencyDistribution;<a name="line.183"></a>
+<span class="sourceLineNo">184</span>    }<a name="line.184"></a>
+<span class="sourceLineNo">185</span><a name="line.185"></a>
+<span class="sourceLineNo">186</span>    /**<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     * A utility class performing exponential decay fitting. This class enables<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     * the computation of an exponential decay's time constant (tau) and<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     * the goodness-of-fit (R-squared) through least-squares optimization.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     */<a name="line.190"></a>
+<span class="sourceLineNo">191</span>    private static class CalculateTauExpDecayFitter {<a name="line.191"></a>
+<span class="sourceLineNo">192</span><a name="line.192"></a>
+<span class="sourceLineNo">193</span>        private CalculateTauExpDecayFitter() {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        }<a name="line.194"></a>
+<span class="sourceLineNo">195</span><a name="line.195"></a>
+<span class="sourceLineNo">196</span>        /**<a name="line.196"></a>
+<span class="sourceLineNo">197</span>         * Immutable fit result.<a name="line.197"></a>
+<span class="sourceLineNo">198</span>         */<a name="line.198"></a>
+<span class="sourceLineNo">199</span>        private static final class FitResult {<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            final double tauMs;<a name="line.200"></a>
+<span class="sourceLineNo">201</span>            final double rSquared;<a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>            FitResult(double tauMs, double rSquared) {<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                this.tauMs    = tauMs;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                this.rSquared = rSquared;<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            }<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        }<a name="line.207"></a>
+<span class="sourceLineNo">208</span><a name="line.208"></a>
+<span class="sourceLineNo">209</span>        /**<a name="line.209"></a>
+<span class="sourceLineNo">210</span>         * Fits a model to the given data points using a non-linear least squares optimization<a name="line.210"></a>
+<span class="sourceLineNo">211</span>         * and returns the results as a {@code FitResult}.<a name="line.211"></a>
+<span class="sourceLineNo">212</span>         * The model assumes an exponential decay function of the form:<a name="line.212"></a>
+<span class="sourceLineNo">213</span>         * y = m * exp(-t * x) + b.<a name="line.213"></a>
+<span class="sourceLineNo">214</span>         *<a name="line.214"></a>
+<span class="sourceLineNo">215</span>         * @param x the independent variable data points (input values)<a name="line.215"></a>
+<span class="sourceLineNo">216</span>         * @param y the dependent variable data points (output values)<a name="line.216"></a>
+<span class="sourceLineNo">217</span>         *          Both arrays must have the same length and contain at least two elements.<a name="line.217"></a>
+<span class="sourceLineNo">218</span>         * @return a {@code FitResult} containing the calculated time constant in milliseconds (tauMs)<a name="line.218"></a>
+<span class="sourceLineNo">219</span>         *         and the coefficient of determination (rSquared).<a name="line.219"></a>
+<span class="sourceLineNo">220</span>         *         Returns a {@code FitResult} with NaN values if the input is invalid<a name="line.220"></a>
+<span class="sourceLineNo">221</span>         *         or the fitting process fails.<a name="line.221"></a>
+<span class="sourceLineNo">222</span>         */<a name="line.222"></a>
+<span class="sourceLineNo">223</span>        private static FitResult fit(double[] x, double[] y) {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            if (x == null || y == null || x.length != y.length || x.length &lt; 2) {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                return new FitResult(NaN, NaN);<a name="line.225"></a>
+<span class="sourceLineNo">226</span>            }<a name="line.226"></a>
+<span class="sourceLineNo">227</span><a name="line.227"></a>
+<span class="sourceLineNo">228</span>            final MultivariateJacobianFunction model = p -&gt; {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                double m = p.getEntry(0);<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                double t = p.getEntry(1);<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                double b = p.getEntry(2);<a name="line.231"></a>
+<span class="sourceLineNo">232</span><a name="line.232"></a>
+<span class="sourceLineNo">233</span>                double[] values = new double[x.length];<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                double[][] jac = new double[x.length][3];<a name="line.234"></a>
+<span class="sourceLineNo">235</span><a name="line.235"></a>
+<span class="sourceLineNo">236</span>                for (int i = 0; i &lt; x.length; i++) {<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                    double e = FastMath.exp(-t * x[i]);<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                    values[i] = m * e + b;<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                    jac[i][0] = e;              // d/dm<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                    jac[i][1] = -m * x[i] * e;  // d/dt<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                    jac[i][2] = 1.0;            // d/db<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                }<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                return new org.apache.commons.math3.util.Pair&lt;&gt;(<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                        new ArrayRealVector(values, false),<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                        new Array2DRowRealMatrix(jac, false)<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                );<a name="line.246"></a>
+<span class="sourceLineNo">247</span>            };<a name="line.247"></a>
+<span class="sourceLineNo">248</span><a name="line.248"></a>
+<span class="sourceLineNo">249</span>            double[] p0 = initialGuess(x, y);<a name="line.249"></a>
+<span class="sourceLineNo">250</span>            double[] w = new double[y.length];<a name="line.250"></a>
+<span class="sourceLineNo">251</span>            Arrays.fill(w, 1.0);<a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>            LeastSquaresProblem problem = new LeastSquaresBuilder()<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                    .start(p0)<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                    .model(model)<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                    .target(y)<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                    .weight(new DiagonalMatrix(w))<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                    .maxEvaluations(10_000)<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                    .maxIterations(1_000)<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                    .build();<a name="line.260"></a>
+<span class="sourceLineNo">261</span><a name="line.261"></a>
+<span class="sourceLineNo">262</span>            try {<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                LeastSquaresOptimizer.Optimum opt =<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                        new LevenbergMarquardtOptimizer().optimize(problem);<a name="line.264"></a>
+<span class="sourceLineNo">265</span><a name="line.265"></a>
+<span class="sourceLineNo">266</span>                double[] p = opt.getPoint().toArray();<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                double m = p[0], t = p[1], b = p[2];<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                double tauMs = (t &gt; 0.0) ? (1000.0 / t) : NaN;<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                double r2 = computeRSquared(x, y, m, t, b);<a name="line.269"></a>
+<span class="sourceLineNo">270</span><a name="line.270"></a>
+<span class="sourceLineNo">271</span>                return new FitResult(tauMs, r2);<a name="line.271"></a>
+<span class="sourceLineNo">272</span>            } catch (Throwable ignored) {<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                return new FitResult(NaN, NaN);<a name="line.273"></a>
+<span class="sourceLineNo">274</span>            }<a name="line.274"></a>
+<span class="sourceLineNo">275</span>        }<a name="line.275"></a>
+<span class="sourceLineNo">276</span><a name="line.276"></a>
+<span class="sourceLineNo">277</span>        /**<a name="line.277"></a>
+<span class="sourceLineNo">278</span>         * Generates an initial guess for the parameters of an exponential decay model<a name="line.278"></a>
+<span class="sourceLineNo">279</span>         * based on the provided input data.<a name="line.279"></a>
+<span class="sourceLineNo">280</span>         * This method calculates preliminary values for the model parameters<a name="line.280"></a>
+<span class="sourceLineNo">281</span>         * which can be used as a starting point for further optimization or fitting.<a name="line.281"></a>
+<span class="sourceLineNo">282</span>         *<a name="line.282"></a>
+<span class="sourceLineNo">283</span>         * @param x the independent variable data points (input values).<a name="line.283"></a>
+<span class="sourceLineNo">284</span>         *          The array must have at least two elements.<a name="line.284"></a>
+<span class="sourceLineNo">285</span>         * @param y the dependent variable data points (output values).<a name="line.285"></a>
+<span class="sourceLineNo">286</span>         *          The array must have the same length as the {@code x} array.<a name="line.286"></a>
+<span class="sourceLineNo">287</span>         * @return a double array containing the initial guesses for the model parameters:<a name="line.287"></a>
+<span class="sourceLineNo">288</span>         *         - {@code m}: the scaling factor<a name="line.288"></a>
+<span class="sourceLineNo">289</span>         *         - {@code t}: the time constant<a name="line.289"></a>
+<span class="sourceLineNo">290</span>         *         - {@code b}: the baseline offset<a name="line.290"></a>
+<span class="sourceLineNo">291</span>         */<a name="line.291"></a>
+<span class="sourceLineNo">292</span>        private static double[] initialGuess(double[] x, double[] y) {<a name="line.292"></a>
+<span class="sourceLineNo">293</span>            double minY = Arrays.stream(y).min().orElse(0);<a name="line.293"></a>
+<span class="sourceLineNo">294</span>            double maxY = Arrays.stream(y).max().orElse(1);<a name="line.294"></a>
+<span class="sourceLineNo">295</span>            double maxX = Arrays.stream(x).max().orElse(1);<a name="line.295"></a>
+<span class="sourceLineNo">296</span><a name="line.296"></a>
+<span class="sourceLineNo">297</span>            double b = Math.max(0.0, minY);<a name="line.297"></a>
+<span class="sourceLineNo">298</span>            double m = Math.max(1e-6, maxY - b);<a name="line.298"></a>
+<span class="sourceLineNo">299</span><a name="line.299"></a>
+<span class="sourceLineNo">300</span>            double eps  = Math.max(1e-6, 0.01 * m);<a name="line.300"></a>
+<span class="sourceLineNo">301</span>            double sumX = 0, sumXX = 0, sumY = 0, sumXY = 0;<a name="line.301"></a>
+<span class="sourceLineNo">302</span>            int    n    = 0;<a name="line.302"></a>
+<span class="sourceLineNo">303</span><a name="line.303"></a>
+<span class="sourceLineNo">304</span>            for (int i = 0; i &lt; x.length; i++) {<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                double yiAdj = y[i] - b;<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                if (yiAdj &gt; eps) {<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                    double lx = x[i];<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                    double ly = FastMath.log(yiAdj);<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                    sumX += lx;<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                    sumXX += lx * lx;<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                    sumY += ly;<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                    sumXY += lx * ly;<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                    n++;<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                }<a name="line.314"></a>
+<span class="sourceLineNo">315</span>            }<a name="line.315"></a>
+<span class="sourceLineNo">316</span><a name="line.316"></a>
+<span class="sourceLineNo">317</span>            double t;<a name="line.317"></a>
+<span class="sourceLineNo">318</span>            if (n &gt;= 2) {<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                double denominator = (n * sumXX - sumX * sumX);<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                double slope = (denominator == 0.0)<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                        ? -1.0<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                        : (n * sumXY - sumX * sumY) / denominator;<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                t = Math.max(1e-9, -slope);<a name="line.323"></a>
+<span class="sourceLineNo">324</span>            } else {<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                t = 1.0 / Math.max(1e-3, maxX);<a name="line.325"></a>
+<span class="sourceLineNo">326</span>            }<a name="line.326"></a>
+<span class="sourceLineNo">327</span><a name="line.327"></a>
+<span class="sourceLineNo">328</span>            // Clamp to reasonable ranges<a name="line.328"></a>
+<span class="sourceLineNo">329</span>            m = clamp(m, 1e-9, 1e9);<a name="line.329"></a>
+<span class="sourceLineNo">330</span>            t = clamp(t, 1e-9, 1e3);<a name="line.330"></a>
+<span class="sourceLineNo">331</span>            b = clamp(b, 0.0, Math.max(1.0, maxY));<a name="line.331"></a>
+<span class="sourceLineNo">332</span><a name="line.332"></a>
+<span class="sourceLineNo">333</span>            return new double[]{m, t, b};<a name="line.333"></a>
+<span class="sourceLineNo">334</span>        }<a name="line.334"></a>
+<span class="sourceLineNo">335</span><a name="line.335"></a>
+<span class="sourceLineNo">336</span>        /**<a name="line.336"></a>
+<span class="sourceLineNo">337</span>         * Computes the coefficient of determination (R-squared) for the given data points<a name="line.337"></a>
+<span class="sourceLineNo">338</span>         * and model parameters. The R-squared value indicates how well the model fits<a name="line.338"></a>
+<span class="sourceLineNo">339</span>         * the data, with a value ranging from 0 (no fit) to 1 (perfect fit).<a name="line.339"></a>
+<span class="sourceLineNo">340</span>         *<a name="line.340"></a>
+<span class="sourceLineNo">341</span>         * @param x the independent variable data points (input values).<a name="line.341"></a>
+<span class="sourceLineNo">342</span>         *          Must be an array of doubles with length matching the {@code y} array.<a name="line.342"></a>
+<span class="sourceLineNo">343</span>         * @param y the dependent variable data points (output values).<a name="line.343"></a>
+<span class="sourceLineNo">344</span>         *          Must be an array of doubles with length matching the {@code x} array.<a name="line.344"></a>
+<span class="sourceLineNo">345</span>         * @param m the scaling factor (model parameter).<a name="line.345"></a>
+<span class="sourceLineNo">346</span>         * @param t the time constant (model parameter).<a name="line.346"></a>
+<span class="sourceLineNo">347</span>         * @param b the baseline offset (model parameter).<a name="line.347"></a>
+<span class="sourceLineNo">348</span>         * @return the R-squared value, representing the goodness of fit of the model to the data.<a name="line.348"></a>
+<span class="sourceLineNo">349</span>         *         Returns NaN if the total sum of squares is zero.<a name="line.349"></a>
+<span class="sourceLineNo">350</span>         */<a name="line.350"></a>
+<span class="sourceLineNo">351</span>        private static double computeRSquared(double[] x, double[] y, double m, double t, double b) {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>            double meanY  = Arrays.stream(y).average().orElse(0);<a name="line.352"></a>
+<span class="sourceLineNo">353</span>            double ssRes  = 0.0;<a name="line.353"></a>
+<span class="sourceLineNo">354</span>            double  ssTot = 0.0;<a name="line.354"></a>
+<span class="sourceLineNo">355</span>            for (int i = 0; i &lt; y.length; i++) {<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                double predicted = m * FastMath.exp(-t * x[i]) + b;<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                ssRes += Math.pow(y[i] - predicted, 2);<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                ssTot += Math.pow(y[i] - meanY, 2);<a name="line.358"></a>
+<span class="sourceLineNo">359</span>            }<a name="line.359"></a>
+<span class="sourceLineNo">360</span>            return (ssTot == 0.0) ? NaN : 1.0 - (ssRes / ssTot);<a name="line.360"></a>
+<span class="sourceLineNo">361</span>        }<a name="line.361"></a>
+<span class="sourceLineNo">362</span><a name="line.362"></a>
+<span class="sourceLineNo">363</span>        private static double clamp(double v, double lo, double hi) {<a name="line.363"></a>
+<span class="sourceLineNo">364</span>            return Math.max(lo, Math.min(hi, v));<a name="line.364"></a>
+<span class="sourceLineNo">365</span>        }<a name="line.365"></a>
+<span class="sourceLineNo">366</span>    }<a name="line.366"></a>
+<span class="sourceLineNo">367</span><a name="line.367"></a>
+<span class="sourceLineNo">368</span>    /**<a name="line.368"></a>
+<span class="sourceLineNo">369</span>     * Fits the given data arrays to an exponential decay model and returns the calculated time constant (tau)<a name="line.369"></a>
+<span class="sourceLineNo">370</span>     * and the goodness-of-fit (R-squared) as an array of double values.<a name="line.370"></a>
+<span class="sourceLineNo">371</span>     *<a name="line.371"></a>
+<span class="sourceLineNo">372</span>     * @param x the independent variable data points<a name="line.372"></a>
+<span class="sourceLineNo">373</span>     * @param y the dependent variable data points<a name="line.373"></a>
+<span class="sourceLineNo">374</span>     * @return an array of double values, where the first element is the time constant (tau) and the second<a name="line.374"></a>
+<span class="sourceLineNo">375</span>     * element is the goodness-of-fit (R-squared)<a name="line.375"></a>
+<span class="sourceLineNo">376</span>     */<a name="line.376"></a>
+<span class="sourceLineNo">377</span>    public static double[] debugFit(double[] x, double[] y) {<a name="line.377"></a>
+<span class="sourceLineNo">378</span>        CalculateTauExpDecayFitter.FitResult result = CalculateTauExpDecayFitter.fit(x, y);<a name="line.378"></a>
+<span class="sourceLineNo">379</span>        return new double[]{result.tauMs, result.rSquared};<a name="line.379"></a>
+<span class="sourceLineNo">380</span>    }<a name="line.380"></a>
+<span class="sourceLineNo">381</span>}<a name="line.381"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

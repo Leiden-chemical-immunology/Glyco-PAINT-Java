@@ -1,0 +1,967 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/******************************************************************************<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  Class:        TracksCsvComparator.java<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  Package:      validation<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *  PURPOSE:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *    Compares two Paint-generated “Tracks” CSV datasets (typically from Python<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *    and Java outputs) and evaluates track-level correspondence across metrics<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *    such as duration, displacement, speed, distance, confinement, and position.<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  DESCRIPTION:<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    The comparator reads, normalizes, and aligns trajectory data by recording<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    name and track ID. It performs both strict and diagnostic comparisons using<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *    configurable tolerance thresholds and computes per-track match statistics.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *    Outputs include normalized CSVs, diagnostic scoring files, tolerance<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *    optimization results, and overall summary reports.<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *  RESPONSIBILITIES:<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *    • Normalize and align datasets for comparison<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *    • Perform exact and approximate track matching<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *    • Evaluate numeric differences with configurable tolerances<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *    • Generate validation diagnostics and summary CSV reports<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *    • Optimize tolerance settings based on deviation statistics<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *  USAGE EXAMPLE:<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *    TracksCsvComparator.main(new String[]{});<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *  DEPENDENCIES:<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *    - java.io<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *    - java.nio.file<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *    - java.util<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *  AUTHOR:<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *    Hans Bakker (jjabakker)<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *<a name="line.34"></a>
+<span class="sourceLineNo">035</span> *  UPDATED:<a name="line.35"></a>
+<span class="sourceLineNo">036</span> *    2025-10-27<a name="line.36"></a>
+<span class="sourceLineNo">037</span> *<a name="line.37"></a>
+<span class="sourceLineNo">038</span> *  COPYRIGHT:<a name="line.38"></a>
+<span class="sourceLineNo">039</span> *    © 2025 Hans Bakker. All rights reserved.<a name="line.39"></a>
+<span class="sourceLineNo">040</span> ******************************************************************************/<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span>package paint.regression;<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span>import java.io.BufferedReader;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import java.io.BufferedWriter;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import java.io.IOException;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import java.io.PrintWriter;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import java.nio.file.Files;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import java.nio.file.Path;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import java.nio.file.Paths;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import java.util.*;<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>public class TracksCsvComparatorPythonJava {<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span>    // --- Field-level tolerances (units correspond to column meaning) ---<a name="line.55"></a>
+<span class="sourceLineNo">056</span>    private static final double XY_TOLERANCE           = 0.5;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>    private static final double DURATION_TOLERANCE     = 0.1;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>    private static final double SPEED_TOLERANCE        = 0.5;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>    private static final double DISPLACEMENT_TOLERANCE = 0.5;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>    private static final double DIST_TOLERANCE         = 0.5;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    private static final double CONFINEMENT_TOLERANCE  = 0.5;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>    /**<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     * Maximum allowed RMS score for a diagnostic match to be considered acceptable.<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     */<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    private static final double MAX_ACCEPTABLE_SCORE = 40;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>    /**<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     * Standard column order used in normalized CSVs.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     */<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    private static final List&lt;String&gt; COMPARE_COLUMNS = Arrays.asList(<a name="line.69"></a>
+<span class="sourceLineNo">070</span>            "Recording Name",<a name="line.70"></a>
+<span class="sourceLineNo">071</span>            "Track Id",<a name="line.71"></a>
+<span class="sourceLineNo">072</span>            "Square Nr",<a name="line.72"></a>
+<span class="sourceLineNo">073</span>            "Nr Spots",<a name="line.73"></a>
+<span class="sourceLineNo">074</span>            "Nr Gaps",<a name="line.74"></a>
+<span class="sourceLineNo">075</span>            "Longest Gap",<a name="line.75"></a>
+<span class="sourceLineNo">076</span>            "Track Duration",<a name="line.76"></a>
+<span class="sourceLineNo">077</span>            "Track Displacement",<a name="line.77"></a>
+<span class="sourceLineNo">078</span>            "Track Max Speed",<a name="line.78"></a>
+<span class="sourceLineNo">079</span>            "Track Median Speed",<a name="line.79"></a>
+<span class="sourceLineNo">080</span>            "Total Distance",<a name="line.80"></a>
+<span class="sourceLineNo">081</span>            "Track X Location",<a name="line.81"></a>
+<span class="sourceLineNo">082</span>            "Track Y Location",<a name="line.82"></a>
+<span class="sourceLineNo">083</span>            "Confinement Ratio"<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    );<a name="line.84"></a>
+<span class="sourceLineNo">085</span><a name="line.85"></a>
+<span class="sourceLineNo">086</span>    // ---------------------------------------------------------------------<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    /**<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     * Mappings from alternative column names → standard column names.<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     */<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    private static final Map&lt;String, String&gt; COLUMN_MAP = new HashMap&lt;&gt;();<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span>    // ---------------------------------------------------------------------<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>    static {<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        COLUMN_MAP.put("Square Number", "Square Nr");<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        COLUMN_MAP.put("Number of Spots", "Nr Spots");<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        COLUMN_MAP.put("Number of Gaps", "Nr Gaps");<a name="line.97"></a>
+<span class="sourceLineNo">098</span>    }<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span>    /**<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     * The run method serves as the entry point to the program, orchestrating the process<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     * of normalizing data, grouping, matching, and validating tracks from two CSV files<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     * representing an old and new dataset, respectively. The output includes validation<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     * summaries, diagnostics, and comparison files to analyze the results of strict and<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     * diagnostic matching phases.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     * @param oldCsv     the old CSV file<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     * @param newCsv     the new CSV file<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     */<a name="line.109"></a>
+<span class="sourceLineNo">110</span>    public static void run(Path oldCsv, Path newCsv) {<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>        Path downloadsPath = Paths.get(System.getProperty("user.home"), "Downloads");<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        Path validatePath = downloadsPath.resolve("Validate").resolve(Paths.get("Tracks"));<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>        try {<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            Files.createDirectories(validatePath);<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        } catch (IOException ignored) {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        }<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>        Path outCsv     = validatePath.resolve("Tracks Validation - Comparison.csv");<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        Path diagCsv    = validatePath.resolve("Tracks Validation - Comparison Diagnostics.csv");<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        Path summaryCsv = validatePath.resolve("Tracks Validation - Comparison Summary.csv");<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        Path oldNormCsv = validatePath.resolve("Tracks Validation - Old Normalised.csv");<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        Path newNormCsv = validatePath.resolve("Tracks Validation - New Normalised.csv");<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>        MatchConfig cfg = new MatchConfig();<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span>        try {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            // === Step 1: Read &amp; normalize ===<a name="line.129"></a>
+<span class="sourceLineNo">130</span>            List&lt;Map&lt;String, String&gt;&gt; oldRows = readCsv(oldCsv);<a name="line.130"></a>
+<span class="sourceLineNo">131</span>            List&lt;Map&lt;String, String&gt;&gt; newRows = readCsv(newCsv);<a name="line.131"></a>
+<span class="sourceLineNo">132</span><a name="line.132"></a>
+<span class="sourceLineNo">133</span>            List&lt;Map&lt;String, String&gt;&gt; oldNorm = normalizeAndSort(oldRows, "Ext Recording Name");<a name="line.133"></a>
+<span class="sourceLineNo">134</span>            List&lt;Map&lt;String, String&gt;&gt; newNorm = normalizeAndSort(newRows, "Recording Name");<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            writeNormalizedCsv(oldNorm, oldNormCsv);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>            writeNormalizedCsv(newNorm, newNormCsv);<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>            // === Step 2: Group by recording name ===<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            Map&lt;String, List&lt;Map&lt;String, String&gt;&gt;&gt; oldByRec = groupBy(oldNorm, "Ext Recording Name");<a name="line.139"></a>
+<span class="sourceLineNo">140</span>            Map&lt;String, List&lt;Map&lt;String, String&gt;&gt;&gt; newByRec = groupBy(newNorm, "Recording Name");<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>            // Build a recording name mapping ignoring threshold suffixes<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            Map&lt;String, String&gt; recMapping = new LinkedHashMap&lt;&gt;();<a name="line.143"></a>
+<span class="sourceLineNo">144</span>            for (String oldRec : oldByRec.keySet()) {<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                String oldNormName = normalizeRecordingName(oldRec);<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                String match = findClosestRecording(oldNormName, newByRec.keySet());<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                if (match != null) {<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                    recMapping.put(oldRec, match);<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                }<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            }<a name="line.150"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">152</span>            if (recMapping.isEmpty()) {<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                System.err.println("❌ No matching recordings found.");<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                return;<a name="line.154"></a>
+<span class="sourceLineNo">155</span>            }<a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
+<span class="sourceLineNo">157</span>            System.out.println("\n=== Recording mappings ===");<a name="line.157"></a>
+<span class="sourceLineNo">158</span>            for (Map.Entry&lt;String, String&gt; e : recMapping.entrySet()) {<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                System.out.println("  " + e.getKey() + "  →  " + e.getValue());<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            }<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            System.out.println();<a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span>            // === Step 3: Phase 1 — strict direct matching ===<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            Set&lt;String&gt; usedNewIds                    = new HashSet&lt;&gt;();<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            List&lt;Map&lt;String, String&gt;&gt; unmatched       = new ArrayList&lt;&gt;();<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            List&lt;Map&lt;String, String&gt;&gt; multipleMatches = new ArrayList&lt;&gt;();<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            Set&lt;String&gt; multipleMatchIds              = new HashSet&lt;&gt;();<a name="line.167"></a>
+<span class="sourceLineNo">168</span>            List&lt;String&gt; perfectIds                   = new ArrayList&lt;&gt;();<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            List&lt;String&gt; reasonableIds                = new ArrayList&lt;&gt;();<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            List&lt;String&gt; unmatchedIds                 = new ArrayList&lt;&gt;();<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>            int total = 0, matched = 0, unique = 0, multiple = 0;<a name="line.172"></a>
+<span class="sourceLineNo">173</span><a name="line.173"></a>
+<span class="sourceLineNo">174</span>            try (BufferedWriter bw = Files.newBufferedWriter(outCsv)) {<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                // Write header row for comparison file<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                bw.write(String.join(",", Arrays.asList(<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                        "Ext Recording Name",<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                        "Track Id",<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                        "Track Id Java",<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                        "Square Nr",<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                        "Nr Spots",<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                        "Nr Gaps",<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                        "Longest Gap",<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                        "Track Duration",<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                        "Track Displacement",<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                        "Track Max Speed",<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                        "Track Median Speed",<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                        "Total Distance",<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                        "Track X Location",<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                        "Track Y Location",<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                        "Confinement Ratio",<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                        "Matches Found"<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                )));<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                bw.newLine();<a name="line.194"></a>
+<span class="sourceLineNo">195</span><a name="line.195"></a>
+<span class="sourceLineNo">196</span>                // Process per recording mapping<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                for (Map.Entry&lt;String, String&gt; entry : recMapping.entrySet()) {<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                    String oldRec = entry.getKey();<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                    String newRec = entry.getValue();<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                    List&lt;Map&lt;String, String&gt;&gt; oldSubset = oldByRec.get(oldRec);<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                    List&lt;Map&lt;String, String&gt;&gt; newSubset = newByRec.get(newRec);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                    if (oldSubset == null || newSubset == null) {<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                        continue;<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                    }<a name="line.204"></a>
+<span class="sourceLineNo">205</span><a name="line.205"></a>
+<span class="sourceLineNo">206</span>                    System.out.printf("→ Processing %s (%d old, %d new)%n", oldRec, oldSubset.size(), newSubset.size());<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                    for (int i = 0; i &lt; oldSubset.size(); i++) {<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                        Map&lt;String, String&gt; old = oldSubset.get(i);<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                        total++;<a name="line.209"></a>
+<span class="sourceLineNo">210</span><a name="line.210"></a>
+<span class="sourceLineNo">211</span>                        List&lt;Map&lt;String, String&gt;&gt; matches = findMatches(cfg, old, newSubset, usedNewIds);<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                        int count = matches.size();<a name="line.212"></a>
+<span class="sourceLineNo">213</span><a name="line.213"></a>
+<span class="sourceLineNo">214</span>                        if (count == 1) {<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                            matched++;<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                            unique++;<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                            usedNewIds.add(matches.get(0).get("Track Id"));<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                            perfectIds.add(old.get("Track Id"));<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                        } else if (count &gt; 1) {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                            matched++;<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                            multiple++;<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                            multipleMatches.addAll(matches);<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                            for (Map&lt;String, String&gt; m : matches) {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                                multipleMatchIds.add(m.get("Track Id"));<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                            }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                            unmatched.add(old);<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                            unmatchedIds.add(old.get("Track Id"));<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                        } else {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                            unmatched.add(old);<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                            unmatchedIds.add(old.get("Track Id"));<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                        }<a name="line.231"></a>
+<span class="sourceLineNo">232</span><a name="line.232"></a>
+<span class="sourceLineNo">233</span>                        Map&lt;String, String&gt; match = (count == 1) ? matches.get(0) : null;<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                        List&lt;String&gt; row = new ArrayList&lt;&gt;();<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                        row.add(escapeCsv(old.get("Ext Recording Name")));<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                        row.add(escapeCsv(old.get("Track Id")));<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                        row.add(match != null ? escapeCsv(match.get("Track Id")) : "");<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                        row.add(old.getOrDefault("Square Nr",         ""));<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                        row.add(old.getOrDefault("Nr Spots",           ""));<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                        row.add(old.getOrDefault("Nr Gaps",            ""));<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                        row.add(old.getOrDefault("Longest Gap",        ""));<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                        row.add(old.getOrDefault("Track Duration",     ""));<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                        row.add(old.getOrDefault("Track Displacement", ""));<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                        row.add(old.getOrDefault("Track Max Speed",    ""));<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                        row.add(old.getOrDefault("Track Median Speed", ""));<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                        row.add(old.getOrDefault("Total Distance",     ""));<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                        row.add(old.getOrDefault("Track X Location",   ""));<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                        row.add(old.getOrDefault("Track Y Location",   ""));<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                        row.add(old.getOrDefault("Confinement Ratio",  ""));<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                        row.add(String.valueOf(count));<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                        bw.write(String.join(",", row));<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                        bw.newLine();<a name="line.252"></a>
+<span class="sourceLineNo">253</span><a name="line.253"></a>
+<span class="sourceLineNo">254</span>                        // 👇 periodic progress reporting every 1000 tracks<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                        if ((i + 1) % 1000 == 0) {<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                            System.out.printf("   ...processed %,d / %,d tracks in %s%n",<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                                              i + 1, oldSubset.size(), oldRec);<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                        }<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                    }<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                    System.out.printf("   ✓ Finished %s%n", oldRec);<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                }<a name="line.261"></a>
+<span class="sourceLineNo">262</span>            }<a name="line.262"></a>
+<span class="sourceLineNo">263</span><a name="line.263"></a>
+<span class="sourceLineNo">264</span>            // Phase 1 summary<a name="line.264"></a>
+<span class="sourceLineNo">265</span>            System.out.println("\n=== Phase 1 Summary ===");<a name="line.265"></a>
+<span class="sourceLineNo">266</span>            System.out.printf("Total old tracks: %,d%n", total);<a name="line.266"></a>
+<span class="sourceLineNo">267</span>            System.out.printf("Matched (≥1):     %,d%n", matched);<a name="line.267"></a>
+<span class="sourceLineNo">268</span>            System.out.printf("Unique matches:   %,d%n", unique);<a name="line.268"></a>
+<span class="sourceLineNo">269</span>            System.out.printf("Multiple matches: %,d%n", multiple);<a name="line.269"></a>
+<span class="sourceLineNo">270</span>            System.out.printf("Unmatched:        %,d%n", unmatched.size());<a name="line.270"></a>
+<span class="sourceLineNo">271</span>            System.out.println("📄 Written: " + outCsv.toAbsolutePath());<a name="line.271"></a>
+<span class="sourceLineNo">272</span><a name="line.272"></a>
+<span class="sourceLineNo">273</span>            // === Step 4: Phase 2 — diagnostic scoring for remaining unmatched ===<a name="line.273"></a>
+<span class="sourceLineNo">274</span>            if (!unmatched.isEmpty()) {<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                System.out.println("\nRunning diagnostics for unmatched tracks...");<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                try (BufferedWriter bw = Files.newBufferedWriter(diagCsv)) {<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                    bw.write(String.join(",", Arrays.asList(<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                            "Recording", "Old Track ID", "Best Match ID", "Duration Δ", "Displacement Δ", "Max Speed Δ",<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                            "Median Speed Δ", "Total Distance Δ", "X Δ", "Y Δ", "Confinement Δ", "Total Score"<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                    )));<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                    bw.newLine();<a name="line.281"></a>
+<span class="sourceLineNo">282</span><a name="line.282"></a>
+<span class="sourceLineNo">283</span>                    Map&lt;String, List&lt;Map&lt;String, String&gt;&gt;&gt; unmatchedByRec = groupBy(unmatched, "Ext Recording Name");<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                    for (Map.Entry&lt;String, List&lt;Map&lt;String, String&gt;&gt;&gt; e : unmatchedByRec.entrySet()) {<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                        String oldRec = e.getKey();<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                        String normOld = normalizeRecordingName(oldRec);<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                        String newRec = findClosestRecording(normOld, newByRec.keySet());<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                        if (newRec == null) {<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                            continue;<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                        }<a name="line.290"></a>
+<span class="sourceLineNo">291</span><a name="line.291"></a>
+<span class="sourceLineNo">292</span>                        List&lt;Map&lt;String, String&gt;&gt; candidates = new ArrayList&lt;&gt;();<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                        for (Map&lt;String, String&gt; cand : newByRec.get(newRec)) {<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                            if (multipleMatchIds.contains(cand.get("Track Id"))) {<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                                candidates.add(cand);<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                            }<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                        }<a name="line.297"></a>
+<span class="sourceLineNo">298</span><a name="line.298"></a>
+<span class="sourceLineNo">299</span>                        for (Map&lt;String, String&gt; old : e.getValue()) {<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                            Map&lt;String, Object&gt; best = findBestCandidate(old, candidates);<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                            bw.write(String.join(",", Arrays.asList(<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                                    escapeCsv(oldRec),<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                                    escapeCsv(old.getOrDefault("Track Id", "")),<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                                    escapeCsv((String) best.get("BestId")),<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                                    fmt(best.get("durD")), fmt(best.get("dispD")), fmt(best.get("maxD")),<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                                    fmt(best.get("medD")), fmt(best.get("distD")),<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                                    fmt(best.get("xD")), fmt(best.get("yD")), fmt(best.get("confD")),<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                                    fmt(best.get("score"))<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                            )));<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                            bw.newLine();<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                        }<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                    }<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                }<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                System.out.println("📊 Diagnostics written: " + diagCsv.toAbsolutePath());<a name="line.314"></a>
+<span class="sourceLineNo">315</span><a name="line.315"></a>
+<span class="sourceLineNo">316</span>            }<a name="line.316"></a>
+<span class="sourceLineNo">317</span><a name="line.317"></a>
+<span class="sourceLineNo">318</span>            // 🔹 Ensure diagnostic file is fully flushed before optimization<a name="line.318"></a>
+<span class="sourceLineNo">319</span>            try {<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                Thread.sleep(200); // short wait for filesystem sync<a name="line.320"></a>
+<span class="sourceLineNo">321</span>            } catch (InterruptedException ignored) {<a name="line.321"></a>
+<span class="sourceLineNo">322</span>            }<a name="line.322"></a>
+<span class="sourceLineNo">323</span><a name="line.323"></a>
+<span class="sourceLineNo">324</span>            // === Step 4b: Iterative tolerance optimization (impact analysis) ===<a name="line.324"></a>
+<span class="sourceLineNo">325</span>            Path tolCsv = validatePath.resolve("Tracks Validation - Tolerance Optimization.csv");<a name="line.325"></a>
+<span class="sourceLineNo">326</span>            if (Files.exists(diagCsv)) {<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                System.out.println("\n🔬 Running tolerance impact analysis (5% baseline → tighter thresholds)...");<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                optimizeTolerances(diagCsv, tolCsv);<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                System.out.println("📈 Tolerance optimization summary written: " + tolCsv.toAbsolutePath());<a name="line.329"></a>
+<span class="sourceLineNo">330</span>            } else {<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                System.out.println("ℹ️ Skipping tolerance optimization — no diagnostic file found.");<a name="line.331"></a>
+<span class="sourceLineNo">332</span>            }<a name="line.332"></a>
+<span class="sourceLineNo">333</span><a name="line.333"></a>
+<span class="sourceLineNo">334</span><a name="line.334"></a>
+<span class="sourceLineNo">335</span>            // === Step 5: Global summary ===<a name="line.335"></a>
+<span class="sourceLineNo">336</span>            summarize(perfectIds, reasonableIds, unmatchedIds, diagCsv, summaryCsv, total);<a name="line.336"></a>
+<span class="sourceLineNo">337</span><a name="line.337"></a>
+<span class="sourceLineNo">338</span>            System.out.println("\n✅ All done!");<a name="line.338"></a>
+<span class="sourceLineNo">339</span>            System.out.println("📄 Summary: " + summaryCsv.toAbsolutePath());<a name="line.339"></a>
+<span class="sourceLineNo">340</span>            System.out.println("📄 Normalized old: " + oldNormCsv.toAbsolutePath());<a name="line.340"></a>
+<span class="sourceLineNo">341</span>            System.out.println("📄 Normalized new: " + newNormCsv.toAbsolutePath());<a name="line.341"></a>
+<span class="sourceLineNo">342</span><a name="line.342"></a>
+<span class="sourceLineNo">343</span>        } catch (Exception e) {<a name="line.343"></a>
+<span class="sourceLineNo">344</span>            e.printStackTrace();<a name="line.344"></a>
+<span class="sourceLineNo">345</span>        }<a name="line.345"></a>
+<span class="sourceLineNo">346</span>    }<a name="line.346"></a>
+<span class="sourceLineNo">347</span><a name="line.347"></a>
+<span class="sourceLineNo">348</span>    // ---------------------------------------------------------------------<a name="line.348"></a>
+<span class="sourceLineNo">349</span><a name="line.349"></a>
+<span class="sourceLineNo">350</span>    /**<a name="line.350"></a>
+<span class="sourceLineNo">351</span>     * Strip threshold suffix ("-threshold-N") from recording name.<a name="line.351"></a>
+<span class="sourceLineNo">352</span>     */<a name="line.352"></a>
+<span class="sourceLineNo">353</span>    private static String normalizeRecordingName(String name) {<a name="line.353"></a>
+<span class="sourceLineNo">354</span>        if (name == null) {<a name="line.354"></a>
+<span class="sourceLineNo">355</span>            return "";<a name="line.355"></a>
+<span class="sourceLineNo">356</span>        }<a name="line.356"></a>
+<span class="sourceLineNo">357</span>        name = name.trim();<a name="line.357"></a>
+<span class="sourceLineNo">358</span>        int idx = name.indexOf("-threshold");<a name="line.358"></a>
+<span class="sourceLineNo">359</span>        if (idx &gt; 0) {<a name="line.359"></a>
+<span class="sourceLineNo">360</span>            name = name.substring(0, idx);<a name="line.360"></a>
+<span class="sourceLineNo">361</span>        }<a name="line.361"></a>
+<span class="sourceLineNo">362</span>        return name;<a name="line.362"></a>
+<span class="sourceLineNo">363</span>    }<a name="line.363"></a>
+<span class="sourceLineNo">364</span><a name="line.364"></a>
+<span class="sourceLineNo">365</span>    /**<a name="line.365"></a>
+<span class="sourceLineNo">366</span>     * Find best matching recording name among candidates (ignoring threshold).<a name="line.366"></a>
+<span class="sourceLineNo">367</span>     */<a name="line.367"></a>
+<span class="sourceLineNo">368</span>    private static String findClosestRecording(String oldRecNorm, Set&lt;String&gt; candidates) {<a name="line.368"></a>
+<span class="sourceLineNo">369</span>        for (String cand : candidates) {<a name="line.369"></a>
+<span class="sourceLineNo">370</span>            String normCand = normalizeRecordingName(cand);<a name="line.370"></a>
+<span class="sourceLineNo">371</span>            if (oldRecNorm.equalsIgnoreCase(normCand)<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                    || oldRecNorm.startsWith(normCand)<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                    || normCand.startsWith(oldRecNorm)) {<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                return cand;<a name="line.374"></a>
+<span class="sourceLineNo">375</span>            }<a name="line.375"></a>
+<span class="sourceLineNo">376</span>        }<a name="line.376"></a>
+<span class="sourceLineNo">377</span>        return null;<a name="line.377"></a>
+<span class="sourceLineNo">378</span>    }<a name="line.378"></a>
+<span class="sourceLineNo">379</span><a name="line.379"></a>
+<span class="sourceLineNo">380</span>    /**<a name="line.380"></a>
+<span class="sourceLineNo">381</span>     * Normalize column names, recording names, and track IDs.<a name="line.381"></a>
+<span class="sourceLineNo">382</span>     * Then sort by Recording Name + Track Id.<a name="line.382"></a>
+<span class="sourceLineNo">383</span>     */<a name="line.383"></a>
+<span class="sourceLineNo">384</span>    private static List&lt;Map&lt;String, String&gt;&gt; normalizeAndSort(List&lt;Map&lt;String, String&gt;&gt; rows,<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                                                              String recordingColumn) {<a name="line.385"></a>
+<span class="sourceLineNo">386</span>        if (rows.isEmpty()) {<a name="line.386"></a>
+<span class="sourceLineNo">387</span>            return rows;<a name="line.387"></a>
+<span class="sourceLineNo">388</span>        }<a name="line.388"></a>
+<span class="sourceLineNo">389</span><a name="line.389"></a>
+<span class="sourceLineNo">390</span>        for (Map&lt;String, String&gt; row : rows) {<a name="line.390"></a>
+<span class="sourceLineNo">391</span>            // unify recording name<a name="line.391"></a>
+<span class="sourceLineNo">392</span>            String recName = row.getOrDefault(recordingColumn, "").trim().replace('\u00A0', ' ');<a name="line.392"></a>
+<span class="sourceLineNo">393</span>            int idx = recName.toLowerCase(Locale.ROOT).indexOf("-threshold");<a name="line.393"></a>
+<span class="sourceLineNo">394</span>            if (idx &gt; 0) {<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                recName = recName.substring(0, idx);<a name="line.395"></a>
+<span class="sourceLineNo">396</span>            }<a name="line.396"></a>
+<span class="sourceLineNo">397</span>            row.put("Recording Name", recName);<a name="line.397"></a>
+<span class="sourceLineNo">398</span><a name="line.398"></a>
+<span class="sourceLineNo">399</span>            // normalize alternate column names<a name="line.399"></a>
+<span class="sourceLineNo">400</span>            for (Map.Entry&lt;String, String&gt; e : COLUMN_MAP.entrySet()) {<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                if (row.containsKey(e.getKey()) &amp;&amp; !row.containsKey(e.getValue())) {<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                    row.put(e.getValue(), row.get(e.getKey()));<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                }<a name="line.403"></a>
+<span class="sourceLineNo">404</span>            }<a name="line.404"></a>
+<span class="sourceLineNo">405</span><a name="line.405"></a>
+<span class="sourceLineNo">406</span>            // ensure Track Id field exists<a name="line.406"></a>
+<span class="sourceLineNo">407</span>            String id = row.getOrDefault("Track Id", "").trim();<a name="line.407"></a>
+<span class="sourceLineNo">408</span>            row.put("Track Id", id);<a name="line.408"></a>
+<span class="sourceLineNo">409</span>        }<a name="line.409"></a>
+<span class="sourceLineNo">410</span><a name="line.410"></a>
+<span class="sourceLineNo">411</span>        // sort deterministically<a name="line.411"></a>
+<span class="sourceLineNo">412</span>        rows.sort((a, b) -&gt; {<a name="line.412"></a>
+<span class="sourceLineNo">413</span>            String ra = a.getOrDefault("Recording Name", "").toLowerCase(Locale.ROOT);<a name="line.413"></a>
+<span class="sourceLineNo">414</span>            String rb = b.getOrDefault("Recording Name", "").toLowerCase(Locale.ROOT);<a name="line.414"></a>
+<span class="sourceLineNo">415</span>            int cmp = ra.compareTo(rb);<a name="line.415"></a>
+<span class="sourceLineNo">416</span>            if (cmp != 0) {<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                return cmp;<a name="line.417"></a>
+<span class="sourceLineNo">418</span>            }<a name="line.418"></a>
+<span class="sourceLineNo">419</span>            double ia = parseDoubleSafe(a.getOrDefault("Track Id", ""));<a name="line.419"></a>
+<span class="sourceLineNo">420</span>            double ib = parseDoubleSafe(b.getOrDefault("Track Id", ""));<a name="line.420"></a>
+<span class="sourceLineNo">421</span>            if (Double.isFinite(ia) &amp;&amp; Double.isFinite(ib)) {<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                return Double.compare(ia, ib);<a name="line.422"></a>
+<span class="sourceLineNo">423</span>            }<a name="line.423"></a>
+<span class="sourceLineNo">424</span>            return a.getOrDefault("Track Id", "").compareTo(b.getOrDefault("Track Id", ""));<a name="line.424"></a>
+<span class="sourceLineNo">425</span>        });<a name="line.425"></a>
+<span class="sourceLineNo">426</span><a name="line.426"></a>
+<span class="sourceLineNo">427</span>        System.out.println("✅ Normalized + sorted by Recording Name + Track Id");<a name="line.427"></a>
+<span class="sourceLineNo">428</span>        return rows;<a name="line.428"></a>
+<span class="sourceLineNo">429</span>    }<a name="line.429"></a>
+<span class="sourceLineNo">430</span><a name="line.430"></a>
+<span class="sourceLineNo">431</span>    // ---------------------------------------------------------------------<a name="line.431"></a>
+<span class="sourceLineNo">432</span><a name="line.432"></a>
+<span class="sourceLineNo">433</span>    /**<a name="line.433"></a>
+<span class="sourceLineNo">434</span>     * Write normalized CSV to disk for verification and inspection.<a name="line.434"></a>
+<span class="sourceLineNo">435</span>     */<a name="line.435"></a>
+<span class="sourceLineNo">436</span>    private static void writeNormalizedCsv(List&lt;Map&lt;String, String&gt;&gt; sortedRows, Path out) throws IOException {<a name="line.436"></a>
+<span class="sourceLineNo">437</span>        if (sortedRows.isEmpty()) {<a name="line.437"></a>
+<span class="sourceLineNo">438</span>            return;<a name="line.438"></a>
+<span class="sourceLineNo">439</span>        }<a name="line.439"></a>
+<span class="sourceLineNo">440</span><a name="line.440"></a>
+<span class="sourceLineNo">441</span>        List&lt;String&gt; headers = new ArrayList&lt;&gt;(COMPARE_COLUMNS);<a name="line.441"></a>
+<span class="sourceLineNo">442</span><a name="line.442"></a>
+<span class="sourceLineNo">443</span>        try (BufferedWriter bw = Files.newBufferedWriter(out)) {<a name="line.443"></a>
+<span class="sourceLineNo">444</span>            bw.write(String.join(",", headers));<a name="line.444"></a>
+<span class="sourceLineNo">445</span>            bw.newLine();<a name="line.445"></a>
+<span class="sourceLineNo">446</span><a name="line.446"></a>
+<span class="sourceLineNo">447</span>            for (Map&lt;String, String&gt; row : sortedRows) {<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                List&lt;String&gt; vals = new ArrayList&lt;&gt;();<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                for (String h : headers) {<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                    vals.add(escapeCsv(row.getOrDefault(h, "")));<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                }<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                bw.write(String.join(",", vals));<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                bw.newLine();<a name="line.453"></a>
+<span class="sourceLineNo">454</span>            }<a name="line.454"></a>
+<span class="sourceLineNo">455</span>        }<a name="line.455"></a>
+<span class="sourceLineNo">456</span><a name="line.456"></a>
+<span class="sourceLineNo">457</span>        System.out.println("📄 Normalized harmonized file written: " + out.getFileName());<a name="line.457"></a>
+<span class="sourceLineNo">458</span>        System.out.println("  → Columns: " + headers);<a name="line.458"></a>
+<span class="sourceLineNo">459</span><a name="line.459"></a>
+<span class="sourceLineNo">460</span>        // preview first few entries<a name="line.460"></a>
+<span class="sourceLineNo">461</span>        for (int i = 0; i &lt; Math.min(3, sortedRows.size()); i++) {<a name="line.461"></a>
+<span class="sourceLineNo">462</span>            Map&lt;String, String&gt; r = sortedRows.get(i);<a name="line.462"></a>
+<span class="sourceLineNo">463</span>            System.out.printf("    %s | %s%n",<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                              r.getOrDefault("Recording Name", ""), r.getOrDefault("Track Id", ""));<a name="line.464"></a>
+<span class="sourceLineNo">465</span>        }<a name="line.465"></a>
+<span class="sourceLineNo">466</span>    }<a name="line.466"></a>
+<span class="sourceLineNo">467</span><a name="line.467"></a>
+<span class="sourceLineNo">468</span>    // ---------------------------------------------------------------------<a name="line.468"></a>
+<span class="sourceLineNo">469</span><a name="line.469"></a>
+<span class="sourceLineNo">470</span>    // --- Matching + metrics ---<a name="line.470"></a>
+<span class="sourceLineNo">471</span>    private static List&lt;Map&lt;String, String&gt;&gt; findMatches(MatchConfig cfg, Map&lt;String, String&gt; old,<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                                                         List&lt;Map&lt;String, String&gt;&gt; candidates, Set&lt;String&gt; used) {<a name="line.472"></a>
+<span class="sourceLineNo">473</span>        List&lt;Map&lt;String, String&gt;&gt; matches = new ArrayList&lt;&gt;();<a name="line.473"></a>
+<span class="sourceLineNo">474</span><a name="line.474"></a>
+<span class="sourceLineNo">475</span>        // Extract numerical fields from "old" track<a name="line.475"></a>
+<span class="sourceLineNo">476</span>        int square     = parseIntSafe(old.get("Square Nr"));<a name="line.476"></a>
+<span class="sourceLineNo">477</span>        int nSpots     = parseIntSafe(old.get("Nr Spots"));<a name="line.477"></a>
+<span class="sourceLineNo">478</span>        int nGaps      = parseIntSafe(old.get("Nr Gaps"));<a name="line.478"></a>
+<span class="sourceLineNo">479</span>        int longest    = parseIntSafe(old.get("Longest Gap"));<a name="line.479"></a>
+<span class="sourceLineNo">480</span>        double durOld  = parseDoubleSafe(old.get("Track Duration"));<a name="line.480"></a>
+<span class="sourceLineNo">481</span>        double dispOld = parseDoubleSafe(old.get("Track Displacement"));<a name="line.481"></a>
+<span class="sourceLineNo">482</span>        double maxOld  = parseDoubleSafe(old.get("Track Max Speed"));<a name="line.482"></a>
+<span class="sourceLineNo">483</span>        double medOld  = parseDoubleSafe(old.get("Track Median Speed"));<a name="line.483"></a>
+<span class="sourceLineNo">484</span>        double distOld = parseDoubleSafe(old.get("Total Distance"));<a name="line.484"></a>
+<span class="sourceLineNo">485</span>        double xOld    = parseDoubleSafe(old.get("Track X Location"));<a name="line.485"></a>
+<span class="sourceLineNo">486</span>        double yOld    = parseDoubleSafe(old.get("Track Y Location"));<a name="line.486"></a>
+<span class="sourceLineNo">487</span>        double confOld = parseDoubleSafe(old.get("Confinement Ratio"));<a name="line.487"></a>
+<span class="sourceLineNo">488</span><a name="line.488"></a>
+<span class="sourceLineNo">489</span>        // Iterate over all potential candidates in the same recording<a name="line.489"></a>
+<span class="sourceLineNo">490</span>        for (Map&lt;String, String&gt; cand : candidates) {<a name="line.490"></a>
+<span class="sourceLineNo">491</span>            String newId = cand.getOrDefault("Track Id", "");<a name="line.491"></a>
+<span class="sourceLineNo">492</span>            if (used.contains(newId)) {<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                continue;  // Skip if already assigned<a name="line.493"></a>
+<span class="sourceLineNo">494</span>            }<a name="line.494"></a>
+<span class="sourceLineNo">495</span><a name="line.495"></a>
+<span class="sourceLineNo">496</span>            // Compare integer-like columns exactly<a name="line.496"></a>
+<span class="sourceLineNo">497</span>            int squareNew  = parseIntSafe(cand.get("Square Number"));<a name="line.497"></a>
+<span class="sourceLineNo">498</span>            int nSpotsNew  = parseIntSafe(cand.get("Number of Spots"));<a name="line.498"></a>
+<span class="sourceLineNo">499</span>            int nGapsNew   = parseIntSafe(cand.get("Number of Gaps"));<a name="line.499"></a>
+<span class="sourceLineNo">500</span>            int longestNew = parseIntSafe(cand.get("Longest Gap"));<a name="line.500"></a>
+<span class="sourceLineNo">501</span>            if (square != squareNew || nSpots != nSpotsNew || nGaps != nGapsNew || longest != longestNew) {<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                continue; // Not comparable structure<a name="line.502"></a>
+<span class="sourceLineNo">503</span>            }<a name="line.503"></a>
+<span class="sourceLineNo">504</span><a name="line.504"></a>
+<span class="sourceLineNo">505</span>            // Compare numeric columns within tolerance<a name="line.505"></a>
+<span class="sourceLineNo">506</span>            double durNew  = parseDoubleSafe(cand.get("Track Duration"));<a name="line.506"></a>
+<span class="sourceLineNo">507</span>            double dispNew = parseDoubleSafe(cand.get("Track Displacement"));<a name="line.507"></a>
+<span class="sourceLineNo">508</span>            double maxNew  = parseDoubleSafe(cand.get("Track Max Speed"));<a name="line.508"></a>
+<span class="sourceLineNo">509</span>            double medNew  = parseDoubleSafe(cand.get("Track Median Speed"));<a name="line.509"></a>
+<span class="sourceLineNo">510</span>            double distNew = parseDoubleSafe(cand.get("Total Distance"));<a name="line.510"></a>
+<span class="sourceLineNo">511</span>            double xNew    = parseDoubleSafe(cand.get("Track X Location"));<a name="line.511"></a>
+<span class="sourceLineNo">512</span>            double yNew    = parseDoubleSafe(cand.get("Track Y Location"));<a name="line.512"></a>
+<span class="sourceLineNo">513</span>            double confNew = parseDoubleSafe(cand.get("Confinement Ratio"));<a name="line.513"></a>
+<span class="sourceLineNo">514</span><a name="line.514"></a>
+<span class="sourceLineNo">515</span>            boolean ok = true;<a name="line.515"></a>
+<span class="sourceLineNo">516</span>            if (cfg.useDuration) {<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                ok &amp;= Math.abs(durOld - durNew) &lt;= DURATION_TOLERANCE;<a name="line.517"></a>
+<span class="sourceLineNo">518</span>            }<a name="line.518"></a>
+<span class="sourceLineNo">519</span>            if (cfg.useDisplacement) {<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                ok &amp;= Math.abs(dispOld - dispNew) &lt;= DISPLACEMENT_TOLERANCE;<a name="line.520"></a>
+<span class="sourceLineNo">521</span>            }<a name="line.521"></a>
+<span class="sourceLineNo">522</span>            if (cfg.useSpeed) {<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                ok &amp;= Math.abs(maxOld - maxNew) &lt;= SPEED_TOLERANCE &amp;&amp;<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                        Math.abs(medOld - medNew) &lt;= SPEED_TOLERANCE;<a name="line.524"></a>
+<span class="sourceLineNo">525</span>            }<a name="line.525"></a>
+<span class="sourceLineNo">526</span>            if (cfg.useDistance) {<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                ok &amp;= Math.abs(distOld - distNew) &lt;= DIST_TOLERANCE;<a name="line.527"></a>
+<span class="sourceLineNo">528</span>            }<a name="line.528"></a>
+<span class="sourceLineNo">529</span>            if (cfg.useXY) {<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                ok &amp;= Math.abs(xOld - xNew) &lt;= XY_TOLERANCE &amp;&amp;<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                        Math.abs(yOld - yNew) &lt;= XY_TOLERANCE;<a name="line.531"></a>
+<span class="sourceLineNo">532</span>            }<a name="line.532"></a>
+<span class="sourceLineNo">533</span>            if (cfg.useConfinement) {<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                ok &amp;= Math.abs(confOld - confNew) &lt;= CONFINEMENT_TOLERANCE;<a name="line.534"></a>
+<span class="sourceLineNo">535</span>            }<a name="line.535"></a>
+<span class="sourceLineNo">536</span><a name="line.536"></a>
+<span class="sourceLineNo">537</span>            if (ok) {<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                matches.add(cand);<a name="line.538"></a>
+<span class="sourceLineNo">539</span>            }<a name="line.539"></a>
+<span class="sourceLineNo">540</span>        }<a name="line.540"></a>
+<span class="sourceLineNo">541</span>        return matches;<a name="line.541"></a>
+<span class="sourceLineNo">542</span>    }<a name="line.542"></a>
+<span class="sourceLineNo">543</span><a name="line.543"></a>
+<span class="sourceLineNo">544</span>    /**<a name="line.544"></a>
+<span class="sourceLineNo">545</span>     * Compute the best possible match (lowest RMS score) between an unmatched<a name="line.545"></a>
+<span class="sourceLineNo">546</span>     * "old" track and a set of "new" candidates, based on relative deviation<a name="line.546"></a>
+<span class="sourceLineNo">547</span>     * weighted by field tolerances.<a name="line.547"></a>
+<span class="sourceLineNo">548</span>     *<a name="line.548"></a>
+<span class="sourceLineNo">549</span>     * @param old        reference track<a name="line.549"></a>
+<span class="sourceLineNo">550</span>     * @param candidates candidate new tracks<a name="line.550"></a>
+<span class="sourceLineNo">551</span>     * @return the map containing the best candidate ID, per-field deviations, and score<a name="line.551"></a>
+<span class="sourceLineNo">552</span>     */<a name="line.552"></a>
+<span class="sourceLineNo">553</span>    private static Map&lt;String, Object&gt; findBestCandidate(<a name="line.553"></a>
+<span class="sourceLineNo">554</span>            Map&lt;String, String&gt; old, List&lt;Map&lt;String, String&gt;&gt; candidates) {<a name="line.554"></a>
+<span class="sourceLineNo">555</span><a name="line.555"></a>
+<span class="sourceLineNo">556</span>        double bestScore = Double.POSITIVE_INFINITY;<a name="line.556"></a>
+<span class="sourceLineNo">557</span>        Map&lt;String, String&gt; bestCand = null;<a name="line.557"></a>
+<span class="sourceLineNo">558</span>        double durD  = 0;<a name="line.558"></a>
+<span class="sourceLineNo">559</span>        double dispD = 0;<a name="line.559"></a>
+<span class="sourceLineNo">560</span>        double maxD  = 0;<a name="line.560"></a>
+<span class="sourceLineNo">561</span>        double medD  = 0;<a name="line.561"></a>
+<span class="sourceLineNo">562</span>        double distD = 0;<a name="line.562"></a>
+<span class="sourceLineNo">563</span>        double xD    = 0;<a name="line.563"></a>
+<span class="sourceLineNo">564</span>        double yD    = 0;<a name="line.564"></a>
+<span class="sourceLineNo">565</span>        double confD = 0;<a name="line.565"></a>
+<span class="sourceLineNo">566</span><a name="line.566"></a>
+<span class="sourceLineNo">567</span>        for (Map&lt;String, String&gt; cand : candidates) {<a name="line.567"></a>
+<span class="sourceLineNo">568</span>            // Normalized differences divided by their respective tolerance<a name="line.568"></a>
+<span class="sourceLineNo">569</span>            double dur  = diff(old, cand, "Track Duration", DURATION_TOLERANCE);<a name="line.569"></a>
+<span class="sourceLineNo">570</span>            double disp = diff(old, cand, "Track Displacement", DISPLACEMENT_TOLERANCE);<a name="line.570"></a>
+<span class="sourceLineNo">571</span>            double max  = diff(old, cand, "Track Max Speed", SPEED_TOLERANCE);<a name="line.571"></a>
+<span class="sourceLineNo">572</span>            double med  = diff(old, cand, "Track Median Speed", SPEED_TOLERANCE);<a name="line.572"></a>
+<span class="sourceLineNo">573</span>            double dist = diff(old, cand, "Total Distance", DIST_TOLERANCE);<a name="line.573"></a>
+<span class="sourceLineNo">574</span>            double x    = diff(old, cand, "Track X Location", XY_TOLERANCE);<a name="line.574"></a>
+<span class="sourceLineNo">575</span>            double y    = diff(old, cand, "Track Y Location", XY_TOLERANCE);<a name="line.575"></a>
+<span class="sourceLineNo">576</span>            double conf = diff(old, cand, "Confinement Ratio", CONFINEMENT_TOLERANCE);<a name="line.576"></a>
+<span class="sourceLineNo">577</span><a name="line.577"></a>
+<span class="sourceLineNo">578</span>            // RMS score across all differences<a name="line.578"></a>
+<span class="sourceLineNo">579</span>            double score = Math.sqrt((dur * dur + disp * disp + max * max + med * med +<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                    dist * dist + x * x + y * y + conf * conf) / 8.0);<a name="line.580"></a>
+<span class="sourceLineNo">581</span><a name="line.581"></a>
+<span class="sourceLineNo">582</span>            if (Double.isFinite(score) &amp;&amp; score &lt; bestScore &amp;&amp; score &lt;= MAX_ACCEPTABLE_SCORE) {<a name="line.582"></a>
+<span class="sourceLineNo">583</span>                bestScore = score;<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                bestCand  = cand;<a name="line.584"></a>
+<span class="sourceLineNo">585</span>                durD      = dur;<a name="line.585"></a>
+<span class="sourceLineNo">586</span>                dispD     = disp;<a name="line.586"></a>
+<span class="sourceLineNo">587</span>                maxD      = max;<a name="line.587"></a>
+<span class="sourceLineNo">588</span>                medD      = med;<a name="line.588"></a>
+<span class="sourceLineNo">589</span>                distD     = dist;<a name="line.589"></a>
+<span class="sourceLineNo">590</span>                xD        = x;<a name="line.590"></a>
+<span class="sourceLineNo">591</span>                yD        = y;<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                confD     = conf;<a name="line.592"></a>
+<span class="sourceLineNo">593</span>            }<a name="line.593"></a>
+<span class="sourceLineNo">594</span>        }<a name="line.594"></a>
+<span class="sourceLineNo">595</span><a name="line.595"></a>
+<span class="sourceLineNo">596</span>        // Prepare result summary<a name="line.596"></a>
+<span class="sourceLineNo">597</span>        Map&lt;String, Object&gt; out = new LinkedHashMap&lt;&gt;();<a name="line.597"></a>
+<span class="sourceLineNo">598</span>        if (bestCand != null) {<a name="line.598"></a>
+<span class="sourceLineNo">599</span>            out.put("BestId", bestCand.get("Track Id"));<a name="line.599"></a>
+<span class="sourceLineNo">600</span>            out.put("score", String.format(Locale.US, "%.3f", bestScore));<a name="line.600"></a>
+<span class="sourceLineNo">601</span>        } else {<a name="line.601"></a>
+<span class="sourceLineNo">602</span>            out.put("BestId", "-");<a name="line.602"></a>
+<span class="sourceLineNo">603</span>            out.put("score", "No acceptable match");<a name="line.603"></a>
+<span class="sourceLineNo">604</span>        }<a name="line.604"></a>
+<span class="sourceLineNo">605</span>        out.put("durD", durD);<a name="line.605"></a>
+<span class="sourceLineNo">606</span>        out.put("dispD", dispD);<a name="line.606"></a>
+<span class="sourceLineNo">607</span>        out.put("maxD", maxD);<a name="line.607"></a>
+<span class="sourceLineNo">608</span>        out.put("medD", medD);<a name="line.608"></a>
+<span class="sourceLineNo">609</span>        out.put("distD", distD);<a name="line.609"></a>
+<span class="sourceLineNo">610</span>        out.put("xD", xD);<a name="line.610"></a>
+<span class="sourceLineNo">611</span>        out.put("yD", yD);<a name="line.611"></a>
+<span class="sourceLineNo">612</span>        out.put("confD", confD);<a name="line.612"></a>
+<span class="sourceLineNo">613</span>        return out;<a name="line.613"></a>
+<span class="sourceLineNo">614</span>    }<a name="line.614"></a>
+<span class="sourceLineNo">615</span><a name="line.615"></a>
+<span class="sourceLineNo">616</span>    // ---------------------------------------------------------------------<a name="line.616"></a>
+<span class="sourceLineNo">617</span><a name="line.617"></a>
+<span class="sourceLineNo">618</span>    /**<a name="line.618"></a>
+<span class="sourceLineNo">619</span>     * Generate global summary CSV after all comparison phases.<a name="line.619"></a>
+<span class="sourceLineNo">620</span>     *<a name="line.620"></a>
+<span class="sourceLineNo">621</span>     * @param perfectIds    list of perfect matches (phase 1)<a name="line.621"></a>
+<span class="sourceLineNo">622</span>     * @param reasonableIds list of reasonable matches (phase 2)<a name="line.622"></a>
+<span class="sourceLineNo">623</span>     * @param unmatchedIds  list of unmatched IDs<a name="line.623"></a>
+<span class="sourceLineNo">624</span>     * @param diagCsv       path to diagnostic CSV<a name="line.624"></a>
+<span class="sourceLineNo">625</span>     * @param summaryCsv    output summary file<a name="line.625"></a>
+<span class="sourceLineNo">626</span>     * @param total         total number of old tracks<a name="line.626"></a>
+<span class="sourceLineNo">627</span>     */<a name="line.627"></a>
+<span class="sourceLineNo">628</span>    private static void summarize(List&lt;String&gt; perfectIds, List&lt;String&gt; reasonableIds,<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                                  List&lt;String&gt; unmatchedIds, Path diagCsv,<a name="line.629"></a>
+<span class="sourceLineNo">630</span>                                  Path summaryCsv, int total) throws IOException {<a name="line.630"></a>
+<span class="sourceLineNo">631</span><a name="line.631"></a>
+<span class="sourceLineNo">632</span>        int phase1Perfect = perfectIds.size();<a name="line.632"></a>
+<span class="sourceLineNo">633</span>        int phase2Reasonable = 0;<a name="line.633"></a>
+<span class="sourceLineNo">634</span><a name="line.634"></a>
+<span class="sourceLineNo">635</span>        // Scan diagnostic file for acceptable RMS scores<a name="line.635"></a>
+<span class="sourceLineNo">636</span>        if (Files.exists(diagCsv)) {<a name="line.636"></a>
+<span class="sourceLineNo">637</span>            try (BufferedReader br = Files.newBufferedReader(diagCsv)) {<a name="line.637"></a>
+<span class="sourceLineNo">638</span>                String line;<a name="line.638"></a>
+<span class="sourceLineNo">639</span>                while ((line = br.readLine()) != null) {<a name="line.639"></a>
+<span class="sourceLineNo">640</span>                    String[] parts = line.split(",", -1);<a name="line.640"></a>
+<span class="sourceLineNo">641</span>                    if (parts.length &lt; 12) {<a name="line.641"></a>
+<span class="sourceLineNo">642</span>                        continue;<a name="line.642"></a>
+<span class="sourceLineNo">643</span>                    }<a name="line.643"></a>
+<span class="sourceLineNo">644</span>                    String oldId = parts[1].trim();<a name="line.644"></a>
+<span class="sourceLineNo">645</span>                    String bestId = parts[2].trim();<a name="line.645"></a>
+<span class="sourceLineNo">646</span>                    String scoreStr = parts[11].trim();<a name="line.646"></a>
+<span class="sourceLineNo">647</span>                    if (!bestId.equals("-") &amp;&amp; !scoreStr.startsWith("No")) {<a name="line.647"></a>
+<span class="sourceLineNo">648</span>                        try {<a name="line.648"></a>
+<span class="sourceLineNo">649</span>                            double score = Double.parseDouble(scoreStr);<a name="line.649"></a>
+<span class="sourceLineNo">650</span>                            if (score &lt;= MAX_ACCEPTABLE_SCORE) {<a name="line.650"></a>
+<span class="sourceLineNo">651</span>                                reasonableIds.add(oldId);<a name="line.651"></a>
+<span class="sourceLineNo">652</span>                                unmatchedIds.remove(oldId);<a name="line.652"></a>
+<span class="sourceLineNo">653</span>                                phase2Reasonable++;<a name="line.653"></a>
+<span class="sourceLineNo">654</span>                            }<a name="line.654"></a>
+<span class="sourceLineNo">655</span>                        } catch (NumberFormatException ignored) {<a name="line.655"></a>
+<span class="sourceLineNo">656</span>                        }<a name="line.656"></a>
+<span class="sourceLineNo">657</span>                    }<a name="line.657"></a>
+<span class="sourceLineNo">658</span>                }<a name="line.658"></a>
+<span class="sourceLineNo">659</span>            }<a name="line.659"></a>
+<span class="sourceLineNo">660</span>        }<a name="line.660"></a>
+<span class="sourceLineNo">661</span><a name="line.661"></a>
+<span class="sourceLineNo">662</span>        // Print to console<a name="line.662"></a>
+<span class="sourceLineNo">663</span>        System.out.println("\n===== GLOBAL SUMMARY =====");<a name="line.663"></a>
+<span class="sourceLineNo">664</span>        System.out.printf("Total old tracks:                %,d%n", total);<a name="line.664"></a>
+<span class="sourceLineNo">665</span>        System.out.printf("Perfect matches (Phase 1):       %,d%n", phase1Perfect);<a name="line.665"></a>
+<span class="sourceLineNo">666</span>        System.out.printf("Reasonable matches (Phase 2 ≤ %.1f): %,d%n",<a name="line.666"></a>
+<span class="sourceLineNo">667</span>                          MAX_ACCEPTABLE_SCORE, phase2Reasonable);<a name="line.667"></a>
+<span class="sourceLineNo">668</span>        System.out.printf("Still unmatched:                 %,d%n", unmatchedIds.size());<a name="line.668"></a>
+<span class="sourceLineNo">669</span>        System.out.println("=========================================");<a name="line.669"></a>
+<span class="sourceLineNo">670</span><a name="line.670"></a>
+<span class="sourceLineNo">671</span>        // Write summary CSV with category per Track ID<a name="line.671"></a>
+<span class="sourceLineNo">672</span>        try (BufferedWriter bw = Files.newBufferedWriter(summaryCsv)) {<a name="line.672"></a>
+<span class="sourceLineNo">673</span>            bw.write("Category,Track ID");<a name="line.673"></a>
+<span class="sourceLineNo">674</span>            bw.newLine();<a name="line.674"></a>
+<span class="sourceLineNo">675</span>            for (String id : perfectIds) {<a name="line.675"></a>
+<span class="sourceLineNo">676</span>                bw.write("Perfect," + id + "\n");<a name="line.676"></a>
+<span class="sourceLineNo">677</span>            }<a name="line.677"></a>
+<span class="sourceLineNo">678</span>            for (String id : reasonableIds) {<a name="line.678"></a>
+<span class="sourceLineNo">679</span>                bw.write("Reasonable," + id + "\n");<a name="line.679"></a>
+<span class="sourceLineNo">680</span>            }<a name="line.680"></a>
+<span class="sourceLineNo">681</span>            for (String id : unmatchedIds) {<a name="line.681"></a>
+<span class="sourceLineNo">682</span>                bw.write("Unmatched," + id + "\n");<a name="line.682"></a>
+<span class="sourceLineNo">683</span>            }<a name="line.683"></a>
+<span class="sourceLineNo">684</span>        }<a name="line.684"></a>
+<span class="sourceLineNo">685</span>        System.out.println("📄 Detailed ID list written: " + summaryCsv.toAbsolutePath());<a name="line.685"></a>
+<span class="sourceLineNo">686</span>    }<a name="line.686"></a>
+<span class="sourceLineNo">687</span><a name="line.687"></a>
+<span class="sourceLineNo">688</span>    // ---------------------------------------------------------------------<a name="line.688"></a>
+<span class="sourceLineNo">689</span><a name="line.689"></a>
+<span class="sourceLineNo">690</span>    /**<a name="line.690"></a>
+<span class="sourceLineNo">691</span>     * Compute normalized difference divided by tolerance (used in RMS scoring).<a name="line.691"></a>
+<span class="sourceLineNo">692</span>     */<a name="line.692"></a>
+<span class="sourceLineNo">693</span>    private static double diff(Map&lt;String, String&gt; a, Map&lt;String, String&gt; b, String field, double tol) {<a name="line.693"></a>
+<span class="sourceLineNo">694</span>        double va = parseDoubleSafe(a.get(field));<a name="line.694"></a>
+<span class="sourceLineNo">695</span>        double vb = parseDoubleSafe(b.get(field));<a name="line.695"></a>
+<span class="sourceLineNo">696</span>        if (Double.isNaN(va) || Double.isNaN(vb)) {<a name="line.696"></a>
+<span class="sourceLineNo">697</span>            return Double.POSITIVE_INFINITY;<a name="line.697"></a>
+<span class="sourceLineNo">698</span>        }<a name="line.698"></a>
+<span class="sourceLineNo">699</span>        return Math.abs(va - vb) / tol;<a name="line.699"></a>
+<span class="sourceLineNo">700</span>    }<a name="line.700"></a>
+<span class="sourceLineNo">701</span><a name="line.701"></a>
+<span class="sourceLineNo">702</span>    // ---------------------------------------------------------------------<a name="line.702"></a>
+<span class="sourceLineNo">703</span><a name="line.703"></a>
+<span class="sourceLineNo">704</span>    /**<a name="line.704"></a>
+<span class="sourceLineNo">705</span>     * Safe numeric parsing — returns NaN for empty or invalid input.<a name="line.705"></a>
+<span class="sourceLineNo">706</span>     */<a name="line.706"></a>
+<span class="sourceLineNo">707</span>    private static double parseDoubleSafe(String s) {<a name="line.707"></a>
+<span class="sourceLineNo">708</span>        if (s == null || s.isEmpty()) {<a name="line.708"></a>
+<span class="sourceLineNo">709</span>            return Double.NaN;<a name="line.709"></a>
+<span class="sourceLineNo">710</span>        }<a name="line.710"></a>
+<span class="sourceLineNo">711</span>        try {<a name="line.711"></a>
+<span class="sourceLineNo">712</span>            return Double.parseDouble(s.trim());<a name="line.712"></a>
+<span class="sourceLineNo">713</span>        } catch (Exception e) {<a name="line.713"></a>
+<span class="sourceLineNo">714</span>            return Double.NaN;<a name="line.714"></a>
+<span class="sourceLineNo">715</span>        }<a name="line.715"></a>
+<span class="sourceLineNo">716</span>    }<a name="line.716"></a>
+<span class="sourceLineNo">717</span><a name="line.717"></a>
+<span class="sourceLineNo">718</span>    /**<a name="line.718"></a>
+<span class="sourceLineNo">719</span>     * Safe integer parsing with fallback to -1.<a name="line.719"></a>
+<span class="sourceLineNo">720</span>     */<a name="line.720"></a>
+<span class="sourceLineNo">721</span>    private static int parseIntSafe(String s) {<a name="line.721"></a>
+<span class="sourceLineNo">722</span>        if (s == null || s.isEmpty()) {<a name="line.722"></a>
+<span class="sourceLineNo">723</span>            return -1;<a name="line.723"></a>
+<span class="sourceLineNo">724</span>        }<a name="line.724"></a>
+<span class="sourceLineNo">725</span>        try {<a name="line.725"></a>
+<span class="sourceLineNo">726</span>            return (int) Math.round(Double.parseDouble(s.trim()));<a name="line.726"></a>
+<span class="sourceLineNo">727</span>        } catch (Exception e) {<a name="line.727"></a>
+<span class="sourceLineNo">728</span>            return -1;<a name="line.728"></a>
+<span class="sourceLineNo">729</span>        }<a name="line.729"></a>
+<span class="sourceLineNo">730</span>    }<a name="line.730"></a>
+<span class="sourceLineNo">731</span><a name="line.731"></a>
+<span class="sourceLineNo">732</span>    /**<a name="line.732"></a>
+<span class="sourceLineNo">733</span>     * Generic CSV reader returning list of maps (columnName → value).<a name="line.733"></a>
+<span class="sourceLineNo">734</span>     * No quoting is processed beyond trimming — suitable for standard CSVs.<a name="line.734"></a>
+<span class="sourceLineNo">735</span>     */<a name="line.735"></a>
+<span class="sourceLineNo">736</span>    private static List&lt;Map&lt;String, String&gt;&gt; readCsv(Path path) throws IOException {<a name="line.736"></a>
+<span class="sourceLineNo">737</span>        List&lt;Map&lt;String, String&gt;&gt; rows = new ArrayList&lt;&gt;();<a name="line.737"></a>
+<span class="sourceLineNo">738</span>        try (BufferedReader br = Files.newBufferedReader(path)) {<a name="line.738"></a>
+<span class="sourceLineNo">739</span>            String headerLine = br.readLine();<a name="line.739"></a>
+<span class="sourceLineNo">740</span>            if (headerLine == null) {<a name="line.740"></a>
+<span class="sourceLineNo">741</span>                return rows;<a name="line.741"></a>
+<span class="sourceLineNo">742</span>            }<a name="line.742"></a>
+<span class="sourceLineNo">743</span>            String[] headers = headerLine.split(",", -1);<a name="line.743"></a>
+<span class="sourceLineNo">744</span>            String line;<a name="line.744"></a>
+<span class="sourceLineNo">745</span>            while ((line = br.readLine()) != null) {<a name="line.745"></a>
+<span class="sourceLineNo">746</span>                String[] parts = line.split(",", -1);<a name="line.746"></a>
+<span class="sourceLineNo">747</span>                Map&lt;String, String&gt; map = new LinkedHashMap&lt;&gt;();<a name="line.747"></a>
+<span class="sourceLineNo">748</span>                for (int i = 0; i &lt; headers.length; i++) {<a name="line.748"></a>
+<span class="sourceLineNo">749</span>                    map.put(headers[i].trim(), i &lt; parts.length ? parts[i].trim() : "");<a name="line.749"></a>
+<span class="sourceLineNo">750</span>                }<a name="line.750"></a>
+<span class="sourceLineNo">751</span>                rows.add(map);<a name="line.751"></a>
+<span class="sourceLineNo">752</span>            }<a name="line.752"></a>
+<span class="sourceLineNo">753</span>        }<a name="line.753"></a>
+<span class="sourceLineNo">754</span>        System.out.println("Loaded " + rows.size() + " rows from " + path.getFileName());<a name="line.754"></a>
+<span class="sourceLineNo">755</span>        return rows;<a name="line.755"></a>
+<span class="sourceLineNo">756</span>    }<a name="line.756"></a>
+<span class="sourceLineNo">757</span><a name="line.757"></a>
+<span class="sourceLineNo">758</span>    // ---------------------------------------------------------------------<a name="line.758"></a>
+<span class="sourceLineNo">759</span><a name="line.759"></a>
+<span class="sourceLineNo">760</span>    /**<a name="line.760"></a>
+<span class="sourceLineNo">761</span>     * Escape CSV fields containing commas or quotes.<a name="line.761"></a>
+<span class="sourceLineNo">762</span>     */<a name="line.762"></a>
+<span class="sourceLineNo">763</span>    private static String escapeCsv(String s) {<a name="line.763"></a>
+<span class="sourceLineNo">764</span>        if (s == null) {<a name="line.764"></a>
+<span class="sourceLineNo">765</span>            return "";<a name="line.765"></a>
+<span class="sourceLineNo">766</span>        }<a name="line.766"></a>
+<span class="sourceLineNo">767</span>        if (s.contains(",") || s.contains("\"")) {<a name="line.767"></a>
+<span class="sourceLineNo">768</span>            s = s.replace("\"", "\"\"");<a name="line.768"></a>
+<span class="sourceLineNo">769</span>            return "\"" + s + "\"";<a name="line.769"></a>
+<span class="sourceLineNo">770</span>        }<a name="line.770"></a>
+<span class="sourceLineNo">771</span>        return s;<a name="line.771"></a>
+<span class="sourceLineNo">772</span>    }<a name="line.772"></a>
+<span class="sourceLineNo">773</span><a name="line.773"></a>
+<span class="sourceLineNo">774</span>    /**<a name="line.774"></a>
+<span class="sourceLineNo">775</span>     * Group list of maps by the value in a given column.<a name="line.775"></a>
+<span class="sourceLineNo">776</span>     */<a name="line.776"></a>
+<span class="sourceLineNo">777</span>    private static Map&lt;String, List&lt;Map&lt;String, String&gt;&gt;&gt; groupBy(List&lt;Map&lt;String, String&gt;&gt; rows, String col) {<a name="line.777"></a>
+<span class="sourceLineNo">778</span>        Map&lt;String, List&lt;Map&lt;String, String&gt;&gt;&gt; grouped = new LinkedHashMap&lt;&gt;();<a name="line.778"></a>
+<span class="sourceLineNo">779</span>        for (Map&lt;String, String&gt; r : rows) {<a name="line.779"></a>
+<span class="sourceLineNo">780</span>            String key = r.getOrDefault(col, "").trim();<a name="line.780"></a>
+<span class="sourceLineNo">781</span>            grouped.computeIfAbsent(key, k -&gt; new ArrayList&lt;&gt;()).add(r);<a name="line.781"></a>
+<span class="sourceLineNo">782</span>        }<a name="line.782"></a>
+<span class="sourceLineNo">783</span>        return grouped;<a name="line.783"></a>
+<span class="sourceLineNo">784</span>    }<a name="line.784"></a>
+<span class="sourceLineNo">785</span><a name="line.785"></a>
+<span class="sourceLineNo">786</span>    /**<a name="line.786"></a>
+<span class="sourceLineNo">787</span>     * Format numbers to 3 decimals (US locale) for diagnostic CSVs.<a name="line.787"></a>
+<span class="sourceLineNo">788</span>     */<a name="line.788"></a>
+<span class="sourceLineNo">789</span>    private static String fmt(Object o) {<a name="line.789"></a>
+<span class="sourceLineNo">790</span>        if (o == null) {<a name="line.790"></a>
+<span class="sourceLineNo">791</span>            return "";<a name="line.791"></a>
+<span class="sourceLineNo">792</span>        }<a name="line.792"></a>
+<span class="sourceLineNo">793</span>        if (o instanceof Double) {<a name="line.793"></a>
+<span class="sourceLineNo">794</span>            return String.format(Locale.US, "%.3f", (Double) o);<a name="line.794"></a>
+<span class="sourceLineNo">795</span>        }<a name="line.795"></a>
+<span class="sourceLineNo">796</span>        return o.toString();<a name="line.796"></a>
+<span class="sourceLineNo">797</span>    }<a name="line.797"></a>
+<span class="sourceLineNo">798</span><a name="line.798"></a>
+<span class="sourceLineNo">799</span>    /**<a name="line.799"></a>
+<span class="sourceLineNo">800</span>     * Evaluate how much count changes when tightening per-field tolerance thresholds.<a name="line.800"></a>
+<span class="sourceLineNo">801</span>     */<a name="line.801"></a>
+<span class="sourceLineNo">802</span>    private static void optimizeTolerances(Path diagCsv, Path outCsv) throws IOException {<a name="line.802"></a>
+<span class="sourceLineNo">803</span>        if (!Files.exists(diagCsv)) {<a name="line.803"></a>
+<span class="sourceLineNo">804</span>            System.out.println("⚠️ No diagnostics available for optimization step.");<a name="line.804"></a>
+<span class="sourceLineNo">805</span>            return;<a name="line.805"></a>
+<span class="sourceLineNo">806</span>        }<a name="line.806"></a>
+<span class="sourceLineNo">807</span><a name="line.807"></a>
+<span class="sourceLineNo">808</span>        Map&lt;String, List&lt;Double&gt;&gt; deviationsByField = new LinkedHashMap&lt;&gt;();<a name="line.808"></a>
+<span class="sourceLineNo">809</span><a name="line.809"></a>
+<span class="sourceLineNo">810</span>        try (BufferedReader br = Files.newBufferedReader(diagCsv)) {<a name="line.810"></a>
+<span class="sourceLineNo">811</span>            String line;<a name="line.811"></a>
+<span class="sourceLineNo">812</span>            while ((line = br.readLine()) != null) {<a name="line.812"></a>
+<span class="sourceLineNo">813</span>                String[] parts = line.split(",", -1);<a name="line.813"></a>
+<span class="sourceLineNo">814</span>                if (parts.length &lt; 12) {<a name="line.814"></a>
+<span class="sourceLineNo">815</span>                    continue;<a name="line.815"></a>
+<span class="sourceLineNo">816</span>                }<a name="line.816"></a>
+<span class="sourceLineNo">817</span>                deviationsByField.computeIfAbsent("Duration Δ", k -&gt; new ArrayList&lt;&gt;()).add(parseDoubleSafe(parts[3]));<a name="line.817"></a>
+<span class="sourceLineNo">818</span>                deviationsByField.computeIfAbsent("Displacement Δ", k -&gt; new ArrayList&lt;&gt;()).add(parseDoubleSafe(parts[4]));<a name="line.818"></a>
+<span class="sourceLineNo">819</span>                deviationsByField.computeIfAbsent("Max Speed Δ", k -&gt; new ArrayList&lt;&gt;()).add(parseDoubleSafe(parts[5]));<a name="line.819"></a>
+<span class="sourceLineNo">820</span>                deviationsByField.computeIfAbsent("Median Speed Δ", k -&gt; new ArrayList&lt;&gt;()).add(parseDoubleSafe(parts[6]));<a name="line.820"></a>
+<span class="sourceLineNo">821</span>                deviationsByField.computeIfAbsent("Total Distance Δ", k -&gt; new ArrayList&lt;&gt;()).add(parseDoubleSafe(parts[7]));<a name="line.821"></a>
+<span class="sourceLineNo">822</span>                deviationsByField.computeIfAbsent("X Δ",              k -&gt; new ArrayList&lt;&gt;()).add(parseDoubleSafe(parts[8]));<a name="line.822"></a>
+<span class="sourceLineNo">823</span>                deviationsByField.computeIfAbsent("Y Δ",              k -&gt; new ArrayList&lt;&gt;()).add(parseDoubleSafe(parts[9]));<a name="line.823"></a>
+<span class="sourceLineNo">824</span>                deviationsByField.computeIfAbsent("Confinement Δ",    k -&gt; new ArrayList&lt;&gt;()).add(parseDoubleSafe(parts[10]));<a name="line.824"></a>
+<span class="sourceLineNo">825</span>            }<a name="line.825"></a>
+<span class="sourceLineNo">826</span>        }<a name="line.826"></a>
+<span class="sourceLineNo">827</span><a name="line.827"></a>
+<span class="sourceLineNo">828</span>        double[] testLevels = {5.0, 4.0, 3.0, 2.0, 1.0, 0.5};<a name="line.828"></a>
+<span class="sourceLineNo">829</span>        double targetKeep = 98.0; // percent of matches to retain<a name="line.829"></a>
+<span class="sourceLineNo">830</span><a name="line.830"></a>
+<span class="sourceLineNo">831</span>        try (PrintWriter pw = new PrintWriter(outCsv.toFile())) {<a name="line.831"></a>
+<span class="sourceLineNo">832</span>            pw.println("Field,Total,Equal@5%,OptimalTolerance(%),Equal@Optimal(%)");<a name="line.832"></a>
+<span class="sourceLineNo">833</span><a name="line.833"></a>
+<span class="sourceLineNo">834</span>            for (Map.Entry&lt;String, List&lt;Double&gt;&gt; e : deviationsByField.entrySet()) {<a name="line.834"></a>
+<span class="sourceLineNo">835</span>                String field = e.getKey();<a name="line.835"></a>
+<span class="sourceLineNo">836</span>                List&lt;Double&gt; devs = e.getValue();<a name="line.836"></a>
+<span class="sourceLineNo">837</span>                devs.removeIf(d -&gt; !Double.isFinite(d));<a name="line.837"></a>
+<span class="sourceLineNo">838</span>                if (devs.isEmpty()) {<a name="line.838"></a>
+<span class="sourceLineNo">839</span>                    continue;<a name="line.839"></a>
+<span class="sourceLineNo">840</span>                }<a name="line.840"></a>
+<span class="sourceLineNo">841</span>                int total = devs.size();<a name="line.841"></a>
+<span class="sourceLineNo">842</span><a name="line.842"></a>
+<span class="sourceLineNo">843</span>                double equalAt5 = percentWithin(devs, 5.0);<a name="line.843"></a>
+<span class="sourceLineNo">844</span>                double bestTol = 5.0;<a name="line.844"></a>
+<span class="sourceLineNo">845</span>                double bestKeep = equalAt5;<a name="line.845"></a>
+<span class="sourceLineNo">846</span><a name="line.846"></a>
+<span class="sourceLineNo">847</span>                for (double tol : testLevels) {<a name="line.847"></a>
+<span class="sourceLineNo">848</span>                    double keep = percentWithin(devs, tol);<a name="line.848"></a>
+<span class="sourceLineNo">849</span>                    if (keep &lt; targetKeep) {<a name="line.849"></a>
+<span class="sourceLineNo">850</span>                        break;<a name="line.850"></a>
+<span class="sourceLineNo">851</span>                    }<a name="line.851"></a>
+<span class="sourceLineNo">852</span>                    bestTol = tol;<a name="line.852"></a>
+<span class="sourceLineNo">853</span>                    bestKeep = keep;<a name="line.853"></a>
+<span class="sourceLineNo">854</span>                }<a name="line.854"></a>
+<span class="sourceLineNo">855</span><a name="line.855"></a>
+<span class="sourceLineNo">856</span>                pw.printf(Locale.US, "%s,%d,%.2f,%.2f,%.2f%n",<a name="line.856"></a>
+<span class="sourceLineNo">857</span>                          field, total, equalAt5, bestTol, bestKeep);<a name="line.857"></a>
+<span class="sourceLineNo">858</span>            }<a name="line.858"></a>
+<span class="sourceLineNo">859</span>        }<a name="line.859"></a>
+<span class="sourceLineNo">860</span>    }<a name="line.860"></a>
+<span class="sourceLineNo">861</span><a name="line.861"></a>
+<span class="sourceLineNo">862</span>    /**<a name="line.862"></a>
+<span class="sourceLineNo">863</span>     * Helper: compute fraction of deviations within tolerance.<a name="line.863"></a>
+<span class="sourceLineNo">864</span>     */<a name="line.864"></a>
+<span class="sourceLineNo">865</span>    private static double percentWithin(List&lt;Double&gt; devs, double tol) {<a name="line.865"></a>
+<span class="sourceLineNo">866</span>        long ok = devs.stream().filter(d -&gt; Math.abs(d) &lt;= tol).count();<a name="line.866"></a>
+<span class="sourceLineNo">867</span>        return 100.0 * ok / devs.size();<a name="line.867"></a>
+<span class="sourceLineNo">868</span>    }<a name="line.868"></a>
+<span class="sourceLineNo">869</span><a name="line.869"></a>
+<span class="sourceLineNo">870</span>    public static void main(String[] args) {<a name="line.870"></a>
+<span class="sourceLineNo">871</span><a name="line.871"></a>
+<span class="sourceLineNo">872</span>        // Define input and output file locations<a name="line.872"></a>
+<span class="sourceLineNo">873</span>        Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Tracks.csv");<a name="line.873"></a>
+<span class="sourceLineNo">874</span>        Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/Tracks.csv");<a name="line.874"></a>
+<span class="sourceLineNo">875</span>        run(oldCsv, newCsv);<a name="line.875"></a>
+<span class="sourceLineNo">876</span>    }<a name="line.876"></a>
+<span class="sourceLineNo">877</span><a name="line.877"></a>
+<span class="sourceLineNo">878</span>    /**<a name="line.878"></a>
+<span class="sourceLineNo">879</span>     * Represents configuration options for controlling the matching process in the context<a name="line.879"></a>
+<span class="sourceLineNo">880</span>     * of trajectory or track comparison. Each field determines whether a specific metric<a name="line.880"></a>
+<span class="sourceLineNo">881</span>     * or characteristic should be factored into the matching algorithm.<a name="line.881"></a>
+<span class="sourceLineNo">882</span>     * &lt;p&gt;<a name="line.882"></a>
+<span class="sourceLineNo">883</span>     * The available metrics include duration, displacement, speed, distance, positional<a name="line.883"></a>
+<span class="sourceLineNo">884</span>     * coordinates (x/y), and confinement. These boolean flags enable or disable the inclusion<a name="line.884"></a>
+<span class="sourceLineNo">885</span>     * of the respective metric in the matching evaluation.<a name="line.885"></a>
+<span class="sourceLineNo">886</span>     */<a name="line.886"></a>
+<span class="sourceLineNo">887</span>    private static final class MatchConfig {<a name="line.887"></a>
+<span class="sourceLineNo">888</span>        final boolean useDuration     = true;<a name="line.888"></a>
+<span class="sourceLineNo">889</span>        final boolean useDisplacement = true;<a name="line.889"></a>
+<span class="sourceLineNo">890</span>        final boolean useSpeed        = true;<a name="line.890"></a>
+<span class="sourceLineNo">891</span>        final boolean useDistance     = true;<a name="line.891"></a>
+<span class="sourceLineNo">892</span>        final boolean useXY           = true;<a name="line.892"></a>
+<span class="sourceLineNo">893</span>        final boolean useConfinement  = true;<a name="line.893"></a>
+<span class="sourceLineNo">894</span>    }<a name="line.894"></a>
+<span class="sourceLineNo">895</span>}<a name="line.895"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>
