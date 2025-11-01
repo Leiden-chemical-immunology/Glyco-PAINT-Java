@@ -43,8 +43,6 @@ package paint.viewer;
 
 import paint.shared.config.PaintConfig;
 import paint.shared.objects.Project;
-import paint.shared.objects.Track;
-import paint.shared.utils.CalculateTau;
 import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintPrefs;
 import paint.viewer.dialogs.CellAssignmentDialog;
@@ -70,12 +68,8 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.Float.NaN;
+
 import static paint.shared.constants.PaintConstants.*;
-import static paint.shared.objects.Square.calculateSquareArea;
-import static paint.shared.utils.CalculateTau.CalculateTauResult.Status.TAU_SUCCESS;
-import static paint.shared.utils.CalculateTau.calculateTau;
-import static paint.shared.utils.SharedSquareUtils.*;
 
 /**
  * The {@code RecordingViewerFrame} class defines the main window of the PAINT Viewer.

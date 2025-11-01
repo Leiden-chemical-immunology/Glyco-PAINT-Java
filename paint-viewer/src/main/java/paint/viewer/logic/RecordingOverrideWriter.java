@@ -45,8 +45,6 @@
 
 package paint.viewer.logic;
 
-import paint.shared.objects.Track;
-import paint.shared.utils.CalculateTau;
 import paint.shared.utils.PaintLogger;
 import paint.viewer.shared.SquareControlParams;
 import paint.viewer.utils.RecordingEntry;
