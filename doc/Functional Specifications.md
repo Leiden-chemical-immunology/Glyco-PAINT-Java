@@ -298,7 +298,7 @@ The Tau calculation is only performed if a sufficient number of tracks is presen
 
 To calculate a Tau value for the entire recording, all tracks within squares that meet the specified selection criteria are considered. These criteria include the minimum required density ratio, maximum allowable variability and neighbour state. 
 
-Visual feedback on the fitting process is provided when the "Plot Curve Fitting" flag  (in the "Generate Squares" section) is set to true. In the 'Tau Fitting Plots' directory under the Experiment directories,  plots are gathered in 'Failed' and 'Success' sub directories. An example of such a plot is shown below:
+Visual feedback on the fitting process is provided when the "Tau Fitting Plots" flag  (in the "Generate Squares" section) is set to true. In the 'Tau Fitting Plots' directory under the Experiment directories,  plots are gathered in 'Failed' and 'Success' sub directories. An example of such a plot is shown below:
 
 <img src="/Users/hans/JavaPaintProjects/doc/Pictures/tau-fit-plot.png" alt="tau-fit-plot" style="zoom:33%;" />
 
