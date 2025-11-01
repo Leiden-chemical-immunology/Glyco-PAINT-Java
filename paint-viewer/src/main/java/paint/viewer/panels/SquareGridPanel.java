@@ -372,6 +372,7 @@ public class SquareGridPanel extends JPanel {
      */
     public void setSquares(List<Square> newSquares) {
         this.squares = newSquares != null ? newSquares : new ArrayList<>();
+        applyVisibilityFilter();
     }
 
     /**
