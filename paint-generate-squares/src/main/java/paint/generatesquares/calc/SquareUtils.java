@@ -80,9 +80,9 @@ public class SquareUtils {
             return new BackgroundEstimationResult(mean, Collections.emptyList());
         }
 
-        final double EPSILON = 0.01;
-        final int MAX_ITER   = 10;
-        double prevMean;
+        final double EPSILON   = 0.01;
+        final int    MAX_ITER  = 10;
+        double       prevMean;
 
         List<Square> current = new ArrayList<>(squares);
 
@@ -91,15 +91,15 @@ public class SquareUtils {
             final double meanForLambda = mean;
 
             double std = Math.sqrt(current.stream()
-                                           .mapToDouble(sq -> Math.pow(sq.getNumberOfTracks() - meanForLambda, 2))
+                                           .mapToDouble(square -> Math.pow(square.getNumberOfTracks() - meanForLambda, 2))
                                            .average().orElse(0));
 
             final double threshold = meanForLambda + 2 * std;
 
             List<Square> filtered = new ArrayList<>();
-            for (Square sq : current) {
-                if (sq.getNumberOfTracks() <= threshold) {
-                    filtered.add(sq);
+            for (Square square : current) {
+                if (square.getNumberOfTracks() <= threshold) {
+                    filtered.add(square);
                 }
             }
 

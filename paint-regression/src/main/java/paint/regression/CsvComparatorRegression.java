@@ -242,13 +242,13 @@ public class CsvComparatorRegression {
             for (Map.Entry<String, Map<String, List<String[]>>> recEntry : grouped.entrySet()) {
                 System.out.println("Recording: " + recEntry.getKey());
                 for (Map.Entry<String, List<String[]>> sqEntry : recEntry.getValue().entrySet()) {
-                    String sq = sqEntry.getKey();
-                    if (!sq.equals("—")) {
-                        squaresWithDiffs.add(sq);
+                    String entryKey = sqEntry.getKey();
+                    if (!entryKey.equals("—")) {
+                        squaresWithDiffs.add(entryKey);
                     }
                     List<String[]> entries = sqEntry.getValue();
 
-                    System.out.println("  ▫ Square " + sq + ":");
+                    System.out.println("  ▫ Square " + entryKey + ":");
                     for (String[] row : entries) {
                         String field = row[3];
                         String oldV  = row[4];

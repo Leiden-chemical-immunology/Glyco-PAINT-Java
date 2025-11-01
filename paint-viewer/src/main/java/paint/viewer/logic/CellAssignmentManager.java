@@ -97,11 +97,11 @@ public class CellAssignmentManager {
         squareAssignments.clear();
         squareAssignments.putAll(undoStack.pop());
 
-        for (Square sq : grid.getSquares()) {
-            int cellId = squareAssignments.containsKey(sq.getSquareNumber())
-                    ? squareAssignments.get(sq.getSquareNumber())
+        for (Square square : grid.getSquares()) {
+            int cellId = squareAssignments.containsKey(square.getSquareNumber())
+                    ? squareAssignments.get(square.getSquareNumber())
                     : 0;
-            sq.setCellId(cellId);
+            square.setCellId(cellId);
         }
 
         grid.repaint();

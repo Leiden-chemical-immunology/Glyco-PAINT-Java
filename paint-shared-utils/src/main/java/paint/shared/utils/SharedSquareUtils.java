@@ -213,9 +213,9 @@ public final class SharedSquareUtils {
         }
 
         // --- Apply neighbour filtering result ---
-        for (Square sq : squares) {
-            if (!keep.contains(sq)) {
-                sq.setVisible(false);
+        for (Square square : squares) {
+            if (!keep.contains(square)) {
+                square.setVisible(false);
             }
         }
 

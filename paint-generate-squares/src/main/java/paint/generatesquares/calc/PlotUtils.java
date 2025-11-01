@@ -235,11 +235,11 @@ public class PlotUtils {
                 int[] allBins = new int[binCount];
                 int[] bgBins  = new int[binCount];
 
-                for (Square sq : squares) {
-                    int n   = sq.getNumberOfTracks();
+                for (Square square : squares) {
+                    int n   = square.getNumberOfTracks();
                     int bin = Math.min(n / binSize, binCount - 1);
                     allBins[bin]++;
-                    if (backgroundSet.contains(sq)) {
+                    if (backgroundSet.contains(square)) {
                         bgBins[bin]++;
                     }
                 }

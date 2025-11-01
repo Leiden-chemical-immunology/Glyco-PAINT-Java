@@ -169,16 +169,16 @@ public class SquareGridPanel extends JPanel {
                 int row     = e.getY() / squareH;
 
                 if (selectionEnabled) {
-                    for (Square sq : squares) {
-                        if (sq.getRowNumber() == row && sq.getColNumber() == col) {
+                    for (Square square : squares) {
+                        if (square.getRowNumber() == row && square.getColNumber() == col) {
 
                             // 🔹 Only allow user selection if the square is visible
-                            if (!sq.isVisible()) {
+                            if (!square.isVisible()) {
                                 Toolkit.getDefaultToolkit().beep();
                                 return;
                             }
 
-                            int sqNum = sq.getSquareNumber();
+                            int sqNum = square.getSquareNumber();
                             if (selectedSquaresNumbers.contains(sqNum)) {
                                 selectedSquaresNumbers.remove(sqNum);
                             } else {
@@ -454,14 +454,14 @@ public class SquareGridPanel extends JPanel {
         }
 
         // --- Draw numbers inside selected squares ---
-        for (Square sq : squares) {
-            if (sq.isVisible()) {
-                int x = sq.getColNumber() * squareW;
-                int y = sq.getRowNumber() * squareH;
+        for (Square square : squares) {
+            if (square.isVisible()) {
+                int x = square.getColNumber() * squareW;
+                int y = square.getRowNumber() * squareH;
                 if (numberMode == NumberMode.LABEL) {
-                    drawCenteredString(g2, String.valueOf(sq.getLabelNumber()), x, y, squareW, squareH);
+                    drawCenteredString(g2, String.valueOf(square.getLabelNumber()), x, y, squareW, squareH);
                 } else if (numberMode == NumberMode.SQUARE) {
-                    drawCenteredString(g2, String.valueOf(sq.getSquareNumber()), x, y, squareW, squareH);
+                    drawCenteredString(g2, String.valueOf(square.getSquareNumber()), x, y, squareW, squareH);
                 }
             }
         }
@@ -558,9 +558,9 @@ public class SquareGridPanel extends JPanel {
         if (squares == null) {
             return;
         }
-        for (Square sq : squares) {
-            if (sq.isVisible()) {
-                sq.setCellId(cellId);
+        for (Square square : squares) {
+            if (square.isVisible()) {
+                square.setCellId(cellId);
             }
         }
         this.repaint();
