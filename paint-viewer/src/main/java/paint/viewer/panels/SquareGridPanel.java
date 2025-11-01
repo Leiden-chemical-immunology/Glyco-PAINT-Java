@@ -165,27 +165,34 @@ public class SquareGridPanel extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 int squareW = getWidth() / cols;
                 int squareH = getHeight() / rows;
-                int col = e.getX() / squareW;
-                int row = e.getY() / squareH;
+                int col     = e.getX() / squareW;
+                int row     = e.getY() / squareH;
 
                 if (selectionEnabled) {
                     for (Square sq : squares) {
                         if (sq.getRowNumber() == row && sq.getColNumber() == col) {
-                            boolean newSel = !sq.isSelected();
-                            sq.setSelected(newSel);
-                            if (newSel) {
-                                selectedSquaresNumbers.add(sq.getSquareNumber());
-                            } else {
-                                selectedSquaresNumbers.remove(sq.getSquareNumber());
+
+                            // 🔹 Only allow user selection if the square is visible
+                            if (!sq.isSelected()) {
+                                Toolkit.getDefaultToolkit().beep();
+                                return;
                             }
+
+                            int sqNum = sq.getSquareNumber();
+                            if (selectedSquaresNumbers.contains(sqNum)) {
+                                selectedSquaresNumbers.remove(sqNum);
+                            } else {
+                                selectedSquaresNumbers.add(sqNum);
+                            }
+
                             SquareGridPanel.this.repaint();
                             break;
                         }
                     }
                 }
 
-                // Left-click shows info; right-click hides popup
-                if (SwingUtilities.isLeftMouseButton(e)) {
+                // Left-click shows info only if popups enabled; right-click hides popup
+                if (SwingUtilities.isLeftMouseButton(e) && infoPopupsEnabled) {
                     showSquareInfo(e.getX(), e.getY());
                 } else if (SwingUtilities.isRightMouseButton(e)) {
                     hideInfoPopup();
@@ -320,8 +327,9 @@ public class SquareGridPanel extends JPanel {
                     square.getRowNumber() * squareH,
                     squareW, squareH
             );
-            if (rect.intersects(r)) {
-                square.setSelected(true);
+
+            // 🔹 Only add squares that are visible
+            if (rect.intersects(r) && square.isSelected()) {
                 selectedSquaresNumbers.add(square.getSquareNumber());
                 dragSelectedSquares.add(square.getSquareNumber());
             }
@@ -349,9 +357,6 @@ public class SquareGridPanel extends JPanel {
      */
     public void clearSelection() {
         selectedSquaresNumbers.clear();
-        for (Square sq : squares) {
-            sq.setSelected(false);
-        }
         this.repaint();
     }
 
