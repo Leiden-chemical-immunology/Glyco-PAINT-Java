@@ -82,22 +82,11 @@ public class GenerateSquaresProcessor {
         Experiment            experiment            = null;
         List<Recording>       recordings;
 
-        Path    projectPath       = project.getProjectRootPath();
-        boolean plotFittingCurves = getBoolean("Generate Squares", "Plot Curve Fitting", false);
-
-        LocalDateTime start = LocalDateTime.now();
+        Path          projectPath       = project.getProjectRootPath();
+        boolean       plotFittingCurves = getBoolean("Generate Squares", "Plot Curve Fitting", false);
+        LocalDateTime start             = LocalDateTime.now();
         PaintLogger.debugf("Loading Experiment '%s'", experimentName);
 
-        // Early Exit if the user cancelled before we start
-        if (Thread.currentThread().isInterrupted()) {
-            PaintLogger.infof("Cancelled before starting experiment %s", experimentName);
-            return;
-        }
-        try {
-            experiment = loadExperiment(project.getProjectRootPath(), experimentName, false);
-        } catch (Exception e) {
-            PaintLogger.errorf("Failed to load Experiment '%s'", experimentName);
-        }
         // Load the experiment (without squares, with tracks)
         experiment = loadExperiment(project.getProjectRootPath(),
                                     experimentName,
@@ -123,6 +112,7 @@ public class GenerateSquaresProcessor {
                 PaintLogger.infof("Cancelled before processing recording %s", recording.getRecordingName());
                 return;
             }
+
             PaintLogger.infof("   Processing: %s", recording.getRecordingName());
             PaintLogger.debugf(recording.toString());
 
@@ -184,7 +174,6 @@ public class GenerateSquaresProcessor {
         int numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
         numberOfSquaresInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);   // Number of squares in one dimension (e.g., 20 for 20x20).
 
-        
         List<Square> squares = new ArrayList<>();
         double squareWidth   = IMAGE_WIDTH / numberOfSquaresInOneDimension;
         double squareHeight  = IMAGE_HEIGHT / numberOfSquaresInOneDimension;
