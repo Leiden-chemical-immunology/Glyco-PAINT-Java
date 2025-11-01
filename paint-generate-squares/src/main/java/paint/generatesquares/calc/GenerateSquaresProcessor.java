@@ -114,6 +114,10 @@ public class GenerateSquaresProcessor {
         recordings = experiment.getRecordings();
         for (Recording recording : recordings) {
 
+            if (!recording.isProcessFlag()) {
+                continue;
+            }
+
             // CHECK before starting each recording
             if (Thread.currentThread().isInterrupted()) {
                 PaintLogger.infof("Cancelled before processing recording %s", recording.getRecordingName());
