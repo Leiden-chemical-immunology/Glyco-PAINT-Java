@@ -120,11 +120,11 @@ In the Project Root directory, a **Paint Configuration** file exists, in which i
 
 The Glyco-PAINT plugin is started, after starting Fiji, by selecting from the Plugins menu, the Glyco-PAINT and Run options. A dialog box like the one shown below pops up.
 
-![trackmate-plugin](/Users/hans/JavaPaintProjects/doc/Pictures/trackmate-plugin.png)
+![trackmate-plugin](./Pictures/trackmate-plugin.png)
 
 A Paint Console is also opened to provide you with feedback on the status and progress of operations, 
 
-![paint-console-initial](/Users/hans/JavaPaintProjects/doc/Pictures/paint-console-initial.png)  
+![paint-console-initial](./Pictures/paint-console-initial.png)  
 
 ## The plugin user interface
 
@@ -178,7 +178,7 @@ The first step is that the validity of the Experiment Info files in the selected
 
 The TrackMate calculations are influenced by a set of parameters, that do normally not require changing and which are specified in the **Paint Configuration** file.  If 'Verbose' is set, the parameters are displayed in the **Paint Console**. See below.
 
-![paint-console-running](/Users/hans/JavaPaintProjects/doc/Pictures/paint-console-running.png) 
+![paint-console-running](./Pictures/paint-console-running.png) 
 
 Information on TrackMate and TrackMate parameters is found in the [TrackMate manual](https://imagej.net/media/plugins/trackmate/trackmate-manual.pdf).
 
@@ -197,7 +197,7 @@ The Experiment Info files in the selected Experiments specify which Recordings a
 
 For each Recording a **Threshold** value is specified. A low value for Threshold will cause many features to be recognised as spots; high values will lead to fewer spots. The optimal value depends on the experiment and the user likely will need to resort to an iterative process to find the optimal values. To avoid long processing times,  initially high 'Threshold' values should be chosen      
 
-![experiment-info](/Users/hans/JavaPaintProjects/doc/Pictures/experiment-info.png)
+![experiment-info](./Pictures/experiment-info.png)
 
 #### Paint Configuration file
 
@@ -207,9 +207,9 @@ In general users will not often have to edit the Paint Configuration and should 
 
 The file is 'self-healing', e.g., when necessary  cannot be found, they are recreated with sensible defaults.  If the whole file is missing, for example for a freshly created Project Root, it will be regenerated from scratch.
 
-![paint-config-json](/Users/hans/JavaPaintProjects/doc/Pictures/paint-config-json.png)Only Project specific values are stored in the Paint Configuration file.  For system wide settings, the macOS Preferences mechanism is used to store attributes in  ~/Library/preferences/Glyco-PAINT.plist (for Windows an equivalent implementation is provided). You will generally not interact directly with this file,  but it is here where the current 'Project Root' and 'Images Root' are kept.  Below the Glyco-PAINT.plist is shown with Xcode's  plist viewer. Also the **Log Level** can be adjusted here. The standard Log Level is **Info**, but for more detailed information **Debug** can be chosen. Less information can be displayed by choosing **Error** or **Warn**.  
+![paint-config-json](./Pictures/paint-config-json.png)Only Project specific values are stored in the Paint Configuration file.  For system wide settings, the macOS Preferences mechanism is used to store attributes in  ~/Library/preferences/Glyco-PAINT.plist (for Windows an equivalent implementation is provided). You will generally not interact directly with this file,  but it is here where the current 'Project Root' and 'Images Root' are kept.  Below the Glyco-PAINT.plist is shown with Xcode's  plist viewer. Also the **Log Level** can be adjusted here. The standard Log Level is **Info**, but for more detailed information **Debug** can be chosen. Less information can be displayed by choosing **Error** or **Warn**.  
 
-![preferences](/Users/hans/JavaPaintProjects/doc/Pictures/preferences.png)
+![preferences](./Pictures/preferences.png)
 
 #### TrackMate Results
 
@@ -225,14 +225,14 @@ Upon completion of a TrackMate run, two new files have been created in each Expe
 In addition to the creating of the 'Tracks' file and the updating of 'Recordings', two directories with images are created. The **TrackMate Images** directory contains  the processed images in which the tracks are shown.  The images in the TrackMate and Brightfield directories are used in the Viewer application.
 
 <div align="center">
-<img src="/Users/hans/JavaPaintProjects/doc/Pictures/trackmate-image.png" alt="trackmate-image" style="zoom:33%;" /> 
+<img src="./Pictures/trackmate-image.png" alt="trackmate-image" style="zoom:33%;" /> 
 </div>
 
 
 In the **Brightfield Images** directory the brightfield images for  recording are collected.
 
 <div align="center">
-<img src="/Users/hans/JavaPaintProjects/doc/Pictures/brightfield-image.png" alt="brightfield-image" style="zoom:33%;" /> 
+<img src="./Pictures/brightfield-image.png" alt="brightfield-image" style="zoom:33%;" /> 
 </div>
 
 
@@ -300,7 +300,7 @@ To calculate a Tau value for the entire recording, all tracks within squares tha
 
 Visual feedback on the fitting process is provided when the "Tau Fitting Plots" flag  (in the "Generate Squares" section) is set to true. In the 'Tau Fitting Plots' directory under the Experiment directories,  plots are gathered in 'Failed' and 'Success' sub directories. An example of such a plot is shown below:
 
-<img src="/Users/hans/JavaPaintProjects/doc/Pictures/tau-fit-plot.png" alt="tau-fit-plot" style="zoom:33%;" />
+<img src="./Pictures/tau-fit-plot.png" alt="tau-fit-plot" style="zoom:33%;" />
 
 
 
@@ -308,7 +308,7 @@ Visual feedback on the fitting process is provided when the "Tau Fitting Plots" 
 
 The variability of a square calculation begins with overlaying a finer grid over the existing grid and determining the number of tracks in each grid element. The variability is then calculated as the quotient of the standard deviation and the mean of the grid track numbers. The figure below illustrates the variability for four fictional squares.
 
-![variability](/Users/hans/JavaPaintProjects/doc/Pictures/variability.png)
+![variability](./Pictures/variability.png)
 
 The code can be found at: [CalculateSquareAttributes.java](https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java/blob/main/paint-generate-squares/src/main/java/paint/generatesquares/calc/CalculateSquareAttributes.java).
 
@@ -348,7 +348,7 @@ One of the criteria applied to for square selection is the 'Density  ratio'. Sim
 
 The code can be found at: [SquareUtils.java](https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java/blob/main/paint-generate-squares/src/main/java/paint/generatesquares/calc/SquareUtils.java)
 
-<img src="/Users/hans/JavaPaintProjects/doc/Pictures/background.png" alt="background" style="zoom:33%;" />
+<img src="./Pictures/background.png" alt="background" style="zoom:33%;" />
 
 
 
@@ -363,7 +363,7 @@ With the Viewer you can inspect the what tracks have been generates for recoding
 The first dialog looks similar to the TrackMate plugin and allows the selection of the **Project Root** and **Experiments** you want to  view.  You can also specify the **Images Root**, but this is only necessary if you want to replay the recordings as made by the microscope. Notice that seelections you have made previously, fopr excample in the TrackMate plugun or Generate Squares have been preserved. 
 
 <div align="center">
-  <img src="/Users/hans/JavaPaintProjects/doc/Pictures/viewer-1.png" alt="viewer-1" style="zoom:33%;" />
+  <img src="./Pictures/viewer-1.png" alt="viewer-1" style="zoom:33%;" />
 </div >
 Having made all selections, the actual Viewer dialog is displayed. Three panels are visible: 
 
@@ -373,7 +373,7 @@ Having made all selections, the actual Viewer dialog is displayed. Three panels 
 
 In the TrackMate image, those squares are displayed that meet the slection criteria specified during the generation of the squares. Thos criteria are viaible in the attribute panel on the left (Min Density Ratio, Max Variability, Min R²  and Neighbour Mode). 
 
-![viewer-2](/Users/hans/JavaPaintProjects/doc/Pictures/viewer-2.png) 
+![viewer-2](./Pictures/viewer-2.png) 
 
 The checkboxes in the control panel on the right determine whether borders are shown, whether squares are shaded and whether label or square numbers is displayed or not.
 
@@ -381,20 +381,20 @@ The checkboxes in the control panel on the right determine whether borders are s
 
 Pressing the **Select Squares** button in the control panel, causes a Square Control dialog to become visible. Moving the sliders will change the criteria for square selection and you will see the squares selection change dynamically. You can assign the current settings to just the Recording, all Recordings in the same Experiment or to all Recordings currently loaded in the Viewer. In that case those settings will be presered for the current Viewer settings and stored in a **Recording Override** file in the **Viewer** directory in the Project Root. 
 
-<img src="/Users/hans/JavaPaintProjects/doc/Pictures/select-squares-dialog.png" alt="select-squares-dialog" style="zoom:33%;" />
+<img src="./Pictures/select-squares-dialog.png" alt="select-squares-dialog" style="zoom:33%;" />
 
 ## Assign Cells
 
 Pressing the **Assign Cells** button, causes the Assign Cells dialog to be shown. You can select squares, by pressing the left mouse button and dragging the mouse. Selected squares are assigned to cell 1 till 6 (or unassigned) when you click the **Assign** button.  The cell assignments are preserved for the current Viewer settings and stored in a **Square Override** file in the **Viewer** directory in the Project Root. 
 
 <div align="center">
-<img src="/Users/hans/JavaPaintProjects/doc/Pictures/assign-cells-dialog.png" alt="assign-cells-dialog" style="zoom:33%;" />
+<img src="./Pictures/assign-cells-dialog.png" alt="assign-cells-dialog" style="zoom:33%;" />
 </div>
 ## Filter Recordings
 
 
 
-![filter-recordings-dialog](/Users/hans/JavaPaintProjects/doc/Pictures/filter-recordings-dialog.png)
+![filter-recordings-dialog](./Pictures/filter-recordings-dialog.png)
 
 
 # Get Omero
@@ -429,7 +429,7 @@ Others are for supporting and development purposes:
 
 
 
-![github](/Users/hans/JavaPaintProjects/doc/Pictures/github.png)
+![github](./Pictures/github.png)
 
 
 
@@ -439,7 +439,7 @@ The development environment used is Jetbrain's IntelliJ IDEA. It can be download
 
 In the picture below the IDEA environment for the Glyco-PAINT pipeline is shown.
 
-![idea](/Users/hans/JavaPaintProjects/doc/Pictures/idea.png)
+![idea](./Pictures/idea.png)
 
 If you want to reciew code, after having installed IDEA, you can **clone** a project from Github, using [File] - [New] - [Project from Version Control]. You specify as URL https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java and you select a folder on your harddrive where you want the code to be installed.
 
