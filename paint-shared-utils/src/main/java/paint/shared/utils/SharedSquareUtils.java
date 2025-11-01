@@ -161,7 +161,7 @@ public final class SharedSquareUtils {
                     && square.getRSquared() >= minRSquared
                     && !Double.isNaN(square.getRSquared());
 
-            square.setSelected(passes);
+            square.setVisible(passes);
             if (passes) {
                 visibleBasic++;
             }
@@ -176,7 +176,7 @@ public final class SharedSquareUtils {
         int keptCount        = 0;
 
         for (Square square : squares) {
-            if (!square.isSelected()) {
+            if (!square.isVisible()) {
                 continue;
             }
 
@@ -185,7 +185,7 @@ public final class SharedSquareUtils {
             int c = square.getColNumber();
 
             for (Square other : squares) {
-                if (other == square || !other.isSelected()) {
+                if (other == square || !other.isVisible()) {
                     continue;
                 }
                 int dr = Math.abs(other.getRowNumber() - r);
@@ -215,7 +215,7 @@ public final class SharedSquareUtils {
         // --- Apply neighbour filtering result ---
         for (Square sq : squares) {
             if (!keep.contains(sq)) {
-                sq.setSelected(false);
+                sq.setVisible(false);
             }
         }
 
@@ -233,7 +233,7 @@ public final class SharedSquareUtils {
     public static List<Track> getTracksFromSelectedSquares(List<Square> squares) {
         List<Track> selectedTracks = new ArrayList<>();
         for (Square square : squares) {
-            if (square.isSelected() && square.getTracks() != null) {
+            if (square.isVisible() && square.getTracks() != null) {
                 selectedTracks.addAll(square.getTracks());
             }
         }
@@ -249,7 +249,7 @@ public final class SharedSquareUtils {
     public static int getNumberOfSelectedSquares(Recording recording) {
         int count = 0;
         for (Square square : recording.getSquaresOfRecording()) {
-            if (square.isSelected()) {
+            if (square.isVisible()) {
                 count++;
             }
         }

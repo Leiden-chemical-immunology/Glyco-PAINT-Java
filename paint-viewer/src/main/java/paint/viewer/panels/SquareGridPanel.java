@@ -173,7 +173,7 @@ public class SquareGridPanel extends JPanel {
                         if (sq.getRowNumber() == row && sq.getColNumber() == col) {
 
                             // 🔹 Only allow user selection if the square is visible
-                            if (!sq.isSelected()) {
+                            if (!sq.isVisible()) {
                                 Toolkit.getDefaultToolkit().beep();
                                 return;
                             }
@@ -329,7 +329,7 @@ public class SquareGridPanel extends JPanel {
             );
 
             // 🔹 Only add squares that are visible
-            if (rect.intersects(r) && square.isSelected()) {
+            if (rect.intersects(r) && square.isVisible()) {
                 selectedSquaresNumbers.add(square.getSquareNumber());
                 dragSelectedSquares.add(square.getSquareNumber());
             }
@@ -405,7 +405,7 @@ public class SquareGridPanel extends JPanel {
             int x = square.getColNumber() * squareW;
             int y = square.getRowNumber() * squareH;
 
-            boolean visible = square.isSelected(); // selected == visible (from filter)
+            boolean visible = square.isVisible(); // selected == visible (from filter)
             boolean userSelected = selectedSquaresNumbers.contains(square.getSquareNumber());
             boolean hasCell = square.getCellId() > 0;
 
@@ -455,7 +455,7 @@ public class SquareGridPanel extends JPanel {
 
         // --- Draw numbers inside selected squares ---
         for (Square sq : squares) {
-            if (sq.isSelected()) {
+            if (sq.isVisible()) {
                 int x = sq.getColNumber() * squareW;
                 int y = sq.getRowNumber() * squareH;
                 if (numberMode == NumberMode.LABEL) {
@@ -559,7 +559,7 @@ public class SquareGridPanel extends JPanel {
             return;
         }
         for (Square sq : squares) {
-            if (sq.isSelected()) {
+            if (sq.isVisible()) {
                 sq.setCellId(cellId);
             }
         }

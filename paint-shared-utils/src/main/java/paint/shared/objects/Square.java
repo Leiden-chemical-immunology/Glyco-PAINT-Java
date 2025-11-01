@@ -66,7 +66,7 @@ public class Square {
     private int     colNumber;                       // 5
     private int     labelNumber;                     // 6
     private int     cellId;                          // 7
-    private boolean selected;                        // 8
+    private boolean visible;                        // 8
     private boolean squareManuallyExcluded;          // 9
     private boolean imageExcluded;                   // 10
     private double  x0;                              // 11
@@ -193,8 +193,13 @@ public class Square {
     public int getCellId() { return cellId; }
     public void setCellId(int cellId) { this.cellId = cellId; }
 
-    public boolean isSelected() { return selected; }
-    public void setSelected(boolean selected) { this.selected = selected; }
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
 
     public boolean isSquareManuallyExcluded() { return squareManuallyExcluded; }
     public void setSquareManuallyExcluded(boolean squareManuallyExcluded) { this.squareManuallyExcluded = squareManuallyExcluded; }
@@ -335,7 +340,7 @@ public class Square {
         sb.append(String.format("Label Number                   : %d%n", labelNumber));
         sb.append(String.format("Cell ID                        : %d%n", cellId));
 
-        sb.append(String.format("Selected                       : %b%n", selected));
+        sb.append(String.format("Visible                        : %b%n", visible));
         sb.append(String.format("Square Manually Excluded       : %b%n", squareManuallyExcluded));
         sb.append(String.format("Image Excluded                 : %b%n", imageExcluded));
 

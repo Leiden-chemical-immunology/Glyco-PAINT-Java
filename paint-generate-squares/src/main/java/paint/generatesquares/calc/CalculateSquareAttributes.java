@@ -161,7 +161,7 @@ public class CalculateSquareAttributes {
 
         int labelNumber = 0;
         for (Square sq : recording.getSquaresOfRecording()) {
-            if (sq.isSelected()) {
+            if (sq.isVisible()) {
                 sq.setLabelNumber(labelNumber++);
             }
         }
