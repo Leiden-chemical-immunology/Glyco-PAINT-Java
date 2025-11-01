@@ -306,7 +306,7 @@ public class PlotUtils {
      * @param experimentPath The root directory of the experiment (used to resolve Output path).
      * @throws IOException If any image cannot be written.
      */
-    public static void exportExperimentHistogramsToPngs(Experiment experiment, Path experimentPath) throws IOException {
+    public static void exportBackgroundHistogramsToPngs(Experiment experiment, Path experimentPath) throws IOException {
         Path outputDir = experimentPath.resolve("Output").resolve("Background Plots");
         Files.createDirectories(outputDir);
 
@@ -317,17 +317,16 @@ public class PlotUtils {
                 continue;
             }
 
-            SquareUtils.BackgroundEstimationResult backgroundResult = calculateBackgroundDensity(squares);
-            Set<Square> backgroundSet = new HashSet<>(backgroundResult.getBackgroundSquares());
-            double backgroundTracksPerSquare = backgroundResult.getBackgroundMean();
+            SquareUtils.BackgroundEstimationResult backgroundResult          = calculateBackgroundDensity(squares);
+            Set<Square>                            backgroundSet             = new HashSet<>(backgroundResult.getBackgroundSquares());
+            double                                 backgroundTracksPerSquare = backgroundResult.getBackgroundMean();
 
-            int totalSquares = squares.size();
-            int nBackground  = backgroundSet.size();
-            int totalTracks  = squares.stream().mapToInt(Square::getNumberOfTracks).sum();
+            int totalSquares          = squares.size();
+            int nBackground           = backgroundSet.size();
+            int totalTracks           = squares.stream().mapToInt(Square::getNumberOfTracks).sum();
             int backgroundTracksTotal = backgroundSet.stream().mapToInt(Square::getNumberOfTracks).sum();
 
-            int maxTracks = squares.stream()
-                    .mapToInt(Square::getNumberOfTracks).max().orElse(0);
+            int maxTracks = squares.stream().mapToInt(Square::getNumberOfTracks).max().orElse(0);
             int binSize   = Math.max(1, maxTracks / 20);
             int binCount  = (maxTracks / binSize) + 1;
 

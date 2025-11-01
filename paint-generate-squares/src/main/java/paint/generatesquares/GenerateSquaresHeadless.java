@@ -57,8 +57,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static paint.generatesquares.calc.GenerateSquaresProcessor.generateSquaresForExperiment;
-import static paint.generatesquares.calc.PlotUtils.exportExperimentHistogramsToPdf;
-import static paint.generatesquares.calc.PlotUtils.exportExperimentHistogramsToPngs;
+import static paint.generatesquares.calc.PlotUtils.exportBackgroundHistogramsToPngs;
 import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.io.ExperimentDataLoader.loadExperiment;
 import static paint.shared.utils.CsvUtils.concatenateNamedCsvFiles;
@@ -128,18 +127,19 @@ public class GenerateSquaresHeadless {
                 return;
             }
 
+            // Generate the background plots
             try {
                 Experiment experiment = loadExperiment(projectPath,
                                                        experimentName,
-                                                       true,  // Load Squares
-                                                       false);           // Don't load Tracks
+                                                       true,   // Load Squares
+                                                       false); // Don't load Tracks
                 Path pdfOut = projectPath
                         .resolve(experimentName)
                         .resolve("Output")
                         .resolve("Background.pdf");
 
                 Files.createDirectories(pdfOut.getParent());
-                exportExperimentHistogramsToPngs(experiment, projectPath.resolve(experimentName));
+                exportBackgroundHistogramsToPngs(experiment, projectPath.resolve(experimentName));
 
             } catch (Exception e) {
                 PaintLogger.errorf("Failed to export histograms for %s: %s", experimentName, e.getMessage());
