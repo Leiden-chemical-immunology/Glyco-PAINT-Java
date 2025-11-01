@@ -24,7 +24,7 @@ This Java version of Glyco-PAINT will fully replace the current Python-based ver
 - **Better documentation**, making the code more  to users.
 - **Improved version management**, fully utilising the GutHub release mechanism and installers for macOS and Windows. 
 
-Whereas the functionality of the this version is identical to the Python version, results from the Python version are not 100% reproducible. Partially this is because of some improvements in implementation of core algorithms, but more so because of inherent indeterministic behaviour of the TrackMate calculation engine itself (also with the Python environment itself, results are not 100% reproducible). Differences are small and do not impact the analysis and conclusion drawn from experiments.
+Whereas the functionality of this version is identical to the Python version, results from the Python version are not 100% reproducible. Partially this is because of some improvements in implementation of core algorithms, but more so because of inherent indeterministic behaviour of the TrackMate calculation engine itself (also with the Python environment itself, results are not 100% reproducible). Differences are small and do not impact the analysis and conclusion drawn from experiments.
 
 The code for the Python version and the new Java version is available on: [Glyco-PAINT Python](https://github.com/Leiden-chemical-immunology/Glyco-PAINT) Github and [Glyco-PAINT Java](https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java). You no longer need access to the code for running the pipeline, but nevertheless familiarity with the core algorithms is desirable for more effective use of the pipeline  
 
@@ -32,7 +32,7 @@ In addition to the published code itself, a  Javadoc site provides a complete, w
 
 Example images are published on Zenodo and can be used as  [Glyco-PAINT reference images](https://doi.org/10.5281/zenodo.17487086).
 
-Thos document provides explanation on how to use the pipeline  (maintained as a Markdown document, on GitHub and distributed as a pdf file.   
+This document provides explanation on how to use the pipeline  (maintained as a Markdown document, on GitHub and distributed as a pdf file.   
 
 
 
@@ -84,7 +84,7 @@ In addition to these main apps there are two simple utilities:
 
 There are multiple ways to install the Glyco-PAINT pipeline. The easiest is through a self extracting installer, likely called something like: Glyco-PAINT-Installer.sh.
 
-For an easy installation route, agree with the developers at Leiden LIC access to the OneDrive Glyco-PAINT distribution site.  Download the installer file (typically with a 500 MB size) to any folder on your compurer (typically your ~/Downloads folder). Open a terminal and execute the following commands
+For an easy installation route, agree with the developers at Leiden LIC access to the OneDrive Glyco-PAINT distribution site.  Download the installer file (typically with a 500 MB size) to any folder on your computer (typically your ~/Downloads folder). Open a terminal and execute the following commands
 
 ```
 cd ~/Downloads
@@ -95,7 +95,7 @@ The installer will create a directory Glyco-PAINT in the ~/Applications director
 
 The jar name will be similar to  **paint-fiji-plugin-0.0.3-SNAPSHOT-jar-with-dependencies.jar**. The number sequence 0.0.3 will be incremented with subsequent releases. The **SNAPSHOT** may be present,  indicating  this is a development version, or not, indicating a formal release version.
 
-The Glyco-Paint apps can be started by simply clicking on them in the ~/Applications/Glyco-PAINT folder. There is no good reason for it but you can start the Glyco-PAINT apps also from the command line. For that you need to open the App bundles and locate the jar files in the Contents/Java directory. As example for Get Omero.
+The Glyco-Paint apps can be started by simply clicking on them in the ~/Applications/Glyco-PAINT folder. There is no good reason for it, but you can start the Glyco-PAINT apps also from the command line. For that, you need to open the App bundles and locate the jar files in the Contents/Java directory. As example for Get Omero:
 
 ```
 cd ~/Applications/Glyco-PAINT/Get Omero/Contents/Java
@@ -385,11 +385,17 @@ Pressing the **Select Squares** button in the control panel, causes a Square Con
 
 ## Assign Cells
 
-Pressing the Assign Cells button, causes the Assign Cells dialog to be shown.
+Pressing the **Assign Cells** button, causes the Assign Cells dialog to be shown. You can select squares, by pressing the left mouse button and dragging the mouse. Selected squares are assigned to cell 1 till 6 (or unassigned) when you click the **Assign** button.  The cell assignments are preserved for the current Viewer settings and stored in a **Square Override** file in the **Viewer** directory in the Project Root. 
 
 <div align="center">
 <img src="/Users/hans/JavaPaintProjects/doc/Pictures/assign-cells-dialog.png" alt="assign-cells-dialog" style="zoom:33%;" />
 </div>
+## Filter Recordings
+
+
+
+![filter-recordings-dialog](/Users/hans/JavaPaintProjects/doc/Pictures/filter-recordings-dialog.png)
+
 
 # Get Omero
 
