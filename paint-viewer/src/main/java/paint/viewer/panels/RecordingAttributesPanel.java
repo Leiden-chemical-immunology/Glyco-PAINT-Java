@@ -79,6 +79,8 @@ public class RecordingAttributesPanel {
         table.setFocusable(false);
         table.setRowSelectionAllowed(false);
         table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
+        table.getColumnModel().getColumn(0).setPreferredWidth(100); // "Attr"
+        table.getColumnModel().getColumn(1).setPreferredWidth(50);  // "Val"
 
         JScrollPane scroll = new JScrollPane(table);
         root.add(scroll, BorderLayout.CENTER);
@@ -110,8 +112,6 @@ public class RecordingAttributesPanel {
         model.addRow(new Object[]{"Number of Tracks",  recordingEntry.getNumberOfTracks()});
         model.addRow(new Object[]{"Number of Squares", numSquares});
         model.addRow(new Object[]{"Threshold",         recordingEntry.getThreshold()});
-        // model.addRow(new Object[]{"Tau",               format(recordingEntry.getTau(), 1)});
-        // model.addRow(new Object[]{"Density",           recordingEntry.getDensity()});
         model.addRow(new Object[]{"Min Density Ratio", recordingEntry.getMinRequiredDensityRatio()});
         model.addRow(new Object[]{"Max Variability",   recordingEntry.getMaxAllowableVariability()});
         model.addRow(new Object[]{"Min R²",            recordingEntry.getMinRequiredRSquared()});
