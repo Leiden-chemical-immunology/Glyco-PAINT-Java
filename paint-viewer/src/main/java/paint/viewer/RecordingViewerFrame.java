@@ -46,7 +46,7 @@ import paint.shared.objects.Project;
 import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintPrefs;
 import paint.viewer.dialogs.CellAssignmentDialog;
-import paint.viewer.dialogs.FilterDialog;
+import paint.viewer.dialogs.RecordingFilterDialog;
 import paint.viewer.dialogs.SquareControlDialog;
 import paint.viewer.logic.CellAssignmentManager;
 import paint.viewer.logic.RecordingOverrideWriter;
@@ -92,24 +92,31 @@ import static paint.shared.constants.PaintConstants.*;
  */
 public class RecordingViewerFrame extends JFrame
         implements RecordingControlsPanel.Listener, NavigationPanel.Listener {
-    private final Project                  project;
-    private final List<RecordingEntry>     recordingEntries;   // The main data structure containing all recordings
-    private       int                      currentIndex      = 0;
 
-    private       SquareGridPanel          leftGridPanel;
-    private final JLabel                   rightImageLabel   = new JLabel("", SwingConstants.CENTER);
-    private final JLabel                   experimentLabel   = new JLabel("", SwingConstants.CENTER);
-    private final JLabel                   recordingLabel    = new JLabel("", SwingConstants.CENTER);
+    // Remembers the last used filter criteria for the filter dialog
+    private RecordingFilterDialog.FilterCriteria lastFilterCriteria = null;
 
-    private       RecordingAttributesPanel attributesPanel;
-    private       NavigationPanel          navigationPanel;
+    private final Project                              project;
+    private final List<RecordingEntry>                 allRecordingEntries;  // full unfiltered list
+    private final List<RecordingEntry>                 recordingEntries;     // currently visible (may be filtered)
+    private       int                                  currentIndex      = 0;
 
-    private final CellAssignmentManager    assignmentManager = new CellAssignmentManager();
-    private final RecordingOverrideWriter  recordingOverrideWriter;
-    private final SquareOverrideWriter     squareOverrideWriter;
-    private final SquareControlHandler     controlHandler    = new SquareControlHandler();
+    private       SquareGridPanel                      leftGridPanel;
+    private final JLabel                               rightImageLabel   = new JLabel("", SwingConstants.CENTER);
+    private final JLabel                               experimentLabel   = new JLabel("", SwingConstants.CENTER);
+    private final JLabel                               recordingLabel    = new JLabel("", SwingConstants.CENTER);
 
-    private       JDialog                  activeDialog      = null;
+    private       RecordingAttributesPanel             attributesPanel;
+    private       NavigationPanel                      navigationPanel;
+
+    private final CellAssignmentManager                assignmentManager = new CellAssignmentManager();
+    private final SquareControlHandler                 controlHandler    = new SquareControlHandler();
+    private       RecordingFilterDialog.FilterCriteria lastCriteria      = RecordingFilterDialog.FilterCriteria.empty();
+    private       JDialog                              activeDialog      = null;
+
+    private final RecordingOverrideWriter              recordingOverrideWriter;
+    private final SquareOverrideWriter                 squareOverrideWriter;
+
     /**
      * Constructs a {@code RecordingViewerFrame} that initializes and displays the complete
      * recording viewer environment. The frame sets up grid visualization, navigation,
@@ -121,7 +128,8 @@ public class RecordingViewerFrame extends JFrame
     public RecordingViewerFrame(Project project, List<RecordingEntry> recordingEntries) {
         super("Recording Viewer - " + project.getProjectRootPath().getFileName());
         this.project                 = project;
-        this.recordingEntries        = recordingEntries;  // All the information is maintained here
+        this.allRecordingEntries     = new java.util.ArrayList<>(recordingEntries);
+        this.recordingEntries        = new java.util.ArrayList<>(recordingEntries);
         this.recordingOverrideWriter = new RecordingOverrideWriter(project.getProjectRootPath());
         this.squareOverrideWriter    = new SquareOverrideWriter(project.getProjectRootPath());
 
@@ -327,7 +335,7 @@ public class RecordingViewerFrame extends JFrame
         }
 
         leftGridPanel.hideSquareInfoIfVisible();
-        activeDialog = new FilterDialog(this, recordingEntries);
+        activeDialog = new RecordingFilterDialog(this, recordingEntries, allRecordingEntries, lastFilterCriteria);
         setGridEnabled(false); // 🔹 Disable grid interaction
 
         activeDialog.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -336,14 +344,39 @@ public class RecordingViewerFrame extends JFrame
                 activeDialog = null;
             }
         });
+
+        // 🔹 SHOW THE DIALOG
         activeDialog.setVisible(true);
 
-        FilterDialog fd = (FilterDialog) activeDialog;
+        // Now handle user result after closing
+        RecordingFilterDialog fd = (RecordingFilterDialog) activeDialog;
         if (!fd.isCancelled()) {
             List<RecordingEntry> filtered = fd.getFilteredRecordings();
-            if (!filtered.isEmpty()) {
+            lastFilterCriteria = fd.getCurrentFilterCriteria();
+            boolean isResetAll = (filtered.size() == allRecordingEntries.size());
+
+            if (isResetAll) {
+                recordingEntries.clear();
+                recordingEntries.addAll(allRecordingEntries);
                 currentIndex = 0;
-                showRecordingEntry(0);
+                showRecordingEntry(currentIndex);
+                PaintLogger.infof("Filter reset — showing all recordings (%d total).", recordingEntries.size());
+                return;
+            }
+
+            if (!filtered.isEmpty()) {
+                recordingEntries.clear();
+                recordingEntries.addAll(filtered);
+                currentIndex = 0;
+                showRecordingEntry(currentIndex);
+                PaintLogger.infof("Filter applied — showing %d of %d recordings.", filtered.size(), allRecordingEntries.size());
+            } else {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No recordings match the selected filter criteria.",
+                        "No Results",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
             }
         }
     }

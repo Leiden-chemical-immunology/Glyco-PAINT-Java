@@ -89,7 +89,7 @@ public class RecordingControlsPanel {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
         // === Action buttons ===
-        JButton filterButton = new JButton("Filter recordings");
+        JButton filterButton = new JButton("Filter Recordings");
         JButton squareButton = new JButton("Select Squares");
         JButton cellButton   = new JButton("Assign Cells");
         JButton playButton   = new JButton("Play Recording");
