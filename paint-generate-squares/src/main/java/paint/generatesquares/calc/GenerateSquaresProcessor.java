@@ -83,7 +83,6 @@ public class GenerateSquaresProcessor {
         List<Recording>       recordings;
 
         Path          projectPath       = project.getProjectRootPath();
-        boolean       plotFittingCurves = getBoolean("Generate Squares", "Plot Curve Fitting", false);
         LocalDateTime start             = LocalDateTime.now();
         PaintLogger.debugf("Loading Experiment '%s'", experimentName);
 

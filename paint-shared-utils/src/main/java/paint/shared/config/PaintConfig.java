@@ -203,7 +203,8 @@ public class PaintConfig {
         generateSquares.addProperty("Exclude zero DC tracks from Tau Calculation", false);
         generateSquares.addProperty(NEIGHBOUR_MODE,                                        "Free");
         generateSquares.addProperty(NUMBER_OF_SQUARES_IN_RECORDING,                        400);
-        generateSquares.addProperty("Plot Curve Fitting",                          false);
+        generateSquares.addProperty("Tau Fitting plots",                                   true);
+        generateSquares.addProperty("Background plots",                                    true);
         configData.add(SECTION_GENERATE_SQUARES, generateSquares);
 
         JsonObject trackMate = new JsonObject();

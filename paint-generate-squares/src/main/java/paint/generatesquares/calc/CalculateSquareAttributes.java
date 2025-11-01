@@ -105,9 +105,10 @@ public class CalculateSquareAttributes {
             if (tracksInSquare.size() >= minTracksForTau) {
                 CalculateTau.CalculateTauResult results = calculateTau(tracksInSquare, minRequiredRSquared);
 
-                if (paint.shared.config.PaintConfig.getBoolean("Generate Squares", "Plot Curve Fitting", false) &&
-                        tracksInSquare.size() >= minTracksForTau) {
-                    saveTauFitPlot(tracksInSquare, results, experimentPath, recording.getRecordingName(), squareNumber);
+                if (paint.shared.config.PaintConfig.getBoolean("Generate Squares", "Tau Fitting Plots", false)) {
+                    if (tracksInSquare.size() >= minTracksForTau){
+                        saveTauFitPlot(tracksInSquare, results, experimentPath, recording.getRecordingName(), squareNumber);
+                    }
                 }
 
                 if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {

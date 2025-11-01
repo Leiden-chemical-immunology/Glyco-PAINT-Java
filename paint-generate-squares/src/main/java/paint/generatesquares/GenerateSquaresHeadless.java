@@ -122,27 +122,24 @@ public class GenerateSquaresHeadless {
                 continue;
             }
 
-            if (Thread.currentThread().isInterrupted()) {
-                PaintLogger.infof("Cancelled before exporting histograms for %s", experimentName);
-                return;
-            }
-
             // Generate the background plots
-            try {
-                Experiment experiment = loadExperiment(projectPath,
-                                                       experimentName,
-                                                       true,   // Load Squares
-                                                       false); // Don't load Tracks
-                Path pdfOut = projectPath
-                        .resolve(experimentName)
-                        .resolve("Output")
-                        .resolve("Background.pdf");
+            if (paint.shared.config.PaintConfig.getBoolean("Generate Squares", "Background Plots Plots", false)) {
 
-                Files.createDirectories(pdfOut.getParent());
-                exportBackgroundHistogramsToPngs(experiment, projectPath.resolve(experimentName));
+                try {
+                    Experiment experiment = loadExperiment(projectPath,
+                                                           experimentName,
+                                                           true,   // Load Squares
+                                                           false); // Don't load Tracks
+                    Path outPath = projectPath
+                            .resolve(experimentName)
+                            .resolve("Output");
 
-            } catch (Exception e) {
-                PaintLogger.errorf("Failed to export histograms for %s: %s", experimentName, e.getMessage());
+                    Files.createDirectories(outPath);
+                    exportBackgroundHistogramsToPngs(experiment, projectPath.resolve(experimentName));
+
+                } catch (Exception e) {
+                    PaintLogger.errorf("Failed to export histograms for %s: %s", experimentName, e.getMessage());
+                }
             }
         }
 
