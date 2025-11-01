@@ -405,34 +405,51 @@ public class SquareGridPanel extends JPanel {
             int x = square.getColNumber() * squareW;
             int y = square.getRowNumber() * squareH;
 
-            // 1) Assigned-cell shading (base layer)
-            if (square.getCellId() > 0 && showShading) {
-                Color baseColor = getColorForCell(square.getCellId());
-                int   rVal      = Math.min(255, baseColor.getRed() + 40);
-                int   gVal      = Math.min(255, baseColor.getGreen() + 40);
-                int   bVal      = Math.min(255, baseColor.getBlue() + 40);
-                g2.setColor(new Color(rVal, gVal, bVal, 100));
+            boolean visible = square.isSelected(); // selected == visible (from filter)
+            boolean userSelected = selectedSquaresNumbers.contains(square.getSquareNumber());
+            boolean hasCell = square.getCellId() > 0;
+
+            // --- Base fill ---
+            if (!visible) {
+                // Filtered-out squares: subtle gray fill + faint border
+                g2.setColor(new Color(0, 0, 0, 20));
                 g2.fillRect(x, y, squareW, squareH);
-            }
 
-            // 2) User-selection highlight (always on top of any assigned shading)
-            if (showShading) {
-                if (selectedSquaresNumbers.contains(square.getSquareNumber())) {
-                    g2.setColor(new Color(255, 235, 0, 200));
-                    g2.fillRect(x, y, squareW, squareH);
-                } else if (square.isSelected()) {
-                    g2.setColor(new Color(255, 255, 255, 80));
-                    g2.fillRect(x, y, squareW, squareH);
-                }
-            }
-
-            // 3) Borders (only if enabled)
-            if (showBorders) {
-                if (square.getCellId() > 0 || square.isSelected() || selectedSquaresNumbers.contains(square.getSquareNumber())) {
-                    g2.setStroke(new BasicStroke(1.0f));
-                    g2.setColor(Color.WHITE);
+                if (showBorders) {
+                    g2.setStroke(new BasicStroke(0.5f));
+                    g2.setColor(new Color(255, 255, 255, 25));
                     g2.drawRect(x, y, squareW, squareH);
                 }
+                continue;
+            }
+
+            // --- Visible squares ---
+            if (showShading) {
+                // Assigned cell color base layer
+                if (hasCell) {
+                    Color baseColor = getColorForCell(square.getCellId());
+                    g2.setColor(new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), 100));
+                    g2.fillRect(x, y, squareW, squareH);
+                }
+
+                // Yellow user-selection overlay
+                if (userSelected) {
+                    g2.setColor(new Color(255, 235, 0, 180));
+                    g2.fillRect(x, y, squareW, squareH);
+                }
+
+                // Light white tint for visible but not selected/assigned
+                if (!userSelected && !hasCell) {
+                    g2.setColor(new Color(255, 255, 255, 50));
+                    g2.fillRect(x, y, squareW, squareH);
+                }
+            }
+
+            // --- Borders for all visible squares ---
+            if (showBorders) {
+                g2.setStroke(new BasicStroke(1.0f));
+                g2.setColor(new Color(255, 255, 255, 150)); // soft white
+                g2.drawRect(x, y, squareW, squareH);
             }
         }
 
