@@ -84,7 +84,8 @@ public class RecordingLoader {
             Experiment experiment = ExperimentDataLoader.loadExperiment(
                     project.getProjectRootPath(),
                     experimentName,
-                    true // matureProject: includes squares + tracks
+                    true, // load squares
+                    false // don't load tracks
             );
 
             if (experiment == null || experiment.getRecordings().isEmpty()) {

@@ -47,9 +47,7 @@ import java.awt.*;
  * A Swing panel that presents attributes of a {@link RecordingEntry} in tabular form.
  * <p>
  * The panel includes a scrollable, non-editable table showing probe, experiment,
- * and computed parameters for the active recording. It supports both static
- * updates (via {@link #updateFromEntry}) and temporary previews
- * (via {@link #updatePreview}).
+ * and computed parameters for the active recording.
  */
 public class RecordingAttributesPanel {
 
@@ -112,8 +110,8 @@ public class RecordingAttributesPanel {
         model.addRow(new Object[]{"Number of Tracks",  recordingEntry.getNumberOfTracks()});
         model.addRow(new Object[]{"Number of Squares", numSquares});
         model.addRow(new Object[]{"Threshold",         recordingEntry.getThreshold()});
-        model.addRow(new Object[]{"Tau",               format(recordingEntry.getTau(), 1)});
-        model.addRow(new Object[]{"Density",           recordingEntry.getDensity()});
+        // model.addRow(new Object[]{"Tau",               format(recordingEntry.getTau(), 1)});
+        // model.addRow(new Object[]{"Density",           recordingEntry.getDensity()});
         model.addRow(new Object[]{"Min Density Ratio", recordingEntry.getMinRequiredDensityRatio()});
         model.addRow(new Object[]{"Max Variability",   recordingEntry.getMaxAllowableVariability()});
         model.addRow(new Object[]{"Min R²",            recordingEntry.getMinRequiredRSquared()});
@@ -127,8 +125,6 @@ public class RecordingAttributesPanel {
      *
      * @param recordingEntry  the current recording entry (for static attributes)
      * @param numSquares      number of squares for the recording
-     * @param tau             Tau value to preview
-     * @param density         Density value to preview
      * @param minDensityRatio minimum density ratio threshold
      * @param maxVariability  maximum variability threshold
      * @param minRSquared     minimum R² threshold
@@ -137,8 +133,6 @@ public class RecordingAttributesPanel {
     public void updatePreview(
             RecordingEntry recordingEntry,
             int            numSquares,
-            double         tau,
-            double         density,
             double         minDensityRatio,
             double         maxVariability,
             double         minRSquared,
@@ -154,8 +148,6 @@ public class RecordingAttributesPanel {
         model.addRow(new Object[]{"Number of Tracks",    recordingEntry.getNumberOfTracks()});
         model.addRow(new Object[]{"Number of Squares",   numSquares});
         model.addRow(new Object[]{"Threshold",           recordingEntry.getThreshold()});
-        model.addRow(new Object[]{"Tau",                 format(tau, 1)});
-        model.addRow(new Object[]{"Density",             format(density, 2)});
         model.addRow(new Object[]{"Min Density Ratio",   format(minDensityRatio, 1)});
         model.addRow(new Object[]{"Max Variability",     format(maxVariability, 1)});
         model.addRow(new Object[]{"Min R²",              format(minRSquared, 2)});

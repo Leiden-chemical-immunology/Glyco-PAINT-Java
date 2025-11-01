@@ -59,9 +59,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static paint.shared.utils.CalculateTau.calculateTau;
-import static paint.shared.utils.SharedSquareUtils.getTracksFromSelectedSquares;
-
 /**
  * Handles the writing of per-recording override configurations for the
  * PAINT viewer. The {@code RecordingOverrideWriter} manages the creation
@@ -205,15 +202,6 @@ public class RecordingOverrideWriter {
      */
     private void update(RecordingEntry recordingEntry,
                         SquareControlParams params) {
-
-        List<Track> tracksFromSelectedSquares = getTracksFromSelectedSquares(
-                recordingEntry.getRecording().getSquaresOfRecording());
-
-        CalculateTau.CalculateTauResult results = calculateTau(
-                tracksFromSelectedSquares, params.minRequiredRSquared);
-
-        recordingEntry.getRecording().setTau(results.getTau());
-        recordingEntry.getRecording().setRSquared(results.getRSquared());
         recordingEntry.setMaxAllowableVariability(params.maxAllowableVariability);
         recordingEntry.setMinRequiredDensityRatio(params.minRequiredDensityRatio);
         recordingEntry.setNeighbourMode(params.neighbourMode);

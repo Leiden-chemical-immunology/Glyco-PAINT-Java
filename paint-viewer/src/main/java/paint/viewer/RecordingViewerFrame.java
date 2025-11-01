@@ -502,32 +502,10 @@ public class RecordingViewerFrame extends JFrame
             RecordingEntry currentRecordingEntry = recordingEntries.get(currentIndex);
             int numSquares = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
 
-            // --- Compute Tau and R² for preview ---
-            List<Track> tracksFromSelectedSquares = getTracksFromSelectedSquares(currentRecordingEntry.getRecording().getSquaresOfRecording());
-            CalculateTau.CalculateTauResult results = calculateTau(tracksFromSelectedSquares, params.minRequiredRSquared);
-            if (results.getStatus() == TAU_SUCCESS) {
-                currentRecordingEntry.getRecording().setTau(results.getTau());
-                currentRecordingEntry.getRecording().setRSquared(results.getRSquared());
-            } else {
-                currentRecordingEntry.getRecording().setTau(NaN);
-                currentRecordingEntry.getRecording().setRSquared(NaN);
-                // No successful Tau calculation; retain existing state
-            }
-
-            // --- Compute density for current selection ---
-            double density = calculateDensity(
-                    tracksFromSelectedSquares.size(),
-                    calculateSquareArea(getNumberOfSelectedSquares(currentRecordingEntry.getRecording())),
-                    RECORDING_DURATION,
-                    currentRecordingEntry.getRecording().getConcentration()
-            );
-
-            // --- Reflect results in attribute preview panel ---
+            //  --- Reflect results in attribute preview panel ---
             attributesPanel.updatePreview(
                     currentRecordingEntry,
                     numSquares,
-                    results.getTau(),
-                    density,
                     params.minRequiredDensityRatio,
                     params.maxAllowableVariability,
                     params.minRequiredRSquared,

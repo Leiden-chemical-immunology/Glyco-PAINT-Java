@@ -98,6 +98,11 @@ public class GenerateSquaresProcessor {
         } catch (Exception e) {
             PaintLogger.errorf("Failed to load Experiment '%s'", experimentName);
         }
+        // Load the experiment (without squares, with tracks)
+        experiment = loadExperiment(project.getProjectRootPath(),
+                                    experimentName,
+                                    false,   // No Squares
+                                    true);  // No Tracks
 
         if (experiment == null) {
             PaintLogger.errorf("Failed to load experiment: %s", experimentName);

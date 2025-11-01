@@ -129,7 +129,10 @@ public class GenerateSquaresHeadless {
             }
 
             try {
-                Experiment experiment = loadExperiment(projectPath, experimentName, true);
+                Experiment experiment = loadExperiment(projectPath,
+                                                       experimentName,
+                                                       true,  // Load Squares
+                                                       false);           // Don't load Tracks
                 Path pdfOut = projectPath
                         .resolve(experimentName)
                         .resolve("Output")
