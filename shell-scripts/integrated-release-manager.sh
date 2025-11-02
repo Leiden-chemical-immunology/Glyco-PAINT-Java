@@ -245,3 +245,15 @@ fi
 run chmod +x "$DIST_DIR/$INSTALLER_NAME"
 
 say "Installer created."
+
+TAG="${GIT_TAG_PREFIX}${RELEASE_VERSION}"
+say "Tagging release as ${TAG}..."
+run git tag -a "$TAG" -m "Release ${RELEASE_VERSION}"
+run git push origin main --follow-tags
+
+say ""
+say "✅ Tag ${TAG} pushed successfully."
+say "GitHub Actions will now automatically build and publish the release."
+say "Monitor progress here:"
+say "  https://github.com/${ORG_REPO}/actions"
+say ""
