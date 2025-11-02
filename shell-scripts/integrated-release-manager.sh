@@ -18,6 +18,7 @@ APP_TEMPLATES_DIR="${APP_TEMPLATES_DIR:-apps}"
 STAGE_ROOT="build"
 DIST_DIR="dist"
 PRODUCT_NAME="GlycoPAINT"
+SAFE_NAME="${PRODUCT_NAME}"
 ORG_REPO="${ORG_REPO:-Leiden-chemical-immunology/Glyco-PAINT-Java}"
 GIT_TAG_PREFIX="v"
 
@@ -188,6 +189,7 @@ if [[ "$DRY_RUN" == false ]]; then
   git commit -m "Release ${RELEASE_VERSION}" || echo "No changes to commit."
 
   say "Creating and pushing tag ${TAG}..."
+  git tag -d "$TAG" 2>/dev/null || true
   git tag -a "$TAG" -m "Release ${RELEASE_VERSION}"
   git push origin main --follow-tags
 
@@ -197,8 +199,8 @@ if [[ "$DRY_RUN" == false ]]; then
       --repo "$ORG_REPO" \
       --title "Glyco-PAINT ${RELEASE_VERSION}" \
       --notes "Automated release ${RELEASE_VERSION}" \
-      "$DIST_DIR/${SAFE_NAME}-${RELEASE_VERSION}.zip" \
-      "$DIST_DIR/${SAFE_NAME}-Installer-${RELEASE_VERSION}.sh"
+      "$DIST_DIR/${PRODUCT_NAME}-${RELEASE_VERSION}.zip" \
+      "$DIST_DIR/${PRODUCT_NAME}-Installer-${RELEASE_VERSION}.sh"
   else
     say "⚠️ GitHub CLI (gh) not found; skipping GitHub release."
   fi
