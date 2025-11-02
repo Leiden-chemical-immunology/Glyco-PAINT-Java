@@ -122,9 +122,12 @@ The Glyco-PAINT plugin is started, after starting Fiji, by selecting from the Pl
 
 ![trackmate-plugin](./Pictures/trackmate-plugin.png)
 
-A Paint Console is also opened to provide you with feedback on the status and progress of the operations.  
+A Paint Console is also opened to provide you with feedback on the status and progress of the operations. 
 
-![paint-console-initial](./Pictures/paint-console-initial.png) 
+<div style="text-align:center;"> 
+<img src="./Pictures/paint-console-initial.png" alt="paint-console-initial" style="zoom: 33%;" />
+
+ 
 
 ## The plugin user interface
 
@@ -234,11 +237,6 @@ In the **Brightfield Images** directory the brightfield images for recording are
 <div style="text-align:center;">
 <img src="./Pictures/brightfield-image.png" alt="brightfield-image" style="zoom:33%;" /> 
 </div>
-
-
-
-#### TrackMate Reproducibility 
-
 
 
 #### The Paint Console
@@ -389,8 +387,7 @@ Pressing the **Assign Cells** button causes the Assign Cells dialog to be shown.
 
 <div style="text-align:center;">
 <img src="./Pictures/assign-cells-dialog.png" alt="assign-cells-dialog" style="zoom:33%;" />
-</div>
-
+</div >
 ## Filter Recordings
 
 With **Filter Recordings** you can restrict recordings that you have loaded to certain criteria.  For example, in the case shown below, you have loaded pictures, for two different cell types, multiple probes and three concentrations.  If you want to see only recordings for BMDC, you would select BMDC and push the Filter button below the Cell Type list.  The choices in other categories may be reduced as a consequence.  When you are satisfied with selection, you push the Apply button.  
@@ -416,17 +413,17 @@ With **Filter Recordings** you can restrict recordings that you have loaded to c
 
 The code base is published on GitHub, which allows the code to be checked and peer-reviewed.  An overview of the main window is shown below.  The pipeline is maintained as a project with multiple modules, some of which produce the plugin and the apps.  
 
-- **paint-create-experiment** contains the Create Experiment code
-- **paint-fiji-plugin** contains the code for FiJi plugin
-- **paint-generate-squares** contains the Generate Squares code
-- **paint-get-omero** contains the Get Omero code
-- **paint-viewer** contains the Viewer code
+- **paint-create-experiment**, contains the Create Experiment code
+- **paint-fiji-plugin**, contains the code for FiJi plugin
+- **paint-generate-squares**, contains the Generate Squares code
+- **paint-get-omero**, contains the Get Omero code
+- **paint-viewer**, contains the Viewer code
 
 Others are for supporting and development purposes:
 
-- **paint-shared-utils** contains code shared by the applications above
-- **shell-scripts** contains scripts to facilitate maintenance tasks 
-- **reference-case** contains: the csv files associated with the reference images
+- **paint-shared-utils**, contains code shared by the applications above
+- **shell-scripts**, contains scripts to facilitate maintenance tasks 
+- **reference-case**, contains: the csv files associated with the reference images
 
 
 
