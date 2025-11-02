@@ -156,13 +156,13 @@ public class ProjectDialog {
         int row = 0;
 
         // Project Root
-        addLabeledFieldWithBrowse(formPanel, gbc, row++, "Project Root:", labelSize,
+        addLabeledFieldWithBrowse(formPanel, gbc, row++, "Project Root", labelSize,
                                   (tf) -> projectRootField = tf,
                                   () -> (projectPath != null ? projectPath.toString() : System.getProperty("user.home")),
                                   this::onProjectRootChosen);
 
         // Images Root (always shown, all modes)
-        addLabeledFieldWithBrowse(formPanel, gbc, row++, "Images Root:", labelSize,
+        addLabeledFieldWithBrowse(formPanel, gbc, row++, "Images Root", labelSize,
                                   (tf) -> imageDirectoryField = tf,
                                   () -> {
                                       String def = PaintPrefs.getString("Path", "Images Root", System.getProperty("user.home"));
