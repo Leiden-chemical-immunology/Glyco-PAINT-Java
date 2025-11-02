@@ -127,7 +127,7 @@ A Paint Console is also opened to provide you with feedback on the status and pr
 <div style="text-align:center;"> 
 <img src="./Pictures/paint-console-initial.png" alt="paint-console-initial" style="zoom: 33%;" />
 
- 
+
 
 ## The plugin user interface
 
@@ -390,16 +390,29 @@ Pressing the **Assign Cells** button causes the Assign Cells dialog to be shown.
 </div >
 ## Filter Recordings
 
-With **Filter Recordings** you can restrict recordings that you have loaded to certain criteria.  For example, in the case shown below, you have loaded pictures, for two different cell types, multiple probes and three concentrations.  If you want to see only recordings for BMDC, you would select BMDC and push the Filter button below the Cell Type list.  The choices in other categories may be reduced as a consequence.  When you are satisfied with selection, you push the Apply button.  
+With **Filter Recordings** you can restrict recordings that you have loaded to certain criteria.  For example, in the case shown below, you have loaded pictures, for two different cell types, multiple probes and three concentrations.  If you want to see only recordings for BMDC, you would select BMDC and push the **Filter** button below the Cell Type list.  The **Reset** button, initially disabled, becomes active. The choices in other categories may be reduced as a consequence.  When you are satisfied with selection, you push the **Apply** button.  The viewer will then only display recordings that match the selected criteria.
+
+Opening the Filter Recordings dialog again alows you change the selection. You can apply additional filters, remiove single filters by pressing the **Reset** button under a list or remove all filters by pressiung **Reset All**.
 
 ![filter-recordings-dialog](./Pictures/filter-recordings-dialog.png)
 
-
 # Get Omero
 
+When you download images from Omero, individual files are stored in a individual directories (see below). 
 
+<img src="/Users/hans/JavaPaintProjects/Glyco-PAINT-Java/doc/Pictures/omero-download.png" alt="omero-download" style="zoom: 33%;" />
+
+For these imnages to be used in the Glyco-PAINT pipeline, they need all to be in one directory. The **Get Omero** utility helps you with that. Start the utillity and select the folder where Omero had downloaded all the directories (in this example '~/Downloads/Omero Folder' and press **Process**. If 'Fileset' directories are found, the resulting director with all copied files will be displayed. This directory can now be moved to the **Images Root** and given a proper **Experiment** name.
+
+<img src="/Users/hans/JavaPaintProjects/Glyco-PAINT-Java/doc/Pictures/omero-result.png" alt="omero-result" style="zoom:33%;" />
 
 # Create Experiment
+
+The **Create Experiment** utility helps you set up an Experiment Info file.
+
+
+
+<img src="/Users/hans/JavaPaintProjects/Glyco-PAINT-Java/doc/Pictures/create-experiment.png" alt="create-experiment" style="zoom:50%;" />
 
 
 
