@@ -76,6 +76,10 @@ err() {
   exit 1
 }
 
+warn() {
+  printf "\033[1;33mWARN:\033[0m %s\n" "$*"
+}
+
 run() {
   if [[ "$DRY_RUN" == true ]]; then
     say "(dry-run) Would run: $*"
@@ -278,18 +282,34 @@ run rm -rf "$STAGE_DIR" "$DIST_DIR"    # Start fresh
 run mkdir -p "$STAGE_DIR" "$DIST_DIR"
 
 # 1) Fiji plugin JAR
+
 say "Collecting Fiji plugin jar…"
+
 PLUGIN_JAR_DIR="paint-fiji-plugin/target"
 PLUGIN_JAR_PATTERN="paint-fiji-plugin-*-jar-with-dependencies.jar"
 
-PLUGIN_JAR=$(compgen -G "$PLUGIN_JAR_DIR/$PLUGIN_JAR_PATTERN" | head -n1 || true)
+# Only pick the one fat jar (never pick shared-utils or others)
+PLUGIN_JAR="$(find "$PLUGIN_JAR_DIR" -maxdepth 1 -type f -name "$PLUGIN_JAR_PATTERN" | head -n1 || true)"
 if [[ -z "$PLUGIN_JAR" ]]; then
-  err "Cannot find Fiji plugin fat jar in $PLUGIN_JAR_DIR"
+  err "Cannot find Fiji plugin fat jar matching pattern: $PLUGIN_JAR_PATTERN"
 fi
 
 run mkdir -p "$STAGE_DIR/plugin"
-say "Copying: $(basename "$PLUGIN_JAR")"
+
+# Defensive: remove any stale PAINT jars from a previous run in staging
+run find "$STAGE_DIR/plugin" -maxdepth 1 -type f -name 'paint-*.jar' -delete
+
+say "Copying only plugin jar: $(basename "$PLUGIN_JAR")"
 run cp -f "$PLUGIN_JAR" "$STAGE_DIR/plugin/"
+
+# Verify nothing else snuck in; if so, remove and warn
+mapfile -t EXTRA_JARS < <(find "$STAGE_DIR/plugin" -maxdepth 1 -type f -name 'paint-*.jar' \
+  ! -name 'paint-fiji-plugin-*-jar-with-dependencies.jar' 2>/dev/null || true)
+if (( ${#EXTRA_JARS[@]} > 0 )); then
+  warn "Unexpected jars found in plugin staging; removing:"
+  printf '  - %s\n' "${EXTRA_JARS[@]}"
+  run rm -f "${EXTRA_JARS[@]}"
+fi
 
 # Keep ONLY the fat plugin jar; delete any stray jars (e.g., paint-shared-utils-*.jar)
 run find "$STAGE_DIR/plugin" -maxdepth 1 -type f -name 'paint-*.jar' \
