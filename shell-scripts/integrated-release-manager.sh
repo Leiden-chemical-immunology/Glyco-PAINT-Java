@@ -291,6 +291,10 @@ run mkdir -p "$STAGE_DIR/plugin"
 say "Copying: $(basename "$PLUGIN_JAR")"
 run cp -f "$PLUGIN_JAR" "$STAGE_DIR/plugin/"
 
+# Keep ONLY the fat plugin jar; delete any stray jars (e.g., paint-shared-utils-*.jar)
+run find "$STAGE_DIR/plugin" -maxdepth 1 -type f -name 'paint-*.jar' \
+  ! -name 'paint-fiji-plugin-*-jar-with-dependencies.jar' -print -delete
+
 # 2) Each desktop app bundle + module fat JAR → drop JAR into app/Contents/Java/
 for module in "paint-generate-squares" "paint-viewer" "paint-get-omero" "paint-create-experiment"; do
   app_name="${APP_MAP[$module]}"
@@ -373,10 +377,15 @@ if [[ -z "$TOP" ]]; then
 fi
 
 say "Copying applications…"
-rsync -a --delete "$TOP/" "$TARGET_ROOT/"
+rsync -a --delete --exclude 'plugin/' "$TOP/" "$TARGET_ROOT/"
+
+# Clean any leftover from older installers
+rm -rf "$TARGET_ROOT/plugin" 2>/dev/null || true
 
 # --- Install Fiji plugin -----------------------------------------------------
 say "Installing Fiji plugin JAR…"
+
+# Find exactly one plugin jar from the installer payload (not from Applications)
 PLUGIN_JAR="$(find "$TOP" -type f -name 'paint-fiji-plugin-*-jar-with-dependencies.jar' | head -n1 || true)"
 
 if [[ -z "$PLUGIN_JAR" ]]; then
@@ -386,6 +395,7 @@ else
     "${HOME}/Applications/Fiji.app"
     "/Applications/Fiji.app"
   )
+
   INSTALLED=false
   for D in "${POSSIBLE_FIJI_DIRS[@]}"; do
     if [[ -d "$D" ]]; then
@@ -395,6 +405,7 @@ else
       echo ""
       say "Checking for existing PAINT-related jars in: $PLUGINS_DIR"
       OLD_JARS=($(find "$PLUGINS_DIR" -type f -name 'paint-*.jar' 2>/dev/null || true))
+
       if (( ${#OLD_JARS[@]} > 0 )); then
         echo "Found existing plugin jars:"
         printf '  - %s\n' "${OLD_JARS[@]}"
@@ -406,13 +417,15 @@ else
             rm -f "$J"
           done
         else
-          warn "Keeping old jars; skipping plugin installation."
+          warn "Keeping old jars; skipping plugin installation for safety."
           continue
         fi
       fi
 
-      say "Copying new plugin jar to: $PLUGINS_DIR"
+      say "Copying new plugin jar: $(basename "$PLUGIN_JAR")"
       cp -f "$PLUGIN_JAR" "$PLUGINS_DIR/"
+      say "Installed plugin to: $PLUGINS_DIR"
+
       INSTALLED=true
       break
     fi
