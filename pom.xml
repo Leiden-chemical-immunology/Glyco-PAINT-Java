@@ -29,7 +29,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jjabakker</groupId>
     <artifactId>paint-parent</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
     <packaging>pom</packaging>
 
     <name>Paint Parent</name>
@@ -120,7 +120,7 @@
             <dependency>
                 <groupId>com.github.jjabakker</groupId>
                 <artifactId>paint-shared-utils</artifactId>
-                <version>0.0.4</version>
+                <version>0.0.5</version>
             </dependency>
 
             <!-- Common external libraries -->
