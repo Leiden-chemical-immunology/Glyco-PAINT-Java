@@ -369,7 +369,8 @@ rsync -a --delete "$TOP/" "$TARGET_ROOT/"
 
 # --- Install Fiji plugin -----------------------------------------------------
 say "Installing Fiji plugin JAR…"
-PLUGIN_JAR="$(find "$TOP" -name 'paint-fiji-plugin-*-jar-with-dependencies.jar' | head -n1 || true)"
+PLUGIN_JAR="$(find "$TOP" -type f -name 'paint-fiji-plugin-*-jar-with-dependencies.jar' | head -n1 || true)"
+
 if [[ -z "$PLUGIN_JAR" ]]; then
   warn "No plugin jar found in installer payload. Skipping plugin installation."
 else
@@ -383,18 +384,19 @@ else
       PLUGINS_DIR="$D/plugins"
       mkdir -p "$PLUGINS_DIR"
 
-      # Find old PAINT plugin jars
-      OLD_JARS=($(find "$PLUGINS_DIR" -type f -name 'paint-fiji-plugin-*.jar' 2>/dev/null || true))
+      echo ""
+      say "Checking for existing PAINT-related jars in: $PLUGINS_DIR"
+      OLD_JARS=($(find "$PLUGINS_DIR" -type f -name 'paint-*.jar' 2>/dev/null || true))
       if (( ${#OLD_JARS[@]} > 0 )); then
-        echo ""
-        echo "The following existing PAINT plugin jars were found in:"
-        echo "  $PLUGINS_DIR"
+        echo "Found existing plugin jars:"
         printf '  - %s\n' "${OLD_JARS[@]}"
         echo ""
-        read -r -p "Remove old plugin jars before installing the new one? [y/N] " ANSWER
+        read -r -p "Remove old PAINT plugin jars before installing the new one? [y/N] " ANSWER
         if [[ "$ANSWER" =~ ^[Yy]$ ]]; then
           say "Removing old plugin jars..."
-          for J in "${OLD_JARS[@]}"; do rm -f "$J"; done
+          for J in "${OLD_JARS[@]}"; do
+            rm -f "$J"
+          done
         else
           warn "Keeping old jars; skipping plugin installation."
           continue
