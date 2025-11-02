@@ -190,10 +190,10 @@ public class GetOmeroUI extends JFrame {
             area.setFont(new JLabel().getFont().deriveFont(Font.PLAIN, 12f));
             JScrollPane scroll = new JScrollPane(area);
 
-            JOptionPane.showMessageDialog(
+            String dialogTitle = "Processing completed — " + rootDir.getAbsolutePath();JOptionPane.showMessageDialog(
                     this,
                     scroll,
-                    "Processing completed. Files now in directory:",
+                    dialogTitle,
                     JOptionPane.INFORMATION_MESSAGE
             );
 
