@@ -38,7 +38,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.10-SNAPSHOT</version>
+        <version>0.0.11-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -55,7 +55,7 @@
     <!-- Application properties                                         -->
     <!-- =============================================================== -->
     <properties>
-        <project.build.outputTimestamp>2025-11-02T14:24:26Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-11-02T14:29:53Z</project.build.outputTimestamp>
         <app.name>Get Omero</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-get-omero.icns</app.icon.macos>

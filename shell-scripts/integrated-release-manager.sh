@@ -279,8 +279,16 @@ run mkdir -p "$STAGE_DIR" "$DIST_DIR"
 
 # 1) Fiji plugin JAR
 say "Collecting Fiji plugin jar…"
-PLUGIN_JAR="$(resolve_one_jar "paint-fiji-plugin")"
+PLUGIN_JAR_DIR="paint-fiji-plugin/target"
+PLUGIN_JAR_PATTERN="paint-fiji-plugin-*-jar-with-dependencies.jar"
+
+PLUGIN_JAR=$(compgen -G "$PLUGIN_JAR_DIR/$PLUGIN_JAR_PATTERN" | head -n1 || true)
+if [[ -z "$PLUGIN_JAR" ]]; then
+  err "Cannot find Fiji plugin fat jar in $PLUGIN_JAR_DIR"
+fi
+
 run mkdir -p "$STAGE_DIR/plugin"
+say "Copying: $(basename "$PLUGIN_JAR")"
 run cp -f "$PLUGIN_JAR" "$STAGE_DIR/plugin/"
 
 # 2) Each desktop app bundle + module fat JAR → drop JAR into app/Contents/Java/
