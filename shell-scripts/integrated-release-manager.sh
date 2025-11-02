@@ -180,3 +180,28 @@ run chmod +x "$DIST_DIR/$INSTALLER_NAME"
 say "Installer created."
 TAG="${GIT_TAG_PREFIX}${RELEASE_VERSION}"
 say "Tagging $TAG"
+
+# --- Commit, tag, and push release ---
+if [[ "$DRY_RUN" == false ]]; then
+  say "Committing release artifacts..."
+  git add -A
+  git commit -m "Release ${RELEASE_VERSION}" || echo "No changes to commit."
+
+  say "Creating and pushing tag ${TAG}..."
+  git tag -a "$TAG" -m "Release ${RELEASE_VERSION}"
+  git push origin main --follow-tags
+
+  if command -v gh >/dev/null 2>&1; then
+    say "Creating GitHub release..."
+    gh release create "$TAG" \
+      --repo "$ORG_REPO" \
+      --title "Glyco-PAINT ${RELEASE_VERSION}" \
+      --notes "Automated release ${RELEASE_VERSION}" \
+      "$DIST_DIR/${SAFE_NAME}-${RELEASE_VERSION}.zip" \
+      "$DIST_DIR/${SAFE_NAME}-Installer-${RELEASE_VERSION}.sh"
+  else
+    say "⚠️ GitHub CLI (gh) not found; skipping GitHub release."
+  fi
+else
+  say "(dry-run) Would commit, tag, and push to GitHub as ${TAG}"
+fi
