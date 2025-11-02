@@ -98,6 +98,19 @@ else
   NEXT_SNAPSHOT="unknown"
 fi
 
+# Detect Git info (branch, remote, and repo URL)
+GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
+GIT_REMOTE_URL=$(git config --get remote.origin.url 2>/dev/null || echo "")
+if [[ -z "$GIT_REMOTE_URL" ]]; then
+  # fallback if no remote defined
+  GIT_REMOTE_SHORT="Leiden-chemical-immunology/Glyco-PAINT-Java"
+  GIT_REMOTE_URL="https://github.com/${GIT_REMOTE_SHORT}.git"
+else
+  # normalize SSH or HTTPS origin to org/repo form
+  GIT_REMOTE_SHORT=$(echo "$GIT_REMOTE_URL" | \
+    sed -E 's#(git@|https://)([^/:]+)[:/]([^/.]+/[^.]+)(\.git)?#\3#')
+fi
+
 echo "==============================================================================="
 echo "   Glyco-PAINT Release Manager"
 echo "==============================================================================="
