@@ -158,7 +158,7 @@ echo "    🔹 Maven site   → https://${GIT_REMOTE_SHORT/github.io\//}.github.
 echo "    🔹 Javadoc      → https://${GIT_REMOTE_SHORT/github.io\//}.github.io/${GIT_REMOTE_SHORT#*/}/apidocs/"
 echo "==============================================================================="
 echo ""
-sleep 1
+sleep 5
 
 # ------------------------------------------------------------------------------
 # Build outputs are staged OUTSIDE the repo to avoid tracking artifacts
@@ -367,10 +367,12 @@ fi
 say "Copying applications…"
 rsync -a --delete "$TOP/" "$TARGET_ROOT/"
 
-# Optional: install Fiji plugin into known Fiji.app locations
-say "Attempting to install Fiji plugin JAR…"
-PLUGIN_JAR="$(find "$TARGET_ROOT/plugin" -name 'paint-fiji-plugin-*-jar-with-dependencies.jar' | head -n1 || true)"
-if [[ -n "$PLUGIN_JAR" ]]; then
+# --- Install Fiji plugin -----------------------------------------------------
+say "Installing Fiji plugin JAR…"
+PLUGIN_JAR="$(find "$TOP" -name 'paint-fiji-plugin-*-jar-with-dependencies.jar' | head -n1 || true)"
+if [[ -z "$PLUGIN_JAR" ]]; then
+  warn "No plugin jar found in installer payload. Skipping plugin installation."
+else
   POSSIBLE_FIJI_DIRS=(
     "${HOME}/Applications/Fiji.app"
     "/Applications/Fiji.app"
@@ -378,21 +380,40 @@ if [[ -n "$PLUGIN_JAR" ]]; then
   INSTALLED=false
   for D in "${POSSIBLE_FIJI_DIRS[@]}"; do
     if [[ -d "$D" ]]; then
-      mkdir -p "$D/plugins"
-      cp -f "$PLUGIN_JAR" "$D/plugins/"
-      say "Installed plugin to: $D/plugins/"
+      PLUGINS_DIR="$D/plugins"
+      mkdir -p "$PLUGINS_DIR"
+
+      # Find old PAINT plugin jars
+      OLD_JARS=($(find "$PLUGINS_DIR" -type f -name 'paint-fiji-plugin-*.jar' 2>/dev/null || true))
+      if (( ${#OLD_JARS[@]} > 0 )); then
+        echo ""
+        echo "The following existing PAINT plugin jars were found in:"
+        echo "  $PLUGINS_DIR"
+        printf '  - %s\n' "${OLD_JARS[@]}"
+        echo ""
+        read -r -p "Remove old plugin jars before installing the new one? [y/N] " ANSWER
+        if [[ "$ANSWER" =~ ^[Yy]$ ]]; then
+          say "Removing old plugin jars..."
+          for J in "${OLD_JARS[@]}"; do rm -f "$J"; done
+        else
+          warn "Keeping old jars; skipping plugin installation."
+          continue
+        fi
+      fi
+
+      say "Copying new plugin jar to: $PLUGINS_DIR"
+      cp -f "$PLUGIN_JAR" "$PLUGINS_DIR/"
       INSTALLED=true
       break
     fi
   done
+
   if [[ "$INSTALLED" != "true" ]]; then
-    warn "Fiji not found. Plugin jar kept in: $TARGET_ROOT/plugin/"
+    warn "No Fiji.app installation detected. Plugin jar was not installed."
   fi
-else
-  warn "No plugin jar found inside installer payload. Skipping plugin copy."
 fi
 
-# macOS UX: clear quarantine flags on installed app bundles
+# --- macOS UX convenience ----------------------------------------------------
 if command -v xattr >/dev/null 2>&1; then
   say "Removing quarantine attributes on installed apps (macOS)…"
   xattr -dr com.apple.quarantine "$TARGET_ROOT" || true
