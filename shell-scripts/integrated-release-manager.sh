@@ -1,5 +1,129 @@
 #!/opt/homebrew/bin/bash
 
+###############################################################################
+# release-manager.sh
+#
+# PURPOSE:
+#   Automates the full Glyco-PAINT release process — from building all modules
+#   Automates the full Glyco-PAINT release process — from building all modules
+#   to packaging the applications, creating the installer, tagging the release,
+#   pushing to GitHub, and bumping the Maven version to the next -SNAPSHOT.
+#
+# USE CASE:
+#   Run this script from the repository root whenever you are ready to publish
+#   a new version of Glyco-PAINT. It produces both a distributable .zip archive
+#   and a self-extracting Bash installer, then triggers GitHub Actions to
+#   publish the release and Maven site automatically.
+#
+# ACTIONS PERFORMED:
+#   1  Ensures Maven, zip, and base64 are installed and available on PATH
+#   2  Determines the release version (from pom.xml or argument)
+#   3  Updates all POM files to the release version (removing -SNAPSHOT)
+#   4  Builds all modules and fat JARs via Maven
+#   5  Collects all desktop .app bundles and the Fiji plugin JAR
+#   6  Stages them outside the repository under:
+#        ../Glyco-PAINT-builds/build/
+#   7  Creates:
+#        • GlycoPAINT-<version>.zip
+#        • GlycoPAINT-Installer-<version>.sh
+#   8  Tags and pushes the release to GitHub
+#   9  Automatically triggers GitHub Actions:
+#        - Builds and publishes release artifacts
+#        - Updates the Maven site to gh-pages
+#  10  Bumps all POMs to the next <major>.<minor>.<patch>-SNAPSHOT version
+#      and commits the change to main
+#
+# USAGE:
+#   chmod +x release-manager.sh
+#   ./release-manager.sh <version>
+#
+# EXAMPLES:
+#   ./release-manager.sh 0.0.5
+#     → Produces v0.0.5 release, then bumps to 0.0.6-SNAPSHOT
+#
+#   ./release-manager.sh --dry-run
+#     → Simulates all actions without modifying files or pushing to GitHub
+#
+# REQUIREMENTS:
+#   - macOS or Linux (Bash 5+)
+#   - Maven installed and configured
+#   - Java 8+ for builds
+#   - Git configured with push access to origin
+#   - GitHub Actions workflow configured for tags (v*)
+#
+# SAFETY FEATURES:
+#   - Exits on any error (`set -euo pipefail`)
+#   - Refuses to release if version is still a SNAPSHOT
+#   - Keeps build artifacts outside the Git repository
+#   - Skips tag creation if the same tag already exists
+#
+# RESULT:
+#   - Release artifacts under:
+#       ../Glyco-PAINT-builds/dist/
+#
+#   - New Git tag pushed:
+#       v<release-version>  → triggers GitHub build + release
+#
+#   - POM versions automatically updated to:
+#       <next-version>-SNAPSHOT
+#
+# WHERE TO CHECK RESULTS:
+#   🔹 Build Artifacts:
+#        ../Glyco-PAINT-builds/dist/
+#
+#   🔹 GitHub Actions:
+#        https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java/actions
+#
+#   🔹 Release Page:
+#        https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java/releases
+#
+###############################################################################
+
+
+# =========================
+# Runtime banner
+# =========================
+clear
+
+# Try to extract the current Maven version
+CURRENT_VERSION=$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout 2>/dev/null | grep -E '^[0-9]+\.[0-9]+\.[0-9]+' | head -n1 || echo "unknown")
+
+# Compute next snapshot if possible
+if [[ "$CURRENT_VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
+  MAJOR="${BASH_REMATCH[1]}"
+  MINOR="${BASH_REMATCH[2]}"
+  PATCH="${BASH_REMATCH[3]}"
+  NEXT_SNAPSHOT="${MAJOR}.${MINOR}.$((PATCH + 1))-SNAPSHOT"
+else
+  NEXT_SNAPSHOT="unknown"
+fi
+
+echo "==============================================================================="
+echo "   Glyco-PAINT Release Manager"
+echo "==============================================================================="
+echo "  Automates building, packaging, tagging, and publishing releases"
+echo "  for the Glyco-PAINT suite (apps + Fiji plugin)."
+echo ""
+echo "  • Creates versioned .zip and self-extracting installer"
+echo "  • Tags and pushes to GitHub → triggers CI/CD release workflow"
+echo "  • Bumps all Maven modules to next -SNAPSHOT version"
+echo ""
+echo "  Current Maven project version : ${CURRENT_VERSION}"
+echo "  Next development version      : ${NEXT_SNAPSHOT}"
+echo ""
+echo "  Active Git branch             : ${GIT_BRANCH}"
+echo "  Remote repository             : ${GIT_REMOTE_URL}"
+echo ""
+echo "  Relevant sites:"
+echo "    🔹 Repository   → https://github.com/${GIT_REMOTE_SHORT}"
+echo "    🔹 Actions      → https://github.com/${GIT_REMOTE_SHORT}/actions"
+echo "    🔹 Releases     → https://github.com/${GIT_REMOTE_SHORT}/releases"
+echo "    🔹 Maven site   → https://${GIT_REMOTE_SHORT/github.io\//}.github.io/${GIT_REMOTE_SHORT#*/}/"
+echo "    🔹 Javadoc      → https://${GIT_REMOTE_SHORT/github.io\//}.github.io/${GIT_REMOTE_SHORT#*/}/apidocs/"
+echo "==============================================================================="
+echo ""
+sleep 1
+
 set -euo pipefail
 
 # Ensure we're running from the project root (one level up from this script)
@@ -246,6 +370,9 @@ run chmod +x "$DIST_DIR/$INSTALLER_NAME"
 
 say "Installer created."
 
+# ===============================
+# Tag and push release to GitHub
+# ===============================
 TAG="${GIT_TAG_PREFIX}${RELEASE_VERSION}"
 say "Tagging release as ${TAG}..."
 run git tag -a "$TAG" -m "Release ${RELEASE_VERSION}"
@@ -256,4 +383,24 @@ say "✅ Tag ${TAG} pushed successfully."
 say "GitHub Actions will now automatically build and publish the release."
 say "Monitor progress here:"
 say "  https://github.com/${ORG_REPO}/actions"
+say ""
+
+# ===============================
+# Bump Maven to next -SNAPSHOT
+# ===============================
+say "Bumping Maven version to next -SNAPSHOT..."
+next_snapshot
+
+NEW_VERSION="$(get_version)"
+say "New development version: $NEW_VERSION"
+
+run git add -A
+run git commit -m "Bump to ${NEW_VERSION}"
+run git push origin main
+
+say ""
+say "✅ All done."
+say "Deliverables:"
+say "  - $DIST_DIR/$ZIP_NAME"
+say "  - $DIST_DIR/$INSTALLER_NAME"
 say ""
