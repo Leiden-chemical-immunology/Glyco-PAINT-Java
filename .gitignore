@@ -69,3 +69,5 @@ paint-icons-generation/
 221012 reference/
 
 MANIFEST.MF/paint-fiji-plugin/META-INF/
+build/
+dist/
