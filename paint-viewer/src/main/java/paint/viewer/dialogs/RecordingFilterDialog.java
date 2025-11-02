@@ -43,6 +43,7 @@ public class RecordingFilterDialog extends JDialog {
 
     // ----- Book-keeping for highlighting & per-column behavior -----
     private final Map<JList<String>, JPanel> listPanels                                = new HashMap<>();
+    private final Map<JList<String>, JButton> resetButtons                             = new HashMap<>();
     private final Map<JList<String>, String> titles                                    = new HashMap<>();
     private final Map<JList<String>, Function<RecordingEntry, String>> valueExtractors = new HashMap<>();
     private final Map<JList<String>, List<String>> selections                          = new HashMap<>();
@@ -144,7 +145,7 @@ public class RecordingFilterDialog extends JDialog {
                 l.clearSelection();
             }
             activeFilters.clear();
-            updateHighlighting();
+            updateResetButtonStates();
         });
 
         cancelButton.addActionListener(e -> {
@@ -175,7 +176,7 @@ public class RecordingFilterDialog extends JDialog {
             filteredRecordings = applyAllFilters(); // apply all selected lists
             updateAllListsFrom(filteredRecordings);
         }
-        updateHighlighting();
+        updateResetButtonStates();
     }
 
     // ===== UI helpers =====
@@ -201,6 +202,8 @@ public class RecordingFilterDialog extends JDialog {
         JPanel btnPanel   = new JPanel(new GridLayout(2, 1, 0, 5));
         JButton filterBtn = new JButton("Filter");
         JButton resetBtn  = new JButton("Reset");
+        resetBtn.setEnabled(false); // initially disabled
+        resetButtons.put(list, resetBtn);
 
         filterBtn.addActionListener(e -> onFilterClicked(list));
         resetBtn.addActionListener(e -> onResetClicked(list));
@@ -235,7 +238,7 @@ public class RecordingFilterDialog extends JDialog {
         }
 
         // Update borders (highlight active lists)
-        updateHighlighting();
+        updateResetButtonStates();
     }
 
     private void onResetClicked(JList<String> list) {
@@ -256,8 +259,7 @@ public class RecordingFilterDialog extends JDialog {
                 reselect(e.getKey(), e.getValue());
             }
         }
-
-        updateHighlighting();
+        updateResetButtonStates();
     }
 
     // ===== Core filtering =====
@@ -318,23 +320,31 @@ public class RecordingFilterDialog extends JDialog {
 
     // ===== Visual highlighting =====
 
-    private void updateHighlighting() {
-        for (Map.Entry<JList<String>, JPanel> e : listPanels.entrySet()) {
+    private void updateResetButtonStates() {
+        for (Map.Entry<JList<String>, JButton> e : resetButtons.entrySet()) {
             JList<String> list = e.getKey();
-            JPanel panel = e.getValue();
-            String title = titles.get(list);
-
-            boolean isActive = activeFilters.contains(list);
-            Border border = isActive
-                    ? BorderFactory.createTitledBorder(
-                    BorderFactory.createLineBorder(new Color(30, 144, 255), 2),
-                    title)
-                    : BorderFactory.createTitledBorder(title);
-
-            panel.setBorder(border);
-            panel.repaint();
+            JButton button = e.getValue();
+            button.setEnabled(activeFilters.contains(list));
         }
     }
+
+//    private void updateHighlighting() {
+//        for (Map.Entry<JList<String>, JPanel> e : listPanels.entrySet()) {
+//            JList<String> list = e.getKey();
+//            JPanel panel = e.getValue();
+//            String title = titles.get(list);
+//
+//            boolean isActive = activeFilters.contains(list);
+//            Border border = isActive
+//                    ? BorderFactory.createTitledBorder(
+//                    BorderFactory.createLineBorder(new Color(30, 144, 255), 2),
+//                    title)
+//                    : BorderFactory.createTitledBorder(title);
+//
+//            panel.setBorder(border);
+//            panel.repaint();
+//        }
+//    }
 
     // ===== Criteria restore =====
 
