@@ -37,7 +37,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.8-SNAPSHOT</version>
+        <version>0.0.9-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -55,7 +55,7 @@
     <!-- =============================================================== -->
     <properties>
         <!-- Reproducible builds -->
-        <project.build.outputTimestamp>2025-11-02T14:11:56Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-11-02T14:19:40Z</project.build.outputTimestamp>
 
         <!-- Controls whether the built JAR is copied into Fiji.app/plugins -->
         <skip.copy.to.fiji>false</skip.copy.to.fiji>
