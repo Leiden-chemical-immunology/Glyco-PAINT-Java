@@ -66,7 +66,9 @@ jobs:
       # 🗜️ Zip versioned macOS build
       - name: Zip macOS build for distribution
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION=$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout | sed 's/-SNAPSHOT//')
+          echo "📦 Detected Maven build version: $VERSION" 
+          
           echo "Preparing macOS folder structure..."
           mkdir -p ../Glyco-PAINT-Builds/build/macOS
           mkdir -p ../Glyco-PAINT-Builds/dist/macOS
