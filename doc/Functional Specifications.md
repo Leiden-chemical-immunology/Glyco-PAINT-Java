@@ -104,7 +104,9 @@ java -jar paint-get-omero-0.0.3-SNAPSHOT-jar-with-dependencies.jar
 
 
 
-# Project and Image Root
+# Components of the Pipeline
+
+## Project and Image Root
 
 Central in the pipeline is the **Project Root**, a directory containing subdirectories that represent **Experiments**.  Experiment directories contain as a minimum an **Experiment Info** file that contains information about **Recordings** of the **Experiment**.
 
@@ -113,6 +115,34 @@ Parallel to the Project Root, the pipeline depends on an **Images Root** directo
 The images are likely downloaded from Omero (for which the pipeline provides a **Get Omero** app) or may be copied in any other way.  The names of the recordings can be chosen freely, with the condition that the name of the brightfield image is equal to the multi-frame recording with '-BF' attached.
 
 In the Project Root directory, a **Paint Configuration** file exists, in which important parameters for the pipeline are stored.  If the file does not exist, for example, in a new installation, it will be created automatically with default parameters.  The user should confirm that the default values are appropriate or make changes.
+
+## Paint Configuration file
+
+The **Paint Configuration** file is a readable file in JSON format and contains Project specific attributes.  The file is read and written by software but can also be inspected and edited with any normal plain text editor (Visual Studio Code, BBedit, Sublime).  Below is the Paint Config file shown in Visual Code Studio.
+
+In general, users will not often have to edit the Paint Configuration and should only do so when they can assess the consequences of changes.  For information on the values in the TrackMate section, please refer to the [Track Mate manual](https://imagej.net/media/plugins/trackmate/trackmate-manual.pdf).
+
+The file is 'self-healing', e.g., when necessary cannot be found, they are recreated with sensible defaults.  If the whole file is missing, for example, for a freshly created Project Root, it will be regenerated from scratch.
+
+![paint-config-json](./Pictures/paint-config-json.png)Only Project specific values are stored in the Paint Configuration file.  For system-wide settings, the macOS Preferences mechanism is used to store attributes in ~/Library/preferences/Glyco-PAINT.plist (for Windows an equivalent implementation is provided).  You will generally not interact directly with this file, but it is here where the current 'Project Root' and 'Images Root' are kept.  Below, the Glyco-PAINT.plist is shown with Xcode's plist viewer.  Also, the **Log Level** can be adjusted here.  The standard Log Level is **Info**, but for more detailed information **Debug** can be chosen.  Less information can be displayed by choosing **Error** or **Warn**.  
+
+![preferences](./Pictures/preferences.png)
+
+## The Paint Console
+
+Each application of the Glyco-PAINT pipeline opens its own Paint **Console**.  In the title of the window the name of the application the Paint Console is attached to is listed.
+
+More information is logged in the Paint Console than can be seen at any one time, and therefore scrolling is provided.  Normally the end of the log is shown, so that new information is visible.  The **Scroll Lock** checkbox (left bottom) stops the auto-scroll mechanism to allow you to inspect earlier parts of the log undisturbed.
+
+The **Highlight Problems** button jumps to [ERROR] and [WARN ] lines in the log to alert you to irregularities.  Repeatedly clicking the button will jump to the next problem.  
+
+A **Save** button saves the information in the console window to a file.  Generally this is not needed as most information is already saved automatically to a log file (see next section).
+
+
+
+## Paint log files 
+
+Every time the Glyco-PAINT Fiji plugin (or any other component of the pipeline) is started, a log file is opened in the **Logs** directory under the Project Root directory.  Log files are named after the pipeline component that is logging.  Files are sequentially numbered so that older information is not overwritten.  In a heavily analysed 'Project Root', the Logs directory may accumulate a large number of log files and cleaning up may be warranted.  
 
 
 
@@ -129,7 +159,7 @@ A Paint Console is also opened to provide you with feedback on the status and pr
 
 
 
-## The plugin user interface
+## The Plugin user interface
 
 On top, the currently selected **Project Root** and **Images Root** are shown; the Browse buttons on the right allow users to change that selection.
 
@@ -145,10 +175,6 @@ At the bottom of the dialog, three checkboxes are shown.
 
 Pressing the Ok button starts the calculation.  Pressing the Cancel button when a calculation is running stops it.  When no calculations are running, pressing Cancel will close the dialog.
 
-
-
-## Experiments
-
 The experiments which are shown are subdirectories directly under the selected Project Root.  To be shown as Experiment, the directory needs to contain an **Experiment Info** file.  If the user selects a different Project Root, the display of Experiments is refreshed.
 
 Note: If 'Sweep' calculations are performed, a Sweep directory will be created in the Project Root, which will contain an 'Experiment Info' file, but it will never be shown as Experiment.
@@ -161,7 +187,7 @@ A previously saved selection of 'Experiments' is stored in the **Paint Configura
 
 
 
-#### The overall flow
+### The overall flow
 
 When the Project and Image Roots have been set and Experiments selected, pressing the 'Ok' button starts the operation.  The 'Ok' button changes to 'Running...' for as long as the operation runs.  Only the 'Cancel' button is enabled during this period and can be used to interrupt the calculation.
 
@@ -171,13 +197,13 @@ If the user cancels the operation, the 'Running...' button changes to 'Cancelled
 
 
 
-#### Validation
+### Validation
 
 The first step is that the validity of the Experiment Info files in the selected Experiments is verified.  An error is raised if the columns are different from expected, or when values in a column are inconsistent with the expected datatype (for example, when a numeric value is expected and a text string is present).  A more subtle error when there are differences in attributes of replicates of the same condition is also detected.
 
 
 
-#### TrackMate input parameters
+### TrackMate input parameters
 
 The TrackMate calculations are influenced by a set of parameters that do normally not require changing and which are specified in the **Paint Configuration** file.  If 'Verbose' is set, the parameters are displayed in the **Paint Console**.  See below.
 
@@ -194,7 +220,7 @@ The two, in combination, prevent the pipeline choking up.  In contrast to the ge
 
 
 
-#### Recordings processed
+### Recordings processed
 
 The Experiment Info files in the selected Experiments specify which Recordings are to be processed.  An example of an Experiment Info file is shown below.  Recordings for which the **Process Flag** is set to 'TRUE' will be processed.  Allowable 'TRUE' values are TRUE, 1, Yes, Y and T; valid 'FALSE' values are FALSE, 0, No, N and F, all case-insensitive.  Other values will trigger an error.
 
@@ -202,19 +228,7 @@ For each Recording a **Threshold** value is specified.  A low value for Threshol
 
 ![experiment-info](./Pictures/experiment-info.png)
 
-#### Paint Configuration file
-
-The **Paint Configuration** file is a readable file in JSON format and contains Project specific attributes.  The file is read and written by software but can also be inspected and edited with any normal plain text editor (Visual Studio Code, BBedit, Sublime).  Below is the Paint Config file shown in Visual Code Studio.
-
-In general, users will not often have to edit the Paint Configuration and should only do so when they can assess the consequences of changes.  For information on the values in the TrackMate section, please refer to the [Track Mate manual](https://imagej.net/media/plugins/trackmate/trackmate-manual.pdf).
-
-The file is 'self-healing', e.g., when necessary cannot be found, they are recreated with sensible defaults.  If the whole file is missing, for example, for a freshly created Project Root, it will be regenerated from scratch.
-
-![paint-config-json](./Pictures/paint-config-json.png)Only Project specific values are stored in the Paint Configuration file.  For system-wide settings, the macOS Preferences mechanism is used to store attributes in ~/Library/preferences/Glyco-PAINT.plist (for Windows an equivalent implementation is provided).  You will generally not interact directly with this file, but it is here where the current 'Project Root' and 'Images Root' are kept.  Below, the Glyco-PAINT.plist is shown with Xcode's plist viewer.  Also, the **Log Level** can be adjusted here.  The standard Log Level is **Info**, but for more detailed information **Debug** can be chosen.  Less information can be displayed by choosing **Error** or **Warn**.  
-
-![preferences](./Pictures/preferences.png)
-
-#### TrackMate Results
+### TrackMate Results
 
 Upon completion of a TrackMate run, two new files have been created in each Experiment directory: **Tracks** and **Recordings**.  The Tracks file contains the tracks for all the recordings in the Experiment, with for each calculated attribute (the individual spots of the tracks are not saved).  The Recordings file is an evolution of the Experiment Info file with spots, track and runtime information added:
 
@@ -239,29 +253,37 @@ In the **Brightfield Images** directory the brightfield images for recording are
 </div>
 
 
-#### The Paint Console
-
-Each application of the Glyco-PAINT pipeline opens its own Paint **Console**.  In the title of the window the name of the application the Paint Console is attached to is listed.
-
-More information is logged in the Paint Console than can be seen at any one time, and therefore scrolling is provided.  Normally the end of the log is shown, so that new information is visible.  The **Scroll Lock** checkbox (left bottom) stops the auto-scroll mechanism to allow you to inspect earlier parts of the log undisturbed.
-
-The **Highlight Problems** button jumps to [ERROR] and [WARN ] lines in the log to alert you to irregularities.  Repeatedly clicking the button will jump to the next problem.  
-
-A **Save** button saves the information in the console window to a file.  Generally this is not needed as most information is already saved automatically to a log file (see next section).
 
 
 
-#### Paint log files 
 
-Every time the Glyco-PAINT Fiji plugin (or any other component of the pipeline) is started, a log file is opened in the **Logs** directory under the Project Root directory.  Log files are named after the pipeline component that is logging.  Files are sequentially numbered so that older information is not overwritten.  In a heavily analysed 'Project Root', the Logs directory may accumulate a large number of log files and cleaning up may be warranted.  
+### Generate Squares
+
+If the Generate Squares checkbox was ticked before the TrackMate calculation was started, squares will be generated as if the Generate Squares was run. For explanation of this calculation refer to the description of the [**Generate Squares**](#Generate Squares) app.
 
 
 
-#### Generate Squares
+## TrackMate Sweep mode 
 
-If the 'Generate Squares' checkbox was ticked before the calculation was started, squares will be generated for all the Recordings in the selected Experiments.  You can choose several square sizes; 20x20 has been found to be a good choice.
 
-The following steps are followed:
+
+# Generate Squares
+
+## Process steps
+
+**Generate Squares** can be started as part of the TrackMate processing or can be started as a separate app. If the app is used, Project Root and Experiments will need to be confirmed again (but will be preselected if the **Save Experiments** checkbox in previous steps was checked).
+
+Squares will be generated for all the Recordings in the selected Experiments.  You can choose several square sizes; 20x20 has been found to be a good choice. Some additional parameters need to be set to set for the filter criteria that determine the 'visibility' of squares.  
+
+- **Min Required R²**, only squares with a higher R² are visible. 
+
+- **Min Required Density Ratio**, only squares with a higher density ratio are visible.  
+
+- **Max Allowed Variability**, only squares with a lower Variability are visible. . 
+
+
+
+The following calculations are performed:
 
 1.  Define the squares (with coordinates)
 2.  Determine in which squares the tracks of the recording are located.
@@ -275,7 +297,7 @@ The following steps are followed:
     - displacement
     - speed
     - duration
-6.  For each square determine whether it is 'selected', i.e., when all three conditions are met:
+6.  For each square determine whether it is 'visible', i.e., when all three conditions are met:
     - the variability < the maximum allowed variability 
     - the R² > the minimum required R²
     - the density ratio > the §min required density ratio 
@@ -283,12 +305,12 @@ The following steps are followed:
     - the Tau and R²
     - the density
 
+The results are stored in Experiment-level **Squares** files.
 
-The results are stored in Experiment-level **Squares** files
+The last step of Generate Squares is the compilation of **Squares**, **Tracks**, **Recordings** and **Experiment Info** information for all **Recordings** processed in project level files stored in the **Project Root**. 
 
 
-
-#### Calculation of Tau
+##Calculation of Tau
 
 Tau is a measure used to characterise the distribution of track durations.  To calculate Tau, a frequency distribution is created from the track durations.  These durations are then ordered and fitted with a one-phase exponential decay curve to obtain the Tau value ([CalculateTau.java](https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java/blob/main/paint-shared-utils/src/main/java/paint/shared/utils/CalculateTau.java)).
 
@@ -301,8 +323,7 @@ Visual feedback on the fitting process is provided when the "Tau Fitting Plots" 
 <img src="./Pictures/tau-fit-plot.png" alt="tau-fit-plot" style="zoom:33%;" />
 
 
-
-#### Calculation of Variability
+## Calculation of Variability
 
 The variability of a square calculation begins with overlaying a finer grid over the existing grid and determining the number of tracks in each grid element.  The variability is then calculated as the quotient of the standard deviation and the mean of the grid track numbers.  The figure below illustrates the variability for four fictional squares.
 
@@ -312,7 +333,7 @@ The code can be found at: [CalculateSquareAttributes.java](https://github.com/Le
 
 
 
-#### Calculation of Diffusion Coefficient (Ext)
+####Calculation of Diffusion Coefficient (Ext)
 
 The 'Diffusion Coefficient' is calculated for each track in the recording that contains three or more spots, using the following formula.  Here, **n** represents the dimensionality (in this case 2), and **t** is the time interval over which displacement is measured (0.05 s).
 
@@ -340,7 +361,7 @@ The code can be found at: [TrackAttributeCalculations.java](https://github.com/L
 
 
 
-#### Calculation of background density
+## Calculation of background density
 
 One of the criteria applied to for square selection is the 'Density ratio'.  Simply said, squares are only considered if they contain 'significantly' more tracks than the 'majority' of the squares.  A statistical procedure is applied in which squares are iteratively filtered with track counts exceeding a dynamically calculated threshold (mean + 2 * standard deviation).  The mean is then recalculated and the calculation repeated until the mean stabilises or a maximum number of iterations is reached.
 
@@ -350,11 +371,9 @@ The code can be found at: [SquareUtils.java](https://github.com/Leiden-chemical-
 
 
 
-## TrackMate Sweep mode 
-
-
-
 # Viewer
+
+## General description
 
 With the Viewer you can inspect what tracks have been generated for recordings and what squares meet the selection criteria.
 
@@ -375,6 +394,16 @@ In the TrackMate image, those squares are displayed that meet the selection crit
 
 The checkboxes in the control panel on the right determine whether borders are shown, whether squares are shaded and whether label or square numbers are displayed or not.
 
+
+
+## Filter Recordings
+
+With **Filter Recordings** you can restrict recordings that you have loaded to certain criteria.  For example, in the case shown below, you have loaded pictures, for two different cell types, multiple probes and three concentrations.  If you want to see only recordings for BMDC, you would select BMDC and push the **Filter** button below the Cell Type list.  The **Reset** button, initially disabled, becomes active. The choices in other categories may be reduced as a consequence.  When you are satisfied with selection, you push the **Apply** button.  The viewer will then only display recordings that match the selected criteria.
+
+Opening the Filter Recordings dialog again allows you to change the selection. You can apply additional filters, remove single filters by pressing the **Reset** button under a list or remove all filters by pressing **Reset All**.
+
+![filter-recordings-dialog](./Pictures/filter-recordings-dialog.png)
+
 ## Select Squares
 
 Pressing the **Select Squares** button in the control panel causes a Square Control dialog to become visible.  Moving the sliders will change the criteria for square selection, and you will see the square selection change dynamically.  You can assign the current settings to just the Recording, all Recordings in the same Experiment or to all Recordings currently loaded in the Viewer.  In that case those settings will be preserved for the current Viewer settings and stored in a **Recording Override** file in the **Viewer** directory in the Project Root.  
@@ -388,23 +417,21 @@ Pressing the **Assign Cells** button causes the Assign Cells dialog to be shown.
 <div style="text-align:center;">
 <img src="./Pictures/assign-cells-dialog.png" alt="assign-cells-dialog" style="zoom:33%;" />
 </div >
-## Filter Recordings
+## Play recordings
 
-With **Filter Recordings** you can restrict recordings that you have loaded to certain criteria.  For example, in the case shown below, you have loaded pictures, for two different cell types, multiple probes and three concentrations.  If you want to see only recordings for BMDC, you would select BMDC and push the **Filter** button below the Cell Type list.  The **Reset** button, initially disabled, becomes active. The choices in other categories may be reduced as a consequence.  When you are satisfied with selection, you push the **Apply** button.  The viewer will then only display recordings that match the selected criteria.
+A new feature in the Viewer is the option to view the original recording that was used by TrackMate to detect spots and create tracks. For this feature to work, the 'Images Root' parameter needs to have been set and the images need to be available (for example, not on a not-connected external hard drive). A 2,000-frame recoding is approximately 1 GB in size and loading will take a few seconds. Once loaded, the recording can be viewed at user-selectable speeds.
 
-Opening the Filter Recordings dialog again alows you change the selection. You can apply additional filters, remiove single filters by pressing the **Reset** button under a list or remove all filters by pressiung **Reset All**.
-
-![filter-recordings-dialog](./Pictures/filter-recordings-dialog.png)
+<img src="./Pictures/play-recordings.png" alt="play-recordings" style="zoom:50%;" />
 
 # Get Omero
 
-When you download images from Omero, individual files are stored in a individual directories (see below). 
+When you download images from Omero, individual files are stored in individual directories (see below). 
 
-<img src="/Users/hans/JavaPaintProjects/Glyco-PAINT-Java/doc/Pictures/omero-download.png" alt="omero-download" style="zoom: 33%;" />
+<img src="./Pictures/omero-download.png" alt="omero-download" style="zoom: 33%;" />
 
-For these imnages to be used in the Glyco-PAINT pipeline, they need all to be in one directory. The **Get Omero** utility helps you with that. Start the utillity and select the folder where Omero had downloaded all the directories (in this example '~/Downloads/Omero Folder' and press **Process**. If 'Fileset' directories are found, the resulting director with all copied files will be displayed. This directory can now be moved to the **Images Root** and given a proper **Experiment** name.
+For these images to be used in the Glyco-PAINT pipeline, they need all to be in one directory. The **Get Omero** utility helps you with that. Start the utility and select the folder where Omero had downloaded all the directories (in this example '~/Downloads/Omero Folder') and press **Process**. If 'Fileset' directories are found, the resulting director with all copied files will be displayed. This directory can now be moved to the **Images Root** and given a proper **Experiment** name.
 
-<img src="/Users/hans/JavaPaintProjects/Glyco-PAINT-Java/doc/Pictures/omero-result.png" alt="omero-result" style="zoom:33%;" />
+<img src="./Pictures/omero-result.png" alt="omero-result" style="zoom:33%;" />
 
 # Create Experiment
 
@@ -412,7 +439,7 @@ The **Create Experiment** utility helps you set up an Experiment Info file.
 
 
 
-<img src="/Users/hans/JavaPaintProjects/Glyco-PAINT-Java/doc/Pictures/create-experiment.png" alt="create-experiment" style="zoom:50%;" />
+<img src="./Pictures/create-experiment.png" alt="create-experiment" style="zoom:50%;" />
 
 
 
