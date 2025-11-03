@@ -47,7 +47,7 @@ set -euo pipefail
 # --- Always start from repo root (script may be run from subfolders) ----------
 cd "$(dirname "$0")/.."
 
-# Avoid 'TERM environment variable not set' when running in CI
+# Avoid 'TERM environment variable not set' when running in CI 
 [[ -t 1 ]] && clear || true
 
 # ------------------------------------------------------------------------------
