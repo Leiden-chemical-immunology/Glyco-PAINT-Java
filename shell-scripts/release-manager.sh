@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/opt/homebrew/bin/bash
 ###############################################################################
 # release-manager.sh
 #
@@ -43,9 +43,6 @@
 ###############################################################################
 
 set -euo pipefail
-# Debugging aid for CI
-set -x
-trap 'echo "❌ Script failed at line $LINENO (exit code $?)"' ERR
 
 # --- Always start from repo root (script may be run from subfolders) ----------
 cd "$(dirname "$0")/.."
