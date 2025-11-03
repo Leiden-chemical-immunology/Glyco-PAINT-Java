@@ -58,10 +58,6 @@ $RECYCLE.BIN/
 # Ignore local icon generation artifacts
 paint-icons-generation/
 
-# Ignore all macOS and Windows icon files anywhere in the repo
-*.icns
-*.ico
-
 # Ignore all images
 *.png
 
@@ -71,11 +67,4 @@ paint-icons-generation/
 MANIFEST.MF/paint-fiji-plugin/META-INF/
 build/
 dist/
-build/
-dist/
-build/
-dist/
-build/
-dist/
-dist/
-build/
+

@@ -535,7 +535,16 @@ say "New development version: $(get_version)"
 
 run git add -A
 run git commit -m "Bump to ${NEXT_DEV}"
-run git push origin main
+
+# ------------------------------------------------------------
+# ✅ Push version bump back to main (local only)
+# ------------------------------------------------------------
+if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
+  say "ℹ️ Running in CI — skipping push to main (detached HEAD)."
+else
+  say "📤 Pushing version bump to main..."
+  run git push origin main
+fi
 
 # ------------------------------------------------------------------------------
 # Export build artifacts back into the CI workspace (for GitHub Actions)

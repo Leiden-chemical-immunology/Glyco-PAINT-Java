@@ -129,11 +129,18 @@ jobs:
 
       - name: Collect Windows executables
         run: |
-          mkdir dist
-          if exist paint-generate-squares\target\*.exe copy paint-generate-squares\target\*.exe dist\
-          if exist paint-viewer\target\*.exe copy paint-viewer\target\*.exe dist\
-          if exist paint-get-omero\target\*.exe copy paint-get-omero\target\*.exe dist\
-          if exist paint-create-experiment\target\*.exe copy paint-create-experiment\target\*.exe dist\
+          echo "Collecting Windows executables..."
+          mkdir dist 2>nul
+
+          for %%M in (paint-generate-squares paint-viewer paint-get-omero paint-create-experiment) do (
+            if exist "%%M\target\*.exe" (
+              echo "📦 Found executables in %%M\target — copying..."
+              copy "%%M\target\*.exe" dist\ >nul
+            ) else (
+              echo "⚠️ No executables found in %%M\target"
+            )
+          )
+
           echo "✅ Windows executables collected:"
           dir dist
         shell: cmd
@@ -141,34 +148,34 @@ jobs:
       # ✅ Copy .exe files to Glyco-PAINT-Builds/build/Windows
       - name: Copy executables to Glyco-PAINT-Builds/build/Windows
         run: |
-          echo "Copying Windows executables to ../Glyco-PAINT-Builds/build/Windows..."
-          mkdir "..\Glyco-PAINT-Builds" 2>nul
-          mkdir "..\Glyco-PAINT-Builds\build" 2>nul
-          mkdir "..\Glyco-PAINT-Builds\build\Windows" 2>nul
-          copy dist\*.exe "..\Glyco-PAINT-Builds\build\Windows\" >nul
+          echo "Copying Windows executables to Glyco-PAINT-Builds/build/Windows..."
+          mkdir Glyco-PAINT-Builds 2>nul
+          mkdir Glyco-PAINT-Builds\build 2>nul
+          mkdir Glyco-PAINT-Builds\build\Windows 2>nul
+          copy dist\*.exe Glyco-PAINT-Builds\build\Windows\ >nul
           echo "✅ Windows executables copied successfully:"
-          dir "..\Glyco-PAINT-Builds\build\Windows"
+          dir Glyco-PAINT-Builds\build\Windows
         shell: cmd
 
       # 🗜️ Zip Windows executables
       - name: Zip Windows executables
         run: |
           for /f "delims=v" %%v in ("%GITHUB_REF_NAME%") do set VERSION=%%v
-          echo "Zipping Windows executables into ../Glyco-PAINT-Builds/dist/Windows..."
-          mkdir "..\Glyco-PAINT-Builds\dist" 2>nul
-          mkdir "..\Glyco-PAINT-Builds\dist\Windows" 2>nul
-          powershell Compress-Archive -Path "..\Glyco-PAINT-Builds\build\Windows\*.exe" -DestinationPath "..\Glyco-PAINT-Builds\dist\Windows\Glyco-PAINT-Windows-%VERSION%.zip" -Force
+          echo "Zipping Windows executables into Glyco-PAINT-Builds/dist/Windows..."
+          mkdir Glyco-PAINT-Builds\dist 2>nul
+          mkdir Glyco-PAINT-Builds\dist\Windows 2>nul
+          powershell Compress-Archive -Path "Glyco-PAINT-Builds\build\Windows\*.exe" -DestinationPath "Glyco-PAINT-Builds\dist\Windows\Glyco-PAINT-Windows-%VERSION%.zip" -Force
           echo "✅ Created Glyco-PAINT-Windows-%VERSION%.zip"
-          dir "..\Glyco-PAINT-Builds\dist\Windows"
-        shell: cmd
-
-      - name: Upload Windows build artifacts
-        run: |
-          mkdir -p dist-upload/windows
-          xcopy /E /I "..\Glyco-PAINT-Builds\dist\Windows" "dist-upload\windows" >nul
+          dir Glyco-PAINT-Builds\dist\Windows
         shell: cmd
 
       - name: Upload Windows artifacts
+        run: |
+          mkdir -p dist-upload/windows
+          copy Glyco-PAINT-Builds\dist\Windows\* dist-upload\windows\
+        shell: cmd
+
+      - name: Upload Windows build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: windows-artifacts
