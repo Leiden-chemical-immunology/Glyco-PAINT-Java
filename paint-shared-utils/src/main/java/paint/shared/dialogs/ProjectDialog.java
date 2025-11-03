@@ -247,19 +247,6 @@ public class ProjectDialog {
             paramsPanel.add(gridSizeCombo, pg);
             prow++;
 
-            // Min Tracks
-            pg.gridx = 0;
-            pg.gridy = prow;
-            JLabel lblMinTracks = label("Min Tracks to Calculate Tau", labelSize);
-            squareParamLabels.add(lblMinTracks);
-            paramsPanel.add(lblMinTracks, pg);
-
-            pg.gridx = 1;
-            minTracksField = createTightTextField(String.valueOf(minTracks), new IntegerDocumentFilter());
-            minTracksField.setPreferredSize(narrowFieldSize);
-            paramsPanel.add(minTracksField, pg);
-            prow++;
-
             // Min R²
             pg.gridx = 0;
             pg.gridy = prow;
