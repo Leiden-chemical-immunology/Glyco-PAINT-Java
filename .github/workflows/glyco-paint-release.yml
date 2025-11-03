@@ -6,7 +6,7 @@ permissions:
 on:
   push:
     tags:
-      - "v*.*.*"   # Trigger only when a version tag is pushed (e.g. v0.0.15)
+      - "v*.*.*"   # Trigger only when a version tag is pushed (e.g. v0.0.25)
 
 jobs:
   build-macos:
@@ -49,32 +49,43 @@ jobs:
           echo "✅ macOS artifacts collected:"
           ls -R dist/macos || true
 
-          # ✅ Copy to external Glyco-PAINT-Builds folder
           mkdir -p ../Glyco-PAINT-Builds/dist/macOS
           cp -R dist/macos/* ../Glyco-PAINT-Builds/dist/macOS/ || true
           echo "✅ macOS artifacts copied to ../Glyco-PAINT-Builds/dist/macOS"
           ls -R ../Glyco-PAINT-Builds/dist/macOS || true
 
-      # 🗜️ Zip versioned macOS build and remove old unversioned archive
+      # 🗜️ Zip versioned macOS build
       - name: Zip macOS build for distribution
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          echo "Zipping macOS build into ../Glyco-PAINT-Builds/dist/macOS..."
+          echo "Preparing macOS folder structure..."
+          mkdir -p ../Glyco-PAINT-Builds/build/macOS
           mkdir -p ../Glyco-PAINT-Builds/dist/macOS
-          cd ../Glyco-PAINT-Builds/build/macOS || exit 1
-          zip -qry "../../dist/macOS/Glyco-PAINT-macOS-${VERSION}.zip" "Glyco-PAINT-${VERSION}"
-          echo "✅ Created Glyco-PAINT-macOS-${VERSION}.zip"
-          echo "🧹 Removing unversioned zip from dist/macOS..."
-          rm -f "../../dist/macOS/Glyco-PAINT-${VERSION}.zip" || true
-          echo "✅ Remaining files in dist/macOS:"
-          ls -lh "../../dist/macOS/"
+
+          BUILD_DIR="../Glyco-PAINT-Builds/build/macOS/Glyco-PAINT-${VERSION}"
+          DIST_ZIP="../Glyco-PAINT-Builds/dist/macOS/Glyco-PAINT-macOS-${VERSION}.zip"
+
+          if [ -d "$BUILD_DIR" ]; then
+            echo "Zipping macOS build from $BUILD_DIR → $DIST_ZIP"
+            cd ../Glyco-PAINT-Builds/build/macOS || exit 1
+            zip -qry "$DIST_ZIP" "Glyco-PAINT-${VERSION}"
+            echo "✅ Created $DIST_ZIP"
+          else
+            echo "❌ ERROR: Expected build folder $BUILD_DIR not found!"
+            echo "Available structure:"
+            ls -R ../Glyco-PAINT-Builds/build || true
+            exit 1
+          fi
+
+          echo "✅ macOS zip completed."
+          ls -lh ../Glyco-PAINT-Builds/dist/macOS/
         shell: bash
 
       - name: Upload macOS build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: macos-artifacts
-          path: dist/macos/**
+          path: ../Glyco-PAINT-Builds/dist/macOS/**
           if-no-files-found: warn
 
   build-windows:
@@ -125,14 +136,15 @@ jobs:
           dir "..\Glyco-PAINT-Builds\build\Windows"
         shell: cmd
 
-      # 🗜️ Zip executables into Glyco-PAINT-Builds/dist/Windows
+      # 🗜️ Zip Windows executables
       - name: Zip Windows executables
         run: |
+          for /f "delims=v" %%v in ("%GITHUB_REF_NAME%") do set VERSION=%%v
           echo "Zipping Windows executables into ../Glyco-PAINT-Builds/dist/Windows..."
           mkdir "..\Glyco-PAINT-Builds\dist" 2>nul
           mkdir "..\Glyco-PAINT-Builds\dist\Windows" 2>nul
-          powershell Compress-Archive -Path "..\Glyco-PAINT-Builds\build\Windows\*.exe" -DestinationPath "..\Glyco-PAINT-Builds\dist\Windows\Glyco-PAINT-Windows-%GITHUB_RUN_NUMBER%.zip" -Force
-          echo "✅ Created Glyco-PAINT-Windows-%GITHUB_RUN_NUMBER%.zip"
+          powershell Compress-Archive -Path "..\Glyco-PAINT-Builds\build\Windows\*.exe" -DestinationPath "..\Glyco-PAINT-Builds\dist\Windows\Glyco-PAINT-Windows-%VERSION%.zip" -Force
+          echo "✅ Created Glyco-PAINT-Windows-%VERSION%.zip"
           dir "..\Glyco-PAINT-Builds\dist\Windows"
         shell: cmd
 
@@ -140,7 +152,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-artifacts
-          path: dist/**
+          path: ../Glyco-PAINT-Builds/dist/Windows/**
           if-no-files-found: warn
 
   release:
@@ -153,15 +165,17 @@ jobs:
       - name: Download all build artifacts
         uses: actions/download-artifact@v4
         with:
-          path: dist
+          path: release
 
       - name: Display collected artifacts
-        run: ls -R dist
+        run: ls -R release
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/**
+          files: |
+            release/macos/**/*
+            release/windows/**/*
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
