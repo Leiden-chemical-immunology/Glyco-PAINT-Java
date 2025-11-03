@@ -328,7 +328,7 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                             <outfile>${project.build.directory}/${app.name}.exe</outfile>
                             <jar>${fat.jar}</jar>
                             <dontWrapJar>false</dontWrapJar>
-                            <icon>${project.build.directory}/../src/main/resources/icons/paint-viewer.ico</icon>
+                            <icon>${project.basedir}/src/main/resources/icons/paint-viewer.ico</icon>
                             <jre>
                                 <minVersion>1.8.0</minVersion>
                             </jre>
