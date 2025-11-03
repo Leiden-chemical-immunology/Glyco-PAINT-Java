@@ -15,7 +15,7 @@
  *
  *    Upon confirmation, it loads experiment data via
  *    {@link paint.viewer.utils.RecordingLoader}, and if valid recordings are found,
- *    launches the {@link paint.viewer.RecordingViewerFrame} interface.
+ *    launches the {@link paint.viewer.ViewerFrame} interface.
  *
  *  KEY FEATURES:
  *    • Loads the last used project directory from user preferences.
@@ -67,10 +67,10 @@ import java.util.List;
  *   <li>Initialize configuration and logging via {@link PaintConfig} and {@link PaintLogger}.</li>
  *   <li>Display a project specification dialog for user selection.</li>
  *   <li>Load recordings from the selected project using {@link RecordingLoader}.</li>
- *   <li>Launch the {@link RecordingViewerFrame} interface if valid recordings are found.</li>
+ *   <li>Launch the {@link ViewerFrame} interface if valid recordings are found.</li>
  * </ul>
  */
-public class RecordingViewer {
+public class Viewer {
 
     /**
      * Main entry point for the PAINT Viewer application.
@@ -111,7 +111,7 @@ public class RecordingViewer {
                     }
 
                     // With the recordingEntries info available, the viewer can be started
-                    RecordingViewerFrame viewer = new RecordingViewerFrame(project, recordingEntries);
+                    ViewerFrame viewer = new ViewerFrame(project, recordingEntries);
                     viewer.setVisible(true);
                     return true;
                 } catch (Exception ex) {

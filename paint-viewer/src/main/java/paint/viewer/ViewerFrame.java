@@ -87,10 +87,10 @@ import static paint.shared.constants.PaintConstants.*;
  *   <li>Preview live recalculations of Tau, R², and density metrics.</li>
  * </ul>
  * <p>
- * This class is instantiated by {@link paint.viewer.RecordingViewer} after successful
+ * This class is instantiated by {@link Viewer} after successful
  * project initialization. All UI updates occur on the Swing event dispatch thread.
  */
-public class RecordingViewerFrame extends JFrame
+public class ViewerFrame extends JFrame
         implements RecordingControlsPanel.Listener, NavigationPanel.Listener {
 
     // Remembers the last used filter criteria for the filter dialog
@@ -125,7 +125,7 @@ public class RecordingViewerFrame extends JFrame
      * @param project          the {@link Project} object providing experiment context and paths.
      * @param recordingEntries list of {@link RecordingEntry} objects representing loaded recordings.
      */
-    public RecordingViewerFrame(Project project, List<RecordingEntry> recordingEntries) {
+    public ViewerFrame(Project project, List<RecordingEntry> recordingEntries) {
         super("Recording Viewer - " + project.getProjectRootPath().getFileName());
         this.project                 = project;
         this.allRecordingEntries     = new java.util.ArrayList<>(recordingEntries);

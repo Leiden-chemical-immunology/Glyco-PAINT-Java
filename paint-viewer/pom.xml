@@ -178,7 +178,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>paint.viewer.RecordingViewer</mainClass>
+                            <mainClass>paint.viewer.Viewer</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -333,7 +333,7 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                                 <minVersion>1.8.0</minVersion>
                             </jre>
                             <classPath>
-                                <mainClass>paint.viewer.RecordingViewer</mainClass>
+                                <mainClass>paint.viewer.Viewer</mainClass>
                             </classPath>
                             <headerType>gui</headerType>
                             <errTitle>${app.name}</errTitle>
