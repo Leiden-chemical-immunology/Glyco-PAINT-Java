@@ -170,7 +170,9 @@ sleep 5
 ROOT_DIR="$(pwd)"
 OUTSIDE_ROOT="${OUTSIDE_ROOT:-${ROOT_DIR}/../Glyco-PAINT-builds}"
 APP_TEMPLATES_DIR="${APP_TEMPLATES_DIR:-apps}"
-STAGE_ROOT="${OUTSIDE_ROOT}/build"
+
+# macOS paths
+STAGE_ROOT="${OUTSIDE_ROOT}/build/macOS"
 DIST_DIR="${OUTSIDE_ROOT}/dist/macOS"
 
 # Guard: never let OUTSIDE_ROOT collapse to repo root (accidental recursion)
@@ -363,7 +365,7 @@ say "Creating zip: $DIST_DIR/$ZIP_NAME"
 #   - Attempts to install Fiji plugin into standard Fiji.app locations
 #   - Removes quarantine attributes (macOS) to aid first-run UX
 # ------------------------------------------------------------------------------
-INSTALLER_NAME="${PRODUCT_NAME}-Installer-${RELEASE_VERSION}.sh"
+INSTALLER_NAME="${PRODUCT_NAME}-macOS-${RELEASE_VERSION}.sh"
 say "Creating self-extracting installer: $DIST_DIR/$INSTALLER_NAME"
 
 cat > "$DIST_DIR/$INSTALLER_NAME" <<'EOF'
@@ -528,7 +530,7 @@ fi
 
 say ""
 say "✅ All done."
-say "Deliverables:"
-say "  - $DIST_DIR/$ZIP_NAME"
-say "  - $DIST_DIR/$INSTALLER_NAME"
+say "Deliverables (macOS):"
+say "  📦 ZIP archive:       $DIST_DIR/$ZIP_NAME"
+say "  🧰 Installer script:  $DIST_DIR/$INSTALLER_NAME"
 say ""

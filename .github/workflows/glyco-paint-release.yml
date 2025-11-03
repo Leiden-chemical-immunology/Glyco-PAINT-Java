@@ -21,22 +21,24 @@ jobs:
           distribution: zulu
           java-version: 8
 
+      # 🧱 Build macOS release using the local release-manager script
       - name: Build macOS version
         run: ./shell-scripts/release-manager.sh
         env:
-          GITHUB_ACTIONS: true    # ensures artifacts copied into dist/macos
+          GITHUB_ACTIONS: true
 
+      # 📦 Collect and copy artifacts into Glyco-PAINT-Builds/dist/macOS
       - name: Collect macOS artifacts
         run: |
           mkdir -p dist/macos
 
           # ✅ First try release-manager output
-          if [ -d Glyco-PAINT-builds/dist ]; then
-            echo "📦 Found Glyco-PAINT-builds/dist — copying..."
-            cp -r Glyco-PAINT-builds/dist/* dist/macos/
-          elif [ -d ../Glyco-PAINT-builds/dist ]; then
-            echo "📦 Found ../Glyco-PAINT-builds/dist — copying..."
-            cp -r ../Glyco-PAINT-builds/dist/* dist/macos/
+          if [ -d Glyco-PAINT-builds/dist/macOS ]; then
+            echo "📦 Found Glyco-PAINT-builds/dist/macOS — copying..."
+            cp -r Glyco-PAINT-builds/dist/macOS/* dist/macos/
+          elif [ -d ../Glyco-PAINT-builds/dist/macOS ]; then
+            echo "📦 Found ../Glyco-PAINT-builds/dist/macOS — copying..."
+            cp -r ../Glyco-PAINT-builds/dist/macOS/* dist/macos/
           elif [ -d dist/macos ] && [ "$(ls -A dist/macos)" ]; then
             echo "✅ Artifacts already present in dist/macos (from release-manager)"
           else
@@ -52,6 +54,21 @@ jobs:
           cp -R dist/macos/* ../Glyco-PAINT-Builds/dist/macOS/ || true
           echo "✅ macOS artifacts copied to ../Glyco-PAINT-Builds/dist/macOS"
           ls -R ../Glyco-PAINT-Builds/dist/macOS || true
+
+      # 🗜️ Zip versioned macOS build and remove old unversioned archive
+      - name: Zip macOS build for distribution
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "Zipping macOS build into ../Glyco-PAINT-Builds/dist/macOS..."
+          mkdir -p ../Glyco-PAINT-Builds/dist/macOS
+          cd ../Glyco-PAINT-Builds/build/macOS || exit 1
+          zip -qry "../../dist/macOS/Glyco-PAINT-macOS-${VERSION}.zip" "Glyco-PAINT-${VERSION}"
+          echo "✅ Created Glyco-PAINT-macOS-${VERSION}.zip"
+          echo "🧹 Removing unversioned zip from dist/macOS..."
+          rm -f "../../dist/macOS/Glyco-PAINT-${VERSION}.zip" || true
+          echo "✅ Remaining files in dist/macOS:"
+          ls -lh "../../dist/macOS/"
+        shell: bash
 
       - name: Upload macOS build artifacts
         uses: actions/upload-artifact@v4
@@ -96,15 +113,26 @@ jobs:
           dir dist
         shell: cmd
 
-      # ✅ Copy .exe files to Glyco-PAINT-Builds/dist/Windows
-      - name: Copy executables to Glyco-PAINT-Builds/dist/Windows
+      # ✅ Copy .exe files to Glyco-PAINT-Builds/build/Windows
+      - name: Copy executables to Glyco-PAINT-Builds/build/Windows
         run: |
-          echo "Copying Windows executables to ../Glyco-PAINT-Builds/dist/Windows..."
+          echo "Copying Windows executables to ../Glyco-PAINT-Builds/build/Windows..."
           mkdir "..\Glyco-PAINT-Builds" 2>nul
+          mkdir "..\Glyco-PAINT-Builds\build" 2>nul
+          mkdir "..\Glyco-PAINT-Builds\build\Windows" 2>nul
+          copy dist\*.exe "..\Glyco-PAINT-Builds\build\Windows\" >nul
+          echo "✅ Windows executables copied successfully:"
+          dir "..\Glyco-PAINT-Builds\build\Windows"
+        shell: cmd
+
+      # 🗜️ Zip executables into Glyco-PAINT-Builds/dist/Windows
+      - name: Zip Windows executables
+        run: |
+          echo "Zipping Windows executables into ../Glyco-PAINT-Builds/dist/Windows..."
           mkdir "..\Glyco-PAINT-Builds\dist" 2>nul
           mkdir "..\Glyco-PAINT-Builds\dist\Windows" 2>nul
-          copy dist\*.exe "..\Glyco-PAINT-Builds\dist\Windows\" >nul
-          echo "✅ Windows executables copied successfully:"
+          powershell Compress-Archive -Path "..\Glyco-PAINT-Builds\build\Windows\*.exe" -DestinationPath "..\Glyco-PAINT-Builds\dist\Windows\Glyco-PAINT-Windows-%GITHUB_RUN_NUMBER%.zip" -Force
+          echo "✅ Created Glyco-PAINT-Windows-%GITHUB_RUN_NUMBER%.zip"
           dir "..\Glyco-PAINT-Builds\dist\Windows"
         shell: cmd
 
