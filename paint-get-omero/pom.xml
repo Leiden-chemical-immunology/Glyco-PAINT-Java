@@ -239,7 +239,7 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                                     <outfile>${project.build.directory}/${app.name}.exe</outfile>
                                     <jar>${fat.jar}</jar>
                                     <dontWrapJar>false</dontWrapJar>
-                                    <icon>${project.basedir}/src/main/resources/icons/paint-get-omero.ico</icon>
+                                    <icon>${project.basedir}/src/main/resources/icons/${project.artifactId}.ico</icon>
                                     <jre>
                                         <minVersion>1.8.0</minVersion>
                                     </jre>

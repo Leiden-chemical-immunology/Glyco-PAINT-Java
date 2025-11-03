@@ -517,6 +517,15 @@ run git add -A
 run git commit -m "Bump to ${NEXT_DEV}"
 run git push origin main
 
+# ------------------------------------------------------------------------------
+# Export build artifacts back into the CI workspace (for GitHub Actions)
+# ------------------------------------------------------------------------------
+if [[ -n "${GITHUB_ACTIONS:-}" ]]; then
+  say "Copying artifacts into CI workspace (dist/macos)..."
+  mkdir -p "$ROOT_DIR/dist/macos"
+  cp -R "$DIST_DIR"/* "$ROOT_DIR/dist/macos/" || warn "No artifacts copied"
+fi
+
 say ""
 say "✅ All done."
 say "Deliverables:"
