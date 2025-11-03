@@ -24,13 +24,21 @@ jobs:
       - name: Collect macOS artifacts
         run: |
           mkdir -p dist/macos
+
+          # ✅ First try release-manager output
           if [ -d Glyco-PAINT-builds/dist ]; then
+            echo "📦 Found Glyco-PAINT-builds/dist — copying..."
             cp -r Glyco-PAINT-builds/dist/* dist/macos/
           elif [ -d ../Glyco-PAINT-builds/dist ]; then
+            echo "📦 Found ../Glyco-PAINT-builds/dist — copying..."
             cp -r ../Glyco-PAINT-builds/dist/* dist/macos/
           else
-            echo "⚠️ No dist directory found after build"
+            echo "⚠️ No dist directory found — searching module targets..."
+            find . -type f \( -name "*.app" -o -name "*.app.zip" \) -exec cp -r {} dist/macos/ \;
           fi
+
+          echo "✅ macOS artifacts collected:"
+          ls -R dist/macos || true
 
       - name: Upload macOS build artifacts
         uses: actions/upload-artifact@v4
