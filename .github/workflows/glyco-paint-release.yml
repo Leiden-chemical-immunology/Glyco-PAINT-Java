@@ -15,8 +15,8 @@ jobs:
       - name: Set up JDK 8
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 8.0.392+8
+          distribution: zulu
+          java-version: 8
 
       - name: Build macOS version
         run: ./shell-scripts/release-manager.sh
@@ -41,8 +41,8 @@ jobs:
       - name: Set up JDK 8
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 8.0.392+8
+          distribution: zulu
+          java-version: 8
 
       - name: Build Windows .exe files
         run: mvn -B -Pwindows-exe -DskipTests clean package
