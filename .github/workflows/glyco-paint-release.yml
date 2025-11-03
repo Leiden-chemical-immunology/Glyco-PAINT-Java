@@ -6,7 +6,7 @@ permissions:
 on:
   push:
     tags:
-      - "v*.*.*"   # Trigger only when a version tag is pushed (e.g. v0.0.25)
+      - "v*.*.*"
 
 jobs:
   build-macos:
@@ -21,7 +21,6 @@ jobs:
           distribution: zulu
           java-version: 8
 
-      # 🧱 Install modern Bash (v5) and run release-manager under it
       - name: Install Homebrew Bash
         run: |
           brew install bash
@@ -36,59 +35,36 @@ jobs:
         env:
           GITHUB_ACTIONS: true
 
-      # 📦 Collect and copy artifacts into Glyco-PAINT-Builds/dist/macOS
       - name: Collect macOS artifacts
         run: |
           mkdir -p dist/macos
-
-          # ✅ First try release-manager output
           if [ -d Glyco-PAINT-builds/dist/macOS ]; then
-            echo "📦 Found Glyco-PAINT-builds/dist/macOS — copying..."
             cp -r Glyco-PAINT-builds/dist/macOS/* dist/macos/
           elif [ -d ../Glyco-PAINT-builds/dist/macOS ]; then
-            echo "📦 Found ../Glyco-PAINT-builds/dist/macOS — copying..."
             cp -r ../Glyco-PAINT-builds/dist/macOS/* dist/macos/
-          elif [ -d dist/macos ] && [ "$(ls -A dist/macos)" ]; then
-            echo "✅ Artifacts already present in dist/macos (from release-manager)"
           else
-            echo "⚠️ No dist directory found — searching module targets..."
+            echo "⚠️ No dist directory found — searching for .app/.sh files"
             find . -type f \( -name "*.app" -o -name "*.app.zip" -o -name "*.sh" \) -exec cp -r {} dist/macos/ \;
           fi
-
-          echo "✅ macOS artifacts collected:"
           ls -R dist/macos || true
+        shell: bash
 
-          mkdir -p ../Glyco-PAINT-Builds/dist/macOS
-          cp -R dist/macos/* ../Glyco-PAINT-Builds/dist/macOS/ || true
-          echo "✅ macOS artifacts copied to ../Glyco-PAINT-Builds/dist/macOS"
-          ls -R ../Glyco-PAINT-Builds/dist/macOS || true
-
-      # 🗜️ Zip versioned macOS build
       - name: Zip macOS build for distribution
         run: |
           VERSION=$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout | sed 's/-SNAPSHOT//')
-          echo "📦 Detected Maven build version: $VERSION" 
-          
-          echo "Preparing macOS folder structure..."
-          mkdir -p ../Glyco-PAINT-Builds/build/macOS
-          mkdir -p ../Glyco-PAINT-Builds/dist/macOS
-
+          echo "📦 Detected Maven build version: $VERSION"
+          mkdir -p ../Glyco-PAINT-Builds/build/macOS ../Glyco-PAINT-Builds/dist/macOS
           BUILD_DIR="../Glyco-PAINT-Builds/build/macOS/Glyco-PAINT-${VERSION}"
           DIST_ZIP="../Glyco-PAINT-Builds/dist/macOS/Glyco-PAINT-macOS-${VERSION}.zip"
-
           if [ -d "$BUILD_DIR" ]; then
-            echo "Zipping macOS build from $BUILD_DIR → $DIST_ZIP"
             cd ../Glyco-PAINT-Builds/build/macOS || exit 1
             zip -qry "$DIST_ZIP" "Glyco-PAINT-${VERSION}"
             echo "✅ Created $DIST_ZIP"
           else
             echo "❌ ERROR: Expected build folder $BUILD_DIR not found!"
-            echo "Available structure:"
             ls -R ../Glyco-PAINT-Builds/build || true
             exit 1
           fi
-
-          echo "✅ macOS zip completed."
           ls -lh ../Glyco-PAINT-Builds/dist/macOS/
         shell: bash
 
@@ -97,8 +73,7 @@ jobs:
           mkdir -p dist-upload/macos
           cp -R ../Glyco-PAINT-Builds/dist/macOS/* dist-upload/macos/ || true
 
-      - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: macos-artifacts
           path: dist-upload/macos/**
@@ -120,7 +95,6 @@ jobs:
         run: |
           echo "Checking for .ico icons..."
           dir /s /b *.ico || echo "⚠️ No .ico files found!"
-          echo "✅ Icon verification step complete."
         shell: cmd
 
       - name: Build Windows .exe files
@@ -133,7 +107,6 @@ jobs:
         run: |
           echo "Collecting Windows executables..."
           mkdir dist 2>nul
-
           for %%M in (paint-generate-squares paint-viewer paint-get-omero paint-create-experiment) do (
             if exist "%%M\target\*.exe" (
               echo "📦 Found executables in %%M\target — copying..."
@@ -142,57 +115,46 @@ jobs:
               echo "⚠️ No executables found in %%M\target"
             )
           )
-
-          echo "✅ Windows executables collected:"
           dir dist
         shell: cmd
 
-      # ✅ Copy .exe files to Glyco-PAINT-Builds/build/Windows
-      - name: Copy executables to Glyco-PAINT-Builds/build/Windows
+      - name: Copy executables to build directory
         run: |
-          echo "Copying Windows executables to Glyco-PAINT-Builds/build/Windows..."
-          mkdir Glyco-PAINT-Builds 2>nul
-          mkdir Glyco-PAINT-Builds\build 2>nul
-          mkdir Glyco-PAINT-Builds\build\Windows 2>nul
-          copy dist\*.exe Glyco-PAINT-Builds\build\Windows\ >nul
-          echo "✅ Windows executables copied successfully:"
-          dir Glyco-PAINT-Builds\build\Windows
+          set BASE=%GITHUB_WORKSPACE%
+          echo "Copying executables to %BASE%\Glyco-PAINT-Builds\build\Windows..."
+          mkdir "%BASE%\Glyco-PAINT-Builds" 2>nul
+          mkdir "%BASE%\Glyco-PAINT-Builds\build" 2>nul
+          mkdir "%BASE%\Glyco-PAINT-Builds\build\Windows" 2>nul
+          copy dist\*.exe "%BASE%\Glyco-PAINT-Builds\build\Windows\" >nul
+          dir "%BASE%\Glyco-PAINT-Builds\build\Windows"
         shell: cmd
 
-      # 🗜️ Zip Windows executables
       - name: Zip Windows executables
         run: |
-          echo "Determining version from Git tag..."
+          set BASE=%GITHUB_WORKSPACE%
           for /f %%v in ('powershell -Command "$env:GITHUB_REF_NAME -replace \"^v\", \"\""') do set VERSION=%%v
-          echo Version is %VERSION%
-          echo "Zipping Windows executables into Glyco-PAINT-Builds/dist/Windows..."
-          mkdir Glyco-PAINT-Builds\dist 2>nul
-          mkdir Glyco-PAINT-Builds\dist\Windows 2>nul
-          powershell Compress-Archive -Path "Glyco-PAINT-Builds\build\Windows\*.exe" -DestinationPath "Glyco-PAINT-Builds\dist\Windows\Glyco-PAINT-Windows-%VERSION%.zip" -Force
-          echo "✅ Created Glyco-PAINT-Windows-%VERSION%.zip"
-          dir Glyco-PAINT-Builds\dist\Windows
+          echo "Zipping into %BASE%\Glyco-PAINT-Builds\dist\Windows..."
+          mkdir "%BASE%\Glyco-PAINT-Builds\dist" 2>nul
+          mkdir "%BASE%\Glyco-PAINT-Builds\dist\Windows" 2>nul
+          powershell Compress-Archive -Path "%BASE%\Glyco-PAINT-Builds\build\Windows\*.exe" -DestinationPath "%BASE%\Glyco-PAINT-Builds\dist\Windows\Glyco-PAINT-Windows-%VERSION%.zip" -Force
+          dir "%BASE%\Glyco-PAINT-Builds\dist\Windows"
         shell: cmd
 
-      - name: Upload Windows artifacts
+      - name: Prepare and upload Windows artifacts
         run: |
-          echo "Preparing upload directory..."
+          set BASE=%GITHUB_WORKSPACE%
           if not exist dist-upload mkdir dist-upload
           if not exist dist-upload\windows mkdir dist-upload\windows
-          if exist Glyco-PAINT-Builds\dist\Windows\* (
-            copy Glyco-PAINT-Builds\dist\Windows\* dist-upload\windows\
-            dir Glyco-PAINT-Builds\dist\Windows
-            dir dist-upload\windows
-          ) else (
-            echo "⚠️ No Windows build files found to upload."
-          )
+          copy "%BASE%\Glyco-PAINT-Builds\dist\Windows\*.zip" dist-upload\windows\ >nul
+          echo "✅ Prepared for upload:"
+          dir dist-upload\windows
         shell: cmd
 
-      - name: Upload Windows build artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: windows-artifacts
           path: dist-upload/windows/**
-          if-no-files-found: warn
+          if-no-files-found: error
 
   release:
     name: Publish GitHub Release

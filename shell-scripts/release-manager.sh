@@ -264,6 +264,12 @@ else
   RELEASE_VERSION="${CURRENT_VERSION/-SNAPSHOT/}"
 fi
 
+# If running under GitHub Actions with a tag, prefer the tag version
+if [[ -n "${GITHUB_REF_NAME:-}" && "${GITHUB_REF_NAME:-}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  RELEASE_VERSION="${GITHUB_REF_NAME#v}"
+  say "Overriding release version from Git tag: $RELEASE_VERSION"
+fi
+
 say "Project version: $CURRENT_VERSION"
 say "Release version: $RELEASE_VERSION"
 
