@@ -14,13 +14,7 @@
     paint-create-experiment
 
   UPDATED:
-    2025-10-30
-
-  NOTES:
-    • To build the macOS .app bundle:
-          mvn clean package -Pmacos-appbundle
-    • The resulting app is automatically installed to:
-          ~/Applications/Glyco-PAINT/Create Experiment.app
+    2025-11-03
 -->
 <!-- ===================================================================== -->
 
@@ -195,8 +189,6 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
 
                                         <fixcrlf file="${app.bundle}/Contents/MacOS/launch" eol="unix"/>
                                         <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
-
-                                        <!-- Zip bundle -->
                                         <exec executable="zip">
                                             <arg value="-r"/>
                                             <arg value="${project.build.directory}/${app.name}.app.zip"/>
@@ -221,7 +213,57 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                                         <echo message="Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
                                     </target>
                                 </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
 
+        <!-- Windows .exe launcher profile -->
+        <profile>
+            <id>windows-exe</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                        <artifactId>launch4j-maven-plugin</artifactId>
+                        <version>2.5.0</version>
+                        <executions>
+                            <execution>
+                                <id>l4j-create-experiment</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>launch4j</goal>
+                                </goals>
+                                <configuration>
+                                    <outfile>${project.build.directory}/${app.name}.exe</outfile>
+                                    <jar>${fat.jar}</jar>
+                                    <dontWrapJar>false</dontWrapJar>
+                                    <icon>${project.build.directory}/../src/main/resources/icons/paint-create-experiment.ico</icon>
+                                    <jre>
+                                        <minVersion>1.8.0</minVersion>
+                                    </jre>
+                                    <classPath>
+                                        <mainClass>createexperiment.CreateExperimentUI</mainClass>
+                                    </classPath>
+                                    <headerType>gui</headerType>
+                                    <errTitle>${app.name}</errTitle>
+                                    <versionInfo>
+                                        <fileVersion>1.0.0.0</fileVersion>
+                                        <txtFileVersion>${project.version}</txtFileVersion>
+                                        <productVersion>1.0.0.0</productVersion>
+                                        <txtProductVersion>${project.version}</txtProductVersion>
+                                        <fileDescription>${project.description}</fileDescription>
+                                        <productName>${app.name}</productName>
+                                        <companyName>Glyco-PAINT</companyName>
+                                    </versionInfo>
+                                </configuration>
                             </execution>
 
                         </executions>
