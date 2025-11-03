@@ -1,91 +1,69 @@
-name: Build, Release, and Publish Site
+name: Glyco-PAINT Release
 
 on:
   push:
-    branches:
-      - main          # ✅ Rebuild site when pushing to main
     tags:
-      - 'v*.*.*'      # ✅ Also build & release when tagging versions
-
-permissions:
-  contents: write  # Needed for gh-pages + releases
+      - "v*.*.*"  # Triggers only on version tags (e.g. v1.0.0)
 
 jobs:
-  build:
-    if: startsWith(github.ref, 'refs/tags/v')  # Only run full release job for version tags
-    name: Build and Release JARs
-    runs-on: ubuntu-latest
-
+  build-macos:
+    name: Build macOS Apps
+    runs-on: macos-latest
     steps:
-      # 1️⃣ Checkout (read-only, no credentials)
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
+      - uses: actions/checkout@v4
 
-      # 2️⃣ Setup Java 8
       - name: Set up JDK 8
         uses: actions/setup-java@v4
         with:
-          java-version: '8'
-          distribution: 'temurin'
+          distribution: temurin
+          java-version: 8
 
-      # 3️⃣ Build with Maven (skip Fiji copy)
-      - name: Build with Maven
-        run: mvn -B clean package -DskipTests -Dskip.fiji.copy=true
+      - name: Build macOS version
+        run: ./shell-scripts/release-manager.sh --dry-run  # remove --dry-run for real build
 
-      # 4️⃣ Collect all fat JARs for release
-      - name: Collect release JARs
-        run: |
-          mkdir -p release
-          find . -name "*-jar-with-dependencies.jar" -exec cp {} release/ \;
+  build-windows:
+    name: Build Windows Executables
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
 
-      # 5️⃣ Publish GitHub Release (attaches JARs)
-      - name: Publish GitHub Release
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 8
+
+      - name: Build Windows .exe files
+        run: mvn -B -Pwindows-exe -DskipTests clean package
+
+      - name: Upload EXEs as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-executables
+          path: |
+            paint-generate-squares/target/*.exe
+            paint-viewer/target/*.exe
+            paint-get-omero/target/*.exe
+            paint-create-experiment/target/*.exe
+
+  release:
+    name: Publish Release
+    needs: [build-macos, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Display collected artifacts
+        run: ls -R dist
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: release/*
-          generate_release_notes: true
+          files: dist/**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  site:
-    name: Build and Publish Maven Site
-    runs-on: ubuntu-latest
-
-    steps:
-      # 1️⃣ Checkout repo (fresh clone)
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      # 2️⃣ Set up Java 8
-      - name: Set up JDK 8
-        uses: actions/setup-java@v4
-        with:
-          java-version: '8'
-          distribution: 'temurin'
-
-      # 3️⃣ Generate Maven site
-      - name: Generate Maven Site
-        run: mvn -B clean site -DskipTests -Dskip.fiji.copy=true
-
-      # 4️⃣ Clean up old gh-pages worktree if needed
-      - name: Clean gh-pages worktree
-        run: |
-          echo "🧹 Cleaning up old gh-pages worktree if present..."
-          git worktree list | grep -q "gh-pages" && git worktree remove gh-pages --force || true
-          git branch -D gh-pages 2>/dev/null || true
-        continue-on-error: true
-
-      # 5️⃣ Publish site to GitHub Pages
-      - name: Publish site to gh-pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: ./target/site
-          force_orphan: true  # keep gh-pages branch clean

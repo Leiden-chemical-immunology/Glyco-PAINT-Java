@@ -84,16 +84,17 @@ In addition to these main apps, there are two simple utilities:
 
 There are multiple ways to install the Glyco-PAINT pipeline.  The easiest is through a self-extracting installer, likely called something like: Glyco-PAINT-Installer.sh.
 
-For an easy installation route, agree with the developers at Leiden LIC access to the OneDrive Glyco-PAINT distribution site.  Download the installer file (typically with a 500 MB size) to any folder on your computer (typically your ~/Downloads folder).  Open a terminal and execute the following commands
+For an easy installation route, agree with the developers at Leiden LIC access to the OneDrive Glyco-PAINT distribution site.  Download the installer file (typically with a 500 MB size) to any folder on your computer (typically your ~/Downloads folder).  Open a terminal and execute the following commands (replace the version number 0.0.1 for the actual version number).
 
 ```
 cd ~/Downloads
-./Glyco-PAINT-installer.sh
+chmod +x Glyco-PAINT-installer-0.0.1.sh
+./Glyco-PAINT-installer-0.0.1.sh
 ```
 
 The installer will create a directory Glyco-PAINT in the ~/Applications directory and copy the four apps (Generate Squares, Viewer, Get Omero and Create Experiment) to it and will subsequently attempt to copy the plugin jar to the Fiji plugins directory.  
 
-The jar name will be similar to **paint-fiji-plugin-0.0.3-SNAPSHOT-jar-with-dependencies.jar**.  The number sequence 0.0.3 will be incremented with subsequent releases.  The **SNAPSHOT** may be present, indicating this is a development version, or not, indicating a formal release version.
+The jar name will be similar to **paint-fiji-plugin-0.0.1-jar-with-dependencies.jar**.  The number sequence 0.0.1 will be incremented with subsequent releases.  There may be a **SNAPSHOT** present in the file name, indicating this is a development version..
 
 The Glyco-Paint apps can be started by simply clicking on them in the ~/Applications/Glyco-PAINT folder.  There is no good reason for it, but you can start the Glyco-PAINT apps also from the command line.  For that, you need to open the App bundles and locate the jar files in the Contents/Java directory.  For example, for Get Omero:
 
@@ -309,8 +310,7 @@ The results are stored in Experiment-level **Squares** files.
 
 The last step of Generate Squares is the compilation of **Squares**, **Tracks**, **Recordings** and **Experiment Info** information for all **Recordings** processed in project level files stored in the **Project Root**. 
 
-
-##Calculation of Tau
+## Calculation of Tau
 
 Tau is a measure used to characterise the distribution of track durations.  To calculate Tau, a frequency distribution is created from the track durations.  These durations are then ordered and fitted with a one-phase exponential decay curve to obtain the Tau value ([CalculateTau.java](https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java/blob/main/paint-shared-utils/src/main/java/paint/shared/utils/CalculateTau.java)).
 
@@ -423,6 +423,12 @@ A new feature in the Viewer is the option to view the original recording that wa
 
 <img src="./Pictures/play-recordings.png" alt="play-recordings" style="zoom:50%;" />
 
+## Export Image
+
+With the **Export Image** option you can export the currently shown image in a high resolution, RGB format to a png file.
+
+
+
 # Get Omero
 
 When you download images from Omero, individual files are stored in individual directories (see below). 
@@ -439,11 +445,13 @@ The **Create Experiment** utility helps you set up an Experiment Info file.
 
 
 
-<img src="./Pictures/create-experiment.png" alt="create-experiment" style="zoom:50%;" />
+<img src="./Pictures/create-experiment.png" alt="create-experiment" style="zoom: 33%;" />
 
 
 
 # Analysis in R
+
+The end resukt of the Glyco-PAINT pipeline is a set of **Squares**, **Tracks** and **Recordings** files in the **Project Root** directory. These files contain all information about the experiments conducted and the calculation  results. The files are in CSV format and can be read in for exampke with RStudio, to do R processing. 
 
 
 
@@ -473,7 +481,7 @@ Others are for supporting and development purposes:
 
 ## IDEA
 
-The development environment used is Jetbrain's IntelliJ IDEA.  It can be downloaded from the [IDEA](https://www.jetbrains.com/idea/) website.  For academic use, free licences to the professional edition can be obtained from the [Student Pack](https://www.jetbrains.com/academy/student-pack/) site.  It is not necessary to download IDEA for just running the pipeline, but it is recommended for reviewing the code.
+ Jetbrain's IntelliJ IDEA is used as the development environment. IDEA is a popular Java development environment and can be downloaded from the [IDEA](https://www.jetbrains.com/idea/) website.  For academic use, free licences to the professional edition can be obtained from the [Student Pack](https://www.jetbrains.com/academy/student-pack/) site.  It is not necessary to download IDEA for just running the pipeline, but it is recommended for reviewing the code.
 
 In the picture below, the IDEA environment for the Glyco-PAINT pipeline is shown.
 
@@ -488,4 +496,10 @@ and you select a folder on your hard drive where you want the code to be install
 With a clone, you get a copy of the published Glyco-PAINT source code.  With [Git] - [Pull] you can refresh the locally available code with the latest GitHub information.
 
 In the local environment you can experiment, browse code, debug code, change code as you please.  Uploading changes is possible but requires special authorisation.  
+
+
+
+## RStudio
+
+Analysis of the results can be done in many different ways. R has proven to be a particularly convenient tool to analyse Glyco-PAINT results. **RStudio** is  a popukar R develoopment environment and can be downloaded from the [RStudio](https://posit.co/download/rstudio-desktop/) website.  
 
