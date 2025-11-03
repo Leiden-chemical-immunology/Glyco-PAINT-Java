@@ -108,6 +108,7 @@ public class ViewerFrame extends JFrame
 
     private       RecordingAttributesPanel             attributesPanel;
     private       NavigationPanel                      navigationPanel;
+    private       RecordingControlsPanel               controlsPanel;
 
     private final CellAssignmentManager                assignmentManager = new CellAssignmentManager();
     private final SquareControlHandler                 controlHandler    = new SquareControlHandler();
@@ -116,6 +117,7 @@ public class ViewerFrame extends JFrame
 
     private final RecordingOverrideWriter              recordingOverrideWriter;
     private final SquareOverrideWriter                 squareOverrideWriter;
+    private       boolean                              moviePlaying      = false;
 
     /**
      * Constructs a {@code RecordingViewerFrame} that initializes and displays the complete
@@ -132,7 +134,6 @@ public class ViewerFrame extends JFrame
         this.recordingEntries        = new java.util.ArrayList<>(recordingEntries);
         this.recordingOverrideWriter = new RecordingOverrideWriter(project.getProjectRootPath());
         this.squareOverrideWriter    = new SquareOverrideWriter(project.getProjectRootPath());
-
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -161,7 +162,7 @@ public class ViewerFrame extends JFrame
 
         attributesPanel = new RecordingAttributesPanel();
         navigationPanel = new NavigationPanel(this);
-        RecordingControlsPanel controlsPanel = new RecordingControlsPanel(this);
+        controlsPanel   = new RecordingControlsPanel(this);
 
         // --- Build the main layout ---
         JPanel imagesInner = new JPanel(new GridLayout(1, 2, 15, 0));
@@ -334,6 +335,7 @@ public class ViewerFrame extends JFrame
             return;
         }
 
+        setActionButtonsEnabled(false);
         leftGridPanel.hideSquareInfoIfVisible();
         activeDialog = new RecordingFilterDialog(this, recordingEntries, allRecordingEntries, lastFilterCriteria);
         setGridEnabled(false); // 🔹 Disable grid interaction
@@ -341,6 +343,7 @@ public class ViewerFrame extends JFrame
         activeDialog.addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent e) {
                 setGridEnabled(true); // 🔹 Re-enable grid
+                setActionButtonsEnabled(true);
                 activeDialog = null;
             }
         });
@@ -394,6 +397,7 @@ public class ViewerFrame extends JFrame
             return;
         }
 
+        setActionButtonsEnabled(false);
         leftGridPanel.hideSquareInfoIfVisible();
         RecordingEntry current = recordingEntries.get(currentIndex);
 
@@ -413,6 +417,7 @@ public class ViewerFrame extends JFrame
         activeDialog.addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent e) {
                 setGridEnabled(true); // 🔹 Re-enable grid
+                setActionButtonsEnabled(true);  // ✅ Re-enable buttons
                 activeDialog = null;
             }
         });
@@ -430,17 +435,16 @@ public class ViewerFrame extends JFrame
             return;
         }
 
+        setActionButtonsEnabled(false);
         leftGridPanel.hideSquareInfoIfVisible();
         leftGridPanel.setSelectionEnabled(true);
         leftGridPanel.setInfoPopupsEnabled(false); // 🔸 keep selection, suppress info popups
 
         final JFrame owner = this;
         activeDialog = new CellAssignmentDialog(owner, new CellAssignmentDialog.Listener() {
-
             public void onAssign(int cellId) {
                 Map<Integer, Integer> userSelectedSquares =
                         assignmentManager.assignUserSelectedSquares(cellId, leftGridPanel);
-
                 RecordingEntry currentRecording = recordingEntries.get(currentIndex);
                 if (!userSelectedSquares.isEmpty()) {
                     squareOverrideWriter.writeSquareOverrides(currentRecording, userSelectedSquares);
@@ -462,6 +466,7 @@ public class ViewerFrame extends JFrame
             public void windowClosed(java.awt.event.WindowEvent e) {
                 leftGridPanel.setSelectionEnabled(false);
                 leftGridPanel.setInfoPopupsEnabled(true); // 🔸 re-enable popups
+                setActionButtonsEnabled(true);            // ✅ add this
                 activeDialog = null;
             }
         });
@@ -558,10 +563,10 @@ public class ViewerFrame extends JFrame
      * Performs validation of user selection and file presence before launching playback.
      * Errors and missing files are reported via dialog boxes.
      */
+
     @Override
     public void onPlayRecordingRequested() {
-        // Silently block playback while any dialog is open
-        if (activeDialog != null && activeDialog.isShowing()) {
+        if ((activeDialog != null && activeDialog.isShowing()) || moviePlaying) {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
@@ -569,11 +574,9 @@ public class ViewerFrame extends JFrame
         leftGridPanel.hideSquareInfoIfVisible();
 
         if (recordingEntries.isEmpty() || currentIndex < 0 || currentIndex >= recordingEntries.size()) {
-            PaintLogger.warnf("No recording selected to play.");
             JOptionPane.showMessageDialog(this,
                                           "No recording selected to play.",
-                                          "No Selection",
-                                          JOptionPane.WARNING_MESSAGE);
+                                          "No Selection", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -604,22 +607,107 @@ public class ViewerFrame extends JFrame
             return;
         }
 
-        Thread movieThread = new Thread(() -> {
+        // ✅ Disable buttons and grid while movie plays
+        setActionButtonsEnabled(false);
+        setGridEnabled(false);
+        moviePlaying = true;
+
+        new Thread(() -> {
             try {
+                SwingUtilities.invokeLater(() -> {
+                    setActionButtonsEnabled(false);
+                    setGridEnabled(false);
+                    moviePlaying = true;
+                });
+
+                // Launch movie playback
                 TiffMoviePlayer player = new TiffMoviePlayer();
                 player.playMovie(imagePath.toString());
-            } catch (Exception ex) {
-                PaintLogger.errorf("Error playing recording: %s", ex.getMessage());
-                ex.printStackTrace();
-            }
-        }, "MoviePlayerThread");
 
-        movieThread.setDaemon(true);
-        movieThread.start();
+                // --- Fiji / ImageJ window tracking (instant response) ---
+                String expectedTitle = imagePath.getFileName().toString();
+
+                // Log all currently open window titles for debugging
+                PaintLogger.infof("Currently open ImageJ windows BEFORE tracking:");
+                for (Window w : Window.getWindows()) {
+                    String title = w instanceof Frame ? ((Frame) w).getTitle()
+                            : (w instanceof Dialog ? ((Dialog) w).getTitle() : null);
+                    if (title != null && !title.trim().isEmpty()) {
+                        PaintLogger.infof("  • " + title);
+                    }
+                }
+
+                Window targetWindow = null;
+
+                // Wait up to 10 s for the actual movie window to appear
+                for (int i = 0; i < 40 && targetWindow == null; i++) {
+                    Thread.sleep(250);
+                    for (Window w : Window.getWindows()) {
+                        String title = w instanceof Frame ? ((Frame) w).getTitle()
+                                : (w instanceof Dialog ? ((Dialog) w).getTitle() : null);
+                        if (title != null && title.contains(expectedTitle)) {
+                            targetWindow = w;
+                            break;
+                        }
+                    }
+                }
+
+                if (targetWindow != null) {
+                    PaintLogger.infof("Tracking movie window: %s", targetWindow.getClass().getSimpleName());
+
+                    // Add a direct listener — instant re-enable on close
+                    Window finalTarget = targetWindow;
+                    finalTarget.addWindowListener(new java.awt.event.WindowAdapter() {
+                        @Override
+                        public void windowClosed(java.awt.event.WindowEvent e) {
+                            SwingUtilities.invokeLater(() -> {
+                                moviePlaying = false;
+                                setGridEnabled(true);
+                                setActionButtonsEnabled(true);
+                            });
+                        }
+
+                        @Override
+                        public void windowClosing(java.awt.event.WindowEvent e) {
+                            SwingUtilities.invokeLater(() -> {
+                                moviePlaying = false;
+                                setGridEnabled(true);
+                                setActionButtonsEnabled(true);
+                            });
+                        }
+                    });
+
+                    // Backup poll in case window closes silently
+                    while (targetWindow.isDisplayable()) {
+                        Thread.sleep(200);
+                    }
+
+                    PaintLogger.infof("Movie window closed — UI re-enabled.");
+                } else {
+                    PaintLogger.warnf("Movie window for '%s' not detected — assuming playback finished.", expectedTitle);
+                }
+
+            } catch (Exception ex) {
+                PaintLogger.errorf("Error during movie playback: %s", ex.getMessage());
+            } finally {
+                SwingUtilities.invokeLater(() -> {
+                    moviePlaying = false;
+                    setGridEnabled(true);
+                    setActionButtonsEnabled(true);
+                });
+            }
+        }, "MovieMonitorThread").start();
+
         PaintLogger.infof("Playing recording: %s / %s", experimentName, recordingName);
     }
 
     private void setGridEnabled(boolean enabled) {
         leftGridPanel.setInteractionEnabled(enabled);  // we'll add this method below if it doesn’t exist
+    }
+
+    private void setActionButtonsEnabled(boolean enabled) {
+        if (controlsPanel != null) {
+            controlsPanel.setButtonsEnabled(enabled);
+        }
     }
 }

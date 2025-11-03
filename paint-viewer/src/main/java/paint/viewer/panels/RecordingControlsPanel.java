@@ -53,23 +53,20 @@ public class RecordingControlsPanel {
      */
     public interface Listener {
         void onFilterRequested();
-
         void onSelectSquaresRequested();
-
         void onAssignCellsRequested();
-
         void onPlayRecordingRequested();
-
         void onBordersToggled(boolean showBorders);
-
         void onShadingToggled(boolean showShading);
-
         void onNumberModeChanged(SquareGridPanel.NumberMode mode);
-
         void onApplySquareControl(String scope, SquareControlParams params);
     }
 
-    private final JPanel root;
+    private final JPanel  root;
+    private       JButton filterRecordingsButton;
+    private       JButton selectSquaresButton;
+    private       JButton assignCellsButton;
+    private       JButton playRecordingButton;
 
     /**
      * Constructs a {@code RecordingControlsPanel} providing buttons, checkboxes,
@@ -78,6 +75,8 @@ public class RecordingControlsPanel {
      * @param listener the {@link Listener} that handles user actions
      */
     public RecordingControlsPanel(final Listener listener) {
+
+
         root = new JPanel(new BorderLayout());
         root.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
@@ -89,12 +88,12 @@ public class RecordingControlsPanel {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
         // === Action buttons ===
-        JButton filterButton = new JButton("Filter Recordings");
-        JButton squareButton = new JButton("Select Squares");
-        JButton cellButton   = new JButton("Assign Cells");
-        JButton playButton   = new JButton("Play Recording");
+        filterRecordingsButton = new JButton("Filter Recordings");
+        selectSquaresButton    = new JButton("Select Squares");
+        assignCellsButton      = new JButton("Assign Cells");
+        playRecordingButton    = new JButton("Play Recording");
 
-        for (JButton b : new JButton[]{filterButton, squareButton, cellButton, playButton}) {
+        for (JButton b : new JButton[]{filterRecordingsButton, selectSquaresButton, assignCellsButton, playRecordingButton}) {
             b.setAlignmentX(Component.CENTER_ALIGNMENT);
             b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28)); // stretch horizontally
         }
@@ -105,13 +104,13 @@ public class RecordingControlsPanel {
         controls.setAlignmentX(Component.LEFT_ALIGNMENT);
         controls.setMaximumSize(new Dimension(Integer.MAX_VALUE, controls.getPreferredSize().height));
 
-        controls.add(filterButton);
+        controls.add(filterRecordingsButton);
         controls.add(Box.createVerticalStrut(10));
-        controls.add(squareButton);
+        controls.add(selectSquaresButton);
         controls.add(Box.createVerticalStrut(10));
-        controls.add(cellButton);
+        controls.add(assignCellsButton);
         controls.add(Box.createVerticalStrut(10));
-        controls.add(playButton);
+        controls.add(playRecordingButton);
 
         // === Borders and shading toggles ===
         JCheckBox showBorders = new JCheckBox("Show borders", true);
@@ -148,15 +147,15 @@ public class RecordingControlsPanel {
         numbers.add(square);
 
         // === Action listeners ===
-        filterButton.addActionListener(e -> listener.onFilterRequested());
-        squareButton.addActionListener(e -> listener.onSelectSquaresRequested());
-        cellButton.addActionListener(  e -> listener.onAssignCellsRequested());
-        playButton.addActionListener(  e -> listener.onPlayRecordingRequested());
-        showBorders.addActionListener( e -> listener.onBordersToggled(showBorders.isSelected()));
-        showShading.addActionListener( e -> listener.onShadingToggled(showShading.isSelected()));
-        none.addActionListener(        e -> listener.onNumberModeChanged(SquareGridPanel.NumberMode.NONE));
-        label.addActionListener(       e -> listener.onNumberModeChanged(SquareGridPanel.NumberMode.LABEL));
-        square.addActionListener(      e -> listener.onNumberModeChanged(SquareGridPanel.NumberMode.SQUARE));
+        filterRecordingsButton.addActionListener(e -> listener.onFilterRequested());
+        selectSquaresButton.addActionListener(   e -> listener.onSelectSquaresRequested());
+        assignCellsButton.addActionListener(     e -> listener.onAssignCellsRequested());
+        playRecordingButton.addActionListener(   e -> listener.onPlayRecordingRequested());
+        showBorders.addActionListener(           e -> listener.onBordersToggled(showBorders.isSelected()));
+        showShading.addActionListener(           e -> listener.onShadingToggled(showShading.isSelected()));
+        none.addActionListener(                  e -> listener.onNumberModeChanged(SquareGridPanel.NumberMode.NONE));
+        label.addActionListener(                 e -> listener.onNumberModeChanged(SquareGridPanel.NumberMode.LABEL));
+        square.addActionListener(                e -> listener.onNumberModeChanged(SquareGridPanel.NumberMode.SQUARE));
 
         // === Layout order ===
         content.add(controls);
@@ -176,5 +175,12 @@ public class RecordingControlsPanel {
      */
     public JComponent getComponent() {
         return root;
+    }
+
+    public void setButtonsEnabled(boolean enabled) {
+        filterRecordingsButton.setEnabled(enabled);
+        selectSquaresButton.setEnabled(enabled);
+        assignCellsButton.setEnabled(enabled);
+        playRecordingButton.setEnabled(enabled);
     }
 }
