@@ -162,7 +162,9 @@ jobs:
       # 🗜️ Zip Windows executables
       - name: Zip Windows executables
         run: |
-          for /f "delims=v" %%v in ("%GITHUB_REF_NAME%") do set VERSION=%%v
+          echo "Determining version from Git tag..."
+          for /f %%v in ('powershell -Command "$env:GITHUB_REF_NAME -replace \"^v\", \"\""') do set VERSION=%%v
+          echo Version is %VERSION%
           echo "Zipping Windows executables into Glyco-PAINT-Builds/dist/Windows..."
           mkdir Glyco-PAINT-Builds\dist 2>nul
           mkdir Glyco-PAINT-Builds\dist\Windows 2>nul
@@ -173,8 +175,16 @@ jobs:
 
       - name: Upload Windows artifacts
         run: |
-          mkdir -p dist-upload/windows
-          copy Glyco-PAINT-Builds\dist\Windows\* dist-upload\windows\
+          echo "Preparing upload directory..."
+          if not exist dist-upload mkdir dist-upload
+          if not exist dist-upload\windows mkdir dist-upload\windows
+          if exist Glyco-PAINT-Builds\dist\Windows\* (
+            copy Glyco-PAINT-Builds\dist\Windows\* dist-upload\windows\
+            dir Glyco-PAINT-Builds\dist\Windows
+            dir dist-upload\windows
+          ) else (
+            echo "⚠️ No Windows build files found to upload."
+          )
         shell: cmd
 
       - name: Upload Windows build artifacts
