@@ -51,21 +51,28 @@ jobs:
 
       - name: Zip macOS build for distribution
         run: |
-          VERSION=$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout | sed 's/-SNAPSHOT//')
-          echo "📦 Detected Maven build version: $VERSION"
-          mkdir -p ../Glyco-PAINT-Builds/build/macOS ../Glyco-PAINT-Builds/dist/macOS
-          BUILD_DIR="../Glyco-PAINT-Builds/build/macOS/Glyco-PAINT-${VERSION}"
-          DIST_ZIP="../Glyco-PAINT-Builds/dist/macOS/Glyco-PAINT-macOS-${VERSION}.zip"
-          if [ -d "$BUILD_DIR" ]; then
-            cd ../Glyco-PAINT-Builds/build/macOS || exit 1
-            zip -qry "$DIST_ZIP" "Glyco-PAINT-${VERSION}"
-            echo "✅ Created $DIST_ZIP"
-          else
-            echo "❌ ERROR: Expected build folder $BUILD_DIR not found!"
-            ls -R ../Glyco-PAINT-Builds/build || true
+          echo "Detecting latest Glyco-PAINT build in ../Glyco-PAINT-Builds/build/macOS..."
+          BASE_DIR="${GITHUB_WORKSPACE}/../Glyco-PAINT-Builds"
+          LATEST_BUILD=$(ls -td "${BASE_DIR}/build/macOS/Glyco-PAINT-"* | head -n 1)
+
+          if [ -z "$LATEST_BUILD" ]; then
+            echo "❌ ERROR: No build directories found!"
             exit 1
           fi
-          ls -lh ../Glyco-PAINT-Builds/dist/macOS/
+
+          VERSION=$(basename "$LATEST_BUILD" | sed 's/Glyco-PAINT-//')
+          DIST_DIR="${BASE_DIR}/dist/macOS"
+          DIST_ZIP="${DIST_DIR}/Glyco-PAINT-macOS-${VERSION}.zip"
+
+          echo "📦 Found latest build: $LATEST_BUILD"
+          echo "Zipping to: $DIST_ZIP"
+          mkdir -p "$DIST_DIR"
+
+          cd "${BASE_DIR}/build/macOS" || exit 1
+          zip -qry "$DIST_ZIP" "Glyco-PAINT-${VERSION}"
+
+          echo "✅ Created $DIST_ZIP"
+          ls -lh "$DIST_DIR"
         shell: bash
 
       - name: Upload macOS build artifacts
