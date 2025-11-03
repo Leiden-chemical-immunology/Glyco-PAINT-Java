@@ -23,7 +23,7 @@ jobs:
 
       # 🧱 Build macOS release using the local release-manager script
       - name: Build macOS version
-        run: ./shell-scripts/release-manager.sh
+        run: ./shell-scripts/integrated-release-manager.sh
         env:
           GITHUB_ACTIONS: true
 
