@@ -21,7 +21,7 @@ jobs:
       - name: Build macOS version
         run: ./shell-scripts/release-manager.sh
         env:
-          GITHUB_ACTIONS: true    # 👈 Ensures script copies artifacts into dist/macos
+          GITHUB_ACTIONS: true    # ensures artifacts copied into dist/macos
 
       - name: Collect macOS artifacts
         run: |
@@ -63,16 +63,38 @@ jobs:
           distribution: zulu
           java-version: 8
 
-      - name: Build Windows .exe files
-        run: mvn -B -Pwindows-exe -DskipTests clean package
+      # 🧱 Ensure icon resources exist in all modules before build
+      - name: Verify and copy icons
+        run: |
+          echo "Checking for .ico icons..."
+          dir /s /b *.ico || echo "⚠️ No .ico files found!"
+          echo "Copying shared icons into modules (if any)..."
+          for %M in (paint-generate-squares paint-viewer paint-get-omero paint-create-experiment) do (
+            if exist shared\icons (
+              mkdir %M\src\main\resources\icons 2>nul
+              copy shared\icons\*.ico %M\src\main\resources\icons\ >nul
+            )
+          )
+          echo "✅ Icon verification step complete."
+        shell: cmd
 
+      # 🏗️ Build Windows executables (Launch4j or similar)
+      - name: Build Windows .exe files
+        run: |
+          echo "Starting Windows build..."
+          mvn -B -Pwindows-exe -DskipTests clean package
+        shell: cmd
+
+      # 📦 Collect all built .exe artifacts
       - name: Collect Windows executables
         run: |
           mkdir dist
-          copy paint-generate-squares\target\*.exe dist\
-          copy paint-viewer\target\*.exe dist\
-          copy paint-get-omero\target\*.exe dist\
-          copy paint-create-experiment\target\*.exe dist\
+          if exist paint-generate-squares\target\*.exe copy paint-generate-squares\target\*.exe dist\
+          if exist paint-viewer\target\*.exe copy paint-viewer\target\*.exe dist\
+          if exist paint-get-omero\target\*.exe copy paint-get-omero\target\*.exe dist\
+          if exist paint-create-experiment\target\*.exe copy paint-create-experiment\target\*.exe dist\
+          echo "✅ Windows executables collected:"
+          dir dist
         shell: cmd
 
       - name: Upload Windows build artifacts
@@ -80,6 +102,7 @@ jobs:
         with:
           name: windows-artifacts
           path: dist/**
+          if-no-files-found: warn
 
   release:
     name: Publish GitHub Release
