@@ -3,7 +3,7 @@ name: Glyco-PAINT Release
 on:
   push:
     tags:
-      - "v*.*.*"  # Triggers only on version tags (e.g. v1.0.0)
+      - "v*.*.*"   # Trigger only when a version tag is pushed (e.g. v0.0.15)
 
 jobs:
   build-macos:
@@ -16,10 +16,21 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 8
+          java-version: 8.0.392+8
 
       - name: Build macOS version
-        run: ./shell-scripts/release-manager.sh --dry-run  # remove --dry-run for real build
+        run: ./shell-scripts/release-manager.sh
+
+      - name: Collect macOS artifacts
+        run: |
+          mkdir -p dist/macos
+          cp -r ../Glyco-PAINT-builds/dist/* dist/macos/ || true
+
+      - name: Upload macOS build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-artifacts
+          path: dist/macos/**
 
   build-windows:
     name: Build Windows Executables
@@ -31,23 +42,28 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 8
+          java-version: 8.0.392+8
 
       - name: Build Windows .exe files
         run: mvn -B -Pwindows-exe -DskipTests clean package
 
-      - name: Upload EXEs as artifacts
+      - name: Collect Windows executables
+        run: |
+          mkdir dist
+          copy paint-generate-squares\target\*.exe dist\
+          copy paint-viewer\target\*.exe dist\
+          copy paint-get-omero\target\*.exe dist\
+          copy paint-create-experiment\target\*.exe dist\
+        shell: cmd
+
+      - name: Upload Windows build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: windows-executables
-          path: |
-            paint-generate-squares/target/*.exe
-            paint-viewer/target/*.exe
-            paint-get-omero/target/*.exe
-            paint-create-experiment/target/*.exe
+          name: windows-artifacts
+          path: dist/**
 
   release:
-    name: Publish Release
+    name: Publish GitHub Release
     needs: [build-macos, build-windows]
     runs-on: ubuntu-latest
     steps:
@@ -65,5 +81,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist/**
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
