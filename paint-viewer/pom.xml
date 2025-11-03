@@ -57,7 +57,7 @@
     <!-- Application properties                                         -->
     <!-- =============================================================== -->
     <properties>
-        <project.build.outputTimestamp>2025-11-03T17:13:35Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-11-03T17:19:36Z</project.build.outputTimestamp>
         <app.name>Viewer</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-viewer.icns</app.icon.macos>
