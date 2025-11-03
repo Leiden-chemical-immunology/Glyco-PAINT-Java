@@ -201,7 +201,6 @@ say "  Dist:  $DIST_DIR"
 # Product + repo metadata for filenames and tagging
 # ------------------------------------------------------------------------------
 PRODUCT_NAME="Glyco-PAINT"   # Used for ZIP/installer naming and top-level dir in payload
-SAFE_NAME="${PRODUCT_NAME}"  # Keep as-is (spaces not used in PRODUCT_NAME)
 ORG_REPO="${ORG_REPO:-Leiden-chemical-immunology/Glyco-PAINT-Java}"
 GIT_TAG_PREFIX="v"
 
@@ -504,7 +503,31 @@ say "Installer created."
 #   and the annotated tag reach the remote.
 # ------------------------------------------------------------------------------
 TAG="${GIT_TAG_PREFIX}${RELEASE_VERSION}"
-say "Tagging release as ${TAG}..."
+
+# ------------------------------------------------------------------------------
+# Optional safety check: warn if this tag already exists remotely on GitHub
+# ------------------------------------------------------------------------------
+if command -v curl >/dev/null 2>&1; then
+  GITHUB_API="https://api.github.com/repos/${ORG_REPO}/releases/tags/${TAG}"
+  if curl -s -f -o /dev/null "$GITHUB_API"; then
+    warn "⚠️  A GitHub release for tag ${TAG} already exists!"
+    warn "    You may be re-publishing an existing version."
+    warn "    Consider bumping the version or deleting the old release first."
+    sleep 10
+  fi
+fi
+
+say "Preparing Git tag: ${TAG}"
+
+# Check if the tag already exists
+say "🔁 Ensuring tag ${TAG} is fresh before release."
+if git rev-parse "$TAG" >/dev/null 2>&1; then
+  warn "Tag ${TAG} already exists — removing old tag before recreating it."
+  run git tag -d "$TAG" || true
+  run git push origin ":refs/tags/${TAG}" || true
+fi
+
+say "Creating new tag ${TAG}..."
 run git tag -a "$TAG" -m "Release ${RELEASE_VERSION}"
 
 # In CI, we may be in a detached HEAD; push only the tag if main is missing
