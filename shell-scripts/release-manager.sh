@@ -1,294 +1,536 @@
-#!/usr/bin/env bash
-set -euo pipefail
-
+#!/opt/homebrew/bin/bash
 ###############################################################################
 # release-manager.sh
 #
 # PURPOSE:
-#   Unified release management script for multi-module Maven + Git + GitHub projects.
-#   Handles version bumping, tagging, changelog updates, and GitHub release creation.
+#   Automates the full Glyco-PAINT release process — from building all modules
+#   to packaging the applications, creating the installer, tagging the release,
+#   pushing to GitHub, and bumping the Maven version to the next -SNAPSHOT.
 #
 # USE CASE:
-#   Run this when you’re ready to publish a new release version or correct an existing one.
-#   It automates Maven version updates, Git commits, tagging, and triggers GitHub Actions
-#   for building, packaging, and publishing release artifacts and Maven sites.
+#   Run this script from the repository root whenever you are ready to publish
+#   a new version of Glyco-PAINT. It produces both a distributable .zip archive
+#   and a self-extracting Bash installer, then triggers GitHub Actions to
+#   publish the release and Maven site automatically.
 #
 # ACTIONS PERFORMED:
-#   1  Validates that your working tree is clean
-#   2  Updates Maven POM versions to the release version
-#   3  Commits and tags the release in Git
-#   4  Pushes the tag to GitHub (automatically triggers GitHub Actions)
-#   5  Optionally deletes or re-creates existing releases and tags
-#   6  Bumps project version to the next SNAPSHOT after release
-#
-# SUBCOMMANDS:
-#   create [VERSION]     Create a new release (triggers GitHub Actions build + site deploy)
-#   delete <TAG>         Delete a GitHub release and its tags (local + remote)
-#   recreate <TAG>       Delete and immediately re-create the specified release
+#   1  Validates environment (Bash≥4 via /opt/homebrew/bin/bash, Maven, zip, base64)
+#   2  Reads current Maven version and resolves release version (CLI arg or POM)
+#   3  Sets all modules to the release version (drops -SNAPSHOT)
+#   4  Builds fat JARs for all modules
+#   5  Stages apps + Fiji plugin outside the repo to avoid tracking large artifacts
+#   6  Creates versioned ZIP and a self-extracting installer (.sh)
+#   7  Creates + pushes a Git tag (v<version>) to trigger GitHub Actions
+#   8  Bumps all modules to next <x.y.(z+1)>-SNAPSHOT and pushes to main
 #
 # USAGE:
-#   ./shell-scripts/release-manager.sh create --execute 1.2.0
-#   ./shell-scripts/release-manager.sh delete --execute 1.2.0
-#   ./shell-scripts/release-manager.sh recreate --execute 1.2.0
-#
-# OPTIONS:
-#   --execute, -x   Run for real (default is dry-run)
-#   --help, -h      Show help
+#   chmod +x release-manager.sh
+#   ./release-manager.sh <version>
+#   ./release-manager.sh --dry-run
 #
 # REQUIREMENTS:
-#   - Git installed and configured
-#   - Maven installed and on PATH
-#   - GitHub CLI (`gh`) installed and authenticated (for deleting GitHub releases)
-#   - GitHub Actions configured to build and publish on tag push (v*.*.*)
+#   - macOS with Homebrew Bash (Bash 5+, path used here: /opt/homebrew/bin/bash)
+#   - Java 8 + Maven installed
+#   - zip, base64, rsync, xattr available
+#   - Git remote "origin" configured with push access
 #
-# SAFETY FEATURES:
-#   - Runs in DRY-RUN mode by default (no file or tag changes)
-#   - Confirms before performing destructive actions
-#   - Aborts automatically if uncommitted changes are detected
-#   - Never pushes or deletes tags without explicit confirmation
-#
-# RESULT:
-#   - New release tag pushed → triggers GitHub Actions to:
-#       • Build and attach release JARs
-#       • Publish a GitHub Release with notes
-#       • Rebuild and deploy the Maven site to GitHub Pages
-#   - Local POMs bumped to the next SNAPSHOT version
-#
-# WHERE TO CHECK RESULTS:
-#   🔹 GitHub Releases:
-#        https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java/releases
-#        → Verify that the new release appears with attached JARs and notes
-#
-#   🔹 GitHub Actions (CI/CD logs):
-#        https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java/actions
-#        → Confirm that the “Build, Release, and Publish Site” workflow ran successfully
-#
-#   🔹 GitHub Pages (Maven site):
-#        https://leiden-chemical-immunology.github.io/Glyco-PAINT-Java/
-#        → Confirm that the site updated with the new project documentation
+# SAFETY / DESIGN CHOICES:
+#   - set -euo pipefail: fail-hard on any error, undefined var, or pipe error
+#   - All build outputs live OUTSIDE the repository (../Glyco-PAINT-Builds/*)
+#     to avoid bloating history / hitting GitHub size limits.
+#   - The installer carries the ZIP payload and can install the Fiji plugin
+#     into standard Fiji.app locations (~/Applications, /Applications).
 ###############################################################################
 
-export GIT_EDITOR=true
-export EDITOR=true
-export VISUAL=true
+set -euo pipefail
 
-MAVEN_JAVA_HOME="$({ /usr/libexec/java_home -v 21 2>/dev/null || true; })"
-[ -n "$MAVEN_JAVA_HOME" ] && export JAVA_HOME="$MAVEN_JAVA_HOME"
+# --- Always start from repo root (script may be run from subfolders) ----------
+cd "$(dirname "$0")/.."
 
-export MAVEN_OPTS="${MAVEN_OPTS:-} --add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED"
-export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:-} --add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED"
+# ------------------------------------------------------------------------------
+# CLI flags
+#   --dry-run : simulate actions, do not change files or push
+# ------------------------------------------------------------------------------
+DRY_RUN=false
+if [[ "${1:-}" == "--dry-run" ]]; then
+  DRY_RUN=true
+  shift
+fi
 
-MVN_CMD="mvn"
-MAIN_BRANCH="main"
-DRY_RUN=true
-SHOW_DIFF=true
+# ------------------------------------------------------------------------------
+# Logging helpers
+#   say: pretty info line
+#   err: hard error + exit
+#   run: wrapper to honor DRY_RUN (echo command instead of executing)
+# ------------------------------------------------------------------------------
+say() {
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "(dry-run) ==> $*"
+  else
+    printf "\033[1;32m==>\033[0m %s\n" "$*"
+  fi
+}
 
-cd "$(dirname "$0")/.." || exit 1
+err() {
+  printf "\033[1;31mERROR:\033[0m %s\n" "$*" >&2
+  exit 1
+}
 
-say() { printf "%s\n" "$*"; }
-warn() { printf "⚠️  %s\n" "$*" >&2; }
-die() { printf "❌ %s\n" "$*" >&2; exit 1; }
+warn() {
+  printf "\033[1;33mWARN:\033[0m %s\n" "$*"
+}
 
 run() {
-  echo "👉 $*"
-  if [ "$DRY_RUN" = false ]; then "$@"; fi
-}
-
-commit_if_needed() {
-  local msg="$1"
-  if [ -n "$(git status --porcelain)" ]; then
-    run git add -u
-    run git commit -m "$msg" --no-edit --quiet
+  if [[ "$DRY_RUN" == true ]]; then
+    say "(dry-run) Would run: $*"
+  else
+    "$@"
   fi
 }
 
-require_clean_worktree() {
-  if [ -n "$(git status --porcelain)" ]; then
-    die "Working tree not clean. Commit or stash changes first."
+# ------------------------------------------------------------------------------
+# Maven helpers (declared early so we can use them in the banner too)
+# ------------------------------------------------------------------------------
+get_version() {
+  # Try with daemon cleanup disabled first (avoids occasional hangs),
+  # fall back to default evaluate if that fails.
+  mvn -q -Dexec.cleanupDaemonThreads=false help:evaluate -Dexpression=project.version -DforceStdout 2>/dev/null \
+    || mvn -q help:evaluate -Dexpression=project.version -DforceStdout
+}
+
+next_snapshot_value() {
+  # Computes x.y.(z+1)-SNAPSHOT for a given x.y.z (no output validation here)
+  local release="$1"
+  local major minor patch
+  IFS='.' read -r major minor patch <<< "${release}"
+  patch=$((patch + 1))
+  echo "${major}.${minor}.${patch}-SNAPSHOT"
+}
+
+# ------------------------------------------------------------------------------
+# Git / Maven context for the runtime banner
+#   - Detect branch and remote URL (normalize to org/repo)
+#   - Resolve current and next-SNAPSHOT versions from Maven
+# ------------------------------------------------------------------------------
+GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo main)"
+GIT_REMOTE_URL="$(git config --get remote.origin.url 2>/dev/null || echo "")"
+
+if [[ -z "$GIT_REMOTE_URL" ]]; then
+  # Fallback (keeps banner useful even if no remote is set)
+  GIT_REMOTE_SHORT="Leiden-chemical-immunology/Glyco-PAINT-Java"
+  GIT_REMOTE_URL="https://github.com/${GIT_REMOTE_SHORT}.git"
+else
+  # Normalize ssh/https URL into "org/repo" form.
+  # Examples:
+  #   git@github.com:org/repo.git  -> org/repo
+  #   https://github.com/org/repo  -> org/repo
+  GIT_REMOTE_SHORT="$(echo "$GIT_REMOTE_URL" | sed -E 's#(git@|https://)([^/:]+)[:/]([^/.]+/[^.]+)(\.git)?#\3#')"
+fi
+
+CURRENT_VERSION="$(get_version || true)"
+if [[ "$CURRENT_VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
+  NEXT_SNAPSHOT="$(next_snapshot_value "${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}")"
+else
+  NEXT_SNAPSHOT="unknown"
+fi
+
+# ------------------------------------------------------------------------------
+# Runtime banner (developer-focused, shows what will happen and where)
+# ------------------------------------------------------------------------------
+clear
+echo "==============================================================================="
+echo "   Glyco-PAINT Release Manager"
+echo "==============================================================================="
+echo "  Automates building, packaging, tagging, and publishing releases"
+echo "  for the Glyco-PAINT suite (apps + Fiji plugin)."
+echo ""
+echo "  • Creates versioned .zip and self-extracting installer"
+echo "  • Tags and pushes to GitHub → triggers CI/CD release workflow"
+echo "  • Bumps all Maven modules to next -SNAPSHOT version"
+echo ""
+echo "  Current Maven project version : ${CURRENT_VERSION}"
+echo "  Next development version      : ${NEXT_SNAPSHOT}"
+echo ""
+echo "  Active Git branch             : ${GIT_BRANCH}"
+echo "  Remote repository             : ${GIT_REMOTE_URL}"
+echo ""
+echo "  Relevant sites:"
+echo "    🔹 Repository   → https://github.com/${GIT_REMOTE_SHORT}"
+echo "    🔹 Actions      → https://github.com/${GIT_REMOTE_SHORT}/actions"
+echo "    🔹 Releases     → https://github.com/${GIT_REMOTE_SHORT}/releases"
+echo "    🔹 Maven site   → https://${GIT_REMOTE_SHORT/github.io\//}.github.io/${GIT_REMOTE_SHORT#*/}/"
+echo "    🔹 Javadoc      → https://${GIT_REMOTE_SHORT/github.io\//}.github.io/${GIT_REMOTE_SHORT#*/}/apidocs/"
+echo "==============================================================================="
+echo ""
+sleep 5
+
+# ------------------------------------------------------------------------------
+# Build outputs are staged OUTSIDE the repo to avoid tracking artifacts
+# ------------------------------------------------------------------------------
+ROOT_DIR="$(pwd)"
+OUTSIDE_ROOT="${OUTSIDE_ROOT:-${ROOT_DIR}/../Glyco-PAINT-Builds}"
+APP_TEMPLATES_DIR="${APP_TEMPLATES_DIR:-apps}"
+
+# macOS paths
+STAGE_ROOT="${OUTSIDE_ROOT}/build/macOS"
+DIST_DIR="${OUTSIDE_ROOT}/dist/macOS"
+
+# Guard: never let OUTSIDE_ROOT collapse to repo root (accidental recursion)
+if [[ "$OUTSIDE_ROOT" == "$ROOT_DIR" ]]; then
+  err "Build paths cannot point inside the repo! Set OUTSIDE_ROOT to a directory outside the repo."
+fi
+
+# Create staging/packing folders
+run mkdir -p "$STAGE_ROOT" "$DIST_DIR"
+say "Output directories:"
+say "  Build: $STAGE_ROOT"
+say "  Dist:  $DIST_DIR"
+
+# ------------------------------------------------------------------------------
+# Product + repo metadata for filenames and tagging
+# ------------------------------------------------------------------------------
+PRODUCT_NAME="Glyco-PAINT"   # Used for ZIP/installer naming and top-level dir in payload
+SAFE_NAME="${PRODUCT_NAME}"  # Keep as-is (spaces not used in PRODUCT_NAME)
+ORG_REPO="${ORG_REPO:-Leiden-chemical-immunology/Glyco-PAINT-Java}"
+GIT_TAG_PREFIX="v"
+
+# ------------------------------------------------------------------------------
+# Map of modules → .app names, and modules → fat-jar glob patterns
+#   Note: these names must match what your module packaging produces.
+# ------------------------------------------------------------------------------
+declare -A APP_MAP
+APP_MAP["paint-generate-squares"]="Generate Squares.app"
+APP_MAP["paint-viewer"]="Viewer.app"
+APP_MAP["paint-get-omero"]="Get Omero.app"
+APP_MAP["paint-create-experiment"]="Create Experiment.app"
+
+declare -A JAR_PATTERN
+JAR_PATTERN["paint-generate-squares"]="paint-generate-squares-*-jar-with-dependencies.jar"
+JAR_PATTERN["paint-viewer"]="paint-viewer-*-jar-with-dependencies.jar"
+JAR_PATTERN["paint-get-omero"]="paint-get-omero-*-jar-with-dependencies.jar"
+JAR_PATTERN["paint-create-experiment"]="paint-create-experiment-*-jar-with-dependencies.jar"
+JAR_PATTERN["paint-fiji-plugin"]="paint-fiji-plugin-*-jar-with-dependencies.jar"
+
+# ------------------------------------------------------------------------------
+# Helper: resolve a single module's fat JAR path (errors out if not found)
+# ------------------------------------------------------------------------------
+resolve_one_jar() {
+  local module="$1"
+  local pattern="${JAR_PATTERN[$module]}"
+  local dir="$module/target"
+  [[ -d "$dir" ]] || err "Missing target dir for $module ($dir). Did build fail?"
+  local path
+  path=$(compgen -G "$dir/$pattern" | head -n1 || true)
+  [[ -n "${path:-}" ]] || err "Cannot find fat JAR for $module (pattern $pattern)"
+  echo "$path"
+}
+
+# ------------------------------------------------------------------------------
+# Environment sanity checks (before build)
+# ------------------------------------------------------------------------------
+command -v mvn     >/dev/null || err "Maven not found."
+command -v zip     >/dev/null || err "zip not found."
+command -v base64  >/dev/null || err "base64 not found."
+command -v rsync   >/dev/null || err "rsync not found."
+# xattr is macOS-specific; we gate its use later with command -v xattr
+
+if [[ ! -d "$APP_TEMPLATES_DIR" ]]; then
+  say "No shared app templates dir found ('$APP_TEMPLATES_DIR'); will use module-local .app bundles."
+fi
+
+# ------------------------------------------------------------------------------
+# Resolve release version:
+#   - If user passes an explicit version arg, use it.
+#   - Otherwise, drop '-SNAPSHOT' from the current Maven version.
+#   - Refuse to release if it still ends with '-SNAPSHOT'.
+# ------------------------------------------------------------------------------
+VERSION_ARG="${1:-}"
+CURRENT_VERSION="$(get_version)"
+[[ -n "$CURRENT_VERSION" ]] || err "Could not resolve current project.version"
+
+if [[ -n "$VERSION_ARG" ]]; then
+  RELEASE_VERSION="$VERSION_ARG"
+else
+  RELEASE_VERSION="${CURRENT_VERSION/-SNAPSHOT/}"
+fi
+
+say "Project version: $CURRENT_VERSION"
+say "Release version: $RELEASE_VERSION"
+
+if [[ "$RELEASE_VERSION" == *"-SNAPSHOT" ]]; then
+  err "Refusing to release a SNAPSHOT ($RELEASE_VERSION). Pass explicit clean version, e.g.: ./release-manager.sh 1.0.5"
+fi
+
+# ------------------------------------------------------------------------------
+# Update all modules to RELEASE version (remove -SNAPSHOT), no backup poms.
+#   NOTE: we do this in-tree; the commit/push happens later.
+# ------------------------------------------------------------------------------
+say "Setting Maven version to release: $RELEASE_VERSION"
+run mvn -q -DprocessAllModules versions:set -DnewVersion="$RELEASE_VERSION" -DgenerateBackupPoms=false
+
+# ------------------------------------------------------------------------------
+# Fast multi-module build (skip tests for speed, can toggle via flags)
+# ------------------------------------------------------------------------------
+say "Building all modules (fat jars)…"
+run mvn -T 1C -DskipTests clean package
+
+# ------------------------------------------------------------------------------
+# Stage apps + plugin into a single versioned folder ready for packaging
+#   Example: <OUTSIDE_ROOT>/build/Glyco-PAINT-0.0.5/
+# ------------------------------------------------------------------------------
+STAGE_DIR="$STAGE_ROOT/${PRODUCT_NAME}-${RELEASE_VERSION}"
+say "Staging into: $STAGE_DIR"
+run rm -rf "$STAGE_DIR" "$DIST_DIR"    # Start fresh
+run mkdir -p "$STAGE_DIR" "$DIST_DIR"
+
+# 1) Fiji plugin JAR
+
+say "Collecting Fiji plugin jar…"
+
+PLUGIN_JAR_DIR="paint-fiji-plugin/target"
+PLUGIN_JAR_PATTERN="paint-fiji-plugin-*-jar-with-dependencies.jar"
+
+# Only pick the one fat jar (never pick shared-utils or others)
+PLUGIN_JAR="$(find "$PLUGIN_JAR_DIR" -maxdepth 1 -type f -name "$PLUGIN_JAR_PATTERN" | head -n1 || true)"
+if [[ -z "$PLUGIN_JAR" ]]; then
+  err "Cannot find Fiji plugin fat jar matching pattern: $PLUGIN_JAR_PATTERN"
+fi
+
+run mkdir -p "$STAGE_DIR/plugin"
+
+# Defensive: remove any stale PAINT jars from a previous run in staging
+run find "$STAGE_DIR/plugin" -maxdepth 1 -type f -name 'paint-*.jar' -delete
+
+say "Copying only plugin jar: $(basename "$PLUGIN_JAR")"
+run cp -f "$PLUGIN_JAR" "$STAGE_DIR/plugin/"
+
+# Verify nothing else snuck in; if so, remove and warn
+mapfile -t EXTRA_JARS < <(find "$STAGE_DIR/plugin" -maxdepth 1 -type f -name 'paint-*.jar' \
+  ! -name 'paint-fiji-plugin-*-jar-with-dependencies.jar' 2>/dev/null || true)
+if (( ${#EXTRA_JARS[@]} > 0 )); then
+  warn "Unexpected jars found in plugin staging; removing:"
+  printf '  - %s\n' "${EXTRA_JARS[@]}"
+  run rm -f "${EXTRA_JARS[@]}"
+fi
+
+# Keep ONLY the fat plugin jar; delete any stray jars (e.g., paint-shared-utils-*.jar)
+run find "$STAGE_DIR/plugin" -maxdepth 1 -type f -name 'paint-*.jar' \
+  ! -name 'paint-fiji-plugin-*-jar-with-dependencies.jar' -print -delete
+
+# 2) Each desktop app bundle + module fat JAR → drop JAR into app/Contents/Java/
+for module in "paint-generate-squares" "paint-viewer" "paint-get-omero" "paint-create-experiment"; do
+  app_name="${APP_MAP[$module]}"
+  module_app_dir="$module/target/$app_name"
+  src_app="$APP_TEMPLATES_DIR/$app_name"
+
+  if [[ -d "$module_app_dir" ]]; then
+    say "Found app bundle inside module: $module_app_dir"
+    src_app="$module_app_dir"
+  elif [[ -d "$src_app" ]]; then
+    say "Using shared app template: $src_app"
+  else
+    err "Missing app bundle for $module (looked in $module_app_dir and $src_app)"
   fi
-}
 
-ensure_on_main() {
-  local cur
-  cur=$(git rev-parse --abbrev-ref HEAD)
-  if [ "$cur" != "$MAIN_BRANCH" ]; then
-    warn "Switching to '$MAIN_BRANCH'..."
-    run git switch "$MAIN_BRANCH"
-  fi
-}
-
-confirm() {
-  local msg="$1"
-  read -rp "$msg (y/n): " ans
-  [ "$ans" = "y" ]
-}
-
-get_current_version() {
-  $MVN_CMD help:evaluate -Dexpression=project.version -q -DforceStdout
-}
-
-next_snapshot() {
-  local v="${1%%-*}" major minor patch
-  IFS='.' read -r major minor patch <<< "$v"
-  echo "${major}.${minor}.$((patch+1))-SNAPSHOT"
-}
-
-usage() {
-  cat <<EOF
-Usage:
-  $0 create [--execute] [VERSION]
-  $0 delete [TAG] [--execute]
-  $0 recreate [TAG] [--execute]
-
-Subcommands:
-  create     Create and tag a new release (triggers GitHub Actions)
-  delete     Delete a Git tag and GitHub release
-  recreate   Delete and immediately re-create a release
-
-Options:
-  --execute, -x   Run for real (not dry-run)
-  --help, -h      Show help
-EOF
-}
-
-# --- Arg parsing ---
-subcommand="${1:-}"
-shift || true
-while [[ "${1:-}" =~ ^- ]]; do
-  case "$1" in
-    --execute|-x) DRY_RUN=false; SHOW_DIFF=false; shift ;;
-    --help|-h) usage; exit 0 ;;
-    *) break ;;
-  esac
+  say "Preparing app: $app_name"
+  run cp -R "$src_app" "$STAGE_DIR/$app_name"
+  jar_path="$(resolve_one_jar "$module")"
+  run cp -f "$jar_path" "$STAGE_DIR/$app_name/Contents/Java/"
 done
 
-# --- create ---
-cmd_create() {
-  local version_arg="${1:-}"
-
-  require_clean_worktree
-  say "💡 Mode: $( [ "$DRY_RUN" = true ] && echo 'DRY-RUN' || echo 'EXECUTE')"
-  ensure_on_main
-
-  local current release next
-  current=$(get_current_version)
-  release="${current%-SNAPSHOT}"
-  [ -n "$version_arg" ] && release="$version_arg"
-  next=$(next_snapshot "$release")
-
-  say "📦 Current version:  $current"
-  say "🏷️  Release version: $release"
-  say "🔄 Next dev:         $next"
-  confirm "Proceed with release?" || { say "Aborted."; return 0; }
-
-  say "🧪 Verifying build..."
-  run $MVN_CMD clean verify -DskipTests
-
-  say "🏷️  Setting release version..."
-  run $MVN_CMD versions:set -DnewVersion="$release" -DprocessAllModules=true
-  run $MVN_CMD versions:commit
-
-  local CHANGELOG="CHANGELOG.md"
-  local DATE HEADER
-  DATE=$(date +"%Y-%m-%d")
-  HEADER="## v${release} - ${DATE}"
-
-  bash -c "
-if [ -f '$CHANGELOG' ]; then
-  tmp=\$(mktemp)
-  {
-    echo '$HEADER'
-    echo
-    echo '- Describe new features, fixes, or changes here.'
-    echo
-    cat '$CHANGELOG'
-  } > \$tmp && mv \$tmp '$CHANGELOG'
-else
-  cat > '$CHANGELOG' <<EOF2
-# Changelog
-
-$HEADER
-
-- Initial release notes.
-EOF2
+# macOS convenience: strip quarantine recursively to eliminate 'unverified developer' warnings
+if command -v xattr >/dev/null 2>&1; then
+  say "Removing quarantine attributes (macOS)…"
+  run xattr -dr com.apple.quarantine "$STAGE_DIR" || true
 fi
-"
 
-  if [ "$SHOW_DIFF" = true ]; then
-    echo ""
-    echo "🟡 Diff preview:"
-    git diff --color || true
-    echo ""
-  fi
+# ------------------------------------------------------------------------------
+# Create versioned ZIP of the staged tree
+#   Packaging excludes shell-scripts/tools (defense in depth; staging shouldn’t contain them)
+# ------------------------------------------------------------------------------
+ZIP_NAME="${PRODUCT_NAME}-${RELEASE_VERSION}.zip"
+say "Creating zip: $DIST_DIR/$ZIP_NAME"
+(
+  cd "$STAGE_ROOT"
+  run zip -qry "$DIST_DIR/$ZIP_NAME" "${PRODUCT_NAME}-${RELEASE_VERSION}" \
+      -x "*/shell-scripts/*" \
+      -x "*integrated-release-manager.sh" \
+      -x "*release-manager.sh" \
+      -x "*make-glyco-paint-installer.sh"
+)
 
-  say "📝 Commit and tag release..."
-  run git add "$CHANGELOG"
-  commit_if_needed "Release v${release}"
-  run git tag -a "v${release}" -m "Release v${release}" || warn "Tag already exists, skipping."
+# ------------------------------------------------------------------------------
+# Self-extracting installer (.sh) that:
+#   - Unpacks payload ZIP into ~/Applications/Glyco-PAINT
+#   - Attempts to install Fiji plugin into standard Fiji.app locations
+#   - Removes quarantine attributes (macOS) to aid first-run UX
+# ------------------------------------------------------------------------------
+INSTALLER_NAME="${PRODUCT_NAME}-macOS-${RELEASE_VERSION}.sh"
+say "Creating self-extracting installer: $DIST_DIR/$INSTALLER_NAME"
 
-  say "🚀 Pushing release tag (triggers GitHub Actions)..."
-  run git push origin "$MAIN_BRANCH"
-  run git push origin "v${release}"
+cat > "$DIST_DIR/$INSTALLER_NAME" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
 
-  say "🔄 Bumping to next snapshot..."
-  run $MVN_CMD versions:set -DnewVersion="$next" -DprocessAllModules=true
-  run $MVN_CMD versions:commit
-  commit_if_needed "Start $next development"
-  run git push origin "$MAIN_BRANCH"
+PRODUCT_NAME="Glyco-PAINT"
+TARGET_ROOT="${HOME}/Applications/Glyco-PAINT"
 
-  if [ "$DRY_RUN" = true ]; then
-    say "✅ Dry-run complete — nothing changed."
-  else
-    say "🎉 Release v${release} created and pushed!"
-    say "   → GitHub Actions will build and publish automatically."
-  fi
-}
+say() { printf "\033[1;32m==>\033[0m %s\n" "$*"; }
+warn() { printf "\033[1;33mWARN:\033[0m %s\n" "$*\n"; }
 
-# --- delete ---
-cmd_delete() {
-  local tag="${1:-}"
-  if [ -z "$tag" ]; then die "Usage: $0 delete <tag> [--execute]"; fi
+SELF="$0"
+WORKDIR="$(mktemp -d)"
+trap 'rm -rf "$WORKDIR"' EXIT
 
-  local tagname="v${tag#v}"  # normalize prefix
-  say "🗑️  Deleting release '$tagname'..."
-  confirm "Are you sure you want to delete $tagname?" || { say "Aborted."; return 0; }
+say "Extracting payload…"
+ARCHIVE_LINE=$(awk '/^__ZIPFILE_BELOW__/ {print NR + 1; exit 0; }' "$SELF")
+tail -n +$ARCHIVE_LINE "$SELF" | base64 --decode > "$WORKDIR/payload.zip"
 
-  if command -v gh >/dev/null 2>&1; then
-    say "📢 Checking GitHub for release '$tagname'..."
-    if gh release view "$tagname" &>/dev/null; then
-      run gh release delete "$tagname" --yes
-      say "✅ GitHub release deleted."
-    else
-      warn "No GitHub release found for '$tagname'."
+say "Creating target: ${TARGET_ROOT}"
+mkdir -p "$TARGET_ROOT"
+
+say "Unzipping into temporary directory…"
+unzip -q "$WORKDIR/payload.zip" -d "$WORKDIR/unzip"
+
+TOP="$(find "$WORKDIR/unzip" -maxdepth 1 -type d -name "${PRODUCT_NAME}-*" | head -n1)"
+if [[ -z "$TOP" ]]; then
+  echo "Installer internal error: cannot find top dir inside zip." >&2
+  exit 1
+fi
+
+say "Copying applications…"
+rsync -a --delete --exclude 'plugin/' "$TOP/" "$TARGET_ROOT/"
+
+# Clean any leftover from older installers
+rm -rf "$TARGET_ROOT/plugin" 2>/dev/null || true
+
+# --- Install Fiji plugin -----------------------------------------------------
+say "Installing Fiji plugin JAR…"
+
+# Find exactly one plugin jar from the installer payload (not from Applications)
+PLUGIN_JAR="$(find "$TOP" -type f -name 'paint-fiji-plugin-*-jar-with-dependencies.jar' | head -n1 || true)"
+
+if [[ -z "$PLUGIN_JAR" ]]; then
+  warn "No plugin jar found in installer payload. Skipping plugin installation."
+else
+  POSSIBLE_FIJI_DIRS=(
+    "${HOME}/Applications/Fiji.app"
+    "/Applications/Fiji.app"
+  )
+
+  INSTALLED=false
+  for D in "${POSSIBLE_FIJI_DIRS[@]}"; do
+    if [[ -d "$D" ]]; then
+      PLUGINS_DIR="$D/plugins"
+      mkdir -p "$PLUGINS_DIR"
+
+      echo ""
+      say "Checking for existing PAINT-related jars in: $PLUGINS_DIR"
+      OLD_JARS=($(find "$PLUGINS_DIR" -type f -name 'paint-*.jar' 2>/dev/null || true))
+
+      if (( ${#OLD_JARS[@]} > 0 )); then
+        echo "Found existing plugin jars:"
+        printf '  - %s\n' "${OLD_JARS[@]}"
+        echo ""
+        read -r -p "Remove old PAINT plugin jars before installing the new one? [y/N] " ANSWER
+        if [[ "$ANSWER" =~ ^[Yy]$ ]]; then
+          say "Removing old plugin jars..."
+          for J in "${OLD_JARS[@]}"; do
+            rm -f "$J"
+          done
+        else
+          warn "Keeping old jars; skipping plugin installation for safety."
+          continue
+        fi
+      fi
+
+      say "Copying new plugin jar: $(basename "$PLUGIN_JAR")"
+      cp -f "$PLUGIN_JAR" "$PLUGINS_DIR/"
+      say "Installed plugin to: $PLUGINS_DIR"
+
+      INSTALLED=true
+      break
     fi
-  else
-    warn "'gh' CLI not found — skipping GitHub release deletion."
+  done
+
+  if [[ "$INSTALLED" != "true" ]]; then
+    warn "No Fiji.app installation detected. Plugin jar was not installed."
   fi
+fi
 
-  say "🧹 Deleting Git tag locally and remotely..."
-  run git tag -d "$tagname" || warn "Local tag not found."
-  run git push --delete origin "$tagname" || warn "Remote tag not found."
-  say "✅ Delete complete."
-}
+# --- macOS UX convenience ----------------------------------------------------
+if command -v xattr >/dev/null 2>&1; then
+  say "Removing quarantine attributes on installed apps (macOS)…"
+  xattr -dr com.apple.quarantine "$TARGET_ROOT" || true
+fi
 
-# --- recreate ---
-cmd_recreate() {
-  local tag="${1:-}"
-  if [ -z "$tag" ]; then die "Usage: $0 recreate <tag> [--execute]"; fi
+say "Installation complete."
+echo ""
+echo "✅ Applications installed to:"
+echo "   $TARGET_ROOT"
+echo "If you use Fiji, verify the plugin is present under:"
+echo "   Fiji.app/plugins/"
+echo ""
+exit 0
 
-  say "♻️  Recreating release $tag..."
-  cmd_delete "$tag"
-  echo ""
-  cmd_create "$tag"
-  say "✅ Recreated release v${tag#v}."
-}
+__ZIPFILE_BELOW__
+EOF
 
-# --- dispatch ---
-case "$subcommand" in
-  create)  cmd_create "${1:-}" ;;
-  delete)  cmd_delete "${1:-}" ;;
-  recreate) cmd_recreate "${1:-}" ;;
-  rollback) warn "Rollback not implemented yet."; ;;
-  ""|-h|--help|help) usage ;;
-  *) die "Unknown subcommand: $subcommand" ;;
-esac
+# Append the payload ZIP as base64 so installer is standalone.
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # BSD base64 requires -i for input file
+  run base64 -i "$DIST_DIR/$ZIP_NAME" >> "$DIST_DIR/$INSTALLER_NAME"
+else
+  run base64 "$DIST_DIR/$ZIP_NAME" >> "$DIST_DIR/$INSTALLER_NAME"
+fi
+run chmod +x "$DIST_DIR/$INSTALLER_NAME"
+
+say "Installer created."
+
+# ------------------------------------------------------------------------------
+# Tag and push the release. This triggers GitHub Actions (on tag 'v*.*.*').
+#   We push main with --follow-tags so both branch changes (POMs set to release)
+#   and the annotated tag reach the remote.
+# ------------------------------------------------------------------------------
+TAG="${GIT_TAG_PREFIX}${RELEASE_VERSION}"
+say "Tagging release as ${TAG}..."
+run git tag -a "$TAG" -m "Release ${RELEASE_VERSION}"
+run git push origin main --follow-tags
+
+say ""
+say "✅ Tag ${TAG} pushed successfully."
+say "GitHub Actions will now automatically build and publish the release."
+say "Monitor progress here:"
+say "  https://github.com/${ORG_REPO}/actions"
+say ""
+
+# ------------------------------------------------------------------------------
+# Bump to next -SNAPSHOT for continued development
+#   This keeps main ahead immediately after release tagging.
+# ------------------------------------------------------------------------------
+say "Bumping Maven version to next -SNAPSHOT..."
+# Recompute next from RELEASE_VERSION (not CURRENT_VERSION) to avoid drift.
+NEXT_DEV="$(next_snapshot_value "$RELEASE_VERSION")"
+run mvn -q -DprocessAllModules versions:set -DnewVersion="$NEXT_DEV" -DgenerateBackupPoms=false
+
+say "New development version: $(get_version)"
+
+run git add -A
+run git commit -m "Bump to ${NEXT_DEV}"
+run git push origin main
+
+# ------------------------------------------------------------------------------
+# Export build artifacts back into the CI workspace (for GitHub Actions)
+# ------------------------------------------------------------------------------
+if [[ -n "${GITHUB_ACTIONS:-}" ]]; then
+  say "Copying artifacts into CI workspace (dist/macos)..."
+  mkdir -p "$ROOT_DIR/dist/macos"
+  cp -R "$DIST_DIR"/* "$ROOT_DIR/dist/macos/" || warn "No artifacts copied"
+fi
+
+say ""
+say "✅ All done."
+say "Deliverables (macOS):"
+say "  📦 ZIP archive:       $DIST_DIR/$ZIP_NAME"
+say "  🧰 Installer script:  $DIST_DIR/$INSTALLER_NAME"
+say ""
