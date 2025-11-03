@@ -66,18 +66,11 @@ jobs:
           distribution: zulu
           java-version: 8
 
-      # 🧱 Ensure icon resources exist in all modules before build
-      - name: Verify and copy icons
+      # 🧱 Verify icons
+      - name: Verify icons
         run: |
           echo "Checking for .ico icons..."
           dir /s /b *.ico || echo "⚠️ No .ico files found!"
-          echo "Copying shared icons into modules (if any)..."
-          for %M in (paint-generate-squares paint-viewer paint-get-omero paint-create-experiment) do (
-            if exist shared\icons (
-              mkdir %M\src\main\resources\icons 2>nul
-              copy shared\icons\*.ico %M\src\main\resources\icons\ >nul
-            )
-          )
           echo "✅ Icon verification step complete."
         shell: cmd
 
