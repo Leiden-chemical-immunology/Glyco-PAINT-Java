@@ -98,62 +98,48 @@ jobs:
           distribution: zulu
           java-version: 8
 
-      - name: Verify icons
-        run: |
-          echo "Checking for .ico icons..."
-          dir /s /b *.ico || echo "⚠️ No .ico files found!"
-        shell: cmd
-
       - name: Build Windows .exe files
         run: |
           echo "Starting Windows build..."
           mvn -B -Pwindows-exe -DskipTests clean package
         shell: cmd
 
-      - name: Collect Windows executables
+      - name: Collect executables
         run: |
-          echo "Collecting Windows executables..."
-          mkdir dist 2>nul
+          set BASE=%GITHUB_WORKSPACE%
+          set BUILD_DIR=%BASE%\Glyco-PAINT-Builds\build\Windows
+          echo "📦 Collecting executables into %BUILD_DIR%..."
+          if not exist "%BUILD_DIR%" mkdir "%BUILD_DIR%"
+
           for %%M in (paint-generate-squares paint-viewer paint-get-omero paint-create-experiment) do (
             if exist "%%M\target\*.exe" (
-              echo "📦 Found executables in %%M\target — copying..."
-              copy "%%M\target\*.exe" dist\ >nul
-            ) else (
-              echo "⚠️ No executables found in %%M\target"
+              copy "%%M\target\*.exe" "%BUILD_DIR%\" >nul
             )
           )
-          dir dist
+
+          echo "✅ Files now in:"
+          dir "%BUILD_DIR%"
         shell: cmd
 
-      - name: Copy executables to build directory
+      - name: Zip Windows build
         run: |
           set BASE=%GITHUB_WORKSPACE%
-          echo "Copying executables to %BASE%\Glyco-PAINT-Builds\build\Windows..."
-          mkdir "%BASE%\Glyco-PAINT-Builds" 2>nul
-          mkdir "%BASE%\Glyco-PAINT-Builds\build" 2>nul
-          mkdir "%BASE%\Glyco-PAINT-Builds\build\Windows" 2>nul
-          copy dist\*.exe "%BASE%\Glyco-PAINT-Builds\build\Windows\" >nul
-          dir "%BASE%\Glyco-PAINT-Builds\build\Windows"
-        shell: cmd
-
-      - name: Zip Windows executables
-        run: |
-          set BASE=%GITHUB_WORKSPACE%
+          set BUILD_DIR=%BASE%\Glyco-PAINT-Builds\build\Windows
+          set DIST_DIR=%BASE%\Glyco-PAINT-Builds\dist\Windows
           for /f %%v in ('powershell -Command "$env:GITHUB_REF_NAME -replace \"^v\", \"\""') do set VERSION=%%v
-          echo "Zipping into %BASE%\Glyco-PAINT-Builds\dist\Windows..."
-          mkdir "%BASE%\Glyco-PAINT-Builds\dist" 2>nul
-          mkdir "%BASE%\Glyco-PAINT-Builds\dist\Windows" 2>nul
-          powershell Compress-Archive -Path "%BASE%\Glyco-PAINT-Builds\build\Windows\*.exe" -DestinationPath "%BASE%\Glyco-PAINT-Builds\dist\Windows\Glyco-PAINT-Windows-%VERSION%.zip" -Force
-          dir "%BASE%\Glyco-PAINT-Builds\dist\Windows"
+          if not exist "%DIST_DIR%" mkdir "%DIST_DIR%"
+          echo "📦 Creating %DIST_DIR%\Glyco-PAINT-Windows-%VERSION%.zip"
+          powershell Compress-Archive -Path "%BUILD_DIR%\*.exe" -DestinationPath "%DIST_DIR%\Glyco-PAINT-Windows-%VERSION%.zip" -Force
+          echo "✅ Done:"
+          dir "%DIST_DIR%"
         shell: cmd
 
-      - name: Prepare and upload Windows artifacts
+      - name: Upload Windows artifacts
         run: |
           set BASE=%GITHUB_WORKSPACE%
           if not exist dist-upload mkdir dist-upload
           if not exist dist-upload\windows mkdir dist-upload\windows
           copy "%BASE%\Glyco-PAINT-Builds\dist\Windows\*.zip" dist-upload\windows\ >nul
-          echo "✅ Prepared for upload:"
           dir dist-upload\windows
         shell: cmd
 
