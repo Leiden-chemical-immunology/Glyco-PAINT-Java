@@ -47,8 +47,13 @@ set -euo pipefail
 # --- Always start from repo root (script may be run from subfolders) ----------
 cd "$(dirname "$0")/.."
 
-# Avoid 'TERM environment variable not set' when running in CI
-[[ -t 1 ]] && clear || true
+# --- Ensure TERM is set for non-interactive shells (CI safety) ----------------
+export TERM=${TERM:-dumb}
+
+# --- Avoid clear if stdout isn't a terminal ----------------------------------
+if [ -t 1 ]; then
+  clear
+fi
 
 # ------------------------------------------------------------------------------
 # CLI flags
