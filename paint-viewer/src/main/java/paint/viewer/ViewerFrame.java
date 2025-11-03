@@ -62,6 +62,7 @@ import paint.viewer.utils.TiffMoviePlayer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -319,6 +320,15 @@ public class ViewerFrame extends JFrame
         showRecordingEntry(recordingEntries.size() - 1);
     }
 
+    @Override
+    public void onExportLeftImageRequested() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setSelectedFile(new java.io.File("grid-export.png"));
+        if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            Path exportPath = chooser.getSelectedFile().toPath();
+            exportLeftGridPanelAsImage(exportPath, 2.0); // 2× resolution, RGB PNG
+        }
+    }
     // =========================================================================================
     // FILTER AND CONTROL REQUEST HANDLERS
     // =========================================================================================
@@ -708,6 +718,53 @@ public class ViewerFrame extends JFrame
     private void setActionButtonsEnabled(boolean enabled) {
         if (controlsPanel != null) {
             controlsPanel.setButtonsEnabled(enabled);
+        }
+    }
+
+    /**
+     * Exports the current left grid panel (image + overlay) as a high-resolution PNG.
+     *
+     * @param outputPath the destination file path (e.g., Paths.get("export.png"))
+     * @param scale      the scale factor for resolution (1.0 = screen size, 2.0 = double resolution)
+     */
+    private void exportLeftGridPanelAsImage(Path outputPath, double scale) {
+        try {
+            int width  = (int) (leftGridPanel.getWidth()  * scale);
+            int height = (int) (leftGridPanel.getHeight() * scale);
+
+            // Create high-res buffered image (RGB)
+            BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2 = image.createGraphics();
+
+            // High-quality rendering hints
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+
+            // Apply scaling
+            g2.scale(scale, scale);
+
+            // Paint the component (includes background + overlay)
+            leftGridPanel.paintAll(g2);
+            g2.dispose();
+
+            // Ensure parent directories exist
+            if (outputPath.getParent() != null) {
+                java.nio.file.Files.createDirectories(outputPath.getParent());
+            }
+
+            // Write PNG (lossless)
+            javax.imageio.ImageIO.write(image, "png", outputPath.toFile());
+
+            JOptionPane.showMessageDialog(this,
+                                          "Exported successfully to:\n" + outputPath.toAbsolutePath(),
+                                          "Export Complete", JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this,
+                                          "Error exporting image: " + ex.getMessage(),
+                                          "Export Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
