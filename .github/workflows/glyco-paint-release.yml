@@ -20,6 +20,8 @@ jobs:
 
       - name: Build macOS version
         run: ./shell-scripts/release-manager.sh
+        env:
+          GITHUB_ACTIONS: true    # 👈 Ensures script copies artifacts into dist/macos
 
       - name: Collect macOS artifacts
         run: |
@@ -32,9 +34,11 @@ jobs:
           elif [ -d ../Glyco-PAINT-builds/dist ]; then
             echo "📦 Found ../Glyco-PAINT-builds/dist — copying..."
             cp -r ../Glyco-PAINT-builds/dist/* dist/macos/
+          elif [ -d dist/macos ] && [ "$(ls -A dist/macos)" ]; then
+            echo "✅ Artifacts already present in dist/macos (from release-manager)"
           else
             echo "⚠️ No dist directory found — searching module targets..."
-            find . -type f \( -name "*.app" -o -name "*.app.zip" \) -exec cp -r {} dist/macos/ \;
+            find . -type f \( -name "*.app" -o -name "*.app.zip" -o -name "*.sh" \) -exec cp -r {} dist/macos/ \;
           fi
 
           echo "✅ macOS artifacts collected:"
@@ -45,6 +49,7 @@ jobs:
         with:
           name: macos-artifacts
           path: dist/macos/**
+          if-no-files-found: warn
 
   build-windows:
     name: Build Windows Executables
