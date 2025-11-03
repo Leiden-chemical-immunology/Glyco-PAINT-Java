@@ -47,6 +47,12 @@ jobs:
           echo "✅ macOS artifacts collected:"
           ls -R dist/macos || true
 
+          # ✅ Copy to external Glyco-PAINT-Builds folder
+          mkdir -p ../Glyco-PAINT-Builds/dist/macOS
+          cp -R dist/macos/* ../Glyco-PAINT-Builds/dist/macOS/ || true
+          echo "✅ macOS artifacts copied to ../Glyco-PAINT-Builds/dist/macOS"
+          ls -R ../Glyco-PAINT-Builds/dist/macOS || true
+
       - name: Upload macOS build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -66,7 +72,6 @@ jobs:
           distribution: zulu
           java-version: 8
 
-      # 🧱 Verify icons
       - name: Verify icons
         run: |
           echo "Checking for .ico icons..."
@@ -74,14 +79,12 @@ jobs:
           echo "✅ Icon verification step complete."
         shell: cmd
 
-      # 🏗️ Build Windows executables (Launch4j or similar)
       - name: Build Windows .exe files
         run: |
           echo "Starting Windows build..."
           mvn -B -Pwindows-exe -DskipTests clean package
         shell: cmd
 
-      # 📦 Collect all built .exe artifacts
       - name: Collect Windows executables
         run: |
           mkdir dist
@@ -91,6 +94,18 @@ jobs:
           if exist paint-create-experiment\target\*.exe copy paint-create-experiment\target\*.exe dist\
           echo "✅ Windows executables collected:"
           dir dist
+        shell: cmd
+
+      # ✅ Copy .exe files to Glyco-PAINT-Builds/dist/Windows
+      - name: Copy executables to Glyco-PAINT-Builds/dist/Windows
+        run: |
+          echo "Copying Windows executables to ../Glyco-PAINT-Builds/dist/Windows..."
+          mkdir "..\Glyco-PAINT-Builds" 2>nul
+          mkdir "..\Glyco-PAINT-Builds\dist" 2>nul
+          mkdir "..\Glyco-PAINT-Builds\dist\Windows" 2>nul
+          copy dist\*.exe "..\Glyco-PAINT-Builds\dist\Windows\" >nul
+          echo "✅ Windows executables copied successfully:"
+          dir "..\Glyco-PAINT-Builds\dist\Windows"
         shell: cmd
 
       - name: Upload Windows build artifacts

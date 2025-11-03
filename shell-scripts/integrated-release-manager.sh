@@ -171,7 +171,7 @@ ROOT_DIR="$(pwd)"
 OUTSIDE_ROOT="${OUTSIDE_ROOT:-${ROOT_DIR}/../Glyco-PAINT-builds}"
 APP_TEMPLATES_DIR="${APP_TEMPLATES_DIR:-apps}"
 STAGE_ROOT="${OUTSIDE_ROOT}/build"
-DIST_DIR="${OUTSIDE_ROOT}/dist"
+DIST_DIR="${OUTSIDE_ROOT}/dist/macOS"
 
 # Guard: never let OUTSIDE_ROOT collapse to repo root (accidental recursion)
 if [[ "$OUTSIDE_ROOT" == "$ROOT_DIR" ]]; then
