@@ -53,10 +53,13 @@ cd "$(dirname "$0")/.."
 # --- Ensure TERM is set for non-interactive shells (CI safety) ----------------
 export TERM=${TERM:-dumb}
 
-# --- Avoid clear if stdout isn't a terminal ----------------------------------
-if [ -t 1 ]; then
-  clear
+# Defensive alias: ignore 'clear' in non-interactive shells
+if [ ! -t 1 ]; then
+  alias clear=':'
 fi
+
+# --- Avoid clear if stdout isn't a terminal ----------------------------------
+if [ -t 1 ]; then clear; fi
 
 # ------------------------------------------------------------------------------
 # CLI flags
@@ -148,7 +151,7 @@ fi
 # ------------------------------------------------------------------------------
 # Runtime banner (developer-focused, shows what will happen and where)
 # ------------------------------------------------------------------------------
-clear
+if [ -t 1 ]; then clear; fi
 echo "==============================================================================="
 echo "   Glyco-PAINT Release Manager"
 echo "==============================================================================="
