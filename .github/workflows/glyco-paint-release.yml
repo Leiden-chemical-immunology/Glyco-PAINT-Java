@@ -91,10 +91,15 @@ jobs:
         shell: bash
 
       - name: Upload macOS build artifacts
+        run: |
+          mkdir -p dist-upload/macos
+          cp -R ../Glyco-PAINT-Builds/dist/macOS/* dist-upload/macos/ || true
+
+      - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
         with:
           name: macos-artifacts
-          path: ../Glyco-PAINT-Builds/dist/macOS/**
+          path: dist-upload/macos/**
           if-no-files-found: warn
 
   build-windows:
@@ -158,10 +163,16 @@ jobs:
         shell: cmd
 
       - name: Upload Windows build artifacts
+        run: |
+          mkdir -p dist-upload/windows
+          xcopy /E /I "..\Glyco-PAINT-Builds\dist\Windows" "dist-upload\windows" >nul
+        shell: cmd
+
+      - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
           name: windows-artifacts
-          path: ../Glyco-PAINT-Builds/dist/Windows/**
+          path: dist-upload/windows/**
           if-no-files-found: warn
 
   release:

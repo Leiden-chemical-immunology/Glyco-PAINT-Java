@@ -506,7 +506,14 @@ say "Installer created."
 TAG="${GIT_TAG_PREFIX}${RELEASE_VERSION}"
 say "Tagging release as ${TAG}..."
 run git tag -a "$TAG" -m "Release ${RELEASE_VERSION}"
-run git push origin main --follow-tags
+
+# In CI, we may be in a detached HEAD; push only the tag if main is missing
+if git show-ref --verify --quiet refs/heads/main; then
+  run git push origin main --follow-tags
+else
+  say "Detached HEAD detected (CI). Pushing tag only."
+  run git push origin "refs/tags/${TAG}"
+fi
 
 say ""
 say "✅ Tag ${TAG} pushed successfully."
