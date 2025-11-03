@@ -21,9 +21,18 @@ jobs:
           distribution: zulu
           java-version: 8
 
-      # 🧱 Build macOS release using the local release-manager script
+      # 🧱 Install modern Bash (v5) and run release-manager under it
+      - name: Install Homebrew Bash
+        run: |
+          brew install bash
+          echo "Installed Bash at $(brew --prefix)/bin/bash"
+          $(brew --prefix)/bin/bash --version
+
       - name: Build macOS version
-        run: ./shell-scripts/release-manager.sh
+        run: |
+          BASH_BIN="$(brew --prefix)/bin/bash"
+          echo "Using Bash at: $BASH_BIN"
+          "$BASH_BIN" ./shell-scripts/release-manager.sh
         env:
           GITHUB_ACTIONS: true
 
