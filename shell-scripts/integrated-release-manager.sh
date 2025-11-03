@@ -36,7 +36,7 @@
 #
 # SAFETY / DESIGN CHOICES:
 #   - set -euo pipefail: fail-hard on any error, undefined var, or pipe error
-#   - All build outputs live OUTSIDE the repository (../Glyco-PAINT-builds/*)
+#   - All build outputs live OUTSIDE the repository (../Glyco-PAINT-Builds/*)
 #     to avoid bloating history / hitting GitHub size limits.
 #   - The installer carries the ZIP payload and can install the Fiji plugin
 #     into standard Fiji.app locations (~/Applications, /Applications).
@@ -168,7 +168,7 @@ sleep 5
 # Build outputs are staged OUTSIDE the repo to avoid tracking artifacts
 # ------------------------------------------------------------------------------
 ROOT_DIR="$(pwd)"
-OUTSIDE_ROOT="${OUTSIDE_ROOT:-${ROOT_DIR}/../Glyco-PAINT-builds}"
+OUTSIDE_ROOT="${OUTSIDE_ROOT:-${ROOT_DIR}/../Glyco-PAINT-Builds}"
 APP_TEMPLATES_DIR="${APP_TEMPLATES_DIR:-apps}"
 
 # macOS paths
