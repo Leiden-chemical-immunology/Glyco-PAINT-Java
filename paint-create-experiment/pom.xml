@@ -30,7 +30,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.18-SNAPSHOT</version>
+        <version>0.0.19-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -47,7 +47,7 @@
     <!-- Application properties                                         -->
     <!-- =============================================================== -->
     <properties>
-        <project.build.outputTimestamp>2025-11-03T14:54:56Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-11-03T15:07:49Z</project.build.outputTimestamp>
         <app.name>Create Experiment</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-create-experiment.icns</app.icon.macos>
