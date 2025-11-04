@@ -358,16 +358,45 @@ public class BuildAllExecutables {
 
     /** Updates the version string inside a single pom.xml file. */
     private void updatePomVersion(Path pom, String oldVersion, String newVersion) throws Exception {
-        DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document doc  = docBuilder.parse(Files.newInputStream(pom));
-        NodeList list = doc.getElementsByTagName("version");
-        for (int i = 0; i < list.getLength(); i++) {
-            Node node = list.item(i);
-            if (node.getTextContent().trim().equals(oldVersion)) node.setTextContent(newVersion);
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(false);
+        DocumentBuilder docBuilder = dbf.newDocumentBuilder();
+        Document doc = docBuilder.parse(Files.newInputStream(pom));
+
+        boolean modified = false;
+
+        NodeList versionNodes = doc.getElementsByTagName("version");
+        for (int i = 0; i < versionNodes.getLength(); i++) {
+            Node node = versionNodes.item(i);
+            String text = node.getTextContent().trim();
+
+            if (text.equals(oldVersion)) {
+                node.setTextContent(newVersion);
+                modified = true;
+            }
         }
-        Transformer t = TransformerFactory.newInstance().newTransformer();
-        t.setOutputProperty(OutputKeys.INDENT, "yes");
-        t.transform(new DOMSource(doc), new StreamResult(Files.newOutputStream(pom)));
+
+        // also handle <parent><version> if not caught above
+        NodeList parentList = doc.getElementsByTagName("parent");
+        if (parentList.getLength() > 0) {
+            Element parent = (Element) parentList.item(0);
+            NodeList vlist = parent.getElementsByTagName("version");
+            if (vlist.getLength() > 0) {
+                Node v = vlist.item(0);
+                String text = v.getTextContent().trim();
+                if (text.equals(oldVersion)) {
+                    v.setTextContent(newVersion);
+                    modified = true;
+                }
+            }
+        }
+
+        if (modified) {
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.transform(new DOMSource(doc), new StreamResult(Files.newOutputStream(pom)));
+            System.out.println("📝 Updated " + pom.getFileName() + " → " + newVersion);
+        }
     }
 
     /** Extracts the version number from the given pom.xml. */
