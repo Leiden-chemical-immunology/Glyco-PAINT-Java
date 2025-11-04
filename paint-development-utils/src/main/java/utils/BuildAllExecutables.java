@@ -142,7 +142,9 @@ public class BuildAllExecutables {
             buildAndCollectMacApp(moduleDir, "-Pmacos-appbundle", macOSPath);
         }
 
-        if (doRelease) createAndPushTag(versionInfo.releaseVersion);
+        if (doRelease) {
+            createAndPushTag(versionInfo.releaseVersion);
+        }
 
         bumpAllPomVersions(versionInfo.releaseVersion, versionInfo.nextDevVersion);
         commitVersionBump(versionInfo.releaseVersion, versionInfo.nextDevVersion);
@@ -616,10 +618,8 @@ public class BuildAllExecutables {
     }
     /**
      * Creates and pushes a Git tag for the specified release version.
-     * This automatically triggers the GitHub Actions workflow (which listens for "v*.*.*" tags).
-     *
-     * The tag is created as "vX.Y.Z" (e.g., "v0.0.20") and annotated with a standard message.
-     * The working directory must be clean before tagging to ensure reproducible builds.
+     * Automatically commits uncommitted pom.xml changes before tagging.
+     * If the repository is still dirty after that, it warns and skips tagging safely.
      */
     private void createAndPushTag(String version) throws IOException, InterruptedException {
         Path repoDir = BASE_PATH;
@@ -633,20 +633,67 @@ public class BuildAllExecutables {
         // --- Check for uncommitted changes
         ProcessBuilder statusCheck = new ProcessBuilder("git", "status", "--porcelain");
         statusCheck.directory(repoDir.toFile());
-        Process        status = statusCheck.start();
+        Process status = statusCheck.start();
         BufferedReader reader = new BufferedReader(new InputStreamReader(status.getInputStream()));
-        boolean        dirty  = reader.lines().anyMatch(line -> !line.trim().isEmpty());
+        List<String> changedFiles = new ArrayList<>();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (!line.trim().isEmpty()) changedFiles.add(line.trim());
+        }
         status.waitFor();
+        boolean dirty = !changedFiles.isEmpty();
+
         if (dirty) {
-            throw new IllegalStateException("❌ Working tree not clean — please commit or stash changes before tagging.");
+            System.out.println("⚠️  Working tree has uncommitted changes — auto-committing before tagging...");
+
+            // Automatically stage all pom.xml changes
+            ProcessBuilder addPb = new ProcessBuilder("bash", "-c", "git add **/pom.xml");
+            addPb.directory(repoDir.toFile());
+            addPb.inheritIO();
+            Process addProc = addPb.start();
+            addProc.waitFor();
+
+            // Commit the version bump
+            String message = "Auto-commit before tagging release v" + version;
+            ProcessBuilder commitPb = new ProcessBuilder("git", "commit", "-m", message);
+            commitPb.directory(repoDir.toFile());
+            commitPb.inheritIO();
+            commitPb.start().waitFor();
+
+            // Re-check cleanliness
+            ProcessBuilder recheck = new ProcessBuilder("git", "status", "--porcelain");
+            recheck.directory(repoDir.toFile());
+            Process reproc = recheck.start();
+            BufferedReader reReader = new BufferedReader(new InputStreamReader(reproc.getInputStream()));
+            boolean stillDirty = reReader.lines().anyMatch(l -> !l.trim().isEmpty());
+            reproc.waitFor();
+
+            if (stillDirty) {
+                System.out.println("⚠️  Working tree still has uncommitted files after auto-commit.");
+                System.out.println("─────────────────────────────────────────────────────────────");
+                System.out.println("Your build artifacts (.app and .exe) were created successfully!");
+                System.out.println("However, Git tagging was skipped because additional files are dirty.");
+                System.out.println();
+                System.out.println("👉 Please review and commit manually:");
+                System.out.println("   cd " + BASE_PATH.toAbsolutePath());
+                System.out.println("   git status");
+                System.out.println("   git add <remaining files>");
+                System.out.println("   git commit -m \"Finalize v" + version + " release\"");
+                System.out.println("   git tag -a v" + version + " -m \"Release v" + version + "\"");
+                System.out.println("   git push origin main --tags");
+                System.out.println("─────────────────────────────────────────────────────────────");
+                return;
+            }
+
+            System.out.println("✅ Auto-committed version bump. Continuing with tagging...");
         }
 
         // --- Ensure tag doesn’t already exist
         ProcessBuilder checkTag = new ProcessBuilder("git", "tag", "--list", tagName);
         checkTag.directory(repoDir.toFile());
-        Process        check     = checkTag.start();
+        Process check = checkTag.start();
         BufferedReader tagReader = new BufferedReader(new InputStreamReader(check.getInputStream()));
-        boolean        exists    = tagReader.lines().anyMatch(line -> line.trim().equals(tagName));
+        boolean exists = tagReader.lines().anyMatch(l -> l.trim().equals(tagName));
         check.waitFor();
         if (exists) {
             throw new IllegalStateException("❌ Tag " + tagName + " already exists!");
@@ -663,9 +710,7 @@ public class BuildAllExecutables {
             ProcessBuilder pb = new ProcessBuilder(cmd);
             pb.directory(repoDir.toFile());
             pb.inheritIO();
-            Process process = pb.start();
-            int exit = process.waitFor();
-            if (exit != 0) {
+            if (pb.start().waitFor() != 0) {
                 throw new RuntimeException("❌ Git command failed: " + String.join(" ", cmd));
             }
         }
