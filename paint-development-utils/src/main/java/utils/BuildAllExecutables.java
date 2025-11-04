@@ -52,7 +52,7 @@ public class BuildAllExecutables {
         rebuildSharedUtils();
         bumpAllPomVersions(currentVersion, versionInfo.nextDevVersion);
         commitVersionBump(currentVersion, versionInfo.nextDevVersion);
-        
+
         Path buildRoot   = BUILDS_PATH.resolve("Glyco-PAINT-" + versionInfo.releaseVersion);
         Path windowsPath = buildRoot.resolve("Windows");
         Path macOSPath   = buildRoot.resolve("macOS");
@@ -90,9 +90,8 @@ public class BuildAllExecutables {
 
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(utilsDir.toFile());
-        pb.inheritIO();
-        Process process = pb.start();
 
+        Process process = startAndFilterOutput(pb, "paint-shared-utils");
         int exit = process.waitFor();
         if (exit != 0) throw new RuntimeException("❌ Failed to install paint-shared-utils. Exit code: " + exit);
 
@@ -126,7 +125,7 @@ public class BuildAllExecutables {
     }
 
     // ===============================================================
-    // Build logic with visible commands
+    // Build logic with filtered Maven output
     // ===============================================================
     private void buildAndCollect(Path moduleDir, String profile, String glob, Path destDir)
             throws IOException, InterruptedException {
@@ -136,9 +135,8 @@ public class BuildAllExecutables {
 
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(moduleDir.toFile());
-        pb.inheritIO();
-        Process process = pb.start();
 
+        Process process = startAndFilterOutput(pb, moduleDir.getFileName().toString());
         int exit = process.waitFor();
         if (exit != 0) {
             System.err.println("❌ Build failed for " + moduleDir.getFileName() + " (" + profile + ")");
@@ -155,9 +153,8 @@ public class BuildAllExecutables {
 
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(moduleDir.toFile());
-        pb.inheritIO();
-        Process process = pb.start();
 
+        Process process = startAndFilterOutput(pb, moduleDir.getFileName().toString());
         int exit = process.waitFor();
         if (exit != 0) {
             System.err.println("❌ macOS build failed for " + moduleDir.getFileName());
@@ -247,8 +244,6 @@ public class BuildAllExecutables {
         }
 
         String message = String.format("Bump version: %s → %s", oldVersion, newVersion);
-
-        // Stage all pom.xml changes
         List<String[]> commands = Arrays.asList(
                 new String[]{"git", "add", "-u"},
                 new String[]{"git", "commit", "-m", message}
@@ -268,5 +263,23 @@ public class BuildAllExecutables {
         }
 
         System.out.println("✅ Committed version bump: " + message);
+    }
+
+    // ===============================================================
+    // 🔹 Filter Maven output (hide Unsafe warnings)
+    // ===============================================================
+    private static Process startAndFilterOutput(ProcessBuilder pb, String moduleName) throws IOException {
+        pb.redirectErrorStream(true); // merge stdout + stderr
+        Process process = pb.start();
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.contains("sun.misc.Unsafe") || line.contains("HiddenClassDefiner"))
+                    continue; // suppress only these
+                System.out.println("[" + moduleName + "] " + line);
+            }
+        }
+        return process;
     }
 }
