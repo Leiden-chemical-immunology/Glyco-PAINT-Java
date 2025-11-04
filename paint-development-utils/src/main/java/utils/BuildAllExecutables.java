@@ -32,6 +32,7 @@ public class BuildAllExecutables {
         } catch (Exception e) {
             System.err.println("❌ Build process failed: " + e.getMessage());
             e.printStackTrace();
+            System.exit(1);
         }
     }
 
@@ -49,18 +50,25 @@ public class BuildAllExecutables {
         System.out.println("🏷️  Release: " + versionInfo.releaseVersion);
         System.out.println("🚀 Next dev: " + versionInfo.nextDevVersion);
 
+        // Step 1: Build old snapshot to ensure all dependencies are installed
         rebuildSharedUtils();
+
+        // Step 2: Bump version numbers and commit
         bumpAllPomVersions(currentVersion, versionInfo.nextDevVersion);
         commitVersionBump(currentVersion, versionInfo.nextDevVersion);
 
+        // Step 3: Rebuild shared-utils again, now at the new version
+        rebuildSharedUtils();
+
+        // Step 4: Prepare build directories
         Path buildRoot   = BUILDS_PATH.resolve("Glyco-PAINT-" + versionInfo.releaseVersion);
         Path windowsPath = buildRoot.resolve("Windows");
         Path macOSPath   = buildRoot.resolve("macOS");
         Files.createDirectories(windowsPath);
         Files.createDirectories(macOSPath);
-
         System.out.println("📦 Output base: " + buildRoot);
 
+        // Step 5: Build all modules (fail-fast)
         for (String module : MODULES) {
             Path moduleDir = BASE_PATH.resolve(module);
             System.out.println("\n---------------------------------------------");
@@ -80,7 +88,7 @@ public class BuildAllExecutables {
     // ===============================================================
     private void rebuildSharedUtils() throws IOException, InterruptedException {
         Path utilsDir = BASE_PATH.resolve("paint-shared-utils");
-        System.out.println("\n🧱 Building paint-shared-utils first...");
+        System.out.println("\n🧱 Building paint-shared-utils...");
         if (!Files.exists(utilsDir.resolve("pom.xml"))) {
             throw new IOException("Missing pom.xml in " + utilsDir);
         }
@@ -90,7 +98,6 @@ public class BuildAllExecutables {
 
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(utilsDir.toFile());
-
         Process process = startAndFilterOutput(pb, "paint-shared-utils");
         int exit = process.waitFor();
         if (exit != 0) throw new RuntimeException("❌ Failed to install paint-shared-utils. Exit code: " + exit);
@@ -125,7 +132,7 @@ public class BuildAllExecutables {
     }
 
     // ===============================================================
-    // Build logic with filtered Maven output
+    // Build logic (fail-fast, filtered output)
     // ===============================================================
     private void buildAndCollect(Path moduleDir, String profile, String glob, Path destDir)
             throws IOException, InterruptedException {
@@ -139,8 +146,7 @@ public class BuildAllExecutables {
         Process process = startAndFilterOutput(pb, moduleDir.getFileName().toString());
         int exit = process.waitFor();
         if (exit != 0) {
-            System.err.println("❌ Build failed for " + moduleDir.getFileName() + " (" + profile + ")");
-            return;
+            throw new RuntimeException("❌ Build failed for " + moduleDir.getFileName() + " (" + profile + ")");
         }
         copyMatchingFiles(moduleDir.resolve("target"), glob, destDir);
     }
@@ -157,8 +163,7 @@ public class BuildAllExecutables {
         Process process = startAndFilterOutput(pb, moduleDir.getFileName().toString());
         int exit = process.waitFor();
         if (exit != 0) {
-            System.err.println("❌ macOS build failed for " + moduleDir.getFileName());
-            return;
+            throw new RuntimeException("❌ macOS build failed for " + moduleDir.getFileName());
         }
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(moduleDir.resolve("target"), "*.app*")) {
@@ -269,7 +274,7 @@ public class BuildAllExecutables {
     // 🔹 Filter Maven output (hide Unsafe warnings)
     // ===============================================================
     private static Process startAndFilterOutput(ProcessBuilder pb, String moduleName) throws IOException {
-        pb.redirectErrorStream(true); // merge stdout + stderr
+        pb.redirectErrorStream(true);
         Process process = pb.start();
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
