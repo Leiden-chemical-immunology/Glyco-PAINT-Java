@@ -178,10 +178,34 @@ public class BuildAllExecutables {
         }
 
         // --- Bump back to next development version ---
+        System.out.println("\n🔄 Restoring development version (" + versionInfo.nextDevVersion + ")...");
         bumpAllPomVersions(versionInfo.releaseVersion, versionInfo.nextDevVersion);
-        commitVersionBump(versionInfo.releaseVersion, versionInfo.nextDevVersion);
 
-        installParentPom();
+        // --- Explicit final commit for new SNAPSHOT version ---
+        System.out.println("📝 Committing final version bump (" + versionInfo.nextDevVersion + ")...");
+        ProcessBuilder addFinal = new ProcessBuilder("bash", "-c", "git add pom.xml **/pom.xml");
+        addFinal.directory(BASE_PATH.toFile());
+        addFinal.inheritIO();
+        addFinal.start().waitFor();
+
+        // Check if anything was staged
+        ProcessBuilder diffFinal = new ProcessBuilder("git", "diff", "--cached", "--quiet");
+        diffFinal.directory(BASE_PATH.toFile());
+        Process diffProc = diffFinal.start();
+        int diffExit = diffProc.waitFor();
+
+        if (diffExit != 0) {
+            String msg = "Bump version: " + versionInfo.releaseVersion + " → " + versionInfo.nextDevVersion;
+            ProcessBuilder commitFinal = new ProcessBuilder("git", "commit", "-m", msg);
+            commitFinal.directory(BASE_PATH.toFile());
+            commitFinal.inheritIO();
+            if (commitFinal.start().waitFor() == 0)
+                System.out.println("✅ Committed final POM version bump to " + versionInfo.nextDevVersion);
+            else
+                System.err.println("⚠️  Could not commit final version bump automatically.");
+        } else {
+            System.out.println("ℹ️  No remaining POM changes to commit.");
+        }
 
         // --- Push new SNAPSHOT commit ---
         System.out.println("\n📦 Pushing new development version (" + versionInfo.nextDevVersion + ") to main...");
@@ -195,6 +219,10 @@ public class BuildAllExecutables {
         } else {
             System.err.println("⚠️  Failed to push new development version — please push manually.");
         }
+
+        // --- Ensure updated parent is reinstalled ---
+        installParentPom();
+        rebuildSharedUtils();
 
         System.out.println("\n🎉 All builds complete!");
         System.out.println("✅ Output directory: " + buildRoot.toAbsolutePath());
