@@ -53,6 +53,7 @@ public class BuildAllExecutables {
         // Step 1: Build old snapshot to ensure all dependencies are installed
         rebuildSharedUtils();
         installParentPom();
+        installParentPomAsRelease(versionInfo.releaseVersion);
 
         // Step 2: Bump version numbers and commit
         bumpAllPomVersions(currentVersion, versionInfo.nextDevVersion);
@@ -219,7 +220,7 @@ public class BuildAllExecutables {
             }
         }
     }
-    
+
     private void copyMatchingFiles(Path fromDir, String glob, Path destDir) throws IOException {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(fromDir, glob)) {
             for (Path file : stream) {
@@ -351,5 +352,45 @@ public class BuildAllExecutables {
         }
 
         System.out.println("✅ Parent POM installed locally.");
+    }
+
+    // ===============================================================
+    // 🔹 Install parent POM as a local release version (for Maven offline resolution)
+    // ===============================================================
+    private void installParentPomAsRelease(String releaseVersion) throws IOException, InterruptedException {
+        Path parentPom = BASE_PATH.resolve("pom.xml");
+        if (!Files.exists(parentPom)) {
+            System.out.println("⚠️  Parent POM not found — skipping release install.");
+            return;
+        }
+
+        System.out.println("\n🧩 Installing parent POM as release " + releaseVersion + "...");
+        Path tmpPom = Files.createTempFile("parent-release-", ".xml");
+        Files.copy(parentPom, tmpPom, StandardCopyOption.REPLACE_EXISTING);
+
+        // Replace only the <version> tag in the temp file
+        String content = new String(Files.readAllBytes(tmpPom), "UTF-8")
+                .replaceAll("<version>.*?</version>", "<version>" + releaseVersion + "</version>");
+        Files.write(tmpPom, content.getBytes("UTF-8"));
+
+        List<String> cmd = Arrays.asList(
+                "mvn", "install:install-file",
+                "-Dfile=" + tmpPom.toAbsolutePath(),
+                "-DgroupId=com.github.jjabakker",
+                "-DartifactId=paint-parent",
+                "-Dversion=" + releaseVersion,
+                "-Dpackaging=pom"
+        );
+        System.out.println("🔧 Running: " + String.join(" ", cmd));
+
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.directory(BASE_PATH.toFile());
+        Process process = startAndFilterOutput(pb, "paint-parent-release");
+        int exit = process.waitFor();
+        Files.deleteIfExists(tmpPom);
+        if (exit != 0)
+            throw new RuntimeException("❌ Failed to install parent POM release version " + releaseVersion);
+
+        System.out.println("✅ Installed paint-parent " + releaseVersion + " locally.");
     }
 }
