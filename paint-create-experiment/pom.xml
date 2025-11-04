@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.30-SNAPSHOT</version>
+        <version>0.0.31</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -55,7 +55,7 @@
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
-            <version>0.0.30-SNAPSHOT</version>
+            <version>0.0.31</version>
         </dependency>
 
         <!-- CSV utilities -->
@@ -279,5 +279,5 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
         </repository>
     </repositories>
 
-<version>0.0.30-SNAPSHOT</version>
+<version>0.0.31</version>
 </project>
