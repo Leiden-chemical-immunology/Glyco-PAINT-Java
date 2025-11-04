@@ -1,8 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- ===================================================================== -->
-<!--  PAINT LAUNCHER MODULE                                               -->
-<!-- ===================================================================== -->
-<!--
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- ===================================================================== --><!--  PAINT LAUNCHER MODULE                                               --><!-- ===================================================================== --><!--
   PURPOSE:
     Builds the central PAINT Launcher — a lightweight Swing-based desktop
     application that serves as the entry point for all other PAINT modules.
@@ -20,13 +17,7 @@
     • Produces a self-contained fat JAR with all dependencies.
     • No external or inter-module dependencies are required.
     • The launcher provides convenient access to all PAINT desktop tools.
--->
-<!-- ===================================================================== -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+--><!-- ===================================================================== --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <!-- =============================================================== -->
     <!-- Project hierarchy                                               -->
@@ -36,7 +27,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.8-SNAPSHOT</version>
+        <version>0.0.16-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

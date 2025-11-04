@@ -1,8 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- ===================================================================== -->
-<!--  PAINT GENERATE SQUARES MODULE                                       -->
-<!-- ===================================================================== -->
-<!--
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- ===================================================================== --><!--  PAINT GENERATE SQUARES MODULE                                       --><!-- ===================================================================== --><!--
   PURPOSE:
     Builds the "Generate Squares" standalone desktop application.
     This module produces:
@@ -25,12 +22,7 @@
 
     The resulting app is installed automatically to:
       ~/Applications/Glyco-PAINT/Generate Squares.app
--->
-<!-- ===================================================================== -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+--><!-- ===================================================================== --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <!-- =============================================================== -->
     <!-- Project hierarchy                                               -->
@@ -40,7 +32,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.8-SNAPSHOT</version>
+        <version>0.0.16-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -73,7 +65,7 @@
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
-            <version>0.0.8-SNAPSHOT</version>
+            <version>0.0.16-SNAPSHOT</version>
         </dependency>
 
         <!-- ImageJ and Fiji components -->
@@ -211,18 +203,14 @@
                                     <target>
                                         <echo message="Creating macOS .app bundle at ${app.bundle}"/>
                                         <delete dir="${app.bundle}" failonerror="false"/>
-                                        <delete file="${project.build.directory}/${app.name}.app.zip" failonerror="false"/>
+                                        <delete failonerror="false" file="${project.build.directory}/${app.name}.app.zip"/>
                                         <mkdir dir="${app.bundle}/Contents/MacOS"/>
                                         <mkdir dir="${app.bundle}/Contents/Java"/>
                                         <mkdir dir="${app.bundle}/Contents/Resources"/>
 
                                         <!-- Copy app files -->
-                                        <copy file="${fat.jar}"
-                                              todir="${app.bundle}/Contents/Java"
-                                              overwrite="true" failonerror="false"/>
-                                        <copy file="${app.icon.macos}"
-                                              todir="${app.bundle}/Contents/Resources"
-                                              overwrite="true" failonerror="false"/>
+                                        <copy failonerror="false" file="${fat.jar}" overwrite="true" todir="${app.bundle}/Contents/Java"/>
+                                        <copy failonerror="false" file="${app.icon.macos}" overwrite="true" todir="${app.bundle}/Contents/Resources"/>
 
                                         <!-- Create Info.plist -->
                                         <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
@@ -247,7 +235,7 @@
 DIR="$( cd "$( dirname "$0" )" && cd ../Java && pwd )"
 exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-jar-with-dependencies.jar"
                                         ]]></echo>
-                                        <fixcrlf file="${app.bundle}/Contents/MacOS/launch" eol="unix"/>
+                                        <fixcrlf eol="unix" file="${app.bundle}/Contents/MacOS/launch"/>
                                         <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
 
                                         <!-- Zip and install -->
@@ -258,8 +246,7 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
                                         </exec>
                                         <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
                                         <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
-                                        <copy todir="${user.home}/Applications/Glyco-PAINT"
-                                              overwrite="true" failonerror="false">
+                                        <copy failonerror="false" overwrite="true" todir="${user.home}/Applications/Glyco-PAINT">
                                             <fileset dir="${project.build.directory}">
                                                 <include name="${app.name}.app/**"/>
                                             </fileset>

@@ -1,8 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- ===================================================================== -->
-<!--  PAINT SHARED UTILS MODULE                                           -->
-<!-- ===================================================================== -->
-<!--
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- ===================================================================== --><!--  PAINT SHARED UTILS MODULE                                           --><!-- ===================================================================== --><!--
   PURPOSE:
     Provides shared utility classes used across all Paint modules.
     This includes core I/O, data management, PDF utilities, and plist parsing.
@@ -19,12 +16,7 @@
   NOTES:
     • This module is no longer responsible for copying its JAR into Fiji.app.
       The integrated installer handles plugin deployment.
--->
-<!-- ===================================================================== -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+--><!-- ===================================================================== --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <!-- =============================================================== -->
     <!-- Project hierarchy                                               -->
@@ -34,7 +26,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.8-SNAPSHOT</version>
+        <version>0.0.16-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

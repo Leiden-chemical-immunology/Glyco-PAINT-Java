@@ -1,14 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.8-SNAPSHOT</version>
+        <version>0.0.16-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -51,7 +49,7 @@
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
-            <version>0.0.8-SNAPSHOT</version>
+            <version>0.0.16-SNAPSHOT</version>
         </dependency>
 
         <!-- Bundled dependencies -->
@@ -82,7 +80,7 @@
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-generate-squares</artifactId>
-            <version>0.0.8-SNAPSHOT</version>
+            <version>0.0.16-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
@@ -140,7 +138,9 @@
                 <executions>
                     <execution>
                         <phase>package</phase>
-                        <goals><goal>shade</goal></goals>
+                        <goals>
+<goal>shade</goal>
+</goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
@@ -191,7 +191,7 @@
                             <skip>${env.CI}</skip>
 
                             <target>
-                                <echo message="🚀 Deploying ${project.artifactId} to Fiji (skipped in CI)"/>
+                                <echo message="&#128640; Deploying ${project.artifactId} to Fiji (skipped in CI)"/>
 
                                 <delete quiet="true">
                                     <fileset dir="${fiji.dir}/plugins">
@@ -199,7 +199,7 @@
                                     </fileset>
                                 </delete>
 
-                                <copy todir="${fiji.dir}/plugins" overwrite="true">
+                                <copy overwrite="true" todir="${fiji.dir}/plugins">
                                     <fileset dir="${project.build.directory}">
                                         <include name="${project.artifactId}-${project.version}-jar-with-dependencies.jar"/>
                                     </fileset>

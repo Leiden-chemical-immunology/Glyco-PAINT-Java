@@ -1,8 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- ===================================================================== -->
-<!--  PAINT REGRESSION MODULE                                             -->
-<!-- ===================================================================== -->
-<!--
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- ===================================================================== --><!--  PAINT REGRESSION MODULE                                             --><!-- ===================================================================== --><!--
   PURPOSE:
     Builds the PAINT Regression module, used for regression testing
     of all Squares and Tracks data. This module ensures data consistency
@@ -22,13 +19,7 @@
     • Run via:
           java -jar paint-regression-<version>-jar-with-dependencies.jar
     • Includes JUnit 5 for test execution.
--->
-<!-- ===================================================================== -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+--><!-- ===================================================================== --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <!-- =============================================================== -->
     <!-- Project hierarchy                                               -->
@@ -38,7 +29,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.8-SNAPSHOT</version>
+        <version>0.0.16-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
