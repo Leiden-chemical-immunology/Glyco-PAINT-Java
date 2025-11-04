@@ -41,7 +41,7 @@
     <artifactId>paint-parent</artifactId>
                 
     
-    <version>0.0.57</version>
+    <version>0.0.58</version>
                 
     
     <relativePath>../pom.xml</relativePath>
@@ -185,7 +185,7 @@
   </build>
     
   
-  <version>0.0.57</version>
+  <version>0.0.58</version>
     
 
 </project>
