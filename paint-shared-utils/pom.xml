@@ -26,7 +26,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.31</version>
+        <version>0.0.33-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -43,7 +43,7 @@
     <!-- Properties                                                     -->
     <!-- =============================================================== -->
     <properties>
-        <project.build.outputTimestamp>2025-11-03T20:11:54Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-11-04T09:30:36Z</project.build.outputTimestamp>
     </properties>
 
     <!-- =============================================================== -->
@@ -111,5 +111,5 @@
         </plugins>
     </build>
 
-<version>0.0.31</version>
+<version>0.0.33-SNAPSHOT</version>
 </project>

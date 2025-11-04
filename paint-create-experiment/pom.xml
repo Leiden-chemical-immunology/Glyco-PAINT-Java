@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.31</version>
+        <version>0.0.33-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -39,7 +39,7 @@
     <!-- Application properties                                         -->
     <!-- =============================================================== -->
     <properties>
-        <project.build.outputTimestamp>2025-11-03T20:11:54Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-11-04T09:30:36Z</project.build.outputTimestamp>
         <app.name>Create Experiment</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-create-experiment.icns</app.icon.macos>
@@ -55,7 +55,7 @@
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
-            <version>0.0.31</version>
+            <version>0.0.33-SNAPSHOT</version>
         </dependency>
 
         <!-- CSV utilities -->
@@ -279,5 +279,5 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
         </repository>
     </repositories>
 
-<version>0.0.31</version>
+<version>0.0.33-SNAPSHOT</version>
 </project>
