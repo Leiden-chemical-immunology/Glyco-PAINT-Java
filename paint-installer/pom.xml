@@ -5,12 +5,12 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.49</version>
+        <version>0.0.49-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>paint-installer</artifactId>
-    <version>0.0.49</version>
+    <version>0.0.49-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Glyco-PAINT Installer</name>
     <description>Self-extracting GUI installer for Glyco-PAINT (macOS).</description>
