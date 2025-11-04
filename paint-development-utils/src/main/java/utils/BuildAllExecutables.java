@@ -145,6 +145,19 @@ public class BuildAllExecutables {
 
             buildAndCollect(moduleDir, "-Pwindows-exe", "*.exe", windowsPath);
             buildAndCollectMacApp(moduleDir, "-Pmacos-appbundle", macOSPath);
+
+            // --- Install built module into local repo for plugin dependencies ---
+            System.out.println("📦 Installing " + module + " into local Maven repo...");
+            List<String> installCmd = Arrays.asList(
+                    "mvn", "-q", "install", "-DskipTests",
+                    "-Dmaven.repo.local=" + System.getProperty("user.home") + "/.m2/repository"
+            );
+            ProcessBuilder installPb = new ProcessBuilder(installCmd);
+            installPb.directory(moduleDir.toFile());
+            Process installProc = startAndFilterOutput(installPb, module);
+            if (installProc.waitFor() != 0)
+                throw new RuntimeException("❌ Failed to install " + module + " into local repo.");
+            System.out.println("✅ Installed " + module + " locally.");
         }
 
         // --- Build the Fiji plugin ---
