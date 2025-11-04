@@ -514,28 +514,49 @@ public class BuildAllExecutables {
 
         String message = String.format("Bump version: %s → %s", oldVersion, newVersion);
 
-        // Stage only pom.xml files
+        // Use bash -c so globs (**/pom.xml) are expanded by the shell
+        String addCommand = "git add **/pom.xml";
         List<String[]> commands = Arrays.asList(
-                new String[]{"git", "add", "*.xml"},
-                new String[]{"git", "add", "**/pom.xml"},
+                new String[]{"bash", "-c", addCommand},
+                new String[]{"git", "diff", "--cached", "--quiet"},
                 new String[]{"git", "commit", "-m", message}
         );
 
-        for (String[] cmd : commands) {
-            System.out.println("🔧 Running: " + String.join(" ", cmd));
-            ProcessBuilder pb = new ProcessBuilder(cmd);
-            pb.directory(repoDir.toFile());
-            pb.inheritIO();
-            Process process = pb.start();
-            int exit = process.waitFor();
-            if (exit != 0 && !cmd[0].equals("git") && !cmd[1].equals("commit")) {
-                System.err.println("⚠️  Git command failed: " + String.join(" ", cmd));
-            }
+        // --- 1️⃣ Add all pom.xml files
+        System.out.println("🔧 Running: " + addCommand);
+        ProcessBuilder addPb = new ProcessBuilder("bash", "-c", addCommand);
+        addPb.directory(repoDir.toFile());
+        addPb.inheritIO();
+        Process addProc = addPb.start();
+        if (addProc.waitFor() != 0) {
+            System.err.println("⚠️  git add failed — check repository status.");
+            return;
         }
 
-        System.out.println("✅ Committed pom.xml version bump: " + message);
-    }
+        // --- 2️⃣ Check if anything was staged
+        ProcessBuilder diffPb = new ProcessBuilder("git", "diff", "--cached", "--quiet");
+        diffPb.directory(repoDir.toFile());
+        Process diffProc = diffPb.start();
+        int diffExit = diffProc.waitFor();
 
+        if (diffExit == 0) {
+            System.out.println("ℹ️  No pom.xml changes to commit.");
+            return;
+        }
+
+        // --- 3️⃣ Commit staged pom.xml files
+        System.out.println("🔧 Running: git commit -m \"" + message + "\"");
+        ProcessBuilder commitPb = new ProcessBuilder("git", "commit", "-m", message);
+        commitPb.directory(repoDir.toFile());
+        commitPb.inheritIO();
+        Process commitProc = commitPb.start();
+        int commitExit = commitProc.waitFor();
+
+        if (commitExit == 0)
+            System.out.println("✅ Committed pom.xml version bump: " + message);
+        else
+            System.err.println("⚠️  git commit failed (nothing staged or error).");
+    }
     // ======================================================================
     // 🔹 Maven Process Helpers
     // ======================================================================
