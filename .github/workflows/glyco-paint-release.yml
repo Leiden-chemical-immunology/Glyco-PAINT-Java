@@ -3,6 +3,9 @@ name: Glyco-PAINT Release
 permissions:
   contents: write
 
+on:
+  workflow_dispatch:
+
 #on:
 #  push:
 #    tags:
