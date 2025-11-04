@@ -21,7 +21,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jjabakker</groupId>
     <artifactId>paint-parent</artifactId>
-    <version>0.0.41-SNAPSHOT</version>
+    <version>0.0.42</version>
     <packaging>pom</packaging>
 
     <name>Paint Parent</name>
@@ -113,7 +113,7 @@
             <dependency>
                 <groupId>com.github.jjabakker</groupId>
                 <artifactId>paint-shared-utils</artifactId>
-                <version>0.0.41-SNAPSHOT</version>
+                <version>0.0.42</version>
             </dependency>
 
             <!-- Common external libraries -->
@@ -142,6 +142,25 @@
     <!-- Shared build and plugin configuration                           -->
     <!-- =============================================================== -->
     <build>
+
+        <!-- =========================================================== -->
+        <!-- Shared resource handling for all child modules              -->
+        <!-- Ensures icons and images are copied into target/classes     -->
+        <!-- =========================================================== -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.ico</include>
+                    <include>**/*.icns</include>
+                    <include>**/*.png</include>
+                    <include>**/*.jpg</include>
+                    <include>**/*.gif</include>
+                </includes>
+            </resource>
+        </resources>
+
+
         <pluginManagement>
             <plugins>
                 <!-- Compiler -->
