@@ -1,3 +1,34 @@
+/* =================================================================================================
+ *  PURPOSE    : Automate full version bumping and multi-platform builds for all Glyco-PAINT modules.
+ *
+ *  DESCRIPTION:
+ *     This utility coordinates the end-to-end build pipeline for all Glyco-PAINT Java modules.
+ *     It performs version management, dependency installation, Git commits, and packaging
+ *     for both Windows and macOS executables in one run.
+ *
+ *  EXECUTION FLOW SUMMARY:
+ *     1. Read current parent POM version (must end with -SNAPSHOT).
+ *     2. Compute release and next development versions based on the bump flag.
+ *     3. Build and install current SNAPSHOT versions of shared and parent modules.
+ *     4. Install the parent POM also as a local release (for dependency resolution).
+ *     5. Bump all POM versions across modules and commit to Git.
+ *     6. Reinstall the bumped parent POM and rebuild shared-utils.
+ *     7. Build each module for both platforms, fail-fast on errors.
+ *     8. Copy built executables or app bundles into the organized build directory.
+ *
+ *  KEY FEATURES:
+ *     • Full automated version bumping and tagging
+ *     • Local parent POM release injection for offline builds
+ *     • Fail-fast build execution with clear per-module reporting
+ *     • Distinct build directories for macOS (.app bundles) and Windows (.exe)
+ *     • Git commit integration for version control synchronization
+ *
+ *  AUTHOR     : J.J. Abakker
+ *  MODULE     : paint-development-utils
+ *  UPDATED    : 2025-11-04
+ *  COPYRIGHT  : (c) 2025 J.J. Abakker. All rights reserved.
+ * =============================================================================================== */
+
 package utils;
 
 import java.io.*;
@@ -9,8 +40,15 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.*;
 
+/**
+ * Central build orchestrator for the entire Glyco-PAINT project.
+ * <p>
+ * Handles version bumping, Maven rebuilds, Git commits, and multi-platform packaging.
+ * The build fails immediately upon any critical Maven error.
+ */
 public class BuildAllExecutables {
 
+    /** List of modules to build for both platforms. */
     private static final List<String> MODULES = Arrays.asList(
             "paint-viewer",
             "paint-generate-squares",
@@ -18,12 +56,19 @@ public class BuildAllExecutables {
             "paint-create-experiment"
     );
 
-    private static final Path BASE_PATH   = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
+    /** Base repository path containing all source modules. */
+    private static final Path BASE_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
+
+    /** Target directory for completed builds. */
     private static final Path BUILDS_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Builds");
 
+    /**
+     * Main entry point.
+     * Accepts an optional bump flag: "-bump 0.0.x" | "-bump 0.x.0" | "-bump x.0.0".
+     */
     public static void main(String[] args) {
         try {
-            String bumpFlag = "0.0.x"; // default bump type
+            String bumpFlag = "0.0.x"; // Default bump type (patch)
             if (args.length >= 2 && args[0].equalsIgnoreCase("-bump")) {
                 bumpFlag = args[1];
             }
@@ -36,44 +81,50 @@ public class BuildAllExecutables {
         }
     }
 
+    /**
+     * Main orchestration logic.
+     * Coordinates version management, builds, and packaging for all modules.
+     */
     private void run(String bumpFlag) throws Exception {
         System.out.println("=== Building Glyco-PAINT apps for macOS and Windows ===");
 
+        // Retrieve current version from parent POM
         Path parentPom = BASE_PATH.resolve("pom.xml");
         String currentVersion = getVersionFromPom(parentPom);
         if (currentVersion == null || !currentVersion.endsWith("-SNAPSHOT")) {
             throw new IllegalStateException("Expected SNAPSHOT version in parent pom.xml, found: " + currentVersion);
         }
 
+        // Determine release and next dev versions
         VersionInfo versionInfo = computeVersions(currentVersion, bumpFlag);
         System.out.println("🔢 Current: " + currentVersion);
         System.out.println("🏷️  Release: " + versionInfo.releaseVersion);
         System.out.println("🚀 Next dev: " + versionInfo.nextDevVersion);
 
-        // Step 1: Build old snapshot to ensure all dependencies are installed
+        // 1️⃣ Build old snapshot to ensure all dependencies are fresh
         rebuildSharedUtils();
         installParentPom();
         installParentPomAsRelease(versionInfo.releaseVersion);
 
-        // Step 2: Bump version numbers and commit
+        // 2️⃣ Bump versions across all modules and commit changes
         bumpAllPomVersions(currentVersion, versionInfo.nextDevVersion);
         commitVersionBump(currentVersion, versionInfo.nextDevVersion);
 
-        // 🔹 Install new parent snapshot after bump
-        installParentPom(); // install the newly bumped parent SNAPSHOT
+        // 3️⃣ Reinstall the new parent SNAPSHOT
+        installParentPom();
 
-        // Step 3: Rebuild shared-utils again, now at the new version
+        // 4️⃣ Rebuild shared-utils with updated parent version
         rebuildSharedUtils();
 
-        // Step 4: Prepare build directories
-        Path buildRoot   = BUILDS_PATH.resolve("Glyco-PAINT-" + versionInfo.releaseVersion);
+        // 5️⃣ Prepare build directories for macOS and Windows
+        Path buildRoot = BUILDS_PATH.resolve("Glyco-PAINT-" + versionInfo.releaseVersion);
         Path windowsPath = buildRoot.resolve("Windows");
-        Path macOSPath   = buildRoot.resolve("macOS");
+        Path macOSPath = buildRoot.resolve("macOS");
         Files.createDirectories(windowsPath);
         Files.createDirectories(macOSPath);
         System.out.println("📦 Output base: " + buildRoot);
 
-        // Step 5: Build all modules (fail-fast)
+        // 6️⃣ Build all modules for both platforms (fail-fast)
         for (String module : MODULES) {
             Path moduleDir = BASE_PATH.resolve(module);
             System.out.println("\n---------------------------------------------");
@@ -88,9 +139,13 @@ public class BuildAllExecutables {
         System.out.println("✅ Output directory: " + buildRoot.toAbsolutePath());
     }
 
-    // ===============================================================
-    // 🔹 Build paint-shared-utils with forced local install refresh
-    // ===============================================================
+    // ======================================================================
+    // 🔹 Shared Utility Builders
+    // ======================================================================
+
+    /**
+     * Builds and installs {@code paint-shared-utils} locally to ensure all dependencies are current.
+     */
     private void rebuildSharedUtils() throws IOException, InterruptedException {
         Path utilsDir = BASE_PATH.resolve("paint-shared-utils");
         System.out.println("\n🧱 Building paint-shared-utils...");
@@ -98,7 +153,6 @@ public class BuildAllExecutables {
             throw new IOException("Missing pom.xml in " + utilsDir);
         }
 
-        // Force Maven to update remote snapshots and refresh the local repo
         String localRepo = System.getProperty("user.home") + "/.m2/repository";
         List<String> cmd = Arrays.asList(
                 "mvn", "-U", "clean", "install",
@@ -111,22 +165,31 @@ public class BuildAllExecutables {
         pb.directory(utilsDir.toFile());
         Process process = startAndFilterOutput(pb, "paint-shared-utils");
         int exit = process.waitFor();
-        if (exit != 0) {
+        if (exit != 0)
             throw new RuntimeException("❌ Failed to install paint-shared-utils. Exit code: " + exit);
-        }
 
         System.out.println("✅ paint-shared-utils installed successfully (refreshed local repo).");
     }
 
+    // ======================================================================
+    // 🔹 Version Computation and Data
+    // ======================================================================
 
-    // ===============================================================
-    // Version bumping logic
-    // ===============================================================
+    /** Helper container for version state. */
     private static class VersionInfo {
         final String releaseVersion, nextDevVersion;
-        VersionInfo(String release, String next) { this.releaseVersion = release; this.nextDevVersion = next; }
+        VersionInfo(String release, String next) {
+            this.releaseVersion = release;
+            this.nextDevVersion = next;
+        }
     }
 
+    /**
+     * Compute new release and next development versions.
+     *
+     * @param currentVersion current project version (e.g., 0.0.23-SNAPSHOT)
+     * @param bumpFlag one of "0.0.x", "0.x.0", "x.0.0"
+     */
     private VersionInfo computeVersions(String currentVersion, String bumpFlag) {
         String base = currentVersion.replace("-SNAPSHOT", "");
         String[] parts = base.split("\\.");
@@ -145,9 +208,13 @@ public class BuildAllExecutables {
         return new VersionInfo(releaseVersion, releaseVersion + "-SNAPSHOT");
     }
 
-    // ===============================================================
-    // Build logic (fail-fast, filtered output)
-    // ===============================================================
+    // ======================================================================
+    // 🔹 Build Execution and Artifact Collection
+    // ======================================================================
+
+    /**
+     * Builds a module using a specified Maven profile, copying matching artifacts into the output directory.
+     */
     private void buildAndCollect(Path moduleDir, String profile, String glob, Path destDir)
             throws IOException, InterruptedException {
 
@@ -165,22 +232,25 @@ public class BuildAllExecutables {
         Process process = startAndFilterOutput(pb, moduleDir.getFileName().toString());
         int exit = process.waitFor();
 
+        // Retry online if offline build fails (common when parent SNAPSHOT not yet cached)
         if (exit != 0) {
             System.out.println("⚠️  Offline build failed, retrying online...");
             List<String> onlineCmd = new ArrayList<>(offlineCmd);
-            onlineCmd.remove("-o"); // remove offline flag
+            onlineCmd.remove("-o");
             ProcessBuilder retry = new ProcessBuilder(onlineCmd);
             retry.directory(moduleDir.toFile());
             process = startAndFilterOutput(retry, moduleDir.getFileName().toString());
             exit = process.waitFor();
-            if (exit != 0) {
+            if (exit != 0)
                 throw new RuntimeException("❌ Build failed for " + moduleDir.getFileName() + " (" + profile + ")");
-            }
         }
 
         copyMatchingFiles(moduleDir.resolve("target"), glob, destDir);
     }
 
+    /**
+     * Builds the macOS `.app` bundle version of a module and copies results to destination.
+     */
     private void buildAndCollectMacApp(Path moduleDir, String profile, Path destDir)
             throws IOException, InterruptedException {
 
@@ -206,9 +276,8 @@ public class BuildAllExecutables {
             retry.directory(moduleDir.toFile());
             process = startAndFilterOutput(retry, moduleDir.getFileName().toString());
             exit = process.waitFor();
-            if (exit != 0) {
+            if (exit != 0)
                 throw new RuntimeException("❌ macOS build failed for " + moduleDir.getFileName());
-            }
         }
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(moduleDir.resolve("target"), "*.app*")) {
@@ -224,6 +293,11 @@ public class BuildAllExecutables {
         }
     }
 
+    // ======================================================================
+    // 🔹 File Utilities
+    // ======================================================================
+
+    /** Copies files from source to destination matching a given glob pattern. */
     private void copyMatchingFiles(Path fromDir, String glob, Path destDir) throws IOException {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(fromDir, glob)) {
             for (Path file : stream) {
@@ -233,6 +307,7 @@ public class BuildAllExecutables {
         }
     }
 
+    /** Recursively copies a directory tree. */
     private void copyDirectory(Path source, Path target) throws IOException {
         Files.walk(source).forEach(path -> {
             try {
@@ -245,9 +320,11 @@ public class BuildAllExecutables {
         });
     }
 
-    // ===============================================================
-    // POM version utilities
-    // ===============================================================
+    // ======================================================================
+    // 🔹 POM and Git Utilities
+    // ======================================================================
+
+    /** Bump version numbers in all {@code pom.xml} files under the project tree. */
     private void bumpAllPomVersions(String oldVersion, String newVersion) throws Exception {
         Files.walk(BASE_PATH)
                 .filter(p -> p.getFileName().toString().equals("pom.xml"))
@@ -258,6 +335,7 @@ public class BuildAllExecutables {
         System.out.println("✅ Updated all pom.xml files to " + newVersion);
     }
 
+    /** Updates the version string inside a single pom.xml file. */
     private void updatePomVersion(Path pom, String oldVersion, String newVersion) throws Exception {
         DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document doc = docBuilder.parse(Files.newInputStream(pom));
@@ -271,6 +349,7 @@ public class BuildAllExecutables {
         t.transform(new DOMSource(doc), new StreamResult(Files.newOutputStream(pom)));
     }
 
+    /** Extracts the version number from the given pom.xml. */
     private String getVersionFromPom(Path pomPath) {
         try (InputStream in = Files.newInputStream(pomPath)) {
             DocumentBuilder b = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -283,9 +362,7 @@ public class BuildAllExecutables {
         return null;
     }
 
-    // ===============================================================
-    // 🔹 Commit updated pom.xml files to Git
-    // ===============================================================
+    /** Commits all updated pom.xml files to Git. */
     private void commitVersionBump(String oldVersion, String newVersion) throws IOException, InterruptedException {
         Path repoDir = BASE_PATH;
         if (!Files.exists(repoDir.resolve(".git"))) {
@@ -315,9 +392,11 @@ public class BuildAllExecutables {
         System.out.println("✅ Committed version bump: " + message);
     }
 
-    // ===============================================================
-    // 🔹 Filter Maven output (hide Unsafe warnings)
-    // ===============================================================
+    // ======================================================================
+    // 🔹 Maven Process Helpers
+    // ======================================================================
+
+    /** Starts a Maven process and filters its output to suppress noisy warnings. */
     private static Process startAndFilterOutput(ProcessBuilder pb, String moduleName) throws IOException {
         pb.redirectErrorStream(true);
         Process process = pb.start();
@@ -326,19 +405,19 @@ public class BuildAllExecutables {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.contains("sun.misc.Unsafe") || line.contains("HiddenClassDefiner"))
-                    continue; // suppress only these
+                    continue;
                 System.out.println("[" + moduleName + "] " + line);
             }
         }
         return process;
     }
 
+    /** Installs the current parent POM locally. */
     private void installParentPom() throws IOException, InterruptedException {
         Path parentPom = BASE_PATH.resolve("pom.xml");
         System.out.println("\n🧩 Installing parent POM locally...");
-        if (!Files.exists(parentPom)) {
+        if (!Files.exists(parentPom))
             throw new IOException("Parent POM not found at " + parentPom);
-        }
 
         List<String> cmd = Arrays.asList(
                 "mvn", "-U", "install", "-N", "-DskipTests",
@@ -350,16 +429,16 @@ public class BuildAllExecutables {
         pb.directory(BASE_PATH.toFile());
         Process process = startAndFilterOutput(pb, "paint-parent");
         int exit = process.waitFor();
-        if (exit != 0) {
+        if (exit != 0)
             throw new RuntimeException("❌ Failed to install paint-parent. Exit code: " + exit);
-        }
 
         System.out.println("✅ Parent POM installed locally.");
     }
 
-    // ===============================================================
-    // 🔹 Install parent POM as a local release version (for Maven offline resolution)
-    // ===============================================================
+    /**
+     * Installs the parent POM as a local release version (e.g., 0.0.24)
+     * so that dependent modules can resolve it even when Maven runs offline.
+     */
     private void installParentPomAsRelease(String releaseVersion) throws IOException, InterruptedException {
         Path parentPom = BASE_PATH.resolve("pom.xml");
         if (!Files.exists(parentPom)) {
@@ -371,7 +450,7 @@ public class BuildAllExecutables {
         Path tmpPom = Files.createTempFile("parent-release-", ".xml");
         Files.copy(parentPom, tmpPom, StandardCopyOption.REPLACE_EXISTING);
 
-        // Replace only the <version> tag in the temp file
+        // Replace only the <version> tag in the temporary copy
         String content = new String(Files.readAllBytes(tmpPom), "UTF-8")
                 .replaceAll("<version>.*?</version>", "<version>" + releaseVersion + "</version>");
         Files.write(tmpPom, content.getBytes("UTF-8"));
@@ -391,6 +470,7 @@ public class BuildAllExecutables {
         Process process = startAndFilterOutput(pb, "paint-parent-release");
         int exit = process.waitFor();
         Files.deleteIfExists(tmpPom);
+
         if (exit != 0)
             throw new RuntimeException("❌ Failed to install parent POM release version " + releaseVersion);
 
