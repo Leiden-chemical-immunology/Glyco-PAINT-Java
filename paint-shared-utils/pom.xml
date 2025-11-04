@@ -17,99 +17,167 @@
     • This module is no longer responsible for copying its JAR into Fiji.app.
       The integrated installer handles plugin deployment.
 --><!-- ===================================================================== --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
-    <!-- =============================================================== -->
-    <!-- Project hierarchy                                               -->
-    <!-- =============================================================== -->
-    <modelVersion>4.0.0</modelVersion>
-
-    <parent>
-        <groupId>com.github.jjabakker</groupId>
-        <artifactId>paint-parent</artifactId>
-        <version>0.0.55-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-
-    <artifactId>paint-shared-utils</artifactId>
-    <packaging>jar</packaging>
-
-    <!-- =============================================================== -->
-    <!-- Metadata                                                       -->
-    <!-- =============================================================== -->
-    <name>Paint Shared Utils</name>
-    <description>Shared utilities for the Paint project</description>
-
-    <!-- =============================================================== -->
-    <!-- Properties                                                     -->
-    <!-- =============================================================== -->
-    <properties>
-        <project.build.outputTimestamp>2025-11-04T09:30:36Z</project.build.outputTimestamp>
-    </properties>
-
-    <!-- =============================================================== -->
-    <!-- Dependencies                                                    -->
-    <!-- =============================================================== -->
-    <dependencies>
-        <!-- JSON parsing -->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.11.0</version>
-        </dependency>
-
-        <!-- Tablesaw for data frames -->
-        <dependency>
-            <groupId>tech.tablesaw</groupId>
-            <artifactId>tablesaw-core</artifactId>
-            <version>0.43.1</version>
-        </dependency>
-
-        <!-- Commons CSV -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
-            <version>1.10.0</version>
-        </dependency>
-
-        <!-- TIFF Image I/O -->
-        <dependency>
-            <groupId>com.twelvemonkeys.imageio</groupId>
-            <artifactId>imageio-tiff</artifactId>
-            <version>3.10.1</version>
-        </dependency>
-
-        <!-- PDF generation utilities -->
-        <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox</artifactId>
-            <version>2.0.30</version>
-        </dependency>
-
-        <dependency>
-            <groupId>de.rototor.pdfbox</groupId>
-            <artifactId>graphics2d</artifactId>
-            <version>0.37</version>
-        </dependency>
-
-        <!-- macOS plist reader -->
-        <dependency>
-            <groupId>com.googlecode.plist</groupId>
-            <artifactId>dd-plist</artifactId>
-            <version>1.23</version>
-        </dependency>
-    </dependencies>
-
-    <!-- =============================================================== -->
-    <!-- Build configuration                                             -->
-    <!-- =============================================================== -->
-    <build>
-        <plugins>
-            <!-- ======================================================= -->
-            <!-- No automatic JAR copying to Fiji                        -->
-            <!-- Deployment handled by installer (see release-manager)   -->
-            <!-- ======================================================= -->
-        </plugins>
-    </build>
-
-<version>0.0.55-SNAPSHOT</version>
+      
+  <!-- =============================================================== -->
+      
+  <!-- Project hierarchy                                               -->
+      
+  <!-- =============================================================== -->
+      
+  <modelVersion>4.0.0</modelVersion>
+      
+  <parent>
+            
+    <groupId>com.github.jjabakker</groupId>
+            
+    <artifactId>paint-parent</artifactId>
+            
+    <version>0.0.56</version>
+            
+    <relativePath>../pom.xml</relativePath>
+        
+  </parent>
+      
+  <artifactId>paint-shared-utils</artifactId>
+      
+  <packaging>jar</packaging>
+      
+  <!-- =============================================================== -->
+      
+  <!-- Metadata                                                       -->
+      
+  <!-- =============================================================== -->
+      
+  <name>Paint Shared Utils</name>
+      
+  <description>Shared utilities for the Paint project</description>
+      
+  <!-- =============================================================== -->
+      
+  <!-- Properties                                                     -->
+      
+  <!-- =============================================================== -->
+      
+  <properties>
+            
+    <project.build.outputTimestamp>2025-11-04T09:30:36Z</project.build.outputTimestamp>
+        
+  </properties>
+      
+  <!-- =============================================================== -->
+      
+  <!-- Dependencies                                                    -->
+      
+  <!-- =============================================================== -->
+      
+  <dependencies>
+            
+    <!-- JSON parsing -->
+            
+    <dependency>
+                  
+      <groupId>com.google.code.gson</groupId>
+                  
+      <artifactId>gson</artifactId>
+                  
+      <version>2.11.0</version>
+              
+    </dependency>
+            
+    <!-- Tablesaw for data frames -->
+            
+    <dependency>
+                  
+      <groupId>tech.tablesaw</groupId>
+                  
+      <artifactId>tablesaw-core</artifactId>
+                  
+      <version>0.43.1</version>
+              
+    </dependency>
+            
+    <!-- Commons CSV -->
+            
+    <dependency>
+                  
+      <groupId>org.apache.commons</groupId>
+                  
+      <artifactId>commons-csv</artifactId>
+                  
+      <version>1.10.0</version>
+              
+    </dependency>
+            
+    <!-- TIFF Image I/O -->
+            
+    <dependency>
+                  
+      <groupId>com.twelvemonkeys.imageio</groupId>
+                  
+      <artifactId>imageio-tiff</artifactId>
+                  
+      <version>3.10.1</version>
+              
+    </dependency>
+            
+    <!-- PDF generation utilities -->
+            
+    <dependency>
+                  
+      <groupId>org.apache.pdfbox</groupId>
+                  
+      <artifactId>pdfbox</artifactId>
+                  
+      <version>2.0.30</version>
+              
+    </dependency>
+            
+    <dependency>
+                  
+      <groupId>de.rototor.pdfbox</groupId>
+                  
+      <artifactId>graphics2d</artifactId>
+                  
+      <version>0.37</version>
+              
+    </dependency>
+            
+    <!-- macOS plist reader -->
+            
+    <dependency>
+                  
+      <groupId>com.googlecode.plist</groupId>
+                  
+      <artifactId>dd-plist</artifactId>
+                  
+      <version>1.23</version>
+              
+    </dependency>
+        
+  </dependencies>
+      
+  <!-- =============================================================== -->
+      
+  <!-- Build configuration                                             -->
+      
+  <!-- =============================================================== -->
+      
+  <build>
+            
+    <plugins>
+                  
+      <!-- ======================================================= -->
+                  
+      <!-- No automatic JAR copying to Fiji                        -->
+                  
+      <!-- Deployment handled by installer (see release-manager)   -->
+                  
+      <!-- ======================================================= -->
+              
+    </plugins>
+        
+  </build>
+  
+  <version>0.0.56</version>
+  
 </project>
