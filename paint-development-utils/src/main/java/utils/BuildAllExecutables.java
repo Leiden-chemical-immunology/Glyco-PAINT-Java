@@ -59,6 +59,9 @@ public class BuildAllExecutables {
         bumpAllPomVersions(currentVersion, versionInfo.nextDevVersion);
         commitVersionBump(currentVersion, versionInfo.nextDevVersion);
 
+        // 🔹 Install new parent snapshot after bump
+        installParentPom(); // install the newly bumped parent SNAPSHOT
+
         // Step 3: Rebuild shared-utils again, now at the new version
         rebuildSharedUtils();
 
