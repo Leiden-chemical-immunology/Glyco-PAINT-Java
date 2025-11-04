@@ -14,7 +14,7 @@
     <artifactId>paint-parent</artifactId>
                 
     
-    <version>0.0.56-SNAPSHOT</version>
+    <version>0.0.57</version>
                 
     
     <relativePath>../pom.xml</relativePath>
@@ -119,7 +119,7 @@
       <artifactId>paint-shared-utils</artifactId>
                         
       
-      <version>0.0.56-SNAPSHOT</version>
+      <version>0.0.57</version>
                     
     
     </dependency>
@@ -197,7 +197,7 @@
       <artifactId>paint-generate-squares</artifactId>
                         
       
-      <version>0.0.56-SNAPSHOT</version>
+      <version>0.0.57</version>
                         
       
       <scope>compile</scope>
@@ -554,7 +554,7 @@
   </build>
     
   
-  <version>0.0.56-SNAPSHOT</version>
+  <version>0.0.57</version>
     
 
 </project>
