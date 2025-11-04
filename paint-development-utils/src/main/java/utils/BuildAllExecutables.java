@@ -52,6 +52,7 @@ public class BuildAllExecutables {
 
         // Step 1: Build old snapshot to ensure all dependencies are installed
         rebuildSharedUtils();
+        installParentPom();
 
         // Step 2: Bump version numbers and commit
         bumpAllPomVersions(currentVersion, versionInfo.nextDevVersion);
@@ -112,7 +113,7 @@ public class BuildAllExecutables {
 
         System.out.println("✅ paint-shared-utils installed successfully (refreshed local repo).");
     }
-    
+
 
     // ===============================================================
     // Version bumping logic
@@ -295,5 +296,29 @@ public class BuildAllExecutables {
             }
         }
         return process;
+    }
+
+    private void installParentPom() throws IOException, InterruptedException {
+        Path parentPom = BASE_PATH.resolve("pom.xml");
+        System.out.println("\n🧩 Installing parent POM locally...");
+        if (!Files.exists(parentPom)) {
+            throw new IOException("Parent POM not found at " + parentPom);
+        }
+
+        List<String> cmd = Arrays.asList(
+                "mvn", "-U", "install", "-N", "-DskipTests",
+                "-Dmaven.repo.local=" + System.getProperty("user.home") + "/.m2/repository"
+        );
+        System.out.println("🔧 Running: " + String.join(" ", cmd));
+
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.directory(BASE_PATH.toFile());
+        Process process = startAndFilterOutput(pb, "paint-parent");
+        int exit = process.waitFor();
+        if (exit != 0) {
+            throw new RuntimeException("❌ Failed to install paint-parent. Exit code: " + exit);
+        }
+
+        System.out.println("✅ Parent POM installed locally.");
     }
 }
