@@ -23,7 +23,7 @@
  *     • Distinct build directories for macOS (.app bundles) and Windows (.exe)
  *     • Git commit integration for version control synchronization
  *
- *  AUTHOR     : J.J. Abakker
+ *  AUTHOR     : J.J. Bakker
  *  MODULE     : paint-development-utils
  *  UPDATED    : 2025-11-04
  *  COPYRIGHT  : (c) 2025 J.J. Abakker. All rights reserved.
@@ -69,11 +69,21 @@ public class BuildAllExecutables {
     public static void main(String[] args) {
         try {
             String bumpFlag = "0.0.x"; // Default bump type (patch)
-            if (args.length >= 2 && args[0].equalsIgnoreCase("-bump")) {
-                bumpFlag = args[1];
+            boolean doRelease = false; // Default: no release
+
+            // Parse command-line flags
+            for (int i = 0; i < args.length; i++) {
+                if (args[i].equalsIgnoreCase("-bump") && i + 1 < args.length) {
+                    bumpFlag = args[i + 1];
+                    i++; // skip version argument
+                } else if (args[i].equalsIgnoreCase("--release")) {
+                    doRelease = true;
+                }
             }
 
-            new BuildAllExecutables().run(bumpFlag);
+            // Pass both arguments
+            new BuildAllExecutables().run(bumpFlag, doRelease);
+
         } catch (Exception e) {
             System.err.println("❌ Build process failed: " + e.getMessage());
             e.printStackTrace();
@@ -85,46 +95,44 @@ public class BuildAllExecutables {
      * Main orchestration logic.
      * Coordinates version management, builds, and packaging for all modules.
      */
-    private void run(String bumpFlag) throws Exception {
+    private void run(String bumpFlag, boolean doRelease) throws Exception {
         System.out.println("=== Building Glyco-PAINT apps for macOS and Windows ===");
 
-        // Retrieve current version from parent POM
         Path parentPom = BASE_PATH.resolve("pom.xml");
         String currentVersion = getVersionFromPom(parentPom);
         if (currentVersion == null || !currentVersion.endsWith("-SNAPSHOT")) {
             throw new IllegalStateException("Expected SNAPSHOT version in parent pom.xml, found: " + currentVersion);
         }
 
-        // Determine release and next dev versions
         VersionInfo versionInfo = computeVersions(currentVersion, bumpFlag);
-        System.out.println("🔢 Current: " + currentVersion);
+        System.out.println("🔢  Current:  " + currentVersion);
         System.out.println("🏷️  Release: " + versionInfo.releaseVersion);
         System.out.println("🚀 Next dev: " + versionInfo.nextDevVersion);
 
-        // 1️⃣ Build old snapshot to ensure all dependencies are fresh
+        // 1️⃣ Build old snapshot to ensure all dependencies are installed
         rebuildSharedUtils();
         installParentPom();
-        installParentPomAsRelease(versionInfo.releaseVersion);
 
-        // 2️⃣ Bump versions across all modules and commit changes
-        bumpAllPomVersions(currentVersion, versionInfo.nextDevVersion);
-        commitVersionBump(currentVersion, versionInfo.nextDevVersion);
+        // 2️⃣ If doing a release, switch all modules to release version first
+        if (doRelease) {
+            System.out.println("\n🎯 Preparing release " + versionInfo.releaseVersion);
+            bumpAllPomVersions(currentVersion, versionInfo.releaseVersion);
+            commitVersionBump(currentVersion, versionInfo.releaseVersion);
+            installParentPom();
+            rebuildSharedUtils();
+        } else {
+            installParentPomAsRelease(versionInfo.releaseVersion);
+        }
 
-        // 3️⃣ Reinstall the new parent SNAPSHOT
-        installParentPom();
-
-        // 4️⃣ Rebuild shared-utils with updated parent version
-        rebuildSharedUtils();
-
-        // 5️⃣ Prepare build directories for macOS and Windows
-        Path buildRoot = BUILDS_PATH.resolve("Glyco-PAINT-" + versionInfo.releaseVersion);
+        // 3️⃣ Prepare build directories
+        Path buildRoot   = BUILDS_PATH.resolve("Glyco-PAINT-" + versionInfo.releaseVersion);
         Path windowsPath = buildRoot.resolve("Windows");
-        Path macOSPath = buildRoot.resolve("macOS");
+        Path macOSPath   = buildRoot.resolve("macOS");
         Files.createDirectories(windowsPath);
         Files.createDirectories(macOSPath);
         System.out.println("📦 Output base: " + buildRoot);
 
-        // 6️⃣ Build all modules for both platforms (fail-fast)
+        // 4️⃣ Build all modules for both platforms (fail-fast)
         for (String module : MODULES) {
             Path moduleDir = BASE_PATH.resolve(module);
             System.out.println("\n---------------------------------------------");
@@ -135,10 +143,20 @@ public class BuildAllExecutables {
             buildAndCollectMacApp(moduleDir, "-Pmacos-appbundle", macOSPath);
         }
 
+        // 5️⃣ Tag and push if release requested
+        if (doRelease) {
+            createAndPushTag(versionInfo.releaseVersion);
+        }
+
+        // 6️⃣ Bump to next SNAPSHOT for continued development
+        bumpAllPomVersions(versionInfo.releaseVersion, versionInfo.nextDevVersion);
+        commitVersionBump(versionInfo.releaseVersion, versionInfo.nextDevVersion);
+        installParentPom();
+        rebuildSharedUtils();
+
         System.out.println("\n🎉 All builds complete!");
         System.out.println("✅ Output directory: " + buildRoot.toAbsolutePath());
     }
-
     // ======================================================================
     // 🔹 Shared Utility Builders
     // ======================================================================
@@ -165,9 +183,9 @@ public class BuildAllExecutables {
         pb.directory(utilsDir.toFile());
         Process process = startAndFilterOutput(pb, "paint-shared-utils");
         int exit = process.waitFor();
-        if (exit != 0)
+        if (exit != 0) {
             throw new RuntimeException("❌ Failed to install paint-shared-utils. Exit code: " + exit);
-
+        }
         System.out.println("✅ paint-shared-utils installed successfully (refreshed local repo).");
     }
 
@@ -191,11 +209,11 @@ public class BuildAllExecutables {
      * @param bumpFlag one of "0.0.x", "0.x.0", "x.0.0"
      */
     private VersionInfo computeVersions(String currentVersion, String bumpFlag) {
-        String base = currentVersion.replace("-SNAPSHOT", "");
+        String   base  = currentVersion.replace("-SNAPSHOT", "");
         String[] parts = base.split("\\.");
-        int major = Integer.parseInt(parts[0]);
-        int minor = Integer.parseInt(parts[1]);
-        int patch = Integer.parseInt(parts[2]);
+        int      major = Integer.parseInt(parts[0]);
+        int      minor = Integer.parseInt(parts[1]);
+        int      patch = Integer.parseInt(parts[2]);
 
         switch (bumpFlag) {
             case "0.0.x": patch++; break;
@@ -241,8 +259,9 @@ public class BuildAllExecutables {
             retry.directory(moduleDir.toFile());
             process = startAndFilterOutput(retry, moduleDir.getFileName().toString());
             exit = process.waitFor();
-            if (exit != 0)
+            if (exit != 0) {
                 throw new RuntimeException("❌ Build failed for " + moduleDir.getFileName() + " (" + profile + ")");
+            }
         }
 
         copyMatchingFiles(moduleDir.resolve("target"), glob, destDir);
@@ -266,7 +285,7 @@ public class BuildAllExecutables {
         ProcessBuilder pb = new ProcessBuilder(offlineCmd);
         pb.directory(moduleDir.toFile());
         Process process = startAndFilterOutput(pb, moduleDir.getFileName().toString());
-        int exit = process.waitFor();
+        int     exit    = process.waitFor();
 
         if (exit != 0) {
             System.out.println("⚠️  Offline macOS build failed, retrying online...");
@@ -276,18 +295,21 @@ public class BuildAllExecutables {
             retry.directory(moduleDir.toFile());
             process = startAndFilterOutput(retry, moduleDir.getFileName().toString());
             exit = process.waitFor();
-            if (exit != 0)
+            if (exit != 0) {
                 throw new RuntimeException("❌ macOS build failed for " + moduleDir.getFileName());
+            }
         }
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(moduleDir.resolve("target"), "*.app*")) {
             for (Path appBundle : stream) {
                 Path dest = destDir.resolve(appBundle.getFileName());
                 System.out.println("📦 Copying " + appBundle.getFileName() + " → " + destDir);
-                if (appBundle.toString().endsWith(".zip"))
+                if (appBundle.toString().endsWith(".zip")) {
                     Files.copy(appBundle, dest, StandardCopyOption.REPLACE_EXISTING);
-                else
+                }
+                else {
                     copyDirectory(appBundle, dest);
+                }
                 System.out.println("✅ Copied " + appBundle.getFileName());
             }
         }
@@ -312,8 +334,12 @@ public class BuildAllExecutables {
         Files.walk(source).forEach(path -> {
             try {
                 Path dest = target.resolve(source.relativize(path).toString());
-                if (Files.isDirectory(path)) Files.createDirectories(dest);
-                else Files.copy(path, dest, StandardCopyOption.REPLACE_EXISTING);
+                if (Files.isDirectory(path)) {
+                    Files.createDirectories(dest);
+                }
+                else {
+                    Files.copy(path, dest, StandardCopyOption.REPLACE_EXISTING);
+                }
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -338,7 +364,7 @@ public class BuildAllExecutables {
     /** Updates the version string inside a single pom.xml file. */
     private void updatePomVersion(Path pom, String oldVersion, String newVersion) throws Exception {
         DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document doc = docBuilder.parse(Files.newInputStream(pom));
+        Document doc  = docBuilder.parse(Files.newInputStream(pom));
         NodeList list = doc.getElementsByTagName("version");
         for (int i = 0; i < list.getLength(); i++) {
             Node node = list.item(i);
@@ -351,11 +377,13 @@ public class BuildAllExecutables {
 
     /** Extracts the version number from the given pom.xml. */
     private String getVersionFromPom(Path pomPath) {
-        try (InputStream in = Files.newInputStream(pomPath)) {
-            DocumentBuilder b = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document doc = b.parse(in);
-            NodeList list = doc.getElementsByTagName("version");
-            if (list.getLength() > 0) return list.item(0).getTextContent().trim();
+        try (InputStream    in   = Files.newInputStream(pomPath)) {
+            DocumentBuilder b    = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document        doc  = b.parse(in);
+            NodeList        list = doc.getElementsByTagName("version");
+            if (list.getLength() > 0) {
+                return list.item(0).getTextContent().trim();
+            }
         } catch (Exception e) {
             System.err.println("⚠️  Could not read version from " + pomPath + ": " + e.getMessage());
         }
@@ -404,8 +432,9 @@ public class BuildAllExecutables {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                if (line.contains("sun.misc.Unsafe") || line.contains("HiddenClassDefiner"))
+                if (line.contains("sun.misc.Unsafe") || line.contains("HiddenClassDefiner")) {
                     continue;
+                }
                 System.out.println("[" + moduleName + "] " + line);
             }
         }
@@ -416,8 +445,9 @@ public class BuildAllExecutables {
     private void installParentPom() throws IOException, InterruptedException {
         Path parentPom = BASE_PATH.resolve("pom.xml");
         System.out.println("\n🧩 Installing parent POM locally...");
-        if (!Files.exists(parentPom))
+        if (!Files.exists(parentPom)) {
             throw new IOException("Parent POM not found at " + parentPom);
+        }
 
         List<String> cmd = Arrays.asList(
                 "mvn", "-U", "install", "-N", "-DskipTests",
@@ -429,8 +459,9 @@ public class BuildAllExecutables {
         pb.directory(BASE_PATH.toFile());
         Process process = startAndFilterOutput(pb, "paint-parent");
         int exit = process.waitFor();
-        if (exit != 0)
+        if (exit != 0) {
             throw new RuntimeException("❌ Failed to install paint-parent. Exit code: " + exit);
+        }
 
         System.out.println("✅ Parent POM installed locally.");
     }
@@ -475,5 +506,64 @@ public class BuildAllExecutables {
             throw new RuntimeException("❌ Failed to install parent POM release version " + releaseVersion);
 
         System.out.println("✅ Installed paint-parent " + releaseVersion + " locally.");
+    }
+
+    /**
+     * Creates and pushes a Git tag for the specified release version.
+     * This automatically triggers the GitHub Actions workflow (which listens for "v*.*.*" tags).
+     *
+     * The tag is created as "vX.Y.Z" (e.g., "v0.0.20") and annotated with a standard message.
+     * The working directory must be clean before tagging to ensure reproducible builds.
+     */
+    private void createAndPushTag(String version) throws IOException, InterruptedException {
+        Path repoDir = BASE_PATH;
+        if (!Files.exists(repoDir.resolve(".git"))) {
+            System.out.println("⚠️  No Git repository found — skipping tagging.");
+            return;
+        }
+
+        String tagName = "v" + version;
+
+        // --- Check for uncommitted changes
+        ProcessBuilder statusCheck = new ProcessBuilder("git", "status", "--porcelain");
+        statusCheck.directory(repoDir.toFile());
+        Process        status = statusCheck.start();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(status.getInputStream()));
+        boolean        dirty  = reader.lines().anyMatch(line -> !line.trim().isEmpty());
+        status.waitFor();
+        if (dirty) {
+            throw new IllegalStateException("❌ Working tree not clean — please commit or stash changes before tagging.");
+        }
+
+        // --- Ensure tag doesn’t already exist
+        ProcessBuilder checkTag = new ProcessBuilder("git", "tag", "--list", tagName);
+        checkTag.directory(repoDir.toFile());
+        Process        check     = checkTag.start();
+        BufferedReader tagReader = new BufferedReader(new InputStreamReader(check.getInputStream()));
+        boolean        exists    = tagReader.lines().anyMatch(line -> line.trim().equals(tagName));
+        check.waitFor();
+        if (exists) {
+            throw new IllegalStateException("❌ Tag " + tagName + " already exists!");
+        }
+
+        // --- Create and push the tag
+        List<String[]> commands = Arrays.asList(
+                new String[]{"git", "tag", "-a", tagName, "-m", "Release " + tagName},
+                new String[]{"git", "push", "origin", tagName}
+        );
+
+        for (String[] cmd : commands) {
+            System.out.println("🔧 Running: " + String.join(" ", cmd));
+            ProcessBuilder pb = new ProcessBuilder(cmd);
+            pb.directory(repoDir.toFile());
+            pb.inheritIO();
+            Process process = pb.start();
+            int exit = process.waitFor();
+            if (exit != 0) {
+                throw new RuntimeException("❌ Git command failed: " + String.join(" ", cmd));
+            }
+        }
+
+        System.out.println("✅ Tagged and pushed " + tagName + " successfully!");
     }
 }
