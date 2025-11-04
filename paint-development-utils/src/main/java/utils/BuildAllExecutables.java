@@ -69,6 +69,28 @@ public class BuildAllExecutables {
     private static final Path BASE_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
     private static final Path BUILDS_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Builds");
 
+    /**
+     * Ensures Maven runs with Java 8, even if this program itself runs on a newer JDK.
+     */
+    private static void enforceJava8(ProcessBuilder pb) {
+        try {
+            Process proc = new ProcessBuilder("/usr/libexec/java_home", "-v", "1.8").start();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
+                String java8Home = reader.readLine();
+                proc.waitFor();
+                if (java8Home != null && !java8Home.isEmpty()) {
+                    Map<String, String> env = pb.environment();
+                    env.put("JAVA_HOME", java8Home);
+                    env.put("PATH", java8Home + "/bin:" + env.get("PATH"));
+                } else {
+                    System.err.println("⚠️  Java 8 not found; Maven may build with a newer JDK.");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️  Could not enforce Java 8 environment: " + e.getMessage());
+        }
+    }
+
     public static void main(String[] args) {
         try {
             String bumpFlag = "0.0.x";
@@ -683,6 +705,7 @@ public class BuildAllExecutables {
     /** Starts a Maven process and filters its output to suppress noisy warnings. */
     private static Process startAndFilterOutput(ProcessBuilder pb, String moduleName) throws IOException {
         pb.redirectErrorStream(true);
+        enforceJava8(pb);
         Process process = pb.start();
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
@@ -758,6 +781,7 @@ public class BuildAllExecutables {
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(BASE_PATH.toFile());
         pb.inheritIO(); // show Maven output directly
+        enforceJava8(pb);
         Process process = pb.start();
         int exit = process.waitFor();
 
@@ -869,6 +893,7 @@ public class BuildAllExecutables {
             ProcessBuilder pb = new ProcessBuilder(cmd);
             pb.directory(repoDir.toFile());
             pb.inheritIO();
+            enforceJava8(pb);
             Process process = pb.start();
             int exit = process.waitFor();
             if (exit != 0) {
