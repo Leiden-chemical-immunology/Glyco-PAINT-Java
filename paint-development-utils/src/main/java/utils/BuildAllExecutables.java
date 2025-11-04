@@ -49,6 +49,7 @@
 package utils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import javax.xml.parsers.*;
@@ -248,88 +249,54 @@ public class BuildAllExecutables {
 
 
         // ======================================================================
-        // 🔹 Build Installer Payload
+        // 🔹 Build Installer Payloads (macOS + Windows)
         // ======================================================================
+
+        // --- macOS payload ---
         System.out.println("\n---------------------------------------------");
         System.out.println("📦 Building macOS Installer Payload");
         System.out.println("---------------------------------------------");
 
-        Path payloadSrc = macOSPath; // the completed .app bundles
-        Path pluginSrc  = pluginPath;
-        Path installerResources = BASE_PATH.resolve("paint-installer/src/main/resources");
-        Files.createDirectories(installerResources);
+        Path macInstallerResources = BASE_PATH.resolve("paint-installer-mac/src/main/resources");
+        Files.createDirectories(macInstallerResources);
+        Path macPayloadZip = macInstallerResources.resolve("payload.zip");
+        Files.deleteIfExists(macPayloadZip);
 
-        Path payloadZip = installerResources.resolve("payload.zip");
+        // Create mac payload.zip from .app bundles + plugin folder
+        zipPayload(macOSPath, pluginPath, macPayloadZip);
+        System.out.println("✅ macOS payload ready: " + macPayloadZip);
 
-        // Delete any existing payload.zip
-        Files.deleteIfExists(payloadZip);
-
-        // Create payload.zip containing .app bundles + plugin folder
-        List<String> zipCmd = new ArrayList<>();
-        zipCmd.addAll(Arrays.asList("zip", "-qry", payloadZip.toString()));
-        zipCmd.addAll(Collections.singletonList("."));
-        ProcessBuilder zipPb = new ProcessBuilder(zipCmd);
-        zipPb.directory(payloadSrc.toFile());
-        zipPb.inheritIO();
-        Process zipProc = zipPb.start();
-        int zipExit = zipProc.waitFor();
-        if (zipExit != 0) {
-            throw new RuntimeException("❌ Failed to create payload.zip");
-        }
-
-        // Add plugin directory into payload.zip
-        if (Files.exists(pluginSrc) && Files.list(pluginSrc).findAny().isPresent()) {
-            System.out.println("📦 Adding plugin contents as /plugin/ folder in payload.zip");
-
-            // Use a subshell to add the plugin directory as "plugin/" in the zip
-            String cmd = String.format(
-                    "cd \"%s\" && mkdir -p ../_plugin_tmp && cp -R . ../_plugin_tmp/plugin && " +
-                            "cd ../_plugin_tmp && zip -qry \"%s\" plugin && cd .. && rm -rf _plugin_tmp",
-                    pluginSrc.toAbsolutePath(),
-                    payloadZip.toAbsolutePath()
-            );
-
-            ProcessBuilder addPb = new ProcessBuilder("bash", "-c", cmd);
-            addPb.inheritIO();
-            Process addProc = addPb.start();
-            if (addProc.waitFor() != 0) {
-                throw new RuntimeException("❌ Failed to append plugin to payload.zip");
-            }
-        }
-
-        System.out.println("✅ Created payload.zip at: " + payloadZip.toAbsolutePath());
-
-        // ======================================================================
-        // 🔹 Build Installer JAR
-        // ======================================================================
+        // --- Windows payload ---
         System.out.println("\n---------------------------------------------");
-        System.out.println("🛠️  Building Glyco-PAINT Installer JAR");
+        System.out.println("📦 Building Windows Installer Payload");
         System.out.println("---------------------------------------------");
 
-        List<String> installerCmd = Arrays.asList(
-                "mvn", "-U", "clean", "package",
-                "-pl", "paint-installer", "-am",
-                "-DskipTests"
-        );
-        ProcessBuilder installerPb = new ProcessBuilder(installerCmd);
-        installerPb.directory(BASE_PATH.toFile());
-        installerPb.inheritIO();
-        Process installerProc = installerPb.start();
-        int installerExit = installerProc.waitFor();
-        if (installerExit != 0) {
-            throw new RuntimeException("❌ Installer build failed!");
-        }
+        Path winInstallerResources = BASE_PATH.resolve("paint-installer-windows/src/main/resources");
+        Files.createDirectories(winInstallerResources);
+        Path winPayloadZip = winInstallerResources.resolve("payload.zip");
+        Files.deleteIfExists(winPayloadZip);
 
-        // Copy installer jar into macOS build directory
-        try (DirectoryStream<Path> jarStream = Files.newDirectoryStream(
-                BASE_PATH.resolve("paint-installer/target"), "*.jar")) {
-            for (Path jar : jarStream) {
-                if (jar.getFileName().toString().contains("jar-with-dependencies")) continue;
-                Path dest = macOSPath.resolve(jar.getFileName());
-                Files.copy(jar, dest, StandardCopyOption.REPLACE_EXISTING);
-                System.out.println("✅ Copied installer JAR → " + dest.getFileName());
-            }
-        }
+        // Create Windows payload.zip from Windows builds + plugin folder
+        zipPayload(windowsPath, pluginPath, winPayloadZip);
+        System.out.println("✅ Windows payload ready: " + winPayloadZip);
+
+        // ======================================================================
+        // 🔹 Build Installer JAR and EXE
+        // ======================================================================
+
+        // macOS JAR installer
+        System.out.println("\n---------------------------------------------");
+        System.out.println("🛠️  Building Glyco-PAINT macOS Installer JAR");
+        System.out.println("---------------------------------------------");
+        runMavenModule("paint-installer-mac", versionInfo.releaseVersion);
+
+        // Windows EXE installer
+        System.out.println("\n---------------------------------------------");
+        System.out.println("🛠️  Building Glyco-PAINT Windows Installer EXE");
+        System.out.println("---------------------------------------------");
+        runMavenModule("paint-installer-windows", versionInfo.releaseVersion);
+
+        System.out.println("\n✅ Both installers built successfully for version " + versionInfo.releaseVersion);        System.out.println("✅ Installer built with version " + versionInfo.releaseVersion);
 
         System.out.println("\n🎉 All builds complete!");
         System.out.println("✅ Output directory: " + buildRoot.toAbsolutePath());
@@ -622,10 +589,23 @@ public class BuildAllExecutables {
         }
 
         if (modified) {
-            Transformer t = TransformerFactory.newInstance().newTransformer();
+            TransformerFactory tf = TransformerFactory.newInstance();
+            tf.setAttribute("indent-number", 2);
+
+            Transformer t = tf.newTransformer();
             t.setOutputProperty(OutputKeys.INDENT, "yes");
+            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+            t.setOutputProperty(OutputKeys.METHOD, "xml");
             t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-            t.transform(new DOMSource(doc), new StreamResult(Files.newOutputStream(pom)));
+            t.setOutputProperty("{http://xml.apache.org/xalan}indent-amount", "2");
+
+            // Prevent adding extra blank lines
+            t.setOutputProperty(OutputKeys.STANDALONE, "no");
+
+            try (OutputStream out = Files.newOutputStream(pom)) {
+                t.transform(new DOMSource(doc), new StreamResult(new OutputStreamWriter(out, StandardCharsets.UTF_8)));
+            }
+
             System.out.println("📝 Enforced version " + newVersion + " in " + pom.getFileName());
         }
     }
@@ -901,6 +881,44 @@ public class BuildAllExecutables {
             }
         }
 
+
+
         System.out.println("✅ Tagged and pushed " + tagName + " successfully!");
+    }
+
+    private void zipPayload(Path appDir, Path pluginDir, Path outputZip) throws Exception {
+        List<String> cmd = new ArrayList<>();
+        cmd.addAll(Arrays.asList("zip", "-qry", outputZip.toString(), "."));
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.directory(appDir.toFile());
+        pb.inheritIO();
+        if (pb.start().waitFor() != 0)
+            throw new RuntimeException("❌ Failed to zip payload at " + appDir);
+
+        if (Files.exists(pluginDir) && Files.list(pluginDir).findAny().isPresent()) {
+            String cmdStr = String.format(
+                    "cd \"%s\" && mkdir -p ../_plugin_tmp && cp -R . ../_plugin_tmp/plugin && " +
+                            "cd ../_plugin_tmp && zip -qry \"%s\" plugin && cd .. && rm -rf _plugin_tmp",
+                    pluginDir.toAbsolutePath(), outputZip.toAbsolutePath()
+            );
+            ProcessBuilder addPb = new ProcessBuilder("bash", "-c", cmdStr);
+            addPb.inheritIO();
+            if (addPb.start().waitFor() != 0)
+                throw new RuntimeException("❌ Failed to append plugin to " + outputZip);
+        }
+    }
+
+    private void runMavenModule(String module, String version) throws Exception {
+        List<String> cmd = Arrays.asList(
+                "mvn", "-U", "clean", "package",
+                "-pl", module, "-am",
+                "-DskipTests",
+                "-Dproject.version=" + version
+        );
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.directory(BASE_PATH.toFile());
+        pb.inheritIO();
+        if (pb.start().waitFor() != 0)
+            throw new RuntimeException("❌ Maven build failed for module: " + module);
     }
 }
