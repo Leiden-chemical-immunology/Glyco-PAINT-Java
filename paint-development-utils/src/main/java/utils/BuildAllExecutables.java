@@ -4,19 +4,19 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import javax.xml.parsers.*;
-import org.w3c.dom.*;
 
 /**
  * BuildAllExecutables
  *
  * PURPOSE:
- *   Builds both Windows (.exe) and macOS (.app.zip) Glyco-PAINT desktop applications
+ *   Builds both Windows (.exe) and macOS (.app) Glyco-PAINT desktop applications
  *   and gathers them into:
  *
  *       /Users/hans/JavaPaintProjects/Glyco-PAINT-<version>/{Windows,macOS}
  *
- * USAGE:
- *   Run this directly from IntelliJ (Run → BuildAllExecutables.main())
+ * BEHAVIOR:
+ *   • Windows → copies .exe files from /target/
+ *   • macOS → copies the full .app bundle (not the .zip)
  */
 public class BuildAllExecutables {
 
@@ -50,34 +50,35 @@ public class BuildAllExecutables {
         }
 
         // Build target directories
-        Path buildRootPath = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Builds", "Glyco-PAINT-" + version);
-        Path windowsPath   = buildRootPath.resolve("Windows");
-        Path macosPath     = buildRootPath.resolve("macOS");
+        Path buildPath   = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Builds", "Glyco-PAINT-" + version);
+        Path windowsPath = buildPath.resolve("Windows");
+        Path macOSPath   = buildPath.resolve("macOS");
 
         Files.createDirectories(windowsPath);
-        Files.createDirectories(macosPath);
+        Files.createDirectories(macOSPath);
 
-        System.out.println("📦 Output base: " + buildRootPath.toAbsolutePath());
+        System.out.println("📦 Output base: " + buildPath.toAbsolutePath());
 
-        // Build all modules
         for (String module : MODULES) {
             Path moduleDir = BASE_PATH.resolve(module);
             System.out.println("\n---------------------------------------------");
             System.out.println("🏗️  Module: " + module);
             System.out.println("---------------------------------------------");
 
-            // Windows build
+            // --- Windows build ---
             buildAndCollect(moduleDir, "-Pwindows-exe", "*.exe", windowsPath);
 
-            // macOS build
-            buildAndCollect(moduleDir, "-Pmacos-appbundle", "*.app.zip", macosPath);
+            // --- macOS build ---
+            buildAndCollectMacApp(moduleDir, "-Pmacos-appbundle", macOSPath);
         }
 
         System.out.println("\n🎉 All builds complete!");
-        System.out.println("✅ Output directory: " + buildRootPath.toAbsolutePath());
+        System.out.println("✅ Output directory: " + buildPath.toAbsolutePath());
     }
 
-    // === HELPER: run mvn and copy output ===
+    // ---------------------------------------------------------------------
+    // Build and collect for Windows
+    // ---------------------------------------------------------------------
     private void buildAndCollect(Path moduleDir, String profile, String glob, Path destDir)
             throws IOException, InterruptedException {
 
@@ -96,7 +97,38 @@ public class BuildAllExecutables {
         copyMatchingFiles(moduleDir.resolve("target"), glob, destDir);
     }
 
-    // === HELPER: copy files ===
+    // ---------------------------------------------------------------------
+    // Build and collect for macOS (copy .app directly)
+    // ---------------------------------------------------------------------
+    private void buildAndCollectMacApp(Path moduleDir, String profile, Path destDir)
+            throws IOException, InterruptedException {
+
+        System.out.println("🍎  Running Maven build " + profile + " in " + moduleDir.getFileName());
+        ProcessBuilder pb = new ProcessBuilder("mvn", "-q", "clean", "package", profile);
+        pb.directory(moduleDir.toFile());
+        pb.inheritIO();
+
+        Process process = pb.start();
+        int exit = process.waitFor();
+        if (exit != 0) {
+            System.err.println("❌ macOS build failed for " + moduleDir.getFileName());
+            return;
+        }
+
+        // Copy any generated .app bundles directly
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(moduleDir.resolve("target"), "*.app")) {
+            for (Path appBundle : stream) {
+                Path dest = destDir.resolve(appBundle.getFileName());
+                System.out.println("📦 Copying " + appBundle.getFileName() + " → " + destDir);
+                copyDirectory(appBundle, dest);
+                System.out.println("✅ Copied " + appBundle.getFileName());
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // File utilities
+    // ---------------------------------------------------------------------
     private void copyMatchingFiles(Path fromDir, String glob, Path destDir) throws IOException {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(fromDir, glob)) {
             for (Path file : stream) {
@@ -107,11 +139,26 @@ public class BuildAllExecutables {
         }
     }
 
-    // === HELPER: read version from pom.xml ===
+    private void copyDirectory(Path source, Path target) throws IOException {
+        Files.walk(source).forEach(path -> {
+            try {
+                Path relative = source.relativize(path);
+                Path dest = target.resolve(relative);
+                if (Files.isDirectory(path)) {
+                    Files.createDirectories(dest);
+                } else {
+                    Files.copy(path, dest, StandardCopyOption.REPLACE_EXISTING);
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+    }
+
     private String getVersionFromPom(Path pomPath) {
         try (InputStream in = Files.newInputStream(pomPath)) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder        =   factory.newDocumentBuilder();
+            DocumentBuilder builder        = factory.newDocumentBuilder();
             org.w3c.dom.Document doc       = builder.parse(in);
             org.w3c.dom.NodeList list      = doc.getElementsByTagName("version");
             if (list.getLength() > 0) {
