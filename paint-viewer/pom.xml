@@ -46,7 +46,7 @@
     <artifactId>paint-parent</artifactId>
                 
     
-    <version>0.0.58</version>
+    <version>0.0.58-SNAPSHOT</version>
                 
     
     <relativePath>../pom.xml</relativePath>
@@ -133,7 +133,7 @@
       <artifactId>paint-shared-utils</artifactId>
                         
       
-      <version>0.0.58</version>
+      <version>0.0.58-SNAPSHOT</version>
                     
     
     </dependency>
@@ -867,7 +867,7 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
   </profiles>
     
   
-  <version>0.0.58</version>
+  <version>0.0.58-SNAPSHOT</version>
     
 
 </project>

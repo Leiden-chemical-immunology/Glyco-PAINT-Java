@@ -6,12 +6,12 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.58</version>
+        <version>0.0.58-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>paint-installer</artifactId>
-    <version>0.0.58</version>
+    <version>0.0.58-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Glyco-PAINT Installer</name>
