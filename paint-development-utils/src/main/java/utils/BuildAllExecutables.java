@@ -110,9 +110,11 @@ public class BuildAllExecutables {
         System.out.println("🏷️  Release: " + versionInfo.releaseVersion);
         System.out.println("🚀 Next dev: " + versionInfo.nextDevVersion);
 
+        // --- Prepare environment ---
         installParentPom();
         rebuildSharedUtils();
 
+        // --- Release preparation ---
         if (doRelease) {
             System.out.println("\n🎯 Preparing release " + versionInfo.releaseVersion);
             bumpAllPomVersions(currentVersion, versionInfo.releaseVersion);
@@ -124,14 +126,17 @@ public class BuildAllExecutables {
             installParentPomAsRelease(versionInfo.releaseVersion);
         }
 
+        // --- Prepare output directories ---
         Path buildRoot   = BUILDS_PATH.resolve("Glyco-PAINT-" + versionInfo.releaseVersion);
         Path windowsPath = buildRoot.resolve("Windows");
         Path macOSPath   = buildRoot.resolve("macOS");
+        Path pluginPath  = buildRoot.resolve("Plugins");
         Files.createDirectories(windowsPath);
         Files.createDirectories(macOSPath);
+        Files.createDirectories(pluginPath);
         System.out.println("📦 Output base: " + buildRoot);
 
-        // 4️⃣ Build all modules for both platforms (fail-fast)
+        // --- Build all application modules ---
         for (String module : MODULES) {
             Path moduleDir = BASE_PATH.resolve(module);
             System.out.println("\n---------------------------------------------");
@@ -142,14 +147,41 @@ public class BuildAllExecutables {
             buildAndCollectMacApp(moduleDir, "-Pmacos-appbundle", macOSPath);
         }
 
+        // --- Build the Fiji plugin ---
+        Path pluginDir = BASE_PATH.resolve("paint-fiji-plugin");
+        if (Files.exists(pluginDir.resolve("pom.xml"))) {
+            System.out.println("\n---------------------------------------------");
+            System.out.println("🔬 Module: paint-fiji-plugin");
+            System.out.println("---------------------------------------------");
+
+            buildAndCollect(pluginDir, "", "*.jar", pluginPath);
+        } else {
+            System.out.println("⚠️  paint-fiji-plugin not found — skipping plugin build.");
+        }
+
+        // --- Tag release if needed ---
         if (doRelease) {
             createAndPushTag(versionInfo.releaseVersion);
         }
 
+        // --- Bump back to next development version ---
         bumpAllPomVersions(versionInfo.releaseVersion, versionInfo.nextDevVersion);
         commitVersionBump(versionInfo.releaseVersion, versionInfo.nextDevVersion);
+
         installParentPom();
-        rebuildSharedUtils();
+
+        // --- Push new SNAPSHOT commit ---
+        System.out.println("\n📦 Pushing new development version (" + versionInfo.nextDevVersion + ") to main...");
+        ProcessBuilder pushMain = new ProcessBuilder("git", "push", "origin", "main");
+        pushMain.directory(BASE_PATH.toFile());
+        pushMain.inheritIO();
+        Process pushProc = pushMain.start();
+        pushProc.waitFor();
+        if (pushProc.exitValue() == 0) {
+            System.out.println("✅ Pushed new development version to main.");
+        } else {
+            System.err.println("⚠️  Failed to push new development version — please push manually.");
+        }
 
         System.out.println("\n🎉 All builds complete!");
         System.out.println("✅ Output directory: " + buildRoot.toAbsolutePath());
