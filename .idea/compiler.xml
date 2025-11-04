@@ -10,6 +10,7 @@
         <module name="paint-regression" />
         <module name="paint-fiji-plugin" />
         <module name="paint-shared-utils" />
+        <module name="paint-installer" />
         <module name="paint-viewer" />
         <module name="paint-generate-squares" />
         <module name="paint-create-experiment" />

@@ -224,6 +224,91 @@ public class BuildAllExecutables {
         installParentPom();
         rebuildSharedUtils();
 
+
+        // ======================================================================
+        // 🔹 Build Installer Payload
+        // ======================================================================
+        System.out.println("\n---------------------------------------------");
+        System.out.println("📦 Building macOS Installer Payload");
+        System.out.println("---------------------------------------------");
+
+        Path payloadSrc = macOSPath; // the completed .app bundles
+        Path pluginSrc  = pluginPath;
+        Path installerResources = BASE_PATH.resolve("paint-installer/src/main/resources");
+        Files.createDirectories(installerResources);
+
+        Path payloadZip = installerResources.resolve("payload.zip");
+
+        // Delete any existing payload.zip
+        Files.deleteIfExists(payloadZip);
+
+        // Create payload.zip containing .app bundles + plugin folder
+        List<String> zipCmd = new ArrayList<>();
+        zipCmd.addAll(Arrays.asList("zip", "-qry", payloadZip.toString()));
+        zipCmd.addAll(Collections.singletonList("."));
+        ProcessBuilder zipPb = new ProcessBuilder(zipCmd);
+        zipPb.directory(payloadSrc.toFile());
+        zipPb.inheritIO();
+        Process zipProc = zipPb.start();
+        int zipExit = zipProc.waitFor();
+        if (zipExit != 0) {
+            throw new RuntimeException("❌ Failed to create payload.zip");
+        }
+
+        // Add plugin directory into payload.zip
+        if (Files.exists(pluginSrc) && Files.list(pluginSrc).findAny().isPresent()) {
+            System.out.println("📦 Adding plugin contents as /plugin/ folder in payload.zip");
+
+            // Use a subshell to add the plugin directory as "plugin/" in the zip
+            String cmd = String.format(
+                    "cd \"%s\" && mkdir -p ../_plugin_tmp && cp -R . ../_plugin_tmp/plugin && " +
+                            "cd ../_plugin_tmp && zip -qry \"%s\" plugin && cd .. && rm -rf _plugin_tmp",
+                    pluginSrc.toAbsolutePath(),
+                    payloadZip.toAbsolutePath()
+            );
+
+            ProcessBuilder addPb = new ProcessBuilder("bash", "-c", cmd);
+            addPb.inheritIO();
+            Process addProc = addPb.start();
+            if (addProc.waitFor() != 0) {
+                throw new RuntimeException("❌ Failed to append plugin to payload.zip");
+            }
+        }
+
+        System.out.println("✅ Created payload.zip at: " + payloadZip.toAbsolutePath());
+
+        // ======================================================================
+        // 🔹 Build Installer JAR
+        // ======================================================================
+        System.out.println("\n---------------------------------------------");
+        System.out.println("🛠️  Building Glyco-PAINT Installer JAR");
+        System.out.println("---------------------------------------------");
+
+        List<String> installerCmd = Arrays.asList(
+                "mvn", "-U", "clean", "package",
+                "-pl", "paint-installer", "-am",
+                "-DskipTests"
+        );
+        ProcessBuilder installerPb = new ProcessBuilder(installerCmd);
+        installerPb.directory(BASE_PATH.toFile());
+        installerPb.inheritIO();
+        Process installerProc = installerPb.start();
+        int installerExit = installerProc.waitFor();
+        if (installerExit != 0) {
+            throw new RuntimeException("❌ Installer build failed!");
+        }
+
+        // Copy installer jar into macOS build directory
+        try (DirectoryStream<Path> jarStream = Files.newDirectoryStream(
+                BASE_PATH.resolve("paint-installer/target"), "*.jar")) {
+            for (Path jar : jarStream) {
+                if (jar.getFileName().toString().contains("jar-with-dependencies")) continue;
+                Path dest = macOSPath.resolve(jar.getFileName());
+                Files.copy(jar, dest, StandardCopyOption.REPLACE_EXISTING);
+                System.out.println("✅ Copied installer JAR → " + dest.getFileName());
+            }
+        }
+
         System.out.println("\n🎉 All builds complete!");
         System.out.println("✅ Output directory: " + buildRoot.toAbsolutePath());
     }
