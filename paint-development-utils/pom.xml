@@ -9,7 +9,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.44</version>
+        <version>0.0.44-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -30,7 +30,7 @@
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
-            <version>0.0.44</version>
+            <version>0.0.44-SNAPSHOT</version>
         </dependency>
 
         <!-- Apache Commons CSV (needed for CSVFormat, CSVParser, etc.) -->
@@ -75,5 +75,5 @@
         </plugins>
     </build>
 
-<version>0.0.44</version>
+<version>0.0.44-SNAPSHOT</version>
 </project>
