@@ -14,309 +14,546 @@
   LICENSE:
     BSD-2-Clause
 --><!-- ===================================================================== --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
-    <!-- =============================================================== -->
-    <!-- Basic project coordinates and metadata                          -->
-    <!-- =============================================================== -->
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>com.github.jjabakker</groupId>
-    <artifactId>paint-parent</artifactId>
-    <version>0.0.55-SNAPSHOT</version>
-    <packaging>pom</packaging>
-
-    <name>Paint Parent</name>
-    <description>Parent POM for Paint projects</description>
+      
+  <!-- =============================================================== -->
+      
+  <!-- Basic project coordinates and metadata                          -->
+      
+  <!-- =============================================================== -->
+      
+  <modelVersion>4.0.0</modelVersion>
+      
+  <groupId>com.github.jjabakker</groupId>
+      
+  <artifactId>paint-parent</artifactId>
+      
+  <version>0.0.56</version>
+      
+  <packaging>pom</packaging>
+      
+  <name>Paint Parent</name>
+      
+  <description>Parent POM for Paint projects</description>
+      
+  <url>https://github.com/jjabakker</url>
+      
+  <inceptionYear>2025</inceptionYear>
+      
+  <organization>
+            
+    <name>jjabakker</name>
+            
     <url>https://github.com/jjabakker</url>
-    <inceptionYear>2025</inceptionYear>
-
-    <organization>
-        <name>jjabakker</name>
-        <url>https://github.com/jjabakker</url>
-    </organization>
-
-    <!-- =============================================================== -->
-    <!-- Licensing and developer information                             -->
-    <!-- =============================================================== -->
-    <licenses>
-        <license>
-            <name>BSD-2-Clause</name>
-            <url>https://opensource.org/licenses/BSD-2-Clause</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <developers>
-        <developer>
-            <id>hans</id>
-            <name>Hans Bakker</name>
-            <email>hans@example.com</email>
-        </developer>
-    </developers>
-
-    <!-- =============================================================== -->
-    <!-- Source control and CI configuration                             -->
-    <!-- =============================================================== -->
-    <scm>
-        <connection>scm:git:git://github.com/jjabakker/JavaPaintProjects.git</connection>
-        <developerConnection>scm:git:ssh://github.com:jjabakker/JavaPaintProjects.git</developerConnection>
-        <url>https://github.com/jjabakker/JavaPaintProjects</url>
-        <tag>HEAD</tag>
-    </scm>
-
-    <issueManagement>
-        <system>GitHub</system>
-        <url>https://github.com/jjabakker/JavaPaintProjects/issues</url>
-    </issueManagement>
-
-    <ciManagement>
-        <system>GitHub Actions</system>
-        <url>https://github.com/jjabakker/JavaPaintProjects/actions</url>
-    </ciManagement>
-
-    <!-- =============================================================== -->
-    <!-- Modules (subprojects)                                           -->
-    <!-- =============================================================== -->
-    <modules>
-        <module>paint-shared-utils</module>
-        <module>paint-fiji-plugin</module>
-        <module>paint-generate-squares</module>
-        <module>paint-create-experiment</module>
-        <module>paint-viewer</module>
-        <module>paint-get-omero</module>
-        <module>paint-launcher</module>
-        <module>paint-regression</module>
-        <module>paint-development-utils</module>
-        <module>paint-installer</module>
-    </modules>
-
-    <!-- =============================================================== -->
-    <!-- Shared properties and encoding settings                         -->
-    <!-- =============================================================== -->
-    <properties>
-        <!-- Java 8 baseline -->
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-
-        <!-- Encoding -->
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-        <!-- Default JVM arguments for applications -->
-        <app.jvm.args>-Xms512m -Xmx2048m -XX:ReservedCodeCacheSize=256m</app.jvm.args>
-    </properties>
-
-    <!-- =============================================================== -->
-    <!-- Centralized dependency management                               -->
-    <!-- =============================================================== -->
-    <dependencyManagement>
-        <dependencies>
-            <!-- Internal shared utilities -->
-            <dependency>
-                <groupId>com.github.jjabakker</groupId>
-                <artifactId>paint-shared-utils</artifactId>
-                <version>0.0.55-SNAPSHOT</version>
-            </dependency>
-
-            <!-- Common external libraries -->
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-csv</artifactId>
-                <version>1.10.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.scijava</groupId>
-                <artifactId>scijava-common</artifactId>
-                <version>2.94.1</version>
-            </dependency>
-
-            <!-- Safe, globally pinned Guava version -->
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>32.1.3-jre</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <!-- =============================================================== -->
-    <!-- Shared build and plugin configuration                           -->
-    <!-- =============================================================== -->
-    <build>
-
-        <!-- =========================================================== -->
-        <!-- Shared resource handling for all child modules              -->
-        <!-- Ensures icons and images are copied into target/classes     -->
-        <!-- =========================================================== -->
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/*.ico</include>
-                    <include>**/*.icns</include>
-                    <include>**/*.png</include>
-                    <include>**/*.jpg</include>
-                    <include>**/*.gif</include>
-                </includes>
-            </resource>
-        </resources>
-
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-            </testResource>
-        </testResources>
         
-        <pluginManagement>
-            <plugins>
-                <!-- Compiler -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.11.0</version>
-                </plugin>
-
-                <!-- Assembly (for fat JARs) -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.6.0</version>
-                </plugin>
-
-                <!-- AntRun (for scripted build steps) -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-antrun-plugin</artifactId>
-                    <version>3.1.0</version>
-                </plugin>
-
-                <!-- Surefire (unit testing) -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.2.5</version>
-                </plugin>
-
-                <!-- Enforce Java 8 requirement -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.1.0</version>
-                    <executions>
-                        <execution>
-                            <id>enforce-java</id>
-                            <goals>
-                                <goal>enforce</goal>
-                            </goals>
-                            <configuration>
-                                <rules>
-                                    <requireJavaVersion>
-                                        <version>[1.8,1.9)</version>
-                                    </requireJavaVersion>
-                                </rules>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-
-        <plugins>
-            <!-- Maven Site generation -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <version>3.12.1</version>
-            </plugin>
-
-            <!-- Publish site to GitHub Pages -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-scm-publish-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                    <checkoutDirectory>${project.build.directory}/scmpublish</checkoutDirectory>
-                    <pubScmUrl>scm:git:git@github.com:jjabakker/JavaPaintProjects.git</pubScmUrl>
-                    <scmBranch>gh-pages</scmBranch>
-                    <checkinComment>Update Maven site</checkinComment>
-                    <content>${project.reporting.outputDirectory}</content>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
-    <!-- =============================================================== -->
-    <!-- Plugin repositories                                              -->
-    <!-- =============================================================== -->
-    <pluginRepositories>
-        <pluginRepository>
-            <id>maven-central</id>
-            <url>https://repo1.maven.org/maven2/</url>
-        </pluginRepository>
-    </pluginRepositories>
-
-    <!-- =============================================================== -->
-    <!-- Reporting configuration for site and Javadoc                    -->
-    <!-- =============================================================== -->
-    <reporting>
-        <plugins>
-            <!-- Project information reports -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>3.4.5</version>
-
-                <reportSets>
-                    <reportSet>
-                        <reports>
-                            <report>dependencies</report>
-                            <report>modules</report>
-                            <report>summary</report>
-                        </reports>
-                    </reportSet>
-                </reportSets>
-
-            </plugin>
-
-            <!-- Aggregated Javadoc generation -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.7.0</version>
-                <reportSets>
-                    <reportSet>
-                        <reports>
-                            <report>aggregate</report>
-                        </reports>
-                    </reportSet>
-                </reportSets>
-
-                <configuration>
-                    <noindex>false</noindex>
-                    <notree>false</notree>
-                    <use>true</use>
-                    <splitindex>true</splitindex>
-                    <additionalOptions>
-                        <additionalOption>-linksource</additionalOption>
-                        <additionalOption>-Xdoclint:none</additionalOption>
-                    </additionalOptions>
-                    <show>protected</show>
-                    <failOnError>false</failOnError>
-                    <doclint>none</doclint>
-                </configuration>
-
-            </plugin>
-        </plugins>
-    </reporting>
-
-    <!-- =============================================================== -->
-    <!-- Distribution (site publishing) configuration                    -->
-    <!-- =============================================================== -->
-    <distributionManagement>
-        <site>
-            <id>github</id>
-            <url>scm:git:git@github.com:jjabakker/JavaPaintProjects.git</url>
-        </site>
-    </distributionManagement>
-
+  </organization>
+      
+  <!-- =============================================================== -->
+      
+  <!-- Licensing and developer information                             -->
+      
+  <!-- =============================================================== -->
+      
+  <licenses>
+            
+    <license>
+                  
+      <name>BSD-2-Clause</name>
+                  
+      <url>https://opensource.org/licenses/BSD-2-Clause</url>
+                  
+      <distribution>repo</distribution>
+              
+    </license>
+        
+  </licenses>
+      
+  <developers>
+            
+    <developer>
+                  
+      <id>hans</id>
+                  
+      <name>Hans Bakker</name>
+                  
+      <email>hans@example.com</email>
+              
+    </developer>
+        
+  </developers>
+      
+  <!-- =============================================================== -->
+      
+  <!-- Source control and CI configuration                             -->
+      
+  <!-- =============================================================== -->
+      
+  <scm>
+            
+    <connection>scm:git:git://github.com/jjabakker/JavaPaintProjects.git</connection>
+            
+    <developerConnection>scm:git:ssh://github.com:jjabakker/JavaPaintProjects.git</developerConnection>
+            
+    <url>https://github.com/jjabakker/JavaPaintProjects</url>
+            
+    <tag>HEAD</tag>
+        
+  </scm>
+      
+  <issueManagement>
+            
+    <system>GitHub</system>
+            
+    <url>https://github.com/jjabakker/JavaPaintProjects/issues</url>
+        
+  </issueManagement>
+      
+  <ciManagement>
+            
+    <system>GitHub Actions</system>
+            
+    <url>https://github.com/jjabakker/JavaPaintProjects/actions</url>
+        
+  </ciManagement>
+      
+  <!-- =============================================================== -->
+      
+  <!-- Modules (subprojects)                                           -->
+      
+  <!-- =============================================================== -->
+      
+  <modules>
+            
+    <module>paint-shared-utils</module>
+            
+    <module>paint-fiji-plugin</module>
+            
+    <module>paint-generate-squares</module>
+            
+    <module>paint-create-experiment</module>
+            
+    <module>paint-viewer</module>
+            
+    <module>paint-get-omero</module>
+            
+    <module>paint-launcher</module>
+            
+    <module>paint-regression</module>
+            
+    <module>paint-development-utils</module>
+            
+    <module>paint-installer</module>
+        
+  </modules>
+      
+  <!-- =============================================================== -->
+      
+  <!-- Shared properties and encoding settings                         -->
+      
+  <!-- =============================================================== -->
+      
+  <properties>
+            
+    <!-- Java 8 baseline -->
+            
+    <maven.compiler.source>1.8</maven.compiler.source>
+            
+    <maven.compiler.target>1.8</maven.compiler.target>
+            
+    <!-- Encoding -->
+            
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+            
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+            
+    <!-- Default JVM arguments for applications -->
+            
+    <app.jvm.args>-Xms512m -Xmx2048m -XX:ReservedCodeCacheSize=256m</app.jvm.args>
+        
+  </properties>
+      
+  <!-- =============================================================== -->
+      
+  <!-- Centralized dependency management                               -->
+      
+  <!-- =============================================================== -->
+      
+  <dependencyManagement>
+            
+    <dependencies>
+                  
+      <!-- Internal shared utilities -->
+                  
+      <dependency>
+                        
+        <groupId>com.github.jjabakker</groupId>
+                        
+        <artifactId>paint-shared-utils</artifactId>
+                        
+        <version>0.0.56</version>
+                    
+      </dependency>
+                  
+      <!-- Common external libraries -->
+                  
+      <dependency>
+                        
+        <groupId>org.apache.commons</groupId>
+                        
+        <artifactId>commons-csv</artifactId>
+                        
+        <version>1.10.0</version>
+                    
+      </dependency>
+                  
+      <dependency>
+                        
+        <groupId>org.scijava</groupId>
+                        
+        <artifactId>scijava-common</artifactId>
+                        
+        <version>2.94.1</version>
+                    
+      </dependency>
+                  
+      <!-- Safe, globally pinned Guava version -->
+                  
+      <dependency>
+                        
+        <groupId>com.google.guava</groupId>
+                        
+        <artifactId>guava</artifactId>
+                        
+        <version>32.1.3-jre</version>
+                    
+      </dependency>
+              
+    </dependencies>
+        
+  </dependencyManagement>
+      
+  <!-- =============================================================== -->
+      
+  <!-- Shared build and plugin configuration                           -->
+      
+  <!-- =============================================================== -->
+      
+  <build>
+            
+    <!-- =========================================================== -->
+            
+    <!-- Shared resource handling for all child modules              -->
+            
+    <!-- Ensures icons and images are copied into target/classes     -->
+            
+    <!-- =========================================================== -->
+            
+    <resources>
+                  
+      <resource>
+                        
+        <directory>src/main/resources</directory>
+                        
+        <includes>
+                              
+          <include>**/*.ico</include>
+                              
+          <include>**/*.icns</include>
+                              
+          <include>**/*.png</include>
+                              
+          <include>**/*.jpg</include>
+                              
+          <include>**/*.gif</include>
+                          
+        </includes>
+                    
+      </resource>
+              
+    </resources>
+            
+    <testResources>
+                  
+      <testResource>
+                        
+        <directory>src/test/resources</directory>
+                    
+      </testResource>
+              
+    </testResources>
+            
+        
+    <pluginManagement>
+                  
+      <plugins>
+                        
+        <!-- Compiler -->
+                        
+        <plugin>
+                              
+          <groupId>org.apache.maven.plugins</groupId>
+                              
+          <artifactId>maven-compiler-plugin</artifactId>
+                              
+          <version>3.11.0</version>
+                          
+        </plugin>
+                        
+        <!-- Assembly (for fat JARs) -->
+                        
+        <plugin>
+                              
+          <groupId>org.apache.maven.plugins</groupId>
+                              
+          <artifactId>maven-assembly-plugin</artifactId>
+                              
+          <version>3.6.0</version>
+                          
+        </plugin>
+                        
+        <!-- AntRun (for scripted build steps) -->
+                        
+        <plugin>
+                              
+          <groupId>org.apache.maven.plugins</groupId>
+                              
+          <artifactId>maven-antrun-plugin</artifactId>
+                              
+          <version>3.1.0</version>
+                          
+        </plugin>
+                        
+        <!-- Surefire (unit testing) -->
+                        
+        <plugin>
+                              
+          <groupId>org.apache.maven.plugins</groupId>
+                              
+          <artifactId>maven-surefire-plugin</artifactId>
+                              
+          <version>3.2.5</version>
+                          
+        </plugin>
+                        
+        <!-- Enforce Java 8 requirement -->
+                        
+        <plugin>
+                              
+          <groupId>org.apache.maven.plugins</groupId>
+                              
+          <artifactId>maven-enforcer-plugin</artifactId>
+                              
+          <version>3.1.0</version>
+                              
+          <executions>
+                                    
+            <execution>
+                                          
+              <id>enforce-java</id>
+                                          
+              <goals>
+                                                
+                <goal>enforce</goal>
+                                            
+              </goals>
+                                          
+              <configuration>
+                                                
+                <rules>
+                                                      
+                  <requireJavaVersion>
+                                                            
+                    <version>[1.8,1.9)</version>
+                                                        
+                  </requireJavaVersion>
+                                                  
+                </rules>
+                                            
+              </configuration>
+                                      
+            </execution>
+                                
+          </executions>
+                          
+        </plugin>
+                    
+      </plugins>
+              
+    </pluginManagement>
+            
+    <plugins>
+                  
+      <!-- Maven Site generation -->
+                  
+      <plugin>
+                        
+        <groupId>org.apache.maven.plugins</groupId>
+                        
+        <artifactId>maven-site-plugin</artifactId>
+                        
+        <version>3.12.1</version>
+                    
+      </plugin>
+                  
+      <!-- Publish site to GitHub Pages -->
+                  
+      <plugin>
+                        
+        <groupId>org.apache.maven.plugins</groupId>
+                        
+        <artifactId>maven-scm-publish-plugin</artifactId>
+                        
+        <version>3.1.0</version>
+                        
+        <configuration>
+                              
+          <checkoutDirectory>${project.build.directory}/scmpublish</checkoutDirectory>
+                              
+          <pubScmUrl>scm:git:git@github.com:jjabakker/JavaPaintProjects.git</pubScmUrl>
+                              
+          <scmBranch>gh-pages</scmBranch>
+                              
+          <checkinComment>Update Maven site</checkinComment>
+                              
+          <content>${project.reporting.outputDirectory}</content>
+                          
+        </configuration>
+                    
+      </plugin>
+              
+    </plugins>
+        
+  </build>
+      
+  <!-- =============================================================== -->
+      
+  <!-- Plugin repositories                                              -->
+      
+  <!-- =============================================================== -->
+      
+  <pluginRepositories>
+            
+    <pluginRepository>
+                  
+      <id>maven-central</id>
+                  
+      <url>https://repo1.maven.org/maven2/</url>
+              
+    </pluginRepository>
+        
+  </pluginRepositories>
+      
+  <!-- =============================================================== -->
+      
+  <!-- Reporting configuration for site and Javadoc                    -->
+      
+  <!-- =============================================================== -->
+      
+  <reporting>
+            
+    <plugins>
+                  
+      <!-- Project information reports -->
+                  
+      <plugin>
+                        
+        <groupId>org.apache.maven.plugins</groupId>
+                        
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+                        
+        <version>3.4.5</version>
+                        
+        <reportSets>
+                              
+          <reportSet>
+                                    
+            <reports>
+                                          
+              <report>dependencies</report>
+                                          
+              <report>modules</report>
+                                          
+              <report>summary</report>
+                                      
+            </reports>
+                                
+          </reportSet>
+                          
+        </reportSets>
+                    
+      </plugin>
+                  
+      <!-- Aggregated Javadoc generation -->
+                  
+      <plugin>
+                        
+        <groupId>org.apache.maven.plugins</groupId>
+                        
+        <artifactId>maven-javadoc-plugin</artifactId>
+                        
+        <version>3.7.0</version>
+                        
+        <reportSets>
+                              
+          <reportSet>
+                                    
+            <reports>
+                                          
+              <report>aggregate</report>
+                                      
+            </reports>
+                                
+          </reportSet>
+                          
+        </reportSets>
+                        
+        <configuration>
+                              
+          <noindex>false</noindex>
+                              
+          <notree>false</notree>
+                              
+          <use>true</use>
+                              
+          <splitindex>true</splitindex>
+                              
+          <additionalOptions>
+                                    
+            <additionalOption>-linksource</additionalOption>
+                                    
+            <additionalOption>-Xdoclint:none</additionalOption>
+                                
+          </additionalOptions>
+                              
+          <show>protected</show>
+                              
+          <failOnError>false</failOnError>
+                              
+          <doclint>none</doclint>
+                          
+        </configuration>
+                    
+      </plugin>
+              
+    </plugins>
+        
+  </reporting>
+      
+  <!-- =============================================================== -->
+      
+  <!-- Distribution (site publishing) configuration                    -->
+      
+  <!-- =============================================================== -->
+      
+  <distributionManagement>
+            
+    <site>
+                  
+      <id>github</id>
+                  
+      <url>scm:git:git@github.com:jjabakker/JavaPaintProjects.git</url>
+              
+    </site>
+        
+  </distributionManagement>
+  
 </project>
