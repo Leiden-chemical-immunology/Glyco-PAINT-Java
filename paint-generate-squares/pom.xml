@@ -32,7 +32,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.33-SNAPSHOT</version>
+        <version>0.0.34</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -65,7 +65,7 @@
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
-            <version>0.0.33-SNAPSHOT</version>
+            <version>0.0.34</version>
         </dependency>
 
         <!-- ImageJ and Fiji components -->
@@ -331,5 +331,5 @@ exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-
         </repository>
     </repositories>
 
-<version>0.0.33-SNAPSHOT</version>
+<version>0.0.34</version>
 </project>
