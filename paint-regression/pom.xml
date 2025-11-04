@@ -20,141 +20,210 @@
           java -jar paint-regression-<version>-jar-with-dependencies.jar
     • Includes JUnit 5 for test execution.
 --><!-- ===================================================================== --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
-      
+        
+  
   <!-- =============================================================== -->
-      
+        
+  
   <!-- Project hierarchy                                               -->
-      
+        
+  
   <!-- =============================================================== -->
-      
+        
+  
   <modelVersion>4.0.0</modelVersion>
-      
+        
+  
   <parent>
-            
+                
+    
     <groupId>com.github.jjabakker</groupId>
-            
+                
+    
     <artifactId>paint-parent</artifactId>
-            
-    <version>0.0.56</version>
-            
+                
+    
+    <version>0.0.56-SNAPSHOT</version>
+                
+    
     <relativePath>../pom.xml</relativePath>
-        
+            
+  
   </parent>
-      
+        
+  
   <artifactId>paint-regression</artifactId>
-      
+        
+  
   <packaging>jar</packaging>
-      
+        
+  
   <!-- =============================================================== -->
-      
+        
+  
   <!-- Metadata                                                       -->
-      
+        
+  
   <!-- =============================================================== -->
-      
+        
+  
   <name>PAINT Regression</name>
-      
+        
+  
   <description>Regression for all Squares and Tracks</description>
-      
+        
+  
   <!-- =============================================================== -->
-      
+        
+  
   <!-- Dependencies                                                    -->
-      
+        
+  
   <!-- =============================================================== -->
-      
+        
+  
   <dependencies>
-            
+                
+    
     <!-- Shared utilities -->
-            
+                
+    
     <dependency>
-                  
+                        
+      
       <groupId>com.github.jjabakker</groupId>
-                  
+                        
+      
       <artifactId>paint-shared-utils</artifactId>
-              
-      <version>0.0.56</version>
-          
-    </dependency>
-            
-    <!-- JUnit 5 (for testing) -->
-            
-    <dependency>
-                  
-      <groupId>org.junit.jupiter</groupId>
-                  
-      <artifactId>junit-jupiter</artifactId>
-                  
-      <version>5.10.0</version>
-                  
-      <scope>test</scope>
-              
-    </dependency>
-        
-  </dependencies>
-      
-  <!-- =============================================================== -->
-      
-  <!-- Build configuration                                             -->
-      
-  <!-- =============================================================== -->
-      
-  <build>
-            
-    <plugins>
-                  
-      <!-- Create executable fat JAR -->
-                  
-      <plugin>
-                        
-        <groupId>org.apache.maven.plugins</groupId>
-                        
-        <artifactId>maven-assembly-plugin</artifactId>
-                        
-        <version>3.7.1</version>
-                        
-        <configuration>
-                              
-          <descriptorRefs>
-                                    
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-                                
-          </descriptorRefs>
-                              
-          <archive>
-                                    
-            <manifest>
-                                          
-              <mainClass>paint.regression.CompareAllSquares</mainClass>
-                                      
-            </manifest>
-                                
-          </archive>
-                          
-        </configuration>
-                        
-        <executions>
-                              
-          <execution>
-                                    
-            <id>make-assembly</id>
-                                    
-            <phase>package</phase>
-                                    
-            <goals>
-                                          
-              <goal>single</goal>
-                                      
-            </goals>
-                                
-          </execution>
-                          
-        </executions>
                     
-      </plugin>
-              
-    </plugins>
+      
+      <version>0.0.56-SNAPSHOT</version>
+                
+    
+    </dependency>
+                
+    
+    <!-- JUnit 5 (for testing) -->
+                
+    
+    <dependency>
+                        
+      
+      <groupId>org.junit.jupiter</groupId>
+                        
+      
+      <artifactId>junit-jupiter</artifactId>
+                        
+      
+      <version>5.10.0</version>
+                        
+      
+      <scope>test</scope>
+                    
+    
+    </dependency>
+            
+  
+  </dependencies>
         
+  
+  <!-- =============================================================== -->
+        
+  
+  <!-- Build configuration                                             -->
+        
+  
+  <!-- =============================================================== -->
+        
+  
+  <build>
+                
+    
+    <plugins>
+                        
+      
+      <!-- Create executable fat JAR -->
+                        
+      
+      <plugin>
+                                
+        
+        <groupId>org.apache.maven.plugins</groupId>
+                                
+        
+        <artifactId>maven-assembly-plugin</artifactId>
+                                
+        
+        <version>3.7.1</version>
+                                
+        
+        <configuration>
+                                        
+          
+          <descriptorRefs>
+                                                
+            
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+                                            
+          
+          </descriptorRefs>
+                                        
+          
+          <archive>
+                                                
+            
+            <manifest>
+                                                        
+              
+              <mainClass>paint.regression.CompareAllSquares</mainClass>
+                                                    
+            
+            </manifest>
+                                            
+          
+          </archive>
+                                    
+        
+        </configuration>
+                                
+        
+        <executions>
+                                        
+          
+          <execution>
+                                                
+            
+            <id>make-assembly</id>
+                                                
+            
+            <phase>package</phase>
+                                                
+            
+            <goals>
+                                                        
+              
+              <goal>single</goal>
+                                                    
+            
+            </goals>
+                                            
+          
+          </execution>
+                                    
+        
+        </executions>
+                            
+      
+      </plugin>
+                    
+    
+    </plugins>
+            
+  
   </build>
+    
   
-  <version>0.0.56</version>
-  
+  <version>0.0.56-SNAPSHOT</version>
+    
+
 </project>

@@ -14,237 +14,353 @@
   UPDATED:
     2025-11-03
 --><!-- ===================================================================== --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
-      
+        
+  
   <!-- =============================================================== -->
-      
+        
+  
   <!-- Project hierarchy                                               -->
-      
+        
+  
   <!-- =============================================================== -->
-      
+        
+  
   <modelVersion>4.0.0</modelVersion>
-      
+        
+  
   <parent>
-            
+                
+    
     <groupId>com.github.jjabakker</groupId>
-            
+                
+    
     <artifactId>paint-parent</artifactId>
-            
-    <version>0.0.56</version>
-            
+                
+    
+    <version>0.0.56-SNAPSHOT</version>
+                
+    
     <relativePath>../pom.xml</relativePath>
-        
+            
+  
   </parent>
-      
+        
+  
   <artifactId>paint-get-omero</artifactId>
-      
+        
+  
   <packaging>jar</packaging>
-      
+        
+  
   <!-- =============================================================== -->
-      
+        
+  
   <!-- Metadata                                                       -->
-      
+        
+  
   <!-- =============================================================== -->
-      
+        
+  
   <name>Paint Get Omero</name>
-      
+        
+  
   <description>Standalone desktop app for loading Omero data</description>
-      
+        
+  
   <!-- =============================================================== -->
-      
+        
+  
   <!-- Application properties                                         -->
-      
+        
+  
   <!-- =============================================================== -->
-      
+        
+  
   <properties>
-            
+                
+    
     <project.build.outputTimestamp>2025-11-04T09:30:36Z</project.build.outputTimestamp>
-            
+                
+    
     <app.name>Get Omero</app.name>
-            
+                
+    
     <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
-            
+                
+    
     <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-get-omero.icns</app.icon.macos>
-            
+                
+    
     <fat.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</fat.jar>
-        
+            
+  
   </properties>
-      
+        
+  
   <!-- =============================================================== -->
-      
+        
+  
   <!-- Dependencies                                                    -->
-      
+        
+  
   <!-- =============================================================== -->
-      
+        
+  
   <dependencies>
-            
+                
+    
     <!-- CSV utilities -->
-            
+                
+    
     <dependency>
-                  
+                        
+      
       <groupId>org.apache.commons</groupId>
-                  
+                        
+      
       <artifactId>commons-csv</artifactId>
-                  
+                        
+      
       <version>1.9.0</version>
-              
+                    
+    
     </dependency>
-            
+                
+    
     <!-- Logging -->
-            
+                
+    
     <dependency>
-                  
+                        
+      
       <groupId>org.slf4j</groupId>
-                  
+                        
+      
       <artifactId>slf4j-nop</artifactId>
-                  
+                        
+      
       <version>1.7.36</version>
-                  
+                        
+      
       <scope>runtime</scope>
-              
+                    
+    
     </dependency>
-        
+            
+  
   </dependencies>
-      
-  <!-- =============================================================== -->
-      
-  <!-- Build configuration                                             -->
-      
-  <!-- =============================================================== -->
-      
-  <build>
-            
-    <plugins>
-                  
-      <!-- Build fat JAR with dependencies -->
-                  
-      <plugin>
-                        
-        <groupId>org.apache.maven.plugins</groupId>
-                        
-        <artifactId>maven-assembly-plugin</artifactId>
-                        
-        <version>3.7.1</version>
-                        
-        <configuration>
-                              
-          <descriptorRefs>
-                                    
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-                                
-          </descriptorRefs>
-                              
-          <archive>
-                                    
-            <manifest>
-                                          
-              <mainClass>paint.getomero.GetOmeroUI</mainClass>
-                                      
-            </manifest>
-                                
-          </archive>
-                          
-        </configuration>
-                        
-        <executions>
-                              
-          <execution>
-                                    
-            <id>make-assembly</id>
-                                    
-            <phase>package</phase>
-                                    
-            <goals>
-                                          
-              <goal>single</goal>
-                                      
-            </goals>
-                                
-          </execution>
-                          
-        </executions>
-                    
-      </plugin>
-              
-    </plugins>
         
-  </build>
-      
+  
   <!-- =============================================================== -->
-      
-  <!-- OS-specific build profiles                                      -->
-      
+        
+  
+  <!-- Build configuration                                             -->
+        
+  
   <!-- =============================================================== -->
-      
-  <profiles>
-            
-    <!-- macOS .app bundle profile -->
-            
-    <profile>
-                  
-      <id>macos-appbundle</id>
-                  
-      <activation>
+        
+  
+  <build>
+                
+    
+    <plugins>
                         
-        <os>
-                              
-          <family>mac</family>
-                          
-        </os>
+      
+      <!-- Build fat JAR with dependencies -->
+                        
+      
+      <plugin>
+                                
+        
+        <groupId>org.apache.maven.plugins</groupId>
+                                
+        
+        <artifactId>maven-assembly-plugin</artifactId>
+                                
+        
+        <version>3.7.1</version>
+                                
+        
+        <configuration>
+                                        
+          
+          <descriptorRefs>
+                                                
+            
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+                                            
+          
+          </descriptorRefs>
+                                        
+          
+          <archive>
+                                                
+            
+            <manifest>
+                                                        
+              
+              <mainClass>paint.getomero.GetOmeroUI</mainClass>
+                                                    
+            
+            </manifest>
+                                            
+          
+          </archive>
+                                    
+        
+        </configuration>
+                                
+        
+        <executions>
+                                        
+          
+          <execution>
+                                                
+            
+            <id>make-assembly</id>
+                                                
+            
+            <phase>package</phase>
+                                                
+            
+            <goals>
+                                                        
+              
+              <goal>single</goal>
+                                                    
+            
+            </goals>
+                                            
+          
+          </execution>
+                                    
+        
+        </executions>
+                            
+      
+      </plugin>
                     
-      </activation>
-                  
-      <build>
+    
+    </plugins>
+            
+  
+  </build>
+        
+  
+  <!-- =============================================================== -->
+        
+  
+  <!-- OS-specific build profiles                                      -->
+        
+  
+  <!-- =============================================================== -->
+        
+  
+  <profiles>
+                
+    
+    <!-- macOS .app bundle profile -->
+                
+    
+    <profile>
                         
+      
+      <id>macos-appbundle</id>
+                        
+      
+      <activation>
+                                
+        
+        <os>
+                                        
+          
+          <family>mac</family>
+                                    
+        
+        </os>
+                            
+      
+      </activation>
+                        
+      
+      <build>
+                                
+        
         <plugins>
-                              
+                                        
+          
           <plugin>
-                                    
+                                                
+            
             <groupId>org.apache.maven.plugins</groupId>
-                                    
+                                                
+            
             <artifactId>maven-antrun-plugin</artifactId>
-                                    
+                                                
+            
             <version>3.1.0</version>
-                                    
+                                                
+            
             <executions>
-                                          
+                                                        
+              
               <execution>
-                                                
+                                                                
+                
                 <id>create-app-bundle</id>
-                                                
+                                                                
+                
                 <phase>package</phase>
-                                                
+                                                                
+                
                 <goals>
-                                                      
+                                                                        
+                  
                   <goal>run</goal>
-                                                  
+                                                                    
+                
                 </goals>
-                                                
+                                                                
+                
                 <configuration>
-                                                      
+                                                                        
+                  
                   <target>
-                                                            
+                                                                                
+                    
                     <echo message="Creating macOS app bundle at ${app.bundle}"/>
-                                                            
+                                                                                
+                    
                     <delete dir="${app.bundle}" failonerror="false"/>
-                                                            
+                                                                                
+                    
                     <delete failonerror="false" file="${project.build.directory}/${app.name}.app.zip"/>
-                                                            
+                                                                                
+                    
                     <!-- Create app bundle structure -->
-                                                            
+                                                                                
+                    
                     <mkdir dir="${app.bundle}/Contents/MacOS"/>
-                                                            
+                                                                                
+                    
                     <mkdir dir="${app.bundle}/Contents/Java"/>
-                                                            
+                                                                                
+                    
                     <mkdir dir="${app.bundle}/Contents/Resources"/>
-                                                            
+                                                                                
+                    
                     <!-- Copy required files -->
-                                                            
+                                                                                
+                    
                     <copy failonerror="false" file="${fat.jar}" overwrite="true" todir="${app.bundle}/Contents/Java"/>
-                                                            
+                                                                                
+                    
                     <copy failonerror="false" file="${app.icon.macos}" overwrite="true" todir="${app.bundle}/Contents/Resources"/>
-                                                            
+                                                                                
+                    
                     <!-- Create Info.plist -->
-                                                            
+                                                                                
+                    
                     <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -259,199 +375,295 @@
 </dict>
 </plist>
                                         ]]></echo>
-                                                            
+                                                                                
+                    
                     <!-- Create launch script -->
-                                                            
+                                                                                
+                    
                     <echo file="${app.bundle}/Contents/MacOS/launch"><![CDATA[
 #!/bin/bash
 DIR="$( cd "$( dirname "$0" )" && cd ../Java && pwd )"
 exec /usr/bin/env java -Xms512m -Xmx2048m -jar "$DIR/${project.build.finalName}-jar-with-dependencies.jar"
                                         ]]></echo>
-                                                            
+                                                                                
+                    
                     <fixcrlf eol="unix" file="${app.bundle}/Contents/MacOS/launch"/>
-                                                            
+                                                                                
+                    
                     <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
-                                                            
+                                                                                
+                    
                     <!-- Zip and install -->
-                                                            
+                                                                                
+                    
                     <exec executable="zip">
-                                                                  
+                                                                                        
+                      
                       <arg value="-r"/>
-                                                                  
+                                                                                        
+                      
                       <arg value="${project.build.directory}/${app.name}.app.zip"/>
-                                                                  
+                                                                                        
+                      
                       <arg value="${app.bundle}"/>
-                                                              
+                                                                                    
+                    
                     </exec>
-                                                            
+                                                                                
+                    
                     <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
-                                                            
+                                                                                
+                    
                     <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
-                                                            
+                                                                                
+                    
                     <copy failonerror="false" overwrite="true" todir="${user.home}/Applications/Glyco-PAINT">
-                                                                  
+                                                                                        
+                      
                       <fileset dir="${project.build.directory}">
-                                                                        
+                                                                                                
+                        
                         <include name="${app.name}.app/**"/>
-                                                                    
+                                                                                            
+                      
                       </fileset>
-                                                              
+                                                                                    
+                    
                     </copy>
-                                                            
+                                                                                
+                    
                     <exec executable="chmod" failonerror="false">
-                                                                  
+                                                                                        
+                      
                       <arg value="755"/>
-                                                                  
+                                                                                        
+                      
                       <arg value="${user.home}/Applications/Glyco-PAINT/${app.name}.app/Contents/MacOS/launch"/>
-                                                              
+                                                                                    
+                    
                     </exec>
-                                                            
+                                                                                
+                    
                     <echo message="Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
-                                                        
+                                                                            
+                  
                   </target>
-                                                  
+                                                                    
+                
                 </configuration>
-                                            
-              </execution>
-                                      
-            </executions>
-                                
-          </plugin>
-                          
-        </plugins>
-                    
-      </build>
+                                                            
               
-    </profile>
+              </execution>
+                                                    
             
+            </executions>
+                                            
+          
+          </plugin>
+                                    
+        
+        </plugins>
+                            
+      
+      </build>
+                    
+    
+    </profile>
+                
+    
     <!-- Windows .exe launcher profile -->
-            
+                
+    
     <profile>
-                  
+                        
+      
       <id>windows-exe</id>
-                  
+                        
+      
       <activation>
-                        
-        <os>
-                              
-          <family>windows</family>
-                          
-        </os>
-                    
-      </activation>
-                  
-      <build>
-                        
-        <plugins>
-                              
-          <plugin>
-                                    
-            <groupId>com.akathist.maven.plugins.launch4j</groupId>
-                                    
-            <artifactId>launch4j-maven-plugin</artifactId>
-                                    
-            <version>2.5.0</version>
-                                    
-            <executions>
-                                          
-              <execution>
-                                                
-                <id>l4j-get-omero</id>
-                                                
-                <phase>package</phase>
-                                                
-                <goals>
-                                                      
-                  <goal>launch4j</goal>
-                                                  
-                </goals>
-                                                
-                <configuration>
-                                                      
-                  <outfile>${project.build.directory}/${app.name}.exe</outfile>
-                                                      
-                  <jar>${fat.jar}</jar>
-                                                      
-                  <dontWrapJar>false</dontWrapJar>
-                                                      
-                  <icon>${project.basedir}/src/main/resources/icons/${project.artifactId}.ico</icon>
-                                                      
-                  <jre>
-                                                            
-                    <minVersion>1.8.0</minVersion>
-                                                        
-                  </jre>
-                                                      
-                  <classPath>
-                                                            
-                    <mainClass>paint.getomero.GetOmeroUI</mainClass>
-                                                        
-                  </classPath>
-                                                      
-                  <headerType>gui</headerType>
-                                                      
-                  <errTitle>${app.name}</errTitle>
-                                                      
-                  <versionInfo>
-                                                            
-                    <fileVersion>1.0.0.0</fileVersion>
-                                                            
-                    <txtFileVersion>${project.version}</txtFileVersion>
-                                                            
-                    <productVersion>1.0.0.0</productVersion>
-                                                            
-                    <txtProductVersion>${project.version}</txtProductVersion>
-                                                            
-                    <fileDescription>${project.description}</fileDescription>
-                                                            
-                    <productName>${app.name}</productName>
-                                                            
-                    <companyName>Glyco-PAINT</companyName>
-                                                        
-                  </versionInfo>
-                                                  
-                </configuration>
-                                            
-              </execution>
-                                      
-            </executions>
                                 
-          </plugin>
-                          
-        </plugins>
+        
+        <os>
+                                        
+          
+          <family>windows</family>
+                                    
+        
+        </os>
+                            
+      
+      </activation>
+                        
+      
+      <build>
+                                
+        
+        <plugins>
+                                        
+          
+          <plugin>
+                                                
+            
+            <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                                                
+            
+            <artifactId>launch4j-maven-plugin</artifactId>
+                                                
+            
+            <version>2.5.0</version>
+                                                
+            
+            <executions>
+                                                        
+              
+              <execution>
+                                                                
+                
+                <id>l4j-get-omero</id>
+                                                                
+                
+                <phase>package</phase>
+                                                                
+                
+                <goals>
+                                                                        
+                  
+                  <goal>launch4j</goal>
+                                                                    
+                
+                </goals>
+                                                                
+                
+                <configuration>
+                                                                        
+                  
+                  <outfile>${project.build.directory}/${app.name}.exe</outfile>
+                                                                        
+                  
+                  <jar>${fat.jar}</jar>
+                                                                        
+                  
+                  <dontWrapJar>false</dontWrapJar>
+                                                                        
+                  
+                  <icon>${project.basedir}/src/main/resources/icons/${project.artifactId}.ico</icon>
+                                                                        
+                  
+                  <jre>
+                                                                                
                     
+                    <minVersion>1.8.0</minVersion>
+                                                                            
+                  
+                  </jre>
+                                                                        
+                  
+                  <classPath>
+                                                                                
+                    
+                    <mainClass>paint.getomero.GetOmeroUI</mainClass>
+                                                                            
+                  
+                  </classPath>
+                                                                        
+                  
+                  <headerType>gui</headerType>
+                                                                        
+                  
+                  <errTitle>${app.name}</errTitle>
+                                                                        
+                  
+                  <versionInfo>
+                                                                                
+                    
+                    <fileVersion>1.0.0.0</fileVersion>
+                                                                                
+                    
+                    <txtFileVersion>${project.version}</txtFileVersion>
+                                                                                
+                    
+                    <productVersion>1.0.0.0</productVersion>
+                                                                                
+                    
+                    <txtProductVersion>${project.version}</txtProductVersion>
+                                                                                
+                    
+                    <fileDescription>${project.description}</fileDescription>
+                                                                                
+                    
+                    <productName>${app.name}</productName>
+                                                                                
+                    
+                    <companyName>Glyco-PAINT</companyName>
+                                                                            
+                  
+                  </versionInfo>
+                                                                    
+                
+                </configuration>
+                                                            
+              
+              </execution>
+                                                    
+            
+            </executions>
+                                            
+          
+          </plugin>
+                                    
+        
+        </plugins>
+                            
+      
       </build>
-              
+                    
+    
     </profile>
-        
+            
+  
   </profiles>
-      
-  <!-- =============================================================== -->
-      
-  <!-- External repositories                                           -->
-      
-  <!-- =============================================================== -->
-      
-  <repositories>
-            
-    <repository>
-                  
-      <id>scijava.public</id>
-                  
-      <url>https://maven.scijava.org/content/groups/public</url>
-              
-    </repository>
-            
-    <repository>
-                  
-      <id>ome.releases</id>
-                  
-      <url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
-              
-    </repository>
         
+  
+  <!-- =============================================================== -->
+        
+  
+  <!-- External repositories                                           -->
+        
+  
+  <!-- =============================================================== -->
+        
+  
+  <repositories>
+                
+    
+    <repository>
+                        
+      
+      <id>scijava.public</id>
+                        
+      
+      <url>https://maven.scijava.org/content/groups/public</url>
+                    
+    
+    </repository>
+                
+    
+    <repository>
+                        
+      
+      <id>ome.releases</id>
+                        
+      
+      <url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
+                    
+    
+    </repository>
+            
+  
   </repositories>
+    
   
-  <version>0.0.56</version>
-  
+  <version>0.0.56-SNAPSHOT</version>
+    
+
 </project>

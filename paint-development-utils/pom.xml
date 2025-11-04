@@ -1,132 +1,197 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- =============================================================== --><!--  PAINT DEVELOPMENT UTILITIES MODULE                             --><!-- =============================================================== --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-      
+        
+  
   <modelVersion>4.0.0</modelVersion>
-      
+        
+  
   <!-- =========================================================== -->
-      
+        
+  
   <!-- Parent POM                                                  -->
-      
+        
+  
   <!-- =========================================================== -->
-      
+        
+  
   <parent>
-            
+                
+    
     <groupId>com.github.jjabakker</groupId>
-            
+                
+    
     <artifactId>paint-parent</artifactId>
-            
-    <version>0.0.56</version>
-            
+                
+    
+    <version>0.0.56-SNAPSHOT</version>
+                
+    
     <relativePath>../pom.xml</relativePath>
-        
+            
+  
   </parent>
-      
+        
+  
   <!-- =========================================================== -->
-      
+        
+  
   <!-- Module metadata                                             -->
-      
+        
+  
   <!-- =========================================================== -->
-      
+        
+  
   <artifactId>paint-development-utils</artifactId>
-      
+        
+  
   <packaging>jar</packaging>
-      
+        
+  
   <name>Paint Development Utilities</name>
-      
+        
+  
   <description>Developer utilities for building and packaging PAINT applications</description>
-      
+        
+  
   <!-- =========================================================== -->
-      
+        
+  
   <!-- Dependencies                                                -->
-      
+        
+  
   <!-- =========================================================== -->
-      
+        
+  
   <dependencies>
-            
+                
+    
     <!-- Shared utilities (if you want access to paint-shared-utils code) -->
-            
+                
+    
     <dependency>
-                  
+                        
+      
       <groupId>com.github.jjabakker</groupId>
-                  
+                        
+      
       <artifactId>paint-shared-utils</artifactId>
-                  
-      <version>0.0.56</version>
-              
-    </dependency>
-            
-    <!-- Apache Commons CSV (needed for CSVFormat, CSVParser, etc.) -->
-            
-    <dependency>
-                  
-      <groupId>org.apache.commons</groupId>
-                  
-      <artifactId>commons-csv</artifactId>
-                  
-      <version>1.9.0</version>
-              
-    </dependency>
-            
-    <!-- Logging (optional, consistent with other modules) -->
-            
-    <dependency>
-                  
-      <groupId>org.slf4j</groupId>
-                  
-      <artifactId>slf4j-nop</artifactId>
-                  
-      <version>1.7.36</version>
-                  
-      <scope>runtime</scope>
-              
-    </dependency>
-            
-    <dependency>
-                  
-      <groupId>org.apache.commons</groupId>
-                  
-      <artifactId>commons-compress</artifactId>
-                  
-      <version>1.26.2</version>
-              
-    </dependency>
-        
-  </dependencies>
-      
-  <!-- =========================================================== -->
-      
-  <!-- Build configuration                                         -->
-      
-  <!-- =========================================================== -->
-      
-  <build>
-            
-    <sourceDirectory>src/main/java</sourceDirectory>
-            
-    <plugins>
-                  
-      <!-- Allow running utilities directly via Maven -->
-                  
-      <plugin>
                         
-        <groupId>org.codehaus.mojo</groupId>
-                        
-        <artifactId>exec-maven-plugin</artifactId>
-                        
-        <version>3.5.0</version>
-                        
-        <configuration>
-                              
-          <mainClass>utils.BuildWindowsExecutables</mainClass>
-                          
-        </configuration>
+      
+      <version>0.0.56-SNAPSHOT</version>
                     
-      </plugin>
-              
-    </plugins>
+    
+    </dependency>
+                
+    
+    <!-- Apache Commons CSV (needed for CSVFormat, CSVParser, etc.) -->
+                
+    
+    <dependency>
+                        
+      
+      <groupId>org.apache.commons</groupId>
+                        
+      
+      <artifactId>commons-csv</artifactId>
+                        
+      
+      <version>1.9.0</version>
+                    
+    
+    </dependency>
+                
+    
+    <!-- Logging (optional, consistent with other modules) -->
+                
+    
+    <dependency>
+                        
+      
+      <groupId>org.slf4j</groupId>
+                        
+      
+      <artifactId>slf4j-nop</artifactId>
+                        
+      
+      <version>1.7.36</version>
+                        
+      
+      <scope>runtime</scope>
+                    
+    
+    </dependency>
+                
+    
+    <dependency>
+                        
+      
+      <groupId>org.apache.commons</groupId>
+                        
+      
+      <artifactId>commons-compress</artifactId>
+                        
+      
+      <version>1.26.2</version>
+                    
+    
+    </dependency>
+            
+  
+  </dependencies>
         
+  
+  <!-- =========================================================== -->
+        
+  
+  <!-- Build configuration                                         -->
+        
+  
+  <!-- =========================================================== -->
+        
+  
+  <build>
+                
+    
+    <sourceDirectory>src/main/java</sourceDirectory>
+                
+    
+    <plugins>
+                        
+      
+      <!-- Allow running utilities directly via Maven -->
+                        
+      
+      <plugin>
+                                
+        
+        <groupId>org.codehaus.mojo</groupId>
+                                
+        
+        <artifactId>exec-maven-plugin</artifactId>
+                                
+        
+        <version>3.5.0</version>
+                                
+        
+        <configuration>
+                                        
+          
+          <mainClass>utils.BuildWindowsExecutables</mainClass>
+                                    
+        
+        </configuration>
+                            
+      
+      </plugin>
+                    
+    
+    </plugins>
+            
+  
   </build>
+    
   
-  <version>0.0.56</version>
-  
+  <version>0.0.56-SNAPSHOT</version>
+    
+
 </project>
