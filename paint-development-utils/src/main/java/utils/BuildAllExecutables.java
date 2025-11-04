@@ -1,50 +1,50 @@
-/* =================================================================================================
- *  PURPOSE    : Automate full version bumping and multi-platform builds for all Glyco-PAINT modules.
- *
- *  DESCRIPTION:
- *     This utility coordinates the end-to-end build pipeline for all Glyco-PAINT Java modules.
- *     It performs version management, dependency installation, Git commits, and packaging
- *     for both Windows and macOS executables in one run.
- *
- *  EXECUTION FLOW SUMMARY:
- *     1. Read current parent POM version (must end with -SNAPSHOT).
- *     2. Compute release and next development versions based on the bump flag.
- *     3. Build and install current SNAPSHOT versions of shared and parent modules.
- *     4. Install the parent POM also as a local release (for dependency resolution).
- *     5. Bump all POM versions across modules and commit to Git.
- *     6. Reinstall the bumped parent POM and rebuild shared-utils.
- *     7. Build each module for both platforms, fail-fast on errors.
- *     8. Copy built executables or app bundles into the organized build directory.
- *
- *  KEY FEATURES:
- *     • Full automated version bumping and tagging
- *     • Local parent POM release injection for offline builds
- *     • Fail-fast build execution with clear per-module reporting
- *     • Distinct build directories for macOS (.app bundles) and Windows (.exe)
- *     • Git commit integration for version control synchronization
- *
- *  COMMAND-LINE FLAGS:
- *     -bump <mode>     : Defines how to increment the version number.
- *                        Supported values:
- *                           0.0.x → increment patch (e.g., 0.0.26 → 0.0.27)
- *                           0.x.0 → increment minor (e.g., 0.2.9 → 0.3.0)
- *                           x.0.0 → increment major (e.g., 1.9.5 → 2.0.0)
- *
- *     --release        : Performs a full release sequence:
- *                           • Converts SNAPSHOT to release version
- *                           • Builds all modules for both platforms
- *                           • Creates and pushes Git tag (vX.Y.Z)
- *                           • Bumps back to next SNAPSHOT version
- *
- *     Example usage:
- *         java utils.BuildAllExecutables -bump 0.0.x --release
- *         java utils.BuildAllExecutables -bump 0.x.0
- *
- *  AUTHOR     : J.J. Bakker
- *  MODULE     : paint-development-utils
- *  UPDATED    : 2025-11-04
- *  COPYRIGHT  : (c) 2025 J.J. Bakker. All rights reserved.
- * =============================================================================================== */
+// =================================================================================================
+//  PURPOSE    : Automate full version bumping and multi-platform builds for all Glyco-PAINT modules.
+//
+//  DESCRIPTION:
+//     This utility coordinates the end-to-end build pipeline for all Glyco-PAINT Java modules.
+//     It performs version management, dependency installation, Git commits, and packaging
+//     for both Windows and macOS executables in one run.
+//
+//  EXECUTION FLOW SUMMARY:
+//     1. Read current parent POM version (must end with -SNAPSHOT).
+//     2. Compute release and next development versions based on the bump flag.
+//     3. Build and install current SNAPSHOT versions of shared and parent modules.
+//     4. Install the parent POM also as a local release (for dependency resolution).
+//     5. Bump all POM versions across modules and commit to Git.
+//     6. Reinstall the bumped parent POM and rebuild shared-utils.
+//     7. Build each module for both platforms, fail-fast on errors.
+//     8. Copy built executables or app bundles into the organized build directory.
+//
+//  KEY FEATURES:
+//     • Full automated version bumping and tagging
+//     • Local parent POM release injection for offline builds
+//     • Fail-fast build execution with clear per-module reporting
+//     • Distinct build directories for macOS (.app bundles) and Windows (.exe)
+//     • Git commit integration for version control synchronization
+//
+//  COMMAND-LINE FLAGS:
+//     -bump <mode>     : Defines how to increment the version number.
+//                        Supported values:
+//                           0.0.x → increment patch (e.g., 0.0.26 → 0.0.27)
+//                           0.x.0 → increment minor (e.g., 0.2.9 → 0.3.0)
+//                           x.0.0 → increment major (e.g., 1.9.5 → 2.0.0)
+//
+//     --release        : Performs a full release sequence:
+//                           • Converts SNAPSHOT to release version
+//                           • Builds all modules for both platforms
+//                           • Creates and pushes Git tag (vX.Y.Z)
+//                           • Bumps back to next SNAPSHOT version
+//
+//     Example usage:
+//         java utils.BuildAllExecutables -bump 0.0.x --release
+//         java utils.BuildAllExecutables -bump 0.x.0
+//
+//  AUTHOR     : J.J. Bakker
+//  MODULE     : paint-development-utils
+//  UPDATED    : 2025-11-04
+//  COPYRIGHT  : (c) 2025 J.J. Bakker. All rights reserved.
+// ===============================================================================================
 
 package utils;
 
@@ -57,15 +57,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.*;
 
-/**
- * Central build orchestrator for the entire Glyco-PAINT project.
- * <p>
- * Handles version bumping, Maven rebuilds, Git commits, and multi-platform packaging.
- * The build fails immediately upon any critical Maven error.
- */
 public class BuildAllExecutables {
 
-    /** List of modules to build for both platforms. */
     private static final List<String> MODULES = Arrays.asList(
             "paint-viewer",
             "paint-generate-squares",
@@ -73,32 +66,23 @@ public class BuildAllExecutables {
             "paint-create-experiment"
     );
 
-    /** Base repository path containing all source modules. */
     private static final Path BASE_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
-
-    /** Target directory for completed builds. */
     private static final Path BUILDS_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Builds");
 
-    /**
-     * Main entry point.
-     * Accepts an optional bump flag: "-bump 0.0.x" | "-bump 0.x.0" | "-bump x.0.0".
-     */
     public static void main(String[] args) {
         try {
-            String bumpFlag = "0.0.x"; // Default bump type (patch)
-            boolean doRelease = false; // Default: no release
+            String bumpFlag = "0.0.x";
+            boolean doRelease = false;
 
-            // Parse command-line flags
             for (int i = 0; i < args.length; i++) {
                 if (args[i].equalsIgnoreCase("-bump") && i + 1 < args.length) {
                     bumpFlag = args[i + 1];
-                    i++; // skip version argument
+                    i++;
                 } else if (args[i].equalsIgnoreCase("--release")) {
                     doRelease = true;
                 }
             }
 
-            // Pass both arguments
             new BuildAllExecutables().run(bumpFlag, doRelease);
 
         } catch (Exception e) {
@@ -108,17 +92,17 @@ public class BuildAllExecutables {
         }
     }
 
-    /**
-     * Main orchestration logic.
-     * Coordinates version management, builds, and packaging for all modules.
-     */
     private void run(String bumpFlag, boolean doRelease) throws Exception {
         System.out.println("=== Building Glyco-PAINT apps for macOS and Windows ===");
 
         Path parentPom = BASE_PATH.resolve("pom.xml");
         String currentVersion = getVersionFromPom(parentPom);
-        if (currentVersion == null || !currentVersion.endsWith("-SNAPSHOT")) {
-            throw new IllegalStateException("Expected SNAPSHOT version in parent pom.xml, found: " + currentVersion);
+        if (currentVersion == null)
+            throw new IllegalStateException("Could not determine version from parent pom.xml");
+
+        if (!currentVersion.endsWith("-SNAPSHOT")) {
+            System.out.println("⚠️  Parent POM is not a SNAPSHOT (" + currentVersion + ") — converting to snapshot for continued development.");
+            currentVersion = currentVersion + "-SNAPSHOT";
         }
 
         VersionInfo versionInfo = computeVersions(currentVersion, bumpFlag);
@@ -126,22 +110,20 @@ public class BuildAllExecutables {
         System.out.println("🏷️  Release: " + versionInfo.releaseVersion);
         System.out.println("🚀 Next dev: " + versionInfo.nextDevVersion);
 
-        // 1️⃣ Build old snapshot to ensure all dependencies are installed
         rebuildSharedUtils();
         installParentPom();
 
-        // 2️⃣ If doing a release, switch all modules to release version first
         if (doRelease) {
             System.out.println("\n🎯 Preparing release " + versionInfo.releaseVersion);
             bumpAllPomVersions(currentVersion, versionInfo.releaseVersion);
             commitVersionBump(currentVersion, versionInfo.releaseVersion);
+            installParentPomAsRelease(versionInfo.releaseVersion);
             installParentPom();
             rebuildSharedUtils();
         } else {
             installParentPomAsRelease(versionInfo.releaseVersion);
         }
 
-        // 3️⃣ Prepare build directories
         Path buildRoot   = BUILDS_PATH.resolve("Glyco-PAINT-" + versionInfo.releaseVersion);
         Path windowsPath = buildRoot.resolve("Windows");
         Path macOSPath   = buildRoot.resolve("macOS");
@@ -160,12 +142,8 @@ public class BuildAllExecutables {
             buildAndCollectMacApp(moduleDir, "-Pmacos-appbundle", macOSPath);
         }
 
-        // 5️⃣ Tag and push if release requested
-        if (doRelease) {
-            createAndPushTag(versionInfo.releaseVersion);
-        }
+        if (doRelease) createAndPushTag(versionInfo.releaseVersion);
 
-        // 6️⃣ Bump to next SNAPSHOT for continued development
         bumpAllPomVersions(versionInfo.releaseVersion, versionInfo.nextDevVersion);
         commitVersionBump(versionInfo.releaseVersion, versionInfo.nextDevVersion);
         installParentPom();
@@ -174,9 +152,6 @@ public class BuildAllExecutables {
         System.out.println("\n🎉 All builds complete!");
         System.out.println("✅ Output directory: " + buildRoot.toAbsolutePath());
     }
-    // ======================================================================
-    // 🔹 Shared Utility Builders
-    // ======================================================================
 
     /**
      * Builds and installs {@code paint-shared-utils} locally to ensure all dependencies are current.
@@ -207,10 +182,9 @@ public class BuildAllExecutables {
     }
 
     // ======================================================================
-    // 🔹 Version Computation and Data
+    // 🔹 Helper classes and methods
     // ======================================================================
 
-    /** Helper container for version state. */
     private static class VersionInfo {
         final String releaseVersion, nextDevVersion;
         VersionInfo(String release, String next) {
@@ -219,18 +193,12 @@ public class BuildAllExecutables {
         }
     }
 
-    /**
-     * Compute new release and next development versions.
-     *
-     * @param currentVersion current project version (e.g., 0.0.23-SNAPSHOT)
-     * @param bumpFlag one of "0.0.x", "0.x.0", "x.0.0"
-     */
     private VersionInfo computeVersions(String currentVersion, String bumpFlag) {
-        String   base  = currentVersion.replace("-SNAPSHOT", "");
+        String base  = currentVersion.replace("-SNAPSHOT", "");
         String[] parts = base.split("\\.");
-        int      major = Integer.parseInt(parts[0]);
-        int      minor = Integer.parseInt(parts[1]);
-        int      patch = Integer.parseInt(parts[2]);
+        int major = Integer.parseInt(parts[0]);
+        int minor = Integer.parseInt(parts[1]);
+        int patch = Integer.parseInt(parts[2]);
 
         switch (bumpFlag) {
             case "0.0.x": patch++; break;
@@ -248,40 +216,33 @@ public class BuildAllExecutables {
     // ======================================================================
 
     /**
-     * Builds a module using a specified Maven profile, copying matching artifacts into the output directory.
+     * Builds a module using a specified Maven profile,
+     * then copies matching artifacts into the output directory.
      */
     private void buildAndCollect(Path moduleDir, String profile, String glob, Path destDir)
             throws IOException, InterruptedException {
 
+        // ✅ Use the global Maven repository (~/.m2/repository)
         String localRepo = System.getProperty("user.home") + "/.m2/repository";
-        List<String> offlineCmd = Arrays.asList(
-                "mvn", "-o", "-U", "-q", "clean", "package",
+
+        List<String> cmd = Arrays.asList(
+                "mvn", "-U", "-q", "clean", "package",
                 profile,
                 "-Dmaven.repo.local=" + localRepo,
                 "-Dmaven.artifact.threads=1"
         );
 
-        System.out.println("🔧 Running: " + String.join(" ", offlineCmd) + " (in " + moduleDir.getFileName() + ")");
-        ProcessBuilder pb = new ProcessBuilder(offlineCmd);
+        System.out.println("🔧 Running: " + String.join(" ", cmd) + " (in " + moduleDir.getFileName() + ")");
+        ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(moduleDir.toFile());
         Process process = startAndFilterOutput(pb, moduleDir.getFileName().toString());
         int exit = process.waitFor();
 
-        // Retry online if offline build fails (common when parent SNAPSHOT not yet cached)
-        if (exit != 0) {
-            System.out.println("⚠️  Offline build failed, retrying online...");
-            List<String> onlineCmd = new ArrayList<>(offlineCmd);
-            onlineCmd.remove("-o");
-            ProcessBuilder retry = new ProcessBuilder(onlineCmd);
-            retry.directory(moduleDir.toFile());
-            process = startAndFilterOutput(retry, moduleDir.getFileName().toString());
-            exit = process.waitFor();
-            if (exit != 0) {
-                throw new RuntimeException("❌ Build failed for " + moduleDir.getFileName() + " (" + profile + ")");
-            }
-        }
+        if (exit != 0)
+            throw new RuntimeException("❌ Build failed for " + moduleDir.getFileName() + " (" + profile + ")");
 
         copyMatchingFiles(moduleDir.resolve("target"), glob, destDir);
+        Thread.sleep(2000); // allow file locks to clear
     }
 
     /**
@@ -290,32 +251,24 @@ public class BuildAllExecutables {
     private void buildAndCollectMacApp(Path moduleDir, String profile, Path destDir)
             throws IOException, InterruptedException {
 
+        // ✅ Use the global Maven repository (~/.m2/repository)
         String localRepo = System.getProperty("user.home") + "/.m2/repository";
-        List<String> offlineCmd = Arrays.asList(
-                "mvn", "-o", "-U", "-q", "clean", "package",
+
+        List<String> cmd = Arrays.asList(
+                "mvn", "-U", "-q", "clean", "package",
                 profile,
                 "-Dmaven.repo.local=" + localRepo,
                 "-Dmaven.artifact.threads=1"
         );
-        System.out.println("🔧 Running: " + String.join(" ", offlineCmd) + " (in " + moduleDir.getFileName() + ")");
 
-        ProcessBuilder pb = new ProcessBuilder(offlineCmd);
+        System.out.println("🔧 Running: " + String.join(" ", cmd) + " (in " + moduleDir.getFileName() + ")");
+        ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(moduleDir.toFile());
         Process process = startAndFilterOutput(pb, moduleDir.getFileName().toString());
-        int     exit    = process.waitFor();
+        int exit = process.waitFor();
 
-        if (exit != 0) {
-            System.out.println("⚠️  Offline macOS build failed, retrying online...");
-            List<String> onlineCmd = new ArrayList<>(offlineCmd);
-            onlineCmd.remove("-o");
-            ProcessBuilder retry = new ProcessBuilder(onlineCmd);
-            retry.directory(moduleDir.toFile());
-            process = startAndFilterOutput(retry, moduleDir.getFileName().toString());
-            exit = process.waitFor();
-            if (exit != 0) {
-                throw new RuntimeException("❌ macOS build failed for " + moduleDir.getFileName());
-            }
-        }
+        if (exit != 0)
+            throw new RuntimeException("❌ macOS build failed for " + moduleDir.getFileName());
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(moduleDir.resolve("target"), "*.app")) {
             for (Path appBundle : stream) {
@@ -325,6 +278,8 @@ public class BuildAllExecutables {
                 System.out.println("✅ Copied .app bundle");
             }
         }
+
+        Thread.sleep(2000);
     }
 
     // ======================================================================
@@ -604,8 +559,9 @@ public class BuildAllExecutables {
     }
 
     /**
-     * Installs the parent POM as a local release version (e.g., 0.0.24)
+     * Installs the parent POM as a local release version (e.g., 0.0.31)
      * so that dependent modules can resolve it even when Maven runs offline.
+     * Includes verification and clear logging.
      */
     private void installParentPomAsRelease(String releaseVersion) throws IOException, InterruptedException {
         Path parentPom = BASE_PATH.resolve("pom.xml");
@@ -615,6 +571,7 @@ public class BuildAllExecutables {
         }
 
         System.out.println("\n🧩 Installing parent POM as release " + releaseVersion + "...");
+
         Path tmpPom = Files.createTempFile("parent-release-", ".xml");
         Files.copy(parentPom, tmpPom, StandardCopyOption.REPLACE_EXISTING);
 
@@ -631,20 +588,32 @@ public class BuildAllExecutables {
                 "-Dversion=" + releaseVersion,
                 "-Dpackaging=pom"
         );
+
         System.out.println("🔧 Running: " + String.join(" ", cmd));
 
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(BASE_PATH.toFile());
-        Process process = startAndFilterOutput(pb, "paint-parent-release");
+        pb.inheritIO(); // show Maven output directly
+        Process process = pb.start();
         int exit = process.waitFor();
+
         Files.deleteIfExists(tmpPom);
 
-        if (exit != 0)
-            throw new RuntimeException("❌ Failed to install parent POM release version " + releaseVersion);
+        Path localPom = Paths.get(System.getProperty("user.home"),
+                                  ".m2", "repository", "com", "github", "jjabakker", "paint-parent", releaseVersion,
+                                  "paint-parent-" + releaseVersion + ".pom");
 
-        System.out.println("✅ Installed paint-parent " + releaseVersion + " locally.");
+        if (exit == 0 && Files.exists(localPom)) {
+            System.out.println("✅ Installed paint-parent " + releaseVersion + " locally at:");
+            System.out.println("   " + localPom.toAbsolutePath());
+        } else {
+            System.err.println("❌ Failed to install parent POM release version " + releaseVersion);
+            if (!Files.exists(localPom)) {
+                System.err.println("   ⚠️  No POM found at expected path: " + localPom.toAbsolutePath());
+            }
+            throw new RuntimeException("Failed to install paint-parent release version " + releaseVersion);
+        }
     }
-
     /**
      * Creates and pushes a Git tag for the specified release version.
      * This automatically triggers the GitHub Actions workflow (which listens for "v*.*.*" tags).
