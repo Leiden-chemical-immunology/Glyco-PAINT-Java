@@ -145,28 +145,71 @@
     <!-- =============================================================== -->
     <build>
         <plugins>
-            <!-- Fat JAR assembly -->
+
+            <!-- Include version and build info in the manifest for PAINT Logger -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.4.2</version>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
                 <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
                     <archive>
                         <manifest>
                             <mainClass>paint.generatesquares.GenerateSquares</mainClass>
                         </manifest>
+                        <manifestEntries>
+                            <Implementation-Title>${project.name}</Implementation-Title>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                            <Implementation-Vendor>Glyco-PAINT</Implementation-Vendor>
+                            <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
+                            <Build-Jdk>${java.version}</Build-Jdk>
+                            <Built-By>${user.name}</Built-By>
+                        </manifestEntries>
                     </archive>
                 </configuration>
+            </plugin>
+
+            <!-- Fat JAR assembly -->
+            <!-- Create fat JAR with embedded manifest and dependencies -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.3</version>
                 <executions>
                     <execution>
-                        <id>make-assembly</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>single</goal>
+                            <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>paint.generatesquares.GenerateSquares</mainClass>
+                                    <manifestEntries>
+                                        <Implementation-Title>${project.name}</Implementation-Title>
+                                        <Implementation-Version>${project.version}</Implementation-Version>
+                                        <Implementation-Vendor>Glyco-PAINT</Implementation-Vendor>
+                                        <Specification-Title>${project.name}</Specification-Title>
+                                        <Specification-Version>${project.version}</Specification-Version>
+                                        <Specification-Vendor>Glyco-PAINT</Specification-Vendor>
+                                        <Built-By>${user.name}</Built-By>
+                                        <Build-Jdk>${java.version}</Build-Jdk>
+                                        <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
