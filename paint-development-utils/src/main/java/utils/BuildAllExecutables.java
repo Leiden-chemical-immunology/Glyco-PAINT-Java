@@ -147,33 +147,64 @@ public class BuildAllExecutables {
     private void buildAndCollect(Path moduleDir, String profile, String glob, Path destDir)
             throws IOException, InterruptedException {
 
-        List<String> cmd = Arrays.asList("mvn", "-U", "-q", "clean", "package", profile);
-        System.out.println("🔧 Running: " + String.join(" ", cmd) + " (in " + moduleDir.getFileName() + ")");
+        String localRepo = System.getProperty("user.home") + "/.m2/repository";
+        List<String> offlineCmd = Arrays.asList(
+                "mvn", "-o", "-U", "-q", "clean", "package",
+                profile,
+                "-Dmaven.repo.local=" + localRepo,
+                "-Dmaven.artifact.threads=1"
+        );
 
-        ProcessBuilder pb = new ProcessBuilder(cmd);
+        System.out.println("🔧 Running: " + String.join(" ", offlineCmd) + " (in " + moduleDir.getFileName() + ")");
+        ProcessBuilder pb = new ProcessBuilder(offlineCmd);
         pb.directory(moduleDir.toFile());
-
         Process process = startAndFilterOutput(pb, moduleDir.getFileName().toString());
         int exit = process.waitFor();
+
         if (exit != 0) {
-            throw new RuntimeException("❌ Build failed for " + moduleDir.getFileName() + " (" + profile + ")");
+            System.out.println("⚠️  Offline build failed, retrying online...");
+            List<String> onlineCmd = new ArrayList<>(offlineCmd);
+            onlineCmd.remove("-o"); // remove offline flag
+            ProcessBuilder retry = new ProcessBuilder(onlineCmd);
+            retry.directory(moduleDir.toFile());
+            process = startAndFilterOutput(retry, moduleDir.getFileName().toString());
+            exit = process.waitFor();
+            if (exit != 0) {
+                throw new RuntimeException("❌ Build failed for " + moduleDir.getFileName() + " (" + profile + ")");
+            }
         }
+
         copyMatchingFiles(moduleDir.resolve("target"), glob, destDir);
     }
 
     private void buildAndCollectMacApp(Path moduleDir, String profile, Path destDir)
             throws IOException, InterruptedException {
 
-        List<String> cmd = Arrays.asList("mvn", "-U", "-q", "clean", "package", profile);
-        System.out.println("🔧 Running: " + String.join(" ", cmd) + " (in " + moduleDir.getFileName() + ")");
+        String localRepo = System.getProperty("user.home") + "/.m2/repository";
+        List<String> offlineCmd = Arrays.asList(
+                "mvn", "-o", "-U", "-q", "clean", "package",
+                profile,
+                "-Dmaven.repo.local=" + localRepo,
+                "-Dmaven.artifact.threads=1"
+        );
+        System.out.println("🔧 Running: " + String.join(" ", offlineCmd) + " (in " + moduleDir.getFileName() + ")");
 
-        ProcessBuilder pb = new ProcessBuilder(cmd);
+        ProcessBuilder pb = new ProcessBuilder(offlineCmd);
         pb.directory(moduleDir.toFile());
-
         Process process = startAndFilterOutput(pb, moduleDir.getFileName().toString());
         int exit = process.waitFor();
+
         if (exit != 0) {
-            throw new RuntimeException("❌ macOS build failed for " + moduleDir.getFileName());
+            System.out.println("⚠️  Offline macOS build failed, retrying online...");
+            List<String> onlineCmd = new ArrayList<>(offlineCmd);
+            onlineCmd.remove("-o");
+            ProcessBuilder retry = new ProcessBuilder(onlineCmd);
+            retry.directory(moduleDir.toFile());
+            process = startAndFilterOutput(retry, moduleDir.getFileName().toString());
+            exit = process.waitFor();
+            if (exit != 0) {
+                throw new RuntimeException("❌ macOS build failed for " + moduleDir.getFileName());
+            }
         }
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(moduleDir.resolve("target"), "*.app*")) {
@@ -188,7 +219,7 @@ public class BuildAllExecutables {
             }
         }
     }
-
+    
     private void copyMatchingFiles(Path fromDir, String glob, Path destDir) throws IOException {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(fromDir, glob)) {
             for (Path file : stream) {
