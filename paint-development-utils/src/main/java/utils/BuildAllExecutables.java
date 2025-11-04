@@ -345,57 +345,130 @@ public class BuildAllExecutables {
     // 🔹 POM and Git Utilities
     // ======================================================================
 
-    /** Bump version numbers in all {@code pom.xml} files under the project tree. */
+    /**
+     * Forces every pom.xml in the tree to have the same version as the parent.
+     * The parent version is the single source of truth.
+     */
     private void bumpAllPomVersions(String oldVersion, String newVersion) throws Exception {
+        System.out.println("🔄 Enforcing unified version across all modules: " + newVersion);
+
+        Path parentPom = BASE_PATH.resolve("pom.xml");
+        updatePomVersionFull(parentPom, oldVersion, newVersion, true);
+
         Files.walk(BASE_PATH)
                 .filter(p -> p.getFileName().toString().equals("pom.xml"))
+                .filter(p -> !p.equals(parentPom))
                 .forEach(p -> {
-                    try { updatePomVersion(p, oldVersion, newVersion); }
-                    catch (Exception e) { throw new RuntimeException(e); }
+                    try {
+                        updatePomVersionFull(p, oldVersion, newVersion, false);
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed updating " + p + ": " + e.getMessage(), e);
+                    }
                 });
-        System.out.println("✅ Updated all pom.xml files to " + newVersion);
+
+        System.out.println("✅ All modules now use version " + newVersion);
     }
 
-    /** Updates the version string inside a single pom.xml file. */
-    private void updatePomVersion(Path pom, String oldVersion, String newVersion) throws Exception {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(false);
-        DocumentBuilder docBuilder = dbf.newDocumentBuilder();
-        Document doc = docBuilder.parse(Files.newInputStream(pom));
 
+    /**
+     * Updates or inserts version tags so that both <project><version> and <parent><version>
+     * match the parent version. Also updates inter-module dependencies.
+     */
+    private void updatePomVersionFull(Path pom, String oldVersion, String newVersion, boolean isParent) throws Exception {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(Files.newInputStream(pom));
+
+        Element project = (Element) doc.getElementsByTagName("project").item(0);
         boolean modified = false;
 
-        NodeList versionNodes = doc.getElementsByTagName("version");
+        // --- 1️⃣ Set or enforce <project><version>
+        NodeList versionNodes = project.getElementsByTagName("version");
+        Node projectVersion = null;
         for (int i = 0; i < versionNodes.getLength(); i++) {
-            Node node = versionNodes.item(i);
-            String text = node.getTextContent().trim();
-
-            if (text.equals(oldVersion)) {
-                node.setTextContent(newVersion);
-                modified = true;
+            Node v = versionNodes.item(i);
+            if (v.getParentNode().equals(project)) {
+                projectVersion = v;
+                break;
             }
         }
 
-        // also handle <parent><version> if not caught above
-        NodeList parentList = doc.getElementsByTagName("parent");
-        if (parentList.getLength() > 0) {
-            Element parent = (Element) parentList.item(0);
-            NodeList vlist = parent.getElementsByTagName("version");
-            if (vlist.getLength() > 0) {
-                Node v = vlist.item(0);
-                String text = v.getTextContent().trim();
-                if (text.equals(oldVersion)) {
+        if (projectVersion != null) {
+            if (!projectVersion.getTextContent().trim().equals(newVersion)) {
+                projectVersion.setTextContent(newVersion);
+                modified = true;
+            }
+        } else {
+            // Insert <version> directly after <artifactId> if possible, otherwise append at end
+            NodeList artifactNodes = project.getElementsByTagName("artifactId");
+            Element v = doc.createElement("version");
+            v.setTextContent(newVersion);
+
+            if (artifactNodes.getLength() > 0) {
+                Node artifact = artifactNodes.item(0);
+                Node next = artifact.getNextSibling();
+
+                // Skip over whitespace text nodes if present
+                while (next != null && next.getNodeType() == Node.TEXT_NODE) {
+                    next = next.getNextSibling();
+                }
+
+                if (next != null && next.getParentNode() == project) {
+                    project.insertBefore(v, next);
+                } else {
+                    project.appendChild(v);
+                }
+            } else {
+                project.appendChild(v);
+            }
+            modified = true;
+        }
+
+        // --- 2️⃣ Update <parent><version>
+        NodeList parentNodes = project.getElementsByTagName("parent");
+        if (parentNodes.getLength() > 0) {
+            Element parent = (Element) parentNodes.item(0);
+            NodeList parentVersionList = parent.getElementsByTagName("version");
+            if (parentVersionList.getLength() > 0) {
+                Node v = parentVersionList.item(0);
+                if (!v.getTextContent().trim().equals(newVersion)) {
                     v.setTextContent(newVersion);
                     modified = true;
                 }
             }
         }
 
+        // --- 3️⃣ Update all inter-module dependencies with same groupId
+        NodeList deps = project.getElementsByTagName("dependency");
+        for (int i = 0; i < deps.getLength(); i++) {
+            Element dep = (Element) deps.item(i);
+            NodeList gidList = dep.getElementsByTagName("groupId");
+            if (gidList.getLength() > 0) {
+                String gid = gidList.item(0).getTextContent().trim();
+                if (gid.equals("com.github.jjabakker")) {
+                    NodeList vList = dep.getElementsByTagName("version");
+                    if (vList.getLength() > 0) {
+                        Node v = vList.item(0);
+                        if (!v.getTextContent().trim().equals(newVersion)) {
+                            v.setTextContent(newVersion);
+                            modified = true;
+                        }
+                    } else {
+                        Element v = doc.createElement("version");
+                        v.setTextContent(newVersion);
+                        dep.appendChild(v);
+                        modified = true;
+                    }
+                }
+            }
+        }
+
         if (modified) {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.transform(new DOMSource(doc), new StreamResult(Files.newOutputStream(pom)));
-            System.out.println("📝 Updated " + pom.getFileName() + " → " + newVersion);
+            Transformer t = TransformerFactory.newInstance().newTransformer();
+            t.setOutputProperty(OutputKeys.INDENT, "yes");
+            t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            t.transform(new DOMSource(doc), new StreamResult(Files.newOutputStream(pom)));
+            System.out.println("📝 Enforced version " + newVersion + " in " + pom.getFileName());
         }
     }
 
