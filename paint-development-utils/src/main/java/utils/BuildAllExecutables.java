@@ -259,12 +259,15 @@ public class BuildAllExecutables {
         // ✅ Use the global Maven repository (~/.m2/repository)
         String localRepo = System.getProperty("user.home") + "/.m2/repository";
 
-        List<String> cmd = Arrays.asList(
-                "mvn", "-U", "-q", "clean", "package",
-                profile,
+        List<String> cmd = new ArrayList<>();
+        cmd.addAll(Arrays.asList("mvn", "-U", "-q", "clean", "package"));
+        if (profile != null && !profile.trim().isEmpty()) {
+            cmd.add(profile.trim());
+        }
+        cmd.addAll(Arrays.asList(
                 "-Dmaven.repo.local=" + localRepo,
                 "-Dmaven.artifact.threads=1"
-        );
+        ));
 
         System.out.println("🔧 Running: " + String.join(" ", cmd) + " (in " + moduleDir.getFileName() + ")");
         ProcessBuilder pb = new ProcessBuilder(cmd);
@@ -272,8 +275,9 @@ public class BuildAllExecutables {
         Process process = startAndFilterOutput(pb, moduleDir.getFileName().toString());
         int exit = process.waitFor();
 
-        if (exit != 0)
+        if (exit != 0) {
             throw new RuntimeException("❌ Build failed for " + moduleDir.getFileName() + " (" + profile + ")");
+        }
 
         copyMatchingFiles(moduleDir.resolve("target"), glob, destDir);
         Thread.sleep(2000); // allow file locks to clear
