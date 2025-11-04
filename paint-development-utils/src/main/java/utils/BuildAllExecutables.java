@@ -300,17 +300,12 @@ public class BuildAllExecutables {
             }
         }
 
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(moduleDir.resolve("target"), "*.app*")) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(moduleDir.resolve("target"), "*.app")) {
             for (Path appBundle : stream) {
                 Path dest = destDir.resolve(appBundle.getFileName());
                 System.out.println("📦 Copying " + appBundle.getFileName() + " → " + destDir);
-                if (appBundle.toString().endsWith(".zip")) {
-                    Files.copy(appBundle, dest, StandardCopyOption.REPLACE_EXISTING);
-                }
-                else {
-                    copyDirectory(appBundle, dest);
-                }
-                System.out.println("✅ Copied " + appBundle.getFileName());
+                copyDirectory(appBundle, dest);
+                System.out.println("✅ Copied .app bundle");
             }
         }
     }
