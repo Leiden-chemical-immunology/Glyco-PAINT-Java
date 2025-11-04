@@ -620,6 +620,7 @@ public class BuildAllExecutables {
      * Creates and pushes a Git tag for the specified release version.
      * Automatically commits uncommitted pom.xml changes before tagging.
      * If the repository is still dirty after that, it warns and skips tagging safely.
+     * Only pushes the new tag, not all existing ones.
      */
     private void createAndPushTag(String version) throws IOException, InterruptedException {
         Path repoDir = BASE_PATH;
@@ -646,21 +647,21 @@ public class BuildAllExecutables {
         if (dirty) {
             System.out.println("⚠️  Working tree has uncommitted changes — auto-committing before tagging...");
 
-            // Automatically stage all pom.xml changes
-            ProcessBuilder addPb = new ProcessBuilder("bash", "-c", "git add **/pom.xml");
+            // Stage all pom.xml changes, including root and submodules
+            ProcessBuilder addPb = new ProcessBuilder("bash", "-c", "git add pom.xml */pom.xml */*/pom.xml");
             addPb.directory(repoDir.toFile());
             addPb.inheritIO();
             Process addProc = addPb.start();
             addProc.waitFor();
 
-            // Commit the version bump
+            // Commit version bump
             String message = "Auto-commit before tagging release v" + version;
             ProcessBuilder commitPb = new ProcessBuilder("git", "commit", "-m", message);
             commitPb.directory(repoDir.toFile());
             commitPb.inheritIO();
             commitPb.start().waitFor();
 
-            // Re-check cleanliness
+            // Recheck if still dirty
             ProcessBuilder recheck = new ProcessBuilder("git", "status", "--porcelain");
             recheck.directory(repoDir.toFile());
             Process reproc = recheck.start();
@@ -680,7 +681,7 @@ public class BuildAllExecutables {
                 System.out.println("   git add <remaining files>");
                 System.out.println("   git commit -m \"Finalize v" + version + " release\"");
                 System.out.println("   git tag -a v" + version + " -m \"Release v" + version + "\"");
-                System.out.println("   git push origin main --tags");
+                System.out.println("   git push origin v" + version);
                 System.out.println("─────────────────────────────────────────────────────────────");
                 return;
             }
@@ -699,7 +700,7 @@ public class BuildAllExecutables {
             throw new IllegalStateException("❌ Tag " + tagName + " already exists!");
         }
 
-        // --- Create and push the tag
+        // --- Create and push only the new tag
         List<String[]> commands = Arrays.asList(
                 new String[]{"git", "tag", "-a", tagName, "-m", "Release " + tagName},
                 new String[]{"git", "push", "origin", tagName}
