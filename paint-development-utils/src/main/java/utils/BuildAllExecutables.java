@@ -504,7 +504,7 @@ public class BuildAllExecutables {
         return null;
     }
 
-    /** Commits all updated pom.xml files to Git. */
+    /** Commits only updated pom.xml files to Git. */
     private void commitVersionBump(String oldVersion, String newVersion) throws IOException, InterruptedException {
         Path repoDir = BASE_PATH;
         if (!Files.exists(repoDir.resolve(".git"))) {
@@ -513,8 +513,11 @@ public class BuildAllExecutables {
         }
 
         String message = String.format("Bump version: %s → %s", oldVersion, newVersion);
+
+        // Stage only pom.xml files
         List<String[]> commands = Arrays.asList(
-                new String[]{"git", "add", "-u"},
+                new String[]{"git", "add", "*.xml"},
+                new String[]{"git", "add", "**/pom.xml"},
                 new String[]{"git", "commit", "-m", message}
         );
 
@@ -525,13 +528,12 @@ public class BuildAllExecutables {
             pb.inheritIO();
             Process process = pb.start();
             int exit = process.waitFor();
-            if (exit != 0) {
+            if (exit != 0 && !cmd[0].equals("git") && !cmd[1].equals("commit")) {
                 System.err.println("⚠️  Git command failed: " + String.join(" ", cmd));
-                return;
             }
         }
 
-        System.out.println("✅ Committed version bump: " + message);
+        System.out.println("✅ Committed pom.xml version bump: " + message);
     }
 
     // ======================================================================
