@@ -23,10 +23,27 @@
  *     • Distinct build directories for macOS (.app bundles) and Windows (.exe)
  *     • Git commit integration for version control synchronization
  *
+ *  COMMAND-LINE FLAGS:
+ *     -bump <mode>     : Defines how to increment the version number.
+ *                        Supported values:
+ *                           0.0.x → increment patch (e.g., 0.0.26 → 0.0.27)
+ *                           0.x.0 → increment minor (e.g., 0.2.9 → 0.3.0)
+ *                           x.0.0 → increment major (e.g., 1.9.5 → 2.0.0)
+ *
+ *     --release        : Performs a full release sequence:
+ *                           • Converts SNAPSHOT to release version
+ *                           • Builds all modules for both platforms
+ *                           • Creates and pushes Git tag (vX.Y.Z)
+ *                           • Bumps back to next SNAPSHOT version
+ *
+ *     Example usage:
+ *         java utils.BuildAllExecutables -bump 0.0.x --release
+ *         java utils.BuildAllExecutables -bump 0.x.0
+ *
  *  AUTHOR     : J.J. Bakker
  *  MODULE     : paint-development-utils
  *  UPDATED    : 2025-11-04
- *  COPYRIGHT  : (c) 2025 J.J. Abakker. All rights reserved.
+ *  COPYRIGHT  : (c) 2025 J.J. Bakker. All rights reserved.
  * =============================================================================================== */
 
 package utils;
