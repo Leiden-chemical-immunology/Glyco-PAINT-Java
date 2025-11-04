@@ -1,4 +1,37 @@
-name: deploy-pages.yml
+name: Publish JavaDoc to GitHub Pages
+
 on:
+  push:
+    tags:
+      - "v*.*.*" # Runs only when you push a version tag like v1.0.0
+
+permissions:
+  contents: write
 
 jobs:
+  javadoc:
+    name: Build and Deploy JavaDoc
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 8
+
+      - name: Build aggregated JavaDoc
+        run: |
+          echo "Building JavaDoc for tagged release..."
+          mvn -B clean javadoc:aggregate
+
+      - name: Deploy JavaDoc to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/site/apidocs
+          keep_files: false
+          commit_message: "Update JavaDoc for ${{ github.ref_name }}"

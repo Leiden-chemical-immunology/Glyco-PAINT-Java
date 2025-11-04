@@ -3,10 +3,10 @@ name: Glyco-PAINT Release
 permissions:
   contents: write
 
-on:
-  push:
-    tags:
-      - "v*.*.*"
+#on:
+#  push:
+#    tags:
+#      - "v*.*.*"
 
 jobs:
   build-macos:
