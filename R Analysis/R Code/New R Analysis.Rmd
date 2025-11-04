@@ -29,38 +29,38 @@ library(ggtext)
 read_data <- function(root_directory) {
 
   # Read the files
-  squares    <- read_csv(paste0(root_directory, '/', 'Squares.csv'), show_col_types = FALSE)
-  recordings <- read_csv(paste0(root_directory, '/', 'Recordings.csv'), show_col_types = FALSE)
+  Squares    <- read_csv(paste0(root_directory, '/', 'Squares.csv'), show_col_types = FALSE)
+  Recordings <- read_csv(paste0(root_directory, '/', 'Recordings.csv'), show_col_types = FALSE)
 
   # Remove spaces from column names
-  names(squares)    <- str_replace_all(names(squares), c(" " = "_" ))
-  names(recordings) <- str_replace_all(names(recordings), c(" " = "_" ))
+  names(Squares)    <- str_replace_all(names(Squares), c(" " = "_" ))
+  names(Recordings) <- str_replace_all(names(Recordings), c(" " = "_" ))
 
   # Multiply density and diffusion coefficient such that units are correct. 
   # Density is evts/µm2/ms and diffusion coefficient is in nm2/ms (or µm2/s)
-  # <!--squares$Density <- squares$Density * 1000
-  # -->squares$Median_Diffusion_Coefficient <- squares$Median_Diffusion_Coefficient * 1000
+  # <!--Squares$Density <- Squares$Density * 1000
+  # -->Squares$Median_Diffusion_Coefficient <- Squares$Median_Diffusion_Coefficient * 1000
 
-  # Only consider recordings:
+  # Only consider Recordings:
   #   that have been processed because the process flag was  set
   #   that did not contain too many spot
   #   that have expected lengths (2000 frames)
 
-  recordings <- recordings %>%
+  Recordings <- Recordings %>%
     filter(Process_Flag == 'TRUE',
            Number_of_Tracks != -1,
            Number_of_Frames == 2000)
 
   # Only leave data in Squares and Tracks that corresponds with what is in Recordings
-  squares <- squares %>%
-    filter(Recording_Name %in% recordings$Recording_Name)
+  Squares <- Squares %>%
+    filter(Recording_Name %in% Recordings$Recording_Name)
 
-  # Create Valency and Structure in squares master. This only works for Regular probes
-  # if (!('Valency' %in% names(squares))) {
+  # Create Valency and Structure in Squares master. This only works for Regular probes
+  # if (!('Valency' %in% names(Squares))) {
   # 
   #   # Suppressing both messages and warnings within the code block
-  #   squares <- suppressMessages(suppressWarnings (
-  #     squares %>%
+  #   Squares <- suppressMessages(suppressWarnings (
+  #     Squares %>%
   #       separate(Probe_Name, into = c('Valency', 'Structure'), sep = ' ', remove = FALSE) %>%
   #       mutate(
   #         Structure = replace_na(Structure, 'Not specified'),
@@ -70,31 +70,31 @@ read_data <- function(root_directory) {
   # }
 
   # Set Structure to Control when Probe is Control
-  # squares$Structure[squares$Probe_Name == 'Control'] <- 'Control'
+  # Squares$Structure[Squares$Probe_Name == 'Control'] <- 'Control'
 
   # Remove the '-' from CHO-MR, because that name is used later as a column name (and that give sproblems)
-  recordings$Cell_Type[recordings$Cell_Type == 'CHO-MR']  <- 'CHOMR'
+  Recordings$Cell_Type[Recordings$Cell_Type == 'CHO-MR']  <- 'CHOMR'
 
   # fix the MR -/- notation for bmdc and bmdm
-  recordings$Cell_Type[recordings$Cell_Type == 'BMDM MR -/-']  <- 'BMDMMRko'
-  recordings$Cell_Type[recordings$Cell_Type == 'MR -/-']       <- 'BMDCMRko'
+  Recordings$Cell_Type[Recordings$Cell_Type == 'BMDM MR -/-']  <- 'BMDMMRko'
+  Recordings$Cell_Type[Recordings$Cell_Type == 'MR -/-']       <- 'BMDCMRko'
 
   # Change Adjuvant name from No to None
-  recordings$Adjuvant[recordings$Adjuvant %in% c('No', '', NA)] <- 'None'
+  Recordings$Adjuvant[Recordings$Adjuvant %in% c('No', '', NA)] <- 'None'
 
   # Change adjuvant from None to M0 only for BMDM
-  recordings$Adjuvant[recordings$Adjuvant == 'None' & recordings$Cell_Type == 'BMDM'] <- 'M0'
+  Recordings$Adjuvant[Recordings$Adjuvant == 'None' & Recordings$Cell_Type == 'BMDM'] <- 'M0'
 
   # Correct concentrations (irrelevant accuracy)
-  recordings$Concentration[recordings$Concentration == 4.9] <- 5
-  recordings$Concentration[recordings$Concentration == 14.6] <- 15
+  Recordings$Concentration[Recordings$Concentration == 4.9] <- 5
+  Recordings$Concentration[Recordings$Concentration == 14.6] <- 15
 
   # Remove suspect Concentration (question is whether we really used it)
-  recordings <- recordings %>%
-    filter(recordings$Concentration != 0.1)
+  Recordings <- Recordings %>%
+    filter(Recordings$Concentration != 0.1)
 
   # Make Concentration integer
-  # squares$Concentration <- as.numeric(squares$Concentration)
+  # Squares$Concentration <- as.numeric(Squares$Concentration)
 
   # Make columns factor where necessary
   probe_factor = c('1 Mono', '2 Mono', '6 Mono', '1 Bi', '2 Bi', '6 Bi', '1 Tri', '2 Tri', '6 Tri', 'Control')
@@ -105,17 +105,17 @@ read_data <- function(root_directory) {
   structure_factor = c('Mono', 'Bi', 'Tri', 'Control')
 
   # Make columns factor where necessary
-  recordings$Probe_Name <- factor(recordings$Probe_Name,  levels = probe_factor)
-  recordings$Probe_Type <- factor(recordings$Probe_Type,  levels = probe_type_factor)
-  recordings$Cell_Type  <- factor(recordings$Cell_Type,   levels = cell_type_factor)
-  recordings$Adjuvant   <- factor(recordings$Adjuvant,    levels = adjuvant_factor)
+  Recordings$Probe_Name <- factor(Recordings$Probe_Name,  levels = probe_factor)
+  Recordings$Probe_Type <- factor(Recordings$Probe_Type,  levels = probe_type_factor)
+  Recordings$Cell_Type  <- factor(Recordings$Cell_Type,   levels = cell_type_factor)
+  Recordings$Adjuvant   <- factor(Recordings$Adjuvant,    levels = adjuvant_factor)
 
   # Ensure Median Filtering is Boolean
-  # recordings$Median_Filtering <- as.logical(recordings$Median_Filtering)
+  # Recordings$Median_Filtering <- as.logical(Recordings$Median_Filtering)
 
-  write_csv(squares, '~/Downloads/squares_processed.csv')
+  write_csv(Squares, '~/Downloads/Squares_processed.csv')
 
-  return (list(squares=squares, recordings=recordings))
+  return (list(Squares=Squares, Recordings=Recordings))
 }
 
 ```
@@ -125,8 +125,21 @@ read_data <- function(root_directory) {
 
 root_directory <- '/Users/hans/Paint Test Project'
 data <- read_data(root_directory)
-squares <- data$squares
-recordings <- data$recordings
+Squares <- data$Squares
+Recordings <- data$Recordings
 
+library(dplyr)
 
+library(dplyr)
+
+Merged <- Squares %>%
+  left_join(
+    Recordings %>%
+      select(Recording_Name,
+             `Probe_Name`, Adjuvant, `Probe_Type`, Cell_Type, Concentration),
+    by = "Recording_Name"
+  ) %>%
+  relocate(Unique_Key,
+           `Probe_Name`, Adjuvant, `Probe_Type`, Cell_Type, Concentration,
+           .before = everything())
 ```
