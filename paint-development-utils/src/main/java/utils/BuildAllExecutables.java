@@ -84,7 +84,7 @@ public class BuildAllExecutables {
     }
 
     // ===============================================================
-    // 🔹 Build paint-shared-utils first
+    // 🔹 Build paint-shared-utils with forced local install refresh
     // ===============================================================
     private void rebuildSharedUtils() throws IOException, InterruptedException {
         Path utilsDir = BASE_PATH.resolve("paint-shared-utils");
@@ -93,17 +93,26 @@ public class BuildAllExecutables {
             throw new IOException("Missing pom.xml in " + utilsDir);
         }
 
-        List<String> cmd = Arrays.asList("mvn", "-U", "clean", "install", "-DskipTests");
+        // Force Maven to update remote snapshots and refresh the local repo
+        String localRepo = System.getProperty("user.home") + "/.m2/repository";
+        List<String> cmd = Arrays.asList(
+                "mvn", "-U", "clean", "install",
+                "-DskipTests",
+                "-Dmaven.repo.local=" + localRepo
+        );
         System.out.println("🔧 Running: " + String.join(" ", cmd));
 
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(utilsDir.toFile());
         Process process = startAndFilterOutput(pb, "paint-shared-utils");
         int exit = process.waitFor();
-        if (exit != 0) throw new RuntimeException("❌ Failed to install paint-shared-utils. Exit code: " + exit);
+        if (exit != 0) {
+            throw new RuntimeException("❌ Failed to install paint-shared-utils. Exit code: " + exit);
+        }
 
-        System.out.println("✅ paint-shared-utils installed successfully.");
+        System.out.println("✅ paint-shared-utils installed successfully (refreshed local repo).");
     }
+    
 
     // ===============================================================
     // Version bumping logic
