@@ -34,7 +34,7 @@
   <artifactId>paint-parent</artifactId>
         
   
-  <version>0.0.56-SNAPSHOT</version>
+  <version>0.0.58</version>
         
   
   <packaging>pom</packaging>
@@ -277,7 +277,7 @@
         <artifactId>paint-shared-utils</artifactId>
                                 
         
-        <version>0.0.56-SNAPSHOT</version>
+        <version>0.0.58</version>
                             
       
       </dependency>
