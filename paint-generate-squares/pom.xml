@@ -3,22 +3,20 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <modelVersion>4.0.0</modelVersion>
+
     <!-- =============================================================== -->
     <!-- Project hierarchy -->
     <!-- =============================================================== -->
-    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.75-SNAPSHOT</version>
+        <version>0.0.76-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+
     <artifactId>paint-generate-squares</artifactId>
     <packaging>jar</packaging>
-
-    <!-- =============================================================== -->
-    <!-- Metadata -->
-    <!-- =============================================================== -->
     <name>Paint Generate Squares</name>
     <description>Standalone desktop application for generating experiment squares</description>
 
@@ -26,7 +24,7 @@
     <!-- Application properties -->
     <!-- =============================================================== -->
     <properties>
-        <project.build.outputTimestamp>2025-11-05T10:27:16Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-11-05T10:44:55Z</project.build.outputTimestamp>
         <app.name>Generate Squares</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-generate-squares.icns</app.icon.macos>
@@ -37,15 +35,12 @@
     <!-- Dependencies -->
     <!-- =============================================================== -->
     <dependencies>
-
-        <!-- Shared internal utilities -->
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
 
-        <!-- ImageJ and Fiji components -->
         <dependency>
             <groupId>net.imagej</groupId>
             <artifactId>ij</artifactId>
@@ -70,14 +65,12 @@
             <version>7.1.5</version>
         </dependency>
 
-        <!-- Logging -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.2.13</version>
         </dependency>
 
-        <!-- Bio-Formats -->
         <dependency>
             <groupId>ome</groupId>
             <artifactId>bio-formats_plugins</artifactId>
@@ -96,7 +89,6 @@
             <version>6.13.0</version>
         </dependency>
 
-        <!-- Data and CSV handling -->
         <dependency>
             <groupId>tech.tablesaw</groupId>
             <artifactId>tablesaw-core</artifactId>
@@ -114,7 +106,6 @@
             <artifactId>gson</artifactId>
             <version>2.11.0</version>
         </dependency>
-
     </dependencies>
 
     <!-- =============================================================== -->
@@ -123,7 +114,7 @@
     <build>
         <plugins>
 
-            <!-- Include version and build info in the manifest for PAINT Logger -->
+            <!-- Manifest metadata -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -144,7 +135,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Fat JAR assembly -->
+            <!-- Fat JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -191,11 +182,11 @@
     </build>
 
     <!-- =============================================================== -->
-    <!-- OS-specific build profiles -->
+    <!-- OS-specific profiles -->
     <!-- =============================================================== -->
     <profiles>
 
-        <!-- macOS .app bundle profile -->
+        <!-- macOS .app bundle -->
         <profile>
             <id>macos-appbundle</id>
             <activation>
@@ -218,26 +209,55 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <echo message="Creating macOS .app bundle at ${app.bundle}"/>
+                                        <echo message="Creating macOS app bundle at ${app.bundle}"/>
                                         <delete dir="${app.bundle}" failonerror="false"/>
                                         <mkdir dir="${app.bundle}/Contents/MacOS"/>
                                         <mkdir dir="${app.bundle}/Contents/Java"/>
                                         <mkdir dir="${app.bundle}/Contents/Resources"/>
 
-                                        <!-- Copy app files -->
                                         <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
                                               todir="${app.bundle}/Contents/Java" failonerror="false"/>
                                         <copy file="${app.icon.macos}" todir="${app.bundle}/Contents/Resources" failonerror="false"/>
 
-                                        <!-- Create Info.plist -->
-                                        <echo file="${app.bundle}/Contents/Info.plist"></echo>
+                                        <!-- Info.plist -->
+                                        <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key><string>${app.name}</string>
+    <key>CFBundleDisplayName</key><string>${app.name}</string>
+    <key>CFBundleExecutable</key><string>launch</string>
+    <key>CFBundleIconFile</key><string>${app.name}.icns</string>
+    <key>CFBundleIdentifier</key><string>com.github.jjabakker.${app.name}</string>
+    <key>CFBundleVersion</key><string>${project.version}</string>
+    <key>CFBundlePackageType</key><string>APPL</string>
+    <key>NSHighResolutionCapable</key><true/>
+    <key>JVMVersion</key><string>1.8*</string>
+</dict>
+</plist>
+]]></echo>
 
-                                        <!-- Create launch script -->
-                                        <echo file="${app.bundle}/Contents/MacOS/launch"></echo>
+                                        <!-- Launch script -->
+                                        <echo file="${app.bundle}/Contents/MacOS/launch"><![CDATA[
+#!/bin/bash
+# macOS launcher for ${app.name}
+cd "$(dirname "$0")/../Java"
+
+# Use JAVA_HOME if set; otherwise fallback to system Java 8
+JAVA_HOME_DEFAULT="/Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home"
+if [ -z "$JAVA_HOME" ]; then
+  JAVA_CMD="$JAVA_HOME_DEFAULT/bin/java"
+else
+  JAVA_CMD="$JAVA_HOME/bin/java"
+fi
+
+exec "$JAVA_CMD" -Xmx2G -jar "${project.artifactId}-${project.version}.jar"
+]]></echo>
                                         <fixcrlf eol="unix" file="${app.bundle}/Contents/MacOS/launch"/>
                                         <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
 
-                                        <!-- Zip and install -->
                                         <exec executable="zip">
                                             <arg value="-r"/>
                                             <arg value="${project.build.directory}/${app.name}.app.zip"/>
@@ -254,7 +274,7 @@
                                             <arg value="755"/>
                                             <arg value="${user.home}/Applications/Glyco-PAINT/${app.name}.app/Contents/MacOS/launch"/>
                                         </exec>
-                                        <echo message="Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
+                                        <echo message="✅ Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
                                     </target>
                                 </configuration>
                             </execution>
@@ -264,7 +284,7 @@
             </build>
         </profile>
 
-        <!-- Windows .exe launcher profile -->
+        <!-- Windows -->
         <profile>
             <id>windows-exe</id>
             <activation>
@@ -289,7 +309,7 @@
                                     <outfile>${project.build.directory}/${app.name}.exe</outfile>
                                     <jar>${project.build.directory}/${project.artifactId}-${project.version}.jar</jar>
                                     <dontWrapJar>false</dontWrapJar>
-                                    <icon>${project.basedir}/src/main/resources/icons/${project.artifactId}.ico</icon>
+                                    <icon>${app.icon.windows}</icon>
                                     <jre>
                                         <minVersion>1.8.0</minVersion>
                                     </jre>
@@ -316,9 +336,6 @@
         </profile>
     </profiles>
 
-    <!-- =============================================================== -->
-    <!-- External repositories -->
-    <!-- =============================================================== -->
     <repositories>
         <repository>
             <id>scijava.public</id>

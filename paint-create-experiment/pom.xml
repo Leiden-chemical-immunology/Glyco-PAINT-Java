@@ -3,22 +3,21 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <modelVersion>4.0.0</modelVersion>
+
     <!-- =============================================================== -->
     <!-- Project hierarchy -->
     <!-- =============================================================== -->
-    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.75-SNAPSHOT</version>
+        <version>0.0.76-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+
     <artifactId>paint-create-experiment</artifactId>
     <packaging>jar</packaging>
 
-    <!-- =============================================================== -->
-    <!-- Metadata -->
-    <!-- =============================================================== -->
     <name>Paint Create Experiment</name>
     <description>Standalone desktop app for creating experiments</description>
 
@@ -26,7 +25,7 @@
     <!-- Application properties -->
     <!-- =============================================================== -->
     <properties>
-        <project.build.outputTimestamp>2025-11-05T10:27:16Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-11-05T10:44:55Z</project.build.outputTimestamp>
         <app.name>Create Experiment</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-create-experiment.icns</app.icon.macos>
@@ -37,29 +36,24 @@
     <!-- Dependencies -->
     <!-- =============================================================== -->
     <dependencies>
-
-        <!-- Shared utilities -->
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
 
-        <!-- CSV utilities -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
             <version>1.9.0</version>
         </dependency>
 
-        <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
             <version>1.7.36</version>
             <scope>runtime</scope>
         </dependency>
-
     </dependencies>
 
     <!-- =============================================================== -->
@@ -67,8 +61,6 @@
     <!-- =============================================================== -->
     <build>
         <plugins>
-
-            <!-- Build fat JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -138,13 +130,46 @@
                                               todir="${app.bundle}/Contents/Java" failonerror="false"/>
                                         <copy file="${app.icon.macos}" todir="${app.bundle}/Contents/Resources" failonerror="false"/>
 
-                                        <!-- Create Info.plist -->
-                                        <echo file="${app.bundle}/Contents/Info.plist"></echo>
+                                        <!-- Info.plist -->
+                                        <echo file="${app.bundle}/Contents/Info.plist"><![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key><string>${app.name}</string>
+    <key>CFBundleDisplayName</key><string>${app.name}</string>
+    <key>CFBundleExecutable</key><string>launch</string>
+    <key>CFBundleIconFile</key><string>${app.name}.icns</string>
+    <key>CFBundleIdentifier</key><string>com.github.jjabakker.${app.name}</string>
+    <key>CFBundleVersion</key><string>${project.version}</string>
+    <key>CFBundlePackageType</key><string>APPL</string>
+    <key>NSHighResolutionCapable</key><true/>
+    <key>JVMVersion</key><string>1.8*</string>
+</dict>
+</plist>
+]]></echo>
 
-                                        <!-- Create launch script -->
-                                        <echo file="${app.bundle}/Contents/MacOS/launch"></echo>
+                                        <!-- Launch script -->
+                                        <echo file="${app.bundle}/Contents/MacOS/launch"><![CDATA[
+#!/bin/bash
+# macOS launcher for ${app.name}
+cd "$(dirname "$0")/../Java"
+
+# Use JAVA_HOME if set; otherwise fallback to system Java 8
+JAVA_HOME_DEFAULT="/Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home"
+if [ -z "$JAVA_HOME" ]; then
+  JAVA_CMD="$JAVA_HOME_DEFAULT/bin/java"
+else
+  JAVA_CMD="$JAVA_HOME/bin/java"
+fi
+
+exec "$JAVA_CMD" -Xmx2G -jar "${project.artifactId}-${project.version}.jar"
+]]></echo>
                                         <fixcrlf eol="unix" file="${app.bundle}/Contents/MacOS/launch"/>
                                         <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
+
+                                        <!-- Zip and install -->
                                         <exec executable="zip">
                                             <arg value="-r"/>
                                             <arg value="${project.build.directory}/${app.name}.app.zip"/>
@@ -163,7 +188,7 @@
                                             <arg value="755"/>
                                             <arg value="${user.home}/Applications/Glyco-PAINT/${app.name}.app/Contents/MacOS/launch"/>
                                         </exec>
-                                        <echo message="Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
+                                        <echo message="✅ Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>
                                     </target>
                                 </configuration>
                             </execution>
