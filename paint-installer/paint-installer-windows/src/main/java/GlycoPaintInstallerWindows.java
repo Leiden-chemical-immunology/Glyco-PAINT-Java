@@ -80,14 +80,15 @@ public class GlycoPaintInstallerWindows {
     }
 
     private void show() {
-        Path programFiles = Paths.get(System.getenv("ProgramFiles"), PRODUCT_NAME);
-        try { Files.createDirectories(programFiles.getParent()); } catch (IOException ignored) {}
+        // Default suggestion: ~/Applications/Glyco-PAINT
+        Path defaultDir = Paths.get(System.getProperty("user.home"), "Applications", PRODUCT_NAME);
+        try { Files.createDirectories(defaultDir.getParent()); } catch (IOException ignored) {}
 
-        JFileChooser chooser = new JFileChooser(programFiles.toFile());
+        JFileChooser chooser = new JFileChooser(defaultDir.getParent().toFile());
         chooser.setDialogTitle("Choose installation location for " + PRODUCT_NAME);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setAcceptAllFileFilterUsed(false);
-        chooser.setSelectedFile(programFiles.toFile());
+        chooser.setSelectedFile(defaultDir.toFile());
 
         int result = chooser.showDialog(frame, "Install here");
         if (result != JFileChooser.APPROVE_OPTION) {
@@ -95,8 +96,23 @@ public class GlycoPaintInstallerWindows {
             return;
         }
 
+        // --- Determine the actual chosen directory correctly ---
         File selected = chooser.getSelectedFile();
-        installRoot = selected.toPath().resolve(PRODUCT_NAME);
+        File current  = chooser.getCurrentDirectory();
+
+        // If the user created a new directory or typed one manually
+        if (selected == null || !selected.exists()) {
+            selected = current;
+        }
+
+        // Make sure we end up with a valid directory
+        if (selected != null && selected.isDirectory()) {
+            installRoot = selected.toPath();
+        } else {
+            installRoot = current.toPath();
+        }
+
+        log("Selected install root: " + installRoot);
 
         try {
             Files.createDirectories(installRoot);

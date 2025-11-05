@@ -78,14 +78,15 @@ public class GlycoPaintInstallerMac {
     }
 
     private void show() {
-        Path userApps = Paths.get(System.getProperty("user.home"), "Applications");
-        try { Files.createDirectories(userApps); } catch (IOException ignored) {}
+        // Default suggestion: ~/Applications/Glyco-PAINT
+        Path defaultDir = Paths.get(System.getProperty("user.home"), "Applications", PRODUCT_NAME);
+        try { Files.createDirectories(defaultDir.getParent()); } catch (IOException ignored) {}
 
-        JFileChooser chooser = new JFileChooser(userApps.toFile());
+        JFileChooser chooser = new JFileChooser(defaultDir.getParent().toFile());
         chooser.setDialogTitle("Choose installation location for " + PRODUCT_NAME);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setAcceptAllFileFilterUsed(false);
-        chooser.setSelectedFile(userApps.toFile());
+        chooser.setSelectedFile(defaultDir.toFile());
 
         int result = chooser.showDialog(frame, "Install here");
         if (result != JFileChooser.APPROVE_OPTION) {
@@ -93,8 +94,20 @@ public class GlycoPaintInstallerMac {
             return;
         }
 
-        File selected = chooser.getSelectedFile();
-        installRoot = selected.toPath().resolve(PRODUCT_NAME);
+        File chosen = chooser.getSelectedFile();
+        if (chosen == null || !chosen.exists()) {
+            // If user typed a new folder name that doesn't exist yet
+            chosen = chooser.getCurrentDirectory();
+        }
+
+        // ✅ Detect manually created folder names inside current dir
+        if (chosen != null && chosen.isDirectory()) {
+            installRoot = chosen.toPath();
+        } else {
+            installRoot = chooser.getCurrentDirectory().toPath();
+        }
+
+        log("Selected install root: " + installRoot);
 
         try {
             Files.createDirectories(installRoot);
