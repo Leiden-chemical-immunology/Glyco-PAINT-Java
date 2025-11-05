@@ -140,6 +140,7 @@ public class BuildAllExecutables {
         if (doRelease) {
             System.out.println("\n🎯 Preparing release " + versionInfo.releaseVersion);
             alignAllPomVersions(versionInfo.releaseVersion);
+            removeSnapshotFromAllPoms();
             commitVersionBump(currentVersion, versionInfo.releaseVersion);
             installParentPomAsRelease(versionInfo.releaseVersion);
             installParentPom();
@@ -390,23 +391,24 @@ public class BuildAllExecutables {
     }
 
     private VersionInfo computeVersions(String currentVersion, String bumpFlag) {
-        String base  = currentVersion.replace("-SNAPSHOT", "");
-        String[] parts = base.split("\\.");
-        int major = Integer.parseInt(parts[0]);
-        int minor = Integer.parseInt(parts[1]);
-        int patch = Integer.parseInt(parts[2]);
+        String base = currentVersion.replace("-SNAPSHOT", "").trim();
 
-        switch (bumpFlag) {
-            case "0.0.x": patch++; break;
-            case "0.x.0": minor++; patch = 0; break;
-            case "x.0.0": major++; minor = 0; patch = 0; break;
-            default: throw new IllegalArgumentException("Unknown bump flag: " + bumpFlag);
+        // Extract last numeric segment
+        String[] parts = base.split("\\.");
+        int lastNum = Integer.parseInt(parts[parts.length - 1]);
+
+        int next = lastNum + 1;
+
+        String prefix = "";
+        if (parts.length > 1) {
+            prefix = String.join(".", Arrays.copyOf(parts, parts.length - 1)) + ".";
         }
 
-        String releaseVersion = String.format("%d.%d.%d", major, minor, patch);
-        return new VersionInfo(releaseVersion, releaseVersion + "-SNAPSHOT");
-    }
+        String releaseVersion = prefix + lastNum;
+        String nextDevVersion = prefix + next + "-SNAPSHOT";
 
+        return new VersionInfo(releaseVersion, nextDevVersion);
+    }
     // ======================================================================
     // 🔹 Build Execution and Artifact Collection
     // ======================================================================
@@ -867,4 +869,23 @@ public class BuildAllExecutables {
             throw new RuntimeException("❌ Maven build failed for module: " + module);
         }
     }
+    /** Ensures no POM files still contain "-SNAPSHOT" before release builds. */
+    private void removeSnapshotFromAllPoms() throws IOException {
+        try (java.util.stream.Stream<Path> files = Files.walk(BASE_PATH)) {
+            files.filter(p -> p.getFileName().toString().equals("pom.xml"))
+                    .forEach(p -> {
+                        try {
+                            String text = new String(Files.readAllBytes(p), "UTF-8");
+                            String cleaned = text.replaceAll("-SNAPSHOT", "");
+                            if (!text.equals(cleaned)) {
+                                Files.write(p, cleaned.getBytes("UTF-8"));
+                                System.out.println("🧹 Cleaned -SNAPSHOT from " + p);
+                            }
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    });
+        }
+    }
+
 }
