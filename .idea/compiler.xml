@@ -10,17 +10,14 @@
         <module name="paint-regression" />
         <module name="paint-fiji-plugin" />
         <module name="paint-shared-utils" />
+        <module name="paint-installer-macos" />
         <module name="paint-viewer" />
         <module name="paint-generate-squares" />
+        <module name="paint-installer-windows" />
         <module name="paint-create-experiment" />
         <module name="paint-get-omero" />
         <module name="paint-development-utils" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="paint-installer" target="1.8" />
-      <module name="paint-installer-mac" target="1.8" />
-      <module name="paint-installer-windows" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>

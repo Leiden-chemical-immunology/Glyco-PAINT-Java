@@ -288,7 +288,7 @@ public class BuildAllExecutables {
         System.out.println("\n---------------------------------------------");
         System.out.println("🛠️  Building Glyco-PAINT macOS Installer JAR");
         System.out.println("---------------------------------------------");
-        runMavenModule("paint-installer-mac", versionInfo.releaseVersion);
+        runMavenModule("paint-installer-macos", versionInfo.releaseVersion);
 
         // Windows EXE installer
         System.out.println("\n---------------------------------------------");

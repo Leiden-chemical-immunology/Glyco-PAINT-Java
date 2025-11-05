@@ -11,8 +11,8 @@
     <file url="file://$PROJECT_DIR$/paint-generate-squares/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/paint-get-omero/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/paint-get-omero/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/paint-installer/paint-installer-mac/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/paint-installer/paint-installer-mac/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/paint-installer/paint-installer-macos/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/paint-installer/paint-installer-macos/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/paint-installer/paint-installer-windows/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/paint-installer/paint-installer-windows/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/paint-installer/src/main/java" charset="UTF-8" />
