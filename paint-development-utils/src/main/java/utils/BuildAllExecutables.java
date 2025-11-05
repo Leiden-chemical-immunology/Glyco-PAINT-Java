@@ -589,20 +589,23 @@ public class BuildAllExecutables {
         }
 
         if (modified) {
-            TransformerFactory tf = TransformerFactory.newInstance();
-            Transformer t = tf.newTransformer();
+            // ✅ Preserve exact formatting — just replace <version> tags textually.
+            String xml = new String(Files.readAllBytes(pom), StandardCharsets.UTF_8);
 
-            // Keep output exactly as-is: no pretty-print, no newlines
-            t.setOutputProperty(OutputKeys.INDENT, "no");
-            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-            t.setOutputProperty(OutputKeys.METHOD, "xml");
-            t.setOutputProperty(OutputKeys.STANDALONE, "no");
-            t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "0");
-
-            try (OutputStream out = Files.newOutputStream(pom)) {
-                t.transform(new DOMSource(doc), new StreamResult(new OutputStreamWriter(out, StandardCharsets.UTF_8)));
-            }
-
+            // Replace only tag contents, not tag structure.
+            xml = xml.replaceAll(
+                    "(?s)(<parent>.*?<version>)([^<]+)(</version>.*?</parent>)",
+                    "$1" + newVersion + "$3"
+            );
+            xml = xml.replaceAll(
+                    "(?s)(<project[^>]*>.*?<version>)([^<]+)(</version>)",
+                    "$1" + newVersion + "$3"
+            );
+            xml = xml.replaceAll(
+                    "(?s)(<dependency>.*?<groupId>com\\.github\\.jjabakker</groupId>.*?<version>)([^<]+)(</version>.*?</dependency>)",
+                    "$1" + newVersion + "$3"
+            );
+            Files.write(pom, xml.getBytes(StandardCharsets.UTF_8));
             System.out.println("📝 Enforced version " + newVersion + " in " + pom.getFileName());
         }
     }
