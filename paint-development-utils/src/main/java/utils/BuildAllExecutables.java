@@ -139,10 +139,18 @@ public class BuildAllExecutables {
         // --- Release preparation ---
         if (doRelease) {
             System.out.println("\n🎯 Preparing release " + versionInfo.releaseVersion);
+
+            // ✅ 1. Make release parent POM available to child modules first
+            installParentPomAsRelease(versionInfo.releaseVersion);
+
+            // ✅ 2. Then align all module versions (children now resolve parent)
             alignAllPomVersions(versionInfo.releaseVersion);
             removeSnapshotFromAllPoms();
+
+            // ✅ 3. Commit the version bump
             commitVersionBump(currentVersion, versionInfo.releaseVersion);
-            installParentPomAsRelease(versionInfo.releaseVersion);
+
+            // ✅ 4. Reinstall updated parent + rebuild shared-utils
             installParentPom();
             rebuildSharedUtils();
         } else {
@@ -209,7 +217,7 @@ public class BuildAllExecutables {
 
         // --- Explicit final commit for new SNAPSHOT version ---
         System.out.println("📝 Committing final version bump (" + versionInfo.nextDevVersion + ")...");
-        ProcessBuilder addFinal = new ProcessBuilder("bash", "-c", "git add pom.xml **/pom.xml");
+        ProcessBuilder addFinal = new ProcessBuilder("bash", "-c", "shopt -s globstar; git add pom.xml **/pom.xml");
         addFinal.directory(BASE_PATH.toFile());
         addFinal.inheritIO();
         addFinal.start().waitFor();
@@ -580,7 +588,7 @@ public class BuildAllExecutables {
         String message = String.format("Bump version: %s → %s", oldVersion, newVersion);
 
         // Use bash -c so globs (**/pom.xml) are expanded by the shell
-        String addCommand = "git add **/pom.xml";
+        String addCommand = "bash -c 'shopt -s globstar; git add pom.xml **/pom.xml'";
         List<String[]> commands = Arrays.asList(
                 new String[]{"bash", "-c", addCommand},
                 new String[]{"git", "diff", "--cached", "--quiet"},
