@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.72-SNAPSHOT</version>
+        <version>0.0.73-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>paint-fiji-plugin</artifactId>
@@ -43,7 +43,7 @@
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
-            <version>0.0.58-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- Bundled dependencies -->
@@ -74,7 +74,7 @@
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-generate-squares</artifactId>
-            <version>0.0.58-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
 
@@ -200,5 +200,4 @@
             </plugin>
         </plugins>
     </build>
-    <version>0.0.58-SNAPSHOT</version>
 </project>

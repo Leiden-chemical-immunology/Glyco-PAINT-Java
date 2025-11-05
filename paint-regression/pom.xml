@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.72-SNAPSHOT</version>
+        <version>0.0.73-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>paint-regression</artifactId>
@@ -29,7 +29,6 @@
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
-            <version>0.0.58-SNAPSHOT</version>
         </dependency>
 
         <!-- JUnit 5 (for testing) -->
@@ -75,5 +74,4 @@
             </plugin>
         </plugins>
     </build>
-    <version>0.0.58-SNAPSHOT</version>
 </project>
