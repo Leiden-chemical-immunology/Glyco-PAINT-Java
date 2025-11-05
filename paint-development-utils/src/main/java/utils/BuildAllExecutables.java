@@ -49,7 +49,6 @@
 package utils;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import javax.xml.parsers.*;
@@ -138,7 +137,7 @@ public class BuildAllExecutables {
         // --- Release preparation ---
         if (doRelease) {
             System.out.println("\n🎯 Preparing release " + versionInfo.releaseVersion);
-            bumpAllPomVersions(versionInfo.releaseVersion, versionInfo.nextDevVersion);
+            alignAllPomVersions(versionInfo.releaseVersion);
             commitVersionBump(currentVersion, versionInfo.releaseVersion);
             installParentPomAsRelease(versionInfo.releaseVersion);
             installParentPom();
@@ -202,7 +201,7 @@ public class BuildAllExecutables {
 
         // --- Bump back to next development version ---
         System.out.println("\n🔄 Restoring development version (" + versionInfo.nextDevVersion + ")...");
-        bumpAllPomVersions(versionInfo.releaseVersion, versionInfo.nextDevVersion);
+        alignAllPomVersions(versionInfo.nextDevVersion);
 
         // --- Explicit final commit for new SNAPSHOT version ---
         System.out.println("📝 Committing final version bump (" + versionInfo.nextDevVersion + ")...");
@@ -222,10 +221,11 @@ public class BuildAllExecutables {
             ProcessBuilder commitFinal = new ProcessBuilder("git", "commit", "-m", msg);
             commitFinal.directory(BASE_PATH.toFile());
             commitFinal.inheritIO();
-            if (commitFinal.start().waitFor() == 0)
+            if (commitFinal.start().waitFor() == 0) {
                 System.out.println("✅ Committed final POM version bump to " + versionInfo.nextDevVersion);
-            else
+            } else {
                 System.err.println("⚠️  Could not commit final version bump automatically.");
+            }
         } else {
             System.out.println("ℹ️  No remaining POM changes to commit.");
         }
@@ -298,27 +298,51 @@ public class BuildAllExecutables {
 
 
         // --- Copy final installers to unified Installers directory ---
+
         System.out.println("\n---------------------------------------------");
         System.out.println("📦 Collecting final installers into /Installers");
         System.out.println("---------------------------------------------");
 
-        Path macBuiltJar = BASE_PATH.resolve("paint-installer/paint-installer-macos/target")
-                .resolve("Glyco-PAINT-Installer-" + versionInfo.releaseVersion + ".jar");
-        Path winBuiltExe = BASE_PATH.resolve("paint-installer/paint-installer-windows/target")
-                .resolve("Glyco-PAINT-Installer.exe");
-
+        // --- macOS installer ---
+        Path macTarget = BASE_PATH.resolve("paint-installer/paint-installer-macos/target");
+        Path macBuiltJar;
+        try (java.util.stream.Stream<Path> s = Files.list(macTarget)) {
+            macBuiltJar = s
+                    .filter(p -> {
+                        String n = p.getFileName().toString().toLowerCase(Locale.ROOT);
+                        return n.endsWith(".jar") && n.contains("installer");
+                    })
+                    .max(Comparator.comparingLong(p -> {
+                        try { return Files.getLastModifiedTime(p).toMillis(); }
+                        catch (IOException e) { return Long.MIN_VALUE; }
+                    }))
+                    .orElseThrow(() -> new FileNotFoundException("❌ macOS installer not found in " + macTarget));
+        }
         Path macFinal = installerPath.resolve("Glyco-PAINT-Installer-" + versionInfo.releaseVersion + ".jar");
-        Path winFinal = installerPath.resolve("Glyco-PAINT-Installer-" + versionInfo.releaseVersion + ".exe");
-
         Files.copy(macBuiltJar, macFinal, StandardCopyOption.REPLACE_EXISTING);
-        Files.copy(winBuiltExe, winFinal, StandardCopyOption.REPLACE_EXISTING);
-
         System.out.println("✅ macOS installer → " + macFinal);
+
+        // --- Windows installer ---
+        Path winTarget = BASE_PATH.resolve("paint-installer/paint-installer-windows/target");
+        Path winBuiltExe;
+        try (java.util.stream.Stream<Path> s = Files.list(winTarget)) {
+            winBuiltExe = s
+                    .filter(p -> {
+                        String n = p.getFileName().toString().toLowerCase(Locale.ROOT);
+                        return n.endsWith(".exe") || n.endsWith("-shaded.jar") || n.endsWith(".jar");
+                    })
+                    .max(Comparator.comparingLong(p -> {
+                        try { return Files.getLastModifiedTime(p).toMillis(); }
+                        catch (IOException e) { return Long.MIN_VALUE; }
+                    }))
+                    .orElseThrow(() -> new FileNotFoundException("❌ Windows installer not found in " + winTarget));
+        }
+        Path winFinal = installerPath.resolve("Glyco-PAINT-Installer-" + versionInfo.releaseVersion + ".exe");
+        Files.copy(winBuiltExe, winFinal, StandardCopyOption.REPLACE_EXISTING);
         System.out.println("✅ Windows installer → " + winFinal);
 
-        System.out.println("\n✅ Both installers built successfully for version " + versionInfo.releaseVersion);        System.out.println("✅ Installer built with version " + versionInfo.releaseVersion);
-
-        System.out.println("\n🎉 All builds complete!");
+        System.out.println("\n✅ Both installers built successfully for version " + versionInfo.releaseVersion);
+        System.out.println("🎉 All builds complete!");
         System.out.println("✅ Output directory: " + buildRoot.toAbsolutePath());
     }
 
@@ -440,8 +464,9 @@ public class BuildAllExecutables {
         Process process = startAndFilterOutput(pb, moduleDir.getFileName().toString());
         int exit = process.waitFor();
 
-        if (exit != 0)
+        if (exit != 0) {
             throw new RuntimeException("❌ macOS build failed for " + moduleDir.getFileName());
+        }
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(moduleDir.resolve("target"), "*.app")) {
             for (Path appBundle : stream) {
@@ -476,8 +501,7 @@ public class BuildAllExecutables {
                 Path dest = target.resolve(source.relativize(path).toString());
                 if (Files.isDirectory(path)) {
                     Files.createDirectories(dest);
-                }
-                else {
+                } else {
                     Files.copy(path, dest, StandardCopyOption.REPLACE_EXISTING);
                 }
             } catch (IOException e) {
@@ -490,168 +514,39 @@ public class BuildAllExecutables {
     // 🔹 POM and Git Utilities
     // ======================================================================
 
+    private void alignAllPomVersions(String newVersion) throws IOException, InterruptedException {
+        System.out.println("🔄 Aligning all POM versions to " + newVersion + " using Maven Versions Plugin...");
 
-    /**
-     * Forces every pom.xml in the tree to use the same version as the parent POM.
-     * The parent version is always treated as the single source of truth.
-     */
-    private void bumpAllPomVersions(String ignoredOldVersion, String targetVersion) throws Exception {
-        Path parentPom = BASE_PATH.resolve("pom.xml");
+        // ✅ Resolve actual multi-module root path (Glyco-PAINT-Java)
+        Path projectRoot = BASE_PATH.toAbsolutePath().getParent().resolve("Glyco-PAINT-Java");
 
-        // Always read the latest version from the master parent POM
-        String masterVersion = getVersionFromPom(parentPom);
-        if (masterVersion == null || masterVersion.isEmpty()) {
-            throw new IllegalStateException("Could not determine version from parent pom.xml");
-        }
+        // 1️⃣ Set root and child versions
+        List<String> setCmd = Arrays.asList(
+                "mvn", "-B", "versions:set",
+                "-DnewVersion=" + newVersion,
+                "-DgenerateBackupPoms=false"
+        );
+        runMaven(setCmd, projectRoot, "versions:set");
 
-        // If a specific targetVersion is requested (e.g., during release), override it
-        String newVersion = (targetVersion != null && !targetVersion.isEmpty()) ? targetVersion : masterVersion;
+        // 2️⃣ Ensure children inherit the parent version
+        List<String> updateCmd = Arrays.asList(
+                "mvn", "-B", "versions:update-child-modules",
+                "-DforceVersion=true",
+                "-DgenerateBackupPoms=false"
+        );
+        runMaven(updateCmd, projectRoot, "versions:update-child-modules");
 
-        System.out.println("🔄 Enforcing unified version across all modules: " + newVersion);
-
-        // Update the parent itself first
-        updatePomVersionFull(parentPom, masterVersion, newVersion, true);
-
-        // Then update every submodule to match the parent's version
-        Files.walk(BASE_PATH)
-                .filter(p -> p.getFileName().toString().equals("pom.xml"))
-                .filter(p -> !p.equals(parentPom))
-                .forEach(p -> {
-                    try {
-                        updatePomVersionFull(p, masterVersion, newVersion, false);
-                    } catch (Exception e) {
-                        throw new RuntimeException("Failed updating " + p + ": " + e.getMessage(), e);
-                    }
-                });
-
-        // ✅ Add this informational line here
-        System.out.println("🔗 Parent POM is now authoritative: " + masterVersion);
-
-        System.out.println("✅ All modules now use version " + newVersion);
+        System.out.println("✅ All modules now aligned to version " + newVersion);
     }
 
-    /**
-     * Updates or inserts version tags so that both <project><version> and <parent><version>
-     * match the parent version. Also updates inter-module dependencies.
-     */
-    private void updatePomVersionFull(Path pom, String oldVersion, String newVersion, boolean isParent) throws Exception {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        Document doc = db.parse(Files.newInputStream(pom));
 
-        Element project = (Element) doc.getElementsByTagName("project").item(0);
-        boolean modified = false;
-
-        // --- 1️⃣ Set or enforce <project><version>
-        NodeList versionNodes = project.getElementsByTagName("version");
-        Node projectVersion = null;
-        for (int i = 0; i < versionNodes.getLength(); i++) {
-            Node v = versionNodes.item(i);
-            if (v.getParentNode().equals(project)) {
-                projectVersion = v;
-                break;
-            }
-        }
-
-        if (projectVersion != null) {
-            if (!projectVersion.getTextContent().trim().equals(newVersion)) {
-                projectVersion.setTextContent(newVersion);
-                modified = true;
-            }
-        } else {
-            // Insert <version> directly after <artifactId> if possible, otherwise append at end
-            NodeList artifactNodes = project.getElementsByTagName("artifactId");
-            Element v = doc.createElement("version");
-            v.setTextContent(newVersion);
-
-            if (artifactNodes.getLength() > 0) {
-                Node artifact = artifactNodes.item(0);
-                Node next = artifact.getNextSibling();
-
-                // Skip over whitespace text nodes if present
-                while (next != null && next.getNodeType() == Node.TEXT_NODE) {
-                    next = next.getNextSibling();
-                }
-
-                if (next != null && next.getParentNode() == project) {
-                    project.insertBefore(v, next);
-                } else {
-                    project.appendChild(v);
-                }
-            } else {
-                project.appendChild(v);
-            }
-            modified = true;
-        }
-
-        // --- 2️⃣ Update <parent><version>
-        NodeList parentNodes = project.getElementsByTagName("parent");
-        if (parentNodes.getLength() > 0) {
-            Element parent = (Element) parentNodes.item(0);
-            NodeList parentVersionList = parent.getElementsByTagName("version");
-            if (parentVersionList.getLength() > 0) {
-                Node v = parentVersionList.item(0);
-                if (!v.getTextContent().trim().equals(newVersion)) {
-                    v.setTextContent(newVersion);
-                    modified = true;
-                }
-            }
-        }
-
-        // --- 3️⃣ Update all inter-module dependencies with same groupId
-        NodeList deps = project.getElementsByTagName("dependency");
-        for (int i = 0; i < deps.getLength(); i++) {
-            Element dep = (Element) deps.item(i);
-            NodeList gidList = dep.getElementsByTagName("groupId");
-            if (gidList.getLength() > 0) {
-                String gid = gidList.item(0).getTextContent().trim();
-                if (gid.equals("com.github.jjabakker")) {
-                    NodeList vList = dep.getElementsByTagName("version");
-                    if (vList.getLength() > 0) {
-                        Node v = vList.item(0);
-                        if (!v.getTextContent().trim().equals(newVersion)) {
-                            v.setTextContent(newVersion);
-                            modified = true;
-                        }
-                    } else {
-                        Element v = doc.createElement("version");
-                        v.setTextContent(newVersion);
-                        dep.appendChild(v);
-                        modified = true;
-                    }
-                }
-            }
-        }
-
-        if (modified) {
-            // ✅ Preserve formatting; replace only OLD → NEW in relevant blocks.
-            String xml = new String(Files.readAllBytes(pom), StandardCharsets.UTF_8);
-
-            String oldEsc = java.util.regex.Pattern.quote(oldVersion);
-            String newRepl = java.util.regex.Matcher.quoteReplacement(newVersion);
-
-            // --- 1️⃣ Parent version ---
-            xml = xml.replaceAll(
-                    "(?s)(<parent>.*?<version>)\\s*" + oldEsc + "\\s*(</version>.*?</parent>)",
-                    "$1" + newRepl + "$2"
-            );
-
-            // --- 2️⃣ Project version (top-level, not under <parent>) ---
-            xml = xml.replaceAll(
-                    "(?s)(<project\\b[^>]*>.*?<version>)\\s*" + oldEsc + "\\s*(</version>)",
-                    "$1" + newRepl + "$2"
-            );
-
-            // --- 3️⃣ Inter-module deps only (our own groupId) ---
-            xml = xml.replaceAll(
-                    "(?s)(<dependency>.*?<groupId>\\s*com\\.github\\.jjabakker\\s*</groupId>.*?<version>)\\s*"
-                            + oldEsc + "\\s*(</version>.*?</dependency>)",
-                    "$1" + newRepl + "$2"
-            );
-
-            // 🔒 Do NOT touch any other <version> tags (e.g. Gson, Tablesaw, etc.)
-            Files.write(pom, xml.getBytes(StandardCharsets.UTF_8));
-            System.out.println("📝 Enforced version " + newVersion + " in " + pom.getFileName());
+    private void runMaven(List<String> cmd, Path dir, String label) throws IOException, InterruptedException {
+        System.out.println("🔧 Running (" + label + "): " + String.join(" ", cmd));
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.directory(dir.toFile());
+        pb.inheritIO();
+        if (pb.start().waitFor() != 0) {
+            throw new RuntimeException("❌ Maven command failed: " + label);
         }
     }
 
@@ -718,10 +613,11 @@ public class BuildAllExecutables {
         Process commitProc = commitPb.start();
         int commitExit = commitProc.waitFor();
 
-        if (commitExit == 0)
+        if (commitExit == 0) {
             System.out.println("✅ Committed pom.xml version bump: " + message);
-        else
+        } else {
             System.err.println("⚠️  git commit failed (nothing staged or error).");
+        }
     }
     // ======================================================================
     // 🔹 Maven Process Helpers
@@ -871,9 +767,9 @@ public class BuildAllExecutables {
             // Verify it's now clean
             ProcessBuilder verifyClean = new ProcessBuilder("git", "status", "--porcelain");
             verifyClean.directory(repoDir.toFile());
-            Process verifyProc = verifyClean.start();
+            Process        verifyProc   = verifyClean.start();
             BufferedReader verifyReader = new BufferedReader(new InputStreamReader(verifyProc.getInputStream()));
-            boolean stillDirty = verifyReader.lines().anyMatch(line -> !line.trim().isEmpty());
+            boolean        stillDirty   = verifyReader.lines().anyMatch(line -> !line.trim().isEmpty());
             verifyProc.waitFor();
 
             if (stillDirty) {
@@ -937,8 +833,9 @@ public class BuildAllExecutables {
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(appDir.toFile());
         pb.inheritIO();
-        if (pb.start().waitFor() != 0)
+        if (pb.start().waitFor() != 0) {
             throw new RuntimeException("❌ Failed to zip payload at " + appDir);
+        }
 
         if (Files.exists(pluginDir) && Files.list(pluginDir).findAny().isPresent()) {
             String cmdStr = String.format(
@@ -948,8 +845,9 @@ public class BuildAllExecutables {
             );
             ProcessBuilder addPb = new ProcessBuilder("bash", "-c", cmdStr);
             addPb.inheritIO();
-            if (addPb.start().waitFor() != 0)
+            if (addPb.start().waitFor() != 0) {
                 throw new RuntimeException("❌ Failed to append plugin to " + outputZip);
+            }
         }
     }
 
@@ -963,7 +861,8 @@ public class BuildAllExecutables {
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(BASE_PATH.toFile());
         pb.inheritIO();
-        if (pb.start().waitFor() != 0)
+        if (pb.start().waitFor() != 0) {
             throw new RuntimeException("❌ Maven build failed for module: " + module);
+        }
     }
 }

@@ -24,7 +24,7 @@ import org.w3c.dom.*;
 public class ReformatPoms {
 
     private static final File ROOT_DIR =
-            new File("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java-clean");
+            new File("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
 
     public static void main(String[] args) {
         System.out.println("🔍 Searching for pom.xml files under: " + ROOT_DIR.getAbsolutePath());
