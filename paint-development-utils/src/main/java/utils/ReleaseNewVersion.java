@@ -116,246 +116,206 @@ public class BuildAllExecutables {
     private void run(String bumpFlag, boolean doRelease) throws Exception {
         System.out.println("=== Building Glyco-PAINT apps for macOS and Windows ===");
 
-        Path parentPom = BASE_PATH.resolve("pom.xml");
-        String currentVersion = getVersionFromPom(parentPom);
-        if (currentVersion == null) {
-            throw new IllegalStateException("Could not determine version from parent pom.xml");
-        }
+        VersionInfo versionInfo = null;  // ✅ Declare it here, before try
 
-        if (!currentVersion.endsWith("-SNAPSHOT")) {
-            System.out.println("⚠️  Parent POM is not a SNAPSHOT (" + currentVersion + ") — converting to snapshot for continued development.");
-            currentVersion = currentVersion + "-SNAPSHOT";
-        }
+        try {
+            Path parentPom = BASE_PATH.resolve("pom.xml");
+            String currentVersion = getVersionFromPom(parentPom);
+            if (currentVersion == null) {
+                throw new IllegalStateException("Could not determine version from parent pom.xml");
+            }
 
-        VersionInfo versionInfo = computeVersions(currentVersion, bumpFlag);
-        System.out.println("🔢  Current:  " + currentVersion);
-        System.out.println("🏷️  Release: " + versionInfo.releaseVersion);
-        System.out.println("🚀 Next dev: " + versionInfo.nextDevVersion);
+            if (!currentVersion.endsWith("-SNAPSHOT")) {
+                System.out.println("⚠️  Parent POM is not a SNAPSHOT (" + currentVersion + ") — converting to snapshot for continued development.");
+                currentVersion = currentVersion + "-SNAPSHOT";
+            }
 
-        // --- Prepare environment ---
-        installParentPom();
-        rebuildSharedUtils();
+            versionInfo = computeVersions(currentVersion, bumpFlag);
+            System.out.println("🔢  Current:  " + currentVersion);
+            System.out.println("🏷️  Release: " + versionInfo.releaseVersion);
+            System.out.println("🚀 Next dev: " + versionInfo.nextDevVersion);
 
-        // --- Release preparation ---
-        if (doRelease) {
-            System.out.println("\n🎯 Preparing release " + versionInfo.releaseVersion);
-
-            // ✅ 1. Make release parent POM available to child modules first
-            installParentPomAsRelease(versionInfo.releaseVersion);
-
-            // ✅ 2. Then align all module versions (children now resolve parent)
-            alignAllPomVersions(versionInfo.releaseVersion);
-            removeSnapshotFromAllPoms();
-
-            // ✅ 3. Commit the version bump
-            commitVersionBump(currentVersion, versionInfo.releaseVersion);
-
-            // ✅ 4. Reinstall updated parent + rebuild shared-utils
+            // --- Prepare environment ---
             installParentPom();
             rebuildSharedUtils();
-        } else {
-            installParentPomAsRelease(versionInfo.releaseVersion);
-        }
 
-        // --- Prepare output directories ---
-        Path buildRoot     = BUILDS_PATH.resolve("Glyco-PAINT-" + versionInfo.releaseVersion);
-        Path windowsPath   = buildRoot.resolve("Windows");
-        Path macOSPath     = buildRoot.resolve("macOS");
-        Path pluginPath    = buildRoot.resolve("Plugins");
-        Path installerPath = buildRoot.resolve("Installers");
-        Files.createDirectories(installerPath);
-        Files.createDirectories(windowsPath);
-        Files.createDirectories(macOSPath);
-        Files.createDirectories(pluginPath);
-        System.out.println("📦 Output base: " + buildRoot);
+            // --- Release preparation ---
+            if (doRelease) {
+                System.out.println("\n🎯 Preparing release " + versionInfo.releaseVersion);
 
-        // --- Build all application modules ---
-        for (String module : MODULES) {
-            Path moduleDir = BASE_PATH.resolve(module);
-            System.out.println("\n---------------------------------------------");
-            System.out.println("🏗️  Module: " + module);
-            System.out.println("---------------------------------------------");
+                // ✅ Install parent release POM first so children resolve it
+                installParentPomAsRelease(versionInfo.releaseVersion);
 
-            buildAndCollect(moduleDir, "-Pwindows-exe", "*.exe", windowsPath);
-            buildAndCollectMacApp(moduleDir, "-Pmacos-appbundle", macOSPath);
+                // ✅ Align all POMs, remove -SNAPSHOT
+                alignAllPomVersions(versionInfo.releaseVersion);
+                removeSnapshotFromAllPoms();
 
-            // --- Install built module into local repo for plugin dependencies ---
-            System.out.println("📦 Installing " + module + " into local Maven repo...");
-            List<String> installCmd = Arrays.asList(
-                    "mvn", "-q", "install", "-DskipTests",
-                    "-Dmaven.repo.local=" + System.getProperty("user.home") + "/.m2/repository"
-            );
-            ProcessBuilder installPb = new ProcessBuilder(installCmd);
-            installPb.directory(moduleDir.toFile());
-            Process installProc = startAndFilterOutput(installPb, module);
-            if (installProc.waitFor() != 0) {
-                throw new RuntimeException("❌ Failed to install " + module + " into local repo.");
-            }
-            System.out.println("✅ Installed " + module + " locally.");
-        }
+                // ❌ Skip committing version bump — we'll tag directly instead
+                System.out.println("ℹ️  Skipping commit of release version (tag only).");
 
-        // --- Build the Fiji plugin ---
-        Path pluginDir = BASE_PATH.resolve("paint-fiji-plugin");
-        if (Files.exists(pluginDir.resolve("pom.xml"))) {
-            System.out.println("\n---------------------------------------------");
-            System.out.println("🔬 Module: paint-fiji-plugin");
-            System.out.println("---------------------------------------------");
-
-            buildAndCollect(pluginDir, "", "*-jar-with-dependencies.jar", pluginPath);
-        } else {
-            System.out.println("⚠️  paint-fiji-plugin not found — skipping plugin build.");
-        }
-
-        // --- Tag release if needed ---
-        if (doRelease) {
-            createAndPushTag(versionInfo.releaseVersion);
-        }
-
-        // --- Bump back to next development version ---
-        System.out.println("\n🔄 Restoring development version (" + versionInfo.nextDevVersion + ")...");
-        alignAllPomVersions(versionInfo.nextDevVersion);
-
-        // --- Explicit final commit for new SNAPSHOT version ---
-        System.out.println("📝 Committing final version bump (" + versionInfo.nextDevVersion + ")...");
-        ProcessBuilder addFinal = new ProcessBuilder("bash", "-c", "shopt -s globstar; git add pom.xml **/pom.xml");
-        addFinal.directory(BASE_PATH.toFile());
-        addFinal.inheritIO();
-        addFinal.start().waitFor();
-
-        // Check if anything was staged
-        ProcessBuilder diffFinal = new ProcessBuilder("git", "diff", "--cached", "--quiet");
-        diffFinal.directory(BASE_PATH.toFile());
-        Process diffProc = diffFinal.start();
-        int diffExit = diffProc.waitFor();
-
-        if (diffExit != 0) {
-            String msg = "Bump version: " + versionInfo.releaseVersion + " → " + versionInfo.nextDevVersion;
-            ProcessBuilder commitFinal = new ProcessBuilder("git", "commit", "-m", msg);
-            commitFinal.directory(BASE_PATH.toFile());
-            commitFinal.inheritIO();
-            if (commitFinal.start().waitFor() == 0) {
-                System.out.println("✅ Committed final POM version bump to " + versionInfo.nextDevVersion);
+                // ✅ Reinstall updated parent and rebuild shared-utils
+                installParentPom();
+                rebuildSharedUtils();
             } else {
-                System.err.println("⚠️  Could not commit final version bump automatically.");
+                installParentPomAsRelease(versionInfo.releaseVersion);
             }
-        } else {
-            System.out.println("ℹ️  No remaining POM changes to commit.");
-        }
 
-        // --- Push new SNAPSHOT commit ---
-        System.out.println("\n📦 Pushing new development version (" + versionInfo.nextDevVersion + ") to main...");
-        ProcessBuilder pushMain = new ProcessBuilder("git", "push", "origin", "main");
-        pushMain.directory(BASE_PATH.toFile());
-        pushMain.inheritIO();
-        Process pushProc = pushMain.start();
-        pushProc.waitFor();
-        if (pushProc.exitValue() == 0) {
-            System.out.println("✅ Pushed new development version to main.");
-        } else {
-            System.err.println("⚠️  Failed to push new development version — please push manually.");
-        }
+            // --- Prepare output directories ---
+            Path buildRoot     = BUILDS_PATH.resolve("Glyco-PAINT-" + versionInfo.releaseVersion);
+            Path windowsPath   = buildRoot.resolve("Windows");
+            Path macOSPath     = buildRoot.resolve("macOS");
+            Path pluginPath    = buildRoot.resolve("Plugins");
+            Path installerPath = buildRoot.resolve("Installers");
+            Files.createDirectories(installerPath);
+            Files.createDirectories(windowsPath);
+            Files.createDirectories(macOSPath);
+            Files.createDirectories(pluginPath);
+            System.out.println("📦 Output base: " + buildRoot);
 
-        // --- Ensure updated parent is reinstalled ---
-        installParentPom();
-        rebuildSharedUtils();
+            // --- Build all application modules ---
+            for (String module : MODULES) {
+                Path moduleDir = BASE_PATH.resolve(module);
+                System.out.println("\n---------------------------------------------");
+                System.out.println("🏗️  Module: " + module);
+                System.out.println("---------------------------------------------");
 
+                buildAndCollect(moduleDir, "-Pwindows-exe", "*.exe", windowsPath);
+                buildAndCollectMacApp(moduleDir, "-Pmacos-appbundle", macOSPath);
 
-        // ======================================================================
-        // 🔹 Build Installer Payloads (macOS + Windows)
-        // ======================================================================
+                System.out.println("📦 Installing " + module + " into local Maven repo...");
+                List<String> installCmd = Arrays.asList(
+                        "mvn", "-q", "install", "-DskipTests",
+                        "-Dmaven.repo.local=" + System.getProperty("user.home") + "/.m2/repository"
+                );
+                ProcessBuilder installPb = new ProcessBuilder(installCmd);
+                installPb.directory(moduleDir.toFile());
+                Process installProc = startAndFilterOutput(installPb, module);
+                if (installProc.waitFor() != 0) {
+                    throw new RuntimeException("❌ Failed to install " + module + " into local repo.");
+                }
+                System.out.println("✅ Installed " + module + " locally.");
+            }
 
-        // --- macOS payload ---
-        System.out.println("\n---------------------------------------------");
-        System.out.println("📦 Building macOS Installer Payload");
-        System.out.println("---------------------------------------------");
+            // --- Build the Fiji plugin ---
+            Path pluginDir = BASE_PATH.resolve("paint-fiji-plugin");
+            if (Files.exists(pluginDir.resolve("pom.xml"))) {
+                System.out.println("\n---------------------------------------------");
+                System.out.println("🔬 Module: paint-fiji-plugin");
+                System.out.println("---------------------------------------------");
 
-        Path macInstallerResources = BASE_PATH.resolve("paint-installer/paint-installer-macos/src/main/resources");
-        Files.createDirectories(macInstallerResources);
-        Path macPayloadZip = macInstallerResources.resolve("payload.zip");
-        Files.deleteIfExists(macPayloadZip);
+                buildAndCollect(pluginDir, "", "*-jar-with-dependencies.jar", pluginPath);
+            } else {
+                System.out.println("⚠️  paint-fiji-plugin not found — skipping plugin build.");
+            }
 
-        // Create mac payload.zip from .app bundles + plugin folder
-        zipPayload(macOSPath, pluginPath, macPayloadZip);
-        System.out.println("✅ macOS payload ready: " + macPayloadZip);
+            // --- Tag release if needed ---
+            if (doRelease) {
+                createAndPushTag(versionInfo.releaseVersion);
+            }
 
-        // --- Windows payload ---
-        System.out.println("\n---------------------------------------------");
-        System.out.println("📦 Building Windows Installer Payload");
-        System.out.println("---------------------------------------------");
+            // --- Bump back to next development version (local only) ---
+            System.out.println("\n🔄 Restoring development version (" + versionInfo.nextDevVersion + ")...");
+            alignAllPomVersions(versionInfo.nextDevVersion);
 
-        Path winInstallerResources = BASE_PATH.resolve("paint-installer/paint-installer-windows/src/main/resources");
-        Files.createDirectories(winInstallerResources);
-        Path winPayloadZip = winInstallerResources.resolve("payload.zip");
-        Files.deleteIfExists(winPayloadZip);
+            // --- Skip committing; we'll roll back later ---
+            System.out.println("ℹ️  Version bump staged locally (no commit will be kept).");
 
-        // Create Windows payload.zip from Windows builds + plugin folder
-        zipPayload(windowsPath, pluginPath, winPayloadZip);
-        System.out.println("✅ Windows payload ready: " + winPayloadZip);
+            // --- Ensure updated parent is reinstalled ---
+            installParentPom();
+            rebuildSharedUtils();
 
-        // ======================================================================
-        // 🔹 Build Installer JAR and EXE
-        // ======================================================================
+            // ======================================================================
+            // 🔹 Build Installer Payloads (macOS + Windows)
+            // ======================================================================
+            System.out.println("\n---------------------------------------------");
+            System.out.println("📦 Building macOS and Windows installer payloads");
+            System.out.println("---------------------------------------------");
 
-        // macOS JAR installer
-        System.out.println("\n---------------------------------------------");
-        System.out.println("🛠️  Building Glyco-PAINT macOS Installer JAR");
-        System.out.println("---------------------------------------------");
-        runMavenModule("paint-installer/paint-installer-macos", versionInfo.releaseVersion);
+            Path macInstallerResources = BASE_PATH.resolve("paint-installer/paint-installer-macos/src/main/resources");
+            Path winInstallerResources = BASE_PATH.resolve("paint-installer/paint-installer-windows/src/main/resources");
+            Files.createDirectories(macInstallerResources);
+            Files.createDirectories(winInstallerResources);
 
-        // Windows EXE installer
-        System.out.println("\n---------------------------------------------");
-        System.out.println("🛠️  Building Glyco-PAINT Windows Installer EXE");
-        System.out.println("---------------------------------------------");
-        runMavenModule("paint-installer/paint-installer-windows", versionInfo.releaseVersion);
+            Path macPayloadZip = macInstallerResources.resolve("payload.zip");
+            Path winPayloadZip = winInstallerResources.resolve("payload.zip");
+            Files.deleteIfExists(macPayloadZip);
+            Files.deleteIfExists(winPayloadZip);
 
+            zipPayload(macOSPath, pluginPath, macPayloadZip);
+            zipPayload(windowsPath, pluginPath, winPayloadZip);
 
-        // --- Copy final installers to unified Installers directory ---
+            System.out.println("✅ macOS payload → " + macPayloadZip);
+            System.out.println("✅ Windows payload → " + winPayloadZip);
 
-        System.out.println("\n---------------------------------------------");
-        System.out.println("📦 Collecting final installers into /Installers");
-        System.out.println("---------------------------------------------");
+            // ======================================================================
+            // 🔹 Build Installer JARs and Collect Results
+            // ======================================================================
+            System.out.println("\n---------------------------------------------");
+            System.out.println("🛠️  Building installer packages");
+            System.out.println("---------------------------------------------");
 
-        // --- macOS installer ---
-        Path macTarget = BASE_PATH.resolve("paint-installer/paint-installer-macos/target");
-        Path macBuiltJar;
-        try (java.util.stream.Stream<Path> s = Files.list(macTarget)) {
-            macBuiltJar = s
-                    .filter(p -> {
-                        String n = p.getFileName().toString().toLowerCase(Locale.ROOT);
-                        return n.endsWith(".jar") && n.contains("installer");
-                    })
+            runMavenModule("paint-installer/paint-installer-macos", versionInfo.releaseVersion);
+            runMavenModule("paint-installer/paint-installer-windows", versionInfo.releaseVersion);
+
+            Path macTarget = BASE_PATH.resolve("paint-installer/paint-installer-macos/target");
+            Path winTarget = BASE_PATH.resolve("paint-installer/paint-installer-windows/target");
+            Path macBuilt = Files.list(macTarget)
+                    .filter(p -> p.getFileName().toString().toLowerCase().contains("installer") && p.toString().endsWith(".jar"))
                     .max(Comparator.comparingLong(p -> {
                         try { return Files.getLastModifiedTime(p).toMillis(); }
                         catch (IOException e) { return Long.MIN_VALUE; }
                     }))
-                    .orElseThrow(() -> new FileNotFoundException("❌ macOS installer not found in " + macTarget));
-        }
-        Path macFinal = installerPath.resolve("Glyco-PAINT-Installer-" + versionInfo.releaseVersion + ".jar");
-        Files.copy(macBuiltJar, macFinal, StandardCopyOption.REPLACE_EXISTING);
-        System.out.println("✅ macOS installer → " + macFinal);
+                    .orElseThrow(() -> new FileNotFoundException("❌ macOS installer not found"));
 
-        // --- Windows installer ---
-        Path winTarget = BASE_PATH.resolve("paint-installer/paint-installer-windows/target");
-        Path winBuiltExe;
-        try (java.util.stream.Stream<Path> s = Files.list(winTarget)) {
-            winBuiltExe = s
-                    .filter(p -> {
-                        String n = p.getFileName().toString().toLowerCase(Locale.ROOT);
-                        return n.endsWith(".exe") || n.endsWith("-shaded.jar") || n.endsWith(".jar");
-                    })
+            Path winBuilt = Files.list(winTarget)
+                    .filter(p -> p.getFileName().toString().toLowerCase().matches(".*(exe|jar|shaded\\.jar)$"))
                     .max(Comparator.comparingLong(p -> {
                         try { return Files.getLastModifiedTime(p).toMillis(); }
                         catch (IOException e) { return Long.MIN_VALUE; }
                     }))
-                    .orElseThrow(() -> new FileNotFoundException("❌ Windows installer not found in " + winTarget));
-        }
-        Path winFinal = installerPath.resolve("Glyco-PAINT-Installer-" + versionInfo.releaseVersion + ".exe");
-        Files.copy(winBuiltExe, winFinal, StandardCopyOption.REPLACE_EXISTING);
-        System.out.println("✅ Windows installer → " + winFinal);
+                    .orElseThrow(() -> new FileNotFoundException("❌ Windows installer not found"));
 
-        System.out.println("\n✅ Both installers built successfully for version " + versionInfo.releaseVersion);
-        System.out.println("🎉 All builds complete!");
-        System.out.println("✅ Output directory: " + buildRoot.toAbsolutePath());
+            Path macFinal = installerPath.resolve("Glyco-PAINT-Installer-" + versionInfo.releaseVersion + ".jar");
+            Path winFinal = installerPath.resolve("Glyco-PAINT-Installer-" + versionInfo.releaseVersion + ".exe");
+            Files.copy(macBuilt, macFinal, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(winBuilt, winFinal, StandardCopyOption.REPLACE_EXISTING);
+
+            System.out.println("✅ macOS installer → " + macFinal);
+            System.out.println("✅ Windows installer → " + winFinal);
+
+            System.out.println("\n🎉 All builds complete for " + versionInfo.releaseVersion);
+            System.out.println("✅ Output directory: " + buildRoot.toAbsolutePath());
+
+        } finally {
+            // 🔄 Always restore all POMs to pre-build state
+            rollbackPomChanges();
+
+            // --- Commit updated parent POM version for next development cycle (release builds only) ---
+            if (doRelease) {
+                Path parentPom = BASE_PATH.resolve("pom.xml");
+                String nextVersion = versionInfo.nextDevVersion;
+
+                // 🔹 Re-apply the parent bump after rollback
+                System.out.println("🔄 Setting parent POM version to " + nextVersion + "...");
+                alignAllPomVersions(nextVersion);
+
+                System.out.println("📝 Committing parent POM bump to " + nextVersion + " for continued development...");
+                ProcessBuilder addParent = new ProcessBuilder("git", "add", parentPom.toString());
+                addParent.directory(BASE_PATH.toFile());
+                addParent.inheritIO();
+                addParent.start().waitFor();
+
+                String msg = "Bump parent POM to " + nextVersion + " for next development cycle";
+                ProcessBuilder commitParent = new ProcessBuilder("git", "commit", "-m", msg);
+                commitParent.directory(BASE_PATH.toFile());
+                commitParent.inheritIO();
+                if (commitParent.start().waitFor() == 0) {
+                    System.out.println("✅ Parent POM committed for new development version: " + nextVersion);
+                } else {
+                    System.err.println("⚠️  No parent POM changes to commit.");
+                }
+            }
+        }
     }
 
     /**
@@ -811,7 +771,9 @@ public class BuildAllExecutables {
         boolean exists = tagReader.lines().anyMatch(line -> line.trim().equals(tagName));
         check.waitFor();
         if (exists) {
-            throw new IllegalStateException("❌ Tag " + tagName + " already exists!");
+            System.out.println("⚠️  Tag " + tagName + " already exists — skipping tag creation.");
+            System.out.println("✅ Continuing build without creating duplicate tag.");
+            return;
         }
 
         // --- Create and push the tag
@@ -893,6 +855,23 @@ public class BuildAllExecutables {
                             throw new UncheckedIOException(e);
                         }
                     });
+        }
+
+    }
+
+    private void rollbackPomChanges() throws IOException, InterruptedException {
+        System.out.println("🧹 Rolling back all POM version changes to committed state...");
+        ProcessBuilder pb = new ProcessBuilder(
+                "bash", "-c", "git ls-files '**/pom.xml' | xargs git checkout --"
+        );
+        pb.directory(BASE_PATH.toFile());
+        pb.inheritIO();
+        Process proc = pb.start();
+        int exit = proc.waitFor();
+        if (exit == 0) {
+            System.out.println("✅ Restored all pom.xml files to last committed version.");
+        } else {
+            System.err.println("⚠️  Rollback failed — please check Git status manually.");
         }
     }
 
