@@ -1,5 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <!-- =============================================================== -->
     <!-- Project hierarchy -->
@@ -28,7 +30,7 @@
         <app.name>Get Omero</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-get-omero.icns</app.icon.macos>
-        <fat.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</fat.jar>
+        <app.icon.windows>${project.basedir}/src/main/resources/icons/paint-get-omero.ico</app.icon.windows>
     </properties>
 
     <!-- =============================================================== -->
@@ -117,7 +119,7 @@
                                     <target>
                                         <echo message="Creating macOS app bundle at ${app.bundle}"/>
                                         <delete dir="${app.bundle}" failonerror="false"/>
-                                        <delete failonerror="false" file="${project.build.directory}/${app.name}.app.zip"/>
+                                        <delete file="${project.build.directory}/${app.name}.app.zip" failonerror="false"/>
 
                                         <!-- Create app bundle structure -->
                                         <mkdir dir="${app.bundle}/Contents/MacOS"/>
@@ -125,8 +127,9 @@
                                         <mkdir dir="${app.bundle}/Contents/Resources"/>
 
                                         <!-- Copy required files -->
-                                        <copy failonerror="false" file="${fat.jar}" overwrite="true" todir="${app.bundle}/Contents/Java"/>
-                                        <copy failonerror="false" file="${app.icon.macos}" overwrite="true" todir="${app.bundle}/Contents/Resources"/>
+                                        <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
+                                              todir="${app.bundle}/Contents/Java" failonerror="false"/>
+                                        <copy file="${app.icon.macos}" todir="${app.bundle}/Contents/Resources" failonerror="false"/>
 
                                         <!-- Create Info.plist -->
                                         <echo file="${app.bundle}/Contents/Info.plist"></echo>
@@ -144,7 +147,7 @@
                                         </exec>
                                         <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
                                         <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
-                                        <copy failonerror="false" overwrite="true" todir="${user.home}/Applications/Glyco-PAINT">
+                                        <copy todir="${user.home}/Applications/Glyco-PAINT" failonerror="false" overwrite="true">
                                             <fileset dir="${project.build.directory}">
                                                 <include name="${app.name}.app/**"/>
                                             </fileset>
@@ -186,9 +189,9 @@
                                 </goals>
                                 <configuration>
                                     <outfile>${project.build.directory}/${app.name}.exe</outfile>
-                                    <jar>${fat.jar}</jar>
+                                    <jar>${project.build.directory}/${project.artifactId}-${project.version}.jar</jar>
                                     <dontWrapJar>false</dontWrapJar>
-                                    <icon>${project.basedir}/src/main/resources/icons/${project.artifactId}.ico</icon>
+                                    <icon>${app.icon.windows}</icon>
                                     <jre>
                                         <minVersion>1.8.0</minVersion>
                                     </jre>
@@ -223,12 +226,10 @@
             <id>scijava.public</id>
             <url>https://maven.scijava.org/content/groups/public</url>
         </repository>
-
         <repository>
             <id>ome.releases</id>
             <url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
         </repository>
-
     </repositories>
-    <version>0.0.58-SNAPSHOT</version>
+
 </project>

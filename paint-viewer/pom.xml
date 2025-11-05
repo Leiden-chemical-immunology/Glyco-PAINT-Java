@@ -1,5 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <!-- =============================================================== -->
     <!-- Project hierarchy -->
@@ -29,7 +31,6 @@
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-viewer.icns</app.icon.macos>
         <app.icon.windows>${project.basedir}/src/main/resources/icons/paint-viewer.ico</app.icon.windows>
-        <fat.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</fat.jar>
     </properties>
 
     <!-- =============================================================== -->
@@ -41,7 +42,7 @@
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
-            <version>0.0.58-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- Core ImageJ + TrackMate stack -->
@@ -130,7 +131,6 @@
             <id>ome.releases</id>
             <url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
         </repository>
-
     </repositories>
 
     <!-- =============================================================== -->
@@ -161,35 +161,6 @@
                         <goals>
                             <goal>single</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Copy completed .app to ~/Applications/Glyco-PAINT -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>copy-app-to-user-applications</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <echo message="Copying ${app.bundle} to ~/Applications/Glyco-PAINT"/>
-                                <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" failonerror="false"/>
-                                <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
-                                <copy overwrite="true" todir="${user.home}/Applications/Glyco-PAINT">
-                                    <fileset dir="${project.build.directory}">
-                                        <include name="${app.name}.app/**"/>
-                                    </fileset>
-                                </copy>
-                                <chmod dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app/Contents/MacOS" includes="launch" perm="755"/>
-                            </target>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -226,16 +197,21 @@
                                     <target>
                                         <echo message="Creating macOS app bundle at ${app.bundle}"/>
                                         <delete dir="${app.bundle}" failonerror="false"/>
-                                        <delete failonerror="false" file="${project.build.directory}/${app.name}.app.zip"/>
+                                        <delete file="${project.build.directory}/${app.name}.app.zip" failonerror="false"/>
+
                                         <mkdir dir="${app.bundle}/Contents/MacOS"/>
                                         <mkdir dir="${app.bundle}/Contents/Java"/>
                                         <mkdir dir="${app.bundle}/Contents/Resources"/>
-                                        <copy failonerror="false" file="${fat.jar}" overwrite="true" todir="${app.bundle}/Contents/Java"/>
-                                        <copy failonerror="false" file="${app.icon.macos}" overwrite="true" todir="${app.bundle}/Contents/Resources"/>
+
+                                        <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
+                                              todir="${app.bundle}/Contents/Java" failonerror="false"/>
+                                        <copy file="${app.icon.macos}" todir="${app.bundle}/Contents/Resources" failonerror="false"/>
+
                                         <echo file="${app.bundle}/Contents/Info.plist"></echo>
                                         <echo file="${app.bundle}/Contents/MacOS/launch"></echo>
                                         <fixcrlf eol="unix" file="${app.bundle}/Contents/MacOS/launch"/>
                                         <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
+
                                         <exec executable="zip">
                                             <arg value="-r"/>
                                             <arg value="${project.build.directory}/${app.name}.app.zip"/>
@@ -271,35 +247,35 @@
                                 <goals>
                                     <goal>launch4j</goal>
                                 </goals>
+                                <configuration>
+                                    <outfile>${project.build.directory}/${app.name}.exe</outfile>
+                                    <jar>${project.build.directory}/${project.artifactId}-${project.version}.jar</jar>
+                                    <dontWrapJar>false</dontWrapJar>
+                                    <icon>${app.icon.windows}</icon>
+                                    <jre>
+                                        <minVersion>1.8.0</minVersion>
+                                    </jre>
+                                    <classPath>
+                                        <mainClass>paint.viewer.Viewer</mainClass>
+                                    </classPath>
+                                    <headerType>gui</headerType>
+                                    <errTitle>${app.name}</errTitle>
+                                    <versionInfo>
+                                        <fileVersion>1.0.0.0</fileVersion>
+                                        <txtFileVersion>${project.version}</txtFileVersion>
+                                        <productVersion>1.0.0.0</productVersion>
+                                        <txtProductVersion>${project.version}</txtProductVersion>
+                                        <fileDescription>${project.description}</fileDescription>
+                                        <productName>${app.name}</productName>
+                                        <companyName>Glyco-PAINT</companyName>
+                                    </versionInfo>
+                                </configuration>
                             </execution>
                         </executions>
-                        <configuration>
-                            <outfile>${project.build.directory}/${app.name}.exe</outfile>
-                            <jar>${fat.jar}</jar>
-                            <dontWrapJar>false</dontWrapJar>
-                            <icon>${project.basedir}/src/main/resources/icons/${project.artifactId}.ico</icon>
-                            <jre>
-                                <minVersion>1.8.0</minVersion>
-                            </jre>
-                            <classPath>
-                                <mainClass>paint.viewer.Viewer</mainClass>
-                            </classPath>
-                            <headerType>gui</headerType>
-                            <errTitle>${app.name}</errTitle>
-                            <versionInfo>
-                                <fileVersion>1.0.0.0</fileVersion>
-                                <txtFileVersion>${project.version}</txtFileVersion>
-                                <productVersion>1.0.0.0</productVersion>
-                                <txtProductVersion>${project.version}</txtProductVersion>
-                                <fileDescription>${project.description}</fileDescription>
-                                <productName>${app.name}</productName>
-                                <companyName>Glyco-PAINT</companyName>
-                            </versionInfo>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
         </profile>
     </profiles>
-    <version>0.0.58-SNAPSHOT</version>
+
 </project>

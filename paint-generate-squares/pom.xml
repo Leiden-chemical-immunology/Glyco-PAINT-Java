@@ -1,5 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <!-- =============================================================== -->
     <!-- Project hierarchy -->
@@ -29,7 +31,6 @@
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-generate-squares.icns</app.icon.macos>
         <app.icon.windows>${project.basedir}/src/main/resources/icons/paint-generate-squares.ico</app.icon.windows>
-        <fat.jar>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</fat.jar>
     </properties>
 
     <!-- =============================================================== -->
@@ -41,7 +42,7 @@
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
-            <version>0.0.58-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- ImageJ and Fiji components -->
@@ -136,7 +137,6 @@
                             <Implementation-Title>${project.name}</Implementation-Title>
                             <Implementation-Version>${project.version}</Implementation-Version>
                             <Implementation-Vendor>Glyco-PAINT</Implementation-Vendor>
-                            <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
                             <Build-Jdk>${java.version}</Build-Jdk>
                             <Built-By>${user.name}</Built-By>
                         </manifestEntries>
@@ -145,7 +145,6 @@
             </plugin>
 
             <!-- Fat JAR assembly -->
-            <!-- Create fat JAR with embedded manifest and dependencies -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -158,7 +157,6 @@
                         </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
@@ -222,14 +220,14 @@
                                     <target>
                                         <echo message="Creating macOS .app bundle at ${app.bundle}"/>
                                         <delete dir="${app.bundle}" failonerror="false"/>
-                                        <delete failonerror="false" file="${project.build.directory}/${app.name}.app.zip"/>
                                         <mkdir dir="${app.bundle}/Contents/MacOS"/>
                                         <mkdir dir="${app.bundle}/Contents/Java"/>
                                         <mkdir dir="${app.bundle}/Contents/Resources"/>
 
                                         <!-- Copy app files -->
-                                        <copy failonerror="false" file="${fat.jar}" overwrite="true" todir="${app.bundle}/Contents/Java"/>
-                                        <copy failonerror="false" file="${app.icon.macos}" overwrite="true" todir="${app.bundle}/Contents/Resources"/>
+                                        <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
+                                              todir="${app.bundle}/Contents/Java" failonerror="false"/>
+                                        <copy file="${app.icon.macos}" todir="${app.bundle}/Contents/Resources" failonerror="false"/>
 
                                         <!-- Create Info.plist -->
                                         <echo file="${app.bundle}/Contents/Info.plist"></echo>
@@ -247,7 +245,7 @@
                                         </exec>
                                         <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
                                         <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
-                                        <copy failonerror="false" overwrite="true" todir="${user.home}/Applications/Glyco-PAINT">
+                                        <copy todir="${user.home}/Applications/Glyco-PAINT" failonerror="false" overwrite="true">
                                             <fileset dir="${project.build.directory}">
                                                 <include name="${app.name}.app/**"/>
                                             </fileset>
@@ -289,7 +287,7 @@
                                 </goals>
                                 <configuration>
                                     <outfile>${project.build.directory}/${app.name}.exe</outfile>
-                                    <jar>${fat.jar}</jar>
+                                    <jar>${project.build.directory}/${project.artifactId}-${project.version}.jar</jar>
                                     <dontWrapJar>false</dontWrapJar>
                                     <icon>${project.basedir}/src/main/resources/icons/${project.artifactId}.ico</icon>
                                     <jre>
@@ -326,12 +324,10 @@
             <id>scijava.public</id>
             <url>https://maven.scijava.org/content/groups/public</url>
         </repository>
-
         <repository>
             <id>ome.releases</id>
             <url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
         </repository>
-
     </repositories>
-    <version>0.0.58-SNAPSHOT</version>
+
 </project>

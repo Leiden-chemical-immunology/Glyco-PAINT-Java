@@ -1,22 +1,30 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-installer</artifactId>
-        <version>0.0.59-SNAPSHOT</version>
+        <version>0.0.71-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+
     <artifactId>paint-installer-windows</artifactId>
     <packaging>jar</packaging>
+
     <name>Glyco-PAINT Installer (Windows)</name>
     <description>Self-extracting GUI installer for Glyco-PAINT (Windows)</description>
+
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <main.class>GlycoPaintInstallerWindows</main.class>
         <exe.name>Glyco-PAINT-Installer</exe.name>
     </properties>
+
     <build>
         <resources>
             <resource>
@@ -27,9 +35,9 @@
                 </includes>
             </resource>
         </resources>
-        <plugins>
 
-            <!-- Build shaded JAR -->
+        <plugins>
+            <!-- Build shaded (fat) JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -42,7 +50,6 @@
                         </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>${main.class}</mainClass>
@@ -52,49 +59,7 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- Wrap into Windows EXE -->
-            <plugin>
-                <groupId>com.akathist.maven.plugins.launch4j</groupId>
-                <artifactId>launch4j-maven-plugin</artifactId>
-                <version>2.5.0</version>
-                <executions>
-                    <execution>
-                        <id>wrap-exe</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>launch4j</goal>
-                        </goals>
-                        <configuration>
-                            <outfile>${project.build.directory}/${exe.name}.exe</outfile>
-                            <jar>
-                                ${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar
-                            </jar>
-                            <dontWrapJar>false</dontWrapJar>
-                            <headerType>gui</headerType>
-
-                            <!-- <icon>${project.basedir}/src/main/resources/icons/installer.ico</icon> -->
-                            <classPath>
-                                <mainClass>${main.class}</mainClass>
-                            </classPath>
-                            <jre>
-                                <minVersion>1.8.0</minVersion>
-                            </jre>
-                            <errTitle>Glyco-PAINT Installer</errTitle>
-                            <versionInfo>
-                                <fileVersion>1.0.0.0</fileVersion>
-                                <txtFileVersion>${project.version}</txtFileVersion>
-                                <productVersion>1.0.0.0</productVersion>
-                                <txtProductVersion>${project.version}</txtProductVersion>
-                                <fileDescription>Glyco-PAINT Windows Installer</fileDescription>
-                                <productName>Glyco-PAINT</productName>
-                                <companyName>Glyco-PAINT</companyName>
-                            </versionInfo>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
-    <version>0.0.59-SNAPSHOT</version>
+
 </project>
