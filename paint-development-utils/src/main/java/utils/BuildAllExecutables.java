@@ -54,8 +54,6 @@ import java.nio.file.*;
 import java.util.*;
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.*;
 
 public class BuildAllExecutables {
@@ -67,7 +65,7 @@ public class BuildAllExecutables {
             "paint-create-experiment"
     );
 
-    private static final Path BASE_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
+    private static final Path BASE_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java-clean");
     private static final Path BUILDS_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Builds");
 
     /**
@@ -140,7 +138,7 @@ public class BuildAllExecutables {
         // --- Release preparation ---
         if (doRelease) {
             System.out.println("\n🎯 Preparing release " + versionInfo.releaseVersion);
-            bumpAllPomVersions(currentVersion, versionInfo.releaseVersion);
+            bumpAllPomVersions(versionInfo.releaseVersion, versionInfo.nextDevVersion);
             commitVersionBump(currentVersion, versionInfo.releaseVersion);
             installParentPomAsRelease(versionInfo.releaseVersion);
             installParentPom();
@@ -470,30 +468,45 @@ public class BuildAllExecutables {
     // 🔹 POM and Git Utilities
     // ======================================================================
 
+
     /**
-     * Forces every pom.xml in the tree to have the same version as the parent.
-     * The parent version is the single source of truth.
+     * Forces every pom.xml in the tree to use the same version as the parent POM.
+     * The parent version is always treated as the single source of truth.
      */
-    private void bumpAllPomVersions(String oldVersion, String newVersion) throws Exception {
+    private void bumpAllPomVersions(String ignoredOldVersion, String targetVersion) throws Exception {
+        Path parentPom = BASE_PATH.resolve("pom.xml");
+
+        // Always read the latest version from the master parent POM
+        String masterVersion = getVersionFromPom(parentPom);
+        if (masterVersion == null || masterVersion.isEmpty()) {
+            throw new IllegalStateException("Could not determine version from parent pom.xml");
+        }
+
+        // If a specific targetVersion is requested (e.g., during release), override it
+        String newVersion = (targetVersion != null && !targetVersion.isEmpty()) ? targetVersion : masterVersion;
+
         System.out.println("🔄 Enforcing unified version across all modules: " + newVersion);
 
-        Path parentPom = BASE_PATH.resolve("pom.xml");
-        updatePomVersionFull(parentPom, oldVersion, newVersion, true);
+        // Update the parent itself first
+        updatePomVersionFull(parentPom, masterVersion, newVersion, true);
 
+        // Then update every submodule to match the parent's version
         Files.walk(BASE_PATH)
                 .filter(p -> p.getFileName().toString().equals("pom.xml"))
                 .filter(p -> !p.equals(parentPom))
                 .forEach(p -> {
                     try {
-                        updatePomVersionFull(p, oldVersion, newVersion, false);
+                        updatePomVersionFull(p, masterVersion, newVersion, false);
                     } catch (Exception e) {
                         throw new RuntimeException("Failed updating " + p + ": " + e.getMessage(), e);
                     }
                 });
 
+        // ✅ Add this informational line here
+        System.out.println("🔗 Parent POM is now authoritative: " + masterVersion);
+
         System.out.println("✅ All modules now use version " + newVersion);
     }
-
 
     /**
      * Updates or inserts version tags so that both <project><version> and <parent><version>
@@ -589,32 +602,32 @@ public class BuildAllExecutables {
         }
 
         if (modified) {
-            // ✅ Preserve exact formatting — only swap OLD → NEW where it matters.
+            // ✅ Preserve formatting; replace only OLD → NEW in relevant blocks.
             String xml = new String(Files.readAllBytes(pom), StandardCharsets.UTF_8);
 
-            // Escape for regex safety
             String oldEsc = java.util.regex.Pattern.quote(oldVersion);
             String newRepl = java.util.regex.Matcher.quoteReplacement(newVersion);
 
-            // 1) <parent><version>OLD</version> … </parent>
+            // --- 1️⃣ Parent version ---
             xml = xml.replaceAll(
                     "(?s)(<parent>.*?<version>)\\s*" + oldEsc + "\\s*(</version>.*?</parent>)",
                     "$1" + newRepl + "$2"
             );
 
-            // 2) <project ...><version>OLD</version>  (direct project version, not under <parent>)
+            // --- 2️⃣ Project version (top-level, not under <parent>) ---
             xml = xml.replaceAll(
                     "(?s)(<project\\b[^>]*>.*?<version>)\\s*" + oldEsc + "\\s*(</version>)",
                     "$1" + newRepl + "$2"
             );
 
-            // 3) Inter-module deps only: groupId == com.github.jjabakker
+            // --- 3️⃣ Inter-module deps only (our own groupId) ---
             xml = xml.replaceAll(
                     "(?s)(<dependency>.*?<groupId>\\s*com\\.github\\.jjabakker\\s*</groupId>.*?<version>)\\s*"
                             + oldEsc + "\\s*(</version>.*?</dependency>)",
                     "$1" + newRepl + "$2"
             );
 
+            // 🔒 Do NOT touch any other <version> tags (e.g. Gson, Tablesaw, etc.)
             Files.write(pom, xml.getBytes(StandardCharsets.UTF_8));
             System.out.println("📝 Enforced version " + newVersion + " in " + pom.getFileName());
         }
