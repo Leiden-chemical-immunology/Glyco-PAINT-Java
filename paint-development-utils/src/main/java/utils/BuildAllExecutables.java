@@ -590,17 +590,14 @@ public class BuildAllExecutables {
 
         if (modified) {
             TransformerFactory tf = TransformerFactory.newInstance();
-            tf.setAttribute("indent-number", 2);
-
             Transformer t = tf.newTransformer();
-            t.setOutputProperty(OutputKeys.INDENT, "yes");
+
+            // Keep output exactly as-is: no pretty-print, no newlines
+            t.setOutputProperty(OutputKeys.INDENT, "no");
             t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
             t.setOutputProperty(OutputKeys.METHOD, "xml");
-            t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-            t.setOutputProperty("{http://xml.apache.org/xalan}indent-amount", "2");
-
-            // Prevent adding extra blank lines
             t.setOutputProperty(OutputKeys.STANDALONE, "no");
+            t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "0");
 
             try (OutputStream out = Files.newOutputStream(pom)) {
                 t.transform(new DOMSource(doc), new StreamResult(new OutputStreamWriter(out, StandardCharsets.UTF_8)));
