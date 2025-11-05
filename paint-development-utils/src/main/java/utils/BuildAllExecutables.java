@@ -589,22 +589,32 @@ public class BuildAllExecutables {
         }
 
         if (modified) {
-            // ✅ Preserve exact formatting — just replace <version> tags textually.
+            // ✅ Preserve exact formatting — only swap OLD → NEW where it matters.
             String xml = new String(Files.readAllBytes(pom), StandardCharsets.UTF_8);
 
-            // Replace only tag contents, not tag structure.
+            // Escape for regex safety
+            String oldEsc = java.util.regex.Pattern.quote(oldVersion);
+            String newRepl = java.util.regex.Matcher.quoteReplacement(newVersion);
+
+            // 1) <parent><version>OLD</version> … </parent>
             xml = xml.replaceAll(
-                    "(?s)(<parent>.*?<version>)([^<]+)(</version>.*?</parent>)",
-                    "$1" + newVersion + "$3"
+                    "(?s)(<parent>.*?<version>)\\s*" + oldEsc + "\\s*(</version>.*?</parent>)",
+                    "$1" + newRepl + "$2"
             );
+
+            // 2) <project ...><version>OLD</version>  (direct project version, not under <parent>)
             xml = xml.replaceAll(
-                    "(?s)(<project[^>]*>.*?<version>)([^<]+)(</version>)",
-                    "$1" + newVersion + "$3"
+                    "(?s)(<project\\b[^>]*>.*?<version>)\\s*" + oldEsc + "\\s*(</version>)",
+                    "$1" + newRepl + "$2"
             );
+
+            // 3) Inter-module deps only: groupId == com.github.jjabakker
             xml = xml.replaceAll(
-                    "(?s)(<dependency>.*?<groupId>com\\.github\\.jjabakker</groupId>.*?<version>)([^<]+)(</version>.*?</dependency>)",
-                    "$1" + newVersion + "$3"
+                    "(?s)(<dependency>.*?<groupId>\\s*com\\.github\\.jjabakker\\s*</groupId>.*?<version>)\\s*"
+                            + oldEsc + "\\s*(</version>.*?</dependency>)",
+                    "$1" + newRepl + "$2"
             );
+
             Files.write(pom, xml.getBytes(StandardCharsets.UTF_8));
             System.out.println("📝 Enforced version " + newVersion + " in " + pom.getFileName());
         }
