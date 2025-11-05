@@ -65,7 +65,7 @@ public class BuildAllExecutables {
             "paint-fiji-plugin"
     );
 
-    private static final Path BASE_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
+    private static final Path BASE_PATH   = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
     private static final Path BUILDS_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Builds");
 
     /**
@@ -118,8 +118,9 @@ public class BuildAllExecutables {
 
         Path parentPom = BASE_PATH.resolve("pom.xml");
         String currentVersion = getVersionFromPom(parentPom);
-        if (currentVersion == null)
+        if (currentVersion == null) {
             throw new IllegalStateException("Could not determine version from parent pom.xml");
+        }
 
         if (!currentVersion.endsWith("-SNAPSHOT")) {
             System.out.println("⚠️  Parent POM is not a SNAPSHOT (" + currentVersion + ") — converting to snapshot for continued development.");
@@ -178,8 +179,9 @@ public class BuildAllExecutables {
             ProcessBuilder installPb = new ProcessBuilder(installCmd);
             installPb.directory(moduleDir.toFile());
             Process installProc = startAndFilterOutput(installPb, module);
-            if (installProc.waitFor() != 0)
+            if (installProc.waitFor() != 0) {
                 throw new RuntimeException("❌ Failed to install " + module + " into local repo.");
+            }
             System.out.println("✅ Installed " + module + " locally.");
         }
 
@@ -518,10 +520,10 @@ public class BuildAllExecutables {
     private void alignAllPomVersions(String newVersion) throws IOException, InterruptedException {
         System.out.println("🔄 Aligning all POM versions to " + newVersion + " using Maven Versions Plugin...");
 
-        // ✅ Resolve actual multi-module root path (Glyco-PAINT-Java)
-        Path projectRoot = BASE_PATH.toAbsolutePath().getParent().resolve("Glyco-PAINT-Java");
+        // ✅ Use the actual multi-module root path
+        Path projectRoot = BASE_PATH.toAbsolutePath();
 
-        // 1️⃣ Set root and child versions
+        // 1️⃣ Set root and all child versions
         List<String> setCmd = Arrays.asList(
                 "mvn", "-B", "versions:set",
                 "-DnewVersion=" + newVersion,
@@ -529,7 +531,7 @@ public class BuildAllExecutables {
         );
         runMaven(setCmd, projectRoot, "versions:set");
 
-        // 2️⃣ Ensure children inherit the parent version
+        // 2️⃣ Force-update all child modules to match the parent
         List<String> updateCmd = Arrays.asList(
                 "mvn", "-B", "versions:update-child-modules",
                 "-DforceVersion=true",
@@ -539,7 +541,6 @@ public class BuildAllExecutables {
 
         System.out.println("✅ All modules now aligned to version " + newVersion);
     }
-
 
     private void runMaven(List<String> cmd, Path dir, String label) throws IOException, InterruptedException {
         System.out.println("🔧 Running (" + label + "): " + String.join(" ", cmd));

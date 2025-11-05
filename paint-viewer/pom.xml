@@ -152,12 +152,20 @@
                     <archive>
                         <manifest>
                             <mainClass>paint.viewer.Viewer</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix></classpathPrefix>
                         </manifest>
+                        <manifestEntries>
+                            <Built-By>Glyco-PAINT Build System</Built-By>
+                            <Implementation-Title>${project.artifactId}</Implementation-Title>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                        </manifestEntries>
                     </archive>
+                    <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>make-assembly</id>
+                        <id>make-fat-jar</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
