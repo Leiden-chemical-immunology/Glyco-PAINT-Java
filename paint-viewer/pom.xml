@@ -3,14 +3,15 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <modelVersion>4.0.0</modelVersion>
+
     <!-- =============================================================== -->
     <!-- Project hierarchy -->
     <!-- =============================================================== -->
-    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.76-SNAPSHOT</version>
+        <version>0.0.77-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>paint-viewer</artifactId>
@@ -26,7 +27,7 @@
     <!-- Application properties -->
     <!-- =============================================================== -->
     <properties>
-        <project.build.outputTimestamp>2025-11-05T10:44:55Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-11-05T11:01:25Z</project.build.outputTimestamp>
         <app.name>Viewer</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-viewer.icns</app.icon.macos>
@@ -231,11 +232,16 @@
 # macOS launcher for ${app.name}
 cd "$(dirname "$0")/../Java"
 
-# Use JAVA_HOME if set; otherwise default to macOS Java 8 path
-JAVA_CMD="\${JAVA_HOME:-/Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home}/bin/java"
+# Use JAVA_HOME if set; otherwise auto-detect Java 8 via /usr/libexec/java_home
+if [ -z "$JAVA_HOME" ]; then
+  JAVA_CMD="$(/usr/libexec/java_home -v1.8)/bin/java"
+else
+  JAVA_CMD="$JAVA_HOME/bin/java"
+fi
 
 exec "$JAVA_CMD" -Xmx2G -jar "${project.artifactId}-${project.version}.jar"
 ]]></echo>
+
                                         <fixcrlf eol="unix" file="${app.bundle}/Contents/MacOS/launch"/>
                                         <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
 
