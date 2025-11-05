@@ -4,12 +4,12 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.67-SNAPSHOT</version>
+        <version>0.0.68-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>paint-installer</artifactId>
     <packaging>pom</packaging>
     <name>Glyco-PAINT Installer Aggregator</name>
     <description>Aggregator for macOS and Windows Glyco-PAINT installers</description>
-    <version>0.0.67-SNAPSHOT</version>
+    <version>0.0.68-SNAPSHOT</version>
 </project>
