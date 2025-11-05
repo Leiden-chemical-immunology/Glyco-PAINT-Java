@@ -11,7 +11,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.80-SNAPSHOT</version>
+        <version>0.0.82-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -24,7 +24,7 @@
     <!-- Application properties -->
     <!-- =============================================================== -->
     <properties>
-        <project.build.outputTimestamp>2025-11-05T11:48:29Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-11-05T12:04:42Z</project.build.outputTimestamp>
         <app.name>Generate Squares</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-generate-squares.icns</app.icon.macos>
@@ -229,7 +229,7 @@
     <key>CFBundleName</key><string>${app.name}</string>
     <key>CFBundleDisplayName</key><string>${app.name}</string>
     <key>CFBundleExecutable</key><string>launch</string>
-    <key>CFBundleIconFile</key><string>paint-${project.artifactId}.icns</string>
+    <key>CFBundleIconFile</key><string>${project.artifactId}.icns</string>
     <key>CFBundleIdentifier</key><string>com.github.jjabakker.${app.name}</string>
     <key>CFBundleVersion</key><string>${project.version}</string>
     <key>CFBundlePackageType</key><string>APPL</string>
