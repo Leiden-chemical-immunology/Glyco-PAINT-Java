@@ -61,7 +61,8 @@ public class BuildAllExecutables {
             "paint-viewer",
             "paint-generate-squares",
             "paint-get-omero",
-            "paint-create-experiment"
+            "paint-create-experiment",
+            "paint-fiji-plugin"
     );
 
     private static final Path BASE_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
