@@ -65,7 +65,7 @@ public class BuildAllExecutables {
             "paint-create-experiment"
     );
 
-    private static final Path BASE_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java-clean");
+    private static final Path BASE_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
     private static final Path BUILDS_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Builds");
 
     /**
@@ -148,10 +148,12 @@ public class BuildAllExecutables {
         }
 
         // --- Prepare output directories ---
-        Path buildRoot   = BUILDS_PATH.resolve("Glyco-PAINT-" + versionInfo.releaseVersion);
-        Path windowsPath = buildRoot.resolve("Windows");
-        Path macOSPath   = buildRoot.resolve("macOS");
-        Path pluginPath  = buildRoot.resolve("Plugins");
+        Path buildRoot     = BUILDS_PATH.resolve("Glyco-PAINT-" + versionInfo.releaseVersion);
+        Path windowsPath   = buildRoot.resolve("Windows");
+        Path macOSPath     = buildRoot.resolve("macOS");
+        Path pluginPath    = buildRoot.resolve("Plugins");
+        Path installerPath = buildRoot.resolve("Installers");
+        Files.createDirectories(installerPath);
         Files.createDirectories(windowsPath);
         Files.createDirectories(macOSPath);
         Files.createDirectories(pluginPath);
@@ -188,7 +190,7 @@ public class BuildAllExecutables {
             System.out.println("🔬 Module: paint-fiji-plugin");
             System.out.println("---------------------------------------------");
 
-            buildAndCollect(pluginDir, "", "*.jar", pluginPath);
+            buildAndCollect(pluginDir, "", "*-jar-with-dependencies.jar", pluginPath);
         } else {
             System.out.println("⚠️  paint-fiji-plugin not found — skipping plugin build.");
         }
@@ -255,7 +257,7 @@ public class BuildAllExecutables {
         System.out.println("📦 Building macOS Installer Payload");
         System.out.println("---------------------------------------------");
 
-        Path macInstallerResources = BASE_PATH.resolve("paint-installer-mac/src/main/resources");
+        Path macInstallerResources = BASE_PATH.resolve("paint-installer/paint-installer-macos/src/main/resources");
         Files.createDirectories(macInstallerResources);
         Path macPayloadZip = macInstallerResources.resolve("payload.zip");
         Files.deleteIfExists(macPayloadZip);
@@ -269,7 +271,7 @@ public class BuildAllExecutables {
         System.out.println("📦 Building Windows Installer Payload");
         System.out.println("---------------------------------------------");
 
-        Path winInstallerResources = BASE_PATH.resolve("paint-installer-windows/src/main/resources");
+        Path winInstallerResources = BASE_PATH.resolve("paint-installer/paint-installer-windows/src/main/resources");
         Files.createDirectories(winInstallerResources);
         Path winPayloadZip = winInstallerResources.resolve("payload.zip");
         Files.deleteIfExists(winPayloadZip);
@@ -286,13 +288,33 @@ public class BuildAllExecutables {
         System.out.println("\n---------------------------------------------");
         System.out.println("🛠️  Building Glyco-PAINT macOS Installer JAR");
         System.out.println("---------------------------------------------");
-        runMavenModule("paint-installer-macos", versionInfo.releaseVersion);
+        runMavenModule("paint-installer/paint-installer-macos", versionInfo.releaseVersion);
 
         // Windows EXE installer
         System.out.println("\n---------------------------------------------");
         System.out.println("🛠️  Building Glyco-PAINT Windows Installer EXE");
         System.out.println("---------------------------------------------");
-        runMavenModule("paint-installer-windows", versionInfo.releaseVersion);
+        runMavenModule("paint-installer/paint-installer-windows", versionInfo.releaseVersion);
+
+
+        // --- Copy final installers to unified Installers directory ---
+        System.out.println("\n---------------------------------------------");
+        System.out.println("📦 Collecting final installers into /Installers");
+        System.out.println("---------------------------------------------");
+
+        Path macBuiltJar = BASE_PATH.resolve("paint-installer/paint-installer-macos/target")
+                .resolve("Glyco-PAINT-Installer-" + versionInfo.releaseVersion + ".jar");
+        Path winBuiltExe = BASE_PATH.resolve("paint-installer/paint-installer-windows/target")
+                .resolve("Glyco-PAINT-Installer.exe");
+
+        Path macFinal = installerPath.resolve("Glyco-PAINT-Installer-" + versionInfo.releaseVersion + ".jar");
+        Path winFinal = installerPath.resolve("Glyco-PAINT-Installer-" + versionInfo.releaseVersion + ".exe");
+
+        Files.copy(macBuiltJar, macFinal, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(winBuiltExe, winFinal, StandardCopyOption.REPLACE_EXISTING);
+
+        System.out.println("✅ macOS installer → " + macFinal);
+        System.out.println("✅ Windows installer → " + winFinal);
 
         System.out.println("\n✅ Both installers built successfully for version " + versionInfo.releaseVersion);        System.out.println("✅ Installer built with version " + versionInfo.releaseVersion);
 
