@@ -1,31 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- ===================================================================== --><!--  PAINT INSTALLER (WINDOWS) MODULE                                     --><!-- ===================================================================== --><!--
-  PURPOSE:
-    Builds the Windows .exe installer for Glyco-PAINT using Launch4j.
---><!-- ===================================================================== --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-installer</artifactId>
         <version>0.0.59-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
     <artifactId>paint-installer-windows</artifactId>
     <packaging>jar</packaging>
-
     <name>Glyco-PAINT Installer (Windows)</name>
     <description>Self-extracting GUI installer for Glyco-PAINT (Windows)</description>
-
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <main.class>GlycoPaintInstallerWindows</main.class>
         <exe.name>Glyco-PAINT-Installer</exe.name>
     </properties>
-
     <build>
         <resources>
             <resource>
@@ -36,8 +27,8 @@
                 </includes>
             </resource>
         </resources>
-
         <plugins>
+
             <!-- Build shaded JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -47,8 +38,8 @@
                     <execution>
                         <phase>package</phase>
                         <goals>
-              <goal>shade</goal>
-            </goals>
+                            <goal>shade</goal>
+                        </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
@@ -72,14 +63,18 @@
                         <id>wrap-exe</id>
                         <phase>package</phase>
                         <goals>
-              <goal>launch4j</goal>
-            </goals>
+                            <goal>launch4j</goal>
+                        </goals>
                         <configuration>
                             <outfile>${project.build.directory}/${exe.name}.exe</outfile>
-                            <jar>${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar</jar>
+                            <jar>
+                                ${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar
+                            </jar>
                             <dontWrapJar>false</dontWrapJar>
                             <headerType>gui</headerType>
-                            <!-- <icon>${project.basedir}/src/main/resources/icons/installer.ico</icon> -->                            <classPath>
+
+                            <!-- <icon>${project.basedir}/src/main/resources/icons/installer.ico</icon> -->
+                            <classPath>
                                 <mainClass>${main.class}</mainClass>
                             </classPath>
                             <jre>
@@ -101,6 +96,5 @@
             </plugin>
         </plugins>
     </build>
-
-<version>0.0.59-SNAPSHOT</version>
+    <version>0.0.59-SNAPSHOT</version>
 </project>

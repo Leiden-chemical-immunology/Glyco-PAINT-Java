@@ -1,33 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- ===================================================================== --><!--  PAINT INSTALLER (MACOS) MODULE                                       --><!-- ===================================================================== --><!--
-  PURPOSE:
-    Builds the self-extracting macOS JAR installer for Glyco-PAINT.
---><!-- ===================================================================== --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-installer</artifactId>
         <version>0.0.59-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
     <artifactId>paint-installer-macos</artifactId>
     <packaging>jar</packaging>
-
     <name>Glyco-PAINT Installer (macOS)</name>
     <description>Self-extracting GUI installer for Glyco-PAINT (macOS)</description>
-
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <main.class>GlycoPaintInstallerMac</main.class>
     </properties>
-
     <build>
         <finalName>Glyco-PAINT-Installer-${project.version}</finalName>
-
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -37,7 +27,6 @@
                 </includes>
             </resource>
         </resources>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -60,13 +49,12 @@
                         <id>make-fat-jar</id>
                         <phase>package</phase>
                         <goals>
-              <goal>single</goal>
-            </goals>
+                            <goal>single</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
-
-<version>0.0.59-SNAPSHOT</version>
+    <version>0.0.59-SNAPSHOT</version>
 </project>

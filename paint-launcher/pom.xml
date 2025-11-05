@@ -1,191 +1,65 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- ===================================================================== --><!--  PAINT LAUNCHER MODULE                                               --><!-- ===================================================================== --><!--
-  PURPOSE:
-    Builds the central PAINT Launcher — a lightweight Swing-based desktop
-    application that serves as the entry point for all other PAINT modules.
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  AUTHOR:
-    Hans Bakker (jjabakker)
+    <!-- =============================================================== -->
+    <!-- Project hierarchy -->
+    <!-- =============================================================== -->
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.github.jjabakker</groupId>
+        <artifactId>paint-parent</artifactId>
+        <version>0.0.58-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>paint-launcher</artifactId>
+    <packaging>jar</packaging>
 
-  MODULE:
-    paint-launcher
+    <!-- =============================================================== -->
+    <!-- Metadata -->
+    <!-- =============================================================== -->
+    <name>Paint Launcher</name>
+    <description>Central launcher for all PAINT desktop modules</description>
 
-  UPDATED:
-    2025-10-30
+    <!-- =============================================================== -->
+    <!-- Dependencies -->
+    <!-- =============================================================== -->
+    <dependencies>
 
-  NOTES:
-    • Produces a self-contained fat JAR with all dependencies.
-    • No external or inter-module dependencies are required.
-    • The launcher provides convenient access to all PAINT desktop tools.
---><!-- ===================================================================== --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
-        
-  
-  <!-- =============================================================== -->
-        
-  
-  <!-- Project hierarchy                                               -->
-        
-  
-  <!-- =============================================================== -->
-        
-  
-  <modelVersion>4.0.0</modelVersion>
-        
-  
-  <parent>
-                
-    
-    <groupId>com.github.jjabakker</groupId>
-                
-    
-    <artifactId>paint-parent</artifactId>
-                
-    
+        <!-- This is a standalone Swing launcher; no module dependencies required -->
+    </dependencies>
+
+    <!-- =============================================================== -->
+    <!-- Build configuration -->
+    <!-- =============================================================== -->
+    <build>
+        <plugins>
+
+            <!-- Create executable fat JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.7.1</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>paint.launcher.PaintLauncher</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
     <version>0.0.58-SNAPSHOT</version>
-                
-    
-    <relativePath>../pom.xml</relativePath>
-            
-  
-  </parent>
-        
-  
-  <artifactId>paint-launcher</artifactId>
-        
-  
-  <packaging>jar</packaging>
-        
-  
-  <!-- =============================================================== -->
-        
-  
-  <!-- Metadata                                                       -->
-        
-  
-  <!-- =============================================================== -->
-        
-  
-  <name>Paint Launcher</name>
-        
-  
-  <description>Central launcher for all PAINT desktop modules</description>
-        
-  
-  <!-- =============================================================== -->
-        
-  
-  <!-- Dependencies                                                    -->
-        
-  
-  <!-- =============================================================== -->
-        
-  
-  <dependencies>
-                
-    
-    <!-- This is a standalone Swing launcher; no module dependencies required -->
-            
-  
-  </dependencies>
-        
-  
-  <!-- =============================================================== -->
-        
-  
-  <!-- Build configuration                                             -->
-        
-  
-  <!-- =============================================================== -->
-        
-  
-  <build>
-                
-    
-    <plugins>
-                        
-      
-      <!-- Create executable fat JAR -->
-                        
-      
-      <plugin>
-                                
-        
-        <groupId>org.apache.maven.plugins</groupId>
-                                
-        
-        <artifactId>maven-assembly-plugin</artifactId>
-                                
-        
-        <version>3.7.1</version>
-                                
-        
-        <configuration>
-                                        
-          
-          <descriptorRefs>
-                                                
-            
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-                                            
-          
-          </descriptorRefs>
-                                        
-          
-          <archive>
-                                                
-            
-            <manifest>
-                                                        
-              
-              <mainClass>paint.launcher.PaintLauncher</mainClass>
-                                                    
-            
-            </manifest>
-                                            
-          
-          </archive>
-                                    
-        
-        </configuration>
-                                
-        
-        <executions>
-                                        
-          
-          <execution>
-                                                
-            
-            <id>make-assembly</id>
-                                                
-            
-            <phase>package</phase>
-                                                
-            
-            <goals>
-                                                        
-              
-              <goal>single</goal>
-                                                    
-            
-            </goals>
-                                            
-          
-          </execution>
-                                    
-        
-        </executions>
-                            
-      
-      </plugin>
-                    
-    
-    </plugins>
-            
-  
-  </build>
-    
-  
-  <version>0.0.58-SNAPSHOT</version>
-    
-
 </project>

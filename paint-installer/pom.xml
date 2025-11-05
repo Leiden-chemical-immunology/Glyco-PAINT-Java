@@ -1,26 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- ===================================================================== --><!--  PAINT INSTALLER MASTER POM                                           --><!-- ===================================================================== --><!--
-  PURPOSE:
-    Aggregates the platform-specific installer modules for Glyco-PAINT.
-    Builds:
-      • paint-installer-macos (self-extracting JAR)
-      • paint-installer-windows (.exe via Launch4j)
---><!-- ===================================================================== --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
         <version>0.0.59-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
     <artifactId>paint-installer</artifactId>
     <packaging>pom</packaging>
-
     <name>Glyco-PAINT Installer Aggregator</name>
     <description>Aggregator for macOS and Windows Glyco-PAINT installers</description>
-
-<version>0.0.59-SNAPSHOT</version>
+    <version>0.0.59-SNAPSHOT</version>
 </project>

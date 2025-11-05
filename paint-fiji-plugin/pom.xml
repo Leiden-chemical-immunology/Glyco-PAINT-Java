@@ -1,560 +1,204 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-        
-  
-  <modelVersion>4.0.0</modelVersion>
-        
-  
-  <parent>
-                
-    
-    <groupId>com.github.jjabakker</groupId>
-                
-    
-    <artifactId>paint-parent</artifactId>
-                
-    
-    <version>0.0.58-SNAPSHOT</version>
-                
-    
-    <relativePath>../pom.xml</relativePath>
-            
-  
-  </parent>
-        
-  
-  <artifactId>paint-fiji-plugin</artifactId>
-        
-  
-  <packaging>jar</packaging>
-        
-  
-  <name>Paint Fiji Plugin</name>
-        
-  
-  <description>Integration of Paint application with Fiji/TrackMate plugin</description>
-        
-  
-  <properties>
-                
-    
-    <fiji.dir>/Applications/Fiji.app</fiji.dir>
-                
-    
-    <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
-            
-  
-  </properties>
-        
-  
-  <dependencies>
-                
-    
-    <!-- Fiji / TrackMate APIs (provided by Fiji runtime) -->
-                
-    
-    <dependency>
-                        
-      
-      <groupId>sc.fiji</groupId>
-                        
-      
-      <artifactId>TrackMate</artifactId>
-                        
-      
-      <version>7.14.0</version>
-                        
-      
-      <scope>provided</scope>
-                    
-    
-    </dependency>
-                
-    
-    <dependency>
-                        
-      
-      <groupId>org.scijava</groupId>
-                        
-      
-      <artifactId>scijava-common</artifactId>
-                        
-      
-      <version>2.94.1</version>
-                        
-      
-      <scope>provided</scope>
-                    
-    
-    </dependency>
-                
-    
-    <dependency>
-                        
-      
-      <groupId>org.openmicroscopy</groupId>
-                        
-      
-      <artifactId>ome-common</artifactId>
-                        
-      
-      <version>6.0.25</version>
-                        
-      
-      <scope>provided</scope>
-                    
-    
-    </dependency>
-                
-    
-    <!-- Internal shared module -->
-                
-    
-    <dependency>
-                        
-      
-      <groupId>com.github.jjabakker</groupId>
-                        
-      
-      <artifactId>paint-shared-utils</artifactId>
-                        
-      
-      <version>0.0.58-SNAPSHOT</version>
-                    
-    
-    </dependency>
-                
-    
-    <!-- Bundled dependencies -->
-                
-    
-    <dependency>
-                        
-      
-      <groupId>tech.tablesaw</groupId>
-                        
-      
-      <artifactId>tablesaw-core</artifactId>
-                        
-      
-      <version>0.43.1</version>
-                    
-    
-    </dependency>
-                
-    
-    <dependency>
-                        
-      
-      <groupId>org.apache.commons</groupId>
-                        
-      
-      <artifactId>commons-csv</artifactId>
-                        
-      
-      <version>1.10.0</version>
-                    
-    
-    </dependency>
-                
-    
-    <dependency>
-                        
-      
-      <groupId>it.unimi.dsi</groupId>
-                        
-      
-      <artifactId>fastutil</artifactId>
-                        
-      
-      <version>8.5.12</version>
-                    
-    
-    </dependency>
-                
-    
-    <dependency>
-                        
-      
-      <groupId>com.univocity</groupId>
-                        
-      
-      <artifactId>univocity-parsers</artifactId>
-                        
-      
-      <version>2.9.1</version>
-                    
-    
-    </dependency>
-                
-    
-    <dependency>
-                        
-      
-      <groupId>com.github.jjabakker</groupId>
-                        
-      
-      <artifactId>paint-generate-squares</artifactId>
-                        
-      
-      <version>0.0.58-SNAPSHOT</version>
-                        
-      
-      <scope>compile</scope>
-                    
-    
-    </dependency>
-            
-  
-  </dependencies>
-        
-  
-  <repositories>
-                
-    
-    <repository>
-                        
-      
-      <id>scijava.public</id>
-                        
-      
-      <url>https://maven.scijava.org/content/groups/public</url>
-                    
-    
-    </repository>
-            
-  
-  </repositories>
-        
-  
-  <build>
-                
-    
-    <plugins>
-                        
-      
-      <!-- Compile to Java 8 -->
-                        
-      
-      <plugin>
-                                
-        
-        <groupId>org.apache.maven.plugins</groupId>
-                                
-        
-        <artifactId>maven-compiler-plugin</artifactId>
-                                
-        
-        <version>3.11.0</version>
-                                
-        
-        <configuration>
-                                        
-          
-          <source>1.8</source>
-                                        
-          
-          <target>1.8</target>
-                                    
-        
-        </configuration>
-                            
-      
-      </plugin>
-                        
-      
-      <!-- Inject manifest metadata (Compilation-Data) -->
-                        
-      
-      <plugin>
-                                
-        
-        <groupId>org.apache.maven.plugins</groupId>
-                                
-        
-        <artifactId>maven-jar-plugin</artifactId>
-                                
-        
-        <version>3.3.0</version>
-                                
-        
-        <configuration>
-                                        
-          
-          <archive>
-                                                
-            
-            <manifest>
-                                                        
-              
-              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                                                        
-              
-              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                                                    
-            
-            </manifest>
-                                                
-            
-            <manifestEntries>
-                                                        
-              
-              <Built-By>${user.name}</Built-By>
-                                                        
-              
-              <Build-Jdk>${java.version}</Build-Jdk>
-                                                        
-              
-              <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
-                                                    
-            
-            </manifestEntries>
-                                            
-          
-          </archive>
-                                    
-        
-        </configuration>
-                            
-      
-      </plugin>
-                        
-      
-      <!-- Shade all dependencies into one JAR -->
-                        
-      
-      <plugin>
-                                
-        
-        <groupId>org.apache.maven.plugins</groupId>
-                                
-        
-        <artifactId>maven-shade-plugin</artifactId>
-                                
-        
-        <version>3.5.3</version>
-                                
-        
-        <executions>
-                                        
-          
-          <execution>
-                                                
-            
-            <phase>package</phase>
-                                                
-            
-            <goals>
-                            
-              
-              <goal>shade</goal>
-                            
-            
-            </goals>
-                                                
-            
-            <configuration>
-                                                        
-              
-              <createDependencyReducedPom>false</createDependencyReducedPom>
-                                                        
-              
-              <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
-                                                        
-              
-              <filters>
-                                                                
-                
-                <filter>
-                                                                        
-                  
-                  <artifact>*:*</artifact>
-                                                                        
-                  
-                  <excludes>
-                                                                                
-                    
-                    <exclude>META-INF/*.SF</exclude>
-                                                                                
-                    
-                    <exclude>META-INF/*.DSA</exclude>
-                                                                                
-                    
-                    <exclude>META-INF/*.RSA</exclude>
-                                                                            
-                  
-                  </excludes>
-                                                                    
-                
-                </filter>
-                                                            
-              
-              </filters>
-                                                        
-              
-              <transformers>
-                                                                
-                
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                                                        
-                  
-                  <manifestEntries>
-                                                                                
-                    
-                    <Implementation-Title>${project.name}</Implementation-Title>
-                                                                                
-                    
-                    <Implementation-Version>${project.version}</Implementation-Version>
-                                                                                
-                    
-                    <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
-                                                                                
-                    
-                    <Specification-Title>${project.name}</Specification-Title>
-                                                                                
-                    
-                    <Specification-Version>${project.version}</Specification-Version>
-                                                                                
-                    
-                    <Specification-Vendor>${project.organization.name}</Specification-Vendor>
-                                                                                
-                    
-                    <Built-By>${user.name}</Built-By>
-                                                                                
-                    
-                    <Build-Jdk>${java.version}</Build-Jdk>
-                                                                                
-                    
-                    <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
-                                                                            
-                  
-                  </manifestEntries>
-                                                                    
-                
-                </transformer>
-                                                            
-              
-              </transformers>
-                                                    
-            
-            </configuration>
-                                            
-          
-          </execution>
-                                    
-        
-        </executions>
-                            
-      
-      </plugin>
-                        
-      
-      <!-- Cleanup and copy JAR into Fiji (skip automatically on CI) -->
-                        
-      
-      <plugin>
-                                
-        
-        <groupId>org.apache.maven.plugins</groupId>
-                                
-        
-        <artifactId>maven-antrun-plugin</artifactId>
-                                
-        
-        <version>3.1.0</version>
-                                
-        
-        <executions>
-                                        
-          
-          <execution>
-                                                
-            
-            <id>deploy-to-fiji</id>
-                                                
-            
-            <phase>install</phase>
-                                                
-            
-            <goals>
-                                                        
-              
-              <goal>run</goal>
-                                                    
-            
-            </goals>
-                                                
-            
-            <configuration>
-                                                        
-              
-              <!-- ✅ Skip deployment automatically on CI -->
-                                                        
-              
-              <skip>${env.CI}</skip>
-                                                        
-              
-              <target>
-                                                                
-                
-                <echo message="&#128640; Deploying ${project.artifactId} to Fiji (skipped in CI)"/>
-                                                                
-                
-                <delete quiet="true">
-                                                                        
-                  
-                  <fileset dir="${fiji.dir}/plugins">
-                                                                                
-                    
-                    <include name="paint*.jar"/>
-                                                                            
-                  
-                  </fileset>
-                                                                    
-                
-                </delete>
-                                                                
-                
-                <copy overwrite="true" todir="${fiji.dir}/plugins">
-                                                                        
-                  
-                  <fileset dir="${project.build.directory}">
-                                                                                
-                    
-                    <include name="${project.artifactId}-${project.version}-jar-with-dependencies.jar"/>
-                                                                            
-                  
-                  </fileset>
-                                                                    
-                
-                </copy>
-                                                                
-                
-                <echo message="✅ Deployed ${project.artifactId} fat JAR to ${fiji.dir}/plugins/"/>
-                                                            
-              
-              </target>
-                                                    
-            
-            </configuration>
-                                            
-          
-          </execution>
-                                    
-        
-        </executions>
-                            
-      
-      </plugin>
-                    
-    
-    </plugins>
-            
-  
-  </build>
-    
-  
-  <version>0.0.58-SNAPSHOT</version>
-    
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.github.jjabakker</groupId>
+        <artifactId>paint-parent</artifactId>
+        <version>0.0.58-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>paint-fiji-plugin</artifactId>
+    <packaging>jar</packaging>
+    <name>Paint Fiji Plugin</name>
+    <description>Integration of Paint application with Fiji/TrackMate plugin</description>
+    <properties>
+        <fiji.dir>/Applications/Fiji.app</fiji.dir>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
+    </properties>
+    <dependencies>
 
+        <!-- Fiji / TrackMate APIs (provided by Fiji runtime) -->
+        <dependency>
+            <groupId>sc.fiji</groupId>
+            <artifactId>TrackMate</artifactId>
+            <version>7.14.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scijava</groupId>
+            <artifactId>scijava-common</artifactId>
+            <version>2.94.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openmicroscopy</groupId>
+            <artifactId>ome-common</artifactId>
+            <version>6.0.25</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Internal shared module -->
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-shared-utils</artifactId>
+            <version>0.0.58-SNAPSHOT</version>
+        </dependency>
+
+        <!-- Bundled dependencies -->
+        <dependency>
+            <groupId>tech.tablesaw</groupId>
+            <artifactId>tablesaw-core</artifactId>
+            <version>0.43.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>it.unimi.dsi</groupId>
+            <artifactId>fastutil</artifactId>
+            <version>8.5.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.univocity</groupId>
+            <artifactId>univocity-parsers</artifactId>
+            <version>2.9.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-generate-squares</artifactId>
+            <version>0.0.58-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+
+    </dependencies>
+    <repositories>
+        <repository>
+            <id>scijava.public</id>
+            <url>https://maven.scijava.org/content/groups/public</url>
+        </repository>
+
+    </repositories>
+    <build>
+        <plugins>
+
+            <!-- Compile to Java 8 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+            <!-- Inject manifest metadata (Compilation-Data) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Built-By>${user.name}</Built-By>
+                            <Build-Jdk>${java.version}</Build-Jdk>
+                            <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- Shade all dependencies into one JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Implementation-Title>${project.name}</Implementation-Title>
+                                        <Implementation-Version>${project.version}</Implementation-Version>
+                                        <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
+                                        <Specification-Title>${project.name}</Specification-Title>
+                                        <Specification-Version>${project.version}</Specification-Version>
+                                        <Specification-Vendor>${project.organization.name}</Specification-Vendor>
+                                        <Built-By>${user.name}</Built-By>
+                                        <Build-Jdk>${java.version}</Build-Jdk>
+                                        <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Cleanup and copy JAR into Fiji (skip automatically on CI) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>deploy-to-fiji</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+
+                            <!-- ✅ Skip deployment automatically on CI -->
+                            <skip>${env.CI}</skip>
+                            <target>
+                                <echo message="🚀 Deploying ${project.artifactId} to Fiji (skipped in CI)"/>
+                                <delete quiet="true">
+                                    <fileset dir="${fiji.dir}/plugins">
+                                        <include name="paint*.jar"/>
+                                    </fileset>
+                                </delete>
+                                <copy overwrite="true" todir="${fiji.dir}/plugins">
+                                    <fileset dir="${project.build.directory}">
+                                        <include name="${project.artifactId}-${project.version}-jar-with-dependencies.jar"/>
+                                    </fileset>
+                                </copy>
+                                <echo message="✅ Deployed ${project.artifactId} fat JAR to ${fiji.dir}/plugins/"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <version>0.0.58-SNAPSHOT</version>
 </project>
