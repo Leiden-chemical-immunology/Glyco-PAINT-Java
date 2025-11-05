@@ -229,7 +229,7 @@
     <key>CFBundleName</key><string>${app.name}</string>
     <key>CFBundleDisplayName</key><string>${app.name}</string>
     <key>CFBundleExecutable</key><string>launch</string>
-    <key>CFBundleIconFile</key><string>${app.name}.icns</string>
+    <key>CFBundleIconFile</key><string>${app.name}</string>
     <key>CFBundleIdentifier</key><string>com.github.jjabakker.${app.name}</string>
     <key>CFBundleVersion</key><string>${project.version}</string>
     <key>CFBundlePackageType</key><string>APPL</string>
