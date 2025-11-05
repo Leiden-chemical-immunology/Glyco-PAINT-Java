@@ -4,19 +4,16 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import javax.xml.parsers.*;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import org.w3c.dom.Document;
+import org.w3c.dom.*;
 
 /**
  * ===============================================================
- *  POM REFORMATTER UTILITY (BLOCK-AWARE, 4-SPACE INDENT)
+ *  POM REFORMATTER UTILITY (TRUE STRUCTURAL INDENTATION)
  * ===============================================================
  * PURPOSE:
- *   - 4-space indentation (forced)
- *   - Remove all blank/whitespace-only lines
- *   - Add one blank line before a consecutive comment block
+ *   - 4-space indentation with correct nesting
+ *   - Remove blank/whitespace-only lines
+ *   - Add one blank line before a comment block
  *   - Add one blank line after </dependency> and </repository>
  *
  * AUTHOR: Herr Doctor
@@ -40,11 +37,8 @@ public class ReformatPoms {
         File[] files = dir.listFiles();
         if (files == null) return;
         for (File f : files) {
-            if (f.isDirectory()) {
-                reformatAllPoms(f);
-            } else if ("pom.xml".equalsIgnoreCase(f.getName())) {
-                reformatPom(f);
-            }
+            if (f.isDirectory()) reformatAllPoms(f);
+            else if ("pom.xml".equalsIgnoreCase(f.getName())) reformatPom(f);
         }
     }
 
@@ -52,7 +46,7 @@ public class ReformatPoms {
         try {
             String original = new String(Files.readAllBytes(pomFile.toPath()), StandardCharsets.UTF_8);
 
-            // Validate XML
+            // Parse DOM, preserving comments
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setIgnoringComments(false);
             dbf.setNamespaceAware(true);
@@ -60,82 +54,107 @@ public class ReformatPoms {
             Document doc = db.parse(new ByteArrayInputStream(original.getBytes(StandardCharsets.UTF_8)));
             doc.normalizeDocument();
 
-            // Pretty-print
-            TransformerFactory tf = TransformerFactory.newInstance();
-            Transformer t = tf.newTransformer();
-            t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-            t.setOutputProperty(OutputKeys.INDENT, "yes");
-            t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-            t.setOutputProperty(OutputKeys.METHOD, "xml");
+            // Build formatted XML manually
+            StringBuilder xml = new StringBuilder();
+            xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n");
+            formatNode(doc.getDocumentElement(), xml, 0);
 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            t.transform(new DOMSource(doc), new StreamResult(baos));
-            String pretty = baos.toString("UTF-8");
+            // Clean up spacing rules
+            String cleaned = removeBlankLines(xml.toString());
+            String withComments = addBlankBeforeCommentBlocks(cleaned);
+            String withBlocks = addBlankAfterClosingTags(withComments);
 
-            // Post-process spacing
-            String cleaned = removeBlankLines(pretty);
-            String withCommentBlocks = addBlankBeforeCommentBlocks(cleaned);
-            String withBlockSpacing = addBlankAfterClosingTags(withCommentBlocks);
-            String finalText = adjustIndentationWidth(withBlockSpacing, 4);
-
-            Files.write(pomFile.toPath(), finalText.getBytes(StandardCharsets.UTF_8));
+            Files.write(pomFile.toPath(), withBlocks.getBytes(StandardCharsets.UTF_8));
             System.out.println("✅ Reformatted: " + pomFile.getAbsolutePath());
         } catch (Exception e) {
             System.err.println("❌ Error reformatting " + pomFile.getAbsolutePath() + ": " + e.getMessage());
         }
     }
 
-    /** Removes blank or whitespace-only lines. */
+    /** Recursive XML printer with inline text for simple values and 4-space nesting. */
+    private static void formatNode(Node node, StringBuilder out, int level) {
+        String indent = repeat(' ', level * 4);
+
+        switch (node.getNodeType()) {
+            case Node.ELEMENT_NODE:
+                out.append(indent).append("<").append(node.getNodeName());
+
+                // Write attributes inline
+                NamedNodeMap attrs = node.getAttributes();
+                for (int i = 0; i < attrs.getLength(); i++) {
+                    Node a = attrs.item(i);
+                    out.append(" ").append(a.getNodeName()).append("=\"")
+                            .append(a.getNodeValue()).append("\"");
+                }
+
+                NodeList children = node.getChildNodes();
+                if (children.getLength() == 0) {
+                    out.append("/>\n");
+                    return;
+                }
+
+                // If only one text node
+                if (children.getLength() == 1 && children.item(0).getNodeType() == Node.TEXT_NODE) {
+                    String text = children.item(0).getTextContent().trim();
+                    if (text.contains("\n") || text.length() > 80) {
+                        // multiline or long text -> block format
+                        out.append(">\n")
+                                .append(indent).append("    ").append(text).append("\n")
+                                .append(indent).append("</").append(node.getNodeName()).append(">\n");
+                    } else {
+                        // short -> inline
+                        out.append(">").append(text)
+                                .append("</").append(node.getNodeName()).append(">\n");
+                    }
+                    return;
+                }
+
+                // Otherwise recurse for child elements
+                out.append(">\n");
+                for (int i = 0; i < children.getLength(); i++) {
+                    Node child = children.item(i);
+                    if (child.getNodeType() == Node.TEXT_NODE &&
+                            child.getTextContent().trim().isEmpty())
+                        continue; // skip whitespace text
+                    formatNode(child, out, level + 1);
+                }
+                out.append(indent).append("</").append(node.getNodeName()).append(">\n");
+                break;
+
+            case Node.COMMENT_NODE:
+                out.append(indent).append("<!-- ").append(node.getNodeValue().trim()).append(" -->\n");
+                break;
+
+            default:
+                break;
+        }
+    }
     private static String removeBlankLines(String text) {
         StringBuilder sb = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new StringReader(text))) {
             String line;
-            while ((line = br.readLine()) != null) {
+            while ((line = br.readLine()) != null)
                 if (!line.trim().isEmpty()) sb.append(line).append("\n");
-            }
         } catch (IOException ignore) {}
         return sb.toString();
     }
 
-    /**
-     * Adds exactly one blank line before a block of consecutive comments.
-     * Does NOT add blank lines inside or after the comment block.
-     */
+    /** Add one blank line before a comment block, not inside or after. */
     private static String addBlankBeforeCommentBlocks(String text) {
         StringBuilder sb = new StringBuilder();
         String[] lines = text.split("\\r?\\n");
-        boolean previousWasComment = false;
-        boolean inCommentBlock = false;
-
+        boolean prevIsComment = false;
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             boolean isComment = line.trim().startsWith("<!--");
-
-            // Detect start of a comment block
-            if (isComment && !previousWasComment) {
-                // Add a blank line before this block (if not at top)
-                if (sb.length() > 0 && sb.charAt(sb.length() - 1) != '\n') sb.append('\n');
-                sb.append('\n');
-                inCommentBlock = true;
-            }
-
-            sb.append(line).append('\n');
-            previousWasComment = isComment;
-
-            // End of comment block if next line is not a comment
-            if (inCommentBlock) {
-                if (i + 1 < lines.length && !lines[i + 1].trim().startsWith("<!--")) {
-                    inCommentBlock = false;
-                }
-            }
+            if (isComment && !prevIsComment) sb.append("\n"); // before block
+            sb.append(line).append("\n");
+            prevIsComment = isComment;
         }
-
-        // Normalize excessive newlines
         return sb.toString().replaceAll("(?m)\\n{3,}", "\n\n");
     }
 
-
-    /** Adds exactly one blank line after </dependency> and </repository>. */
+    /** Adds one blank line after </dependency> and </repository>. */
     private static String addBlankAfterClosingTags(String text) {
         text = text.replaceAll("(?m)</dependency>\\r?\\n(?!\\r?\\n)", "</dependency>\n\n");
         text = text.replaceAll("(?m)</repository>\\r?\\n(?!\\r?\\n)", "</repository>\n\n");
@@ -143,36 +162,11 @@ public class ReformatPoms {
         return text;
     }
 
-    /**
-     * Ensures consistent 4-space indentation, regardless of the transformer.
-     */
-    private static String adjustIndentationWidth(String text, int targetWidth) {
-        int[] counts = new int[9];
-        String[] lines = text.split("\\r?\\n", -1);
-        for (String line : lines) {
-            int i = 0;
-            while (i < line.length() && line.charAt(i) == ' ') i++;
-            if (i > 0 && i < counts.length) counts[i]++;
-        }
-        int base = 0, max = 0;
-        for (int i = 1; i < counts.length; i++) {
-            if (counts[i] > max) { max = counts[i]; base = i; }
-        }
-        if (base == 0) base = 2;
-
-        StringBuilder out = new StringBuilder(text.length());
-        for (String line : lines) {
-            int i = 0;
-            while (i < line.length() && line.charAt(i) == ' ') i++;
-            if (i == 0) {
-                out.append(line).append('\n');
-                continue;
-            }
-            int level = Math.round((float) i / base);
-            int newSpaces = level * targetWidth;
-            for (int s = 0; s < newSpaces; s++) out.append(' ');
-            out.append(line.substring(i)).append('\n');
-        }
-        return out.toString();
+    /** Java 8-compatible repeat for spaces. */
+    private static String repeat(char c, int count) {
+        if (count <= 0) return "";
+        char[] chars = new char[count];
+        java.util.Arrays.fill(chars, c);
+        return new String(chars);
     }
 }
