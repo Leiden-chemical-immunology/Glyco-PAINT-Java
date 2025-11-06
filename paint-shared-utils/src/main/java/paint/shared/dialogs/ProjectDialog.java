@@ -484,6 +484,19 @@ public class ProjectDialog {
     private void onOkPressed() {
         okPressed = true;
         cancelled = false;
+
+        // ✅ warn the user about missing or invalid Image Root
+        File img = new File(imageDirectoryField.getText().trim());
+        if (!img.isDirectory()) {
+            JOptionPane.showMessageDialog(
+                    dialog,
+                    "The Images Root directory does not exist. Please select a valid directory.",
+                    "Invalid Images Root",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
         saveConfig();
 
         if (calculationCallback != null) {
@@ -672,11 +685,9 @@ public class ProjectDialog {
         boolean anySelected = checkBoxes.stream().anyMatch(JCheckBox::isSelected);
 
         File proj = new File(projectRootField.getText().trim());
-        File img = new File(imageDirectoryField.getText().trim());
+        boolean projectValid = proj.isDirectory();
 
-        boolean rootsValid = proj.isDirectory() && img.isDirectory();
-
-        okButton.setEnabled(anySelected && rootsValid);
+        okButton.setEnabled(anySelected && projectValid);
     }
 
     private void populateCheckboxes() {
