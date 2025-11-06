@@ -107,6 +107,13 @@ public class ReleaseNewVersion {
                 }
             }
 
+            if (pushTag) {
+                System.out.println("🚀 Tags will be pushed to GitHub");
+            }
+            if (doRelease) {
+                System.out.println("🚀 A release will be made");
+            }
+
             new ReleaseNewVersion().run(bumpFlag, doRelease, pushTag);
 
         } catch (Exception e) {
