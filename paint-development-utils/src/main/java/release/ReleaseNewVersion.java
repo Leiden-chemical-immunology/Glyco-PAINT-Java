@@ -223,9 +223,6 @@ public class ReleaseNewVersion {
             System.out.println("\n🔄 Restoring development version (" + versionInfo.nextDevVersion + ")...");
             alignAllPomVersions(versionInfo.nextDevVersion);
 
-            // --- Skip committing; we'll roll back later ---
-            System.out.println("ℹ️  Version bump staged locally (no commit will be kept).");
-
             // --- Ensure updated parent is reinstalled ---
             installParentPom();
             rebuildSharedUtils();
@@ -293,8 +290,6 @@ public class ReleaseNewVersion {
             System.out.println("✅ Output directory: " + buildRoot.toAbsolutePath());
 
         } finally {
-            // 🔄 Always restore all POMs to pre-build state
-            rollbackPomChanges();
 
             // --- Commit updated parent POM version for next development cycle (release builds only) ---
             if (doRelease) {
@@ -314,12 +309,17 @@ public class ReleaseNewVersion {
                             "-DprocessAllModules=false" // only parent
                     ), BASE_PATH, "versions:set (parent only)");
 
-                    // 4️⃣ Commit ONLY the parent POM change
-                    System.out.println("💾 Committing parent POM version bump...");
-                    runCommand(Arrays.asList("git", "add", "pom.xml"), BASE_PATH);
-                    runCommand(Arrays.asList("git", "commit", "-m",
-                                             "Bump parent POM to " + nextSnapshotVersion + " for next development cycle"), BASE_PATH);
+                    // ✅ Commit all updated POMs (parent + modules)
+                    System.out.println("💾 Committing full project version bump to " + nextSnapshotVersion + "...");
 
+                    // Add ALL pom.xml files
+                    runCommand(Arrays.asList("bash", "-c", "shopt -s globstar; git add pom.xml **/pom.xml"), BASE_PATH);
+
+                    // Commit
+                    runCommand(Arrays.asList("git", "commit", "-m",
+                                             "Bump project to " + nextSnapshotVersion + " for next development cycle"), BASE_PATH);
+
+                    System.out.println("✅ Committed all POMs to next development version.");
                     System.out.println("\n✅ Release process complete!");
                     System.out.println("   🎯 Tagged release: " + versionInfo.releaseVersion);
                     System.out.println("   🚀 Next development version: " + nextSnapshotVersion);
@@ -822,22 +822,6 @@ public class ReleaseNewVersion {
                     });
         }
 
-    }
-
-    private void rollbackPomChanges() throws IOException, InterruptedException {
-        System.out.println("🧹 Rolling back all POM version changes to committed state...");
-        ProcessBuilder pb = new ProcessBuilder(
-                "bash", "-c", "git ls-files '**/pom.xml' | xargs git checkout --"
-        );
-        pb.directory(BASE_PATH.toFile());
-        pb.inheritIO();
-        Process proc = pb.start();
-        int exit = proc.waitFor();
-        if (exit == 0) {
-            System.out.println("✅ Restored all pom.xml files to last committed version.");
-        } else {
-            System.err.println("⚠️  Rollback failed — please check Git status manually.");
-        }
     }
 
     /** Runs a simple shell command in the given directory and waits for completion. */
