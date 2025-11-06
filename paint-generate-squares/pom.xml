@@ -11,7 +11,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.102</version>
+        <version>0.0.103</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -24,7 +24,7 @@
     <!-- Application properties -->
     <!-- =============================================================== -->
     <properties>
-        <project.build.outputTimestamp>2025-11-06T07:53:06Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-11-06T08:04:27Z</project.build.outputTimestamp>
         <app.name>Generate Squares</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-generate-squares.icns</app.icon.macos>
