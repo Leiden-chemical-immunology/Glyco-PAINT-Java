@@ -218,10 +218,6 @@ public class ReleaseNewVersion {
                 System.out.println("⚠️  paint-fiji-plugin not found — skipping plugin build.");
             }
 
-            // --- Tag release if needed ---
-            if (doRelease) {
-                createAndPushTag(versionInfo.releaseVersion, pushTag);
-            }
 
             // --- Bump back to next development version (local only) ---
             System.out.println("\n🔄 Restoring development version (" + versionInfo.nextDevVersion + ")...");
@@ -328,21 +324,42 @@ public class ReleaseNewVersion {
                     System.out.println("   🎯 Tagged release: " + versionInfo.releaseVersion);
                     System.out.println("   🚀 Next development version: " + nextSnapshotVersion);
 
-                    // ✅ Push the tag only here, at the very end
-                    if (pushTag) {
-                        String tagName = "v" + versionInfo.releaseVersion;
-                        System.out.println("📤 Final step: pushing tag " + tagName);
+                    String tagName = "v" + versionInfo.releaseVersion;
 
-                        ProcessBuilder pb = new ProcessBuilder("git", "push", "origin", tagName);
-                        pb.directory(BASE_PATH.toFile());
-                        pb.inheritIO();
+                    // ✅ Check if tag already exists locally
+                    ProcessBuilder checkPb = new ProcessBuilder("git", "tag", "--list", tagName);
+                    checkPb.directory(BASE_PATH.toFile());
+                    Process checkProc = checkPb.start();
+                    BufferedReader checkReader = new BufferedReader(new InputStreamReader(checkProc.getInputStream()));
+                    boolean exists = checkReader.lines().anyMatch(line -> line.trim().equals(tagName));
+                    checkProc.waitFor();
 
-                        Process proc = pb.start();
-                        if (proc.waitFor() != 0) {
-                            throw new RuntimeException("❌ Final tag push failed for " + tagName);
+                    if (exists) {
+                        System.out.println("⚠️  Tag " + tagName + " already exists locally. Skipping creation.");
+                    } else {
+                        // ✅ Create the tag locally at the very end
+                        System.out.println("🏷️  Creating local tag " + tagName);
+                        ProcessBuilder tagPb = new ProcessBuilder("git", "tag", "-a", tagName, "-m", "Release " + tagName);
+                        tagPb.directory(BASE_PATH.toFile());
+                        tagPb.inheritIO();
+                        Process tagProc = tagPb.start();
+                        if (tagProc.waitFor() != 0) {
+                            throw new RuntimeException("❌ Failed to create local tag " + tagName);
                         }
+                        System.out.println("✅ Created local tag " + tagName);
+                    }
 
-                        System.out.println("✅ Successfully pushed tag " + tagName + " at the very end.");
+                    // ✅ Push tag if requested
+                    if (pushTag) {
+                        System.out.println("📤 Pushing tag " + tagName);
+                        ProcessBuilder pushPb = new ProcessBuilder("git", "push", "origin", tagName);
+                        pushPb.directory(BASE_PATH.toFile());
+                        pushPb.inheritIO();
+                        Process pushProc = pushPb.start();
+                        if (pushProc.waitFor() != 0) {
+                            throw new RuntimeException("❌ Failed to push tag " + tagName);
+                        }
+                        System.out.println("✅ Successfully pushed tag " + tagName);
                     } else {
                         System.out.println("ℹ️ Tag push skipped (no --push-tag flag).");
                     }
@@ -747,101 +764,7 @@ public class ReleaseNewVersion {
             throw new RuntimeException("Failed to install paint-parent release version " + releaseVersion);
         }
     }
-    /**
-     * Creates and pushes a Git tag for the specified release version.
-     * Automatically commits any outstanding pom.xml version bumps,
-     * including the root pom.xml, before tagging.
-     */
-    private void createAndPushTag(String version, boolean pushTag) throws IOException, InterruptedException {
-        Path repoDir = BASE_PATH;
-        if (!Files.exists(repoDir.resolve(".git"))) {
-            System.out.println("⚠️  No Git repository found — skipping tagging.");
-            return;
-        }
 
-        String tagName = "v" + version;
-
-        // --- Check for uncommitted changes
-        ProcessBuilder statusCheck = new ProcessBuilder("git", "status", "--porcelain");
-        statusCheck.directory(repoDir.toFile());
-        Process status = statusCheck.start();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(status.getInputStream()));
-        boolean dirty = reader.lines().anyMatch(line -> !line.trim().isEmpty());
-        status.waitFor();
-
-        if (dirty) {
-            System.out.println("⚠️  Working tree has uncommitted changes — auto-committing before tagging...");
-
-            // ✅ Explicitly include root and submodule POMs
-            String addCommand = "bash -c 'shopt -s globstar; git add pom.xml **/pom.xml'";
-            ProcessBuilder addPb = new ProcessBuilder("bash", "-c", addCommand);
-            addPb.directory(repoDir.toFile());
-            addPb.inheritIO();
-            Process addProc = addPb.start();
-            addProc.waitFor();
-
-            // Commit the version bump
-            String message = "Auto-commit before tagging release v" + version;
-            ProcessBuilder commitPb = new ProcessBuilder("git", "commit", "-m", message);
-            commitPb.directory(repoDir.toFile());
-            commitPb.inheritIO();
-            Process commitProc = commitPb.start();
-            commitProc.waitFor();
-
-            // Verify it's now clean
-            ProcessBuilder verifyClean = new ProcessBuilder("git", "status", "--porcelain");
-            verifyClean.directory(repoDir.toFile());
-            Process        verifyProc   = verifyClean.start();
-            BufferedReader verifyReader = new BufferedReader(new InputStreamReader(verifyProc.getInputStream()));
-            boolean        stillDirty   = verifyReader.lines().anyMatch(line -> !line.trim().isEmpty());
-            verifyProc.waitFor();
-
-            if (stillDirty) {
-                System.out.println("⚠️  Working tree still has uncommitted files after auto-commit.");
-                System.out.println("─────────────────────────────────────────────────────────────");
-                System.out.println("Your build artifacts (.app and .exe) were created successfully!");
-                System.out.println("However, Git tagging was skipped because additional files are dirty.\n");
-                System.out.println("👉 Please review and commit manually:");
-                System.out.println("   cd " + repoDir);
-                System.out.println("   git status");
-                System.out.println("   git add pom.xml **/pom.xml");
-                System.out.println("   git commit -m \"Finalize v" + version + " release\"");
-                System.out.println("   git tag -a v" + version + " -m \"Release v" + version + "\"");
-                System.out.println("   git push origin main --tags");
-                System.out.println("─────────────────────────────────────────────────────────────");
-                return;
-            }
-
-            System.out.println("✅ Auto-committed all pom.xml files. Continuing with tagging...");
-        }
-
-        // --- Ensure tag doesn’t already exist
-        ProcessBuilder checkTag = new ProcessBuilder("git", "tag", "--list", tagName);
-        checkTag.directory(repoDir.toFile());
-        Process check = checkTag.start();
-        BufferedReader tagReader = new BufferedReader(new InputStreamReader(check.getInputStream()));
-        boolean exists = tagReader.lines().anyMatch(line -> line.trim().equals(tagName));
-        check.waitFor();
-        if (exists) {
-            System.out.println("⚠️  Tag " + tagName + " already exists — skipping tag creation.");
-            System.out.println("✅ Continuing build without creating duplicate tag.");
-            return;
-        }
-
-        // --- Create local tag
-        System.out.println("🔧 Running: git tag -a " + tagName);
-        ProcessBuilder tagPb = new ProcessBuilder("git", "tag", "-a", tagName, "-m", "Release " + tagName);
-        tagPb.directory(repoDir.toFile());
-        tagPb.inheritIO();
-        enforceJava8(tagPb);
-        Process tagProc = tagPb.start();
-        if (tagProc.waitFor() != 0) {
-            throw new RuntimeException("❌ Failed to create local tag " + tagName);
-        }
-
-        System.out.println("✅ Created local tag " + tagName + " (push happens later)");
-        return;   // never push here
-    }
 
     private void zipPayload(Path appDir, Path pluginDir, Path outputZip) throws Exception {
         List<String> cmd = new ArrayList<>();
