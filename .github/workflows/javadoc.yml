@@ -1,0 +1,4 @@
+name: javadoc.yml
+on:
+
+jobs:
