@@ -92,19 +92,22 @@ public class ReleaseNewVersion {
 
     public static void main(String[] args) {
         try {
-            String bumpFlag = "0.0.x";
-            boolean doRelease = false;
+            String  bumpFlag  = "0.0.x";
+            boolean doRelease = true;
+            boolean pushTag   = false;
 
             for (int i = 0; i < args.length; i++) {
                 if (args[i].equalsIgnoreCase("-bump") && i + 1 < args.length) {
                     bumpFlag = args[i + 1];
                     i++;
-                } else if (args[i].equalsIgnoreCase("--release")) {
-                    doRelease = true;
+                } else if (args[i].equalsIgnoreCase("--no-release")) {
+                    doRelease = false;
+                } else if (args[i].equalsIgnoreCase("--push-tag")) {
+                    pushTag = true;
                 }
             }
 
-            new ReleaseNewVersion().run(bumpFlag, doRelease);
+            new ReleaseNewVersion().run(bumpFlag, doRelease, pushTag);
 
         } catch (Exception e) {
             System.err.println("❌ Build process failed: " + e.getMessage());
@@ -113,7 +116,7 @@ public class ReleaseNewVersion {
         }
     }
 
-    private void run(String bumpFlag, boolean doRelease) throws Exception {
+    private void run(String bumpFlag, boolean doRelease, boolean pushTag) throws Exception {
         System.out.println("=== Building Glyco-PAINT apps for macOS and Windows ===");
 
         VersionInfo versionInfo = null;  // ✅ Declare it here, before try
@@ -210,7 +213,7 @@ public class ReleaseNewVersion {
 
             // --- Tag release if needed ---
             if (doRelease) {
-                createAndPushTag(versionInfo.releaseVersion);
+                createAndPushTag(versionInfo.releaseVersion, pushTag);
             }
 
             // --- Bump back to next development version (local only) ---
@@ -295,9 +298,6 @@ public class ReleaseNewVersion {
                 System.out.println("\n🚀 Preparing next development iteration...");
 
                 try {
-                    // 1️⃣ Roll back all temporary POM modifications
-                    rollbackPomChanges();
-                    System.out.println("🔁 Rolled back temporary version changes.");
 
                     // 2️⃣ Compute next snapshot version
                     String nextSnapshotVersion = versionInfo.nextDevVersion;
@@ -726,7 +726,7 @@ public class ReleaseNewVersion {
      * Automatically commits any outstanding pom.xml version bumps,
      * including the root pom.xml, before tagging.
      */
-    private void createAndPushTag(String version) throws IOException, InterruptedException {
+    private void createAndPushTag(String version, boolean pushTag) throws IOException, InterruptedException {
         Path repoDir = BASE_PATH;
         if (!Files.exists(repoDir.resolve(".git"))) {
             System.out.println("⚠️  No Git repository found — skipping tagging.");
@@ -802,28 +802,32 @@ public class ReleaseNewVersion {
             return;
         }
 
-        // --- Create and push the tag
-        List<String[]> commands = Arrays.asList(
-                new String[]{"git", "tag", "-a", tagName, "-m", "Release " + tagName},
-                new String[]{"git", "push", "--force", "origin", tagName}
-        );
-
-        for (String[] cmd : commands) {
-            System.out.println("🔧 Running: " + String.join(" ", cmd));
-            ProcessBuilder pb = new ProcessBuilder(cmd);
-            pb.directory(repoDir.toFile());
-            pb.inheritIO();
-            enforceJava8(pb);
-            Process process = pb.start();
-            int exit = process.waitFor();
-            if (exit != 0) {
-                throw new RuntimeException("❌ Git command failed: " + String.join(" ", cmd));
-            }
+        // --- Create local tag
+        System.out.println("🔧 Running: git tag -a " + tagName);
+        ProcessBuilder tagPb = new ProcessBuilder("git", "tag", "-a", tagName, "-m", "Release " + tagName);
+        tagPb.directory(repoDir.toFile());
+        tagPb.inheritIO();
+        enforceJava8(tagPb);
+        Process tagProc = tagPb.start();
+        if (tagProc.waitFor() != 0) {
+            throw new RuntimeException("❌ Failed to create local tag " + tagName);
         }
 
-
-
-        System.out.println("✅ Tagged and pushed " + tagName + " successfully!");
+        if (pushTag) {
+            // --- Push only when --push-tag is used
+            System.out.println("📤 Running: git push origin " + tagName);
+            ProcessBuilder pushPb = new ProcessBuilder("git", "push", "origin", tagName);
+            pushPb.directory(repoDir.toFile());
+            pushPb.inheritIO();
+            enforceJava8(pushPb);
+            Process pushProc = pushPb.start();
+            if (pushProc.waitFor() != 0) {
+                throw new RuntimeException("❌ Failed to push tag " + tagName);
+            }
+            System.out.println("✅ Tagged and pushed " + tagName + " successfully!");
+        } else {
+            System.out.println("✅ Created local tag " + tagName + " (not pushed)");
+        }
     }
 
     private void zipPayload(Path appDir, Path pluginDir, Path outputZip) throws Exception {
