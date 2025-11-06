@@ -46,13 +46,13 @@
 //  COPYRIGHT  : (c) 2025 J.J. Bakker. All rights reserved.
 // ===============================================================================================
 
-package utils;
+package release;
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import javax.xml.parsers.*;
-import javax.xml.transform.*;
+
 import org.w3c.dom.*;
 
 public class ReleaseNewVersion {
@@ -490,26 +490,41 @@ public class ReleaseNewVersion {
     private void alignAllPomVersions(String newVersion) throws IOException, InterruptedException {
         System.out.println("🔄 Aligning all POM versions to " + newVersion + " using Maven Versions Plugin...");
 
-        // ✅ Use the actual multi-module root path
         Path projectRoot = BASE_PATH.toAbsolutePath();
 
-        // 1️⃣ Set root and all child versions
-        List<String> setCmd = Arrays.asList(
+        // 1️⃣ Set the new version recursively across all modules (even nested)
+        runMaven(Arrays.asList(
                 "mvn", "-B", "versions:set",
                 "-DnewVersion=" + newVersion,
-                "-DgenerateBackupPoms=false"
-        );
-        runMaven(setCmd, projectRoot, "versions:set");
+                "-DgenerateBackupPoms=false",
+                "-DprocessAllModules=true"
+        ), projectRoot, "versions:set");
 
-        // 2️⃣ Force-update all child modules to match the parent
-        List<String> updateCmd = Arrays.asList(
+        // 2️⃣ Install parent POMs locally so submodules can resolve them
+        // Install top-level parent (paint-parent)
+        runMaven(Arrays.asList(
+                "mvn", "-B", "-N", "install", "-DskipTests"
+        ), BASE_PATH, "install paint-parent");
+
+        // Install installer aggregator (paint-installer)
+        runMaven(Arrays.asList(
+                "mvn", "-B", "-N", "install:install-file",
+                "-Dfile=paint-installer/pom.xml",
+                "-DgroupId=com.github.jjabakker",
+                "-DartifactId=paint-installer",
+                "-Dversion=" + newVersion,
+                "-Dpackaging=pom"
+        ), BASE_PATH, "install paint-installer");
+
+        // 3️⃣ Update child module <parent> references to the new version
+        runMaven(Arrays.asList(
                 "mvn", "-B", "versions:update-child-modules",
                 "-DforceVersion=true",
-                "-DgenerateBackupPoms=false"
-        );
-        runMaven(updateCmd, projectRoot, "versions:update-child-modules");
+                "-DgenerateBackupPoms=false",
+                "-DprocessAllModules=true"
+        ), projectRoot, "versions:update-child-modules");
 
-        System.out.println("✅ All modules now aligned to version " + newVersion);
+        System.out.println("✅ All modules (including nested) now aligned to version " + newVersion);
     }
 
     private void runMaven(List<String> cmd, Path dir, String label) throws IOException, InterruptedException {
