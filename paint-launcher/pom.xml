@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.97</version>
+        <version>0.0.98</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>paint-launcher</artifactId>
