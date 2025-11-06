@@ -206,7 +206,34 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+
+
         <plugins>
+
+            <!-- Force doclint off and generate aggregate Javadoc during build -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.12.0</version>
+
+                <executions>
+                    <execution>
+                        <id>aggregate-build-javadoc</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <failOnError>false</failOnError>
+                    <doclint>none</doclint>
+                    <additionalOptions>
+                        <additionalOption>-Xdoclint:none</additionalOption>
+                    </additionalOptions>
+                </configuration>
+            </plugin>
 
             <!-- Maven Site generation -->
             <plugin>

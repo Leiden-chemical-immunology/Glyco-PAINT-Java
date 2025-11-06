@@ -1,0 +1,32 @@
+name: Publish JavaDoc
+
+on:
+  push:
+    tags:
+      - "v*.*.*" # Runs only when you push a version tag like v1.0.0
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # important for gh-pages publishing
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 8
+
+      - name: Build JavaDoc for all modules
+        run: mvn -B -q javadoc:javadoc javadoc:aggregate -DskipTests
+
+      - name: Deploy JavaDoc to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/site/apidocs
