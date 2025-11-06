@@ -55,7 +55,7 @@ import javax.xml.parsers.*;
 import javax.xml.transform.*;
 import org.w3c.dom.*;
 
-public class BuildAllExecutables {
+public class ReleaseNewVersion {
 
     private static final List<String> MODULES = Arrays.asList(
             "paint-viewer",
@@ -104,7 +104,7 @@ public class BuildAllExecutables {
                 }
             }
 
-            new BuildAllExecutables().run(bumpFlag, doRelease);
+            new ReleaseNewVersion().run(bumpFlag, doRelease);
 
         } catch (Exception e) {
             System.err.println("❌ Build process failed: " + e.getMessage());
