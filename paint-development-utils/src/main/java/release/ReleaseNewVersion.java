@@ -805,8 +805,7 @@ public class ReleaseNewVersion {
         // --- Create and push the tag
         List<String[]> commands = Arrays.asList(
                 new String[]{"git", "tag", "-a", tagName, "-m", "Release " + tagName},
-                new String[]{"git", "push", "origin", "main"},
-                new String[]{"git", "push", "origin", tagName}
+                new String[]{"git", "push", "--force", "origin", tagName}
         );
 
         for (String[] cmd : commands) {
