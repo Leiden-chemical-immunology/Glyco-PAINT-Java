@@ -328,6 +328,25 @@ public class ReleaseNewVersion {
                     System.out.println("   🎯 Tagged release: " + versionInfo.releaseVersion);
                     System.out.println("   🚀 Next development version: " + nextSnapshotVersion);
 
+                    // ✅ Push the tag only here, at the very end
+                    if (pushTag) {
+                        String tagName = "v" + versionInfo.releaseVersion;
+                        System.out.println("📤 Final step: pushing tag " + tagName);
+
+                        ProcessBuilder pb = new ProcessBuilder("git", "push", "origin", tagName);
+                        pb.directory(BASE_PATH.toFile());
+                        pb.inheritIO();
+
+                        Process proc = pb.start();
+                        if (proc.waitFor() != 0) {
+                            throw new RuntimeException("❌ Final tag push failed for " + tagName);
+                        }
+
+                        System.out.println("✅ Successfully pushed tag " + tagName + " at the very end.");
+                    } else {
+                        System.out.println("ℹ️ Tag push skipped (no --push-tag flag).");
+                    }
+
                 } catch (Exception e) {
                     System.err.println("❌ Error while preparing next development iteration: " + e.getMessage());
                     e.printStackTrace();
@@ -820,21 +839,8 @@ public class ReleaseNewVersion {
             throw new RuntimeException("❌ Failed to create local tag " + tagName);
         }
 
-        if (pushTag) {
-            // --- Push only when --push-tag is used
-            System.out.println("📤 Running: git push origin " + tagName);
-            ProcessBuilder pushPb = new ProcessBuilder("git", "push", "origin", tagName);
-            pushPb.directory(repoDir.toFile());
-            pushPb.inheritIO();
-            enforceJava8(pushPb);
-            Process pushProc = pushPb.start();
-            if (pushProc.waitFor() != 0) {
-                throw new RuntimeException("❌ Failed to push tag " + tagName);
-            }
-            System.out.println("✅ Tagged and pushed " + tagName + " successfully!");
-        } else {
-            System.out.println("✅ Created local tag " + tagName + " (not pushed)");
-        }
+        System.out.println("✅ Created local tag " + tagName + " (push happens later)");
+        return;   // never push here
     }
 
     private void zipPayload(Path appDir, Path pluginDir, Path outputZip) throws Exception {
