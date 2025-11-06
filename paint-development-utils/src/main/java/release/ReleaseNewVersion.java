@@ -292,27 +292,38 @@ public class ReleaseNewVersion {
 
             // --- Commit updated parent POM version for next development cycle (release builds only) ---
             if (doRelease) {
-                Path parentPom = BASE_PATH.resolve("pom.xml");
-                String nextVersion = versionInfo.nextDevVersion;
+                System.out.println("\n🚀 Preparing next development iteration...");
 
-                // 🔹 Re-apply the parent bump after rollback
-                System.out.println("🔄 Setting parent POM version to " + nextVersion + "...");
-                alignAllPomVersions(nextVersion);
+                try {
+                    // 1️⃣ Roll back all temporary POM modifications
+                    rollbackPomChanges();
+                    System.out.println("🔁 Rolled back temporary version changes.");
 
-                System.out.println("📝 Committing parent POM bump to " + nextVersion + " for continued development...");
-                ProcessBuilder addParent = new ProcessBuilder("git", "add", parentPom.toString());
-                addParent.directory(BASE_PATH.toFile());
-                addParent.inheritIO();
-                addParent.start().waitFor();
+                    // 2️⃣ Compute next snapshot version
+                    String nextSnapshotVersion = versionInfo.nextDevVersion;
+                    System.out.println("🔧 Updating parent POM to next development version: " + nextSnapshotVersion);
 
-                String msg = "Bump parent POM to " + nextVersion + " for next development cycle";
-                ProcessBuilder commitParent = new ProcessBuilder("git", "commit", "-m", msg);
-                commitParent.directory(BASE_PATH.toFile());
-                commitParent.inheritIO();
-                if (commitParent.start().waitFor() == 0) {
-                    System.out.println("✅ Parent POM committed for new development version: " + nextVersion);
-                } else {
-                    System.err.println("⚠️  No parent POM changes to commit.");
+                    // 3️⃣ Apply version bump ONLY to the parent POM
+                    runMaven(Arrays.asList(
+                            "mvn", "-B", "versions:set",
+                            "-DnewVersion=" + nextSnapshotVersion,
+                            "-DgenerateBackupPoms=false",
+                            "-DprocessAllModules=false" // only parent
+                    ), BASE_PATH, "versions:set (parent only)");
+
+                    // 4️⃣ Commit ONLY the parent POM change
+                    System.out.println("💾 Committing parent POM version bump...");
+                    runCommand(Arrays.asList("git", "add", "pom.xml"), BASE_PATH);
+                    runCommand(Arrays.asList("git", "commit", "-m",
+                                             "Bump parent POM to " + nextSnapshotVersion + " for next development cycle"), BASE_PATH);
+
+                    System.out.println("\n✅ Release process complete!");
+                    System.out.println("   🎯 Tagged release: " + versionInfo.releaseVersion);
+                    System.out.println("   🚀 Next development version: " + nextSnapshotVersion);
+
+                } catch (Exception e) {
+                    System.err.println("❌ Error while preparing next development iteration: " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
         }
@@ -887,6 +898,18 @@ public class ReleaseNewVersion {
             System.out.println("✅ Restored all pom.xml files to last committed version.");
         } else {
             System.err.println("⚠️  Rollback failed — please check Git status manually.");
+        }
+    }
+
+    /** Runs a simple shell command in the given directory and waits for completion. */
+    private void runCommand(List<String> cmd, Path dir) throws IOException, InterruptedException {
+        System.out.println("🔧 Running: " + String.join(" ", cmd));
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.directory(dir.toFile());
+        pb.inheritIO();
+        int exit = pb.start().waitFor();
+        if (exit != 0) {
+            throw new RuntimeException("❌ Command failed: " + String.join(" ", cmd));
         }
     }
 
