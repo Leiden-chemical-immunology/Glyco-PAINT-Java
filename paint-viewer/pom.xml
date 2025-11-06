@@ -262,6 +262,26 @@ exec "$JAVA_CMD" -Xmx2G -jar "${project.artifactId}-${project.version}.jar"
                                             <arg value="${project.build.directory}/${app.name}.app.zip"/>
                                             <arg value="${app.bundle}"/>
                                         </exec>
+                                        <exec executable="zip">
+                                            <arg value="-r"/>
+                                            <arg value="${project.build.directory}/${app.name}.app.zip"/>
+                                            <arg value="${app.bundle}"/>
+                                        </exec>
+
+                                        <!-- ✅ INSTALL APP INTO USER APPLICATIONS FOLDER -->
+                                        <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
+                                        <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
+                                        <copy todir="${user.home}/Applications/Glyco-PAINT" failonerror="false" overwrite="true">
+                                            <fileset dir="${project.build.directory}">
+                                                <include name="${app.name}.app/**"/>
+                                            </fileset>
+                                        </copy>
+                                        <exec executable="chmod" failonerror="false">
+                                            <arg value="755"/>
+                                            <arg value="${user.home}/Applications/Glyco-PAINT/${app.name}.app/Contents/MacOS/launch"/>
+                                        </exec>
+                                        <echo message="✅ Installed to ~/Applications/Glyco-PAINT/${app.name}.app"/>\
+
                                     </target>
                                 </configuration>
                             </execution>
