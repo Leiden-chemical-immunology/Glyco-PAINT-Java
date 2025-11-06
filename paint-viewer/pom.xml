@@ -11,7 +11,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-parent</artifactId>
-        <version>0.0.98</version>
+        <version>0.0.99</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>paint-viewer</artifactId>
@@ -27,7 +27,7 @@
     <!-- Application properties -->
     <!-- =============================================================== -->
     <properties>
-        <project.build.outputTimestamp>2025-11-06T07:05:34Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2025-11-06T07:19:23Z</project.build.outputTimestamp>
         <app.name>Viewer</app.name>
         <app.bundle>${project.build.directory}/${app.name}.app</app.bundle>
         <app.icon.macos>${project.basedir}/src/main/resources/icons/paint-viewer.icns</app.icon.macos>
