@@ -89,9 +89,17 @@ public class ReleaseNewVersion {
             "paint-fiji-plugin"
     );
 
-    private static final Path BASE_PATH   = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
-    private static final Path BUILDS_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Builds");
+//    private static final Path BASE_PATH   = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
+//    private static final Path BUILDS_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Builds");
 
+    private static final Path PROJECT_ROOT =
+            Paths.get(System.getProperty("user.dir")).getParent();
+
+    private static final Path BASE_PATH =
+            PROJECT_ROOT.resolve("Glyco-PAINT-Java");
+
+    private static final Path BUILDS_PATH =
+            PROJECT_ROOT.resolve("Glyco-PAINT-Builds");
     /**
      * Ensures Maven runs with Java 8, even if this program itself runs on a newer JDK.
      */
@@ -302,8 +310,8 @@ public class ReleaseNewVersion {
                     }))
                     .orElseThrow(() -> new FileNotFoundException("❌ Windows installer not found"));
 
-            Path macFinal = installerPath.resolve("Glyco-PAINT-Installer-" + versionInfo.releaseVersion + ".jar");
-            Path winFinal = installerPath.resolve("Glyco-PAINT-Installer-" + versionInfo.releaseVersion + ".exe");
+            Path macFinal = installerPath.resolve("Glyco-PAINT-Installer-macOS-" + versionInfo.releaseVersion + ".jar");
+            Path winFinal = installerPath.resolve("Glyco-PAINT-Installer-Windows" + versionInfo.releaseVersion + ".jar");
             Files.copy(macBuilt, macFinal, StandardCopyOption.REPLACE_EXISTING);
             Files.copy(winBuilt, winFinal, StandardCopyOption.REPLACE_EXISTING);
 
@@ -327,7 +335,7 @@ public class ReleaseNewVersion {
 
                     // 3️⃣ Apply version bump ONLY to the parent POM
                     runMaven(Arrays.asList(
-                            "mvn", "-B", "versions:set",
+                            "mvn", "-q",  "-B", "versions:set",
                             "-DnewVersion=" + nextSnapshotVersion,
                             "-DgenerateBackupPoms=false",
                             "-DprocessAllModules=false" // only parent
@@ -408,7 +416,7 @@ public class ReleaseNewVersion {
 
         String localRepo = System.getProperty("user.home") + "/.m2/repository";
         List<String> cmd = Arrays.asList(
-                "mvn", "-U", "clean", "install",
+                "mvn", "-q", "-U", "clean", "install",
                 "-DskipTests",
                 "-Dmaven.repo.local=" + localRepo
         );
@@ -572,7 +580,7 @@ public class ReleaseNewVersion {
 
         // 1️⃣ Set the new version recursively across all modules (even nested)
         runMaven(Arrays.asList(
-                "mvn", "-B", "versions:set",
+                "mvn", "-q", "-B", "versions:set",
                 "-DnewVersion=" + newVersion,
                 "-DgenerateBackupPoms=false",
                 "-DprocessAllModules=true"
@@ -581,12 +589,12 @@ public class ReleaseNewVersion {
         // 2️⃣ Install parent POMs locally so submodules can resolve them
         // Install top-level parent (paint-parent)
         runMaven(Arrays.asList(
-                "mvn", "-B", "-N", "install", "-DskipTests"
+                "mvn", "-q", "-B", "-N", "install", "-DskipTests"
         ), BASE_PATH, "install paint-parent");
 
         // Install installer aggregator (paint-installer)
         runMaven(Arrays.asList(
-                "mvn", "-B", "-N", "install:install-file",
+                "mvn", "-q", "-B", "-N", "install:install-file",
                 "-Dfile=paint-installer/pom.xml",
                 "-DgroupId=com.github.jjabakker",
                 "-DartifactId=paint-installer",
@@ -596,7 +604,7 @@ public class ReleaseNewVersion {
 
         // 3️⃣ Update child module <parent> references to the new version
         runMaven(Arrays.asList(
-                "mvn", "-B", "versions:update-child-modules",
+                "mvn", "-q", "-B", "versions:update-child-modules",
                 "-DforceVersion=true",
                 "-DgenerateBackupPoms=false",
                 "-DprocessAllModules=true"
@@ -715,7 +723,7 @@ public class ReleaseNewVersion {
         }
 
         List<String> cmd = Arrays.asList(
-                "mvn", "-U", "install", "-N", "-DskipTests",
+                "mvn", "-q", "-U", "install", "-N", "-DskipTests",
                 "-Dmaven.repo.local=" + System.getProperty("user.home") + "/.m2/repository"
         );
         System.out.println("🔧 Running: " + String.join(" ", cmd));
@@ -754,7 +762,7 @@ public class ReleaseNewVersion {
         Files.write(tmpPom, content.getBytes("UTF-8"));
 
         List<String> cmd = Arrays.asList(
-                "mvn", "install:install-file",
+                "mvn", "-q", "install:install-file",
                 "-Dfile=" + tmpPom.toAbsolutePath(),
                 "-DgroupId=com.github.jjabakker",
                 "-DartifactId=paint-parent",
@@ -816,7 +824,7 @@ public class ReleaseNewVersion {
 
     private void runMavenModule(String module, String version) throws Exception {
         List<String> cmd = Arrays.asList(
-                "mvn", "-U", "clean", "package",
+                "mvn", "-q", "-U", "clean", "package",
                 "-pl", module, "-am",
                 "-DskipTests",
                 "-Dproject.version=" + version

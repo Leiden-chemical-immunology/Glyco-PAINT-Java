@@ -644,7 +644,7 @@ public class ProjectDialog {
                 PaintLogger.infof("Using Java Swing FileChooser for %s directory...", labelText);
                 // --- Windows/Linux directory chooser ---
                 JFileChooser chooser = new JFileChooser(current);
-                chooser.setDialogTitle("hhhhhhhh Select directory for: " + labelText);
+                chooser.setDialogTitle("Select directory for: " + labelText);
 
                 // This one line must be TRUE for directories to be selectable on Windows
                 chooser.setAcceptAllFileFilterUsed(true);
