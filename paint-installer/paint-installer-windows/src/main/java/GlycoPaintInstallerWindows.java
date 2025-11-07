@@ -13,6 +13,7 @@ public class GlycoPaintInstallerWindows {
 
     private static final String PRODUCT_NAME = "Glyco-PAINT";
     private static final String PAYLOAD_NAME = "/payload.zip";
+
     private static final String[] FIJI_PATHS = {
             System.getenv("ProgramFiles") + "\\Fiji.app",
             System.getenv("ProgramFiles(x86)") + "\\Fiji.app",
@@ -23,6 +24,7 @@ public class GlycoPaintInstallerWindows {
     private final JProgressBar progress;
     private final JTextArea log;
     private final JButton closeButton;
+
     private Path installRoot;
     private String version = "unknown";
 
@@ -30,7 +32,7 @@ public class GlycoPaintInstallerWindows {
         SwingUtilities.invokeLater(() -> new GlycoPaintInstallerWindows().show());
     }
 
-    private GlycoPaintInstallerWindows() {
+    public GlycoPaintInstallerWindows() {
         detectVersion();
 
         frame = new JFrame("Install " + PRODUCT_NAME + " " + version);
@@ -62,15 +64,17 @@ public class GlycoPaintInstallerWindows {
         frame.add(bottomPanel, BorderLayout.SOUTH);
     }
 
-    /** Detect version number from embedded JAR filenames inside payload.zip */
     private void detectVersion() {
         try (InputStream in = getClass().getResourceAsStream(PAYLOAD_NAME);
              ZipInputStream zis = new ZipInputStream(in)) {
+
             ZipEntry entry;
-            Pattern versionPattern = Pattern.compile("paint-[a-zA-Z-]+-([0-9]+\\.[0-9]+(\\.[0-9]+)?)");
+            Pattern versionPattern = Pattern.compile(
+                    "paint-[a-zA-Z-]+-([0-9]+\\.[0-9]+(\\.[0-9]+)?)"
+            );
+
             while ((entry = zis.getNextEntry()) != null) {
-                String name = entry.getName();
-                Matcher m = versionPattern.matcher(name);
+                Matcher m = versionPattern.matcher(entry.getName());
                 if (m.find()) {
                     version = m.group(1);
                     break;
@@ -80,48 +84,47 @@ public class GlycoPaintInstallerWindows {
     }
 
     private void show() {
-        // Default suggestion: ~/Applications/Glyco-PAINT
-        Path defaultDir = Paths.get(System.getProperty("user.home"), "Applications", PRODUCT_NAME);
-        try { Files.createDirectories(defaultDir.getParent()); } catch (IOException ignored) {}
 
-        JFileChooser chooser = new JFileChooser(defaultDir.getParent().toFile());
-        chooser.setDialogTitle("Choose installation location for " + PRODUCT_NAME);
+        // Default parent directory: C:\Users\<name>\Applications
+        Path parentStart = Paths.get(
+                System.getProperty("user.home"), "Applications"
+        );
+        try { Files.createDirectories(parentStart); } catch (IOException ignored) {}
+
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Choose installation parent folder for " + PRODUCT_NAME);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setAcceptAllFileFilterUsed(false);
-        chooser.setSelectedFile(defaultDir.toFile());
+        chooser.setApproveButtonText("Install here");
+        chooser.setCurrentDirectory(parentStart.toFile());
+        chooser.setSelectedFile(parentStart.toFile());
 
-        int result = chooser.showDialog(frame, "Install here");
+        int result = chooser.showOpenDialog(frame);
         if (result != JFileChooser.APPROVE_OPTION) {
             System.exit(0);
             return;
         }
 
-        // --- Determine the actual chosen directory correctly ---
         File selected = chooser.getSelectedFile();
-        File current  = chooser.getCurrentDirectory();
-
-        // If the user created a new directory or typed one manually
-        if (selected == null || !selected.exists()) {
-            selected = current;
+        if (selected == null || !selected.isDirectory()) {
+            selected = chooser.getCurrentDirectory();
         }
 
-        // Make sure we end up with a valid directory
-        if (selected != null && selected.isDirectory()) {
-            installRoot = selected.toPath();
-        } else {
-            installRoot = current.toPath();
-        }
+        Path parent = selected.toPath();
+        installRoot = parent.resolve(PRODUCT_NAME);
 
         log("Selected install root: " + installRoot);
 
         try {
             Files.createDirectories(installRoot);
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(frame,
-                                          "Cannot create installation folder:\n" + installRoot + "\n" + e.getMessage(),
-                                          "Permission error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Cannot create installation folder:\n" + installRoot + "\n" + e,
+                    "Permission error",
+                    JOptionPane.ERROR_MESSAGE
+            );
             System.exit(1);
-            return;
         }
 
         frame.setVisible(true);
@@ -132,22 +135,20 @@ public class GlycoPaintInstallerWindows {
         try {
             SwingUtilities.invokeLater(() -> progress.setVisible(true));
             log("Installing " + PRODUCT_NAME + " " + version + " into: " + installRoot);
-            Files.createDirectories(installRoot);
 
             Path tmpZip = Files.createTempFile("glyco-paint", ".zip");
             Path pluginTemp = Files.createTempDirectory("glyco-paint-plugin");
 
             try (InputStream in = getClass().getResourceAsStream(PAYLOAD_NAME)) {
                 if (in == null)
-                    throw new IOException("Embedded " + PAYLOAD_NAME + " not found in JAR.");
+                    throw new IOException("Embedded " + PAYLOAD_NAME + " not found.");
                 Files.copy(in, tmpZip, StandardCopyOption.REPLACE_EXISTING);
             }
 
-            progress.setIndeterminate(true);
             extractZip(tmpZip, installRoot, pluginTemp);
-            log("");
 
             boolean pluginInstalled = installFijiPlugin(pluginTemp);
+
             Files.deleteIfExists(tmpZip);
 
             if (pluginInstalled) {
@@ -155,18 +156,20 @@ public class GlycoPaintInstallerWindows {
                         .sorted((a, b) -> b.compareTo(a))
                         .forEach(p -> p.toFile().delete());
             } else {
-                Path manualPlugin = installRoot.resolve("plugin");
-                log("⚠️  Fiji.app not found — copying plugin folder for manual installation: " + manualPlugin);
-                copyDirectory(pluginTemp, manualPlugin);
+                Path manual = installRoot.resolve("plugin");
+                log("Fiji.app not found — copying plugin folder: " + manual);
+                copyDirectory(pluginTemp, manual);
             }
 
-            progress.setIndeterminate(false);
-            progress.setVisible(false);
-            SwingUtilities.invokeLater(() -> closeButton.setEnabled(true));
-            log("\nInstallation complete for " + PRODUCT_NAME + " " + version);
+            SwingUtilities.invokeLater(() -> {
+                progress.setVisible(false);
+                closeButton.setEnabled(true);
+            });
+
+            log("\nInstallation complete.");
 
         } catch (Exception e) {
-            log("❌ Installation failed: " + e.getMessage());
+            log("Installation failed: " + e.getMessage());
             SwingUtilities.invokeLater(() -> {
                 progress.setVisible(false);
                 closeButton.setEnabled(true);
@@ -175,91 +178,75 @@ public class GlycoPaintInstallerWindows {
     }
 
     private boolean installFijiPlugin(Path sourceRoot) throws IOException {
+
         Optional<Path> pluginJar = Files.walk(sourceRoot)
-                .filter(p -> p.getFileName().toString().startsWith("paint-fiji-plugin-") && p.toString().endsWith(".jar"))
+                .filter(p -> p.getFileName().toString().startsWith("paint-fiji-plugin-")
+                        && p.toString().endsWith(".jar"))
                 .findFirst();
 
         if (!pluginJar.isPresent()) {
-            log("⚠️  No Fiji plugin JAR found, skipping plugin installation.");
+            log("No Fiji plugin found.");
             return false;
         }
 
         Path jar = pluginJar.get();
-        for (String path : FIJI_PATHS) {
-            if (path == null) continue;
-            Path pluginsDir = Paths.get(path, "plugins");
-            if (Files.isDirectory(pluginsDir)) {
-                log("Found Fiji.app at " + path);
-                Files.createDirectories(pluginsDir);
 
-                Files.list(pluginsDir)
-                        .filter(p -> p.getFileName().toString().startsWith("paint-") && p.toString().endsWith(".jar"))
-                        .forEach(p -> {
-                            try { Files.delete(p); } catch (IOException ignored) {}
-                        });
+        for (String base : FIJI_PATHS) {
+            if (base == null) continue;
 
-                Files.copy(jar, pluginsDir.resolve(jar.getFileName()), StandardCopyOption.REPLACE_EXISTING);
-                log("Installed plugin to " + pluginsDir);
-                return true;
-            }
+            Path pluginsDir = Paths.get(base, "plugins");
+            if (!Files.isDirectory(pluginsDir)) continue;
+
+            log("Found Fiji.app at " + base);
+
+            Files.list(pluginsDir)
+                    .filter(p -> p.getFileName().toString().startsWith("paint-")
+                            && p.toString().endsWith(".jar"))
+                    .forEach(p -> {
+                        try { Files.delete(p); } catch (IOException ignored) {}
+                    });
+
+            Files.copy(jar, pluginsDir.resolve(jar.getFileName()),
+                       StandardCopyOption.REPLACE_EXISTING);
+
+            log("Installed plugin to " + pluginsDir);
+            return true;
         }
-        log("⚠️  No Fiji.app found; plugin not installed.");
-        return false;
-    }
 
-    private void log(String msg) {
-        SwingUtilities.invokeLater(() -> {
-            log.append(msg + "\n");
-            log.setCaretPosition(log.getDocument().getLength());
-        });
+        return false;
     }
 
     private void extractZip(Path zipFile, Path targetDir, Path pluginTemp) throws IOException {
         try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(zipFile))) {
             ZipEntry entry;
             byte[] buf = new byte[8192];
-            boolean pluginAnnounced = false;
-            String currentApp = null;
 
             while ((entry = zis.getNextEntry()) != null) {
                 String name = entry.getName();
 
-                if (name.startsWith("__MACOSX/") || name.endsWith(".DS_Store")) continue;
+                if (name.startsWith("__MACOSX/") || name.endsWith(".DS_Store"))
+                    continue;
 
-                // Handle plugin folder separately
                 if (name.startsWith("plugin/")) {
-                    if (!pluginAnnounced) {
-                        log("Installing Fiji plugin payload...");
-                        pluginAnnounced = true;
-                    }
                     Path out = pluginTemp.resolve(name.substring("plugin/".length()));
-                    if (entry.isDirectory()) {
-                        Files.createDirectories(out);
-                    } else {
-                        Files.createDirectories(out.getParent());
-                        try (OutputStream os = Files.newOutputStream(out)) {
-                            int n;
-                            while ((n = zis.read(buf)) > 0) os.write(buf, 0, n);
-                        }
-                    }
+                    writeZipEntry(zis, buf, entry, out);
                     continue;
                 }
 
-                if (name.matches("^[^/]+\\.exe$")) {
-                    currentApp = name;
-                    log("Installing executable: " + currentApp);
-                }
-
                 Path out = targetDir.resolve(name);
-                if (entry.isDirectory()) {
-                    Files.createDirectories(out);
-                } else {
-                    Files.createDirectories(out.getParent());
-                    try (OutputStream os = Files.newOutputStream(out)) {
-                        int n;
-                        while ((n = zis.read(buf)) > 0) os.write(buf, 0, n);
-                    }
-                }
+                writeZipEntry(zis, buf, entry, out);
+            }
+        }
+    }
+
+    private void writeZipEntry(ZipInputStream zis, byte[] buf, ZipEntry entry, Path out) throws IOException {
+        if (entry.isDirectory()) {
+            Files.createDirectories(out);
+        } else {
+            Files.createDirectories(out.getParent());
+            try (OutputStream os = Files.newOutputStream(out)) {
+                int n;
+                while ((n = zis.read(buf)) > 0) os.write(buf, 0, n);
             }
         }
     }
@@ -274,8 +261,15 @@ public class GlycoPaintInstallerWindows {
                     Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
                 }
             } catch (IOException e) {
-                log("⚠️ Failed to copy " + source + " → " + target + ": " + e.getMessage());
+                log("Failed to copy " + source + " → " + target + ": " + e.getMessage());
             }
+        });
+    }
+
+    private void log(String msg) {
+        SwingUtilities.invokeLater(() -> {
+            log.append(msg + "\n");
+            log.setCaretPosition(log.getDocument().getLength());
         });
     }
 }
