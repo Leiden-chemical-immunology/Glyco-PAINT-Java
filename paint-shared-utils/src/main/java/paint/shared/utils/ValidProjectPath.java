@@ -52,10 +52,12 @@ package paint.shared.utils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
 import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
 
 /**
@@ -114,37 +116,111 @@ public final class ValidProjectPath {
 
         // Validate configuration file presence
         Path confPath = projectPath.resolve(PAINT_CONFIGURATION_JSON);
-        if (!Files.isRegularFile(confPath)) {
-            JOptionPane.showMessageDialog(null,
-                                          "The project folder does not contain:\n" + confPath +
-                                                  "\n\nPlease select a valid project folder.",
-                                          "Invalid Project Path",
-                                          JOptionPane.WARNING_MESSAGE);
+        if (!validateProjectFolder(projectPath)) {
             projectPath = Paths.get(System.getProperty("user.home"));
             needToAsk   = true;
         }
 
         // Ask user to select a valid folder if required
         if (needToAsk) {
+            Path chosen = chooseProjectFolder(projectPath);
+
+            if (chosen == null) {
+                JOptionPane.showMessageDialog(
+                        null,
+                        "No project folder selected.\nExiting.",
+                        "Operation Cancelled",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return null;
+            }
+
+            projectPath = chosen;
+            PaintPrefs.putString("Path", "Project Root", projectPath.toString());
+        }
+        return projectPath;
+    }
+
+    private static boolean validateProjectFolder(Path projectPath) {
+
+        if (projectPath == null) {
+            return false;
+        }
+
+        // Normalise Windows weirdness: trim whitespace, resolve canonical path
+        try {
+            projectPath = projectPath.toRealPath().normalize();
+        } catch (Exception ignored) {
+            projectPath = projectPath.normalize();
+        }
+
+        // Build expected Experiment Info path
+        Path confPath = projectPath.resolve(EXPERIMENT_INFO_CSV);
+
+        // Debugging output for Windows issues
+        System.out.println("=== Project Folder Validation ===");
+        System.out.println("projectPath = [" + projectPath + "]");
+        System.out.println("confPath    = [" + confPath + "]");
+        System.out.println("Exists      = " + Files.exists(confPath));
+        System.out.println("IsRegular   = " + Files.isRegularFile(confPath));
+        System.out.println("=================================");
+
+        // Final decision
+        if (!Files.exists(confPath) || !Files.isRegularFile(confPath)) {
+            JOptionPane.showMessageDialog(
+                    null,
+                    "The project folder does not contain:\n" + confPath +
+                            "\n\nPlease select a valid project folder.",
+                    "Invalid Project Path",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return false;
+        }
+
+        return true;
+    }
+
+    private static Path chooseProjectFolder(Path currentDefault) {
+
+        String os = System.getProperty("os.name").toLowerCase();
+
+        // macOS: use native folder picker
+        if (os.contains("mac")) {
             FileDialog chooser = new FileDialog((Frame) null, "Select Project Folder", FileDialog.LOAD);
+
             System.setProperty("apple.awt.fileDialogForDirectories", "true");
+            chooser.setDirectory(currentDefault.toString());
             chooser.setVisible(true);
             System.clearProperty("apple.awt.fileDialogForDirectories");
 
-            String dir  = chooser.getDirectory();
+            String dir = chooser.getDirectory();
             String file = chooser.getFile();
 
+            // macOS returns folder name in "file"
             if (dir != null && file != null) {
-                projectPath = Paths.get(dir, file);
-                PaintPrefs.putString("Path", "Project Root", projectPath.toString());
-            } else {
-                JOptionPane.showMessageDialog(null,
-                                              "No project folder selected.\nExiting.",
-                                              "Operation Cancelled",
-                                              JOptionPane.ERROR_MESSAGE);
-                return null; // Abort startup
+                return Paths.get(dir, file);
+            }
+
+            // user cancelled
+            return null;
+        }
+
+        // Windows/Linux: **use JFileChooser**, because FileDialog cannot select directories
+        JFileChooser chooser = new JFileChooser(currentDefault.toFile());
+        chooser.setDialogTitle("Select Project Folder");
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setAcceptAllFileFilterUsed(false);
+
+        int result = chooser.showOpenDialog(null);
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selected = chooser.getSelectedFile();
+            if (selected != null && selected.isDirectory()) {
+                return selected.toPath();
             }
         }
-        return projectPath;
+
+        // user cancelled
+        return null;
     }
 }
