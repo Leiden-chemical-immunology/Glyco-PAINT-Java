@@ -621,15 +621,43 @@ public class ProjectDialog {
             if (!current.exists() || !current.isDirectory()) {
                 current = new File(System.getProperty("user.home"));
             }
-            FileDialog dialogChooser = new FileDialog((Frame) null, labelText, FileDialog.LOAD);
-            dialogChooser.setDirectory(current.getAbsolutePath());
-            System.setProperty("apple.awt.fileDialogForDirectories", "true");
-            dialogChooser.setVisible(true);
-            System.clearProperty("apple.awt.fileDialogForDirectories");
-            String dir = dialogChooser.getDirectory();
-            String name = dialogChooser.getFile();
-            if (dir != null && name != null) {
-                onChosen.accept(new File(dir, name));
+
+            boolean isMac = System.getProperty("os.name").toLowerCase().contains("mac");
+
+            if (isMac) {
+                // --- macOS native directory chooser ---
+                FileDialog dialogChooser = new FileDialog((Frame) null, labelText, FileDialog.LOAD);
+                dialogChooser.setDirectory(current.getAbsolutePath());
+                System.setProperty("apple.awt.fileDialogForDirectories", "true");
+                dialogChooser.setVisible(true);
+                System.clearProperty("apple.awt.fileDialogForDirectories");
+
+                String dir = dialogChooser.getDirectory();
+                String name = dialogChooser.getFile();
+                if (dir != null && name != null) {
+                    File chosen = new File(dir, name);
+                    if (chosen.isDirectory()) {
+                        onChosen.accept(chosen);
+                    }
+                }
+            } else {
+                PaintLogger.infof("Using Java Swing FileChooser for %s directory...", labelText);
+                // --- Windows/Linux directory chooser ---
+                JFileChooser chooser = new JFileChooser(current);
+                chooser.setDialogTitle("hhhhhhhh Select directory for: " + labelText);
+
+                // This one line must be TRUE for directories to be selectable on Windows
+                chooser.setAcceptAllFileFilterUsed(true);
+
+                chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+                int result = chooser.showOpenDialog(null);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File chosen = chooser.getSelectedFile();
+                    if (chosen != null && chosen.isDirectory()) {
+                        onChosen.accept(chosen);
+                    }
+                }
             }
         });
 
