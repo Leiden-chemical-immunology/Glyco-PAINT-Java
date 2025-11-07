@@ -1,64 +1,37 @@
 // =================================================================================================
-//  PURPOSE    : Orchestrate full Glyco-PAINT builds, including version bumping,
-//                multi-platform packaging, installer creation, and optional tag pushing.
+//  PURPOSE    : Orchestrate full multi-module Glyco-PAINT builds across macOS and Windows.
+//               Handles version bumping, rebuilding, artifact collection, payload/installer creation,
+//               Fiji plugin packaging, and optional Git tag push for a consistent release output.
 //
 //  DESCRIPTION:
-//     This tool automates the complete build workflow for all Glyco-PAINT Java modules.
-//     It handles version updates, parent POM installation, module rebuilding, cross-platform
-//     packaging, plugin creation, installer payloads, and Git tagging.
+//     ReleaseNewVersion is the single entry-point for building and releasing all Java modules in
+//     the Glyco-PAINT toolchain. It:
+//       • Computes release and next development versions from the parent POM
+//       • Aligns all child modules to a single version
+//       • Rebuilds shared-utils to refresh the local Maven repository
+//       • Builds Windows (.exe) and macOS (.app) deliverables per module
+//       • Packages the Fiji plugin shaded JAR
+//       • Produces installer payload.zip per platform and builds installer JARs
+//       • Bumps back to next -SNAPSHOT and commits
+//       • Creates a local Git tag (and optionally pushes it)
 //
-//     Default behavior (no flags):
-//         • A full release is performed.
-//         • The release version is computed.
-//         • All modules are aligned to the release version.
-//         • All builds (Windows/Mac/plugin/installers) are executed.
-//         • All modules are bumped to the next SNAPSHOT version.
-//         • The release tag is created locally only (not pushed).
-//
-//     When --no-release is provided:
-//         • No release is made.
-//         • No version bumping, installer building, or tagging.
-//         • Only shared-utils is refreshed and parent POM installed as needed.
-//
-//     When --push-tag is provided:
-//         • The locally created release tag is pushed to origin.
-//
-//  EXECUTION FLOW SUMMARY (release mode):
-//     1. Read current SNAPSHOT version from parent POM.
-//     2. Compute release version + next development version.
-//     3. Install parent POM and rebuild paint-shared-utils.
-//     4. Convert all modules from SNAPSHOT → release version.
-//     5. Reinstall parent POM and rebuild shared-utils again.
-//     6. Build all modules for:
-//           • Windows (.exe)
-//           • macOS (.app)
-//     7. Build Fiji plugin shaded JAR.
-//     8. Create payload.zip for each platform.
-//     9. Build macOS and Windows installers.
-//    10. Bump all modules to next SNAPSHOT version.
-//    11. Commit next development version.
-//    12. Create release tag locally.
-//    13. Push tag only when --push-tag is provided.
+//     Two modes are supported:
+//       1) Full release (default): complete end-to-end flow described above
+//       2) No-release (with --no-release): quick iteration without version/tag/installer steps
 //
 //  KEY FEATURES:
-//     • Automatic release versioning
-//     • Next SNAPSHOT version reset
-//     • Optional tag pushing via --push-tag
-//     • Windows + macOS builds for all modules
-//     • Fiji plugin packaging
-//     • Installer payload + installer builds
-//     • Fail-fast behavior with clear logging
+//     • Automatic version computation and bumping
+//     • Multi-module Maven build orchestration
+//     • Windows .exe and macOS .app packaging
+//     • Fiji plugin shaded JAR packaging
+//     • Installer payload + installer JAR generation
+//     • Optional tag push via --push-tag
+//     • Java 8 enforced for Maven execution to ensure compatibility
 //
 //  COMMAND-LINE FLAGS:
-//     -bump <mode>     : Version increment pattern
-//                           0.0.x → patch
-//                           0.x.0 → minor
-//                           x.0.0 → major
-//
-//     --no-release     : Skip the full release sequence
-//                        (no version bumping, no installers, no tag creation)
-//
-//     --push-tag       : Push the release tag to origin after creation
+//     -bump <mode>     : Version increment pattern (0.0.x → patch | 0.x.0 → minor | x.0.0 → major)
+//     --no-release     : Skip version bumping/installer builds/tag creation
+//     --push-tag       : Push the created local release tag to origin
 //
 //  EXAMPLES:
 //     java release.ReleaseNewVersion -bump 0.0.x
@@ -69,7 +42,7 @@
 //  MODULE     : paint-development-utils
 //  UPDATED    : 2025-11-04
 //  COPYRIGHT  : (c) 2025 J.J. Bakker. All rights reserved.
-// ===============================================================================================
+// =================================================================================================
 package release;
 
 import java.io.*;
@@ -79,8 +52,24 @@ import javax.xml.parsers.*;
 
 import org.w3c.dom.*;
 
+/**
+ * Orchestrates the complete Glyco-PAINT release process.
+ * <p>
+ * Responsibilities:
+ * <ul>
+ *   <li>Reads version from the parent POM and computes release/next-dev versions</li>
+ *   <li>Aligns module versions and reinstalls parents so children can resolve them</li>
+ *   <li>Builds Windows/macOS artifacts and the Fiji plugin shaded JAR</li>
+ *   <li>Creates installer payloads and installer JARs</li>
+ *   <li>Bumps back to next development version and commits</li>
+ *   <li>Creates a local Git tag and optionally pushes it</li>
+ * </ul>
+ * This class is Java 8 compatible by design.
+ */
 public class ReleaseNewVersion {
 
+    // List of modules that produce standalone application artifacts.
+    // (Installer and parent modules are handled separately.)
     private static final List<String> MODULES = Arrays.asList(
             "paint-viewer",
             "paint-generate-squares",
@@ -89,19 +78,18 @@ public class ReleaseNewVersion {
             "paint-fiji-plugin"
     );
 
-//    private static final Path BASE_PATH   = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
-//    private static final Path BUILDS_PATH = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Builds");
+    // Resolve project root dynamically based on execution directory.
+    private static final Path PROJECT_ROOT = Paths.get(System.getProperty("user.dir")).getParent();
 
-    private static final Path PROJECT_ROOT =
-            Paths.get(System.getProperty("user.dir")).getParent();
+    // Base source tree containing all Glyco-PAINT Java modules.
+    private static final Path BASE_PATH = PROJECT_ROOT.resolve("Glyco-PAINT-Java");
 
-    private static final Path BASE_PATH =
-            PROJECT_ROOT.resolve("Glyco-PAINT-Java");
-
-    private static final Path BUILDS_PATH =
-            PROJECT_ROOT.resolve("Glyco-PAINT-Builds");
+    // Target directory where final artifacts (.exe, .app, installers) are assembled.
+    private static final Path BUILDS_PATH = PROJECT_ROOT.resolve("Glyco-PAINT-Builds");
     /**
-     * Ensures Maven runs with Java 8, even if this program itself runs on a newer JDK.
+     * Ensures Maven executions run under Java 8 by exporting JAVA_HOME and PATH for the spawned process.
+     * Non-fatal if Java 8 is not available; Maven may then use the default JDK.
+     * @param pb process builder to receive JAVA_HOME/PATH updates
      */
     private static void enforceJava8(ProcessBuilder pb) {
         try {
@@ -122,6 +110,10 @@ public class ReleaseNewVersion {
         }
     }
 
+    /**
+     * CLI entry point. Parses flags, reports chosen mode, and invokes the release pipeline.
+     * Recognized flags: -bump <mode>, --no-release, --push-tag.
+     */
     public static void main(String[] args) {
         try {
             String  bumpFlag  = "0.0.x";
@@ -155,6 +147,13 @@ public class ReleaseNewVersion {
         }
     }
 
+    /**
+     * Runs the full or partial release workflow based on flags.
+     * @param bumpFlag version increment pattern (e.g., 0.0.x)
+     * @param doRelease if false, skips release steps (versions/installer/tag)
+     * @param pushTag if true, pushes the release tag after creation
+     * @throws Exception on any failing sub-step
+     */
     private void run(String bumpFlag, boolean doRelease, boolean pushTag) throws Exception {
         System.out.println("=== Building Glyco-PAINT apps for macOS and Windows ===");
 
@@ -405,7 +404,8 @@ public class ReleaseNewVersion {
     }
 
     /**
-     * Builds and installs {@code paint-shared-utils} locally to ensure all dependencies are current.
+     * Rebuilds and installs paint-shared-utils into the local Maven repository.
+     * Keeps downstream module resolution consistent during version alignment.
      */
     private void rebuildSharedUtils() throws IOException, InterruptedException {
         Path utilsDir = BASE_PATH.resolve("paint-shared-utils");
@@ -436,6 +436,7 @@ public class ReleaseNewVersion {
     // 🔹 Helper classes and methods
     // ======================================================================
 
+    /** Holds the computed release and next development versions. */
     private static class VersionInfo {
         final String releaseVersion, nextDevVersion;
         VersionInfo(String release, String next) {
@@ -444,6 +445,14 @@ public class ReleaseNewVersion {
         }
     }
 
+    /**
+     * Computes the release version (drops -SNAPSHOT) and the next development version (+1 with -SNAPSHOT).
+     * The current implementation increments the last numeric segment regardless of -bump; the bump flag is
+     * reserved for future expansion (major/minor/patch targeting).
+     * @param currentVersion version read from the parent POM (expected to end with -SNAPSHOT)
+     * @param bumpFlag hint for future bump strategy (currently informational)
+     * @return a container with release and next-dev versions
+     */
     private VersionInfo computeVersions(String currentVersion, String bumpFlag) {
         String base = currentVersion.replace("-SNAPSHOT", "").trim();
 
@@ -452,6 +461,7 @@ public class ReleaseNewVersion {
         int lastNum = Integer.parseInt(parts[parts.length - 1]);
 
         int next = lastNum + 1;
+        // Future: honor -bump for major/minor/patch selection; currently increments last segment
 
         String prefix = "";
         if (parts.length > 1) {
@@ -468,8 +478,8 @@ public class ReleaseNewVersion {
     // ======================================================================
 
     /**
-     * Builds a module using a specified Maven profile,
-     * then copies matching artifacts into the output directory.
+     * Builds a module with the given Maven profile and copies matching artifacts to the destination directory.
+     * Uses the global Maven repo (~/.m2/repository) to avoid per-module cache duplication.
      */
     private void buildAndCollect(Path moduleDir, String profile, String glob, Path destDir)
             throws IOException, InterruptedException {
@@ -502,7 +512,7 @@ public class ReleaseNewVersion {
     }
 
     /**
-     * Builds the macOS `.app` bundle version of a module and copies results to destination.
+     * Builds the macOS .app bundle for a module and copies the bundle directory tree to the destination.
      */
     private void buildAndCollectMacApp(Path moduleDir, String profile, Path destDir)
             throws IOException, InterruptedException {
@@ -543,7 +553,9 @@ public class ReleaseNewVersion {
     // 🔹 File Utilities
     // ======================================================================
 
-    /** Copies files from source to destination matching a given glob pattern. */
+    /**
+     * Copies files from a directory that match a glob into the destination directory, replacing on conflict.
+     */
     private void copyMatchingFiles(Path fromDir, String glob, Path destDir) throws IOException {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(fromDir, glob)) {
             for (Path file : stream) {
@@ -553,7 +565,9 @@ public class ReleaseNewVersion {
         }
     }
 
-    /** Recursively copies a directory tree. */
+    /**
+     * Recursively copies a directory tree from source to target, creating directories as needed.
+     */
     private void copyDirectory(Path source, Path target) throws IOException {
         Files.walk(source).forEach(path -> {
             try {
@@ -573,6 +587,10 @@ public class ReleaseNewVersion {
     // 🔹 POM and Git Utilities
     // ======================================================================
 
+    /**
+     * Aligns all project/module POM versions to {@code newVersion} using the Maven Versions Plugin and
+     * reinstalls parent POMs so children can resolve them during the same run.
+     */
     private void alignAllPomVersions(String newVersion) throws IOException, InterruptedException {
         System.out.println("🔄 Aligning all POM versions to " + newVersion + " using Maven Versions Plugin...");
 
@@ -613,6 +631,9 @@ public class ReleaseNewVersion {
         System.out.println("✅ All modules (including nested) now aligned to version " + newVersion);
     }
 
+    /**
+     * Runs a Maven command in the specified directory and fails fast on non-zero exit.
+     */
     private void runMaven(List<String> cmd, Path dir, String label) throws IOException, InterruptedException {
         System.out.println("🔧 Running (" + label + "): " + String.join(" ", cmd));
         ProcessBuilder pb = new ProcessBuilder(cmd);
@@ -623,7 +644,10 @@ public class ReleaseNewVersion {
         }
     }
 
-    /** Extracts the version number from the given pom.xml. */
+    /**
+     * Parses the first <version> element from the given pom.xml.
+     * @return the version text or null if not found or on error
+     */
     private String getVersionFromPom(Path pomPath) {
         try (InputStream    in   = Files.newInputStream(pomPath)) {
             DocumentBuilder b    = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -638,7 +662,10 @@ public class ReleaseNewVersion {
         return null;
     }
 
-    /** Commits only updated pom.xml files to Git. */
+    /**
+     * Commits updated pom.xml files across the repository. No-op if not a Git repository
+     * or if there are no staged changes after adding pom.xml files.
+     */
     private void commitVersionBump(String oldVersion, String newVersion) throws IOException, InterruptedException {
         Path repoDir = BASE_PATH;
         if (!Files.exists(repoDir.resolve(".git"))) {
@@ -696,7 +723,10 @@ public class ReleaseNewVersion {
     // 🔹 Maven Process Helpers
     // ======================================================================
 
-    /** Starts a Maven process and filters its output to suppress noisy warnings. */
+    /**
+     * Starts a process, merges stderr into stdout, and filters noisy warnings from output.
+     * Used for Maven invocations to keep logs readable.
+     */
     private static Process startAndFilterOutput(ProcessBuilder pb, String moduleName) throws IOException {
         pb.redirectErrorStream(true);
         enforceJava8(pb);
@@ -714,7 +744,9 @@ public class ReleaseNewVersion {
         return process;
     }
 
-    /** Installs the current parent POM locally. */
+    /**
+     * Installs the current parent POM (-SNAPSHOT or otherwise) to the local Maven repository.
+     */
     private void installParentPom() throws IOException, InterruptedException {
         Path parentPom = BASE_PATH.resolve("pom.xml");
         System.out.println("\n🧩 Installing parent POM locally...");
@@ -740,9 +772,8 @@ public class ReleaseNewVersion {
     }
 
     /**
-     * Installs the parent POM as a local release version (e.g., 0.0.31)
-     * so that dependent modules can resolve it even when Maven runs offline.
-     * Includes verification and clear logging.
+     * Installs a temporary copy of the parent POM under the given release version so children can resolve
+     * it during the release alignment process.
      */
     private void installParentPomAsRelease(String releaseVersion) throws IOException, InterruptedException {
         Path parentPom = BASE_PATH.resolve("pom.xml");
@@ -752,7 +783,7 @@ public class ReleaseNewVersion {
         }
 
         System.out.println("\n🧩 Installing parent POM as release " + releaseVersion + "...");
-
+        // Create a throwaway POM with only <version> rewritten to install under the release coordinate
         Path tmpPom = Files.createTempFile("parent-release-", ".xml");
         Files.copy(parentPom, tmpPom, StandardCopyOption.REPLACE_EXISTING);
 
@@ -798,6 +829,10 @@ public class ReleaseNewVersion {
     }
 
 
+    /**
+     * Creates/updates the installer payload.zip by zipping the app directory and optionally appending the
+     * plugin subtree under /plugin within the zip archive.
+     */
     private void zipPayload(Path appDir, Path pluginDir, Path outputZip) throws Exception {
         List<String> cmd = new ArrayList<>();
         cmd.addAll(Arrays.asList("zip", "-qry", outputZip.toString(), "."));
@@ -822,6 +857,9 @@ public class ReleaseNewVersion {
         }
     }
 
+    /**
+     * Builds the specified module (and its dependencies) with the provided project version.
+     */
     private void runMavenModule(String module, String version) throws Exception {
         List<String> cmd = Arrays.asList(
                 "mvn", "-q", "-U", "clean", "package",
@@ -836,7 +874,11 @@ public class ReleaseNewVersion {
             throw new RuntimeException("❌ Maven build failed for module: " + module);
         }
     }
-    /** Ensures no POM files still contain "-SNAPSHOT" before release builds. */
+
+
+    /**
+     * Rewrites pom.xml files to strip "-SNAPSHOT" occurrences before release builds.
+     */
     private void removeSnapshotFromAllPoms() throws IOException {
         try (java.util.stream.Stream<Path> files = Files.walk(BASE_PATH)) {
             files.filter(p -> p.getFileName().toString().equals("pom.xml"))
@@ -856,7 +898,9 @@ public class ReleaseNewVersion {
 
     }
 
-    /** Runs a simple shell command in the given directory and waits for completion. */
+    /**
+     * Runs a generic shell command in the given directory, failing fast on non-zero exit.
+     */
     private void runCommand(List<String> cmd, Path dir) throws IOException, InterruptedException {
         System.out.println("🔧 Running: " + String.join(" ", cmd));
         ProcessBuilder pb = new ProcessBuilder(cmd);
