@@ -1,51 +1,75 @@
 // =================================================================================================
-//  PURPOSE    : Automate full version bumping and multi-platform builds for all Glyco-PAINT modules.
+//  PURPOSE    : Orchestrate full Glyco-PAINT builds, including version bumping,
+//                multi-platform packaging, installer creation, and optional tag pushing.
 //
 //  DESCRIPTION:
-//     This utility coordinates the end-to-end build pipeline for all Glyco-PAINT Java modules.
-//     It performs version management, dependency installation, Git commits, and packaging
-//     for both Windows and macOS executables in one run.
+//     This tool automates the complete build workflow for all Glyco-PAINT Java modules.
+//     It handles version updates, parent POM installation, module rebuilding, cross-platform
+//     packaging, plugin creation, installer payloads, and Git tagging.
 //
-//  EXECUTION FLOW SUMMARY:
-//     1. Read current parent POM version (must end with -SNAPSHOT).
-//     2. Compute release and next development versions based on the bump flag.
-//     3. Build and install current SNAPSHOT versions of shared and parent modules.
-//     4. Install the parent POM also as a local release (for dependency resolution).
-//     5. Bump all POM versions across modules and commit to Git.
-//     6. Reinstall the bumped parent POM and rebuild shared-utils.
-//     7. Build each module for both platforms, fail-fast on errors.
-//     8. Copy built executables or app bundles into the organized build directory.
+//     Default behavior (no flags):
+//         • A full release is performed.
+//         • The release version is computed.
+//         • All modules are aligned to the release version.
+//         • All builds (Windows/Mac/plugin/installers) are executed.
+//         • All modules are bumped to the next SNAPSHOT version.
+//         • The release tag is created locally only (not pushed).
+//
+//     When --no-release is provided:
+//         • No release is made.
+//         • No version bumping, installer building, or tagging.
+//         • Only shared-utils is refreshed and parent POM installed as needed.
+//
+//     When --push-tag is provided:
+//         • The locally created release tag is pushed to origin.
+//
+//  EXECUTION FLOW SUMMARY (release mode):
+//     1. Read current SNAPSHOT version from parent POM.
+//     2. Compute release version + next development version.
+//     3. Install parent POM and rebuild paint-shared-utils.
+//     4. Convert all modules from SNAPSHOT → release version.
+//     5. Reinstall parent POM and rebuild shared-utils again.
+//     6. Build all modules for:
+//           • Windows (.exe)
+//           • macOS (.app)
+//     7. Build Fiji plugin shaded JAR.
+//     8. Create payload.zip for each platform.
+//     9. Build macOS and Windows installers.
+//    10. Bump all modules to next SNAPSHOT version.
+//    11. Commit next development version.
+//    12. Create release tag locally.
+//    13. Push tag only when --push-tag is provided.
 //
 //  KEY FEATURES:
-//     • Full automated version bumping and tagging
-//     • Local parent POM release injection for offline builds
-//     • Fail-fast build execution with clear per-module reporting
-//     • Distinct build directories for macOS (.app bundles) and Windows (.exe)
-//     • Git commit integration for version control synchronization
+//     • Automatic release versioning
+//     • Next SNAPSHOT version reset
+//     • Optional tag pushing via --push-tag
+//     • Windows + macOS builds for all modules
+//     • Fiji plugin packaging
+//     • Installer payload + installer builds
+//     • Fail-fast behavior with clear logging
 //
 //  COMMAND-LINE FLAGS:
-//     -bump <mode>     : Defines how to increment the version number.
-//                        Supported values:
-//                           0.0.x → increment patch (e.g., 0.0.26 → 0.0.27)
-//                           0.x.0 → increment minor (e.g., 0.2.9 → 0.3.0)
-//                           x.0.0 → increment major (e.g., 1.9.5 → 2.0.0)
+//     -bump <mode>     : Version increment pattern
+//                           0.0.x → patch
+//                           0.x.0 → minor
+//                           x.0.0 → major
 //
-//     --release        : Performs a full release sequence:
-//                           • Converts SNAPSHOT to release version
-//                           • Builds all modules for both platforms
-//                           • Creates and pushes Git tag (vX.Y.Z)
-//                           • Bumps back to next SNAPSHOT version
+//     --no-release     : Skip the full release sequence
+//                        (no version bumping, no installers, no tag creation)
 //
-//     Example usage:
-//         java utils.BuildAllExecutables -bump 0.0.x --release
-//         java utils.BuildAllExecutables -bump 0.x.0
+//     --push-tag       : Push the release tag to origin after creation
+//
+//  EXAMPLES:
+//     java release.ReleaseNewVersion -bump 0.0.x
+//     java release.ReleaseNewVersion -bump 0.x.0 --push-tag
+//     java release.ReleaseNewVersion -bump x.0.0 --no-release
 //
 //  AUTHOR     : J.J. Bakker
 //  MODULE     : paint-development-utils
 //  UPDATED    : 2025-11-04
 //  COPYRIGHT  : (c) 2025 J.J. Bakker. All rights reserved.
 // ===============================================================================================
-
 package release;
 
 import java.io.*;
