@@ -9,13 +9,13 @@ import java.util.List;
 
 public class BuildSelector {
 
-    private static final Path PROJECT_ROOT = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
+    private static final Path PROJECT_ROOT =
+            Paths.get(System.getProperty("user.dir")).toAbsolutePath();
 
     private JFrame frame;
     private JTextArea log;
     private JButton runBtn, closeBtn;
 
-    // Map deliverable → Maven command + module directory
     private static class Task {
         final String label;
         final Path moduleDir;
@@ -30,23 +30,34 @@ public class BuildSelector {
 
     private final List<Task> tasks = Arrays.asList(
             // macOS apps
-            new Task("Viewer.app", "paint-viewer", "mvn", "-q", "-U", "clean", "package", "-P", "macos-appbundle"),
-            new Task("Generate Squares.app", "paint-generate-squares", "mvn", "-q", "-U", "clean", "package", "-P", "macos-appbundle"),
-            new Task("Create Experiment.app", "paint-create-experiment", "mvn", "-q", "-U", "clean", "package", "-P", "macos-appbundle"),
-            new Task("Get Omero.app", "paint-get-omero", "mvn", "-q", "-U", "clean", "package", "-P", "macos-appbundle"),
+            new Task("Viewer.app", "paint-viewer",
+                     "mvn", "-q", "-U", "clean", "package", "-P", "macos-appbundle"),
+
+            new Task("Generate Squares.app", "paint-generate-squares",
+                     "mvn", "-q", "-U", "clean", "package", "-P", "macos-appbundle"),
+
+            new Task("Create Experiment.app", "paint-create-experiment",
+                     "mvn", "-q", "-U", "clean", "package", "-P", "macos-appbundle"),
+
+            new Task("Get Omero.app", "paint-get-omero",
+                     "mvn", "-q", "-U", "clean", "package", "-P", "macos-appbundle"),
 
             // Windows apps
-            new Task("Viewer.exe", "paint-viewer", "mvn", "-q", "-U", "clean", "package", "-P", "windows-exe"),
-            new Task("Generate Squares.exe", "paint-generate-squares", "mvn", "-q", "-U", "clean", "package", "-P", "windows-exe"),
-            new Task("Create Experiment.exe", "paint-create-experiment", "mvn", "-q", "-U", "clean", "package", "-P", "windows-exe"),
-            new Task("Get Omero.exe", "paint-get-omero", "mvn", "-q", "-U", "clean", "package", "-P", "windows-exe"),
+            new Task("Viewer.exe", "paint-viewer",
+                     "mvn", "-q", "-U", "clean", "package", "-P", "windows-exe"),
 
-            // Plugin
-            new Task("Fiji Plugin (shaded JAR)", "paint-fiji-plugin", "mvn", "-q", "-U", "clean", "package"),
+            new Task("Generate Squares.exe", "paint-generate-squares",
+                     "mvn", "-q", "-U", "clean", "package", "-P", "windows-exe"),
 
-            // Installers
-            new Task("macOS Installer", "paint-installer/paint-installer-macos", "mvn", "-q", "-U", "clean", "package"),
-            new Task("Windows Installer", "paint-installer/paint-installer-windows", "mvn", "-q", "-U", "clean", "package")
+            new Task("Create Experiment.exe", "paint-create-experiment",
+                     "mvn", "-q", "-U", "clean", "package", "-P", "windows-exe"),
+
+            new Task("Get Omero.exe", "paint-get-omero",
+                     "mvn", "-q", "-U", "clean", "package", "-P", "windows-exe"),
+
+            // Fiji plugin
+            new Task("Fiji Plugin (shaded JAR)", "paint-fiji-plugin",
+                     "mvn", "-q", "-U", "clean", "install")
     );
 
     private final Map<Task, JCheckBox> boxes = new LinkedHashMap<>();
@@ -58,12 +69,12 @@ public class BuildSelector {
     private void show() {
         frame = new JFrame("Glyco-PAINT – Deliverables Builder");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(900, 520);
+        frame.setSize(700, 800);
         frame.setLocationRelativeTo(null);
         frame.setLayout(new BorderLayout(10, 10));
 
         JPanel north = new JPanel();
-        north.setBorder(BorderFactory.createEmptyBorder(10,10,0,10));
+        north.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
         north.setLayout(new BoxLayout(north, BoxLayout.Y_AXIS));
 
         addSection(north, "macOS Applications");
@@ -75,18 +86,13 @@ public class BuildSelector {
         addSection(north, "Plugin");
         addBoxes(north, 8, 9);
 
-        addSection(north, "Installers");
-        addBoxes(north, 9, 11);
-
         frame.add(north, BorderLayout.NORTH);
 
-        // Center log
         log = new JTextArea();
         log.setEditable(false);
         log.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         frame.add(new JScrollPane(log), BorderLayout.CENTER);
 
-        // Buttons bottom
         JPanel south = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         closeBtn = new JButton("Close");
         runBtn = new JButton("Generate");
@@ -104,7 +110,7 @@ public class BuildSelector {
 
     private void addSection(JPanel parent, String title) {
         JPanel spacer = new JPanel();
-        spacer.setPreferredSize(new Dimension(1, 20));  // <<< extra space between groups
+        spacer.setPreferredSize(new Dimension(1, 20));
         spacer.setOpaque(false);
         parent.add(spacer);
 
@@ -116,7 +122,7 @@ public class BuildSelector {
     private void addBoxes(JPanel parent, int from, int to) {
         JPanel boxPanel = new JPanel();
         boxPanel.setLayout(new BoxLayout(boxPanel, BoxLayout.Y_AXIS));
-        boxPanel.setBorder(BorderFactory.createEmptyBorder(5, 20, 5, 0)); // indent group items neatly
+        boxPanel.setBorder(BorderFactory.createEmptyBorder(5, 20, 5, 0));
 
         for (int i = from; i < to; i++) {
             Task t = tasks.get(i);
@@ -133,14 +139,19 @@ public class BuildSelector {
 
         new Thread(() -> {
             try {
-                append("=== Running selected deliverable builds ===\n");
+                append("=== Installing shared utils first ===");
+                runSharedUtils();
+
+                append("\n=== Running selected builds ===\n");
 
                 for (Task t : boxes.keySet()) {
-                    if (!boxes.get(t).isSelected()) continue;
+                    if (!boxes.get(t).isSelected()) {
+                        continue;
+                    }
                     runTask(t);
                 }
 
-                append("\n✅ Done.\n");
+                append("\n✅ Finished all selected builds.\n");
 
             } catch (Exception ex) {
                 append("\n❌ " + ex.getMessage());
@@ -148,6 +159,37 @@ public class BuildSelector {
                 SwingUtilities.invokeLater(() -> runBtn.setEnabled(true));
             }
         }).start();
+    }
+
+    private void runSharedUtils() throws IOException, InterruptedException {
+        Path utilsDir = PROJECT_ROOT.resolve("paint-shared-utils");
+        append("→ Building paint-shared-utils (installing into local repo)");
+        append("  Dir: " + utilsDir);
+
+        List<String> cmd = Arrays.asList(
+                "mvn", "-q", "-U", "clean", "install", "-DskipTests"
+        );
+
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.directory(utilsDir.toFile());
+        pb.redirectErrorStream(true);
+
+        Process p = pb.start();
+        try (BufferedReader r =
+                     new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+
+            String line;
+            while ((line = r.readLine()) != null) {
+                append("[paint-shared-utils] " + line);
+            }
+        }
+
+        int exit = p.waitFor();
+        if (exit != 0) {
+            throw new IOException("Failed building paint-shared-utils (exit " + exit + ")");
+        }
+
+        append("✅ Installed paint-shared-utils\n");
     }
 
     private void runTask(Task t) throws IOException, InterruptedException {
@@ -160,16 +202,23 @@ public class BuildSelector {
         pb.redirectErrorStream(true);
 
         Process p = pb.start();
-        try (BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+        try (BufferedReader r =
+                     new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+
             String line;
             while ((line = r.readLine()) != null) {
-                if (line.contains("sun.misc.Unsafe") || line.contains("HiddenClassDefiner")) continue;
+                if (line.contains("sun.misc.Unsafe") || line.contains("HiddenClassDefiner")) {
+                    continue;
+                }
                 append("[" + t.moduleDir.getFileName() + "] " + line);
             }
         }
 
         int exit = p.waitFor();
-        if (exit != 0) throw new IOException("Failed building " + t.label + " (exit " + exit + ")");
+        if (exit != 0) {
+            throw new IOException("Failed building " + t.label + " (exit " + exit + ")");
+        }
+
         append("✅ Built " + t.label + "\n");
     }
 
