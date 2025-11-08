@@ -25,6 +25,13 @@
         <exe.name>Glyco-PAINT-Installer</exe.name>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-shared-utils</artifactId>
+        </dependency>
+    </dependencies>
+
     <build>
         <resources>
             <resource>
