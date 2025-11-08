@@ -22,8 +22,13 @@ jobs:
           distribution: zulu
           java-version: 8
 
+      # ✅ Build all modules and install them locally
+      - name: Build full project
+        run: mvn -B -U -DskipTests install
+
+      # ✅ Now JavaDoc can be resolved correctly
       - name: Build JavaDoc for all modules
-        run: mvn -B -q javadoc:javadoc javadoc:aggregate -DskipTests
+        run: mvn -B javadoc:javadoc javadoc:aggregate
 
       - name: Deploy JavaDoc to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
