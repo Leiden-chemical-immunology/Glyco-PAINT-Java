@@ -63,6 +63,7 @@ import paint.viewer.utils.TiffMoviePlayer;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -329,6 +330,12 @@ public class ViewerFrame extends JFrame
             exportLeftGridPanelAsImage(exportPath, 2.0); // 2× resolution, RGB PNG
         }
     }
+
+    @Override
+    public void onShowSquaresRequested() {
+        openSquaresCsvInDesktop();
+    }
+
     // =========================================================================================
     // FILTER AND CONTROL REQUEST HANDLERS
     // =========================================================================================
@@ -765,6 +772,45 @@ public class ViewerFrame extends JFrame
             JOptionPane.showMessageDialog(this,
                                           "Error exporting image: " + ex.getMessage(),
                                           "Export Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void openSquaresCsvInDesktop() {
+        try {
+
+            String experimentName = this.allRecordingEntries.get(currentIndex).getExperimentName();
+
+            Path squaresFile = project.getProjectRootPath().resolve(experimentName).resolve("squares.csv");
+
+            if (!Files.exists(squaresFile)) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Squares.csv not found:\n" + squaresFile,
+                        "File not found",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return;
+            }
+
+            if (!Desktop.isDesktopSupported()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Desktop integration is not supported on this system.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return;
+            }
+
+            Desktop.getDesktop().open(squaresFile.toFile());
+
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Cannot open Squares CSV:\n" + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 }

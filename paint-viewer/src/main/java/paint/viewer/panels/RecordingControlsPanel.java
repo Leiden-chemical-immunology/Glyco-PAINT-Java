@@ -56,9 +56,8 @@ public class RecordingControlsPanel {
         void onSelectSquaresRequested();
         void onAssignCellsRequested();
         void onPlayRecordingRequested();
-
-        // NEW: export the left grid (image + overlay)
         void onExportLeftImageRequested();
+        void onShowSquaresRequested();
 
         void onBordersToggled(boolean showBorders);
         void onShadingToggled(boolean showShading);
@@ -72,6 +71,7 @@ public class RecordingControlsPanel {
     private       JButton assignCellsButton;
     private       JButton playRecordingButton;
     private       JButton exportImageButton;
+    private       JButton showSquaresButton;
 
     /**
      * Constructs a {@code RecordingControlsPanel} providing buttons, checkboxes,
@@ -97,10 +97,18 @@ public class RecordingControlsPanel {
         assignCellsButton      = new JButton("Assign Cells");
         playRecordingButton    = new JButton("Play Recording");
         exportImageButton      = new JButton("Export Image");
+        showSquaresButton      = new JButton("Show Squares");
 
-        for (JButton b : new JButton[]{filterRecordingsButton, selectSquaresButton, assignCellsButton, playRecordingButton, exportImageButton}) {
+        for (JButton b : new JButton[]{
+                filterRecordingsButton,
+                selectSquaresButton,
+                assignCellsButton,
+                playRecordingButton,
+                exportImageButton,
+                showSquaresButton
+        }) {
             b.setAlignmentX(Component.CENTER_ALIGNMENT);
-            b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28)); // stretch horizontally; equal width
+            b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
         }
 
         JPanel controls = new JPanel();
@@ -118,6 +126,8 @@ public class RecordingControlsPanel {
         controls.add(playRecordingButton);
         controls.add(Box.createVerticalStrut(10));
         controls.add(exportImageButton);
+        controls.add(Box.createVerticalStrut(10));
+        controls.add(showSquaresButton);
 
         // === Borders and shading toggles ===
         JCheckBox showBorders = new JCheckBox("Show borders", true);
@@ -159,6 +169,7 @@ public class RecordingControlsPanel {
         assignCellsButton.addActionListener(     e -> listener.onAssignCellsRequested());
         playRecordingButton.addActionListener(   e -> listener.onPlayRecordingRequested());
         exportImageButton.addActionListener(     e -> listener.onExportLeftImageRequested());
+        showSquaresButton.addActionListener(     e -> listener.onShowSquaresRequested());
 
         showBorders.addActionListener(           e -> listener.onBordersToggled(showBorders.isSelected()));
         showShading.addActionListener(           e -> listener.onShadingToggled(showShading.isSelected()));
