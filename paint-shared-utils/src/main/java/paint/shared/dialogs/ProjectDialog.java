@@ -542,7 +542,11 @@ public class ProjectDialog {
 
                     if (callbackSuccess) {
                         okButton.setText("Completed");
-                        okButton.setEnabled(false);
+                        if (mode == DialogMode.VIEWER) {
+                            okButton.setEnabled(true);
+                        } else {
+                            okButton.setEnabled(false);
+                        }
                         PaintLogger.blankline();
                         PaintLogger.infof("Operation completed successfully.");
                         new javax.swing.Timer(1500, evt -> okButton.setText("OK")).start();
@@ -710,11 +714,15 @@ public class ProjectDialog {
             return;
         }
 
-        boolean anySelected = checkBoxes.stream().anyMatch(JCheckBox::isSelected);
-
         File proj = new File(projectRootField.getText().trim());
         boolean projectValid = proj.isDirectory();
 
+        if (mode == DialogMode.VIEWER) {
+            okButton.setEnabled(projectValid);
+            return;
+        }
+
+        boolean anySelected = checkBoxes.stream().anyMatch(JCheckBox::isSelected);
         okButton.setEnabled(anySelected && projectValid);
     }
 
