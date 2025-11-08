@@ -1,4 +1,4 @@
-name: Publish JavaDoc
+name: Publish Maven Site
 
 on:
   push:
@@ -22,27 +22,16 @@ jobs:
           distribution: zulu
           java-version: 8
 
-      - name: Build full project
-        run: mvn -B -U -DskipTests install
-
-      - name: Prepare combined JavaDoc output
+      - name: Build full site (includes aggregated JavaDoc)
         run: |
-          mkdir -p combined-apidocs
+          mvn -B -U -DskipTests clean install
+          mvn -B -U -DskipTests site:aggregate
+          mvn -B -U -DskipTests site:stage
 
-          for module in paint-viewer paint-generate-squares paint-get-omero paint-shared-utils paint-fiji-plugin; do
-            SRC="$module/target/reports/apidocs"
-            if [ -d "$SRC" ]; then
-              mkdir -p combined-apidocs/$module
-              cp -R "$SRC/"* combined-apidocs/$module/
-            else
-              echo "Warning: No apidocs found for $module"
-            fi
-          done
-
-      - name: Deploy JavaDoc to gh-pages branch
+      - name: Deploy staged site to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: combined-apidocs
+          publish_dir: target/staging
           keep_files: false
           force_orphan: true

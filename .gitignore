@@ -73,3 +73,6 @@ payload.zip
 *.jar
 *.pdf
 
+
+./idea/
+
