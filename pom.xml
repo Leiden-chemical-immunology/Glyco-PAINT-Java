@@ -7,7 +7,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jjabakker</groupId>
     <artifactId>paint-parent</artifactId>
-    <version>0.0.122-SNAPSHOT</version>
+    <version>0.0.123-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Paint Parent</name>
     <description>Parent POM for Paint projects</description>
