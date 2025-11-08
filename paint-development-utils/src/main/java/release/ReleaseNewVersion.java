@@ -116,27 +116,47 @@ public class ReleaseNewVersion {
      */
     public static void main(String[] args) {
         try {
-            String  bumpFlag  = "0.0.x";
+            String  bumpFlag  = null;
             boolean doRelease = true;
             boolean pushTag   = false;
 
+            if (args.length == 0) {
+                System.out.println("ℹ️  No options specified.");
+                System.out.println("   • No version bump will be performed.");
+                System.out.println("   • A release WILL be created.");
+                System.out.println("   • Tags will NOT be pushed.");
+                System.out.println();
+            }
+
             for (int i = 0; i < args.length; i++) {
-                if (args[i].equalsIgnoreCase("-bump") && i + 1 < args.length) {
-                    bumpFlag = args[i + 1];
-                    i++;
-                } else if (args[i].equalsIgnoreCase("--no-release")) {
+                String arg = args[i];
+
+                if (arg.equalsIgnoreCase("-bump")) {
+                    if (i + 1 >= args.length) {
+                        abort("Missing version after -bump");
+                    }
+                    bumpFlag = args[++i]; // read version
+                    if (!isValidBump(bumpFlag)) {
+                        abort("Invalid bump value: " + bumpFlag);
+                    }
+
+                } else if (arg.equalsIgnoreCase("--no-release")) {
                     doRelease = false;
-                } else if (args[i].equalsIgnoreCase("--push-tag")) {
+
+                } else if (arg.equalsIgnoreCase("--push-tag")) {
                     pushTag = true;
+
+                } else {
+                    abort("Unknown option: " + arg);
                 }
             }
 
-            if (pushTag) {
-                System.out.println("🚀 Tags will be pushed to GitHub");
-            }
-            if (doRelease) {
-                System.out.println("🚀 A release will be made");
-            }
+            // Status summary
+            System.out.println("✅ Effective configuration:");
+            System.out.println("   bump      : " + (bumpFlag == null ? "none" : bumpFlag));
+            System.out.println("   release   : " + (doRelease ? "yes" : "no"));
+            System.out.println("   push tag  : " + (pushTag   ? "yes" : "no"));
+            System.out.println();
 
             new ReleaseNewVersion().run(bumpFlag, doRelease, pushTag);
 
@@ -145,6 +165,31 @@ public class ReleaseNewVersion {
             e.printStackTrace();
             System.exit(1);
         }
+    }
+
+    // Accepts: major, minor, patch, or explicit version like 1.4.2
+    private static boolean isValidBump(String s) {
+        return s.matches("^(major|minor|patch|[0-9]+\\.[0-9]+\\.[0-9]+)$");
+    }
+
+    /** Prints error + usage, then aborts */
+    private static void abort(String message) {
+        System.err.println("❌ " + message);
+        System.err.println();
+        System.err.println("Usage:");
+        System.err.println("  java -jar release-tool.jar [options]");
+        System.err.println();
+        System.err.println("Options:");
+        System.err.println("  -bump <major|minor|patch|X.Y.Z>   Bump version or set explicitly");
+        System.err.println("  --no-release                      Do not perform a release");
+        System.err.println("  --push-tag                        Push tags after release");
+        System.err.println();
+        System.err.println("Examples:");
+        System.err.println("  -bump patch");
+        System.err.println("  -bump 1.4.0");
+        System.err.println("  -bump minor --no-release");
+        System.err.println();
+        System.exit(1);
     }
 
     /**
