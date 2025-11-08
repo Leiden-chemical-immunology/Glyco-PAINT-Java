@@ -202,6 +202,7 @@ public class GlycoPaintInstallerMac {
 
             progress.setVisible(false);
             SwingUtilities.invokeLater(() -> closeButton.setEnabled(true));
+            log("");
             log("Installation complete for " + PRODUCT_NAME + " " + version);
 
         } catch (Exception e) {
@@ -214,6 +215,7 @@ public class GlycoPaintInstallerMac {
     }
 
     private boolean installFijiPlugin(Path sourceRoot) throws IOException {
+
         Optional<Path> pluginJar = Files.walk(sourceRoot)
                 .filter(p -> p.getFileName().toString().startsWith("paint-fiji-plugin-")
                         && p.toString().endsWith(".jar"))
@@ -227,23 +229,30 @@ public class GlycoPaintInstallerMac {
         Path jar = pluginJar.get();
         String savedFiji = PaintPrefs.getString("Installer", "Fiji Dir", null);
 
+        // ✅ First try the saved Fiji path
         if (savedFiji != null) {
             Path savedPluginsDir = Paths.get(savedFiji, "plugins");
             if (Files.isDirectory(savedPluginsDir)) {
                 log("Found saved Fiji path: " + savedFiji);
                 installJarIntoFijiDir(jar, savedPluginsDir);
+
+                // ✅ SAVE IT AGAIN (your requested change)
                 PaintPrefs.putString("Installer", "Fiji Dir", savedFiji);
+
                 return true;
             } else {
                 log("Saved Fiji path invalid: " + savedFiji);
             }
         }
 
+        // ✅ Otherwise search standard macOS paths
         for (String path : FIJI_PATHS) {
             Path pluginsDir = Paths.get(path, "plugins");
             if (Files.isDirectory(pluginsDir)) {
                 log("Found Fiji.app at " + path);
                 installJarIntoFijiDir(jar, pluginsDir);
+
+                // ✅ Save for next run (already present before)
                 PaintPrefs.putString("Installer", "Fiji Dir", path);
                 return true;
             }
