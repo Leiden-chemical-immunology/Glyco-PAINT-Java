@@ -64,6 +64,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -333,7 +335,7 @@ public class ViewerFrame extends JFrame
 
     @Override
     public void onShowSquaresRequested() {
-        openSquaresCsvInDesktop();
+        openSquaresForCurrentRecording();
     }
 
     // =========================================================================================
@@ -775,42 +777,64 @@ public class ViewerFrame extends JFrame
         }
     }
 
-    private void openSquaresCsvInDesktop() {
+    private void openSquaresForCurrentRecording() {
         try {
-
-            String experimentName = this.allRecordingEntries.get(currentIndex).getExperimentName();
-
-            Path squaresFile = project.getProjectRootPath().resolve(experimentName).resolve("squares.csv");
-
-            if (!Files.exists(squaresFile)) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Squares.csv not found:\n" + squaresFile,
-                        "File not found",
-                        JOptionPane.ERROR_MESSAGE
-                );
+            String experimentName  = allRecordingEntries.get(currentIndex).getExperimentName();
+            String recordingName   = allRecordingEntries.get(currentIndex).getRecordingName();
+            Path origCsv           = project.getProjectRootPath()
+                    .resolve(experimentName)
+                    .resolve("squares.csv");
+            if (!Files.exists(origCsv)) {
+                JOptionPane.showMessageDialog(this,
+                                              "Squares.csv not found:\n" + origCsv,
+                                              "File not found",
+                                              JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            if (!Desktop.isDesktopSupported()) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Desktop integration is not supported on this system.",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-                return;
+            // Create temp file
+            Path temp = Files.createTempFile("Squares " + recordingName + " - temp label -", ".csv");
+            try (BufferedReader r = Files.newBufferedReader(origCsv);
+                 BufferedWriter w = Files.newBufferedWriter(temp)) {
+                String header = r.readLine();
+                if (header == null) {
+                    JOptionPane.showMessageDialog(this,
+                                                  "Empty squares CSV: " + origCsv,
+                                                  "Error",
+                                                  JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                w.write(header);
+                w.newLine();
+
+                String line;
+                // Assume there’s a column “RecordingName” you can match; adjust as necessary
+                while ((line = r.readLine()) != null) {
+                    if (line.contains(recordingName)) {
+                        w.write(line);
+                        w.newLine();
+                    }
+                }
             }
 
-            Desktop.getDesktop().open(squaresFile.toFile());
+            // Mark read-only
+            temp.toFile().setReadOnly();
+
+            // Open
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(temp.toFile());
+            } else {
+                JOptionPane.showMessageDialog(this,
+                                              "Desktop integration not supported on this system.",
+                                              "Error",
+                                              JOptionPane.ERROR_MESSAGE);
+            }
 
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Cannot open Squares CSV:\n" + ex.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+            JOptionPane.showMessageDialog(this,
+                                          "Cannot open filtered Squares CSV:\n" + ex.getMessage(),
+                                          "Error",
+                                          JOptionPane.ERROR_MESSAGE);
         }
     }
 }
