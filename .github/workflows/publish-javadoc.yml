@@ -22,16 +22,13 @@ jobs:
           distribution: zulu
           java-version: 8
 
-      - name: Build full site (includes aggregated JavaDoc)
-        run: |
-          mvn -B -U -DskipTests clean install
-          mvn -B -U -DskipTests site:aggregate
-          mvn -B -U -DskipTests site:stage
+      - name: Build Maven site (includes aggregated JavaDoc)
+        run: mvn -B -U -DskipTests site
 
-      - name: Deploy staged site to gh-pages
+      - name: Deploy Maven site to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: target/staging
+          publish_dir: target/site
           keep_files: false
           force_orphan: true
