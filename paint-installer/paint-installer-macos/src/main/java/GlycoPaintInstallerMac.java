@@ -79,80 +79,102 @@ public class GlycoPaintInstallerMac {
     }
 
     private void show() {
-        // Remembered parent folder (not the Glyco-PAINT folder itself)
+
         String savedParent = PaintPrefs.getString(
                 "Installer", "InstallDirParent",
                 System.getProperty("user.home") + "/Applications"
         );
-        Path parentStart = Paths.get(savedParent);
-        try { Files.createDirectories(parentStart); } catch (IOException ignored) {}
 
-        File chosenDir = null;
+        Path parent = Paths.get(savedParent);               // e.g. /Users/hans/Downloads
+        Path defaultInstallParent = parent;                 // show EXACTLY what user picked last time
 
-        // Prefer native macOS folder picker
-        if (System.getProperty("os.name", "").toLowerCase().contains("mac")) {
-            System.setProperty("apple.awt.fileDialogForDirectories", "true");
-            System.setProperty("apple.awt.fileDialogOpenButtonText", "Install here");
+        try { Files.createDirectories(parent); } catch (IOException ignored) {}
 
-            FileDialog fd = new FileDialog(frame, "Choose installation parent folder for " + PRODUCT_NAME, FileDialog.LOAD);
-            fd.setDirectory(parentStart.toFile().getAbsolutePath());
-            fd.setVisible(true);
-            // On success, getDirectory() + getFile() combine to the picked folder
-            if (fd.getDirectory() != null && fd.getFile() != null) {
-                chosenDir = new File(fd.getDirectory(), fd.getFile());
-            }
-            System.setProperty("apple.awt.fileDialogForDirectories", "false");
-        }
+        // Main panel
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        frame.add(panel, BorderLayout.NORTH);
 
-        // Fallback for non-Mac (or if user cancelled the native dialog)
-        if (chosenDir == null) {
+        // Top row: install directory + browse
+        JPanel dirPanel = new JPanel(new BorderLayout(5, 0));
+        JLabel dirLabel = new JLabel("Install location:");
+
+        JTextField dirField = new JTextField(defaultInstallParent.toString());
+        JButton browseButton = new JButton("Browse…");
+
+        dirPanel.add(dirLabel, BorderLayout.WEST);
+        dirPanel.add(dirField, BorderLayout.CENTER);
+        dirPanel.add(browseButton, BorderLayout.EAST);
+
+        panel.add(dirPanel, BorderLayout.NORTH);
+
+        // Buttons panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
+        JButton installButton = new JButton("Install");
+        JButton cancelButton = new JButton("Cancel");
+
+        buttonPanel.add(cancelButton);
+        buttonPanel.add(installButton);
+
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Enable choosing install directory
+        browseButton.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();
-            chooser.setDialogTitle("Choose installation parent folder for " + PRODUCT_NAME);
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             chooser.setAcceptAllFileFilterUsed(false);
-            chooser.setApproveButtonText("Install here");
-            chooser.setCurrentDirectory(parentStart.toFile()); // just open here
-            int result = chooser.showDialog(frame, "Install here");
-            if (result != JFileChooser.APPROVE_OPTION) {
-                System.exit(0);
+            chooser.setDialogTitle("Choose installation folder");
+            chooser.setCurrentDirectory(parent.toFile());
+
+            int result = chooser.showOpenDialog(frame);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File f = chooser.getSelectedFile();
+                if (f != null && f.isDirectory()) {
+                    dirField.setText(f.getAbsolutePath());
+                }
+            }
+        });
+
+        // Cancel button action
+        cancelButton.addActionListener(e -> System.exit(0));
+
+        // Install button action
+        installButton.addActionListener(e -> {
+            Path chosen = Paths.get(dirField.getText());
+
+            installRoot = chosen.resolve(PRODUCT_NAME);
+
+            PaintPrefs.putString("Installer", "InstallDirParent", chosen.toString());
+            // log("Selected install root: " + installRoot);
+
+            try {
+                Files.createDirectories(installRoot);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Cannot create installation folder:\n" + installRoot + "\n" + ex.getMessage(),
+                        "Permission error",
+                        JOptionPane.ERROR_MESSAGE
+                );
                 return;
             }
-            chosenDir = chooser.getSelectedFile();
-            if (chosenDir == null || !chosenDir.isDirectory()) {
-                chosenDir = chooser.getCurrentDirectory();
-            }
-        }
 
-        // Always install into <chosen>/Glyco-PAINT
-        Path parent = chosenDir.toPath();
-        installRoot = parent.resolve(PRODUCT_NAME);
+            installButton.setEnabled(false);
+            cancelButton.setEnabled(false);
+            browseButton.setEnabled(false);
+            dirField.setEnabled(false);
 
-        // Persist the parent folder for next run
-        PaintPrefs.putString("Installer", "InstallDirParent", parent.toString());
-
-        log("Selected install root: " + installRoot);
-
-        try {
-            Files.createDirectories(installRoot);
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(
-                    frame,
-                    "Cannot create installation folder:\n" + installRoot + "\n" + e.getMessage(),
-                    "Permission error",
-                    JOptionPane.ERROR_MESSAGE
-            );
-            System.exit(1);
-            return;
-        }
+            Executors.newSingleThreadExecutor().submit(this::runInstaller);
+        });
 
         frame.setVisible(true);
-        Executors.newSingleThreadExecutor().submit(this::runInstaller);
     }
-
     private void runInstaller() {
         try {
             SwingUtilities.invokeLater(() -> progress.setVisible(true));
             log("Installing " + PRODUCT_NAME + " " + version + " into: " + installRoot);
+            log("");
 
             Path tmpZip = Files.createTempFile("glyco-paint", ".zip");
             Path pluginTemp = Files.createTempDirectory("glyco-paint-plugin");
@@ -181,6 +203,7 @@ public class GlycoPaintInstallerMac {
 
             progress.setVisible(false);
             SwingUtilities.invokeLater(() -> closeButton.setEnabled(true));
+            log("");
             log("Installation complete for " + PRODUCT_NAME + " " + version);
 
         } catch (Exception e) {
@@ -278,11 +301,14 @@ public class GlycoPaintInstallerMac {
             boolean pluginAnnounced = false;
 
             while ((entry = zis.getNextEntry()) != null) {
+
                 String name = entry.getName();
                 if (name.startsWith("__MACOSX/") || name.endsWith(".DS_Store")) continue;
 
+                // --- Plugin folder ---
                 if (name.startsWith("plugin/")) {
                     if (!pluginAnnounced) {
+                        log("");
                         log("Installing Fiji plugin payload...");
                         pluginAnnounced = true;
                     }
@@ -291,10 +317,24 @@ public class GlycoPaintInstallerMac {
                     continue;
                 }
 
+                // --- Detect top-level macOS apps ---
+                if (name.matches("^[^/]+\\.app/$")) {
+                    String appName = name.substring(0, name.length() - 1);
+                    log("Installing: " + appName);
+                }
+
+                // --- Detect binaries inside MacOS folder ---
+                if (name.contains("/Contents/MacOS/") && !entry.isDirectory()) {
+                    String execName = name.substring(name.lastIndexOf("/") + 1);
+                    //log("  Adding executable: " + execName);
+                }
+
+                // --- Write the file/directory ---
                 Path out = targetDir.resolve(name);
                 writeZipEntry(zis, buf, entry, out);
 
-                if (out.toString().contains("/Contents/MacOS/")) {
+                // Make executables runnable
+                if (name.contains("/Contents/MacOS/") && !entry.isDirectory()) {
                     out.toFile().setExecutable(true, false);
                 }
             }
