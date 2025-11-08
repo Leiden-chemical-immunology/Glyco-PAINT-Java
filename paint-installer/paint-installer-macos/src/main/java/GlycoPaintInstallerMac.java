@@ -146,7 +146,6 @@ public class GlycoPaintInstallerMac {
             installRoot = chosen.resolve(PRODUCT_NAME);
 
             PaintPrefs.putString("Installer", "InstallDirParent", chosen.toString());
-            // log("Selected install root: " + installRoot);
 
             try {
                 Files.createDirectories(installRoot);
@@ -203,7 +202,6 @@ public class GlycoPaintInstallerMac {
 
             progress.setVisible(false);
             SwingUtilities.invokeLater(() -> closeButton.setEnabled(true));
-            log("");
             log("Installation complete for " + PRODUCT_NAME + " " + version);
 
         } catch (Exception e) {
@@ -326,7 +324,7 @@ public class GlycoPaintInstallerMac {
                 // --- Detect binaries inside MacOS folder ---
                 if (name.contains("/Contents/MacOS/") && !entry.isDirectory()) {
                     String execName = name.substring(name.lastIndexOf("/") + 1);
-                    //log("  Adding executable: " + execName);
+                    // log("  Adding executable: " + execName);
                 }
 
                 // --- Write the file/directory ---
