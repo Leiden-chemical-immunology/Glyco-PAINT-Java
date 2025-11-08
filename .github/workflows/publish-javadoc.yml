@@ -22,19 +22,16 @@ jobs:
           distribution: zulu
           java-version: 8
 
-      # Build every module including shared utils
       - name: Build full project
         run: mvn -B -U -DskipTests install
 
-      # Generate aggregated JavaDoc
       - name: Build aggregated JavaDoc
         run: mvn -B javadoc:aggregate
 
-      # Publish aggregated JavaDoc as the root of GitHub Pages
       - name: Deploy JavaDoc to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./target/site/apidocs-aggregate
+          publish_dir: ./target/site/apidocs
           keep_files: false
           force_orphan: true
