@@ -2,7 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.nio.file.*;
-import java.util.Optional;
+import java.util.*;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -19,15 +20,35 @@ public class GlycoPaintInstallerMac {
             "/Applications/Fiji.app"
     };
 
+    // App folder names as they appear at the top level of the ZIP
+    private static final String APP_VIEWER = "Viewer.app";
+    private static final String APP_GENERATE_SQUARES = "Generate Squares.app";
+    private static final String APP_GET_OMERO = "Get Omero.app";
+    private static final String APP_CREATE_EXPERIMENT = "Create Experiment.app";
+
     private final JFrame frame;
     private final JProgressBar progress;
     private final JTextArea log;
     private final JButton closeButton;
+
+    // selection UI
+    private final JCheckBox cbViewer = new JCheckBox("Viewer", true);
+    private final JCheckBox cbGenerateSquares = new JCheckBox("Generate Squares", true);
+    private final JCheckBox cbGetOmero = new JCheckBox("Get Omero", true);
+    private final JCheckBox cbCreateExperiment = new JCheckBox("Create Experiment", true);
+    private final JCheckBox cbPlugin = new JCheckBox("Fiji plugin", true);
+
     private Path installRoot;
     private String version = "unknown";
 
+    // selections captured at install time
+    private Set<String> selectedApps = Collections.emptySet();
+    private boolean installPlugin = true;
+
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new GlycoPaintInstallerMac().show());
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override public void run() { new GlycoPaintInstallerMac().show(); }
+        });
     }
 
     public GlycoPaintInstallerMac() {
@@ -35,7 +56,7 @@ public class GlycoPaintInstallerMac {
 
         frame = new JFrame("Install " + PRODUCT_NAME + " " + version);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(550, 400);
+        frame.setSize(580, 520);
         frame.setLocationRelativeTo(null);
         frame.setLayout(new BorderLayout(10, 10));
 
@@ -46,7 +67,6 @@ public class GlycoPaintInstallerMac {
         frame.add(scroll, BorderLayout.CENTER);
 
         JPanel bottomPanel = new JPanel(new BorderLayout(10, 0));
-
         progress = new JProgressBar();
         progress.setIndeterminate(true);
         progress.setVisible(false);
@@ -85,41 +105,49 @@ public class GlycoPaintInstallerMac {
                 System.getProperty("user.home") + "/Applications"
         );
 
-        Path parent = Paths.get(savedParent);               // e.g. /Users/hans/Downloads
-        Path defaultInstallParent = parent;                 // show EXACTLY what user picked last time
+        final Path parent = Paths.get(savedParent);
+        final Path defaultInstallParent = parent;
 
         try { Files.createDirectories(parent); } catch (IOException ignored) {}
 
-        // Main panel
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        frame.add(panel, BorderLayout.NORTH);
+        // Top configuration area
+        JPanel configPanel = new JPanel(new BorderLayout(10, 10));
+        configPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        frame.add(configPanel, BorderLayout.NORTH);
 
-        // Top row: install directory + browse
+        // Install directory row
         JPanel dirPanel = new JPanel(new BorderLayout(5, 0));
         JLabel dirLabel = new JLabel("Install location:");
-
-        JTextField dirField = new JTextField(defaultInstallParent.toString());
+        final JTextField dirField = new JTextField(defaultInstallParent.toString());
         JButton browseButton = new JButton("Browse…");
 
         dirPanel.add(dirLabel, BorderLayout.WEST);
         dirPanel.add(dirField, BorderLayout.CENTER);
         dirPanel.add(browseButton, BorderLayout.EAST);
+        configPanel.add(dirPanel, BorderLayout.NORTH);
 
-        panel.add(dirPanel, BorderLayout.NORTH);
+        // Components selection (checkboxes)
+        JPanel componentsPanel = new JPanel();
+        componentsPanel.setLayout(new GridLayout(0, 1, 4, 4));
+        componentsPanel.setBorder(BorderFactory.createTitledBorder("Components to install"));
+
+        componentsPanel.add(cbViewer);
+        componentsPanel.add(cbGenerateSquares);
+        componentsPanel.add(cbGetOmero);
+        componentsPanel.add(cbCreateExperiment);
+        componentsPanel.add(cbPlugin);
+
+        configPanel.add(componentsPanel, BorderLayout.CENTER);
 
         // Buttons panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-
         JButton installButton = new JButton("Install");
         JButton cancelButton = new JButton("Cancel");
-
         buttonPanel.add(cancelButton);
         buttonPanel.add(installButton);
+        configPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        panel.add(buttonPanel, BorderLayout.SOUTH);
-
-        // Enable choosing install directory
+        // Directory chooser wiring
         browseButton.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -136,14 +164,30 @@ public class GlycoPaintInstallerMac {
             }
         });
 
-        // Cancel button action
         cancelButton.addActionListener(e -> System.exit(0));
 
-        // Install button action
         installButton.addActionListener(e -> {
             Path chosen = Paths.get(dirField.getText());
-
             installRoot = chosen.resolve(PRODUCT_NAME);
+
+            // capture selections
+            Set<String> apps = new LinkedHashSet<String>();
+            if (cbViewer.isSelected()) apps.add(APP_VIEWER);
+            if (cbGenerateSquares.isSelected()) apps.add(APP_GENERATE_SQUARES);
+            if (cbGetOmero.isSelected()) apps.add(APP_GET_OMERO);
+            if (cbCreateExperiment.isSelected()) apps.add(APP_CREATE_EXPERIMENT);
+            selectedApps = Collections.unmodifiableSet(apps);
+            installPlugin = cbPlugin.isSelected();
+
+            if (selectedApps.isEmpty() && !installPlugin) {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Nothing selected to install.\nPlease select at least one app or the Fiji plugin.",
+                        "Nothing to do",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
 
             PaintPrefs.putString("Installer", "InstallDirParent", chosen.toString());
 
@@ -163,15 +207,28 @@ public class GlycoPaintInstallerMac {
             cancelButton.setEnabled(false);
             browseButton.setEnabled(false);
             dirField.setEnabled(false);
+            setComponentsEnabled(componentsPanel, false);
 
-            Executors.newSingleThreadExecutor().submit(this::runInstaller);
+            Executors.newSingleThreadExecutor().submit(new Runnable() {
+                @Override public void run() { runInstaller(); }
+            });
         });
 
         frame.setVisible(true);
     }
+
+    private void setComponentsEnabled(Container c, boolean enabled) {
+        for (Component comp : c.getComponents()) {
+            comp.setEnabled(enabled);
+            if (comp instanceof Container) setComponentsEnabled((Container) comp, enabled);
+        }
+    }
+
     private void runInstaller() {
         try {
-            SwingUtilities.invokeLater(() -> progress.setVisible(true));
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override public void run() { progress.setVisible(true); }
+            });
             log("Installing " + PRODUCT_NAME + " " + version + " into: " + installRoot);
             log("");
 
@@ -183,42 +240,75 @@ public class GlycoPaintInstallerMac {
                 Files.copy(in, tmpZip, StandardCopyOption.REPLACE_EXISTING);
             }
 
-            extractZip(tmpZip, installRoot, pluginTemp);
+            extractZip(tmpZip, installRoot, pluginTemp, selectedApps, installPlugin);
 
-            boolean pluginInstalled = installFijiPlugin(pluginTemp);
+            boolean pluginInstalled = false;
+            if (installPlugin) {
+                pluginInstalled = installFijiPlugin(pluginTemp);
+            }
+
             removeQuarantineAttributes(installRoot);
 
             Files.deleteIfExists(tmpZip);
 
-            if (pluginInstalled) {
-                Files.walk(pluginTemp)
-                        .sorted((a, b) -> b.compareTo(a))
-                        .forEach(p -> p.toFile().delete());
+            if (installPlugin) {
+                if (pluginInstalled) {
+                    // cleanup plugin temp if installed automatically
+                    try {
+                        Files.walk(pluginTemp)
+                                .sorted(new Comparator<Path>() {
+                                    @Override public int compare(Path a, Path b) { return b.compareTo(a); }
+                                })
+                                .forEach(new java.util.function.Consumer<Path>() {
+                                    @Override public void accept(Path p) { p.toFile().delete(); }
+                                });
+                    } catch (IOException ignored) {}
+                } else {
+                    Path manualPlugin = installRoot.resolve("plugin");
+                    log("Fiji.app not found, copying plugin folder for manual installation: " + manualPlugin);
+                    copyDirectory(pluginTemp, manualPlugin);
+                }
             } else {
-                Path manualPlugin = installRoot.resolve("plugin");
-                log("Fiji.app not found, copying plugin folder for manual installation: " + manualPlugin);
-                copyDirectory(pluginTemp, manualPlugin);
+                // plugin not selected: discard any extracted plugin temp content
+                try {
+                    Files.walk(pluginTemp)
+                            .sorted(new Comparator<Path>() {
+                                @Override public int compare(Path a, Path b) { return b.compareTo(a); }
+                            })
+                            .forEach(new java.util.function.Consumer<Path>() {
+                                @Override public void accept(Path p) { p.toFile().delete(); }
+                            });
+                } catch (IOException ignored) {}
             }
 
-            progress.setVisible(false);
-            SwingUtilities.invokeLater(() -> closeButton.setEnabled(true));
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override public void run() {
+                    progress.setVisible(false);
+                    closeButton.setEnabled(true);
+                }
+            });
             log("");
             log("Installation complete for " + PRODUCT_NAME + " " + version);
 
         } catch (Exception e) {
             log("Installation failed: " + e.getMessage());
-            SwingUtilities.invokeLater(() -> {
-                progress.setVisible(false);
-                closeButton.setEnabled(true);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override public void run() {
+                    progress.setVisible(false);
+                    closeButton.setEnabled(true);
+                }
             });
         }
     }
 
     private boolean installFijiPlugin(Path sourceRoot) throws IOException {
-
         Optional<Path> pluginJar = Files.walk(sourceRoot)
-                .filter(p -> p.getFileName().toString().startsWith("paint-fiji-plugin-")
-                        && p.toString().endsWith(".jar"))
+                .filter(new java.util.function.Predicate<Path>() {
+                    @Override public boolean test(Path p) {
+                        String fn = p.getFileName().toString();
+                        return fn.startsWith("paint-fiji-plugin-") && fn.endsWith(".jar");
+                    }
+                })
                 .findFirst();
 
         if (!pluginJar.isPresent()) {
@@ -229,30 +319,25 @@ public class GlycoPaintInstallerMac {
         Path jar = pluginJar.get();
         String savedFiji = PaintPrefs.getString("Installer", "Fiji Dir", null);
 
-        // ✅ First try the saved Fiji path
+        // First try saved Fiji path
         if (savedFiji != null) {
             Path savedPluginsDir = Paths.get(savedFiji, "plugins");
             if (Files.isDirectory(savedPluginsDir)) {
                 log("Found saved Fiji path: " + savedFiji);
                 installJarIntoFijiDir(jar, savedPluginsDir);
-
-                // ✅ SAVE IT AGAIN (your requested change)
                 PaintPrefs.putString("Installer", "Fiji Dir", savedFiji);
-
                 return true;
             } else {
                 log("Saved Fiji path invalid: " + savedFiji);
             }
         }
 
-        // ✅ Otherwise search standard macOS paths
+        // Otherwise search standard macOS paths
         for (String path : FIJI_PATHS) {
             Path pluginsDir = Paths.get(path, "plugins");
             if (Files.isDirectory(pluginsDir)) {
                 log("Found Fiji.app at " + path);
                 installJarIntoFijiDir(jar, pluginsDir);
-
-                // ✅ Save for next run (already present before)
                 PaintPrefs.putString("Installer", "Fiji Dir", path);
                 return true;
             }
@@ -263,57 +348,78 @@ public class GlycoPaintInstallerMac {
     }
 
     private void installJarIntoFijiDir(Path jar, Path pluginsDir) throws IOException {
+        // Delete old plugin(s)
         Files.list(pluginsDir)
-                .filter(p -> p.getFileName().toString().startsWith("paint-")
-                        && p.toString().endsWith(".jar"))
-                .forEach(p -> {
-                    try { Files.delete(p); } catch (IOException ignored) {}
+                .filter(new java.util.function.Predicate<Path>() {
+                    @Override public boolean test(Path p) {
+                        String fn = p.getFileName().toString();
+                        return fn.startsWith("paint-") && fn.endsWith(".jar");
+                    }
+                })
+                .forEach(new java.util.function.Consumer<Path>() {
+                    @Override public void accept(Path p) {
+                        try { Files.delete(p); } catch (IOException ignored) {}
+                    }
                 });
 
-        Files.copy(jar,
-                   pluginsDir.resolve(jar.getFileName()),
-                   StandardCopyOption.REPLACE_EXISTING);
-
+        // Copy new
+        Files.copy(jar, pluginsDir.resolve(jar.getFileName()), StandardCopyOption.REPLACE_EXISTING);
         log("Installed plugin into: " + pluginsDir);
     }
 
     private void removeQuarantineAttributes(Path dir) {
         try {
             Files.walk(dir)
-                    .filter(p ->
-                                    p.toString().endsWith(".app")
-                                            || p.getFileName().toString().endsWith(".command")
-                                            || p.getFileName().toString().endsWith(".sh"))
-                    .forEach(p -> {
-                        try {
-                            new ProcessBuilder("xattr", "-dr",
-                                               "com.apple.quarantine", p.toString())
-                                    .inheritIO().start().waitFor();
-                        } catch (Exception ignored) {}
+                    .filter(new java.util.function.Predicate<Path>() {
+                        @Override public boolean test(Path p) {
+                            String fn = p.getFileName().toString();
+                            return p.toString().endsWith(".app")
+                                    || fn.endsWith(".command")
+                                    || fn.endsWith(".sh");
+                        }
+                    })
+                    .forEach(new java.util.function.Consumer<Path>() {
+                        @Override public void accept(Path p) {
+                            try {
+                                new ProcessBuilder("xattr", "-dr",
+                                                   "com.apple.quarantine", p.toString())
+                                        .inheritIO().start().waitFor();
+                            } catch (Exception ignored) {}
+                        }
                     });
         } catch (IOException ignored) {}
     }
 
-    private void log(String msg) {
-        SwingUtilities.invokeLater(() -> {
-            log.append(msg + "\n");
-            log.setCaretPosition(log.getDocument().getLength());
+    private void log(final String msg) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override public void run() {
+                log.append(msg + "\n");
+                log.setCaretPosition(log.getDocument().getLength());
+            }
         });
     }
 
-    private void extractZip(Path zipFile, Path targetDir, Path pluginTemp) throws IOException {
+    private void extractZip(Path zipFile,
+                            Path targetDir,
+                            Path pluginTemp,
+                            final Set<String> appsToInstall,
+                            final boolean includePlugin) throws IOException {
+
         try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(zipFile))) {
             ZipEntry entry;
             byte[] buf = new byte[8192];
             boolean pluginAnnounced = false;
+            Set<String> announcedApps = new HashSet<String>();
 
             while ((entry = zis.getNextEntry()) != null) {
-
                 String name = entry.getName();
+
+                // Skip macOS fluff
                 if (name.startsWith("__MACOSX/") || name.endsWith(".DS_Store")) continue;
 
-                // --- Plugin folder ---
+                // Plugin payload
                 if (name.startsWith("plugin/")) {
+                    if (!includePlugin) continue;
                     if (!pluginAnnounced) {
                         log("");
                         log("Installing Fiji plugin payload...");
@@ -324,26 +430,30 @@ public class GlycoPaintInstallerMac {
                     continue;
                 }
 
-                // --- Detect top-level macOS apps ---
-                if (name.matches("^[^/]+\\.app/$")) {
-                    String appName = name.substring(0, name.length() - 1);
-                    log("Installing: " + appName);
-                }
+                // Determine top-level component (e.g., "Viewer.app")
+                String top = name;
+                int slash = name.indexOf('/');
+                if (slash >= 0) top = name.substring(0, slash);
 
-                // --- Detect binaries inside MacOS folder ---
-                if (name.contains("/Contents/MacOS/") && !entry.isDirectory()) {
-                    String execName = name.substring(name.lastIndexOf("/") + 1);
-                    // log("  Adding executable: " + execName);
-                }
+                // Only handle .app components and only if selected
+                if (top.endsWith(".app")) {
+                    if (!appsToInstall.contains(top)) continue;
 
-                // --- Write the file/directory ---
-                Path out = targetDir.resolve(name);
-                writeZipEntry(zis, buf, entry, out);
+                    // Announce once per app
+                    if (!announcedApps.contains(top) && name.equals(top + "/")) {
+                        log("Installing: " + top);
+                        announcedApps.add(top);
+                    }
 
-                // Make executables runnable
-                if (name.contains("/Contents/MacOS/") && !entry.isDirectory()) {
-                    out.toFile().setExecutable(true, false);
+                    Path out = targetDir.resolve(name);
+                    writeZipEntry(zis, buf, entry, out);
+
+                    // Make executables in Contents/MacOS runnable
+                    if (name.contains("/Contents/MacOS/") && !entry.isDirectory()) {
+                        out.toFile().setExecutable(true, false);
+                    }
                 }
+                // Any other top-level files/dirs are ignored
             }
         }
     }
@@ -361,20 +471,23 @@ public class GlycoPaintInstallerMac {
     }
 
     private void copyDirectory(Path src, Path dst) throws IOException {
-        Files.walk(src).forEach(source -> {
-            Path target = dst.resolve(src.relativize(source));
-            try {
-                if (Files.isDirectory(source)) {
-                    Files.createDirectories(target);
-                } else {
-                    Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+        Files.walk(src).forEach(new java.util.function.Consumer<Path>() {
+            @Override public void accept(Path source) {
+                Path target = dst.resolve(src.relativize(source));
+                try {
+                    if (Files.isDirectory(source)) {
+                        Files.createDirectories(target);
+                    } else {
+                        Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+                    }
+                } catch (IOException e) {
+                    log("Failed to copy " + source + " -> " + target + ": " + e.getMessage());
                 }
-            } catch (IOException e) {
-                log("Failed to copy " + source + " -> " + target + ": " + e.getMessage());
             }
         });
     }
 
+    // (Unused helper kept for completeness; safe to remove if you like)
     private void hideFilenameField(Component c) {
         if (c instanceof JTextField) {
             c.setVisible(false);
@@ -384,13 +497,11 @@ public class GlycoPaintInstallerMac {
             }
         }
     }
-
     private void hideFilenameField(JFileChooser chooser) {
         for (Component comp : chooser.getComponents()) {
             hideFilenameFieldRec(comp);
         }
     }
-
     private void hideFilenameFieldRec(Component c) {
         if (c instanceof JTextField) {
             c.setVisible(false);
