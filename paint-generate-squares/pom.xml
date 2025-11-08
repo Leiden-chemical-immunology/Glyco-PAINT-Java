@@ -257,11 +257,6 @@ exec "$JAVA_CMD" -Xmx2G -jar "${project.artifactId}-${project.version}.jar"
                                         <fixcrlf eol="unix" file="${app.bundle}/Contents/MacOS/launch"/>
                                         <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
 
-                                        <exec executable="zip">
-                                            <arg value="-r"/>
-                                            <arg value="${project.build.directory}/${app.name}.app.zip"/>
-                                            <arg value="${app.bundle}"/>
-                                        </exec>
                                         <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
                                         <delete dir="${user.home}/Applications/Glyco-PAINT/${app.name}.app" quiet="true"/>
                                         <copy todir="${user.home}/Applications/Glyco-PAINT" failonerror="false" overwrite="true">
