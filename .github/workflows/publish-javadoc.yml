@@ -22,12 +22,12 @@ jobs:
           distribution: zulu
           java-version: 8
 
-      # ✅ Build all modules and install them locally
+      # ✅ Build entire multi-module project, including paint-shared-utils
       - name: Build full project
         run: mvn -B -U -DskipTests install
 
-      # ✅ Now JavaDoc can be resolved correctly
-      - name: Build JavaDoc for all modules
+      # ✅ Now JavaDoc aggregation works
+      - name: Build aggregated JavaDoc
         run: mvn -B javadoc:javadoc javadoc:aggregate
 
       - name: Deploy JavaDoc to gh-pages branch
