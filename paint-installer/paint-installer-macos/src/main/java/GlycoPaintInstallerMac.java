@@ -46,9 +46,7 @@ public class GlycoPaintInstallerMac {
     private boolean installPlugin = true;
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override public void run() { new GlycoPaintInstallerMac().show(); }
-        });
+        SwingUtilities.invokeLater(() -> new GlycoPaintInstallerMac().show());
     }
 
     public GlycoPaintInstallerMac() {
@@ -171,7 +169,7 @@ public class GlycoPaintInstallerMac {
             installRoot = chosen.resolve(PRODUCT_NAME);
 
             // capture selections
-            Set<String> apps = new LinkedHashSet<String>();
+            Set<String> apps = new LinkedHashSet<>();
             if (cbViewer.isSelected()) apps.add(APP_VIEWER);
             if (cbGenerateSquares.isSelected()) apps.add(APP_GENERATE_SQUARES);
             if (cbGetOmero.isSelected()) apps.add(APP_GET_OMERO);
@@ -209,9 +207,7 @@ public class GlycoPaintInstallerMac {
             dirField.setEnabled(false);
             setComponentsEnabled(componentsPanel, false);
 
-            Executors.newSingleThreadExecutor().submit(new Runnable() {
-                @Override public void run() { runInstaller(); }
-            });
+            Executors.newSingleThreadExecutor().submit(this::runInstaller);
         });
 
         frame.setVisible(true);
@@ -226,9 +222,7 @@ public class GlycoPaintInstallerMac {
 
     private void runInstaller() {
         try {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override public void run() { progress.setVisible(true); }
-            });
+            SwingUtilities.invokeLater(() -> progress.setVisible(true));
             log("Installing " + PRODUCT_NAME + " " + version + " into: " + installRoot);
             log("");
 
@@ -256,12 +250,8 @@ public class GlycoPaintInstallerMac {
                     // cleanup plugin temp if installed automatically
                     try {
                         Files.walk(pluginTemp)
-                                .sorted(new Comparator<Path>() {
-                                    @Override public int compare(Path a, Path b) { return b.compareTo(a); }
-                                })
-                                .forEach(new java.util.function.Consumer<Path>() {
-                                    @Override public void accept(Path p) { p.toFile().delete(); }
-                                });
+                                .sorted(Comparator.reverseOrder())
+                                .forEach(p -> p.toFile().delete());
                     } catch (IOException ignored) {}
                 } else {
                     Path manualPlugin = installRoot.resolve("plugin");
@@ -272,59 +262,45 @@ public class GlycoPaintInstallerMac {
                 // plugin not selected: discard any extracted plugin temp content
                 try {
                     Files.walk(pluginTemp)
-                            .sorted(new Comparator<Path>() {
-                                @Override public int compare(Path a, Path b) { return b.compareTo(a); }
-                            })
-                            .forEach(new java.util.function.Consumer<Path>() {
-                                @Override public void accept(Path p) { p.toFile().delete(); }
-                            });
+                            .sorted(Comparator.reverseOrder())
+                            .forEach(p -> p.toFile().delete());
                 } catch (IOException ignored) {}
             }
 
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override public void run() {
-                    progress.setVisible(false);
-                    closeButton.setEnabled(true);
-                }
+            SwingUtilities.invokeLater(() -> {
+                progress.setVisible(false);
+                closeButton.setEnabled(true);
             });
             log("");
             log("Installation complete for " + PRODUCT_NAME + " " + version);
 
         } catch (Exception e) {
             log("Installation failed: " + e.getMessage());
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override public void run() {
-                    progress.setVisible(false);
-                    closeButton.setEnabled(true);
-                }
+            SwingUtilities.invokeLater(() -> {
+                progress.setVisible(false);
+                closeButton.setEnabled(true);
             });
         }
     }
 
+    /** Mirrors Windows logic: saved path -> standard paths -> ASK USER */
     private boolean installFijiPlugin(Path sourceRoot) throws IOException {
-        Optional<Path> pluginJar = Files.walk(sourceRoot)
-                .filter(new java.util.function.Predicate<Path>() {
-                    @Override public boolean test(Path p) {
-                        String fn = p.getFileName().toString();
-                        return fn.startsWith("paint-fiji-plugin-") && fn.endsWith(".jar");
-                    }
-                })
-                .findFirst();
-
+        Optional<Path> pluginJar = findPluginJar(sourceRoot);
         if (!pluginJar.isPresent()) {
-            log("No Fiji plugin JAR found, skipping plugin installation.");
+            log("No Fiji plugin JAR found in payload under " + sourceRoot);
             return false;
         }
 
         Path jar = pluginJar.get();
+        // log("Found Fiji plugin JAR: " + jar.getFileName());
+
         String savedFiji = PaintPrefs.getString("Installer", "Fiji Dir", null);
 
-        // First try saved Fiji path
+        // 1) Try saved Fiji path
         if (savedFiji != null) {
-            Path savedPluginsDir = Paths.get(savedFiji, "plugins");
-            if (Files.isDirectory(savedPluginsDir)) {
-                log("Found saved Fiji path: " + savedFiji);
-                installJarIntoFijiDir(jar, savedPluginsDir);
+            Path pluginsDir = Paths.get(savedFiji, "plugins");
+            if (Files.isDirectory(pluginsDir)) {
+                installJarIntoFijiDir(jar, pluginsDir);
                 PaintPrefs.putString("Installer", "Fiji Dir", savedFiji);
                 return true;
             } else {
@@ -332,35 +308,41 @@ public class GlycoPaintInstallerMac {
             }
         }
 
-        // Otherwise search standard macOS paths
-        for (String path : FIJI_PATHS) {
-            Path pluginsDir = Paths.get(path, "plugins");
+        // 2) Try standard macOS locations
+        for (String base : FIJI_PATHS) {
+            Path pluginsDir = Paths.get(base, "plugins");
             if (Files.isDirectory(pluginsDir)) {
-                log("Found Fiji.app at " + path);
                 installJarIntoFijiDir(jar, pluginsDir);
-                PaintPrefs.putString("Installer", "Fiji Dir", path);
+                PaintPrefs.putString("Installer", "Fiji Dir", base);
                 return true;
             }
         }
 
-        log("No Fiji.app found, plugin not installed.");
+        // 3) Ask the user to choose Fiji folder
+        Path manual = askUserForFijiFolder();
+        if (manual != null) {
+            Path pluginsDir = manual.resolve("plugins");
+            if (Files.isDirectory(pluginsDir)) {
+                installJarIntoFijiDir(jar, pluginsDir);
+                PaintPrefs.putString("Installer", "Fiji Dir", manual.toString());
+                return true;
+            } else {
+                log("Selected folder does not contain a 'plugins' directory: " + manual);
+            }
+        }
+
+        log("No valid Fiji.app folder. Plugin will be copied for manual installation.");
         return false;
     }
 
     private void installJarIntoFijiDir(Path jar, Path pluginsDir) throws IOException {
         // Delete old plugin(s)
         Files.list(pluginsDir)
-                .filter(new java.util.function.Predicate<Path>() {
-                    @Override public boolean test(Path p) {
-                        String fn = p.getFileName().toString();
-                        return fn.startsWith("paint-") && fn.endsWith(".jar");
-                    }
+                .filter(p -> {
+                    String fn = p.getFileName().toString();
+                    return fn.startsWith("paint-") && fn.endsWith(".jar");
                 })
-                .forEach(new java.util.function.Consumer<Path>() {
-                    @Override public void accept(Path p) {
-                        try { Files.delete(p); } catch (IOException ignored) {}
-                    }
-                });
+                .forEach(p -> { try { Files.delete(p); } catch (IOException ignored) {} });
 
         // Copy new
         Files.copy(jar, pluginsDir.resolve(jar.getFileName()), StandardCopyOption.REPLACE_EXISTING);
@@ -370,32 +352,26 @@ public class GlycoPaintInstallerMac {
     private void removeQuarantineAttributes(Path dir) {
         try {
             Files.walk(dir)
-                    .filter(new java.util.function.Predicate<Path>() {
-                        @Override public boolean test(Path p) {
-                            String fn = p.getFileName().toString();
-                            return p.toString().endsWith(".app")
-                                    || fn.endsWith(".command")
-                                    || fn.endsWith(".sh");
-                        }
+                    .filter(p -> {
+                        String fn = p.getFileName().toString();
+                        return p.toString().endsWith(".app")
+                                || fn.endsWith(".command")
+                                || fn.endsWith(".sh");
                     })
-                    .forEach(new java.util.function.Consumer<Path>() {
-                        @Override public void accept(Path p) {
-                            try {
-                                new ProcessBuilder("xattr", "-dr",
-                                                   "com.apple.quarantine", p.toString())
-                                        .inheritIO().start().waitFor();
-                            } catch (Exception ignored) {}
-                        }
+                    .forEach(p -> {
+                        try {
+                            new ProcessBuilder("xattr", "-dr",
+                                               "com.apple.quarantine", p.toString())
+                                    .inheritIO().start().waitFor();
+                        } catch (Exception ignored) {}
                     });
         } catch (IOException ignored) {}
     }
 
     private void log(final String msg) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override public void run() {
-                log.append(msg + "\n");
-                log.setCaretPosition(log.getDocument().getLength());
-            }
+        SwingUtilities.invokeLater(() -> {
+            log.append(msg + "\n");
+            log.setCaretPosition(log.getDocument().getLength());
         });
     }
 
@@ -409,7 +385,7 @@ public class GlycoPaintInstallerMac {
             ZipEntry entry;
             byte[] buf = new byte[8192];
             boolean pluginAnnounced = false;
-            Set<String> announcedApps = new HashSet<String>();
+            Set<String> announcedApps = new HashSet<>();
 
             while ((entry = zis.getNextEntry()) != null) {
                 String name = entry.getName();
@@ -471,52 +447,77 @@ public class GlycoPaintInstallerMac {
     }
 
     private void copyDirectory(Path src, Path dst) throws IOException {
-        Files.walk(src).forEach(new java.util.function.Consumer<Path>() {
-            @Override public void accept(Path source) {
-                Path target = dst.resolve(src.relativize(source));
-                try {
-                    if (Files.isDirectory(source)) {
-                        Files.createDirectories(target);
-                    } else {
-                        Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
-                    }
-                } catch (IOException e) {
-                    log("Failed to copy " + source + " -> " + target + ": " + e.getMessage());
+        Files.walk(src).forEach(source -> {
+            Path target = dst.resolve(src.relativize(source));
+            try {
+                if (Files.isDirectory(source)) {
+                    Files.createDirectories(target);
+                } else {
+                    Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
                 }
+            } catch (IOException e) {
+                log("Failed to copy " + source + " -> " + target + ": " + e.getMessage());
             }
         });
     }
 
-    // (Unused helper kept for completeness; safe to remove if you like)
-    private void hideFilenameField(Component c) {
-        if (c instanceof JTextField) {
-            c.setVisible(false);
-        } else if (c instanceof Container) {
-            for (Component child : ((Container)c).getComponents()) {
-                hideFilenameField(child);
-            }
+    /** Prefer paint-fiji-plugin-*.jar; fallback to any .jar under plugin payload */
+    private Optional<Path> findPluginJar(Path root) throws IOException {
+        try (java.util.stream.Stream<Path> s = Files.walk(root)) {
+            Optional<Path> preferred = s
+                    .filter(Files::isRegularFile)
+                    .filter(p -> p.getFileName().toString().endsWith(".jar"))
+                    .filter(p -> p.getFileName().toString().startsWith("paint-fiji-plugin-"))
+                    .sorted((a, b) -> b.getFileName().toString().compareTo(a.getFileName().toString()))
+                    .findFirst();
+            if (preferred.isPresent()) return preferred;
+        }
+        try (java.util.stream.Stream<Path> s2 = Files.walk(root)) {
+            return s2
+                    .filter(Files::isRegularFile)
+                    .filter(p -> p.getFileName().toString().endsWith(".jar"))
+                    .sorted((a, b) -> b.getFileName().toString().compareTo(a.getFileName().toString()))
+                    .findFirst();
         }
     }
-    private void hideFilenameField(JFileChooser chooser) {
-        for (Component comp : chooser.getComponents()) {
-            hideFilenameFieldRec(comp);
-        }
-    }
-    private void hideFilenameFieldRec(Component c) {
-        if (c instanceof JTextField) {
-            c.setVisible(false);
-        }
-        if (c instanceof JLabel) {
-            JLabel lbl = (JLabel) c;
-            String txt = lbl.getText();
-            if (txt != null && txt.toLowerCase().contains("file name")) {
-                lbl.setVisible(false);
-            }
-        }
-        if (c instanceof Container) {
-            for (Component child : ((Container) c).getComponents()) {
-                hideFilenameFieldRec(child);
-            }
-        }
+
+    /** Ask the user to pick their Fiji.app folder (only if not found automatically) */
+    private Path askUserForFijiFolder() {
+        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                frame,
+                "Fiji.app not found.\nPlease select your Fiji.app folder.",
+                "Fiji Not Found",
+                JOptionPane.WARNING_MESSAGE
+        ));
+
+        final Path[] result = new Path[1];
+
+        try {
+            SwingUtilities.invokeAndWait(() -> {
+                JFileChooser chooser = new JFileChooser();
+                chooser.setDialogTitle("Select Fiji.app folder");
+                chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                chooser.setAcceptAllFileFilterUsed(false);
+
+                chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+                    @Override
+                    public boolean accept(File f) {
+                        return f.isDirectory() || f.getName().endsWith(".app");
+                    }
+                    @Override
+                    public String getDescription() {
+                        return "Fiji.app";
+                    }
+                });
+
+                int r = chooser.showOpenDialog(frame);
+                if (r == JFileChooser.APPROVE_OPTION) {
+                    File f = chooser.getSelectedFile();
+                    result[0] = f.toPath();
+                }
+            });
+        } catch (Exception ignored) {}
+
+        return result[0];
     }
 }

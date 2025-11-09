@@ -17,7 +17,12 @@ public class GlycoPaintInstallerWindows {
     private static final String PAYLOAD_NAME = "/payload.zip";
 
     // Common Fiji locations
-    private static final String[] FIJI_DIR_NAMES = { "Fiji", "Fiji.app" };
+    private static final String[] FIJI_DIR_NAMES = {
+            "Fiji",
+            "Fiji-win64",
+            "Fiji-win32",
+            "Fiji-Windows"
+    };
 
     private static String[] buildFijiPaths() {
         String[] bases = {
@@ -273,20 +278,30 @@ public class GlycoPaintInstallerWindows {
 
         String saved = PaintPrefs.getString(PREF_NODE, KEY_FIJI_DIR, null);
         if (saved != null) {
+            log("Trying saved Fiji path: " + saved);
             Path pluginsDir = Paths.get(saved, "plugins");
             if (Files.isDirectory(pluginsDir)) {
+                log("Saved Fiji path is valid.");
                 installJarIntoFijiDir(jar, pluginsDir);
                 return true;
+            } else {
+                log("Saved Fiji path is NOT valid: " + pluginsDir);
             }
         }
 
         for (String base : FIJI_PATHS) {
             if (base == null || base.isEmpty()) continue;
+
+            log("Trying auto-detected Fiji path: " + base);
             Path pluginsDir = Paths.get(base, "plugins");
+
             if (Files.isDirectory(pluginsDir)) {
+                log("Found Fiji at: " + base);
                 installJarIntoFijiDir(jar, pluginsDir);
                 PaintPrefs.putString(PREF_NODE, KEY_FIJI_DIR, base);
                 return true;
+            } else {
+                // log("Not a valid Fiji install: " + pluginsDir);
             }
         }
 
