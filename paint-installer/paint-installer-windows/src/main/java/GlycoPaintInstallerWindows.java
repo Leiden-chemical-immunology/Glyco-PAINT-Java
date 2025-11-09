@@ -17,11 +17,27 @@ public class GlycoPaintInstallerWindows {
     private static final String PAYLOAD_NAME = "/payload.zip";
 
     // Common Fiji locations
-    private static final String[] FIJI_PATHS = {
-            envPath("ProgramFiles") + "\\Fiji.app",
-            envPath("ProgramFiles(x86)") + "\\Fiji.app",
-            envPath("LOCALAPPDATA") + "\\Fiji.app"
-    };
+    private static final String[] FIJI_DIR_NAMES = { "Fiji", "Fiji.app" };
+
+    private static String[] buildFijiPaths() {
+        String[] bases = {
+                envPath("ProgramFiles"),
+                envPath("ProgramFiles(x86)"),
+                envPath("LOCALAPPDATA")
+        };
+
+        java.util.List<String> out = new java.util.ArrayList<>();
+        for (String base : bases) {
+            if (base != null && !base.isEmpty()) {
+                for (String name : FIJI_DIR_NAMES) {
+                    out.add(base + File.separator + name);
+                }
+            }
+        }
+        return out.toArray(new String[0]);
+    }
+
+    private static final String[] FIJI_PATHS = buildFijiPaths();
 
     private static String envPath(String key) {
         String v = System.getenv(key);
@@ -245,24 +261,21 @@ public class GlycoPaintInstallerWindows {
             return false;
         }
 
-        Optional<Path> pluginJar = Files.walk(pluginSourceRoot)
-                .filter(p -> p.getFileName().toString().startsWith("paint-fiji-plugin-"))
-                .filter(p -> p.toString().endsWith(".jar"))
-                .findFirst();
+        Optional<Path> pluginJar = findPluginJar(pluginSourceRoot);
 
         if (!pluginJar.isPresent()) {
-            log("No Fiji plugin found.");
+            log("No Fiji plugin JAR found in payload under " + pluginSourceRoot);
             return false;
         }
 
         Path jar = pluginJar.get();
-        String saved = PaintPrefs.getString(PREF_NODE, KEY_FIJI_DIR, null);
+        log("Found Fiji plugin JAR: " + jar.getFileName());
 
+        String saved = PaintPrefs.getString(PREF_NODE, KEY_FIJI_DIR, null);
         if (saved != null) {
             Path pluginsDir = Paths.get(saved, "plugins");
             if (Files.isDirectory(pluginsDir)) {
                 installJarIntoFijiDir(jar, pluginsDir);
-                PaintPrefs.putString(PREF_NODE, KEY_FIJI_DIR, saved);
                 return true;
             }
         }
@@ -277,7 +290,17 @@ public class GlycoPaintInstallerWindows {
             }
         }
 
-        log("Fiji not detected.");
+        Path manual = askUserForFijiFolder();
+        if (manual != null) {
+            Path pluginsDir = manual.resolve("plugins");
+            if (Files.isDirectory(pluginsDir)) {
+                installJarIntoFijiDir(jar, pluginsDir);
+                PaintPrefs.putString(PREF_NODE, KEY_FIJI_DIR, manual.toString());
+                return true;
+            }
+        }
+
+        log("No valid Fiji folder. Plugin will be copied for manual installation.");
         return false;
     }
 
@@ -365,5 +388,53 @@ public class GlycoPaintInstallerWindows {
             log.append(msg + "\n");
             log.setCaretPosition(log.getDocument().getLength());
         });
+    }
+
+    private Path askUserForFijiFolder() {
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(frame,
+                                          "Fiji installation not found.\nPlease select your Fiji folder.",
+                                          "Fiji Not Found",
+                                          JOptionPane.WARNING_MESSAGE);
+        });
+
+        final Path[] result = new Path[1];
+
+        try {
+            SwingUtilities.invokeAndWait(() -> {
+                JFileChooser chooser = new JFileChooser();
+                chooser.setDialogTitle("Select Fiji folder (contains Fiji.exe)");
+                chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                chooser.setAcceptAllFileFilterUsed(false);
+
+                int r = chooser.showOpenDialog(frame);
+                if (r == JFileChooser.APPROVE_OPTION) {
+                    result[0] = chooser.getSelectedFile().toPath();
+                }
+            });
+        } catch (Exception ignored) {}
+
+        return result[0];
+    }
+
+    private Optional<Path> findPluginJar(Path root) throws IOException {
+        try (java.util.stream.Stream<Path> s = Files.walk(root)) {
+            // Prefer paint-fiji-plugin-*.jar if present, else any .jar under plugin payload
+            Optional<Path> preferred = s
+                    .filter(Files::isRegularFile)
+                    .filter(p -> p.getFileName().toString().endsWith(".jar"))
+                    .filter(p -> p.getFileName().toString().startsWith("paint-fiji-plugin-"))
+                    .sorted((a, b) -> b.getFileName().toString().compareTo(a.getFileName().toString()))
+                    .findFirst();
+            if (preferred.isPresent()) return preferred;
+
+        }
+        try (java.util.stream.Stream<Path> s2 = Files.walk(root)) {
+            return s2
+                    .filter(Files::isRegularFile)
+                    .filter(p -> p.getFileName().toString().endsWith(".jar"))
+                    .sorted((a, b) -> b.getFileName().toString().compareTo(a.getFileName().toString()))
+                    .findFirst();
+        }
     }
 }
