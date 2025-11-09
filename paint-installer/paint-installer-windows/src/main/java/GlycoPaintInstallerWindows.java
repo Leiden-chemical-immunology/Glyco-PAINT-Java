@@ -1,3 +1,71 @@
+/******************************************************************************
+ *  Class:        GlycoPaintInstallerWindows.java
+ *  Package:      paint.installer
+ *
+ *  PURPOSE:
+ *    Provides the Windows installer for Glyco-PAINT, extracting application
+ *    components from the embedded payload and installing the Fiji plugin
+ *    automatically when possible.
+ *
+ *  DESCRIPTION:
+ *    The {@code GlycoPaintInstallerWindows} handles installation of all
+ *    Windows executables from the payload ZIP and manages automatic detection
+ *    of Fiji installations for plugin deployment.
+ *
+ *    Fiji installations are searched in several common Windows locations:
+ *
+ *      • %ProgramFiles%\Fiji
+ *      • %ProgramFiles%\Fiji-win64
+ *      • %ProgramFiles%\Fiji-win32
+ *      • %ProgramFiles%\Fiji-Windows
+ *
+ *      • %ProgramFiles(x86)%\Fiji
+ *      • %ProgramFiles(x86)%\Fiji-win64
+ *      • %ProgramFiles(x86)%\Fiji-win32
+ *      • %ProgramFiles(x86)%\Fiji-Windows
+ *
+ *      • %LOCALAPPDATA%\Fiji
+ *      • %LOCALAPPDATA%\Fiji-win64
+ *      • %LOCALAPPDATA%\Fiji-win32
+ *      • %LOCALAPPDATA%\Fiji-Windows
+ *
+ *    Case differences in directory names do not matter because Windows
+ *    file system lookups are case-insensitive.
+ *
+ *    Detection order:
+ *
+ *      1. A previously saved Fiji directory stored in PaintPrefs.
+ *      2. Auto-detected directories listed above.
+ *      3. A user-guided selection:
+ *           The installer first shows a warning dialog explaining Fiji was not
+ *           found. If the user presses OK, a folder picker is opened. If the
+ *           user cancels, plugin installation is skipped.
+ *
+ *    If no Fiji installation is identified, the plugin files are copied to a
+ *    manual-installation folder inside the Glyco-PAINT installation directory.
+ *
+ *  KEY FEATURES:
+ *    • Extracts selected Windows executables from payload.zip.
+ *    • Detects Fiji automatically in multiple system locations.
+ *    • Allows user manual selection when auto-detection fails.
+ *    • Installs or updates the Fiji plugin by replacing older paint-*.jar files.
+ *    • Stores previously used install locations and Fiji paths in PaintPrefs.
+ *    • Copies plugin for manual installation if no valid Fiji directory is found.
+ *    • Provides detailed progress and logging output in the installation window.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-installer
+ *
+ *  UPDATED:
+ *    2025-11-09
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
@@ -405,16 +473,29 @@ public class GlycoPaintInstallerWindows {
         });
     }
 
+    /** Ask the user to pick their Fiji folder.
+     First show warning. If user presses OK -> open chooser.
+     If user presses Cancel -> return null. */
     private Path askUserForFijiFolder() {
-        SwingUtilities.invokeLater(() -> {
-            JOptionPane.showMessageDialog(frame,
-                                          "Fiji installation not found.\nPlease select your Fiji folder.",
-                                          "Fiji Not Found",
-                                          JOptionPane.WARNING_MESSAGE);
-        });
+
+        // 1. Show warning and wait for user interaction
+        int choice = JOptionPane.showConfirmDialog(
+                frame,
+                "Fiji installation not found.\nPlease select your Fiji folder (contains Fiji.exe).",
+                "Fiji Not Found",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        // 2. If user presses Cancel -> do not show folder picker
+        if (choice != JOptionPane.OK_OPTION) {
+            log("User cancelled Fiji selection.");
+            return null;
+        }
 
         final Path[] result = new Path[1];
 
+        // 3. Now open the directory chooser in a separate EDT call
         try {
             SwingUtilities.invokeAndWait(() -> {
                 JFileChooser chooser = new JFileChooser();
@@ -425,6 +506,8 @@ public class GlycoPaintInstallerWindows {
                 int r = chooser.showOpenDialog(frame);
                 if (r == JFileChooser.APPROVE_OPTION) {
                     result[0] = chooser.getSelectedFile().toPath();
+                } else {
+                    log("User cancelled folder chooser.");
                 }
             });
         } catch (Exception ignored) {}

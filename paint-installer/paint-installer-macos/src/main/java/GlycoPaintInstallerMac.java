@@ -1,9 +1,58 @@
+/******************************************************************************
+ *  Class:        GlycoPaintInstallerMac.java
+ *  Package:      paint.installer
+ *
+ *  PURPOSE:
+ *    Provides a macOS installer for the Glyco-PAINT software suite. The
+ *    installer unpacks the embedded application bundle payload, installs
+ *    selected .app components, and optionally installs the Fiji plugin if a
+ *    Fiji.app installation is found.
+ *
+ *  DESCRIPTION:
+ *    This installer loads an embedded ZIP payload containing multiple .app
+ *    bundles and a Fiji plugin JAR. The user selects which components to
+ *    install and where they should be placed. The installer attempts to
+ *    automatically locate Fiji.app using the most common macOS installation
+ *    directories.
+ *
+ *    macOS Fiji search paths:
+ *      • ~/Applications/Fiji.app
+ *      • /Applications/Fiji.app
+ *
+ *    If those directories do not contain a valid Fiji.app (i.e. a folder
+ *    containing a "plugins" directory), the user is shown a warning dialog and
+ *    then prompted to manually select a Fiji.app folder. If the plugin still
+ *    cannot be installed, the plugin files are copied into a "plugin"
+ *    directory inside the Glyco-PAINT install root for manual installation.
+ *
+ *  KEY FEATURES:
+ *    • Installs Viewer.app, Generate Squares.app, Get Omero.app,
+ *      Create Experiment.app as selected by the user.
+ *    • Extracts plugin payload and attempts to install it into a valid Fiji.app.
+ *    • Shows a clear warning and allows the user to manually select Fiji.app
+ *      when auto-detection fails.
+ *    • Remembers last installation directory and last known Fiji.app path.
+ *    • Removes macOS quarantine attributes for installed applications.
+ *    • Provides detailed logging inside the installer window.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-installer
+ *
+ *  UPDATED:
+ *    2025-11-09
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ******************************************************************************/
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -13,41 +62,67 @@ import paint.shared.utils.PaintPrefs;
 
 public class GlycoPaintInstallerMac {
 
+    /* ----------------------------------------------------------------------
+       CONSTANTS AND SEARCH PATHS
+       ---------------------------------------------------------------------- */
+
     private static final String PRODUCT_NAME = "Glyco-PAINT";
     private static final String PAYLOAD_NAME = "/payload.zip";
+
+    /* macOS Fiji search paths.
+       These match the typical user installation locations:
+         1. ~/Applications/Fiji.app
+         2. /Applications/Fiji.app
+       The installer checks these before prompting the user.
+    */
     private static final String[] FIJI_PATHS = {
             System.getProperty("user.home") + "/Applications/Fiji.app",
             "/Applications/Fiji.app"
     };
 
-    // App folder names as they appear at the top level of the ZIP
+    /* Names of the .app bundles inside the ZIP payload. These must match the
+       top-level directory names in payload.zip exactly. */
     private static final String APP_VIEWER = "Viewer.app";
     private static final String APP_GENERATE_SQUARES = "Generate Squares.app";
     private static final String APP_GET_OMERO = "Get Omero.app";
     private static final String APP_CREATE_EXPERIMENT = "Create Experiment.app";
+
+    /* ----------------------------------------------------------------------
+       UI COMPONENTS
+       ---------------------------------------------------------------------- */
 
     private final JFrame frame;
     private final JProgressBar progress;
     private final JTextArea log;
     private final JButton closeButton;
 
-    // selection UI
     private final JCheckBox cbViewer = new JCheckBox("Viewer", true);
     private final JCheckBox cbGenerateSquares = new JCheckBox("Generate Squares", true);
     private final JCheckBox cbGetOmero = new JCheckBox("Get Omero", true);
     private final JCheckBox cbCreateExperiment = new JCheckBox("Create Experiment", true);
     private final JCheckBox cbPlugin = new JCheckBox("Fiji plugin", true);
 
+    /* ----------------------------------------------------------------------
+       STATE
+       ---------------------------------------------------------------------- */
+
     private Path installRoot;
     private String version = "unknown";
 
-    // selections captured at install time
     private Set<String> selectedApps = Collections.emptySet();
     private boolean installPlugin = true;
+
+    /* ----------------------------------------------------------------------
+       ENTRY POINT
+       ---------------------------------------------------------------------- */
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new GlycoPaintInstallerMac().show());
     }
+
+    /* ----------------------------------------------------------------------
+       CONSTRUCTOR
+       ---------------------------------------------------------------------- */
 
     public GlycoPaintInstallerMac() {
         detectVersion();
@@ -78,6 +153,10 @@ public class GlycoPaintInstallerMac {
         frame.add(bottomPanel, BorderLayout.SOUTH);
     }
 
+    /* ----------------------------------------------------------------------
+       VERSION DETECTION
+       ---------------------------------------------------------------------- */
+
     private void detectVersion() {
         try (InputStream in = getClass().getResourceAsStream(PAYLOAD_NAME);
              ZipInputStream zis = new ZipInputStream(in)) {
@@ -86,8 +165,7 @@ public class GlycoPaintInstallerMac {
             Pattern versionPattern = Pattern.compile("paint-[a-zA-Z-]+-([0-9]+\\.[0-9]+(\\.[0-9]+)?)");
 
             while ((entry = zis.getNextEntry()) != null) {
-                String name = entry.getName();
-                Matcher m = versionPattern.matcher(name);
+                Matcher m = versionPattern.matcher(entry.getName());
                 if (m.find()) {
                     version = m.group(1);
                     break;
@@ -95,6 +173,10 @@ public class GlycoPaintInstallerMac {
             }
         } catch (IOException ignored) {}
     }
+
+    /* ----------------------------------------------------------------------
+       MAIN UI
+       ---------------------------------------------------------------------- */
 
     private void show() {
 
@@ -108,12 +190,10 @@ public class GlycoPaintInstallerMac {
 
         try { Files.createDirectories(parent); } catch (IOException ignored) {}
 
-        // Top configuration area
         JPanel configPanel = new JPanel(new BorderLayout(10, 10));
         configPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         frame.add(configPanel, BorderLayout.NORTH);
 
-        // Install directory row
         JPanel dirPanel = new JPanel(new BorderLayout(5, 0));
         JLabel dirLabel = new JLabel("Install location:");
         final JTextField dirField = new JTextField(defaultInstallParent.toString());
@@ -124,7 +204,6 @@ public class GlycoPaintInstallerMac {
         dirPanel.add(browseButton, BorderLayout.EAST);
         configPanel.add(dirPanel, BorderLayout.NORTH);
 
-        // Components selection (checkboxes)
         JPanel componentsPanel = new JPanel();
         componentsPanel.setLayout(new GridLayout(0, 1, 4, 4));
         componentsPanel.setBorder(BorderFactory.createTitledBorder("Components to install"));
@@ -137,7 +216,6 @@ public class GlycoPaintInstallerMac {
 
         configPanel.add(componentsPanel, BorderLayout.CENTER);
 
-        // Buttons panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton installButton = new JButton("Install");
         JButton cancelButton = new JButton("Cancel");
@@ -145,7 +223,6 @@ public class GlycoPaintInstallerMac {
         buttonPanel.add(installButton);
         configPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        // Directory chooser wiring
         browseButton.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -168,13 +245,13 @@ public class GlycoPaintInstallerMac {
             Path chosen = Paths.get(dirField.getText());
             installRoot = chosen.resolve(PRODUCT_NAME);
 
-            // capture selections
             Set<String> apps = new LinkedHashSet<>();
             if (cbViewer.isSelected()) apps.add(APP_VIEWER);
             if (cbGenerateSquares.isSelected()) apps.add(APP_GENERATE_SQUARES);
             if (cbGetOmero.isSelected()) apps.add(APP_GET_OMERO);
             if (cbCreateExperiment.isSelected()) apps.add(APP_CREATE_EXPERIMENT);
             selectedApps = Collections.unmodifiableSet(apps);
+
             installPlugin = cbPlugin.isSelected();
 
             if (selectedApps.isEmpty() && !installPlugin) {
@@ -220,6 +297,10 @@ public class GlycoPaintInstallerMac {
         }
     }
 
+    /* ----------------------------------------------------------------------
+       INSTALLATION WORKER
+       ---------------------------------------------------------------------- */
+
     private void runInstaller() {
         try {
             SwingUtilities.invokeLater(() -> progress.setVisible(true));
@@ -247,7 +328,6 @@ public class GlycoPaintInstallerMac {
 
             if (installPlugin) {
                 if (pluginInstalled) {
-                    // cleanup plugin temp if installed automatically
                     try {
                         Files.walk(pluginTemp)
                                 .sorted(Comparator.reverseOrder())
@@ -259,7 +339,6 @@ public class GlycoPaintInstallerMac {
                     copyDirectory(pluginTemp, manualPlugin);
                 }
             } else {
-                // plugin not selected: discard any extracted plugin temp content
                 try {
                     Files.walk(pluginTemp)
                             .sorted(Comparator.reverseOrder())
@@ -271,6 +350,7 @@ public class GlycoPaintInstallerMac {
                 progress.setVisible(false);
                 closeButton.setEnabled(true);
             });
+
             log("");
             log("Installation complete for " + PRODUCT_NAME + " " + version);
 
@@ -283,7 +363,10 @@ public class GlycoPaintInstallerMac {
         }
     }
 
-    /** Mirrors Windows logic: saved path -> standard paths -> ASK USER */
+    /* ----------------------------------------------------------------------
+       FIJI PLUGIN INSTALLATION
+       ---------------------------------------------------------------------- */
+
     private boolean installFijiPlugin(Path sourceRoot) throws IOException {
         Optional<Path> pluginJar = findPluginJar(sourceRoot);
         if (!pluginJar.isPresent()) {
@@ -292,43 +375,47 @@ public class GlycoPaintInstallerMac {
         }
 
         Path jar = pluginJar.get();
-        // log("Found Fiji plugin JAR: " + jar.getFileName());
 
         String savedFiji = PaintPrefs.getString("Installer", "Fiji Dir", null);
 
-        // 1) Try saved Fiji path
         if (savedFiji != null) {
+            log("Trying saved Fiji path: " + savedFiji);
             Path pluginsDir = Paths.get(savedFiji, "plugins");
+
             if (Files.isDirectory(pluginsDir)) {
+                log("Saved Fiji path is valid.");
                 installJarIntoFijiDir(jar, pluginsDir);
                 PaintPrefs.putString("Installer", "Fiji Dir", savedFiji);
                 return true;
-            } else {
-                log("Saved Fiji path invalid: " + savedFiji);
             }
         }
 
-        // 2) Try standard macOS locations
         for (String base : FIJI_PATHS) {
+            log("Trying auto-detected Fiji path: " + base);
             Path pluginsDir = Paths.get(base, "plugins");
+
             if (Files.isDirectory(pluginsDir)) {
+                log("Found Fiji at: " + base);
                 installJarIntoFijiDir(jar, pluginsDir);
                 PaintPrefs.putString("Installer", "Fiji Dir", base);
                 return true;
             }
         }
 
-        // 3) Ask the user to choose Fiji folder
+        log("Auto-detection failed. Asking user to select Fiji.app…");
         Path manual = askUserForFijiFolder();
         if (manual != null) {
+            log("User selected: " + manual);
+
             Path pluginsDir = manual.resolve("plugins");
             if (Files.isDirectory(pluginsDir)) {
+                log("Selected folder contains plugins directory. Installing.");
                 installJarIntoFijiDir(jar, pluginsDir);
                 PaintPrefs.putString("Installer", "Fiji Dir", manual.toString());
                 return true;
-            } else {
-                log("Selected folder does not contain a 'plugins' directory: " + manual);
             }
+        } else {
+            log("User cancelled Fiji selection dialog.");
         }
 
         log("No valid Fiji.app folder. Plugin will be copied for manual installation.");
@@ -336,7 +423,6 @@ public class GlycoPaintInstallerMac {
     }
 
     private void installJarIntoFijiDir(Path jar, Path pluginsDir) throws IOException {
-        // Delete old plugin(s)
         Files.list(pluginsDir)
                 .filter(p -> {
                     String fn = p.getFileName().toString();
@@ -344,10 +430,13 @@ public class GlycoPaintInstallerMac {
                 })
                 .forEach(p -> { try { Files.delete(p); } catch (IOException ignored) {} });
 
-        // Copy new
         Files.copy(jar, pluginsDir.resolve(jar.getFileName()), StandardCopyOption.REPLACE_EXISTING);
         log("Installed plugin into: " + pluginsDir);
     }
+
+    /* ----------------------------------------------------------------------
+       FILE OPERATIONS
+       ---------------------------------------------------------------------- */
 
     private void removeQuarantineAttributes(Path dir) {
         try {
@@ -390,10 +479,8 @@ public class GlycoPaintInstallerMac {
             while ((entry = zis.getNextEntry()) != null) {
                 String name = entry.getName();
 
-                // Skip macOS fluff
                 if (name.startsWith("__MACOSX/") || name.endsWith(".DS_Store")) continue;
 
-                // Plugin payload
                 if (name.startsWith("plugin/")) {
                     if (!includePlugin) continue;
                     if (!pluginAnnounced) {
@@ -406,16 +493,13 @@ public class GlycoPaintInstallerMac {
                     continue;
                 }
 
-                // Determine top-level component (e.g., "Viewer.app")
                 String top = name;
                 int slash = name.indexOf('/');
                 if (slash >= 0) top = name.substring(0, slash);
 
-                // Only handle .app components and only if selected
                 if (top.endsWith(".app")) {
                     if (!appsToInstall.contains(top)) continue;
 
-                    // Announce once per app
                     if (!announcedApps.contains(top) && name.equals(top + "/")) {
                         log("Installing: " + top);
                         announcedApps.add(top);
@@ -424,12 +508,10 @@ public class GlycoPaintInstallerMac {
                     Path out = targetDir.resolve(name);
                     writeZipEntry(zis, buf, entry, out);
 
-                    // Make executables in Contents/MacOS runnable
                     if (name.contains("/Contents/MacOS/") && !entry.isDirectory()) {
                         out.toFile().setExecutable(true, false);
                     }
                 }
-                // Any other top-level files/dirs are ignored
             }
         }
     }
@@ -461,7 +543,10 @@ public class GlycoPaintInstallerMac {
         });
     }
 
-    /** Prefer paint-fiji-plugin-*.jar; fallback to any .jar under plugin payload */
+    /* ----------------------------------------------------------------------
+       PLUGIN JAR DISCOVERY
+       ---------------------------------------------------------------------- */
+
     private Optional<Path> findPluginJar(Path root) throws IOException {
         try (java.util.stream.Stream<Path> s = Files.walk(root)) {
             Optional<Path> preferred = s
@@ -470,8 +555,10 @@ public class GlycoPaintInstallerMac {
                     .filter(p -> p.getFileName().toString().startsWith("paint-fiji-plugin-"))
                     .sorted((a, b) -> b.getFileName().toString().compareTo(a.getFileName().toString()))
                     .findFirst();
+
             if (preferred.isPresent()) return preferred;
         }
+
         try (java.util.stream.Stream<Path> s2 = Files.walk(root)) {
             return s2
                     .filter(Files::isRegularFile)
@@ -481,16 +568,26 @@ public class GlycoPaintInstallerMac {
         }
     }
 
-    /** Ask the user to pick their Fiji.app folder (only if not found automatically) */
+    /* ----------------------------------------------------------------------
+       USER PROMPT FOR FIJI.APP
+       ---------------------------------------------------------------------- */
+
     private Path askUserForFijiFolder() {
-        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+
+        final Path[] result = new Path[1];
+
+        int choice = JOptionPane.showConfirmDialog(
                 frame,
                 "Fiji.app not found.\nPlease select your Fiji.app folder.",
                 "Fiji Not Found",
+                JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.WARNING_MESSAGE
-        ));
+        );
 
-        final Path[] result = new Path[1];
+        if (choice != JOptionPane.OK_OPTION) {
+            log("User cancelled Fiji selection.");
+            return null;
+        }
 
         try {
             SwingUtilities.invokeAndWait(() -> {
@@ -502,8 +599,9 @@ public class GlycoPaintInstallerMac {
                 chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
                     @Override
                     public boolean accept(File f) {
-                        return f.isDirectory() || f.getName().endsWith(".app");
+                        return f.isDirectory() || f.getName().equalsIgnoreCase("Fiji.app");
                     }
+
                     @Override
                     public String getDescription() {
                         return "Fiji.app";
@@ -512,8 +610,7 @@ public class GlycoPaintInstallerMac {
 
                 int r = chooser.showOpenDialog(frame);
                 if (r == JFileChooser.APPROVE_OPTION) {
-                    File f = chooser.getSelectedFile();
-                    result[0] = f.toPath();
+                    result[0] = chooser.getSelectedFile().toPath();
                 }
             });
         } catch (Exception ignored) {}
