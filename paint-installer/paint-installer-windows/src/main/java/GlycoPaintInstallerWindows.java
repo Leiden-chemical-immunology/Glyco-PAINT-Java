@@ -3,55 +3,46 @@
  *  Package:      paint.installer
  *
  *  PURPOSE:
- *    Provides the Windows installer for Glyco-PAINT, extracting application
- *    components from the embedded payload and installing the Fiji plugin
- *    automatically when possible.
+ *    Provides a Windows installer for the Glyco-PAINT suite. The installer
+ *    unpacks the embedded payload (EXE launchers plus the Fiji plugin) and
+ *    installs the user-selected components. If a Fiji installation is found,
+ *    the plugin JAR is installed automatically.
  *
  *  DESCRIPTION:
- *    The {@code GlycoPaintInstallerWindows} handles installation of all
- *    Windows executables from the payload ZIP and manages automatic detection
- *    of Fiji installations for plugin deployment.
+ *    The installer extracts an embedded ZIP (payload.zip) containing:
+ *      • Viewer.exe
+ *      • Generate Squares.exe
+ *      • Get Omero.exe
+ *      • Create Experiment.exe
+ *      • A Fiji plugin payload in payload/plugin/
  *
- *    Fiji installations are searched in several common Windows locations:
+ *    The user selects which EXE launchers to install and chooses a parent
+ *    installation directory, under which a folder "Glyco-PAINT" is created.
  *
- *      • %ProgramFiles%\Fiji
- *      • %ProgramFiles%\Fiji-win64
- *      • %ProgramFiles%\Fiji-win32
- *      • %ProgramFiles%\Fiji-Windows
+ *    Fiji plugin installation uses the following search order:
  *
- *      • %ProgramFiles(x86)%\Fiji
- *      • %ProgramFiles(x86)%\Fiji-win64
- *      • %ProgramFiles(x86)%\Fiji-win32
- *      • %ProgramFiles(x86)%\Fiji-Windows
+ *      1) Saved Fiji path from preferences (if any)
+ *      2) Auto-detected paths composed from these base directories:
+ *           - %ProgramFiles%
+ *           - %ProgramFiles(x86)%
+ *           - %LOCALAPPDATA%   (usually C:\Users\<user>\AppData\Local)
+ *         combined with these directory names:
+ *           - Fiji
+ *           - Fiji-win64
+ *           - Fiji-win32
+ *           - Fiji-Windows
+ *      3) Ask the user: first show a warning dialog (OK/Cancel); if OK,
+ *         open a directory chooser to select the Fiji folder.
  *
- *      • %LOCALAPPDATA%\Fiji
- *      • %LOCALAPPDATA%\Fiji-win64
- *      • %LOCALAPPDATA%\Fiji-win32
- *      • %LOCALAPPDATA%\Fiji-Windows
- *
- *    Case differences in directory names do not matter because Windows
- *    file system lookups are case-insensitive.
- *
- *    Detection order:
- *
- *      1. A previously saved Fiji directory stored in PaintPrefs.
- *      2. Auto-detected directories listed above.
- *      3. A user-guided selection:
- *           The installer first shows a warning dialog explaining Fiji was not
- *           found. If the user presses OK, a folder picker is opened. If the
- *           user cancels, plugin installation is skipped.
- *
- *    If no Fiji installation is identified, the plugin files are copied to a
- *    manual-installation folder inside the Glyco-PAINT installation directory.
+ *    If no valid Fiji directory (containing a "plugins" subfolder) is found,
+ *    the plugin payload is copied to <installRoot>\plugin\ for manual install.
  *
  *  KEY FEATURES:
- *    • Extracts selected Windows executables from payload.zip.
- *    • Detects Fiji automatically in multiple system locations.
- *    • Allows user manual selection when auto-detection fails.
- *    • Installs or updates the Fiji plugin by replacing older paint-*.jar files.
- *    • Stores previously used install locations and Fiji paths in PaintPrefs.
- *    • Copies plugin for manual installation if no valid Fiji directory is found.
- *    • Provides detailed progress and logging output in the installation window.
+ *    • Installs selected EXE launchers from the payload.
+ *    • Attempts automatic Fiji detection with full logging of attempted paths.
+ *    • Warn-then-choose flow for manual Fiji selection (matches mac behavior).
+ *    • Remembers last install parent and last known Fiji path.
+ *    • Extracts plugin payload and installs/exports it as appropriate.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -81,10 +72,20 @@ import paint.shared.utils.PaintPrefs;
 
 public class GlycoPaintInstallerWindows {
 
+    /* ======================================================================
+       CONSTANTS & SEARCH PATHS
+       ====================================================================== */
+
+    /** Product name used for folder naming and window titles. */
     private static final String PRODUCT_NAME = "Glyco-PAINT";
+
+    /** Embedded ZIP resource name containing the payload. */
     private static final String PAYLOAD_NAME = "/payload.zip";
 
-    // Common Fiji locations
+    /**
+     * Windows Fiji directory names to try under each base path.
+     * NOTE: Windows file systems are case-insensitive by default.
+     */
     private static final String[] FIJI_DIR_NAMES = {
             "Fiji",
             "Fiji-win64",
@@ -92,6 +93,18 @@ public class GlycoPaintInstallerWindows {
             "Fiji-Windows"
     };
 
+    /**
+     * Constructs the list of candidate Fiji directories by combining
+     * these environment variables (if defined) with FIJI_DIR_NAMES:
+     *   - ProgramFiles
+     *   - ProgramFiles(x86)
+     *   - LOCALAPPDATA
+     *
+     * Examples (depending on system):
+     *   C:\Program Files\Fiji
+     *   C:\Program Files (x86)\Fiji-win64
+     *   C:\Users\<user>\AppData\Local\Fiji-Windows
+     */
     private static String[] buildFijiPaths() {
         String[] bases = {
                 envPath("ProgramFiles"),
@@ -110,16 +123,23 @@ public class GlycoPaintInstallerWindows {
         return out.toArray(new String[0]);
     }
 
+    /** All auto-detected candidate Fiji paths (constructed at class load). */
     private static final String[] FIJI_PATHS = buildFijiPaths();
 
+    /** Helper to read an environment variable, returning empty string if absent. */
     private static String envPath(String key) {
         String v = System.getenv(key);
         return v == null ? "" : v;
     }
 
+    /** Preferences node/keys for this installer flavor. */
     private static final String PREF_NODE        = "InstallerWindows";
     private static final String KEY_PARENT_DIR   = "InstallDirParent";
     private static final String KEY_FIJI_DIR     = "Fiji Dir";
+
+    /* ======================================================================
+       UI COMPONENTS
+       ====================================================================== */
 
     private final JFrame frame;
     private final JProgressBar progress;
@@ -132,12 +152,27 @@ public class GlycoPaintInstallerWindows {
     private JCheckBox cbExperiment;
     private JCheckBox cbPlugin;
 
+    /* ======================================================================
+       STATE
+       ====================================================================== */
+
+    /** Final install root (parent chosen by user + PRODUCT_NAME). */
     private Path installRoot;
+
+    /** Version string extracted from payload. */
     private String version = "unknown";
+
+    /* ======================================================================
+       ENTRY POINT
+       ====================================================================== */
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new GlycoPaintInstallerWindows().show());
     }
+
+    /* ======================================================================
+       CONSTRUCTOR & VERSION DETECTION
+       ====================================================================== */
 
     public GlycoPaintInstallerWindows() {
         detectVersion();
@@ -169,6 +204,10 @@ public class GlycoPaintInstallerWindows {
         frame.add(bottom, BorderLayout.SOUTH);
     }
 
+    /**
+     * Extracts a version string from filenames in payload.zip matching:
+     *   paint-<module>-X.Y[.Z]
+     */
     private void detectVersion() {
         try (InputStream in = getClass().getResourceAsStream(PAYLOAD_NAME);
              ZipInputStream zis = new ZipInputStream(in)) {
@@ -184,6 +223,10 @@ public class GlycoPaintInstallerWindows {
         } catch (IOException ignored) {}
     }
 
+    /* ======================================================================
+       MAIN UI
+       ====================================================================== */
+
     private void show() {
         String defaultParent = PaintPrefs.getString(
                 PREF_NODE,
@@ -197,6 +240,7 @@ public class GlycoPaintInstallerWindows {
         JPanel top = new JPanel(new BorderLayout(10, 10));
         top.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
 
+        /* Install directory selection */
         JPanel dirPanel = new JPanel(new BorderLayout(6, 0));
         JLabel dirLabel = new JLabel("Install location (parent folder):");
         JTextField dirField = new JTextField(parent.toString());
@@ -207,7 +251,7 @@ public class GlycoPaintInstallerWindows {
         dirPanel.add(browseButton, BorderLayout.EAST);
         top.add(dirPanel, BorderLayout.NORTH);
 
-        // Component selection
+        /* Component selection */
         JPanel compPanel = new JPanel();
         compPanel.setLayout(new GridLayout(0, 1));
         compPanel.setBorder(BorderFactory.createTitledBorder("Select components to install"));
@@ -226,6 +270,7 @@ public class GlycoPaintInstallerWindows {
 
         top.add(compPanel, BorderLayout.CENTER);
 
+        /* Action buttons */
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         JButton installButton = new JButton("Install");
         JButton cancelButton  = new JButton("Cancel");
@@ -235,6 +280,7 @@ public class GlycoPaintInstallerWindows {
 
         frame.add(top, BorderLayout.NORTH);
 
+        /* Directory chooser */
         browseButton.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();
             chooser.setDialogTitle("Choose installation parent folder");
@@ -252,6 +298,7 @@ public class GlycoPaintInstallerWindows {
 
         cancelButton.addActionListener(e -> System.exit(0));
 
+        /* Start installation */
         installButton.addActionListener(e -> {
             Path chosenParent = Paths.get(dirField.getText()).normalize();
             installRoot = chosenParent.resolve(PRODUCT_NAME);
@@ -279,6 +326,10 @@ public class GlycoPaintInstallerWindows {
         frame.setVisible(true);
     }
 
+    /* ======================================================================
+       INSTALLATION WORKER
+       ====================================================================== */
+
     private void runInstaller() {
         try {
             SwingUtilities.invokeLater(() -> progress.setVisible(true));
@@ -288,18 +339,23 @@ public class GlycoPaintInstallerWindows {
             Path tmpZip    = Files.createTempFile("glyco-paint", ".zip");
             Path pluginTmp = Files.createTempDirectory("glyco-paint-plugin");
 
+            /* Copy embedded payload to temp */
             try (InputStream in = getClass().getResourceAsStream(PAYLOAD_NAME)) {
                 if (in == null) throw new IOException("Missing embedded payload.zip");
                 Files.copy(in, tmpZip, StandardCopyOption.REPLACE_EXISTING);
             }
 
+            /* Extract EXEs and plugin payload */
             extractZip(tmpZip, installRoot, pluginTmp);
 
+            /* Try to install Fiji plugin (if selected) */
             boolean pluginInstalled = installFijiPlugin(pluginTmp);
 
+            /* Cleanup temp ZIP */
             Files.deleteIfExists(tmpZip);
 
             if (pluginInstalled) {
+                /* Remove temp plugin payload */
                 Files.walk(pluginTmp)
                         .sorted((a, b) -> b.compareTo(a))
                         .forEach(p -> p.toFile().delete());
@@ -327,7 +383,19 @@ public class GlycoPaintInstallerWindows {
         }
     }
 
-    /** Only install plugin if the checkbox is selected */
+    /* ======================================================================
+       FIJI PLUGIN INSTALLATION (Windows)
+       ====================================================================== */
+
+    /**
+     * Attempts to install the Fiji plugin only if the user selected the
+     * "Fiji Plugin" checkbox. Search order:
+     *  1) Saved path
+     *  2) Auto-detected paths (see header for full list)
+     *  3) Ask the user (warning first, then chooser if OK)
+     *
+     * Returns true if installed into a valid Fiji\plugins directory, else false.
+     */
     private boolean installFijiPlugin(Path pluginSourceRoot) throws IOException {
         if (!cbPlugin.isSelected()) {
             log("Fiji plugin skipped by user.");
@@ -335,7 +403,6 @@ public class GlycoPaintInstallerWindows {
         }
 
         Optional<Path> pluginJar = findPluginJar(pluginSourceRoot);
-
         if (!pluginJar.isPresent()) {
             log("No Fiji plugin JAR found in payload under " + pluginSourceRoot);
             return false;
@@ -344,6 +411,7 @@ public class GlycoPaintInstallerWindows {
         Path jar = pluginJar.get();
         log("Found Fiji plugin JAR: " + jar.getFileName());
 
+        /* 1) Saved path */
         String saved = PaintPrefs.getString(PREF_NODE, KEY_FIJI_DIR, null);
         if (saved != null) {
             log("Trying saved Fiji path: " + saved);
@@ -357,6 +425,7 @@ public class GlycoPaintInstallerWindows {
             }
         }
 
+        /* 2) Auto-detected list */
         for (String base : FIJI_PATHS) {
             if (base == null || base.isEmpty()) continue;
 
@@ -368,11 +437,10 @@ public class GlycoPaintInstallerWindows {
                 installJarIntoFijiDir(jar, pluginsDir);
                 PaintPrefs.putString(PREF_NODE, KEY_FIJI_DIR, base);
                 return true;
-            } else {
-                // log("Not a valid Fiji install: " + pluginsDir);
             }
         }
 
+        /* 3) Ask the user — show warning, then chooser only if OK */
         Path manual = askUserForFijiFolder();
         if (manual != null) {
             Path pluginsDir = manual.resolve("plugins");
@@ -387,6 +455,7 @@ public class GlycoPaintInstallerWindows {
         return false;
     }
 
+    /** Deletes old paint-*.jar and copies the new plugin into Fiji\plugins. */
     private void installJarIntoFijiDir(Path jar, Path pluginsDir) throws IOException {
         Files.list(pluginsDir)
                 .filter(p -> p.getFileName().toString().startsWith("paint-") && p.toString().endsWith(".jar"))
@@ -396,7 +465,14 @@ public class GlycoPaintInstallerWindows {
         log("Installed plugin to: " + pluginsDir);
     }
 
-    /** Filtering only selected EXEs */
+    /* ======================================================================
+       ZIP EXTRACTION & FILE UTILITIES
+       ====================================================================== */
+
+    /**
+     * Extracts the payload, installing only selected EXEs and extracting
+     * plugin payload into a temp directory.
+     */
     private void extractZip(Path zipFile, Path targetDir, Path pluginTemp) throws IOException {
         try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(zipFile))) {
             ZipEntry entry;
@@ -406,9 +482,10 @@ public class GlycoPaintInstallerWindows {
             while ((entry = zis.getNextEntry()) != null) {
                 String name = entry.getName();
 
+                /* Skip macOS fluff if present in ZIP */
                 if (name.startsWith("__MACOSX/") || name.endsWith(".DS_Store")) continue;
 
-                // Plugin
+                /* Plugin payload */
                 if (name.startsWith("plugin/")) {
                     if (!pluginStart) {
                         pluginStart = true;
@@ -420,13 +497,12 @@ public class GlycoPaintInstallerWindows {
                     continue;
                 }
 
-                // Skip EXEs not selected
+                /* Respect user selections for EXEs */
                 if (name.equals("Viewer.exe") && !cbViewer.isSelected()) continue;
                 if (name.equals("Generate Squares.exe") && !cbGenerate.isSelected()) continue;
                 if (name.equals("Get Omero.exe") && !cbOmero.isSelected()) continue;
                 if (name.equals("Create Experiment.exe") && !cbExperiment.isSelected()) continue;
 
-                // Log EXEs
                 if (name.toLowerCase().endsWith(".exe")) {
                     log("Installing: " + name);
                 }
@@ -437,6 +513,7 @@ public class GlycoPaintInstallerWindows {
         }
     }
 
+    /** Writes a single ZIP entry to disk, creating parent directories as needed. */
     private void writeZipEntry(ZipInputStream zis, byte[] buf, ZipEntry entry, Path out) throws IOException {
         if (entry.isDirectory()) {
             Files.createDirectories(out);
@@ -449,6 +526,7 @@ public class GlycoPaintInstallerWindows {
         }
     }
 
+    /** Recursively copies one directory tree into another (REPLACE_EXISTING). */
     private void copyDirectory(Path src, Path dst) {
         try {
             Files.walk(src).forEach(source -> {
@@ -466,6 +544,7 @@ public class GlycoPaintInstallerWindows {
         } catch (IOException ignored) {}
     }
 
+    /** Appends a line to the UI log area on the EDT. */
     private void log(String msg) {
         SwingUtilities.invokeLater(() -> {
             log.append(msg + "\n");
@@ -473,12 +552,18 @@ public class GlycoPaintInstallerWindows {
         });
     }
 
-    /** Ask the user to pick their Fiji folder.
-     First show warning. If user presses OK -> open chooser.
-     If user presses Cancel -> return null. */
+    /* ======================================================================
+       USER PROMPT FOR FIJI (Warn then Choose)
+       ====================================================================== */
+
+    /**
+     * Shows a warning dialog explaining Fiji wasn't found. If user presses OK,
+     * opens a folder chooser for the user to select the Fiji directory. If the
+     * user cancels either dialog, returns null.
+     */
     private Path askUserForFijiFolder() {
 
-        // 1. Show warning and wait for user interaction
+        // 1) Warning first (modal)
         int choice = JOptionPane.showConfirmDialog(
                 frame,
                 "Fiji installation not found.\nPlease select your Fiji folder (contains Fiji.exe).",
@@ -495,7 +580,7 @@ public class GlycoPaintInstallerWindows {
 
         final Path[] result = new Path[1];
 
-        // 3. Now open the directory chooser in a separate EDT call
+        // 2) Only open chooser after the warning is dismissed
         try {
             SwingUtilities.invokeAndWait(() -> {
                 JFileChooser chooser = new JFileChooser();
@@ -515,9 +600,16 @@ public class GlycoPaintInstallerWindows {
         return result[0];
     }
 
+    /* ======================================================================
+       PLUGIN JAR DISCOVERY
+       ====================================================================== */
+
+    /**
+     * Prefer paint-fiji-plugin-*.jar; fallback to any .jar under plugin payload.
+     * If multiple candidates exist, choose the lexicographically last name.
+     */
     private Optional<Path> findPluginJar(Path root) throws IOException {
         try (java.util.stream.Stream<Path> s = Files.walk(root)) {
-            // Prefer paint-fiji-plugin-*.jar if present, else any .jar under plugin payload
             Optional<Path> preferred = s
                     .filter(Files::isRegularFile)
                     .filter(p -> p.getFileName().toString().endsWith(".jar"))
@@ -525,7 +617,6 @@ public class GlycoPaintInstallerWindows {
                     .sorted((a, b) -> b.getFileName().toString().compareTo(a.getFileName().toString()))
                     .findFirst();
             if (preferred.isPresent()) return preferred;
-
         }
         try (java.util.stream.Stream<Path> s2 = Files.walk(root)) {
             return s2
