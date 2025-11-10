@@ -8,9 +8,11 @@
 // =================================================================================================
 package release;
 
-import java.io.*;
-import java.nio.file.*;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
+import java.util.List;
 
 public class ReleaseNewVersion {
 
@@ -59,7 +61,7 @@ public class ReleaseNewVersion {
 
         System.out.println("✅ Effective configuration:");
         System.out.println("   bump-version : " + (bumpVersion ? "yes" : "no"));
-        System.out.println("   release      : " + (doRelease   ? "yes" : "no"));
+        System.out.println("   release      : " + (doRelease ? "yes" : "no"));
         System.out.println();
 
         try {
@@ -107,37 +109,51 @@ public class ReleaseNewVersion {
             currentVersion = currentVersion + "-SNAPSHOT";
         }
 
-        VersionInfo versionInfo = PomUtils.computeVersions(currentVersion, null);
-
-        System.out.println("🔢  Current:  " + currentVersion);
-        System.out.println("🏷️  Release: " + versionInfo.releaseVersion);
-        System.out.println("🚀 Next dev: " + versionInfo.nextDevVersion);
+        VersionInfo versionInfo = null;   // created only if bump or release requested
 
         // -------------------------------------------------------------
         // MODE 1 : Rebuild only
         // -------------------------------------------------------------
         if (!bumpVersion && !doRelease) {
+
             System.out.println("ℹ️  Rebuild-only mode. No version changes.");
+            System.out.println("ℹ️  Using version: " + currentVersion);
+
             MavenSupport.installParentPom();
             MavenSupport.rebuildSharedUtils();
-        }
 
+            // continue into build-artifacts block using currentVersion
+            versionInfo = new VersionInfo(currentVersion, currentVersion + "-IGNORED");
+
+        }
         // -------------------------------------------------------------
         // MODE 2 : Bump version only
         // -------------------------------------------------------------
         else if (bumpVersion && !doRelease) {
+
+            versionInfo = PomUtils.computeVersions(currentVersion, null);
+
             System.out.println("🔧 Bumping version only (no release).");
+            System.out.println("🔢  Current : " + currentVersion);
+            System.out.println("🏷️  Release : " + versionInfo.releaseVersion);
+            System.out.println("🚀 Next dev : " + versionInfo.nextDevVersion);
 
             MavenSupport.alignAllPomVersions(versionInfo.releaseVersion);
             MavenSupport.installParentPom();
             MavenSupport.rebuildSharedUtils();
-        }
 
+        }
         // -------------------------------------------------------------
-        // MODE 3 : Full release
+        // MODE 3 : Full release (bump + release)
         // -------------------------------------------------------------
         else {
+
+            versionInfo = PomUtils.computeVersions(currentVersion, null);
+
             System.out.println("🚀 Full release mode.");
+            System.out.println("🔢  Current : " + currentVersion);
+            System.out.println("🏷️  Release : " + versionInfo.releaseVersion);
+            System.out.println("🚀 Next dev : " + versionInfo.nextDevVersion);
 
             MavenSupport.installParentPomAsRelease(versionInfo.releaseVersion);
             MavenSupport.alignAllPomVersions(versionInfo.releaseVersion);

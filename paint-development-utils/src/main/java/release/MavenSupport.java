@@ -1,11 +1,14 @@
 package release;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 final class MavenSupport {
-    private MavenSupport() {}
+    private MavenSupport() {
+    }
 
     static void rebuildSharedUtils() throws IOException, InterruptedException {
         Path utilsDir = PathsConfig.BASE_PATH.resolve("paint-shared-utils");
@@ -26,7 +29,9 @@ final class MavenSupport {
         pb.directory(utilsDir.toFile());
         Process process = ProcessRunner.startAndFilterOutput(pb, "paint-shared-utils");
         int exit = process.waitFor();
-        if (exit != 0) throw new RuntimeException("❌ Failed to install paint-shared-utils. Exit code: " + exit);
+        if (exit != 0) {
+            throw new RuntimeException("❌ Failed to install paint-shared-utils. Exit code: " + exit);
+        }
         System.out.println("✅ paint-shared-utils installed successfully (refreshed local repo).");
     }
 
@@ -37,7 +42,9 @@ final class MavenSupport {
 
         List<String> cmd = new ArrayList<String>();
         cmd.addAll(Arrays.asList("mvn", "-U", "-q", "clean", "package"));
-        if (profile != null && profile.trim().length() > 0) cmd.add(profile.trim());
+        if (profile != null && profile.trim().length() > 0) {
+            cmd.add(profile.trim());
+        }
         cmd.addAll(Arrays.asList(
                 "-Dmaven.repo.local=" + localRepo,
                 "-Dmaven.artifact.threads=1"
@@ -48,7 +55,9 @@ final class MavenSupport {
         pb.directory(moduleDir.toFile());
         Process process = ProcessRunner.startAndFilterOutput(pb, moduleDir.getFileName().toString());
         int exit = process.waitFor();
-        if (exit != 0) throw new RuntimeException("❌ Build failed for " + moduleDir.getFileName() + " (" + profile + ")");
+        if (exit != 0) {
+            throw new RuntimeException("❌ Build failed for " + moduleDir.getFileName() + " (" + profile + ")");
+        }
 
         FileOps.copyMatchingFiles(moduleDir.resolve("target"), glob, destDir);
         Thread.sleep(2000);
@@ -70,7 +79,9 @@ final class MavenSupport {
         pb.directory(moduleDir.toFile());
         Process process = ProcessRunner.startAndFilterOutput(pb, moduleDir.getFileName().toString());
         int exit = process.waitFor();
-        if (exit != 0) throw new RuntimeException("❌ macOS build failed for " + moduleDir.getFileName());
+        if (exit != 0) {
+            throw new RuntimeException("❌ macOS build failed for " + moduleDir.getFileName());
+        }
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(moduleDir.resolve("target"), "*.app")) {
             for (Path appBundle : stream) {
@@ -86,7 +97,9 @@ final class MavenSupport {
     static void installParentPom() throws IOException, InterruptedException {
         Path parentPom = PathsConfig.BASE_PATH.resolve("pom.xml");
         System.out.println("\n🧩 Installing parent POM locally...");
-        if (!Files.exists(parentPom)) throw new IOException("Parent POM not found at " + parentPom);
+        if (!Files.exists(parentPom)) {
+            throw new IOException("Parent POM not found at " + parentPom);
+        }
 
         List<String> cmd = Arrays.asList(
                 "mvn", "-q", "-U", "install", "-N", "-DskipTests",
@@ -98,7 +111,9 @@ final class MavenSupport {
         pb.directory(PathsConfig.BASE_PATH.toFile());
         Process process = ProcessRunner.startAndFilterOutput(pb, "paint-parent");
         int exit = process.waitFor();
-        if (exit != 0) throw new RuntimeException("❌ Failed to install paint-parent. Exit code: " + exit);
+        if (exit != 0) {
+            throw new RuntimeException("❌ Failed to install paint-parent. Exit code: " + exit);
+        }
 
         System.out.println("✅ Parent POM installed locally.");
     }

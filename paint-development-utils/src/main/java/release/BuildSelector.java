@@ -2,32 +2,20 @@ package release;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
-import java.nio.file.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BuildSelector {
 
     private static final Path PROJECT_ROOT =
             Paths.get(System.getProperty("user.dir")).toAbsolutePath();
-
-    private JFrame frame;
-    private JTextArea log;
-    private JButton runBtn, closeBtn;
-
-    private static class Task {
-        final String label;
-        final Path moduleDir;
-        final List<String> mavenCmd;
-
-        Task(String label, String module, String... cmd) {
-            this.label = label;
-            this.moduleDir = PROJECT_ROOT.resolve(module);
-            this.mavenCmd = Arrays.asList(cmd);
-        }
-    }
-
     private final List<Task> tasks = Arrays.asList(
             // macOS apps
             new Task("Viewer.app", "paint-viewer",
@@ -59,8 +47,10 @@ public class BuildSelector {
             new Task("Fiji Plugin (shaded JAR)", "paint-fiji-plugin",
                      "mvn", "-q", "-U", "clean", "install")
     );
-
     private final Map<Task, JCheckBox> boxes = new LinkedHashMap<>();
+    private JFrame frame;
+    private JTextArea log;
+    private JButton runBtn, closeBtn;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new BuildSelector().show());
@@ -202,8 +192,7 @@ public class BuildSelector {
         pb.redirectErrorStream(true);
 
         Process p = pb.start();
-        try (BufferedReader r =
-                     new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
 
             String line;
             while ((line = r.readLine()) != null) {
@@ -227,5 +216,17 @@ public class BuildSelector {
             log.append(s + "\n");
             log.setCaretPosition(log.getDocument().getLength());
         });
+    }
+
+    private static class Task {
+        final String label;
+        final Path moduleDir;
+        final List<String> mavenCmd;
+
+        Task(String label, String module, String... cmd) {
+            this.label = label;
+            this.moduleDir = PROJECT_ROOT.resolve(module);
+            this.mavenCmd = Arrays.asList(cmd);
+        }
     }
 }

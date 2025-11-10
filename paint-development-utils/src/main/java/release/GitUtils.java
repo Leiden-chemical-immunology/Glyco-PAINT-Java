@@ -1,11 +1,14 @@
 package release;
 
-import java.io.*;
-import java.nio.file.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Path;
+import java.util.List;
 
 final class GitUtils {
-    private GitUtils() {}
+    private GitUtils() {
+    }
 
     static void runCommand(List<String> cmd, Path dir) throws IOException, InterruptedException {
         System.out.println("🔧 Running: " + String.join(" ", cmd));
@@ -13,7 +16,9 @@ final class GitUtils {
         pb.directory(dir.toFile());
         pb.inheritIO();
         int exit = pb.start().waitFor();
-        if (exit != 0) throw new RuntimeException("❌ Command failed: " + String.join(" ", cmd));
+        if (exit != 0) {
+            throw new RuntimeException("❌ Command failed: " + String.join(" ", cmd));
+        }
     }
 
     static boolean tagExists(String tagName, Path repoDir) throws IOException, InterruptedException {
@@ -24,7 +29,10 @@ final class GitUtils {
         boolean exists = false;
         String line;
         while ((line = br.readLine()) != null) {
-            if (line.trim().equals(tagName)) { exists = true; break; }
+            if (line.trim().equals(tagName)) {
+                exists = true;
+                break;
+            }
         }
         checkProc.waitFor();
         return exists;
@@ -36,7 +44,9 @@ final class GitUtils {
         tagPb.directory(repoDir.toFile());
         tagPb.inheritIO();
         Process tagProc = tagPb.start();
-        if (tagProc.waitFor() != 0) throw new RuntimeException("❌ Failed to create local tag " + tagName);
+        if (tagProc.waitFor() != 0) {
+            throw new RuntimeException("❌ Failed to create local tag " + tagName);
+        }
         System.out.println("✅ Created local tag " + tagName);
     }
 
@@ -46,7 +56,9 @@ final class GitUtils {
         pushPb.directory(repoDir.toFile());
         pushPb.inheritIO();
         Process pushProc = pushPb.start();
-        if (pushProc.waitFor() != 0) throw new RuntimeException("❌ Failed to push tag " + tagName);
+        if (pushProc.waitFor() != 0) {
+            throw new RuntimeException("❌ Failed to push tag " + tagName);
+        }
         System.out.println("✅ Successfully pushed tag " + tagName);
     }
 }

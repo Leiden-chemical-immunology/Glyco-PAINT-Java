@@ -6,7 +6,10 @@ import java.util.Comparator;
 import java.util.function.Predicate;
 
 final class FileOps {
-    private FileOps() {}
+
+    private FileOps() {
+
+    }
 
     static void copyMatchingFiles(Path fromDir, String glob, Path destDir) throws IOException {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(fromDir, glob)) {

@@ -1,20 +1,29 @@
 package release;
 
-import org.w3c.dom.*;
-import javax.xml.parsers.*;
-import java.io.*;
-import java.nio.file.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 final class PomUtils {
-    private PomUtils() {}
+    private PomUtils() {
+    }
 
     static String getVersionFromPom(Path pomPath) {
         try (InputStream in = Files.newInputStream(pomPath)) {
-            DocumentBuilder b = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document doc = b.parse(in);
-            NodeList list = doc.getElementsByTagName("version");
-            if (list.getLength() > 0) return list.item(0).getTextContent().trim();
+            DocumentBuilder b    = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document        doc  = b.parse(in);
+            NodeList        list = doc.getElementsByTagName("version");
+            if (list.getLength() > 0) {
+                return list.item(0).getTextContent().trim();
+            }
         } catch (Exception e) {
             System.err.println("⚠️  Could not read version from " + pomPath + ": " + e.getMessage());
         }

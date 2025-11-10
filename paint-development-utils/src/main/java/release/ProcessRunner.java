@@ -1,10 +1,13 @@
 package release;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Map;
 
 final class ProcessRunner {
-    private ProcessRunner() {}
+    private ProcessRunner() {
+    }
 
     static void enforceJava8(ProcessBuilder pb) {
         try {
@@ -33,7 +36,9 @@ final class ProcessRunner {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                if (line.contains("sun.misc.Unsafe") || line.contains("HiddenClassDefiner")) continue;
+                if (line.contains("sun.misc.Unsafe") || line.contains("HiddenClassDefiner")) {
+                    continue;
+                }
                 System.out.println("[" + moduleName + "] " + line);
             }
         }
