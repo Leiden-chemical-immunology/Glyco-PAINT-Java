@@ -1,4 +1,10 @@
 package release;
 
-public class VersionInfo {
+final class VersionInfo {
+    final String releaseVersion;
+    final String nextDevVersion;
+    VersionInfo(String release, String next) {
+        this.releaseVersion = release;
+        this.nextDevVersion = next;
+    }
 }

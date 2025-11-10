@@ -1,4 +1,52 @@
 package release;
 
-public class GitUtils {
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+
+final class GitUtils {
+    private GitUtils() {}
+
+    static void runCommand(List<String> cmd, Path dir) throws IOException, InterruptedException {
+        System.out.println("🔧 Running: " + String.join(" ", cmd));
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.directory(dir.toFile());
+        pb.inheritIO();
+        int exit = pb.start().waitFor();
+        if (exit != 0) throw new RuntimeException("❌ Command failed: " + String.join(" ", cmd));
+    }
+
+    static boolean tagExists(String tagName, Path repoDir) throws IOException, InterruptedException {
+        ProcessBuilder checkPb = new ProcessBuilder("git", "tag", "--list", tagName);
+        checkPb.directory(repoDir.toFile());
+        Process checkProc = checkPb.start();
+        BufferedReader br = new BufferedReader(new InputStreamReader(checkProc.getInputStream()));
+        boolean exists = false;
+        String line;
+        while ((line = br.readLine()) != null) {
+            if (line.trim().equals(tagName)) { exists = true; break; }
+        }
+        checkProc.waitFor();
+        return exists;
+    }
+
+    static void createLocalTag(String tagName, Path repoDir) throws IOException, InterruptedException {
+        System.out.println("🏷️  Creating local tag " + tagName);
+        ProcessBuilder tagPb = new ProcessBuilder("git", "tag", "-a", tagName, "-m", "Release " + tagName);
+        tagPb.directory(repoDir.toFile());
+        tagPb.inheritIO();
+        Process tagProc = tagPb.start();
+        if (tagProc.waitFor() != 0) throw new RuntimeException("❌ Failed to create local tag " + tagName);
+        System.out.println("✅ Created local tag " + tagName);
+    }
+
+    static void pushTag(String tagName, Path repoDir) throws IOException, InterruptedException {
+        System.out.println("📤 Pushing tag " + tagName);
+        ProcessBuilder pushPb = new ProcessBuilder("git", "push", "origin", tagName);
+        pushPb.directory(repoDir.toFile());
+        pushPb.inheritIO();
+        Process pushProc = pushPb.start();
+        if (pushProc.waitFor() != 0) throw new RuntimeException("❌ Failed to push tag " + tagName);
+        System.out.println("✅ Successfully pushed tag " + tagName);
+    }
 }
