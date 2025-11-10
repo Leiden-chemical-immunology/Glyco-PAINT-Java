@@ -11,41 +11,50 @@ import static paint.shared.dialogs.ProjectDialog.DialogMode;
 
 public class BottomBarPanel {
 
-    private final JPanel    panel = new JPanel(new BorderLayout());
+    private final JPanel panel = new JPanel(new BorderLayout());
 
     private final JCheckBox saveExperiments;
     private final JCheckBox verbose;
     private final JCheckBox sweep; // TRACKMATE only
 
-    private final JButton   okBtn;
-    private final JButton   cancelBtn;
+    private final JButton okBtn;
+    private final JButton cancelBtn;
 
-    private Runnable onOk = () -> {};
-    private Runnable onCancel = () -> {};
-    private Consumer<Boolean> onVerbose = v -> {};
-    private Consumer<Boolean> onSweep   = s -> {};
+    private Runnable onOk = () -> {
+    };
+
+    private Runnable onCancel = () -> {
+    };
+
+    private Consumer<Boolean> onVerbose = v -> {
+    };
+
+    private Consumer<Boolean> onSweep = s -> {
+    };
 
     public BottomBarPanel(DialogMode mode, boolean verboseDefault, PaintConfig cfg) {
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JPanel right= new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
         saveExperiments = new JCheckBox("Save Experiments", false);
-        verbose         = new JCheckBox("Verbose", verboseDefault);
+        verbose = new JCheckBox("Verbose", verboseDefault);
 
         left.add(saveExperiments);
         left.add(verbose);
 
-        sweep = (mode == DialogMode.TRACKMATE)
-                ? new JCheckBox("Sweep", PaintConfig.getBoolean("Sweep Settings", "Sweep", false))
-                : null;
-        if (sweep != null) left.add(sweep);
+        if (mode == DialogMode.TRACKMATE) {
+            sweep = new JCheckBox("Sweep", false);
+            left.add(sweep);
+        } else {
+            sweep = null;
+        }
 
-        okBtn     = new JButton("OK");
+        okBtn = new JButton("OK");
         cancelBtn = new JButton("Cancel");
         right.add(okBtn);
         right.add(cancelBtn);
 
-        panel.add(left,  BorderLayout.WEST);
+        panel.add(left, BorderLayout.WEST);
         panel.add(right, BorderLayout.EAST);
 
         // wire
@@ -62,28 +71,50 @@ public class BottomBarPanel {
         cancelBtn.addActionListener(e -> onCancel.run());
     }
 
-    public JPanel component() { return panel; }
+    public JPanel component() {
+        return panel;
+    }
 
-    public void onOk(Runnable r)         { this.onOk = (r != null ? r : () -> {}); }
-    public void onCancel(Runnable r)     { this.onCancel = (r != null ? r : () -> {}); }
-    public void onVerboseToggle(Consumer<String> noopLog) { this.onVerbose = v -> {}; }
-    public void onSweepToggle(Consumer<Boolean> c) { this.onSweep = (c != null ? c : s -> {}); }
+    public void onOk(Runnable r) {
+        this.onOk = (r != null ? r : () -> {
+        });
+    }
+
+    public void onCancel(Runnable r) {
+        this.onCancel = (r != null ? r : () -> {
+        });
+    }
+
+    public void onVerboseToggle(Consumer<String> noopLog) {
+        this.onVerbose = v -> {
+        };
+    }
+
+    public void onSweepToggle(Consumer<Boolean> c) {
+        this.onSweep = (c != null ? c : s -> {
+        });
+    }
 
     public void setEnabled(boolean enabled) {
         saveExperiments.setEnabled(enabled);
         verbose.setEnabled(enabled);
-        if (sweep != null) sweep.setEnabled(enabled);
         okBtn.setEnabled(enabled);
         cancelBtn.setEnabled(enabled);
     }
 
     public void setSweepSelected(boolean selected) {
-        if (sweep != null) sweep.setSelected(selected);
+        if (sweep != null) {
+            sweep.setSelected(selected);
+        }
     }
 
-    public boolean isSaveExperiments() { return saveExperiments.isSelected(); }
+    public boolean isSaveExperiments() {
+        return saveExperiments.isSelected();
+    }
 
-    public void updateOkEnabled(boolean enabled) { okBtn.setEnabled(enabled); }
+    public void updateOkEnabled(boolean enabled) {
+        okBtn.setEnabled(enabled);
+    }
 
     public void showRunning() {
         okBtn.setText("Running...");

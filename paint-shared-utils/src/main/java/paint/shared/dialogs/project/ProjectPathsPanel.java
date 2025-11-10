@@ -1,7 +1,5 @@
 package paint.shared.dialogs.project;
 
-import paint.shared.utils.PaintLogger;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
@@ -20,9 +18,12 @@ public class ProjectPathsPanel {
     private final JButton    browseProjectBtn;
     private final JButton    browseImagesBtn;
 
-    private Runnable rootsChanged = () -> {};
-    private Consumer<File> onProjectChosen = f -> {};
-    private Consumer<File> onImagesChosen  = f -> {};
+    private Runnable       rootsChanged    = () -> {
+    };
+    private Consumer<File> onProjectChosen = f -> {
+    };
+    private Consumer<File> onImagesChosen  = f -> {
+    };
 
     public ProjectPathsPanel(DialogMode mode, Path initialProject) {
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -113,10 +114,17 @@ public class ProjectPathsPanel {
         }
     }
 
-    public JPanel component() { return panel; }
+    public JPanel component() {
+        return panel;
+    }
 
-    public String projectRootText() { return projectRootField.getText().trim(); }
-    public String imagesRootText()  { return imagesRootField.getText().trim(); }
+    public String projectRootText() {
+        return projectRootField.getText().trim();
+    }
+
+    public String imagesRootText() {
+        return imagesRootField.getText().trim();
+    }
 
     public boolean isProjectRootValid() {
         return new File(projectRootText()).isDirectory();
@@ -140,16 +148,29 @@ public class ProjectPathsPanel {
         }
     }
 
-    public void onRootsChanged(Runnable r) { this.rootsChanged = (r != null ? r : () -> {}); }
-    public void onBrowseProject(Consumer<File> c) { this.onProjectChosen = (c != null ? c : f -> {}); }
-    public void onBrowseImages(Consumer<File> c)  { this.onImagesChosen  = (c != null ? c : f -> {}); }
+    public void onRootsChanged(Runnable r) {
+        this.rootsChanged = (r != null ? r : () -> {
+        });
+    }
+
+    public void onBrowseProject(Consumer<File> c) {
+        this.onProjectChosen = (c != null ? c : f -> {
+        });
+    }
+
+    public void onBrowseImages(Consumer<File> c) {
+        this.onImagesChosen = (c != null ? c : f -> {
+        });
+    }
 
     private void onTextChanged(DocumentEvent e) {
         rootsChanged.run();
     }
 
     private static String valueOrHome(String s) {
-        if (s == null || s.trim().isEmpty()) return System.getProperty("user.home");
+        if (s == null || s.trim().isEmpty()) {
+            return System.getProperty("user.home");
+        }
         File f = new File(s.trim());
         return f.isDirectory() ? f.getAbsolutePath() : System.getProperty("user.home");
     }

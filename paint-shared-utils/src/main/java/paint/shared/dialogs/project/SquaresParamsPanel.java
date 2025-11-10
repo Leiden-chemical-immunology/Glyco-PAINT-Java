@@ -21,7 +21,8 @@ public class SquaresParamsPanel {
     private JTextField              minDensityField;
     private JTextField              maxVariabilityField;
 
-    private Runnable                onChange = () -> {};
+    private Runnable onChange = () -> {
+    };
 
     public SquaresParamsPanel(DialogMode mode, PaintConfig cfg) {
         this.mode = mode;
@@ -55,54 +56,69 @@ public class SquaresParamsPanel {
             });
         }
 
-        final Dimension labelSize  = new Dimension(220, 20);
-        final Dimension fieldSize  = new Dimension(80, 24);
+        final Dimension labelSize = new Dimension(220, 20);
+        final Dimension fieldSize = new Dimension(80, 24);
 
         // grid
-        pg.gridx = 0; pg.gridy = row; label(panel, "Number of Squares in Recording", labelSize, pg);
+        pg.gridx = 0;
+        pg.gridy = row;
+        label(panel, "Number of Squares in Recording", labelSize, pg);
         pg.gridx = 1;
-        gridSizeCombo = new JComboBox<>(new String[]{"5x5","10x10","15x15","20x20","25x25","30x30","35x35","40x40"});
-        int n = (int)Math.sqrt(nrSquares);
+        gridSizeCombo = new JComboBox<>(new String[]{"5x5", "10x10", "15x15", "20x20", "25x25", "30x30", "35x35", "40x40"});
+        int n = (int) Math.sqrt(nrSquares);
         gridSizeCombo.setSelectedItem(n + "x" + n);
         panel.add(gridSizeCombo, pg);
         row++;
 
         // Min R²
-        pg.gridx = 0; pg.gridy = row; label(panel, "Min Required R²", labelSize, pg);
+        pg.gridx = 0;
+        pg.gridy = row;
+        label(panel, "Min Required R²", labelSize, pg);
         pg.gridx = 1;
         minRSqField = text(String.valueOf(minRSq), fieldSize, true);
         panel.add(minRSqField, pg);
         row++;
 
         // Min Density Ratio
-        pg.gridx = 0; pg.gridy = row; label(panel, "Min Required Density Ratio", labelSize, pg);
+        pg.gridx = 0;
+        pg.gridy = row;
+        label(panel, "Min Required Density Ratio", labelSize, pg);
         pg.gridx = 1;
         minDensityField = text(String.valueOf(minDens), fieldSize, true);
         panel.add(minDensityField, pg);
         row++;
 
         // Max Variability
-        pg.gridx = 0; pg.gridy = row; label(panel, "Max Allowed Variability", labelSize, pg);
+        pg.gridx = 0;
+        pg.gridy = row;
+        label(panel, "Max Allowed Variability", labelSize, pg);
         pg.gridx = 1;
         maxVariabilityField = text(String.valueOf(maxVar), fieldSize, true);
         panel.add(maxVariabilityField, pg);
 
         gridSizeCombo.addActionListener(e -> onChange.run());
-        ((AbstractDocument)minRSqField.getDocument()).addDocumentListener((SimpleDocumentListener)e->onChange.run());
-        ((AbstractDocument)minDensityField.getDocument()).addDocumentListener((SimpleDocumentListener)e->onChange.run());
-        ((AbstractDocument)maxVariabilityField.getDocument()).addDocumentListener((SimpleDocumentListener)e->onChange.run());
+        minRSqField.getDocument().addDocumentListener((SimpleDocumentListener) e -> onChange.run());
+        minDensityField.getDocument().addDocumentListener((SimpleDocumentListener) e -> onChange.run());
+        maxVariabilityField.getDocument().addDocumentListener((SimpleDocumentListener) e -> onChange.run());
 
         if (mode == DialogMode.TRACKMATE) {
             setSquaresEnabled(runAfterTrackMate.isSelected());
         }
     }
 
-    public JPanel component() { return panel; }
+    public JPanel component() {
+        return panel;
+    }
 
-    public void onParamsChanged(Runnable r) { this.onChange = (r != null ? r : () -> {}); }
+    public void onParamsChanged(Runnable r) {
+        this.onChange = (r != null ? r : () -> {
+        });
+    }
 
     public void setEnabled(boolean enabled) {
-        if (runAfterTrackMate != null) runAfterTrackMate.setEnabled(enabled);
+        if (runAfterTrackMate != null) {
+            runAfterTrackMate.setEnabled(enabled);
+        }
         boolean squaresEnabled = enabled && (runAfterTrackMate == null || runAfterTrackMate.isSelected());
         gridSizeCombo.setEnabled(squaresEnabled);
         minRSqField.setEnabled(squaresEnabled);
@@ -157,6 +173,10 @@ public class SquaresParamsPanel {
     }
 
     private static double parseDouble(String s, double def) {
-        try { return Double.parseDouble(s.trim()); } catch (Exception e) { return def; }
+        try {
+            return Double.parseDouble(s.trim());
+        } catch (Exception e) {
+            return def;
+        }
     }
 }

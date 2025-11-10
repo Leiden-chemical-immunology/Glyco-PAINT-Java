@@ -18,29 +18,30 @@ public class ProjectDialogController {
 
     public static WindowAdapter onWindowClosing(Runnable action) {
         return new WindowAdapter() {
-            @Override public void windowClosing(WindowEvent e) {
+            @Override
+            public void windowClosing(WindowEvent e) {
                 action.run();
             }
         };
     }
 
-    private final DialogMode                 mode;
-    private final JDialog                    dialog;
-    private final PaintConfig                cfg;
+    private final DialogMode  mode;
+    private final JDialog     dialog;
+    private final PaintConfig cfg;
 
-    private final Supplier<Path>             getProjectPath;
-    private final Consumer<Path>             setProjectPath;
+    private final Supplier<Path> getProjectPath;
+    private final Consumer<Path> setProjectPath;
 
-    private final ProjectPathsPanel          paths;
-    private final SquaresParamsPanel         params;       // null in VIEWER
-    private final ExperimentsPanel           experiments;
-    private final BottomBarPanel             bottom;
+    private final ProjectPathsPanel  paths;
+    private final SquaresParamsPanel params;       // null in VIEWER
+    private final ExperimentsPanel   experiments;
+    private final BottomBarPanel     bottom;
 
-    private final Supplier<Object>           buildProject; // returns Project
-    private final QuadRunnable               startWorker;  // (runUiDisable, runUiEnable, onSuccess, onFailure)
-    private final Supplier<Thread>           getWorker;
-    private final Runnable                   setCancelled;
-    private final Runnable                   clearCancelled;
+    private final Supplier<Object> buildProject; // returns Project
+    private final QuadRunnable     startWorker;  // (runUiDisable, runUiEnable, onSuccess, onFailure)
+    private final Supplier<Thread> getWorker;
+    private final Runnable         setCancelled;
+    private final Runnable         clearCancelled;
 
     public ProjectDialogController(
             DialogMode mode,
@@ -58,19 +59,19 @@ public class ProjectDialogController {
             Runnable setCancelled,
             Runnable clearCancelled
     ) {
-        this.mode           = mode;
-        this.dialog         = dialog;
-        this.cfg            = cfg;
+        this.mode = mode;
+        this.dialog = dialog;
+        this.cfg = cfg;
         this.getProjectPath = getProjectPath;
         this.setProjectPath = setProjectPath;
-        this.paths          = paths;
-        this.params         = params;
-        this.experiments    = experiments;
-        this.bottom         = bottom;
-        this.buildProject   = buildProject;
-        this.startWorker    = startWorker;
-        this.getWorker      = getWorker;
-        this.setCancelled   = setCancelled;
+        this.paths = paths;
+        this.params = params;
+        this.experiments = experiments;
+        this.bottom = bottom;
+        this.buildProject = buildProject;
+        this.startWorker = startWorker;
+        this.getWorker = getWorker;
+        this.setCancelled = setCancelled;
         this.clearCancelled = clearCancelled;
     }
 
@@ -94,7 +95,7 @@ public class ProjectDialogController {
         bottom.onVerboseToggle(PaintLogger::infof); // already persisted by bottom
         bottom.onSweepToggle(selected -> {
             // Persist flag immediately
-            PaintConfig.setBoolean("Sweep Settings", "Sweep", selected);
+            PaintConfig.setBoolean("TrackMate", "Run Sweep", selected);
             PaintConfig.instance().save();
 
             if (selected) {
@@ -157,7 +158,7 @@ public class ProjectDialogController {
                 setInputsEnabled(false);
                 bottom.showRunning();
             };
-            Runnable uiEnable  = () -> {
+            Runnable uiEnable = () -> {
                 setInputsEnabled(true);
                 bottom.resetOk(mode == DialogMode.VIEWER);
             };
@@ -182,7 +183,10 @@ public class ProjectDialogController {
                 t.interrupt();
 
                 new Thread(() -> {
-                    try { t.join(2000); } catch (InterruptedException ignored) { }
+                    try {
+                        t.join(2000);
+                    } catch (InterruptedException ignored) {
+                    }
                     SwingUtilities.invokeLater(() -> {
                         if (t.isAlive()) {
                             PaintLogger.errorf("Worker thread did not stop — forcing JVM halt.");
@@ -191,7 +195,10 @@ public class ProjectDialogController {
                             PaintLogger.infof("Worker thread terminated cleanly.");
                             clearCancelled.run();
                             bottom.resetOk(true);
-                            try { PaintConsoleWindow.closeIfVisible(); } catch (Throwable ignored) {}
+                            try {
+                                PaintConsoleWindow.closeIfVisible();
+                            } catch (Throwable ignored) {
+                            }
                             dialog.dispose();
                         }
                     });
@@ -201,7 +208,10 @@ public class ProjectDialogController {
                 SwingUtilities.invokeLater(() -> {
                     clearCancelled.run();
                     bottom.resetOk(true);
-                    try { PaintConsoleWindow.closeIfVisible(); } catch (Throwable ignored) {}
+                    try {
+                        PaintConsoleWindow.closeIfVisible();
+                    } catch (Throwable ignored) {
+                    }
                     dialog.dispose();
                 });
             }
@@ -227,7 +237,9 @@ public class ProjectDialogController {
         paths.setEnabled(enabled, mode);
         experiments.setEnabled(enabled);
         bottom.setEnabled(enabled);
-        if (params != null) params.setEnabled(enabled);
+        if (params != null) {
+            params.setEnabled(enabled);
+        }
     }
 
     @FunctionalInterface
