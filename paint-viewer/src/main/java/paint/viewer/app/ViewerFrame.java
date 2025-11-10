@@ -59,6 +59,8 @@ import paint.viewer.ui.panels.RecordingControlsPanel;
 import paint.viewer.ui.panels.SquareGridPanel;
 import paint.viewer.model.SquareControlParams;
 import paint.viewer.model.RecordingEntry;
+import paint.viewer.app.ViewerLayoutBuilder;
+
 import java.io.IOException;  // already present in your imports; if not, add it
 
 import javax.swing.*;
@@ -99,18 +101,17 @@ public class ViewerFrame extends JFrame
     private final List<RecordingEntry>                 recordingEntries;     // currently visible (may be filtered)
     private       int                                  currentIndex      = 0;
 
-    private       SquareGridPanel                      leftGridPanel;
-    private final JLabel                               rightImageLabel   = new JLabel("", SwingConstants.CENTER);
-    private final JLabel                               experimentLabel   = new JLabel("", SwingConstants.CENTER);
-    private final JLabel                               recordingLabel    = new JLabel("", SwingConstants.CENTER);
+    private        SquareGridPanel leftGridPanel;
+    private JLabel rightImageLabel;
+    private JLabel experimentLabel;
+    private JLabel recordingLabel;
 
-    private       RecordingAttributesPanel             attributesPanel;
-    private       NavigationPanel                      navigationPanel;
-    private       RecordingControlsPanel               controlsPanel;
+    private        RecordingAttributesPanel attributesPanel;
+    private        NavigationPanel navigationPanel;
+    private        RecordingControlsPanel controlsPanel;
 
     private final CellAssignmentManager                assignmentManager = new CellAssignmentManager();
     private final SquareControlHandler                 controlHandler    = new SquareControlHandler();
-    private       RecordingFilterDialog.FilterCriteria lastCriteria      = RecordingFilterDialog.FilterCriteria.empty();
     private       JDialog                              activeDialog      = null;
 
     private final RecordingOverrideWriter              recordingOverrideWriter;
@@ -159,55 +160,35 @@ public class ViewerFrame extends JFrame
         }
         int numberOfSquareInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);
 
-        // --- Initialize panels and handlers ---
-        leftGridPanel = new SquareGridPanel(numberOfSquareInOneDimension, numberOfSquareInOneDimension);
-        controlHandler.attach(leftGridPanel);
+        // --- Build UI layout using the layout builder ---
+        ViewerLayoutBuilder builder = new ViewerLayoutBuilder();
 
-        attributesPanel = new RecordingAttributesPanel();
-        displayUpdater  = new RecordingDisplayUpdater(
-                leftGridPanel,
-                rightImageLabel,
-                experimentLabel,
-                recordingLabel,
-                attributesPanel
+        ViewerLayoutBuilder.LayoutComponents ui =
+                builder.build(
+                        numberOfSquareInOneDimension,
+                        this,   // navigation listener
+                        this    // controls listener
+                );
+
+        // Apply content pane
+        setContentPane(ui.rootPanel);
+
+        // Store references
+        this.leftGridPanel   = ui.leftGridPanel;
+        this.rightImageLabel = ui.rightImageLabel;
+        this.experimentLabel = ui.experimentLabel;
+        this.recordingLabel  = ui.recordingLabel;
+        this.attributesPanel = ui.attributesPanel;
+        this.navigationPanel = ui.navigationPanel;
+        this.controlsPanel   = ui.controlsPanel;
+
+        this.displayUpdater = new RecordingDisplayUpdater(
+                this.leftGridPanel,
+                this.rightImageLabel,
+                this.experimentLabel,
+                this.recordingLabel,
+                this.attributesPanel
         );
-        navigationPanel = new NavigationPanel(this);
-        controlsPanel   = new RecordingControlsPanel(this);
-
-        // --- Build the main layout ---
-        JPanel imagesInner = new JPanel(new GridLayout(1, 2, 15, 0));
-        imagesInner.add(createSquareImagePanel(leftGridPanel));
-        imagesInner.add(createSquareImagePanel(rightImageLabel));
-
-        JPanel labelsPanel = new JPanel(new GridLayout(2, 1));
-        labelsPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        experimentLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
-        recordingLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        labelsPanel.add(experimentLabel);
-        labelsPanel.add(recordingLabel);
-
-        JPanel imagesWithNav = new JPanel(new BorderLayout(15, 15));
-        imagesWithNav.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)));
-        imagesWithNav.add(navigationPanel.getComponent(), BorderLayout.NORTH);
-        imagesWithNav.add(imagesInner, BorderLayout.CENTER);
-        imagesWithNav.add(labelsPanel, BorderLayout.SOUTH);
-
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.add(attributesPanel.getComponent(), BorderLayout.WEST);
-        mainPanel.add(imagesWithNav, BorderLayout.CENTER);
-        mainPanel.add(controlsPanel.getComponent(), BorderLayout.EAST);
-        add(mainPanel, BorderLayout.CENTER);
-
-        // --- Close button setup ---
-        JButton closeButton = new JButton("Close Viewer");
-        closeButton.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        closeButton.addActionListener(e -> dispose());
-
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        bottomPanel.add(closeButton);
-        add(bottomPanel, BorderLayout.SOUTH);
 
         setSize(1500, 700);
         setLocationRelativeTo(null);
@@ -216,45 +197,6 @@ public class ViewerFrame extends JFrame
         if (!recordingEntries.isEmpty()) {
             showRecordingEntry(0);
         }
-    }
-
-    /**
-     * Creates a square container panel that holds the specified component (typically an image).
-     * Ensures consistent square proportions regardless of frame resizing.
-     *
-     * @param comp the child component to display inside the square panel.
-     * @return a configured {@link JPanel} maintaining a square aspect ratio.
-     */
-    private JPanel createSquareImagePanel(JComponent comp) {
-        JPanel panel = new JPanel(new BorderLayout()) {
-            public Dimension getPreferredSize() {
-                return new Dimension(NUMBER_PIXELS_WIDTH, NUMBER_PIXELS_HEIGHT);
-            }
-
-            public void setBounds(int x, int y, int w, int h) {
-                int size = Math.min(w, h);
-                super.setBounds(x, y, size, size);
-            }
-        };
-        panel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-        panel.add(comp, BorderLayout.CENTER);
-        return panel;
-    }
-
-    /**
-     * Resizes an {@link ImageIcon} proportionally to the specified dimensions.
-     *
-     * @param icon image icon to scale.
-     * @param w    target width.
-     * @param h    target height.
-     * @return a new scaled {@link ImageIcon}, or {@code null} if the source is invalid.
-     */
-    private static ImageIcon scaleToFit(ImageIcon icon, int w, int h) {
-        if (icon == null || icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) {
-            return null;
-        }
-        Image scaled = icon.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
-        return new ImageIcon(scaled);
     }
 
     /**
