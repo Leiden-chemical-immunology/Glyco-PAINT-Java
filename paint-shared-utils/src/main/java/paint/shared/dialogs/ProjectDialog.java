@@ -25,7 +25,10 @@ import java.util.List;
 public class ProjectDialog {
 
     // ----- public API kept stable -----
-    public enum DialogMode { TRACKMATE, GENERATE_SQUARES, VIEWER }
+    public enum DialogMode {
+        TRACKMATE,
+        GENERATE_SQUARES,
+        VIEWER}
 
     @FunctionalInterface
     public interface CalculationCallback {
@@ -33,20 +36,20 @@ public class ProjectDialog {
     }
 
     // ----- state -----
-    private final    JDialog                dialog;
-    private final    DialogMode             mode;
-    private final    PaintConfig            cfg;
+    private final JDialog     dialog;
+    private final DialogMode  mode;
+    private final PaintConfig cfg;
 
-    private          Path                   projectPath;
-    private          CalculationCallback    callback;
-    private volatile boolean                cancelled = false;
-    private volatile Thread                 workerThread;
+    private          Path                projectPath;
+    private          CalculationCallback callback;
+    private volatile boolean             cancelled = false;
+    private volatile Thread              workerThread;
 
     // sub-components
-    private final ProjectPathsPanel   pathsPanel;
-    private final SquaresParamsPanel  paramsPanel;         // null in VIEWER
-    private final ExperimentsPanel    experimentsPanel;
-    private final BottomBarPanel      bottomBar;
+    private final ProjectPathsPanel  pathsPanel;
+    private final SquaresParamsPanel paramsPanel;         // null in VIEWER
+    private final ExperimentsPanel   experimentsPanel;
+    private final BottomBarPanel     bottomBar;
 
     public ProjectDialog(Frame owner, Path initialProjectPath, DialogMode mode) {
         this.mode        = mode;
@@ -116,14 +119,18 @@ public class ProjectDialog {
                 this::buildProject,
                 this::startWorker,
                 () -> workerThread,
-                () -> { cancelled = true; },
-                () -> { cancelled = false; }
+                () -> {
+                    cancelled = true;
+                },
+                () -> {
+                    cancelled = false;
+                }
         );
         controller.init();
 
         // size & show defaults
         final int width  = 820;
-        final int height = (mode == DialogMode.VIEWER) ? 600 : 680;
+        final int height = 600;
         dialog.setMinimumSize(new Dimension(width, height));
         dialog.setPreferredSize(new Dimension(width, height));
         dialog.pack();
@@ -211,10 +218,17 @@ public class ProjectDialog {
             final boolean success = ok && !cancelled && !Thread.currentThread().isInterrupted();
             SwingUtilities.invokeLater(() -> {
                 runUiEnable.run();
-                if (success) onSuccess.run(); else onFailure.run();
+                if (success)
+                    onSuccess.run();
+                else
+                    onFailure.run();
                 workerThread = null;
             });
         }, "ProjectDialog-Worker");
         workerThread.start();
+    }
+
+    public boolean isSweepSelected() {
+        return bottomBar.isSweepSelected();
     }
 }

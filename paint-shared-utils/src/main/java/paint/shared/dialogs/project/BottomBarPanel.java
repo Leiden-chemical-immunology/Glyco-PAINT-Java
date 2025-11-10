@@ -131,4 +131,12 @@ public class BottomBarPanel {
         okBtn.setText("OK");
         okBtn.setEnabled(enabled);
     }
+
+    /**
+     * Returns whether the “Sweep” mode checkbox is selected.
+     * Only meaningful when mode is TRACKMATE; otherwise returns false.
+     */
+    public boolean isSweepSelected() {
+        return sweep!= null && sweep.isSelected();
+    }
 }

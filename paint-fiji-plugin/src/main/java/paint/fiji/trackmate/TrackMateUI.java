@@ -152,7 +152,6 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
             }
 
             running = true;
-            dialog.setOkEnabled(false);
 
             try {
                 boolean debug = PaintConfig.getBoolean("Debug", DEBUG_RUNTRACKMATEONPROJECT, false);
@@ -165,10 +164,9 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
                 }
 
                 boolean success;
-                boolean sweepEnabled = dialog.isSweepSelected();
-                Path sweepFile = currentProjectRoot.resolve(PAINT_SWEEP_CONFIGURATION_JSON);
 
-                if (sweepEnabled) {
+                if (dialog.isSweepSelected()) {
+                    Path sweepFile = currentProjectRoot.resolve(PAINT_SWEEP_CONFIGURATION_JSON);
                     if (Files.exists(sweepFile)) {
                         success = RunTrackMateOnProjectSweep.runWithSweep(
                                 currentProjectRoot, imagesPath, project.getExperimentNames());

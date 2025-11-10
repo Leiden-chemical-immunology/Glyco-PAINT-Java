@@ -94,9 +94,6 @@ public class ProjectDialogController {
         // Sweep checkbox + verbose + OK/Cancel
         bottom.onVerboseToggle(PaintLogger::infof); // already persisted by bottom
         bottom.onSweepToggle(selected -> {
-            // Persist flag immediately
-            PaintConfig.setBoolean("TrackMate", "Run Sweep", selected);
-            PaintConfig.instance().save();
 
             if (selected) {
                 final Path root = getProjectPath.get();
@@ -131,8 +128,6 @@ public class ProjectDialogController {
                         }
                     } else {
                         bottom.setSweepSelected(false);
-                        PaintConfig.setBoolean("Sweep Settings", "Sweep", false);
-                        PaintConfig.instance().save();
                     }
                 }
             }
