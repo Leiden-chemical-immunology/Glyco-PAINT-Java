@@ -21,10 +21,72 @@ public class ReleaseNewVersion {
         boolean doRelease   = false;  // release implies bump + tag + push
 
         if (args.length == 0) {
-            System.out.println("ℹ️  No options specified.");
-            System.out.println("   • Version will NOT be bumped.");
-            System.out.println("   • No release or tag will be created.");
-            System.out.println("   • A normal rebuild will occur.\n");
+            System.out.println("ℹ️  No command-line options specified.");
+
+            // Determine current version
+            final Path parentPom = PathsConfig.BASE_PATH.resolve("pom.xml");
+            String currentVersion = PomUtils.getVersionFromPom(parentPom);
+            if (currentVersion == null) {
+                System.err.println("❌ Cannot determine current version from parent POM.");
+                System.exit(1);
+            }
+
+            // Compute what bumping would do
+            VersionInfo info = PomUtils.computeVersions(currentVersion, null);
+
+            System.out.println();
+            System.out.println("Current version: " + currentVersion);
+            System.out.println();
+            System.out.println("Choose an action:");
+            System.out.println("  1) Rebuild only");
+            System.out.println("     • Version stays         : " + currentVersion);
+            System.out.println("     • No release/tag created");
+            System.out.println();
+            System.out.println("  2) Bump version only");
+            System.out.println("     • Release version would : " + info.releaseVersion);
+            System.out.println("     • Next dev version      : " + info.nextDevVersion);
+            System.out.println("     • No release/tag created");
+            System.out.println();
+            System.out.println("  3) Full release (bump + tag + push)");
+            System.out.println("     • Release version       : " + info.releaseVersion);
+            System.out.println("     • Next dev version      : " + info.nextDevVersion);
+            System.out.println();
+            System.out.print("Enter 1, 2 or 3: ");
+
+            try {
+                byte[] buf = new byte[32];
+                int read = System.in.read(buf);
+                String choice = new String(buf, 0, read).trim();
+
+                switch (choice) {
+                    case "1":
+                        bumpVersion = false;
+                        doRelease   = false;
+                        break;
+
+                    case "2":
+                        bumpVersion = true;
+                        doRelease   = false;
+                        break;
+
+                    case "3":
+                        bumpVersion = true;
+                        doRelease   = true;
+                        break;
+
+                    default:
+                        System.out.println("Invalid option. Defaulting to: rebuild only.");
+                        bumpVersion = false;
+                        doRelease   = false;
+                }
+
+            } catch (Exception e) {
+                System.out.println("Input error. Defaulting to: rebuild only.");
+                bumpVersion = false;
+                doRelease   = false;
+            }
+
+            System.out.println();
         }
 
         for (int i = 0; i < args.length; i++) {
