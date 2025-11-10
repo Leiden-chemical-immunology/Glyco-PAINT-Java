@@ -13,6 +13,8 @@ import java.nio.file.Paths;
 
 /**
  * Handles playback of ND2 or TIFF files and manages UI state during playback.
+ * Guarantees: only one movie window at a time; UI is disabled during playback
+ * and re-enabled as soon as the Fiji window closes (listener + backup poll).
  */
 public final class RecordingPlaybackController {
 
@@ -27,13 +29,18 @@ public final class RecordingPlaybackController {
         return playing;
     }
 
+    /**
+     * Starts playback of the given recording entry. Disables the frame UI,
+     * launches the movie in a background thread, and re-enables the UI when finished.
+     * Also closes any leftover Fiji window from a previous run that has the same title.
+     */
     public void playRecording(RecordingEntry entry) {
         if (playing) {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
 
-        // Hide popups
+        // Hide popups on the grid before launching
         frame.getLeftGridPanel().hideSquareInfoIfVisible();
 
         // Resolve images root
@@ -63,7 +70,7 @@ public final class RecordingPlaybackController {
             return;
         }
 
-        // Expected Fiji window title (filename only)
+        // The Fiji window title we expect is the filename (e.g., "foo.nd2")
         final String expectedTitle = imagePath.getFileName().toString();
 
         playing = true;
@@ -71,19 +78,19 @@ public final class RecordingPlaybackController {
 
         new Thread(() -> {
             try {
-                // ✅ Ensure no old Fiji windows remain
+                // 1) Close any leftover Fiji window with the same title (from a previous run)
                 closeExistingMovieWindows(expectedTitle);
 
-                // ✅ Launch movie playback
+                // 2) Launch movie
                 new TiffMoviePlayer().playMovie(imagePath.toString());
 
-                // ✅ Wait for Fiji window to appear
+                // 3) Wait for Fiji window to appear so we can listen for close events
                 Window movieWindow = waitForWindow(expectedTitle);
 
                 if (movieWindow != null) {
                     PaintLogger.infof("Tracking movie window: %s", movieWindow.getClass().getSimpleName());
 
-                    // ✅ Re-enable UI as soon as window closes
+                    // Re-enable UI immediately when Fiji window closes
                     movieWindow.addWindowListener(new java.awt.event.WindowAdapter() {
                         @Override
                         public void windowClosed(java.awt.event.WindowEvent e) {
@@ -101,16 +108,19 @@ public final class RecordingPlaybackController {
                         }
                     });
 
-                    // Backup poll loop.
-                    // Stop early if playing was already cleared by the window listener.
-                    while (movieWindow.isDisplayable() && playing) {
-                        Thread.sleep(200);
+                    // Backup: stop after 200 ms if listener did not fire (rare Fiji bug).
+                    Thread.sleep(200);
+                    if (playing) {
+                        SwingUtilities.invokeLater(() -> {
+                            playing = false;
+                            frame.enableUI();
+                        });
                     }
 
                     PaintLogger.infof("Movie window closed — UI re-enabled.");
                 } else {
-                    PaintLogger.warnf("Movie window for '%s' not detected — assuming playback finished.",
-                                      expectedTitle);
+                    // If we never detected the window, still flip the UI back on.
+                    PaintLogger.warnf("Movie window for '%s' not detected — assuming playback finished.", expectedTitle);
                 }
 
             } catch (Exception ex) {
@@ -121,15 +131,18 @@ public final class RecordingPlaybackController {
                                                                                  "Playback Error",
                                                                                  JOptionPane.ERROR_MESSAGE));
             } finally {
+                // Ensure UI is re-enabled even if something went wrong
                 playing = false;
                 SwingUtilities.invokeLater(frame::enableUI);
             }
         }, "MoviePlaybackThread").start();
     }
 
-    // =========================================================================
-    // Helper: Close any existing Fiji movie window before starting new playback
-    // =========================================================================
+    // ------------------------------------------------------------
+    // Helpers
+    // ------------------------------------------------------------
+
+    /** Close any existing Fiji movie window with exactly the same title. */
     private void closeExistingMovieWindows(String expectedTitle) {
         for (Window w : Window.getWindows()) {
             String title = getTitle(w);
@@ -140,13 +153,10 @@ public final class RecordingPlaybackController {
         }
     }
 
-    // =========================================================================
-    // Helper: Wait up to 10 seconds for the window to appear
-    // =========================================================================
+    /** Wait up to ~10 seconds for a window whose title exactly matches expectedTitle. */
     private Window waitForWindow(String expectedTitle) throws InterruptedException {
         Window found = null;
-
-        for (int i = 0; i < 40 && found == null; i++) {
+        for (int i = 0; i < 40 && found == null; i++) { // 40 * 250ms = 10s
             Thread.sleep(250);
             for (Window w : Window.getWindows()) {
                 String title = getTitle(w);
@@ -159,9 +169,7 @@ public final class RecordingPlaybackController {
         return found;
     }
 
-    // =========================================================================
-    // Helper: Extract title from Window/Frame/Dialog
-    // =========================================================================
+    /** Extracts a title from Frame/Dialog windows. */
     private String getTitle(Window w) {
         if (w instanceof Frame)  return ((Frame) w).getTitle();
         if (w instanceof Dialog) return ((Dialog) w).getTitle();

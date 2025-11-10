@@ -203,5 +203,6 @@ public class RecordingControlsPanel {
         assignCellsButton.setEnabled(enabled);
         playRecordingButton.setEnabled(enabled);
         exportImageButton.setEnabled(enabled);
+        showSquaresButton.setEnabled(enabled);
     }
 }

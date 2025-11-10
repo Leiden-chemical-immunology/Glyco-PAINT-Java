@@ -607,12 +607,15 @@ public class ViewerFrame extends JFrame
             Toolkit.getDefaultToolkit().beep();
             return;
         }
-        if (recordingEntries.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No recording selected to play.");
+        if (recordingEntries.isEmpty() || currentIndex < 0 || currentIndex >= recordingEntries.size()) {
+            JOptionPane.showMessageDialog(this,
+                                          "No recording selected to play.",
+                                          "No Selection",
+                                          JOptionPane.WARNING_MESSAGE);
             return;
         }
-
-        playbackController.playRecording(recordingEntries.get(currentIndex));
+        RecordingEntry entry = recordingEntries.get(currentIndex);
+        playbackController.playRecording(entry);
     }
 
     private void setGridEnabled(boolean enabled) {
