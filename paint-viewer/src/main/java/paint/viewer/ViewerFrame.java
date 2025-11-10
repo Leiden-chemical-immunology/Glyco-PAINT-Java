@@ -44,7 +44,6 @@ package paint.viewer;
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.objects.Project;
 import paint.shared.utils.PaintLogger;
-import paint.shared.utils.PaintPrefs;
 import paint.viewer.dialogs.CellAssignmentDialog;
 import paint.viewer.dialogs.RecordingFilterDialog;
 import paint.viewer.dialogs.SquareControlDialog;
@@ -58,22 +57,14 @@ import paint.viewer.panels.RecordingControlsPanel;
 import paint.viewer.panels.SquareGridPanel;
 import paint.viewer.shared.SquareControlParams;
 import paint.viewer.utils.RecordingEntry;
-import paint.viewer.utils.TiffMoviePlayer;
-import paint.viewer.FileHelper;
 import java.io.IOException;  // already present in your imports; if not, add it
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-
 
 import static paint.shared.constants.PaintConstants.*;
 
@@ -126,6 +117,7 @@ public class ViewerFrame extends JFrame
 
     private final RecordingPlaybackController          playbackController = new RecordingPlaybackController(this);
     private       RecordingDisplayUpdater              displayUpdater;
+    private final RecordingNavigator                   navigator;
 
     /**
      * Constructs a {@code RecordingViewerFrame} that initializes and displays the complete
@@ -142,6 +134,8 @@ public class ViewerFrame extends JFrame
         this.recordingEntries        = new java.util.ArrayList<>(recordingEntries);
         this.recordingOverrideWriter = new RecordingOverrideWriter(project.getProjectRootPath());
         this.squareOverrideWriter    = new SquareOverrideWriter(project.getProjectRootPath());
+
+        this.navigator               = new RecordingNavigator(newIndex -> showRecordingEntry(newIndex));
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -296,31 +290,22 @@ public class ViewerFrame extends JFrame
      */
     @Override
     public void onFirst() {
-        showRecordingEntry(0);
+        navigator.first(recordingEntries);
     }
 
-    /**
-     * Navigates to the previous recording entry, if available.
-     */
     @Override
     public void onPrev() {
-        showRecordingEntry(Math.max(0, currentIndex - 1));
+        navigator.prev(recordingEntries, currentIndex);
     }
 
-    /**
-     * Navigates to the next recording entry, if available.
-     */
     @Override
     public void onNext() {
-        showRecordingEntry(Math.min(recordingEntries.size() - 1, currentIndex + 1));
+        navigator.next(recordingEntries, currentIndex);
     }
 
-    /**
-     * Navigates directly to the final recording entry in the project.
-     */
     @Override
     public void onLast() {
-        showRecordingEntry(recordingEntries.size() - 1);
+        navigator.last(recordingEntries);
     }
 
     @Override
@@ -706,5 +691,9 @@ public class ViewerFrame extends JFrame
         setGridEnabled(true);
         updateNavButtons();                    // restores first/prev/next/last
         attributesPanel.getComponent().setEnabled(false);
+    }
+
+    public void onNavigateTo(int newIndex) {
+        showRecordingEntry(newIndex);
     }
 }
