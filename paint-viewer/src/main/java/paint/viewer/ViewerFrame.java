@@ -59,6 +59,8 @@ import paint.viewer.panels.SquareGridPanel;
 import paint.viewer.shared.SquareControlParams;
 import paint.viewer.utils.RecordingEntry;
 import paint.viewer.utils.TiffMoviePlayer;
+import paint.viewer.FileHelper;
+import java.io.IOException;  // already present in your imports; if not, add it
 
 import javax.swing.*;
 import java.awt.*;
@@ -121,7 +123,8 @@ public class ViewerFrame extends JFrame
 
     private final RecordingOverrideWriter              recordingOverrideWriter;
     private final SquareOverrideWriter                 squareOverrideWriter;
-    private       boolean                              moviePlaying      = false;
+
+    private final RecordingPlaybackController          playbackController = new RecordingPlaybackController(this);
 
     /**
      * Constructs a {@code RecordingViewerFrame} that initializes and displays the complete
@@ -329,7 +332,18 @@ public class ViewerFrame extends JFrame
         chooser.setSelectedFile(new java.io.File("grid-export.png"));
         if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             Path exportPath = chooser.getSelectedFile().toPath();
-            exportLeftGridPanelAsImage(exportPath, 2.0); // 2× resolution, RGB PNG
+            try {
+                FileHelper.exportPanelAsImage(leftGridPanel, exportPath, 2.0);
+                JOptionPane.showMessageDialog(this,
+                                              "Exported successfully to:\n" + exportPath.toAbsolutePath(),
+                                              "Export Complete",
+                                              JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this,
+                                              "Error exporting image: " + ex.getMessage(),
+                                              "Export Error",
+                                              JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
@@ -585,141 +599,24 @@ public class ViewerFrame extends JFrame
 
     @Override
     public void onPlayRecordingRequested() {
-        if ((activeDialog != null && activeDialog.isShowing()) || moviePlaying) {
+        if (activeDialog != null && activeDialog.isShowing()) {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
-
-        leftGridPanel.hideSquareInfoIfVisible();
-
+        if (playbackController.isPlaying()) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
         if (recordingEntries.isEmpty() || currentIndex < 0 || currentIndex >= recordingEntries.size()) {
             JOptionPane.showMessageDialog(this,
                                           "No recording selected to play.",
-                                          "No Selection", JOptionPane.WARNING_MESSAGE);
+                                          "No Selection",
+                                          JOptionPane.WARNING_MESSAGE);
             return;
         }
-
-        RecordingEntry entry          = recordingEntries.get(currentIndex);
-        String         experimentName = entry.getExperimentName();
-        String         recordingName  = entry.getRecordingName();
-
-        Path imagesRoot = project.getImagesRootPath();
-        if (imagesRoot == null) {
-            String stored = PaintPrefs.getString("Path", "Images Root", "");
-            if (stored != null && !stored.isEmpty()) {
-                imagesRoot = Paths.get(stored);
-            } else {
-                JOptionPane.showMessageDialog(this,
-                                              "No Images Root is defined.\nPlease set it in the Project Specification dialog.",
-                                              "Configuration Error",
-                                              JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-        }
-
-        Path imagePath = imagesRoot.resolve(experimentName).resolve(recordingName + ".nd2");
-        if (!Files.exists(imagePath)) {
-            JOptionPane.showMessageDialog(this,
-                                          "Recording file not found:\n" + imagePath,
-                                          "File Missing",
-                                          JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        // ✅ Disable buttons and grid while movie plays
-        setActionButtonsEnabled(false);
-        setGridEnabled(false);
-        moviePlaying = true;
-
-        new Thread(() -> {
-            try {
-                SwingUtilities.invokeLater(() -> {
-                    setActionButtonsEnabled(false);
-                    setGridEnabled(false);
-                    moviePlaying = true;
-                });
-
-                // Launch movie playback
-                TiffMoviePlayer player = new TiffMoviePlayer();
-                player.playMovie(imagePath.toString());
-
-                // --- Fiji / ImageJ window tracking (instant response) ---
-                String expectedTitle = imagePath.getFileName().toString();
-
-                // Log all currently open window titles for debugging
-                PaintLogger.infof("Currently open ImageJ windows BEFORE tracking:");
-                for (Window w : Window.getWindows()) {
-                    String title = w instanceof Frame ? ((Frame) w).getTitle()
-                            : (w instanceof Dialog ? ((Dialog) w).getTitle() : null);
-                    if (title != null && !title.trim().isEmpty()) {
-                        PaintLogger.infof("  • " + title);
-                    }
-                }
-
-                Window targetWindow = null;
-
-                // Wait up to 10 s for the actual movie window to appear
-                for (int i = 0; i < 40 && targetWindow == null; i++) {
-                    Thread.sleep(250);
-                    for (Window w : Window.getWindows()) {
-                        String title = w instanceof Frame ? ((Frame) w).getTitle()
-                                : (w instanceof Dialog ? ((Dialog) w).getTitle() : null);
-                        if (title != null && title.contains(expectedTitle)) {
-                            targetWindow = w;
-                            break;
-                        }
-                    }
-                }
-
-                if (targetWindow != null) {
-                    PaintLogger.infof("Tracking movie window: %s", targetWindow.getClass().getSimpleName());
-
-                    // Add a direct listener — instant re-enable on close
-                    Window finalTarget = targetWindow;
-                    finalTarget.addWindowListener(new java.awt.event.WindowAdapter() {
-                        @Override
-                        public void windowClosed(java.awt.event.WindowEvent e) {
-                            SwingUtilities.invokeLater(() -> {
-                                moviePlaying = false;
-                                setGridEnabled(true);
-                                setActionButtonsEnabled(true);
-                            });
-                        }
-
-                        @Override
-                        public void windowClosing(java.awt.event.WindowEvent e) {
-                            SwingUtilities.invokeLater(() -> {
-                                moviePlaying = false;
-                                setGridEnabled(true);
-                                setActionButtonsEnabled(true);
-                            });
-                        }
-                    });
-
-                    // Backup poll in case window closes silently
-                    while (targetWindow.isDisplayable()) {
-                        Thread.sleep(200);
-                    }
-
-                    PaintLogger.infof("Movie window closed — UI re-enabled.");
-                } else {
-                    PaintLogger.warnf("Movie window for '%s' not detected — assuming playback finished.", expectedTitle);
-                }
-
-            } catch (Exception ex) {
-                PaintLogger.errorf("Error during movie playback: %s", ex.getMessage());
-            } finally {
-                SwingUtilities.invokeLater(() -> {
-                    moviePlaying = false;
-                    setGridEnabled(true);
-                    setActionButtonsEnabled(true);
-                });
-            }
-        }, "MovieMonitorThread").start();
-
-        PaintLogger.infof("Playing recording: %s / %s", experimentName, recordingName);
+        RecordingEntry entry = recordingEntries.get(currentIndex);
+        playbackController.playRecording(entry);
     }
-
     private void setGridEnabled(boolean enabled) {
         leftGridPanel.setInteractionEnabled(enabled);  // we'll add this method below if it doesn’t exist
     }
@@ -779,62 +676,34 @@ public class ViewerFrame extends JFrame
 
     private void openSquaresForCurrentRecording() {
         try {
-            String experimentName  = allRecordingEntries.get(currentIndex).getExperimentName();
-            String recordingName   = allRecordingEntries.get(currentIndex).getRecordingName();
-            Path origCsv           = project.getProjectRootPath()
-                    .resolve(experimentName)
-                    .resolve("squares.csv");
-            if (!Files.exists(origCsv)) {
-                JOptionPane.showMessageDialog(this,
-                                              "Squares.csv not found:\n" + origCsv,
-                                              "File not found",
-                                              JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Create temp file
-            Path temp = Files.createTempFile("Squares " + recordingName + " - temp label -", ".csv");
-            try (BufferedReader r = Files.newBufferedReader(origCsv);
-                 BufferedWriter w = Files.newBufferedWriter(temp)) {
-                String header = r.readLine();
-                if (header == null) {
-                    JOptionPane.showMessageDialog(this,
-                                                  "Empty squares CSV: " + origCsv,
-                                                  "Error",
-                                                  JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                w.write(header);
-                w.newLine();
-
-                String line;
-                // Assume there’s a column “RecordingName” you can match; adjust as necessary
-                while ((line = r.readLine()) != null) {
-                    if (line.contains(recordingName)) {
-                        w.write(line);
-                        w.newLine();
-                    }
-                }
-            }
-
-            // Mark read-only
-            temp.toFile().setReadOnly();
-
-            // Open
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().open(temp.toFile());
-            } else {
-                JOptionPane.showMessageDialog(this,
-                                              "Desktop integration not supported on this system.",
-                                              "Error",
-                                              JOptionPane.ERROR_MESSAGE);
-            }
-
+            String experimentName = allRecordingEntries.get(currentIndex).getExperimentName();
+            String recordingName  = allRecordingEntries.get(currentIndex).getRecordingName();
+            FileHelper.filterAndOpenSquaresCsv(project.getProjectRootPath(), experimentName, recordingName);
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this,
-                                          "Cannot open filtered Squares CSV:\n" + ex.getMessage(),
+                                          "Error opening squares CSV:\n" + ex.getMessage(),
                                           "Error",
                                           JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    // Accessors used by the playback controller
+    public SquareGridPanel getLeftGridPanel() {
+        return leftGridPanel;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    // Convenience methods to disable/enable all UI
+    public void disableUI() {
+        setActionButtonsEnabled(false);
+        setGridEnabled(false);
+    }
+
+    public void enableUI() {
+        setActionButtonsEnabled(true);
+        setGridEnabled(true);
     }
 }
