@@ -29,7 +29,7 @@
  *
  *  DEPENDENCIES:
  *    – paint.fiji.trackmate.RunTrackMateOnProject
- *    – paint.shared.config.PaintConfig
+ *    – paint.shared.config.paintconfig.PaintConfig
  *    – paint.shared.config.SweepConfig
  *    – paint.shared.utils.PaintLogger
  *    – paint.fiji.utils.SweepFlattener
@@ -47,7 +47,7 @@
 package paint.fiji.trackmate;
 
 import org.apache.commons.io.FileUtils;
-import paint.shared.config.PaintConfig;
+import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.config.SweepConfig;
 import paint.shared.utils.PaintLogger;
 

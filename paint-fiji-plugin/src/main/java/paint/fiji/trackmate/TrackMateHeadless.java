@@ -26,7 +26,7 @@
  *    cmd.run();  // Executes configured TrackMate experiments headlessly
  *
  *  DEPENDENCIES:
- *    – paint.shared.config.PaintConfig
+ *    – paint.shared.config.paintconfig.PaintConfig
  *    – paint.shared.utils.PaintPrefs
  *    – paint.shared.utils.PaintLogger
  *    – paint.shared.utils.PaintConsoleWindow
@@ -46,7 +46,7 @@ package paint.fiji.trackmate;
 
 import com.google.gson.JsonObject;
 import org.scijava.command.Command;
-import paint.shared.config.PaintConfig;
+import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintPrefs;

@@ -41,7 +41,7 @@
 
 package paint.viewer;
 
-import paint.shared.config.PaintConfig;
+import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.objects.Project;
 import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintPrefs;

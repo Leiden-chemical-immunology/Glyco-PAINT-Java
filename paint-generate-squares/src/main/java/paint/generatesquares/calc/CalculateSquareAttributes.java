@@ -42,6 +42,7 @@
 package paint.generatesquares.calc;
 
 import paint.shared.config.GenerateSquaresConfig;
+import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
 import paint.shared.objects.Track;
@@ -105,7 +106,7 @@ public class CalculateSquareAttributes {
             if (tracksInSquare.size() >= minTracksForTau) {
                 CalculateTau.CalculateTauResult results = calculateTau(tracksInSquare, minRequiredRSquared);
 
-                if (paint.shared.config.PaintConfig.getBoolean("Generate Squares", "Tau Fitting Plots", false)) {
+                if (PaintConfig.getBoolean("Generate Squares", "Tau Fitting Plots", false)) {
                     if (tracksInSquare.size() >= minTracksForTau){
                         saveTauFitPlot(tracksInSquare, results, experimentPath, recording.getRecordingName(), squareNumber);
                     }

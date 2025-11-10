@@ -9,7 +9,7 @@
  *
  *  DESCRIPTION:
  *    The {@code RecordingViewer} initializes application components such as
- *    {@link paint.shared.utils.PaintPrefs}, {@link paint.shared.config.PaintConfig},
+ *    {@link paint.shared.utils.PaintPrefs}, {@link paint.shared.config.paintconfig.PaintConfig},
  *    and {@link paint.shared.utils.PaintLogger}, and presents the user with a
  *    {@link paint.shared.dialogs.ProjectDialog} for project selection.
  *
@@ -40,7 +40,7 @@
 
 package paint.viewer;
 
-import paint.shared.config.PaintConfig;
+import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
 import paint.shared.dialogs.ProjectDialog.DialogMode;
 import paint.shared.utils.PaintLogger;

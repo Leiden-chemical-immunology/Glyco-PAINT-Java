@@ -28,7 +28,7 @@
  *
  *  DEPENDENCIES:
  *    – paint.fiji.trackmate.RunTrackMateOnRecording
- *    – paint.shared.config.PaintConfig
+ *    – paint.shared.config.paintconfig.PaintConfig
  *    – paint.shared.config.TrackMateConfig
  *    – paint.shared.dialogs.ProjectDialog
  *    – paint.shared.utils.PaintLogger
@@ -51,7 +51,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
-import paint.shared.config.PaintConfig;
+import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.dialogs.ProjectDialog;
 import paint.shared.objects.ExperimentInfo;

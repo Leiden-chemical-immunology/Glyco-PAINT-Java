@@ -36,7 +36,7 @@
 package paint.shared.dialogs;
 
 import paint.shared.config.GenerateSquaresConfig;
-import paint.shared.config.PaintConfig;
+import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.objects.Project;
 import paint.shared.utils.PaintConsoleWindow;

@@ -76,7 +76,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import static paint.shared.config.PaintConfig.getBoolean;
+import static paint.shared.config.paintconfig.PaintConfig.getBoolean;
 import static paint.shared.constants.PaintConstants.DEBUG_RUNTRACKMATEONRECORDING;
 
 /**

@@ -42,7 +42,9 @@
 
 package paint.shared.config;
 
-import static paint.shared.config.PaintConfig.SECTION_GENERATE_SQUARES;
+import paint.shared.config.paintconfig.PaintConfig;
+
+import static paint.shared.config.paintconfig.PaintConfig.SECTION_GENERATE_SQUARES;
 import static paint.shared.constants.PaintConstants.*;
 
 /**

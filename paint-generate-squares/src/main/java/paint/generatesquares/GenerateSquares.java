@@ -25,7 +25,7 @@
  *    $ java -jar paint-generate-squares.jar
  *
  *  DEPENDENCIES:
- *    - paint.shared.config.PaintConfig
+ *    - paint.shared.config.paintconfig.PaintConfig
  *    - paint.shared.dialogs.ProjectDialog
  *    - paint.shared.utils.{PaintLogger, PaintConsoleWindow, PaintRuntime, JarInfoLogger}
  *    - javax.swing.*
@@ -42,7 +42,7 @@
 
 package paint.generatesquares;
 
-import paint.shared.config.PaintConfig;
+import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
 import paint.shared.utils.JarInfoLogger;
 import paint.shared.utils.PaintConsoleWindow;

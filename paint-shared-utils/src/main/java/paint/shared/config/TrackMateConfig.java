@@ -31,12 +31,14 @@
 
 package paint.shared.config;
 
+import paint.shared.config.paintconfig.PaintConfig;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static paint.shared.config.PaintConfig.SECTION_TRACKMATE;
+import static paint.shared.config.paintconfig.PaintConfig.SECTION_TRACKMATE;
 import static paint.shared.constants.PaintConstants.*;
 
 /**

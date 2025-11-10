@@ -55,7 +55,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static paint.shared.config.PaintConfig.getBoolean;
 import static paint.shared.constants.PaintConstants.IMAGE_HEIGHT;
 import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
 import static paint.shared.io.ExperimentDataLoader.loadExperiment;

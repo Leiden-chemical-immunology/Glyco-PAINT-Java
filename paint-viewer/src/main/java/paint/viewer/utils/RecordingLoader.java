@@ -14,7 +14,7 @@
  *    process and file-availability requirements.
  *
  *    Each recording entry combines metadata, images (TrackMate and Brightfield),
- *    and configuration thresholds loaded from {@link paint.shared.config.PaintConfig}.
+ *    and configuration thresholds loaded from {@link paint.shared.config.paintconfig.PaintConfig}.
  *    Invalid or incomplete recordings are skipped with diagnostic logging.
  *
  *  KEY FEATURES:
@@ -39,7 +39,7 @@
 
 package paint.viewer.utils;
 
-import paint.shared.config.PaintConfig;
+import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.io.ExperimentDataLoader;
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Project;

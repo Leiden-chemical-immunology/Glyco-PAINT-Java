@@ -44,7 +44,7 @@ package paint.fiji.trackmate;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 import paint.generatesquares.GenerateSquaresHeadless;
-import paint.shared.config.PaintConfig;
+import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
 import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.JarInfoLogger;
