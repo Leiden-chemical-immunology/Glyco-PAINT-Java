@@ -129,6 +129,14 @@ public final class PaintConstants {
     public static final String NEIGHBOUR_MODE                  = "Neighbour Mode";
     public static final String MIN_TRACK_DURATION              = "Min Track Duration";
     public static final String MAX_TRACK_DURATION              = "Max Track Duration";
+    public static final String TAU_FITTING_PLOTS               = "Tau Fitting plots";
+    public static final String BACKGROUND_PLOTS                = "Background plots";
+
+    public static final String DEBUG_RUNTRACKMATEONPROJECT     = "Debug RunTrackMateOnProject";
+    public static final String DEBUG_RUNTRACKMATEONRECORDING   = "Debug RunTrackMateOnRecording";
+
+    public static final String THRESHOLD                       = "Threshold";
+
 
     // =====================
     // Track schema

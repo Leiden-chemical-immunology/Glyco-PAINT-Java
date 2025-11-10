@@ -193,45 +193,198 @@ public class PaintConfig {
     private void loadDefaults() {
         
         JsonObject generateSquares = new JsonObject();
-        generateSquares.addProperty(MIN_TRACKS_TO_CALCULATE_TAU,                           20);
-        generateSquares.addProperty(MIN_REQUIRED_R_SQUARED,                                0.1);
-        generateSquares.addProperty(MAX_ALLOWABLE_VARIABILITY,                             10.0);
-        generateSquares.addProperty(MIN_REQUIRED_DENSITY_RATIO,                            2.0);
-        generateSquares.addProperty(MIN_TRACK_DURATION,                                    0);
-        generateSquares.addProperty(MAX_TRACK_DURATION,                                    2000000);
-        generateSquares.addProperty("Fraction of Squares to Determine Background", 0.1);
-        generateSquares.addProperty("Exclude zero DC tracks from Tau Calculation", false);
-        generateSquares.addProperty(NEIGHBOUR_MODE,                                        "Free");
-        generateSquares.addProperty(NUMBER_OF_SQUARES_IN_RECORDING,                        400);
-        generateSquares.addProperty("Tau Fitting plots",                                   true);
-        generateSquares.addProperty("Background plots",                                    true);
+        generateSquares.addProperty(MIN_TRACKS_TO_CALCULATE_TAU,      20);
+        generateSquares.addProperty(MIN_REQUIRED_R_SQUARED,           0.1);
+        generateSquares.addProperty(MAX_ALLOWABLE_VARIABILITY,        10.0);
+        generateSquares.addProperty(MIN_REQUIRED_DENSITY_RATIO,       2.0);
+        generateSquares.addProperty(MIN_TRACK_DURATION,               0);
+        generateSquares.addProperty(MAX_TRACK_DURATION,               2000000);
+         generateSquares.addProperty(NEIGHBOUR_MODE,                  "Free");
+        generateSquares.addProperty(NUMBER_OF_SQUARES_IN_RECORDING,   400);
+        generateSquares.addProperty(TAU_FITTING_PLOTS,                true);
+        generateSquares.addProperty(BACKGROUND_PLOTS,                 true);
         configData.add(SECTION_GENERATE_SQUARES, generateSquares);
 
         JsonObject trackMate = new JsonObject();
-        trackMate.addProperty(MAX_FRAME_GAP,                                             3);
-        trackMate.addProperty(ALTERNATIVE_LINKING_COST_FACTOR,                           1.05);
-        trackMate.addProperty(DO_SUBPIXEL_LOCALIZATION,                                  false);
-        trackMate.addProperty(MIN_NR_SPOTS_IN_TRACK,                                     3);
-        trackMate.addProperty(LINKING_MAX_DISTANCE,                                      0.6);
-        trackMate.addProperty(MAX_NR_SPOTS_IN_IMAGE,                                     2000000);
-        trackMate.addProperty(MAX_NR_SECONDS_PER_IMAGE,                                  2000);
-        trackMate.addProperty(GAP_CLOSING_MAX_DISTANCE,                                  1.2);
-        trackMate.addProperty(TARGET_CHANNEL,                                            1);
-        trackMate.addProperty(SPLITTING_MAX_DISTANCE,                                    15.0);
-        trackMate.addProperty(TRACK_COLOURING,                                           "TRACK_DURATION");
-        trackMate.addProperty(RADIUS,                                                    0.5);
-        trackMate.addProperty(ALLOW_GAP_CLOSING,                                         true);
-        trackMate.addProperty(DO_MEDIAN_FILTERING,                                       false);
-        trackMate.addProperty(ALLOW_TRACK_SPLITTING,                                     false);
-        trackMate.addProperty(ALLOW_TRACK_MERGING,                                       false);
-        trackMate.addProperty(MERGING_MAX_DISTANCE,                                      15.0);
+        trackMate.addProperty(MAX_FRAME_GAP,                          3);
+        trackMate.addProperty(ALTERNATIVE_LINKING_COST_FACTOR,        1.05);
+        trackMate.addProperty(DO_SUBPIXEL_LOCALIZATION,               false);
+        trackMate.addProperty(MIN_NR_SPOTS_IN_TRACK,                  3);
+        trackMate.addProperty(LINKING_MAX_DISTANCE,                   0.6);
+        trackMate.addProperty(MAX_NR_SPOTS_IN_IMAGE,                  2000000);
+        trackMate.addProperty(MAX_NR_SECONDS_PER_IMAGE,               2000);
+        trackMate.addProperty(GAP_CLOSING_MAX_DISTANCE,               1.2);
+        trackMate.addProperty(TARGET_CHANNEL,                         1);
+        trackMate.addProperty(SPLITTING_MAX_DISTANCE,                 15.0);
+        trackMate.addProperty(TRACK_COLOURING,                        "TRACK_DURATION");
+        trackMate.addProperty(RADIUS,                                 0.5);
+        trackMate.addProperty(ALLOW_GAP_CLOSING,                      true);
+        trackMate.addProperty(DO_MEDIAN_FILTERING,                    false);
+        trackMate.addProperty(ALLOW_TRACK_SPLITTING,                  false);
+        trackMate.addProperty(ALLOW_TRACK_MERGING,                    false);
+        trackMate.addProperty(MERGING_MAX_DISTANCE,                   15.0);
         configData.add(SECTION_TRACKMATE, trackMate);
 
         JsonObject debugFlags = new JsonObject();
-        debugFlags.addProperty("Debug RunTrackMateOnProject",                   false);
-        debugFlags.addProperty("Debug RunTrackMateOnRecording",                 false);
+        debugFlags.addProperty(DEBUG_RUNTRACKMATEONPROJECT,           false);
+        debugFlags.addProperty(DEBUG_RUNTRACKMATEONRECORDING,         false);
         configData.add(SECTION_DEBUG, debugFlags);
 
+    }
+
+
+    private void loadSweepDefaults() {
+
+        // Sweep Settings
+        JsonObject sweepSettings = new JsonObject();
+        sweepSettings.addProperty("Sweep", true);
+        configData.add("Sweep Settings", sweepSettings);
+
+        // TrackMate Sweep
+        JsonObject trackMateSweep = new JsonObject();
+        trackMateSweep.addProperty(THRESHOLD,                       true);
+        trackMateSweep.addProperty(MAX_FRAME_GAP,                   false);
+        trackMateSweep.addProperty(ALTERNATIVE_LINKING_COST_FACTOR, false);
+        trackMateSweep.addProperty(DO_SUBPIXEL_LOCALIZATION,        false);
+        trackMateSweep.addProperty(MIN_NR_SPOTS_IN_TRACK,           false);
+        trackMateSweep.addProperty(LINKING_MAX_DISTANCE,            false);
+        trackMateSweep.addProperty(MAX_NR_SPOTS_IN_IMAGE,           false);
+        trackMateSweep.addProperty(GAP_CLOSING_MAX_DISTANCE,        false);
+        trackMateSweep.addProperty(TARGET_CHANNEL,                  false);
+        trackMateSweep.addProperty(SPLITTING_MAX_DISTANCE,          false);
+        trackMateSweep.addProperty(TRACK_COLOURING,                 false);
+        trackMateSweep.addProperty(RADIUS,                          false);
+        trackMateSweep.addProperty(ALLOW_GAP_CLOSING,               false);
+        trackMateSweep.addProperty(DO_MEDIAN_FILTERING,             false);
+        trackMateSweep.addProperty(ALLOW_TRACK_SPLITTING,           false);
+        trackMateSweep.addProperty(ALLOW_TRACK_MERGING,             false);
+        trackMateSweep.addProperty(MERGING_MAX_DISTANCE,            false);
+        configData.add("TrackMate Sweep", trackMateSweep);
+
+        // Threshold values
+        JsonObject thresholdValues = new JsonObject();
+        thresholdValues.addProperty("Value 1", 30);
+        thresholdValues.addProperty("Value 2", 20);
+        thresholdValues.addProperty("Value 3", 10);
+        thresholdValues.addProperty("Value 4", 5);
+        configData.add(THRESHOLD, thresholdValues);
+
+        // MAX_FRAME_GAP
+        JsonObject maxFrameGap = new JsonObject();
+        maxFrameGap.addProperty("Value 1", 3);
+        maxFrameGap.addProperty("Value 2", 4);
+        configData.add(MAX_FRAME_GAP, maxFrameGap);
+
+        // LINKING_MAX_DISTANCE
+        JsonObject linkingMaxDist = new JsonObject();
+        linkingMaxDist.addProperty("Value 0", 0.2);
+        linkingMaxDist.addProperty("Value 1", 0.3);
+        linkingMaxDist.addProperty("Value 2", 0.4);
+        linkingMaxDist.addProperty("Value 3", 0.5);
+        linkingMaxDist.addProperty("Value 4", 0.6);
+        linkingMaxDist.addProperty("Value 5", 0.7);
+        linkingMaxDist.addProperty("Value 6", 0.8);
+        linkingMaxDist.addProperty("Value 7", 0.9);
+        linkingMaxDist.addProperty("Value 8", 13);
+        configData.add(LINKING_MAX_DISTANCE, linkingMaxDist);
+
+        // ALTERNATIVE_LINKING_COST_FACTOR
+        JsonObject altLinkCost = new JsonObject();
+        altLinkCost.addProperty("Value 0", 1.02);
+        altLinkCost.addProperty("Value 1", 1.03);
+        altLinkCost.addProperty("Value 2", 1.04);
+        altLinkCost.addProperty("Value 3", 1.05);
+        altLinkCost.addProperty("Value 4", 1.06);
+        altLinkCost.addProperty("Value 5", 1.07);
+        altLinkCost.addProperty("Value 6", 1.08);
+        altLinkCost.addProperty("Value 7", 1.09);
+        altLinkCost.addProperty("Value 8", 1.10);
+        configData.add(ALTERNATIVE_LINKING_COST_FACTOR, altLinkCost);
+
+        // RADIUS
+        JsonObject radius = new JsonObject();
+        radius.addProperty("Value 0",  0.2);
+        radius.addProperty("Value 1",  0.3);
+        radius.addProperty("Value 2",  0.4);
+        radius.addProperty("Value 3",  0.5);
+        radius.addProperty("Value 4",  0.6);
+        radius.addProperty("Value 5",  0.7);
+        radius.addProperty("Value 6",  0.8);
+        radius.addProperty("Value 7",  0.9);
+        radius.addProperty("Value 8",  1.0);
+        radius.addProperty("Value 9",  1.1);
+        radius.addProperty("Value 10", 1.2);
+        configData.add(RADIUS, radius);
+
+        // MIN_NR_SPOTS_IN_TRACK
+        JsonObject minNrSpots = new JsonObject();
+        minNrSpots.addProperty("Value 0", 2);
+        minNrSpots.addProperty("Value 1", 3);
+        minNrSpots.addProperty("Value 2", 4);
+        minNrSpots.addProperty("Value 3", 5);
+        configData.add(MIN_NR_SPOTS_IN_TRACK, minNrSpots);
+
+        // GAP_CLOSING_MAX_DISTANCE
+        JsonObject gapClosing = new JsonObject();
+        gapClosing.addProperty("Value 0", 0.7);
+        gapClosing.addProperty("Value 1", 0.8);
+        gapClosing.addProperty("Value 2", 0.9);
+        gapClosing.addProperty("Value 3", 1.0);
+        gapClosing.addProperty("Value 4", 1.1);
+        gapClosing.addProperty("Value 5", 1.2);
+        gapClosing.addProperty("Value 6", 1.3);
+        configData.add(GAP_CLOSING_MAX_DISTANCE, gapClosing);
+
+        // SPLITTING_MAX_DISTANCE
+        JsonObject splitting = new JsonObject();
+        splitting.addProperty("Value 0", 10.0);
+        splitting.addProperty("Value 1", 11.0);
+        splitting.addProperty("Value 2", 12.0);
+        splitting.addProperty("Value 3", 13.0);
+        splitting.addProperty("Value 4", 14.0);
+        splitting.addProperty("Value 5", 15.0);
+        splitting.addProperty("Value 6", 16.0);
+        configData.add(SPLITTING_MAX_DISTANCE, splitting);
+
+        // MERGING_MAX_DISTANCE
+        JsonObject merging = new JsonObject();
+        merging.addProperty("Value 0", 10.0);
+        merging.addProperty("Value 1", 11.0);
+        merging.addProperty("Value 2", 12.0);
+        merging.addProperty("Value 3", 13.0);
+        merging.addProperty("Value 4", 14.0);
+        merging.addProperty("Value 5", 15.0);
+        merging.addProperty("Value 6", 16.0);
+        configData.add(MERGING_MAX_DISTANCE, merging);
+
+        // Generate Squares Sweep
+        JsonObject genSquaresSweep = new JsonObject();
+        genSquaresSweep.addProperty(MIN_REQUIRED_R_SQUARED,                      false);
+        genSquaresSweep.addProperty(MIN_TRACKS_TO_CALCULATE_TAU,                 true);
+        genSquaresSweep.addProperty(MAX_ALLOWABLE_VARIABILITY,                   false);
+        genSquaresSweep.addProperty(MIN_REQUIRED_DENSITY_RATIO,                  false);
+        configData.add("Generate Squares Sweep", genSquaresSweep);
+
+        // Min Required R Squared
+        JsonObject minRSq = new JsonObject();
+        minRSq.addProperty("Value 0", 0.2);
+        minRSq.addProperty("Value 1", 0.3);
+        minRSq.addProperty("Value 2", 0.4);
+        minRSq.addProperty("Value 3", 0.5);
+        minRSq.addProperty("Value 4", 0.6);
+        minRSq.addProperty("Value 5", 0.7);
+        minRSq.addProperty("Value 6", 0.8);
+        minRSq.addProperty("Value 6", 0.9);
+        configData.add("Min Required R Squared", minRSq);
+
+        // Min Tracks to Calculate Tau
+        JsonObject minTracksTau = new JsonObject();
+        minTracksTau.addProperty("Value 0", 5);
+        minTracksTau.addProperty("Value 1", 10);
+        minTracksTau.addProperty("Value 2", 15);
+        minTracksTau.addProperty("Value 3", 20);
+        minTracksTau.addProperty("Value 4", 25);
+        configData.add("Min Tracks to Calculate Tau", minTracksTau);
     }
 
     /**

@@ -77,6 +77,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static paint.shared.config.PaintConfig.getBoolean;
+import static paint.shared.constants.PaintConstants.DEBUG_RUNTRACKMATEONRECORDING;
 
 /**
  * Provides functionality to run TrackMate analysis for a single microscopy
@@ -108,7 +109,7 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
                                                            ExperimentInfo experimentInfoRecord,
                                                            ProjectDialog dialog) {
 
-        final boolean debugFlag = getBoolean("Debug", "Debug RunTrackMateOnRecording", false);
+        final boolean debugFlag = getBoolean("Debug", DEBUG_RUNTRACKMATEONRECORDING, false);
         LocalDateTime start = LocalDateTime.now();
         DebugTools.setRootLevel("OFF");
 

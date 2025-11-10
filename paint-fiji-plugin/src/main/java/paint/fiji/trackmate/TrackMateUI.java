@@ -58,6 +58,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static paint.shared.constants.PaintConstants.DEBUG_RUNTRACKMATEONPROJECT;
 import static paint.shared.constants.PaintConstants.PAINT_SWEEP_CONFIGURATION_JSON;
 import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
 
@@ -154,7 +155,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
             dialog.setOkEnabled(false);
 
             try {
-                boolean debug = PaintConfig.getBoolean("Debug", "Debug RunTrackMateOnProject", false);
+                boolean debug = PaintConfig.getBoolean("Debug", DEBUG_RUNTRACKMATEONPROJECT, false);
                 Path imagesPath = project.getImagesRootPath();
                 Path currentProjectRoot = project.getProjectRootPath();
 
