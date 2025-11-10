@@ -52,10 +52,7 @@ import paint.shared.config.SweepConfig;
 import paint.shared.utils.PaintLogger;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -163,6 +160,8 @@ public class RunTrackMateOnProjectSweep {
                 String originalValue = PaintConfig.getString("TrackMate", parameter, "undefined");
 
                 for (Number val : values) {
+                    PaintLogger.blankline();
+                    PaintLogger.blankline();
                     PaintLogger.infof("Running sweep for %s = %s", parameter, val);
 
                     // Create clean sweep directory
@@ -183,11 +182,13 @@ public class RunTrackMateOnProjectSweep {
                     // Reinitialize PaintConfig for this sweep
                     PaintConfig.reinitialise(sweepPath);
 
-                    // Apply updated parameter value
-                    if (val.doubleValue() == val.intValue()) {
-                        PaintConfig.setInt("TrackMate", parameter, val.intValue());
-                    } else {
-                        PaintConfig.setDouble("TrackMate", parameter, val.doubleValue());
+                    // Apply updated parameter value if it is value that need to be changed in the configuration
+                    if (!"Threshold".equals(parameter)) {
+                        if (val.doubleValue() == val.intValue()) {
+                            PaintConfig.setInt("TrackMate", parameter, val.intValue());
+                        } else {
+                            PaintConfig.setDouble("TrackMate", parameter, val.doubleValue());
+                        }
                     }
 
                     // Persist modified configuration
@@ -202,6 +203,11 @@ public class RunTrackMateOnProjectSweep {
                             if (Files.exists(expSrc)) {
                                 Files.createDirectories(expDstDir);
                                 Files.copy(expSrc, expDst, StandardCopyOption.REPLACE_EXISTING);
+
+                                if ("Threshold".equals(parameter)) {
+                                    PaintLogger.infof("Updating threshold %f for %s", val.doubleValue(), expDst);
+                                    updateThreshold(expDst, val.doubleValue());
+                                }
                             } else {
                                 PaintLogger.warnf("Experiment Info.csv not found for %s at %s", expName, expSrc);
                             }
@@ -251,5 +257,41 @@ public class RunTrackMateOnProjectSweep {
                 Paths.get("/Users/hans/Paint Test Project"),
                 Paths.get("/Volumes/Extreme Pro/Omero"),
                 Arrays.asList("221012", "AnyName"));
+    }
+
+    public static void updateThreshold(Path csvPath, double newValue) throws IOException {
+
+        List<String> lines = Files.readAllLines(csvPath);
+        if (lines.isEmpty()) {
+            return;
+        }
+
+        String   header         = lines.get(0);
+        String[] cols           = header.split(",");
+        int      thresholdIndex = -1;
+
+        for (int i = 0; i < cols.length; i++) {
+            if ("Threshold".equalsIgnoreCase(cols[i].trim())) {
+                thresholdIndex = i;
+                break;
+            }
+        }
+
+        if (thresholdIndex < 0) {
+            throw new IOException("CSV does not contain a 'Threshold' column: " + csvPath);
+        }
+
+        List<String> output = new ArrayList<>();
+        output.add(header); // keep header unchanged
+
+        for (int row = 1; row < lines.size(); row++) {
+            String[] parts = lines.get(row).split(",");
+            if (parts.length > thresholdIndex) {
+                parts[thresholdIndex] = String.valueOf(newValue);
+            }
+            output.add(String.join(",", parts));
+        }
+
+        Files.write(csvPath, output, StandardOpenOption.TRUNCATE_EXISTING);
     }
 }
