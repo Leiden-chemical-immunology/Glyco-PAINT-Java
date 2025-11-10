@@ -233,14 +233,20 @@ public class PaintConfig {
     }
 
 
-    private void loadSweepDefaults() {
+    public void setSweepDefaults(Path projectPath) {
 
-        // Sweep Settings
+        JsonObject root = new JsonObject();
+
+        // ---------------------------
+        // Sweep Settings (only flag)
+        // ---------------------------
         JsonObject sweepSettings = new JsonObject();
         sweepSettings.addProperty("Sweep", true);
-        configData.add("Sweep Settings", sweepSettings);
+        root.add("Sweep Settings", sweepSettings);
 
-        // TrackMate Sweep
+        // ---------------------------
+        // TrackMate Sweep Flags
+        // ---------------------------
         JsonObject trackMateSweep = new JsonObject();
         trackMateSweep.addProperty(THRESHOLD,                       true);
         trackMateSweep.addProperty(MAX_FRAME_GAP,                   false);
@@ -259,23 +265,24 @@ public class PaintConfig {
         trackMateSweep.addProperty(ALLOW_TRACK_SPLITTING,           false);
         trackMateSweep.addProperty(ALLOW_TRACK_MERGING,             false);
         trackMateSweep.addProperty(MERGING_MAX_DISTANCE,            false);
-        configData.add("TrackMate Sweep", trackMateSweep);
 
-        // Threshold values
+        root.add("TrackMate Sweep", trackMateSweep);
+
+        // ---------------------------
+        // Value ranges (all top level)
+        // ---------------------------
         JsonObject thresholdValues = new JsonObject();
         thresholdValues.addProperty("Value 1", 30);
         thresholdValues.addProperty("Value 2", 20);
         thresholdValues.addProperty("Value 3", 10);
         thresholdValues.addProperty("Value 4", 5);
-        configData.add(THRESHOLD, thresholdValues);
+        root.add(THRESHOLD, thresholdValues);
 
-        // MAX_FRAME_GAP
         JsonObject maxFrameGap = new JsonObject();
         maxFrameGap.addProperty("Value 1", 3);
         maxFrameGap.addProperty("Value 2", 4);
-        configData.add(MAX_FRAME_GAP, maxFrameGap);
+        root.add(MAX_FRAME_GAP, maxFrameGap);
 
-        // LINKING_MAX_DISTANCE
         JsonObject linkingMaxDist = new JsonObject();
         linkingMaxDist.addProperty("Value 0", 0.2);
         linkingMaxDist.addProperty("Value 1", 0.3);
@@ -286,9 +293,8 @@ public class PaintConfig {
         linkingMaxDist.addProperty("Value 6", 0.8);
         linkingMaxDist.addProperty("Value 7", 0.9);
         linkingMaxDist.addProperty("Value 8", 13);
-        configData.add(LINKING_MAX_DISTANCE, linkingMaxDist);
+        root.add(LINKING_MAX_DISTANCE, linkingMaxDist);
 
-        // ALTERNATIVE_LINKING_COST_FACTOR
         JsonObject altLinkCost = new JsonObject();
         altLinkCost.addProperty("Value 0", 1.02);
         altLinkCost.addProperty("Value 1", 1.03);
@@ -299,9 +305,8 @@ public class PaintConfig {
         altLinkCost.addProperty("Value 6", 1.08);
         altLinkCost.addProperty("Value 7", 1.09);
         altLinkCost.addProperty("Value 8", 1.10);
-        configData.add(ALTERNATIVE_LINKING_COST_FACTOR, altLinkCost);
+        root.add(ALTERNATIVE_LINKING_COST_FACTOR, altLinkCost);
 
-        // RADIUS
         JsonObject radius = new JsonObject();
         radius.addProperty("Value 0", 0.2);
         radius.addProperty("Value 1", 0.3);
@@ -314,17 +319,15 @@ public class PaintConfig {
         radius.addProperty("Value 8", 1.0);
         radius.addProperty("Value 9", 1.1);
         radius.addProperty("Value 10", 1.2);
-        configData.add(RADIUS, radius);
+        root.add(RADIUS, radius);
 
-        // MIN_NR_SPOTS_IN_TRACK
         JsonObject minNrSpots = new JsonObject();
         minNrSpots.addProperty("Value 0", 2);
         minNrSpots.addProperty("Value 1", 3);
         minNrSpots.addProperty("Value 2", 4);
         minNrSpots.addProperty("Value 3", 5);
-        configData.add(MIN_NR_SPOTS_IN_TRACK, minNrSpots);
+        root.add(MIN_NR_SPOTS_IN_TRACK, minNrSpots);
 
-        // GAP_CLOSING_MAX_DISTANCE
         JsonObject gapClosing = new JsonObject();
         gapClosing.addProperty("Value 0", 0.7);
         gapClosing.addProperty("Value 1", 0.8);
@@ -333,9 +336,8 @@ public class PaintConfig {
         gapClosing.addProperty("Value 4", 1.1);
         gapClosing.addProperty("Value 5", 1.2);
         gapClosing.addProperty("Value 6", 1.3);
-        configData.add(GAP_CLOSING_MAX_DISTANCE, gapClosing);
+        root.add(GAP_CLOSING_MAX_DISTANCE, gapClosing);
 
-        // SPLITTING_MAX_DISTANCE
         JsonObject splitting = new JsonObject();
         splitting.addProperty("Value 0", 10.0);
         splitting.addProperty("Value 1", 11.0);
@@ -344,9 +346,12 @@ public class PaintConfig {
         splitting.addProperty("Value 4", 14.0);
         splitting.addProperty("Value 5", 15.0);
         splitting.addProperty("Value 6", 16.0);
-        configData.add(SPLITTING_MAX_DISTANCE, splitting);
+        splitting.addProperty("Value 7", 17.0);
+        splitting.addProperty("Value 8", 18.0);
+        splitting.addProperty("Value 9", 19.0);
+        splitting.addProperty("Value 10", 20.0);
+        root.add(SPLITTING_MAX_DISTANCE, splitting);
 
-        // MERGING_MAX_DISTANCE
         JsonObject merging = new JsonObject();
         merging.addProperty("Value 0", 10.0);
         merging.addProperty("Value 1", 11.0);
@@ -355,36 +360,52 @@ public class PaintConfig {
         merging.addProperty("Value 4", 14.0);
         merging.addProperty("Value 5", 15.0);
         merging.addProperty("Value 6", 16.0);
-        configData.add(MERGING_MAX_DISTANCE, merging);
+        merging.addProperty("Value 7", 17.0);
+        merging.addProperty("Value 8", 18.0);
+        merging.addProperty("Value 9", 19.0);
+        merging.addProperty("Value 10", 20.0);
+        root.add(MERGING_MAX_DISTANCE, merging);
 
+        // ---------------------------
         // Generate Squares Sweep
+        //---------------------------
         JsonObject genSquaresSweep = new JsonObject();
-        genSquaresSweep.addProperty(MIN_REQUIRED_R_SQUARED,                      false);
-        genSquaresSweep.addProperty(MIN_TRACKS_TO_CALCULATE_TAU,                 true);
-        genSquaresSweep.addProperty(MAX_ALLOWABLE_VARIABILITY,                   false);
-        genSquaresSweep.addProperty(MIN_REQUIRED_DENSITY_RATIO,                  false);
-        configData.add("Generate Squares Sweep", genSquaresSweep);
+        genSquaresSweep.addProperty(MIN_REQUIRED_R_SQUARED,      false);
+        genSquaresSweep.addProperty(MIN_TRACKS_TO_CALCULATE_TAU, true);
+        genSquaresSweep.addProperty(MAX_ALLOWABLE_VARIABILITY,    false);
+        genSquaresSweep.addProperty(MIN_REQUIRED_DENSITY_RATIO,   false);
+        root.add("Generate Squares Sweep", genSquaresSweep);
 
-        // Min Required R Squared
         JsonObject minRSq = new JsonObject();
-        minRSq.addProperty("Value 0", 0.2);
-        minRSq.addProperty("Value 1", 0.3);
-        minRSq.addProperty("Value 2", 0.4);
-        minRSq.addProperty("Value 3", 0.5);
-        minRSq.addProperty("Value 4", 0.6);
-        minRSq.addProperty("Value 5", 0.7);
-        minRSq.addProperty("Value 6", 0.8);
-        minRSq.addProperty("Value 6", 0.9);
-        configData.add("Min Required R Squared", minRSq);
+        minRSq.addProperty("Value 0", 0.1);
+        minRSq.addProperty("Value 1", 0.2);
+        minRSq.addProperty("Value 2", 0.3);
+        minRSq.addProperty("Value 3", 0.4);
+        minRSq.addProperty("Value 4", 0.5);
+        minRSq.addProperty("Value 5", 0.6);
+        minRSq.addProperty("Value 6", 0.7);
+        minRSq.addProperty("Value 7", 0.8);
+        root.add("Min Required R Squared", minRSq);
 
-        // Min Tracks to Calculate Tau
         JsonObject minTracksTau = new JsonObject();
         minTracksTau.addProperty("Value 0", 5);
         minTracksTau.addProperty("Value 1", 10);
         minTracksTau.addProperty("Value 2", 15);
         minTracksTau.addProperty("Value 3", 20);
         minTracksTau.addProperty("Value 4", 25);
-        configData.add("Min Tracks to Calculate Tau", minTracksTau);
+        root.add("Min Tracks to Calculate Tau", minTracksTau);
+
+        // ---------------------------
+        // Save
+        // ---------------------------
+        try {
+            Path filePath = projectPath.resolve("Paint Sweep Configuration.json");
+            try (Writer writer = Files.newBufferedWriter(filePath)) {
+                GSON.toJson(root, writer);
+            }
+        } catch (IOException e) {
+            PaintLogger.errorf("Failed to save Paint Sweep Configuration file: %s", e.getMessage());
+        }
     }
 
     /**

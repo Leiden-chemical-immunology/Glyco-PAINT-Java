@@ -52,6 +52,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -63,8 +64,8 @@ import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
 
 public class ProjectDialog {
 
-    private final    JDialog              dialog;
-    private final    PaintConfig        paintConfig;
+    private final    JDialog             dialog;
+    private final    PaintConfig         paintConfig;
     private final    JCheckBox           saveExperimentsCheckBox;
     private final    JCheckBox           verboseCheckBox;
     private final    JCheckBox           sweepCheckBox;
@@ -344,16 +345,65 @@ public class ProjectDialog {
 
         // Only create the Sweep checkbox in TRACKMATE mode
         if (mode == DialogMode.TRACKMATE) {
-            sweepCheckBox = new JCheckBox("Sweep", PaintConfig.getBoolean("Sweep Settings", "Sweep", false));
+            sweepCheckBox = new JCheckBox("Sweep", false);
+
             sweepCheckBox.addActionListener(e -> {
-                boolean enabled = sweepCheckBox.isSelected();
-                PaintConfig.setBoolean("Sweep Settings", "Sweep", enabled);
+                boolean selected = sweepCheckBox.isSelected();
+
+                PaintConfig.setBoolean("Sweep Settings", "Sweep", selected);
                 PaintConfig.instance().save();
-                PaintLogger.infof("Sweep mode %s.", enabled ? "enabled" : "disabled");
+                PaintLogger.infof("Sweep mode %s.", selected ? "enabled" : "disabled");
+
+                // Only run sweep file check when turning ON
+                if (selected) {
+                    Path sweepFile = projectPath.resolve("Paint Sweep Configuration.json");
+
+                    if (!Files.exists(sweepFile)) {
+
+                        int result = JOptionPane.showConfirmDialog(
+                                dialog,
+                                "The file \"Paint Sweep Configuration.json\" does not exist in the project root.\n\n" +
+                                        "Do you want to create it now with default sweep settings?",
+                                "Sweep Configuration Missing",
+                                JOptionPane.YES_NO_OPTION,
+                                JOptionPane.WARNING_MESSAGE
+                        );
+
+                        if (result == JOptionPane.YES_OPTION) {
+                            try {
+                                paintConfig.setSweepDefaults(projectPath);
+
+                                JOptionPane.showMessageDialog(
+                                        dialog,
+                                        "Sweep configuration file has been created:\n" + sweepFile.toAbsolutePath() +
+                                                 "\nYou should edit that file to enable the desired sweep options.",
+                                        "Sweep File Created",
+                                        JOptionPane.INFORMATION_MESSAGE
+                                );
+
+                            } catch (Exception ex) {
+                                JOptionPane.showMessageDialog(
+                                        dialog,
+                                        "Failed to create sweep configuration:\n" + ex.getMessage(),
+                                        "Error",
+                                        JOptionPane.ERROR_MESSAGE
+                                );
+                            }
+
+                        } else {
+                            // User said NO -> revert checkbox
+                            sweepCheckBox.setSelected(false);
+                            PaintConfig.setBoolean("Sweep Settings", "Sweep", false);
+                            PaintConfig.instance().save();
+                            return;
+                        }
+                    }
+                }
+
                 updateOkButtonState();
             });
         } else {
-            sweepCheckBox = null; // hide it in other modes
+            sweepCheckBox = null;
         }
 
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
