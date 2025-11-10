@@ -56,7 +56,7 @@ public final class PaintRuntime {
     // ───────────────────────────────────────────────────────────────────────────────
 
     private static boolean verbose;
-    private static String logLevel;
+    private static String  logLevel;
 
     /**
      * Private constructor to prevent instantiation.

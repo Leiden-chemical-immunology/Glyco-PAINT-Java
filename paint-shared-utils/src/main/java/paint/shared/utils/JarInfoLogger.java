@@ -63,7 +63,7 @@ public final class JarInfoLogger {
     // CONSTANTS
     // ───────────────────────────────────────────────────────────────────────────────
 
-    private static final ZoneId AMS = ZoneId.of("Europe/Amsterdam");
+    private static final ZoneId            AMS     = ZoneId.of("Europe/Amsterdam");
     private static final DateTimeFormatter OUT_FMT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z").withZone(AMS);
 
@@ -265,13 +265,13 @@ public final class JarInfoLogger {
         /**
          * Constructs a new {@code JarInfo} container with all metadata values.
          *
-         * @param implTitle    implementation title
-         * @param implVersion  implementation version
-         * @param implVendor   implementation vendor
-         * @param implDate     implementation build date/time
-         * @param specTitle    specification title
-         * @param specVersion  specification version
-         * @param specVendor   specification vendor
+         * @param implTitle   implementation title
+         * @param implVersion implementation version
+         * @param implVendor  implementation vendor
+         * @param implDate    implementation build date/time
+         * @param specTitle   specification title
+         * @param specVersion specification version
+         * @param specVendor  specification vendor
          */
         public JarInfo(String implTitle,
                        String implVersion,

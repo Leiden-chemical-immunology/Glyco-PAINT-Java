@@ -110,9 +110,10 @@ public final class PaintPrefs {
      * @param defaultValue default to return and store if missing
      * @return stored boolean or default
      */
-    public static synchronized boolean getBoolean(String section,
-                                                  String key,
-                                                  boolean defaultValue) {
+    public static synchronized boolean getBoolean(
+            String section,
+            String key,
+            boolean defaultValue) {
         NSDictionary sectionDict = (NSDictionary) plist.objectForKey(section);
         if (sectionDict == null) {
             sectionDict = new NSDictionary();
@@ -135,9 +136,10 @@ public final class PaintPrefs {
      * @param defaultValue default to return and store if missing
      * @return stored string or default
      */
-    public static synchronized String getString(String section,
-                                                String key,
-                                                String defaultValue) {
+    public static synchronized String getString(
+            String section,
+            String key,
+            String defaultValue) {
         NSDictionary sectionDict = (NSDictionary) plist.objectForKey(section);
         if (sectionDict == null) {
             sectionDict = new NSDictionary();
@@ -159,9 +161,10 @@ public final class PaintPrefs {
     /**
      * Stores a boolean value within a named section and persists the change.
      */
-    public static synchronized void putBoolean(String section,
-                                               String key,
-                                               boolean value) {
+    public static synchronized void putBoolean(
+            String section,
+            String key,
+            boolean value) {
         NSDictionary sectionDict = (NSDictionary) plist.objectForKey(section);
         if (sectionDict == null) {
             sectionDict = new NSDictionary();
@@ -174,9 +177,10 @@ public final class PaintPrefs {
     /**
      * Stores a string value within a named section and persists the change.
      */
-    public static synchronized void putString(String section,
-                                              String key,
-                                              String value) {
+    public static synchronized void putString(
+            String section,
+            String key,
+            String value) {
         NSDictionary sectionDict = (NSDictionary) plist.objectForKey(section);
         if (sectionDict == null) {
             sectionDict = new NSDictionary();

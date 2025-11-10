@@ -51,7 +51,7 @@ import java.time.format.DateTimeFormatter;
  * Supports multiple severity levels, formatted messages, and persistent
  * log storage under a project’s "Logs" directory.
  */
-public final class  PaintLogger {
+public final class PaintLogger {
 
     // ───────────────────────────────────────────────────────────────────────────────
     // ENUM: LOG LEVEL
@@ -61,12 +61,12 @@ public final class  PaintLogger {
      * Defines log levels with severity rank and display color.
      */
     public enum Level {
-        
+
         DEBUG(0, Color.GRAY),
-        INFO( 1, Color.BLACK),
-        WARN( 2, Color.ORANGE.darker()),
+        INFO(1, Color.BLACK),
+        WARN(2, Color.ORANGE.darker()),
         ERROR(3, Color.RED);
-        
+
 
         private final int   rank;
         private final Color color;
@@ -95,13 +95,13 @@ public final class  PaintLogger {
     // INTERNAL STATE
     // ───────────────────────────────────────────────────────────────────────────────
 
-    
+
     private static          BufferedWriter    writer;
     private static          boolean           initialised    = false;
     private static final    DateTimeFormatter TIME_FMT       = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static          boolean           justPrintedRaw = false;
     private static volatile Level             currentLevel   = Level.INFO;
-    
+
 
     // ───────────────────────────────────────────────────────────────────────────────
     // CONFIGURATION

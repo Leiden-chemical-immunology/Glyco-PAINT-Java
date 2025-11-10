@@ -424,8 +424,8 @@ public final class PaintConsoleWindow {
      * Highlights all occurrences of a given regex pattern in the provided text with the specified color.
      *
      * @param fullText the text in which to search for the pattern
-     * @param regex the regular expression pattern to search for
-     * @param color the color used for highlighting the matched pattern
+     * @param regex    the regular expression pattern to search for
+     * @param color    the color used for highlighting the matched pattern
      */
     private static void highlightPattern(String fullText, String regex, Color color) {
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);

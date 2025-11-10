@@ -84,16 +84,16 @@ public final class CsvUtils {
      *
      * @param filePath path to the CSV file
      * @return number of records marked as processed;
-     *         returns {@code 0} if no valid "Process Flag" column is found
+     * returns {@code 0} if no valid "Process Flag" column is found
      */
     public static int countProcessed(Path filePath) {
         int count = 0;
 
         try {
             CSVFormat format = CSVFormat.DEFAULT.builder()
-                    .setHeader()
-                    .setSkipHeaderRecord(true)
-                    .build();
+                                                .setHeader()
+                                                .setSkipHeaderRecord(true)
+                                                .build();
 
             try (CSVParser parser = CSVParser.parse(filePath.toFile(),
                                                     StandardCharsets.UTF_8,
@@ -143,8 +143,8 @@ public final class CsvUtils {
      * @throws IOException if any I/O error occurs during reading or writing
      */
     public static void concatenateCsvFiles(List<Path> inputFiles,
-                                           Path outputFile,
-                                           boolean deleteInputs) throws IOException {
+            Path outputFile,
+            boolean deleteInputs) throws IOException {
 
         boolean headerWritten = false;
         CSVPrinter printer = null;
@@ -159,15 +159,15 @@ public final class CsvUtils {
 
                 try (Reader reader = Files.newBufferedReader(inputFile);
                      CSVParser parser = CSVFormat.DEFAULT.builder()
-                             .setHeader()
-                             .setSkipHeaderRecord(true)
-                             .build()
-                             .parse(reader)) {
+                                                         .setHeader()
+                                                         .setSkipHeaderRecord(true)
+                                                         .build()
+                                                         .parse(reader)) {
 
                     if (!headerWritten) {
                         printer = new CSVPrinter(writer, CSVFormat.DEFAULT.builder()
-                                .setHeader(parser.getHeaderMap().keySet().toArray(new String[0]))
-                                .build());
+                                                                          .setHeader(parser.getHeaderMap().keySet().toArray(new String[0]))
+                                                                          .build());
                         headerWritten = true;
                     }
 
@@ -208,8 +208,8 @@ public final class CsvUtils {
      * @throws IOException if an I/O error occurs during processing
      */
     public static void concatenateNamedCsvFiles(Path projectPath,
-                                                String fileName,
-                                                List<String> experimentNames) throws IOException {
+            String fileName,
+            List<String> experimentNames) throws IOException {
         List<Path> inputs = new ArrayList<>();
         for (String exp : experimentNames) {
             inputs.add(projectPath.resolve(exp).resolve(fileName));
@@ -238,9 +238,9 @@ public final class CsvUtils {
      * @throws IOException if an I/O error occurs during processing
      */
     public static void addCase(Path root,
-                               String fileName,
-                               List<String> experimentNames,
-                               String caseName) throws IOException {
+            String fileName,
+            List<String> experimentNames,
+            String caseName) throws IOException {
 
         for (String exp : experimentNames) {
             Path csvPath = root.resolve(exp).resolve(fileName);
@@ -252,9 +252,9 @@ public final class CsvUtils {
             Path tempPath = csvPath.resolveSibling(fileName + ".tmp");
 
             CSVFormat readFormat = CSVFormat.DEFAULT.builder()
-                    .setHeader()
-                    .setSkipHeaderRecord(true)
-                    .build();
+                                                    .setHeader()
+                                                    .setSkipHeaderRecord(true)
+                                                    .build();
 
             try (Reader reader = Files.newBufferedReader(csvPath);
                  CSVParser parser = new CSVParser(reader, readFormat);
@@ -274,8 +274,8 @@ public final class CsvUtils {
 
                 // Define write format only once, now with explicit header
                 CSVFormat writeFormat = CSVFormat.DEFAULT.builder()
-                        .setHeader(headers.toArray(new String[0]))
-                        .build();
+                                                         .setHeader(headers.toArray(new String[0]))
+                                                         .build();
 
                 try (CSVPrinter printer = new CSVPrinter(writer, writeFormat)) {
                     for (CSVRecord record : parser) {

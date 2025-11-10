@@ -142,11 +142,12 @@ public final class SharedSquareUtils {
      * @param minRSquared     minimum R² value for selection
      * @param neighbourMode   neighbour logic: "Free", "Relaxed", or "Strict"
      */
-    public static void applyVisibilityFilter(List<Square> squares,
-                                             double minDensityRatio,
-                                             double maxVariability,
-                                             double minRSquared,
-                                             String neighbourMode) {
+    public static void applyVisibilityFilter(
+            List<Square> squares,
+            double       minDensityRatio,
+            double       maxVariability,
+            double       minRSquared,
+            String       neighbourMode) {
 
         if (squares == null || squares.isEmpty()) {
             return;
@@ -258,7 +259,7 @@ public final class SharedSquareUtils {
 
     /**
      * Calculates the density of tracks in a specified area over time and considering a concentration factor.
-     *
+     * <p>
      * The density is computed as the number of tracks divided by the area,
      * then divided by the time, and finally divided by the concentration.
      * If any of the area, time, or concentration values are non-positive, an IllegalArgumentException is thrown.

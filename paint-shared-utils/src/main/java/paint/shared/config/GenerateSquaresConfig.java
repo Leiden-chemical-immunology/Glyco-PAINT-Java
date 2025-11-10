@@ -52,14 +52,14 @@ import static paint.shared.constants.PaintConstants.*;
  */
 public class GenerateSquaresConfig {
 
-    
+
     private final int    numberOfSquaresInRecording;
     private final int    minTracksToCalculateTau;
     private final double minRequiredRSquared;
     private final double minRequiredDensityRatio;
     private final double maxAllowableVariability;
     private final String neighbourMode;
-    
+
 
     /**
      * Constructs a GenerateSquaresConfig by reading appropriate keys from the
@@ -121,7 +121,7 @@ public class GenerateSquaresConfig {
 
     @Override
     public String toString() {
-        
+
         return "GenerateSquaresConfig{" +
                 "Number of Squares in Row      = " + numberOfSquaresInRecording +
                 ", Min Tracks To Calculate Tau = " + minTracksToCalculateTau +
@@ -130,6 +130,6 @@ public class GenerateSquaresConfig {
                 ", Max Allowable Variability   = " + maxAllowableVariability +
                 ", Neighbour Mode              = '"+ neighbourMode + '\'' +
                 '}';
-        
+
     }
 }

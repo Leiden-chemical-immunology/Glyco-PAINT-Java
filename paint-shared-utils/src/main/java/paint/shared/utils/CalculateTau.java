@@ -76,7 +76,7 @@ public class CalculateTau {
      * points, no fit, or R-squared too low.
      */
     public static CalculateTauResult calculateTau(List<Track> tracks,
-                                                  double minRequiredRSquared) {
+            double minRequiredRSquared) {
 
         // 1) Extract durations
         final int n = tracks.size();
@@ -201,7 +201,7 @@ public class CalculateTau {
             final double rSquared;
 
             FitResult(double tauMs, double rSquared) {
-                this.tauMs    = tauMs;
+                this.tauMs = tauMs;
                 this.rSquared = rSquared;
             }
         }
@@ -216,9 +216,9 @@ public class CalculateTau {
          * @param y the dependent variable data points (output values)
          *          Both arrays must have the same length and contain at least two elements.
          * @return a {@code FitResult} containing the calculated time constant in milliseconds (tauMs)
-         *         and the coefficient of determination (rSquared).
-         *         Returns a {@code FitResult} with NaN values if the input is invalid
-         *         or the fitting process fails.
+         * and the coefficient of determination (rSquared).
+         * Returns a {@code FitResult} with NaN values if the input is invalid
+         * or the fitting process fails.
          */
         private static FitResult fit(double[] x, double[] y) {
             if (x == null || y == null || x.length != y.length || x.length < 2) {
@@ -285,9 +285,9 @@ public class CalculateTau {
          * @param y the dependent variable data points (output values).
          *          The array must have the same length as the {@code x} array.
          * @return a double array containing the initial guesses for the model parameters:
-         *         - {@code m}: the scaling factor
-         *         - {@code t}: the time constant
-         *         - {@code b}: the baseline offset
+         * - {@code m}: the scaling factor
+         * - {@code t}: the time constant
+         * - {@code b}: the baseline offset
          */
         private static double[] initialGuess(double[] x, double[] y) {
             double minY = Arrays.stream(y).min().orElse(0);
@@ -346,7 +346,7 @@ public class CalculateTau {
          * @param t the time constant (model parameter).
          * @param b the baseline offset (model parameter).
          * @return the R-squared value, representing the goodness of fit of the model to the data.
-         *         Returns NaN if the total sum of squares is zero.
+         * Returns NaN if the total sum of squares is zero.
          */
         private static double computeRSquared(double[] x, double[] y, double m, double t, double b) {
             double meanY  = Arrays.stream(y).average().orElse(0);

@@ -82,10 +82,10 @@ public class PaintConfig {
     // ============================================================================
 
     private static volatile PaintConfig INSTANCE;
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final    Gson        GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    private final Path path;
-    private JsonObject configData; // lazily loaded
+    private final Path       path;
+    private       JsonObject configData; // lazily loaded
 
     /**
      * Private constructor to enforce singleton usage.
@@ -191,7 +191,7 @@ public class PaintConfig {
      * Debug, and any other defined configuration sections.
      */
     private void loadDefaults() {
-        
+
         JsonObject generateSquares = new JsonObject();
         generateSquares.addProperty(MIN_TRACKS_TO_CALCULATE_TAU,      20);
         generateSquares.addProperty(MIN_REQUIRED_R_SQUARED,           0.1);
@@ -303,16 +303,16 @@ public class PaintConfig {
 
         // RADIUS
         JsonObject radius = new JsonObject();
-        radius.addProperty("Value 0",  0.2);
-        radius.addProperty("Value 1",  0.3);
-        radius.addProperty("Value 2",  0.4);
-        radius.addProperty("Value 3",  0.5);
-        radius.addProperty("Value 4",  0.6);
-        radius.addProperty("Value 5",  0.7);
-        radius.addProperty("Value 6",  0.8);
-        radius.addProperty("Value 7",  0.9);
-        radius.addProperty("Value 8",  1.0);
-        radius.addProperty("Value 9",  1.1);
+        radius.addProperty("Value 0", 0.2);
+        radius.addProperty("Value 1", 0.3);
+        radius.addProperty("Value 2", 0.4);
+        radius.addProperty("Value 3", 0.5);
+        radius.addProperty("Value 4", 0.6);
+        radius.addProperty("Value 5", 0.7);
+        radius.addProperty("Value 6", 0.8);
+        radius.addProperty("Value 7", 0.9);
+        radius.addProperty("Value 8", 1.0);
+        radius.addProperty("Value 9", 1.1);
         radius.addProperty("Value 10", 1.2);
         configData.add(RADIUS, radius);
 

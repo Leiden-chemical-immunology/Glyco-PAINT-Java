@@ -76,7 +76,7 @@ public class ExperimentInfo {
     private double  concentration;
     private boolean processFlag;               // renamed from doProcess
     private double  threshold;
-    
+
     // ───────────────────────────────────────────────────────────────────────────────
     // ASSOCIATED OBJECTS
     // ───────────────────────────────────────────────────────────────────────────────

@@ -247,7 +247,7 @@ public class TrackMateConfig {
 
     @Override
     public String toString() {
-        
+
         return "TrackMateConfig" + "\n" +
                 "                  Max Frame Gap                   = "  + maxFrameGap + "\n" +
                 "                  Alternative Linking Cost Factor = "  + alternativeLinkingCostFactor + "\n" +

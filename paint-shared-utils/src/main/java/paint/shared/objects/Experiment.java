@@ -85,7 +85,7 @@ public class Experiment {
      * Constructs an {@code Experiment} with a name and pre-populated recordings.
      *
      * @param experimentName the name of the experiment
-     * @param recordings the list of recordings to associate
+     * @param recordings     the list of recordings to associate
      */
     public Experiment(String experimentName, ArrayList<Recording> recordings) {
         this.experimentName = experimentName;
