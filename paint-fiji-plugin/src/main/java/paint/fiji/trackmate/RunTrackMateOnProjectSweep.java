@@ -50,6 +50,7 @@ import org.apache.commons.io.FileUtils;
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.config.SweepConfig;
 import paint.shared.utils.PaintLogger;
+import paint.shared.validate.JsonValidator;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -101,6 +102,12 @@ public class RunTrackMateOnProjectSweep {
         Path sweepFile = projectPath.resolve(PAINT_SWEEP_CONFIGURATION_JSON);
         if (!Files.exists(sweepFile)) {
             PaintLogger.infof("No sweep configuration found at %s", sweepFile);
+            return false;
+        }
+
+        JsonValidator.Result validation = JsonValidator.validate(sweepFile);
+        if (!validation.valid) {
+            PaintLogger.errorf("Invalid JSON: " + validation.error);
             return false;
         }
 
@@ -157,7 +164,10 @@ public class RunTrackMateOnProjectSweep {
                 List<Number> values = entry.getValue();     // Values holds the values
 
                 // Store original parameter value for restoration
-                String originalValue = PaintConfig.getString("TrackMate", parameter, "undefined");
+                String originalValue = null;
+                if (!"Threshold".equals(parameter)) {
+                    originalValue = PaintConfig.getString("TrackMate", parameter, "undefined");
+                }
 
                 for (Number val : values) {
                     PaintLogger.blankline();
@@ -230,7 +240,9 @@ public class RunTrackMateOnProjectSweep {
                 }
 
                 // Optionally restore original value after each parameter sweep
-                PaintConfig.setString("TrackMate", parameter, originalValue);
+                if (!"Threshold".equals(parameter)) {
+                    PaintConfig.setString("TrackMate", parameter, originalValue);
+                }
             }
 
         } finally {
