@@ -125,6 +125,7 @@ public class ViewerFrame extends JFrame
     private final SquareOverrideWriter                 squareOverrideWriter;
 
     private final RecordingPlaybackController          playbackController = new RecordingPlaybackController(this);
+    private       RecordingDisplayUpdater              displayUpdater;
 
     /**
      * Constructs a {@code RecordingViewerFrame} that initializes and displays the complete
@@ -168,6 +169,13 @@ public class ViewerFrame extends JFrame
         controlHandler.attach(leftGridPanel);
 
         attributesPanel = new RecordingAttributesPanel();
+        displayUpdater  = new RecordingDisplayUpdater(
+                leftGridPanel,
+                rightImageLabel,
+                experimentLabel,
+                recordingLabel,
+                attributesPanel
+        );
         navigationPanel = new NavigationPanel(this);
         controlsPanel   = new RecordingControlsPanel(this);
 
@@ -272,22 +280,11 @@ public class ViewerFrame extends JFrame
         if (index < 0 || index >= recordingEntries.size()) {
             return;
         }
+
         currentIndex = index;
-
-        RecordingEntry recordingEntry = recordingEntries.get(index);
-        leftGridPanel.setRecording(recordingEntry.getRecording());
-        leftGridPanel.setBackgroundImage(recordingEntry.getLeftImage());
-
-        int numberOfSquaresInRecording = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
-        leftGridPanel.setSquares(recordingEntry.getRecording().getSquaresOfRecording());
-
-        rightImageLabel.setIcon(scaleToFit(recordingEntry.getRightImage(), NUMBER_PIXELS_WIDTH, NUMBER_PIXELS_HEIGHT));
-        experimentLabel.setText("Experiment: " + recordingEntry.getExperimentName() + "   [Overall: " + (currentIndex + 1) + "/" + recordingEntries.size() + "]");
-        recordingLabel.setText("Recording: " + recordingEntry.getRecordingName());
-
-        attributesPanel.updateFromEntry(recordingEntry, numberOfSquaresInRecording);
+        RecordingEntry entry = recordingEntries.get(index);
+        displayUpdater.show(entry, index, recordingEntries.size());
         updateNavButtons();
-        leftGridPanel.repaint();
     }
 
     // =========================================================================================
