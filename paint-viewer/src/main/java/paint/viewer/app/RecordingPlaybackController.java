@@ -120,7 +120,7 @@ public final class RecordingPlaybackController {
                     PaintLogger.infof("Movie window closed — UI re-enabled.");
                 } else {
                     // If we never detected the window, still flip the UI back on.
-                    PaintLogger.warnf("Movie window for '%s' not detected — assuming playback finished.", expectedTitle);
+                    // PaintLogger.warnf("Movie window for '%s' not detected — assuming playback finished.", expectedTitle);
                 }
 
             } catch (Exception ex) {
