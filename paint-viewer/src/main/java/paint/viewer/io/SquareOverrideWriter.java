@@ -1,4 +1,4 @@
-/******************************************************************************
+/*==============================================================================
  *  Class:        SquareOverrideWriter.java
  *  Package:      paint.viewer.logic
  *
@@ -34,12 +34,11 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ******************************************************************************/
-
-package paint.viewer.logic;
+==============================================================================*/
+package paint.viewer.io;
 
 import paint.shared.utils.PaintLogger;
-import paint.viewer.utils.RecordingEntry;
+import paint.viewer.model.RecordingEntry;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -67,7 +66,7 @@ import java.util.Map;
  * <p>
  * The writer ensures the Viewer directory exists, headers are created if
  * missing, and each update replaces any previous record for the same square.
- * This mirrors {@link paint.viewer.logic.RecordingOverrideWriter} in structure
+ * This mirrors {@link paint.viewer.io.RecordingOverrideWriter} in structure
  * and reliability, but applies to square-level (cell) granularity.
  */
 public class SquareOverrideWriter {

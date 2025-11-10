@@ -151,7 +151,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>paint.viewer.Viewer</mainClass>
+                            <mainClass>paint.viewer.app.Viewer</mainClass>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix></classpathPrefix>
                         </manifest>
@@ -310,7 +310,7 @@ exec "$JAVA_CMD" -Xmx2G -jar "${project.artifactId}-${project.version}.jar"
                                         <minVersion>1.8.0</minVersion>
                                     </jre>
                                     <classPath>
-                                        <mainClass>paint.viewer.Viewer</mainClass>
+                                        <mainClass>paint.viewer.app.Viewer</mainClass>
                                     </classPath>
                                     <headerType>gui</headerType>
                                     <errTitle>${app.name}</errTitle>

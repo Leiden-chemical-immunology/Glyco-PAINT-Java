@@ -1,4 +1,4 @@
-/******************************************************************************
+/*==============================================================================
  *  Class:        RecordingControlsPanel.java
  *  Package:      paint.viewer.panels
  *
@@ -33,11 +33,11 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ******************************************************************************/
+==============================================================================*/
 
-package paint.viewer.panels;
+package paint.viewer.ui.panels;
 
-import paint.viewer.shared.SquareControlParams;
+import paint.viewer.model.SquareControlParams;
 
 import javax.swing.*;
 import java.awt.*;

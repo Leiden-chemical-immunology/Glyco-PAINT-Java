@@ -1,9 +1,9 @@
-/******************************************************************************
+/*==============================================================================
  *  Class:        RecordingAttributesPanel.java
  *  Package:      paint.viewer.panels
  *
  *  PURPOSE:
- *    Displays the attributes of a {@link paint.viewer.utils.RecordingEntry}
+ *    Displays the attributes of a {@link paint.viewer.model.RecordingEntry}
  *    in a structured tabular format within the PAINT viewer interface.
  *
  *  DESCRIPTION:
@@ -33,11 +33,11 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ******************************************************************************/
+==============================================================================*/
 
-package paint.viewer.panels;
+package paint.viewer.ui.panels;
 
-import paint.viewer.utils.RecordingEntry;
+import paint.viewer.model.RecordingEntry;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

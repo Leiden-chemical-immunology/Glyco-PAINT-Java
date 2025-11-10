@@ -1,4 +1,4 @@
-/******************************************************************************
+/*==============================================================================
  *  Class:        SquareControlDialog.java
  *  Package:      paint.viewer.dialogs
  *
@@ -36,13 +36,13 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ******************************************************************************/
+ ==============================================================================*/
 
-package paint.viewer.dialogs;
+package paint.viewer.ui.dialogs;
 
-import paint.viewer.panels.RecordingControlsPanel;
-import paint.viewer.panels.SquareGridPanel;
-import paint.viewer.shared.SquareControlParams;
+import paint.viewer.ui.panels.RecordingControlsPanel;
+import paint.viewer.ui.panels.SquareGridPanel;
+import paint.viewer.model.SquareControlParams;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;

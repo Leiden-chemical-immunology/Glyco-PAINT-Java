@@ -1,4 +1,4 @@
-/******************************************************************************
+/*==============================================================================
  *  Class:        CellAssignmentManager.java
  *  Package:      paint.viewer.logic
  *
@@ -14,7 +14,7 @@
  *      • Store historical assignment states for undo operations.
  *      • Restore a previous state upon undo.
  *
- *    Integration occurs via {@link paint.viewer.panels.SquareGridPanel},
+ *    Integration occurs via {@link paint.viewer.ui.panels.SquareGridPanel},
  *    which provides access to squares and their selection state.
  *
  *  KEY FEATURES:
@@ -33,12 +33,12 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ******************************************************************************/
+ ==============================================================================*/
 
-package paint.viewer.logic;
+package paint.viewer.control;
 
 import paint.shared.objects.Square;
-import paint.viewer.panels.SquareGridPanel;
+import paint.viewer.ui.panels.SquareGridPanel;
 
 import java.util.*;
 

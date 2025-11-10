@@ -1,9 +1,9 @@
-package paint.viewer;
+package paint.viewer.app;
 
 import paint.shared.config.paintconfig.PaintConfig;
-import paint.viewer.panels.SquareGridPanel;
-import paint.viewer.panels.RecordingAttributesPanel;
-import paint.viewer.utils.RecordingEntry;
+import paint.viewer.ui.panels.SquareGridPanel;
+import paint.viewer.ui.panels.RecordingAttributesPanel;
+import paint.viewer.model.RecordingEntry;
 
 import javax.swing.*;
 

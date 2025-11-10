@@ -1,4 +1,4 @@
-/******************************************************************************
+/*==============================================================================
  *  Class:        RecordingViewerFrame.java
  *  Package:      paint.viewer
  *
@@ -24,7 +24,7 @@
  *    • Supports cell assignment and undo management through dedicated dialogs.
  *    • Provides full recording navigation across multiple experiments.
  *    • Supports preview recalculation of Tau, R², and density on slider movement.
- *    • Integrates TIFF/ND2 playback via {@link paint.viewer.utils.TiffMoviePlayer}.
+ *    • Integrates TIFF/ND2 playback via {@link paint.viewer.io.TiffMoviePlayer}.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -37,31 +37,32 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ******************************************************************************/
+==============================================================================*/
 
-package paint.viewer;
+package paint.viewer.app;
 
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.objects.Project;
 import paint.shared.utils.PaintLogger;
-import paint.viewer.dialogs.CellAssignmentDialog;
-import paint.viewer.dialogs.RecordingFilterDialog;
-import paint.viewer.dialogs.SquareControlDialog;
-import paint.viewer.logic.CellAssignmentManager;
-import paint.viewer.logic.RecordingOverrideWriter;
-import paint.viewer.logic.SquareControlHandler;
-import paint.viewer.logic.SquareOverrideWriter;
-import paint.viewer.panels.NavigationPanel;
-import paint.viewer.panels.RecordingAttributesPanel;
-import paint.viewer.panels.RecordingControlsPanel;
-import paint.viewer.panels.SquareGridPanel;
-import paint.viewer.shared.SquareControlParams;
-import paint.viewer.utils.RecordingEntry;
+import paint.viewer.io.FileHelper;
+import paint.viewer.io.PanelExporter;
+import paint.viewer.ui.dialogs.CellAssignmentDialog;
+import paint.viewer.ui.dialogs.RecordingFilterDialog;
+import paint.viewer.ui.dialogs.SquareControlDialog;
+import paint.viewer.control.CellAssignmentManager;
+import paint.viewer.io.RecordingOverrideWriter;
+import paint.viewer.control.SquareControlHandler;
+import paint.viewer.io.SquareOverrideWriter;
+import paint.viewer.ui.panels.NavigationPanel;
+import paint.viewer.ui.panels.RecordingAttributesPanel;
+import paint.viewer.ui.panels.RecordingControlsPanel;
+import paint.viewer.ui.panels.SquareGridPanel;
+import paint.viewer.model.SquareControlParams;
+import paint.viewer.model.RecordingEntry;
 import java.io.IOException;  // already present in your imports; if not, add it
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +75,7 @@ import static paint.shared.constants.PaintConstants.*;
  * a cohesive interface for browsing, filtering, and analyzing experiment recordings.
  * <p>
  * Functionally, the class manages synchronization between user interactions and the
- * underlying model objects — specifically {@link paint.viewer.utils.RecordingEntry}
+ * underlying model objects — specifically {@link RecordingEntry}
  * and {@link paint.shared.objects.Recording}. It enables users to:
  * <ul>
  *   <li>Navigate through multiple recordings within an experiment.</li>
@@ -115,9 +116,9 @@ public class ViewerFrame extends JFrame
     private final RecordingOverrideWriter              recordingOverrideWriter;
     private final SquareOverrideWriter                 squareOverrideWriter;
 
-    private final RecordingPlaybackController          playbackController = new RecordingPlaybackController(this);
-    private       RecordingDisplayUpdater              displayUpdater;
-    private final RecordingNavigator                   navigator;
+    private final RecordingPlaybackController playbackController = new RecordingPlaybackController(this);
+    private       RecordingDisplayUpdater     displayUpdater;
+    private final RecordingNavigator          navigator;
 
     /**
      * Constructs a {@code RecordingViewerFrame} that initializes and displays the complete
@@ -317,7 +318,7 @@ public class ViewerFrame extends JFrame
             Path exportPath = chooser.getSelectedFile().toPath();
 
             try {
-                paint.viewer.export.PanelExporter.export(leftGridPanel, exportPath, 2.0);
+                PanelExporter.export(leftGridPanel, exportPath, 2.0);
 
                 JOptionPane.showMessageDialog(
                         this,

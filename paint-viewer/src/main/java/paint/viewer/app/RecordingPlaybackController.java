@@ -1,9 +1,9 @@
-package paint.viewer;
+package paint.viewer.app;
 
 import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintPrefs;
-import paint.viewer.utils.RecordingEntry;
-import paint.viewer.utils.TiffMoviePlayer;
+import paint.viewer.model.RecordingEntry;
+import paint.viewer.io.TiffMoviePlayer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,8 +18,8 @@ import java.nio.file.Paths;
  */
 public final class RecordingPlaybackController {
 
-    private final ViewerFrame frame;
-    private volatile boolean playing = false;
+    private final    ViewerFrame frame;
+    private volatile boolean     playing = false;
 
     public RecordingPlaybackController(ViewerFrame frame) {
         this.frame = frame;

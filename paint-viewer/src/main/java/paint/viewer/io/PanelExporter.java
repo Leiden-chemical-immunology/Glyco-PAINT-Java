@@ -1,4 +1,4 @@
-package paint.viewer.export;
+package paint.viewer.io;
 
 import javax.swing.*;
 import java.awt.*;

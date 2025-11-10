@@ -1,4 +1,4 @@
-/******************************************************************************
+/*==============================================================================
  *  Class:        RecordingLoader.java
  *  Package:      paint.viewer.utils
  *
@@ -35,9 +35,9 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ******************************************************************************/
+ ==============================================================================*/
 
-package paint.viewer.utils;
+package paint.viewer.model;
 
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.io.ExperimentDataLoader;

@@ -1,4 +1,4 @@
-/******************************************************************************
+/*==============================================================================
  *  Class:        RecordingViewer.java
  *  Package:      paint.viewer
  *
@@ -14,8 +14,8 @@
  *    {@link paint.shared.dialogs.ProjectDialog} for project selection.
  *
  *    Upon confirmation, it loads experiment data via
- *    {@link paint.viewer.utils.RecordingLoader}, and if valid recordings are found,
- *    launches the {@link paint.viewer.ViewerFrame} interface.
+ *    {@link paint.viewer.model.RecordingLoader}, and if valid recordings are found,
+ *    launches the {@link paint.viewer.app.ViewerFrame} interface.
  *
  *  KEY FEATURES:
  *    • Loads the last used project directory from user preferences.
@@ -36,17 +36,17 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ******************************************************************************/
+==============================================================================*/
 
-package paint.viewer;
+package paint.viewer.app;
 
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
 import paint.shared.dialogs.ProjectDialog.DialogMode;
 import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintPrefs;
-import paint.viewer.utils.RecordingEntry;
-import paint.viewer.utils.RecordingLoader;
+import paint.viewer.model.RecordingEntry;
+import paint.viewer.model.RecordingLoader;
 
 import javax.swing.*;
 import java.nio.file.Path;

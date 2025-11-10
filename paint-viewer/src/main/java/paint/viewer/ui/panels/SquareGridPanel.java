@@ -1,4 +1,4 @@
-/******************************************************************************
+/*==============================================================================
  *  Class:        SquareGridPanel.java
  *  Package:      paint.viewer.panels
  *
@@ -16,7 +16,7 @@
  *    The panel supports dynamic updates, overlay shading, numeric display
  *    modes, and contextual popups showing detailed square information. It can
  *    operate independently or as part of a larger viewer managed by
- *    {@link paint.viewer.logic.SquareControlHandler}.
+ *    {@link paint.viewer.control.SquareControlHandler}.
  *
  *  KEY FEATURES:
  *    • Renders an interactive, data-driven grid of squares.
@@ -36,9 +36,9 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ******************************************************************************/
+ ==============================================================================*/
 
-package paint.viewer.panels;
+package paint.viewer.ui.panels;
 
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;

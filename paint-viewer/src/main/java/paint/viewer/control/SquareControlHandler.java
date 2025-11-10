@@ -1,10 +1,10 @@
-/******************************************************************************
+/*==============================================================================
  *  Class:        SquareControlHandler.java
  *  Package:      paint.viewer.logic
  *
  *  PURPOSE:
  *    Provides parameter management and visibility control for a
- *    {@link paint.viewer.panels.SquareGridPanel} within the PAINT viewer.
+ *    {@link paint.viewer.ui.panels.SquareGridPanel} within the PAINT viewer.
  *
  *  DESCRIPTION:
  *    This handler applies user-defined square control parameters such as
@@ -31,12 +31,12 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ******************************************************************************/
+==============================================================================*/
 
-package paint.viewer.logic;
+package paint.viewer.control;
 
-import paint.viewer.panels.SquareGridPanel;
-import paint.viewer.shared.SquareControlParams;
+import paint.viewer.ui.panels.SquareGridPanel;
+import paint.viewer.model.SquareControlParams;
 
 /**
  * Handles configuration and control of a {@link SquareGridPanel}

@@ -1,4 +1,4 @@
-/******************************************************************************
+/*==============================================================================
  *  Class:        RecordingOverrideWriter.java
  *  Package:      paint.viewer.logic
  *
@@ -41,13 +41,13 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ******************************************************************************/
+==============================================================================*/
 
-package paint.viewer.logic;
+package paint.viewer.io;
 
 import paint.shared.utils.PaintLogger;
-import paint.viewer.shared.SquareControlParams;
-import paint.viewer.utils.RecordingEntry;
+import paint.viewer.model.SquareControlParams;
+import paint.viewer.model.RecordingEntry;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -67,8 +67,6 @@ import java.util.List;
  * same recording. The file is stored in the {@code Viewer} directory
  * under the project root.
  *
- * <p>This class mirrors {@link paint.viewer.logic.SquareOverrideWriter}
- * but operates at the recording scope instead of per-square granularity.
  */
 public class RecordingOverrideWriter {
 

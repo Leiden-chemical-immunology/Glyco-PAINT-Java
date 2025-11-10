@@ -1,4 +1,4 @@
-package paint.viewer;
+package paint.viewer.io;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,7 +8,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public final class FileHelper {
 

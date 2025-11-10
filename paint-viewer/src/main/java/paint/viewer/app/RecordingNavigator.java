@@ -1,6 +1,6 @@
-package paint.viewer;
+package paint.viewer.app;
 
-import paint.viewer.utils.RecordingEntry;
+import paint.viewer.model.RecordingEntry;
 
 import java.util.List;
 

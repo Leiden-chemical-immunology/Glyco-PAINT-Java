@@ -1,4 +1,4 @@
-/******************************************************************************
+/*==============================================================================
  *  Class:        SquareControlParams.java
  *  Package:      paint.viewer.shared
  *
@@ -13,7 +13,7 @@
  *    density ratio, variability, and R², as well as a string-based neighbour mode.
  *
  *    These parameters are typically passed to handlers such as
- *    {@link paint.viewer.logic.SquareControlHandler} to apply filtering logic
+ *    {@link paint.viewer.control.SquareControlHandler} to apply filtering logic
  *    and update visibility across square grids.
  *
  *  KEY FEATURES:
@@ -33,9 +33,9 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ******************************************************************************/
+==============================================================================*/
 
-package paint.viewer.shared;
+package paint.viewer.model;
 
 /**
  * The {@code SquareControlParams} class encapsulates parameters used to control the

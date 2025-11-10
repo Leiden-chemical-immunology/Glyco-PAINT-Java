@@ -1,4 +1,4 @@
-/******************************************************************************
+/*==============================================================================
  *  Class:        RecordingFilterDialog.java
  *  Package:      paint.viewer.dialogs
  *
@@ -13,14 +13,13 @@
  *
  *  UPDATED:
  *    2025-11-01
- ******************************************************************************/
+ ==============================================================================*/
 
-package paint.viewer.dialogs;
+package paint.viewer.ui.dialogs;
 
-import paint.viewer.utils.RecordingEntry;
+import paint.viewer.model.RecordingEntry;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.util.*;
 import java.util.List;

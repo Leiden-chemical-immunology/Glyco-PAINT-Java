@@ -1,4 +1,4 @@
-/******************************************************************************
+/*==============================================================================
  *  Class:        CellAssignmentDialog.java
  *  Package:      paint.viewer.dialogs
  *
@@ -36,11 +36,11 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ******************************************************************************/
+==============================================================================*/
 
-package paint.viewer.dialogs;
+package paint.viewer.ui.dialogs;
 
-import paint.viewer.panels.SquareGridPanel;
+import paint.viewer.ui.panels.SquareGridPanel;
 
 import javax.swing.*;
 import java.awt.*;
