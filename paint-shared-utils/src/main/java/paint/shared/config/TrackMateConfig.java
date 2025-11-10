@@ -252,7 +252,7 @@ public class TrackMateConfig {
                 "                  Max Frame Gap                   = "  + maxFrameGap + "\n" +
                 "                  Alternative Linking Cost Factor = "  + alternativeLinkingCostFactor + "\n" +
                 "                  Do Subpixel Localization        = "  + doSubpixelLocalization + "\n" +
-                "                  Min Number of Spots In T        = "  + minNumberOfSpotsInTrack + "\n" +
+                "                  Min Number of Spots In Track    = "  + minNumberOfSpotsInTrack + "\n" +
                 "                  Linking Max Distance            = "  + linkingMaxDistance + "\n" +
                 "                  Max Number of Spots in Image    = "  + maxNumberOfSpotsInImage + "\n" +
                 "                  Max Number of Seconds per Image = "  + maxNumberOfSecondsPerImage + "\n" +

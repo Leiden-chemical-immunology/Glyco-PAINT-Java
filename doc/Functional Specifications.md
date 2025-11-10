@@ -16,19 +16,19 @@
 
 # Introduction
 
-This Java version of Glyco-PAINT will fully replace the current Python-based version.  Functionally, the versions are identical, but many improvements have been implemented.  The most important improvements include:
+This Java version of Glyco-PAINT fully replaces the Python-based version.  Functionally, the versions are identical, but many improvements have been implemented:
 
-- **Simplified user interface**, with fewer pipeline components, directly accessible as desktop applications (eliminating the need to use a development environment such as PyCharm as previously).
+- **Simplified user interface**, with fewer pipeline components, directly accessible as desktop applications (eliminating the need to use a development environment such as PyCharm).
 - **Improved validation**, making it less likely for incorrect input to interfere or invalidate with calculations.
-- **Streamlined code**, recreated from the base, making it much easier to understand and maintain.
-- **Better documentation**, making the code more to users.
+- **Streamlined code**, recreated from zero, making it much easier to understand and maintain.
+- **Better documentation**, making the code more acessible to users.
 - **Improved version management**, fully utilising the GitHub release mechanism and installers for macOS and Windows.  
 
-Whereas the functionality of this version is identical to the Python version, results from the Python version are not 100% reproducible.  Partially this is because of some improvements in the implementation of core algorithms, but more so because of the inherent indeterministic behaviour of the TrackMate calculation engine itself (also with the Python environment itself, results are not 100% reproducible).  Differences are small and do not impact the analysis and conclusion drawn from experiments.
+Whereas the functionality of this version is identical to the Python version, results from the Python version can not be 100% reproduced.  Partially this is because of some improvements in the implementation of core algorithms, but more so because of the inherent indeterministic behaviour of the TrackMate calculation engine itself (also with the Python environment itself, results are not 100% reproducible).  Differences are small and are not believed to impact the analysis and conclusion drawn from experiments.
 
-The code for the Python version and the new Java version is available on: [Glyco-PAINT Python](https://github.com/Leiden-chemical-immunology/Glyco-PAINT) GitHub and [Glyco-PAINT Java](https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java).  You no longer need access to the code for running the pipeline, but nevertheless familiarity with the core algorithms is desirable for more effective use of the pipeline 
+The code for the Python version and the new Java version is available on GitHub at: [Glyco-PAINT Python](https://github.com/Leiden-chemical-immunology/Glyco-PAINT) GitHub and [Glyco-PAINT Java](https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java).  You no longer need access to the code for running the pipeline, but nevertheless familiarity with the core algorithms is desirable for more confident use of the pipeline 
 
-In addition to the published code itself, a Javadoc site provides a complete, web-based reference of all public classes and methods in the PAINT software.  It is automatically generated from the code comments and published on GitHub Pages, allowing you to browse the documentation directly in your web browser.  Each module and package includes detailed descriptions of its purpose, parameters, and return values, making it easier to understand and extend the software.  You can access the latest version of the Javadoc at [Glyco-PAINT Javadoc](https://leiden-chemical-immunology.github.io/Glyco-PAINT-Java/).
+In addition to the published code itself, a JavaDoc site provides a complete, web-based reference of all public classes and methods in the PAINT software.  It is automatically generated from the code comments and published on GitHub Pages, allowing you to browse the documentation directly in your web browser.  Each module and package includes detailed descriptions of its purpose, parameters, and return values, making it easier to understand and extend the software.  You can access the latest version of the Javadoc at [Glyco-PAINT Javadoc](https://leiden-chemical-immunology.github.io/Glyco-PAINT-Java/).
 
 Example images are published on Zenodo and can be used as [Glyco-PAINT reference images](https://doi.org/10.5281/zenodo.17487086).
 
@@ -40,11 +40,11 @@ This document provides an explanation on how to use the pipeline (maintained as 
 
 ## System requirements
 
-The Glyco-PAINT pipeline was developed, tested and heavily used on macOS, but should run on Windows and Linux also.  For the latter two platforms support, however, is at a reduced level, because of the absence of a good testing environment.  
+The Glyco-PAINT pipeline was developed, tested and heavily used on macOS, but should run on Windows and Linux also.  For the latter two platforms support, however, is at a reduced level.  
 
-Glyco-PAINT is a computationally heavy application, so you will enjoy a powerful computer.  All development and analysis for the Glyco-PAINT paper has been done on a MacBook Pro M3 Max with 36GB memory, but on a less powerful configuration it will also run, but slower.
+Glyco-PAINT is a computationally heavy application, so you will enjoy using a powerful computer.  All development and analysis for the Glyco-PAINT paper has been done on a MacBook Pro M3 Max with 36GB memory, but on a less powerful configuration it will also run, but slower.
 
-You need to have **FiJi** installed.  If you don't, you can download it from the [FiJi downloads](https://imagej.net/software/fiji/downloads) site.  **TrackMate** normally comes automatically with a FiJi installation.  Information on [TrackMate](https://imagej.net/plugins/trackmate/) is available, and you can also download it from there if needed.
+You need to have **FiJi** installed.  If you don't, you can download it from the [FiJi downloads](https://imagej.net/software/fiji/downloads) site.  You can install wherever you want, but unless you have a good reason not to install Fiji on Windows in eithet the ProgramFiles, ProgramFiles(x86), or AppData\local paths and on macOS on either ~/Applications or /Applications. **TrackMate** normally comes automatically with a FiJi installation.  Information on [TrackMate](https://imagej.net/plugins/trackmate/) is available, and you can also download it from there if needed.
 
 The pipeline depends on the presence of the **Java 8 JRE** (Java Runtime Environment).  Chances are that it is available on your computer already.  You can check on macOS from a terminal with:
 
@@ -52,14 +52,13 @@ The pipeline depends on the presence of the **Java 8 JRE** (Java Runtime Environ
 /usr/libexec/java_home -V
 ```
 
-On windows use Explorer to check the directories:
+On windows you use:
 
 ```
-C:\Program Files\Java\
-C:\Program Files (x86) Java\
+where java
 ```
 
-If the Java 8 JRE is not present, you can download it from [Adoptium Java 8 JRE](https://adoptium.net/en-GB/temurin/releases?version=8&os=any&arch=any) (make sure you select JRE and not JDK).
+If you find anything with jdk-8 or 1.8.0 you are ok. If the Java 8 JRE is not present, you can download it from [Adoptium Java 8 JRE](https://adoptium.net/en-GB/temurin/releases?version=8&os=any&arch=any) (make sure you select JRE and not JDK).
 
  
 
@@ -68,40 +67,45 @@ If the Java 8 JRE is not present, you can download it from [Adoptium Java 8 JRE]
 The pipeline consists of a Fiji plugin that performs the TrackMate calculations and a number of separate apps.  The two most important apps are:
 
 - **Generate Squares**, which allows you to generate squares over the processed TrackMate images and calculates the square attributes such as Tau, Density, etc.
-- **Viewer**, which allows you to visually inspect the TrackMate results in comparison with the brightfield image.  You can change square selection parameters to determine which squares are included in subsequent analysis.
+- **Viewer**, which allows you to visually inspect the TrackMate results together with the brightfield images.  You can change square selection parameters to determine which squares are included in subsequent analysis.
 
 The latest version of the plugin integrates the Generate Squares functionality, so the Generate Squares may be retired over time.
 
 In addition to these main apps, there are two simple utilities:
 
-- **Get Omero**, which allows you to organise downloaded Omero files without extensive manual intervention.  This addresses a peculiarity in Omero and is not part of the Glyco-PAINT pipeline.
+- **Get Omero**, allows you to organise downloaded Omero files without extensive manual intervention.  This addresses a peculiarity in Omero and is not an essential part of the Glyco-PAINT pipeline.
 
-- **Create Experiments**, which helps you create an Experiment Info file that contains the instructions necessary to run the pipeline.  The app does not do anything that a simple text-based editor cannot also do, but you may find it convenient.    
+- **Create Experiments**, helps you create an Experiment Info file that contains the instructions necessary to run the pipeline.  The app does not do anything that a simple text-based editor cannot also do, but you may find it convenient.    
 
  
 
 ## Installing the pipeline
 
-There are multiple ways to install the Glyco-PAINT pipeline.  The easiest is through a self-extracting installer, likely called something like: Glyco-PAINT-Installer.sh.
+There are multiple ways to install the Glyco-PAINT pipeline.  The easiest is through an installer, that allows you to install all or selected components from the pipleline. 
 
-For an easy installation route, agree with the developers at Leiden LIC access to the OneDrive Glyco-PAINT distribution site.  Download the installer file (typically with a 500 MB size) to any folder on your computer (typically your ~/Downloads folder).  Open a terminal and execute the following commands (replace the version number 0.0.1 for the actual version number).
+<img src="Pictures/Installer.png" alt="Installer" style="zoom:33%;" />
 
-```
-cd ~/Downloads
-chmod +x Glyco-PAINT-installer-0.0.1.sh
-./Glyco-PAINT-installer-0.0.1.sh
-```
+For an easy installation route, agree with the developers at Leiden LIC access to the OneDrive Glyco-PAINT distribution site.  Download the installer file for Windows or macOS (typically a 600 MB size) to any folder on your computer (typically your Downloads folder) and double click on the downloaded file. 
 
-The installer will create a directory Glyco-PAINT in the ~/Applications directory and copy the four apps (Generate Squares, Viewer, Get Omero and Create Experiment) to it and will subsequently attempt to copy the plugin jar to the Fiji plugins directory.  
+The installer will create a directory Glyco-PAINT in the directory you have specified and will install the selected apps (Generate Squares, Viewer, Get Omero and Create Experiment). 
 
-The jar name will be similar to **paint-fiji-plugin-0.0.1-jar-with-dependencies.jar**.  The number sequence 0.0.1 will be incremented with subsequent releases.  There may be a **SNAPSHOT** present in the file name, indicating this is a development version..
+The installer will try to find to location of Fiji on your system. On Windows the folowing paths are checked:
+- %ProgramFiles%
+- %ProgramFiles(x86)%
+- %LOCALAPPDATA% (usually C:\Users\<user>\AppData\Local)
 
-The Glyco-Paint apps can be started by simply clicking on them in the ~/Applications/Glyco-PAINT folder.  There is no good reason for it, but you can start the Glyco-PAINT apps also from the command line.  For that, you need to open the App bundles and locate the jar files in the Contents/Java directory.  For example, for Get Omero:
+for the existance of either one of these directories:
 
-```
-cd ~/Applications/Glyco-PAINT/Get Omero/Contents/Java
-java -jar paint-get-omero-0.0.3-SNAPSHOT-jar-with-dependencies.jar
-```
+- Fiji
+- Fiji-win64
+- Fiji-win32
+- Fiji-Windows
+
+For macOS the following paths are checked
+- ~/Applications/Fiji.app
+-  /Applications/Fiji.app
+
+If a Fiji installtion is found, the plugin file will be installed into the Fiji/plugins directory (deleting any old versions that might be present).  If Fiji is not found, the user is offered to specify a Fiji location. If all fails, the plugin is left in a plugins folder under the Glyco-PAINT directory. You will then have to copy the plugin yourself (and delete any old paint plugin that might be present).
 
 
 
@@ -111,27 +115,29 @@ java -jar paint-get-omero-0.0.3-SNAPSHOT-jar-with-dependencies.jar
 
 Central in the pipeline is the **Project Root**, a directory containing subdirectories that represent **Experiments**.  Experiment directories contain as a minimum an **Experiment Info** file that contains information about **Recordings** of the **Experiment**.
 
-Parallel to the Project Root, the pipeline depends on an **Images Root** directory, where the microscopy data is stored.  The Experiment structure in the Project Root needs to be exactly replicated in the Images Root, so for example, if under the Project Root, Experiments 'Exp A', 'Exp B' and 'Exp C' exist, those same directories are expected to be present under the Images Root.  The Experiment directories in the Images Root contain the files recorded with the microscope.  For every recording two files are needed: the multi-frame recording, with typically 2000 frames, and a single-frame brightfield image.
+Parallel to the Project Root, the pipeline depends on an **Images Root** directory, where the microscopy data is stored.  The Experiment structure in the Project Root needs to be exactly replicated in the Images Root, so for example, if under the Project Root, Experiments 'Exp A', 'Exp B' and 'Exp C' exist, those same directories are expected also to be present under the Images Root.  The Experiment directories in the Images Root contain the files recorded with the microscope.  For every recording two files are needed: the multi-frame recording, with typically 2000 frames, and a single-frame brightfield image.
 
 The images are likely downloaded from Omero (for which the pipeline provides a **Get Omero** app) or may be copied in any other way.  The names of the recordings can be chosen freely, with the condition that the name of the brightfield image is equal to the multi-frame recording with '-BF' attached.
 
-In the Project Root directory, a **Paint Configuration** file exists, in which important parameters for the pipeline are stored.  If the file does not exist, for example, in a new installation, it will be created automatically with default parameters.  The user should confirm that the default values are appropriate or make changes.
-
 ## Paint Configuration file
+
+In the Project Root directory, a **Paint Configuration** file exists, in which important parameters for the pipeline are stored.  If the file does not exist, for example, in a new installation, it will be created automatically with default parameters.  The user should confirm that the default values are appropriate or make changes.
 
 The **Paint Configuration** file is a readable file in JSON format and contains Project specific attributes.  The file is read and written by software but can also be inspected and edited with any normal plain text editor (Visual Studio Code, BBedit, Sublime).  Below is the Paint Config file shown in Visual Code Studio.
 
 In general, users will not often have to edit the Paint Configuration and should only do so when they can assess the consequences of changes.  For information on the values in the TrackMate section, please refer to the [Track Mate manual](https://imagej.net/media/plugins/trackmate/trackmate-manual.pdf).
 
-The file is 'self-healing', e.g., when necessary cannot be found, they are recreated with sensible defaults.  If the whole file is missing, for example, for a freshly created Project Root, it will be regenerated from scratch.
+The file is 'self-healing', e.g., when necessary attributed are not found, they are recreated with sensible defaults.  If the whole file is missing, for example, for a freshly created Project Root, it will be regenerated from scratch.
 
-![paint-config-json](./Pictures/paint-config-json.png)Only Project specific values are stored in the Paint Configuration file.  For system-wide settings, the macOS Preferences mechanism is used to store attributes in ~/Library/preferences/Glyco-PAINT.plist (for Windows an equivalent implementation is provided).  You will generally not interact directly with this file, but it is here where the current 'Project Root' and 'Images Root' are kept.  Below, the Glyco-PAINT.plist is shown with Xcode's plist viewer.  Also, the **Log Level** can be adjusted here.  The standard Log Level is **Info**, but for more detailed information **Debug** can be chosen.  Less information can be displayed by choosing **Error** or **Warn**.  
+![paint-config-json](./Pictures/paint-config-json.png)Only **Project** specific values are stored in the Paint Configuration file.  For system-wide settings, the Preferences mechanism is used to store attributes in ~/Library/preferences/Glyco-PAINT.plist on macOS amd for Windows in "C:\Users\<username>\Library\Preferences\Glyco-PAINT.plist").  You will generally not interact directly with this file, but it is here where the current 'Project Root' and 'Images Root' are kept.  Below, the Glyco-PAINT.plist is shown with Xcode's plist viewer.  Also, the **Log Level** can be adjusted here.  The standard Log Level is **Info**, but for more detailed information **Debug** can be chosen.  Less information can be displayed by choosing **Error** or **Warn**.  
 
 ![preferences](./Pictures/preferences.png)
 
 ## The Paint Console
 
-Each application of the Glyco-PAINT pipeline opens its own Paint **Console**.  In the title of the window the name of the application the Paint Console is attached to is listed.
+Each application of the Glyco-PAINT pipeline opens its own **Paint** **Console**.  In the title of the window the name of the application the Paint Console is attached to is listed.
+
+![paint-console-initial](Pictures/paint-console-initial.png)
 
 More information is logged in the Paint Console than can be seen at any one time, and therefore scrolling is provided.  Normally the end of the log is shown, so that new information is visible.  The **Scroll Lock** checkbox (left bottom) stops the auto-scroll mechanism to allow you to inspect earlier parts of the log undisturbed.
 
@@ -143,7 +149,7 @@ A **Save** button saves the information in the console window to a file.  Genera
 
 ## Paint log files 
 
-Every time the Glyco-PAINT Fiji plugin (or any other component of the pipeline) is started, a log file is opened in the **Logs** directory under the Project Root directory.  Log files are named after the pipeline component that is logging.  Files are sequentially numbered so that older information is not overwritten.  In a heavily analysed 'Project Root', the Logs directory may accumulate a large number of log files and cleaning up may be warranted.  
+Every time the Glyco-PAINT Fiji plugin (or any other component of the pipeline) is started, a log file is opened in the **Logs** directory under the Project Root directory.  Log files are named after the pipeline component that is logging.  Files are sequentially numbered so that older information is not overwritten.  In a heavily analysed 'Project Root', the Logs directory may accumulate a large number of log files and occasional cleaning up may be warranted.  
 
 
 
@@ -158,13 +164,11 @@ A Paint Console is also opened to provide you with feedback on the status and pr
 <div style="text-align:center;"> 
 <img src="./Pictures/paint-console-initial.png" alt="paint-console-initial" style="zoom: 33%;" />
 
-
-
 ## The Plugin user interface
 
 On top, the currently selected **Project Root** and **Images Root** are shown; the Browse buttons on the right allow users to change that selection.
 
-Immediately below, you can select to have squares generated after TrackMate processing is completed.  If the checkbox is ticked, the parameters can be entered.
+Immediately below, you can select to have the squares generated after TrackMate processing is completed.  If the checkbox is ticked, the parameters can be entered.
 
 Below that, a list of **Experiments** is displayed.  TrackMate (and Generate Squares) calculations are performed on selected Experiments only.  The **Select All** and **Clear All** buttons facilitate easy selection of Experiments.
 
@@ -200,7 +204,12 @@ If the user cancels the operation, the 'Running...' button changes to 'Cancelled
 
 ### Validation
 
-The first step is that the validity of the Experiment Info files in the selected Experiments is verified.  An error is raised if the columns are different from expected, or when values in a column are inconsistent with the expected datatype (for example, when a numeric value is expected and a text string is present).  A more subtle error when there are differences in attributes of replicates of the same condition is also detected.
+The first step is that the validity of the Experiment Info files in the selected Experiments is verified.  Errors are raised if:
+
+- The column names are different from what is expected. 
+- The values in a numeric column are not numeric.
+- The values in a boolean colum are not either TRUE, 1, Yes, Y and T; or FALSE, 0, No, N and F (all case-insensitive).
+- There are differences in attributes of replicates of the same condition..
 
 
 
@@ -223,19 +232,19 @@ The two, in combination, prevent the pipeline choking up.  In contrast to the ge
 
 ### Recordings processed
 
-The Experiment Info files in the selected Experiments specify which Recordings are to be processed.  An example of an Experiment Info file is shown below.  Recordings for which the **Process Flag** is set to 'TRUE' will be processed.  Allowable 'TRUE' values are TRUE, 1, Yes, Y and T; valid 'FALSE' values are FALSE, 0, No, N and F, all case-insensitive.  Other values will trigger an error.
+The Experiment Info files in the selected Experiments specify which Recordings are to be processed.  An example of an Experiment Info file is shown below.  Recordings for which the **Process Flag** is set to 'TRUE' will be processed. 
 
-For each Recording a **Threshold** value is specified.  A low value for Threshold will cause many features to be recognised as spots; high values will lead to fewer spots.  The optimal value depends on the experiment, and the user likely will need to resort to an iterative process to find the optimal values.  To avoid long processing times, initially high 'Threshold' values should be chosen  
+For each Recording, a **Threshold** value is specified.  A low value for Threshold will cause many features to be recognised as spots; high values will lead to fewer spots.  The optimal value depends on the experiment, and the user likely will need to resort to an iterative process to find the optimal values.  To avoid long processing times, initially high 'Threshold' values should be chosen. 
 
 ![experiment-info](./Pictures/experiment-info.png)
 
 ### TrackMate Results
 
-Upon completion of a TrackMate run, two new files have been created in each Experiment directory: **Tracks** and **Recordings**.  The Tracks file contains the tracks for all the recordings in the Experiment, with for each calculated attribute (the individual spots of the tracks are not saved).  The Recordings file is an evolution of the Experiment Info file with spots, track and runtime information added:
+Upon completion of a TrackMate run, two new files have been created in each Experiment directory: **Tracks** and **Recordings**.  The Tracks file contains the tracks for all the recordings in the Experiment, with for each tracks calculated attributes (the individual spots of the tracks are not saved).  The Recordings file is an evolution of the Experiment Info file with spots, track and runtime information added:
 
 - **Number of Spots**, the total number of spots in the Recording.
 - **Number of Tracks**, the total number of tracks that were identified.
-- **Number of Spots in All Tracks**, the sum of all the spots in those tracks (some spots are not assigned to tracks and this number is always lower than the Number of Spots).  
+- **Number of Spots in All Tracks**, the sum of all the spots in those tracks (some spots are not assigned to tracks and this number is always lower than the (total) Number of Spots).  
 - **Number of Frames**, the number of frames in the recording (will normally be 2000).
 - **Run Time**, the time TrackMate took to process the Recording.
 - **Time Stamp**, for references purpose.
@@ -254,10 +263,6 @@ In the **Brightfield Images** directory the brightfield images for recording are
 </div>
 
 
-
-
-
-
 ### Generate Squares
 
 If the Generate Squares checkbox was ticked before the TrackMate calculation was started, squares will be generated as if the Generate Squares was run. For explanation of this calculation refer to the description of the [**Generate Squares**](#Generate Squares) app.
@@ -266,7 +271,13 @@ If the Generate Squares checkbox was ticked before the TrackMate calculation was
 
 ## TrackMate Sweep mode 
 
+It is difficult to determine optimal values for individual TrackMate parameters. The pipelinbe supports a calculation mode where individual parameters can be varied to assess the impact of those variations. 
 
+To trigger this calculation mode, you haveto check the 'Sweep' checkbox at the bottom left of the plugin dialog. The actual variations are specified in a json file **Paint Sweep Configuration** in the Project Root. 
+
+The Sweep value in Sweep Settings need to be set to True. In the TrackMate Sweep section, you can specify which parameters you want to havce swept with a boolean value. For any parameters tjart have been checked, a section needs to exist, where the values are specified. In the example, MAX_FRAME_GAP has been selected, so a MAX_FRAME_GAP section needs to be present; in this case values 3 and 4 wil be used (the actual label names are unimportant, as loing as they are different values, i.e.  'Value 3', 'Value 4' could have been calle 'A' and 'B' also).
+
+![sweep-configuration](Pictures/sweep-configuration.png)  
 
 # Generate Squares
 
@@ -457,9 +468,15 @@ The end resukt of the Glyco-PAINT pipeline is a set of **Squares**, **Tracks** a
 
 # Development
 
+## JavaDoc
+
+A high-level overview of packages, classes and methods of the Glyco-PAINT pipeline code, is presented thriugh JavaDocs on [this site](https://leiden-chemical-immunology.github.io/Glyco-PAINT-Java/apidocs/index.html). A JavaDoc site provides the complete technical reference for the Glyco-PAINT Java codebase. It lists every public class, method, and data type, along with their roles and documentation comments from the source code. This site is meant for developers and advanced users who need to understand how the software works internally or want to build tools on top of it. It does not replace the user manual and does not explain workflows or tutorials, but it gives precise details about the available APIs and how components relate to each other.
+
+![javadoc](Pictures/javadoc.png)
+
 ## Github
 
-The code base is published on GitHub, which allows the code to be checked and peer-reviewed.  An overview of the main window is shown below.  The pipeline is maintained as a project with multiple modules, some of which produce the plugin and the apps.  
+If you want to see the full code, you can refer to [GitHub](https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java). Github which allows the code to be checked and peer-reviewed.  An overview of the main window is shown below.  The pipeline is maintained as a project with multiple modules, some of which produce the plugin and the apps.  
 
 - **paint-create-experiment**, contains the Create Experiment code
 - **paint-fiji-plugin**, contains the code for FiJi plugin
@@ -477,9 +494,7 @@ Others are for supporting and development purposes:
 
 ![github](./Pictures/github.png)
 
-
-
-## IDEA
+## Jetbrain IDEA
 
  Jetbrain's IntelliJ IDEA is used as the development environment. IDEA is a popular Java development environment and can be downloaded from the [IDEA](https://www.jetbrains.com/idea/) website.  For academic use, free licences to the professional edition can be obtained from the [Student Pack](https://www.jetbrains.com/academy/student-pack/) site.  It is not necessary to download IDEA for just running the pipeline, but it is recommended for reviewing the code.
 
@@ -487,7 +502,7 @@ In the picture below, the IDEA environment for the Glyco-PAINT pipeline is shown
 
 ![idea](./Pictures/idea.png)
 
-If you want to review code, after having installed IDEA, you can **clone** a project from GitHub, using [File] - [New] - [Project from Version Control].  You specify as URL:
+If you want to review code, you can install  IDEA and then clone the a project from GitHub, using [File] - [New] - [Project from Version Control].  You specify as URL:
 
 ​		 https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java 
 

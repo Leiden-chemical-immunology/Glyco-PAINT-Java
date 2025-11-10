@@ -125,8 +125,8 @@ public class RunTrackMateOnProjectSweep {
         sweepSummary.add("");
         try {
             for (Map.Entry<String, List<Number>> entry : sweeps.entrySet()) {
-                String parameter = entry.getKey();       // parameter name
-                List<Number> values = entry.getValue();  // list of values
+                String       parameter = entry.getKey();       // parameter name
+                List<Number> values    = entry.getValue();  // list of values
 
                 // Convert values to comma-separated string
                 String valueList = values.stream()
