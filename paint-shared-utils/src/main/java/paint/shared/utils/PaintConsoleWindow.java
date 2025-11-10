@@ -226,6 +226,10 @@ public final class PaintConsoleWindow {
 
         JScrollPane scrollPane = new JScrollPane(textPane);
 
+        // Smooth scrolling
+        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(20);
+
         JPanel controlPanel = new JPanel(new BorderLayout());
         scrollLock = new JCheckBox("Scroll Lock");
         scrollLock.addActionListener(e -> updateTitleForScrollLock(scrollLock.isSelected()));
