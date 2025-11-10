@@ -1,1060 +1,220 @@
-/******************************************************************************
- *  Class:        ProjectDialog.java
- *  Package:      paint.shared.dialogs
- *
- *  PURPOSE:
- *    Dialog for selecting and running a project workflow (TrackMate, Generate Squares,
- *    or Viewer mode).
- *
- *  DESCRIPTION:
- *    Displays a Swing dialog that allows the user to choose a project root directory,
- *    optionally set image directory, configure square-generation parameters, select
- *    experiments to include, and start the chosen workflow. Supports cancellation,
- *    verbose mode toggle, sweep mode (in TRACKMATE), and saving preferences.
- *
- *  KEY FEATURES:
- *    • Supports 3 modes: TRACKMATE, GENERATE_SQUARES, VIEWER.
- *    • Allows browsing for project root and images root with validation.
- *    • Presents square-generation parameter panel for TRACKMATE and GENERATE_SQUARES modes.
- *    • Maintains a list of experiments via check boxes, with select/clear functionality.
- *    • Allows configuration and persistence of settings (via PaintConfig, PaintPrefs).
- *    • Runs user-provided callback in a background thread with UI handling for start/stop.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-10-28
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- Give me all these ******************************************************************************/
-
+// =================================================================================================
+//  File: src/main/java/paint/shared/dialogs/ProjectDialog.java
+// =================================================================================================
 package paint.shared.dialogs;
 
 import paint.shared.config.GenerateSquaresConfig;
-import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.config.TrackMateConfig;
+import paint.shared.config.paintconfig.PaintConfig;
+import paint.shared.dialogs.project.BottomBarPanel;
+import paint.shared.dialogs.project.ExperimentsPanel;
+import paint.shared.dialogs.project.ProjectDialogController;
+import paint.shared.dialogs.project.ProjectPathsPanel;
+import paint.shared.dialogs.project.SquaresParamsPanel;
 import paint.shared.objects.Project;
-import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.PaintRuntime;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
 import java.awt.*;
-import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-
-import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
 
 public class ProjectDialog {
 
-    private final    JDialog             dialog;
-    private final    PaintConfig         paintConfig;
-    private final    JCheckBox           saveExperimentsCheckBox;
-    private final    JCheckBox           verboseCheckBox;
-    private final    JCheckBox           sweepCheckBox;
-    private final    JPanel              checkboxPanel = new JPanel();
-    private final    List<JCheckBox>     checkBoxes = new ArrayList<>();
-    private final    JButton             selectAllButton;
-    private final    JButton             clearAllButton;
-    private final    JButton             okButton;
-    private final    DialogMode          mode;
-    private          CalculationCallback calculationCallback;
-    private          Path                projectPath;
-    private          Project             project;
-    private          JTextField          projectRootField;
-    private          JTextField          imageDirectoryField;
-
-    private          JPanel              paramsPanel;
-    private          JCheckBox           runSquaresAfterTrackMateCheck; // only visible in TRACKMATE
-    private          JComboBox<String>   gridSizeCombo;
-    private          JTextField          minTracksField;
-    private          JTextField          minRSquaredField;
-    private          JTextField          minDensityRatioField;
-    private          JTextField          maxVariabilityField;
-    private          List<JLabel>        squareParamLabels = new ArrayList<>();
-    private          JButton             projectBrowseButton;
-    private          JButton             imagesBrowseButton;
-    private volatile boolean             cancelled = false;
-    private          boolean             okPressed = false;
-    private volatile Thread              workerThread = null;
-    /**
-     * Dialog for selecting and running a project workflow for the Paint application.
-     * <p>
-     * This dialog allows the user to choose a project root directory (and image directory
-     * if applicable), select experiments, optionally configure square-generation parameters,
-     * and then execute a callback for one of the supported modes: TRACKMATE, GENERATE_SQUARES,
-     * or VIEWER.
-     *
-     */
-    public ProjectDialog(Frame owner, Path initialProjectPath, DialogMode mode) {
-        this.projectPath = initialProjectPath;
-        this.paintConfig = PaintConfig.instance();
-        this.project     = new Project(initialProjectPath);
-        this.mode        = mode;
-
-        String projectName = projectPath != null && projectPath.getFileName() != null
-                ? projectPath.getFileName().toString()
-                : "(none)";
-
-        String dialogTitle;
-        switch (mode) {
-            case TRACKMATE: {
-                dialogTitle = "Run TrackMate on Project - '" + projectName + "'";
-                break;
-            }
-            case VIEWER: {
-                dialogTitle = "View Recordings for Project - '" + projectName + "'";
-                break;
-            }
-            default: {
-                dialogTitle = "Generate Squares for Project - '" + projectName + "'";
-            }
-        }
-
-        this.dialog = new JDialog(owner, dialogTitle, false);
-
-        // handle window [X] the same as Cancel
-        this.dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        this.dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-            public void windowClosing(java.awt.event.WindowEvent e) {
-                cancelled = true;
-                if (workerThread != null && workerThread.isAlive()) {
-                    workerThread.interrupt();
-                    PaintLogger.infof("Cancellation requested — interrupting background thread...");
-                }
-                dialog.dispose();
-            }
-        });
-
-        // ======= TOP FORM =======
-        JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-
-        Dimension labelSize = new Dimension(200, 20);
-        int row = 0;
-
-        // Project Root
-        addLabeledFieldWithBrowse(formPanel, gbc, row++, "Project Root", labelSize,
-                                  (tf) -> projectRootField = tf,
-                                  () -> (projectPath != null ? projectPath.toString() : System.getProperty("user.home")),
-                                  this::onProjectRootChosen);
-
-        // Images Root (always shown, all modes)
-        addLabeledFieldWithBrowse(formPanel, gbc, row++, "Images Root", labelSize,
-                                  (tf) -> imageDirectoryField = tf,
-                                  () -> {
-                                      String def = PaintPrefs.getString("Path", "Images Root", System.getProperty("user.home"));
-                                      return (def == null || def.isEmpty()) ? System.getProperty("user.home") : def;
-                                  },
-                                  this::onImagesRootChosen);
-
-        // Disable and visually gray out "Images Root" in TRACKMATE or GENERATE_SQUARES mode
-        if (mode == DialogMode.GENERATE_SQUARES) {
-            imageDirectoryField.setEnabled(false);
-            imageDirectoryField.setBackground(UIManager.getColor("Panel.background"));
-            imageDirectoryField.setForeground(Color.GRAY);
-            imageDirectoryField.setFocusable(false);
-
-            if (imagesBrowseButton != null) {
-                imagesBrowseButton.setEnabled(false);
-            }
-
-            for (Component comp : formPanel.getComponents()) {
-                if (comp instanceof JLabel && ((JLabel) comp).getText().startsWith("Images Root:")) {
-                    comp.setForeground(Color.GRAY);
-                    break;
-                }
-            }
-        }
-
-
-        // ======= PARAMS BLOCK (TRACKMATE + GENERATE_SQUARES) =======
-        if (mode == DialogMode.TRACKMATE || mode == DialogMode.GENERATE_SQUARES) {
-            paramsPanel = new JPanel(new GridBagLayout());
-            paramsPanel.setBorder(BorderFactory.createTitledBorder("Generate Squares Parameters"));
-            GridBagConstraints pg = new GridBagConstraints();
-            pg.insets = new Insets(5,5,5,5);
-            pg.anchor = GridBagConstraints.WEST;
-
-            int    nrOfSquaresInRecording = PaintConfig.getInt(   "Generate Squares", "Number of Squares in Recording", 400);
-            int    minTracks              = PaintConfig.getInt(   "Generate Squares", "Min Tracks to Calculate Tau",    20);
-            double minRSquared            = PaintConfig.getDouble("Generate Squares", "Min Required R Squared",         0.1);
-            double minDensityRatio        = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio",     2.0);
-            double maxVariability         = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability",      10.0);
-
-            Dimension narrowFieldSize = new Dimension(80, 24);
-
-            int prow = 0;
-
-            // TrackMate-only toggle
-            if (mode == DialogMode.TRACKMATE) {
-                pg.gridx = 0;
-                pg.gridy = prow;
-                pg.gridwidth = 2;
-
-                runSquaresAfterTrackMateCheck = new JCheckBox(
-                        "Run Generate Squares after TrackMate",
-                        PaintConfig.getBoolean("TrackMate", "Run Generate Squares After", true)
-                );
-
-                runSquaresAfterTrackMateCheck.addActionListener(e -> {
-                    setSquaresParamsEnabled(runSquaresAfterTrackMateCheck.isSelected());
-                    updateOkButtonState(); // ✅ new line
-                });
-
-                paramsPanel.add(runSquaresAfterTrackMateCheck, pg);
-                prow++;
-                pg.gridwidth = 1;
-            }
-
-            // Prepare to collect labels for the later gray-out
-            squareParamLabels = new ArrayList<>();
-
-            // Number of squares (grid)
-            pg.gridx = 0;
-            pg.gridy = prow;
-            JLabel lblNumSquares = label("Number of Squares in Recording", labelSize);
-            squareParamLabels.add(lblNumSquares);
-            paramsPanel.add(lblNumSquares, pg);
-
-            pg.gridx = 1;
-            String[] gridOptions = {"5x5", "10x10", "15x15", "20x20", "25x25", "30x30", "35x35", "40x40"};
-            gridSizeCombo = new JComboBox<>(gridOptions);
-            int n = (int) Math.sqrt(nrOfSquaresInRecording);
-            gridSizeCombo.setSelectedItem(n + "x" + n);
-            paramsPanel.add(gridSizeCombo, pg);
-            prow++;
-
-            // Min R²
-            pg.gridx = 0;
-            pg.gridy = prow;
-            JLabel lblRSq = label("Min Required R²", labelSize);
-            squareParamLabels.add(lblRSq);
-            paramsPanel.add(lblRSq, pg);
-
-            pg.gridx = 1;
-            minRSquaredField = createTightTextField(String.valueOf(minRSquared), new FloatDocumentFilter());
-            minRSquaredField.setPreferredSize(narrowFieldSize);
-            paramsPanel.add(minRSquaredField, pg);
-            prow++;
-
-            // Min Density Ratio
-            pg.gridx = 0;
-            pg.gridy = prow;
-            JLabel lblDensity = label("Min Required Density Ratio", labelSize);
-            squareParamLabels.add(lblDensity);
-            paramsPanel.add(lblDensity, pg);
-
-            pg.gridx = 1;
-            minDensityRatioField = createTightTextField(String.valueOf(minDensityRatio), new FloatDocumentFilter());
-            minDensityRatioField.setPreferredSize(narrowFieldSize);
-            paramsPanel.add(minDensityRatioField, pg);
-            prow++;
-
-            // Max Variability
-            pg.gridx = 0;
-            pg.gridy = prow;
-            JLabel lblVar = label("Max Allowed Variability", labelSize);
-            squareParamLabels.add(lblVar);
-            paramsPanel.add(lblVar, pg);
-
-            pg.gridx = 1;
-            maxVariabilityField = createTightTextField(String.valueOf(maxVariability), new FloatDocumentFilter());
-            maxVariabilityField.setPreferredSize(narrowFieldSize);
-            paramsPanel.add(maxVariabilityField, pg);
-            // initial enable state in TrackMate
-            if (mode == DialogMode.TRACKMATE) {
-                setSquaresParamsEnabled(runSquaresAfterTrackMateCheck.isSelected());
-            }
-
-            // write-through grid size to config immediately on change
-            gridSizeCombo.addActionListener(e -> {
-                String sel = (String) gridSizeCombo.getSelectedItem();
-                if (sel != null && sel.contains("x")) {
-                    int side = Integer.parseInt(sel.split("x")[0].trim());
-                    PaintConfig.setInt("Generate Squares", "Number of Squares in Recording", side * side);
-                }
-            });
-
-            // add the params panel to the form
-            gbc.gridx      = 0;
-            gbc.gridy      = row;
-            gbc.gridwidth  = 3;
-            gbc.fill       = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
-            formPanel.add(paramsPanel, gbc);
-            gbc.gridwidth = 1; // reset
-        }
-
-        dialog.add(formPanel, BorderLayout.NORTH);
-
-        // ======= EXPERIMENTS =======
-        checkboxPanel.setLayout(new BoxLayout(checkboxPanel, BoxLayout.Y_AXIS));
-        populateCheckboxes();
-
-        JScrollPane scrollPane = new JScrollPane(checkboxPanel);
-        scrollPane.setPreferredSize(new Dimension(680, 240));
-        scrollPane.setBorder(BorderFactory.createEtchedBorder());
-
-        selectAllButton = new JButton("Select All");
-        clearAllButton = new JButton("Clear All");
-        selectAllButton.addActionListener(e -> {
-            checkBoxes.forEach(cb -> cb.setSelected(true));
-            updateOkButtonState();
-        });
-        clearAllButton.addActionListener(e -> {
-            checkBoxes.forEach(cb -> cb.setSelected(false));
-            updateOkButtonState();
-        });
-
-        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        controlPanel.add(selectAllButton);
-        controlPanel.add(clearAllButton);
-
-        JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.add(controlPanel, BorderLayout.NORTH);
-        centerPanel.add(scrollPane, BorderLayout.CENTER);
-        dialog.add(centerPanel, BorderLayout.CENTER);
-
-        // ======= BOTTOM =======
-
-        saveExperimentsCheckBox = new JCheckBox("Save Experiments", false);
-        verboseCheckBox = new JCheckBox("Verbose", PaintRuntime.isVerbose());
-
-        // Only create the Sweep checkbox in TRACKMATE mode
-        if (mode == DialogMode.TRACKMATE) {
-            sweepCheckBox = new JCheckBox("Sweep", false);
-
-            sweepCheckBox.addActionListener(e -> {
-                boolean selected = sweepCheckBox.isSelected();
-
-                PaintConfig.setBoolean("Sweep Settings", "Sweep", selected);
-                PaintConfig.instance().save();
-                PaintLogger.infof("Sweep mode %s.", selected ? "enabled" : "disabled");
-
-                // Only run sweep file check when turning ON
-                if (selected) {
-                    Path sweepFile = projectPath.resolve("Paint Sweep Configuration.json");
-
-                    if (!Files.exists(sweepFile)) {
-
-                        int result = JOptionPane.showConfirmDialog(
-                                dialog,
-                                "The file \"Paint Sweep Configuration.json\" does not exist in the project root.\n\n" +
-                                        "Do you want to create it now with default sweep settings?",
-                                "Sweep Configuration Missing",
-                                JOptionPane.YES_NO_OPTION,
-                                JOptionPane.WARNING_MESSAGE
-                        );
-
-                        if (result == JOptionPane.YES_OPTION) {
-                            try {
-                                paintConfig.setSweepDefaults(projectPath);
-
-                                JOptionPane.showMessageDialog(
-                                        dialog,
-                                        "Sweep configuration file has been created:\n" + sweepFile.toAbsolutePath() +
-                                                 "\nYou should edit that file to enable the desired sweep options.",
-                                        "Sweep File Created",
-                                        JOptionPane.INFORMATION_MESSAGE
-                                );
-
-                            } catch (Exception ex) {
-                                JOptionPane.showMessageDialog(
-                                        dialog,
-                                        "Failed to create sweep configuration:\n" + ex.getMessage(),
-                                        "Error",
-                                        JOptionPane.ERROR_MESSAGE
-                                );
-                            }
-
-                        } else {
-                            // User said NO -> revert checkbox
-                            sweepCheckBox.setSelected(false);
-                            PaintConfig.setBoolean("Sweep Settings", "Sweep", false);
-                            PaintConfig.instance().save();
-                            return;
-                        }
-                    }
-                }
-
-                updateOkButtonState();
-            });
-        } else {
-            sweepCheckBox = null;
-        }
-
-        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        leftPanel.add(saveExperimentsCheckBox);
-        leftPanel.add(verboseCheckBox);
-
-        if (sweepCheckBox != null) {
-            leftPanel.add(sweepCheckBox);
-        }
-
-        okButton             = new JButton("OK");
-        JButton cancelButton = new JButton("Cancel");
-
-        // listeners affecting OK state
-        for (JCheckBox cb : checkBoxes) {
-            cb.addActionListener(e -> updateOkButtonState());
-        }
-        projectRootField.getDocument().addDocumentListener((SimpleDocumentListener) e -> updateOkButtonState());
-        imageDirectoryField.getDocument().addDocumentListener((SimpleDocumentListener) e -> updateOkButtonState());
-
-        // Also, re-enable OK when toggling these checkboxes
-        if (runSquaresAfterTrackMateCheck != null) {
-            runSquaresAfterTrackMateCheck.addActionListener(e -> updateOkButtonState());
-        }
-        if (sweepCheckBox != null) {
-            sweepCheckBox.addActionListener(e -> updateOkButtonState());
-        }
-
-        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        rightPanel.add(okButton);
-        rightPanel.add(cancelButton);
-
-        JPanel bottomPanel = new JPanel(new BorderLayout());
-        bottomPanel.add(leftPanel, BorderLayout.WEST);
-        bottomPanel.add(rightPanel, BorderLayout.EAST);
-        dialog.add(bottomPanel, BorderLayout.SOUTH);
-
-        okButton.addActionListener(e -> onOkPressed());
-        cancelButton.addActionListener(e -> {
-            cancelled = true;
-            if (workerThread != null && workerThread.isAlive()) {
-                PaintLogger.infof("Cancellation requested — attempting graceful shutdown...");
-                workerThread.interrupt();
-
-                new Thread(() -> {
-                    try {
-                        workerThread.join(2000); // wait up to 2 seconds for the worker to die
-                    } catch (InterruptedException ignored) {
-                    }
-
-                    SwingUtilities.invokeLater(() -> {
-                        if (workerThread.isAlive()) {
-                            PaintLogger.errorf("Worker thread did not stop — forcing JVM halt.");
-                            Runtime.getRuntime().halt(0);
-                        } else {
-                            PaintLogger.infof("Worker thread terminated cleanly.");
-                            // ✅ reset and close UI
-                            cancelled = false;
-                            okButton.setText("OK");
-                            okButton.setEnabled(true);
-                            try {
-                                PaintConsoleWindow.closeIfVisible();
-                            } catch (Throwable t) {
-                                // ignore
-                            }
-                            dialog.dispose();
-                        }
-                    });
-                }, "ForceShutdownWatcher").start();
-            } else {
-                PaintLogger.infof("No active worker thread — closing dialog and console.");
-                SwingUtilities.invokeLater(() -> {
-                    cancelled = false; // ✅ reset
-                    okButton.setText("OK");
-                    okButton.setEnabled(true);
-                    JDialog dlg = getDialog();
-                    if (dlg != null && dlg.isDisplayable()) {
-                        dlg.dispose();
-                    }
-                    try {
-                        PaintConsoleWindow.closeIfVisible();
-                    } catch (Throwable t) {
-                        // ignore
-                    }
-                });
-            }
-        });
-
-        // size and show
-        int width = 820;
-        int height = (mode == DialogMode.VIEWER) ? 600 : 680;
-        dialog.setMinimumSize(new Dimension(width, height));
-        dialog.setPreferredSize(new Dimension(width, height));
-        dialog.pack();
-        dialog.setLocationRelativeTo(owner);
-
-        updateOkButtonState(); // reflect current state
-    }
-
-    private static int parseIntSafe(String s, int def) {
-        try {
-            return Integer.parseInt(s.trim());
-        } catch (Exception e) {
-            return def;
-        }
-    }
-
-    private static double parseDoubleSafe(String s, double def) {
-        try {
-            return Double.parseDouble(s.trim());
-        } catch (Exception e) {
-            return def;
-        }
-    }
-    
-
-    /**
-     * Sets the callback to be invoked when the user confirms and starts the operation.
-     *
-     * @param callback a {@link CalculationCallback} instance that performs the configured workflow.
-     */
-    public void setCalculationCallback(CalculationCallback callback) {
-        this.calculationCallback = callback;
-    }
-
-    // ======= Actions =======
-
-    private void onOkPressed() {
-        okPressed = true;
-        cancelled = false;
-
-        // ✅ warn the user about missing or invalid Image Root
-        File img = new File(imageDirectoryField.getText().trim());
-        if (!img.isDirectory()) {
-            JOptionPane.showMessageDialog(
-                    dialog,
-                    "The Images Root directory does not exist. Please select a valid directory.",
-                    "Invalid Images Root",
-                    JOptionPane.WARNING_MESSAGE
-            );
-            return;
-        }
-
-        saveConfig();
-
-        if (calculationCallback != null) {
-            setInputsEnabled(false);
-            okButton.setText("Running...");
-            okButton.setEnabled(false);
-
-            workerThread = new Thread(() -> {
-                boolean success = false;
-                Exception caught = null;
-
-                try {
-                    if (!cancelled && !Thread.currentThread().isInterrupted()) {
-                        success = calculationCallback.run(getProject());
-                    }
-                } catch (Exception ex) {
-                    caught = ex;
-                    // If this was triggered by an interruption, mark it
-                    if (ex instanceof InterruptedException) {
-                        Thread.currentThread().interrupt();
-                        cancelled = true;
-                        PaintLogger.infof("Generate Squares run was interrupted.");
-                    } else {
-                        PaintLogger.errorf("Error in callback: %s", ex.getMessage());
-                    }
-                }
-
-                final boolean   callbackSuccess = success;
-                final Exception callbackError   = caught;
-                final boolean   wasCancelled    = cancelled || Thread.currentThread().isInterrupted();
-
-                SwingUtilities.invokeLater(() -> {
-                    setInputsEnabled(true);
-
-                    if (wasCancelled) {
-                        okButton.setText("Cancelled");
-                        okButton.setEnabled(true);
-                        PaintLogger.blankline();
-                        PaintLogger.infof("Operation was cancelled by the user.");
-                        workerThread = null;   // ✅ cleanup
-                        return;
-                    }
-
-                    if (callbackSuccess) {
-                        okButton.setText("Completed");
-                        if (mode == DialogMode.VIEWER) {
-                            okButton.setEnabled(true);
-                        } else {
-                            okButton.setEnabled(false);
-                        }
-                        PaintLogger.blankline();
-                        PaintLogger.infof("Operation completed successfully.");
-                        new javax.swing.Timer(1500, evt -> okButton.setText("OK")).start();
-                    } else {
-                        okButton.setText("OK");
-                        okButton.setEnabled(true);
-                        String msg = (callbackError != null)
-                                ? "An error occurred: " + callbackError.getMessage()
-                                : "Operation finished with errors. Check the log.";
-                        JOptionPane.showMessageDialog(dialog, msg,
-                                                      "Warning", JOptionPane.WARNING_MESSAGE);
-                    }
-                    workerThread = null;   // ✅ always clear
-                });
-            }, "ProjectDialog-Worker");
-
-            workerThread.start();
-        }
-    }
-
-    private void onProjectRootChosen(File chosen) {
-        if (chosen != null && chosen.isDirectory()) {
-            projectRootField.setText(chosen.getAbsolutePath());
-            reloadConfigForNewProject(chosen.toPath());
-        }
-    }
-
-    private void onImagesRootChosen(File chosen) {
-        if (chosen != null && chosen.isDirectory()) {
-            imageDirectoryField.setText(chosen.getAbsolutePath());
-            updateOkButtonState();
-        }
-    }
-
-    // ======= Helpers =======
-
-    private void addLabeledFieldWithBrowse(
-            JPanel panel,
-            GridBagConstraints gbc,
-            int row,
-            String labelText,
-            Dimension labelSize,
-            java.util.function.Consumer<JTextField> fieldOut,
-            java.util.function.Supplier<String> defaultValueSupplier,
-            java.util.function.Consumer<File> onChosen
-    ) {
-        gbc.gridx   = 0;
-        gbc.gridy   = row;
-        gbc.weightx = 0;
-        gbc.fill    = GridBagConstraints.NONE;
-        JLabel lbl  = new JLabel(labelText);
-        lbl.setPreferredSize(labelSize);
-        panel.add(lbl, gbc);
-
-        gbc.gridx      = 1;
-        gbc.weightx   = 1.0;
-        gbc.fill      = GridBagConstraints.HORIZONTAL;
-        JTextField tf = new JTextField(defaultValueSupplier.get(), 32);
-        panel.add(tf, gbc);
-        fieldOut.accept(tf);
-
-        gbc.gridx     = 2;
-        gbc.weightx   = 0;
-        gbc.fill      = GridBagConstraints.NONE;
-        JButton browse = new JButton("Browse...");
-
-        // ✅ store reference for enabling/disabling later
-        if (labelText.startsWith("Project Root:")) {
-            projectBrowseButton = browse;
-        } else if (labelText.startsWith("Images Root:")) {
-            imagesBrowseButton = browse;
-        }
-
-        browse.addActionListener(e -> {
-            File current = new File(tf.getText().trim());
-            if (!current.exists() || !current.isDirectory()) {
-                current = new File(System.getProperty("user.home"));
-            }
-
-            boolean isMac = System.getProperty("os.name").toLowerCase().contains("mac");
-
-            if (isMac) {
-                // --- macOS native directory chooser ---
-                FileDialog dialogChooser = new FileDialog((Frame) null, labelText, FileDialog.LOAD);
-                dialogChooser.setDirectory(current.getAbsolutePath());
-                System.setProperty("apple.awt.fileDialogForDirectories", "true");
-                dialogChooser.setVisible(true);
-                System.clearProperty("apple.awt.fileDialogForDirectories");
-
-                String dir = dialogChooser.getDirectory();
-                String name = dialogChooser.getFile();
-                if (dir != null && name != null) {
-                    File chosen = new File(dir, name);
-                    if (chosen.isDirectory()) {
-                        onChosen.accept(chosen);
-                    }
-                }
-            } else {
-                PaintLogger.infof("Using Java Swing FileChooser for %s directory...", labelText);
-                // --- Windows/Linux directory chooser ---
-                JFileChooser chooser = new JFileChooser(current);
-                chooser.setDialogTitle("Select directory for: " + labelText);
-
-                // This one line must be TRUE for directories to be selectable on Windows
-                chooser.setAcceptAllFileFilterUsed(true);
-
-                chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
-                int result = chooser.showOpenDialog(null);
-                if (result == JFileChooser.APPROVE_OPTION) {
-                    File chosen = chooser.getSelectedFile();
-                    if (chosen != null && chosen.isDirectory()) {
-                        onChosen.accept(chosen);
-                    }
-                }
-            }
-        });
-
-        panel.add(browse, gbc);
-    }
-
-    private JLabel label(String text, Dimension pref) {
-        JLabel l = new JLabel(text);
-        l.setPreferredSize(pref);
-        return l;
-    }
-
-    private void setSquaresParamsEnabled(boolean enabled) {
-        Color fg = enabled ? UIManager.getColor("Label.foreground") : Color.GRAY;
-
-        for (JLabel lbl : squareParamLabels) {
-            lbl.setForeground(fg);
-        }
-
-        if (gridSizeCombo != null) {
-            gridSizeCombo.setEnabled(enabled);
-        }
-        if (minTracksField != null) {
-            minTracksField.setEnabled(enabled);
-        }
-        if (minRSquaredField != null) {
-            minRSquaredField.setEnabled(enabled);
-        }
-        if (minDensityRatioField != null) {
-            minDensityRatioField.setEnabled(enabled);
-        }
-        if (maxVariabilityField != null) {
-            maxVariabilityField.setEnabled(enabled);
-        }
-    }
-
-    private void reloadConfigForNewProject(Path newRoot) {
-        this.projectPath = newRoot;
-        this.project     = new Project(newRoot);
-        PaintLogger.infof("Switched project root to: %s", newRoot);
-        PaintConfig.initialise(newRoot);
-        populateCheckboxes();
-        checkboxPanel.revalidate();
-        checkboxPanel.repaint();
-        updateOkButtonState();
-    }
-
-    private void updateOkButtonState() {
-        if (okButton == null) {
-            return;
-        }
-
-        File proj = new File(projectRootField.getText().trim());
-        boolean projectValid = proj.isDirectory();
-
-        if (mode == DialogMode.VIEWER) {
-            okButton.setEnabled(projectValid);
-            return;
-        }
-
-        boolean anySelected = checkBoxes.stream().anyMatch(JCheckBox::isSelected);
-        okButton.setEnabled(anySelected && projectValid);
-    }
-
-    private void populateCheckboxes() {
-        checkboxPanel.removeAll();
-        checkBoxes.clear();
-
-        File[] subs = (projectPath != null ? projectPath.toFile().listFiles() : null);
-        if (subs != null) {
-            Arrays.sort(subs, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
-            for (File sub : subs) {
-                if (sub.isDirectory()) {
-
-                    // Check if the sub-directory contain an Experiment Info file
-                    File file = new File(sub, EXPERIMENT_INFO_CSV);
-                    if (!file.isFile()) {
-                        continue;
-                    }
-
-                    // There may be a sweep directory that contains an Experiment Info file, but skip still
-                    if (sub.getName().equals("Sweep")) {
-                        continue;
-                    }
-
-                    JCheckBox cb = new JCheckBox(sub.getName());
-                    boolean savedState = PaintConfig.getBoolean("Experiments", sub.getName(), false);
-                    cb.setSelected(savedState);
-                    checkboxPanel.add(cb);
-                    checkBoxes.add(cb);
-                }
-            }
-        }
-
-        for (JCheckBox cb : checkBoxes) {
-            cb.addActionListener(e -> updateOkButtonState());
-        }
-        updateOkButtonState();
-    }
-
-    private void saveConfig() {
-        // Roots
-        PaintPrefs.putString("Path", "Project Root", projectRootField.getText().trim());
-        PaintPrefs.putString("Path", "Images Root",  imageDirectoryField.getText().trim());
-
-        // Squares params (write if the panel exists; values used by either mode)
-        if (paramsPanel != null) {
-            if (gridSizeCombo != null) {
-                String selected = (String) gridSizeCombo.getSelectedItem();
-                if (selected != null && selected.contains("x")) {
-                    int side = Integer.parseInt(selected.split("x")[0].trim());
-                    PaintConfig.setInt("Generate Squares", "Number of Squares in Recording", side * side);
-                }
-            }
-            if (minTracksField != null) {
-                PaintConfig.setInt("Generate Squares", "Min Tracks to Calculate Tau", parseIntSafe(minTracksField.getText(), 11));
-            }
-            if (minRSquaredField != null) {
-                PaintConfig.setDouble("Generate Squares", "Min Required R Squared", parseDoubleSafe(minRSquaredField.getText(), 0.1));
-            }
-            if (minDensityRatioField != null) {
-                PaintConfig.setDouble("Generate Squares", "Min Required Density Ratio", parseDoubleSafe(minDensityRatioField.getText(), 2.0));
-            }
-            if (maxVariabilityField != null) {
-                PaintConfig.setDouble("Generate Squares", "Max Allowable Variability", parseDoubleSafe(maxVariabilityField.getText(), 10.0));
-            }
-            if (mode == DialogMode.TRACKMATE && runSquaresAfterTrackMateCheck != null) {
-                PaintConfig.setBoolean("TrackMate", "Run Generate Squares After", runSquaresAfterTrackMateCheck.isSelected());
-            }
-        }
-
-        // Experiments
-        if (saveExperimentsCheckBox.isSelected()) {
-            PaintConfig.removeSection("Experiments");
-            for (JCheckBox cb : checkBoxes) {
-                PaintConfig.setBoolean("Experiments", cb.getText(), cb.isSelected());
-            }
-        }
-        paintConfig.save();
-    }
-
-    private Project getProject() {
-        TrackMateConfig trackMateConfig = new TrackMateConfig();
-        GenerateSquaresConfig squaresConfig = new GenerateSquaresConfig();
-
-        List<String> experimentNames = new ArrayList<>();
-        for (JCheckBox cb : checkBoxes) {
-            if (cb.isSelected()) {
-                experimentNames.add(cb.getText());
-            }
-        }
-
-        Path imagesPath = null;
-        String imgText = imageDirectoryField.getText().trim();
-        if (!imgText.isEmpty()) {
-            imagesPath = Paths.get(imgText);
-        }
-
-        return new Project(
-                okPressed,
-                projectPath,
-                imagesPath,
-                experimentNames,
-                paintConfig,
-                squaresConfig,
-                trackMateConfig,
-                null
-        );
-    }
-
-    /**
-     * Displays the dialog. The method blocks until the user closes the dialog.
-     * <p>
-     * After closing, the configured {@link Project} is returned, regardless of whether
-     * the user pressed OK or cancelled.
-     *
-     * @return the {@link Project} object representing user selections and configuration.
-     */
-    public void showDialog() {
-        dialog.setVisible(true); // stays open until user closes it
-    }
-
-    private void setInputsEnabled(boolean enabled) {
-        if (projectRootField != null) {
-            projectRootField.setEnabled(enabled);
-        }
-
-        if (imageDirectoryField != null) {
-            if (mode == DialogMode.GENERATE_SQUARES) {
-                // Keep read-only and inactive in Generate Squares mode
-                imageDirectoryField.setEditable(false);
-                imageDirectoryField.setEnabled(true); // allow selection/copy
-                imageDirectoryField.setBackground(UIManager.getColor("TextField.inactiveBackground"));
-            } else {
-                imageDirectoryField.setEnabled(enabled);
-            }
-        }
-
-        boolean enableSquares = enabled;
-        if (mode == DialogMode.TRACKMATE && runSquaresAfterTrackMateCheck != null) {
-            runSquaresAfterTrackMateCheck.setEnabled(enabled);
-            enableSquares = enabled && runSquaresAfterTrackMateCheck.isSelected();
-        }
-        setSquaresParamsEnabled(enableSquares);
-
-        for (JCheckBox cb : checkBoxes) {
-            cb.setEnabled(enabled);
-        }
-        saveExperimentsCheckBox.setEnabled(enabled);
-        saveExperimentsCheckBox.setEnabled(enabled);
-
-        if (selectAllButton != null) {
-            selectAllButton.setEnabled(enabled);
-        }
-        if (clearAllButton != null) {
-            clearAllButton.setEnabled(enabled);
-        }
-        if (projectBrowseButton != null) {
-            projectBrowseButton.setEnabled(enabled);
-        }
-        if (imagesBrowseButton != null) {
-            imagesBrowseButton.setEnabled(enabled);
-        }
-        if (sweepCheckBox != null) {
-            sweepCheckBox.setEnabled(enabled);
-        }
-        if (verboseCheckBox != null) {
-            verboseCheckBox.setEnabled(enabled);
-        }
-    }
-
-    private JTextField createTightTextField(String value, DocumentFilter filter) {
-        JTextField field = new JTextField(value);
-        field.setColumns(8);
-        if (filter != null) {
-            ((AbstractDocument) field.getDocument()).setDocumentFilter(filter);
-        }
-        return field;
-    }
-
-    /**
-     * Returns whether the user cancelled the dialog (or closed it without confirming).
-     *
-     * @return {@code true} if cancelled or closed without confirmation; {@code false} otherwise.
-     */
-    public boolean isCancelled() {
-        return cancelled;
-    }
-
-    public JDialog getDialog() {
-        return dialog;
-    }
-
-    /**
-     * Enables or disables the OK button of the dialog.
-     *
-     * @param enabled if {@code true}, the OK button is enabled; if {@code false}, disabled.
-     */
-    public void setOkEnabled(boolean enabled) {
-        if (okButton != null) {
-            okButton.setEnabled(enabled);
-        }
-    }
-
-    private void onVerboseToggled(boolean enabled) {
-        // Persist preference immediately
-        PaintRuntime.setVerbose(enabled);
-        PaintLogger.infof("Verbose mode %s.", enabled ? "enabled" : "disabled");
-    }
-
-    /**
-     * Returns whether the “Sweep” mode checkbox is selected.
-     * <p>
-     * Only meaningful when mode is TRACKMATE; otherwise returns {@code false}.
-     *
-     * @return {@code true} if sweep mode is selected; {@code false} otherwise.
-     */
-    public boolean isSweepSelected() {
-        return sweepCheckBox != null && sweepCheckBox.isSelected();
-    }
-
-    public boolean isCancelledOrInterrupted() {
-        return cancelled || (workerThread != null && workerThread.isInterrupted());
-    }
-
-    public enum DialogMode {
-        TRACKMATE,
-        GENERATE_SQUARES,
-        VIEWER
-    }
+    // ----- public API kept stable -----
+    public enum DialogMode { TRACKMATE, GENERATE_SQUARES, VIEWER }
 
     @FunctionalInterface
     public interface CalculationCallback {
         boolean run(Project project);
     }
 
-    // Simple lambda-friendly document listener
-    @FunctionalInterface
-    interface SimpleDocumentListener extends javax.swing.event.DocumentListener {
-        void update(javax.swing.event.DocumentEvent e);
+    // ----- state -----
+    private final    JDialog                dialog;
+    private final    DialogMode             mode;
+    private final    PaintConfig            cfg;
 
-        default void insertUpdate(javax.swing.event.DocumentEvent e) {
-            update(e);
-        }
+    private          Path                   projectPath;
+    private          CalculationCallback    callback;
+    private volatile boolean                cancelled = false;
+    private volatile Thread                 workerThread;
 
-        default void removeUpdate(javax.swing.event.DocumentEvent e) {
-            update(e);
-        }
+    // sub-components
+    private final ProjectPathsPanel   pathsPanel;
+    private final SquaresParamsPanel  paramsPanel;         // null in VIEWER
+    private final ExperimentsPanel    experimentsPanel;
+    private final BottomBarPanel      bottomBar;
 
-        default void changedUpdate(javax.swing.event.DocumentEvent e) {
-            update(e);
+    public ProjectDialog(Frame owner, Path initialProjectPath, DialogMode mode) {
+        this.mode        = mode;
+        this.projectPath = initialProjectPath;
+        this.cfg         = PaintConfig.instance();
+
+        final String projectName = (projectPath != null && projectPath.getFileName() != null)
+                ? projectPath.getFileName().toString() : "(none)";
+
+        final String title = (mode == DialogMode.TRACKMATE)
+                ? "Run TrackMate on Project - '" + projectName + "'"
+                : (mode == DialogMode.VIEWER)
+                ? "View Recordings for Project - '" + projectName + "'"
+                : "Generate Squares for Project - '" + projectName + "'";
+
+        this.dialog = new JDialog(owner, title, false);
+        this.dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        this.dialog.addWindowListener(ProjectDialogController.onWindowClosing(() -> {
+            cancelled = true;
+            if (workerThread != null && workerThread.isAlive()) {
+                workerThread.interrupt();
+                PaintLogger.infof("Cancellation requested — interrupting background thread...");
+            }
+            dialog.dispose();
+        }));
+
+        // ---- build UI ----
+        final JPanel root = new JPanel(new BorderLayout());
+        final JPanel form = new JPanel(new BorderLayout());
+
+        pathsPanel  = new ProjectPathsPanel(mode, projectPath);
+        paramsPanel = (mode == DialogMode.VIEWER) ? null : new SquaresParamsPanel(mode, cfg);
+        if (paramsPanel != null) {
+            form.add(pathsPanel.component(), BorderLayout.NORTH);
+            form.add(paramsPanel.component(), BorderLayout.CENTER);
+        } else {
+            form.add(pathsPanel.component(), BorderLayout.NORTH);
         }
+        experimentsPanel = new ExperimentsPanel(mode, projectPath);
+
+        final JPanel center = new JPanel(new BorderLayout());
+        center.add(experimentsPanel.component(), BorderLayout.CENTER);
+
+        bottomBar = new BottomBarPanel(mode, PaintRuntime.isVerbose(), cfg);
+
+        root.add(form, BorderLayout.NORTH);
+        root.add(center, BorderLayout.CENTER);
+        root.add(bottomBar.component(), BorderLayout.SOUTH);
+
+        dialog.setContentPane(root);
+
+        // ---- wire controller ----
+        final ProjectDialogController controller = new ProjectDialogController(
+                mode,
+                dialog,
+                cfg,
+                () -> projectPath,
+                p -> {
+                    projectPath = p;
+                    experimentsPanel.reload(projectPath);
+                    pathsPanel.onProjectRootChanged(projectPath);
+                },
+                pathsPanel,
+                paramsPanel,
+                experimentsPanel,
+                bottomBar,
+                this::buildProject,
+                this::startWorker,
+                () -> workerThread,
+                () -> { cancelled = true; },
+                () -> { cancelled = false; }
+        );
+        controller.init();
+
+        // size & show defaults
+        final int width  = 820;
+        final int height = (mode == DialogMode.VIEWER) ? 600 : 680;
+        dialog.setMinimumSize(new Dimension(width, height));
+        dialog.setPreferredSize(new Dimension(width, height));
+        dialog.pack();
+        dialog.setLocationRelativeTo(owner);
     }
 
-    static class IntegerDocumentFilter extends DocumentFilter {
-        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
-                throws BadLocationException {
-            if (string.matches("\\d*")) {
-                super.insertString(fb, offset, string, attr);
-            }
-        }
-
-        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
-                throws BadLocationException {
-            if (text.matches("\\d*")) {
-                super.replace(fb, offset, length, text, attrs);
-            }
-        }
+    // ---------- public API ----------
+    public void setCalculationCallback(CalculationCallback callback) {
+        this.callback = callback;
     }
 
-    static class FloatDocumentFilter extends DocumentFilter {
-        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
-                throws BadLocationException {
-            if (string.matches("\\d*(\\.\\d*)?")) {
-                super.insertString(fb, offset, string, attr);
-            }
+    public void showDialog() {
+        dialog.setVisible(true);
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public boolean isCancelledOrInterrupted() {
+        return cancelled || (workerThread != null && workerThread.isInterrupted());
+    }
+
+    public JDialog getDialog() {
+        return dialog;
+    }
+
+    // ---------- internals ----------
+    private Project buildProject() {
+        final List<String> experimentNames = experimentsPanel.selectedExperimentNames();
+        final Path imagesPath = pathsPanel.imagesRootText().isEmpty()
+                ? null : Paths.get(pathsPanel.imagesRootText());
+
+        // persist roots
+        PaintPrefs.putString("Path", "Project Root",  pathsPanel.projectRootText());
+        PaintPrefs.putString("Path", "Images Root",   pathsPanel.imagesRootText());
+
+        // persist params
+        if (paramsPanel != null) {
+            paramsPanel.persistTo(cfg, mode);
         }
 
-        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
-                throws BadLocationException {
-            if (text.matches("\\d*(\\.\\d*)?")) {
-                super.replace(fb, offset, length, text, attrs);
-            }
+        final TrackMateConfig       tm  = new TrackMateConfig();
+        final GenerateSquaresConfig gs  = new GenerateSquaresConfig();
+
+        return new paint.shared.objects.Project(
+                true,               // okPressed
+                projectPath,
+                imagesPath,
+                experimentNames,
+                cfg,
+                gs,
+                tm,
+                null
+        );
+    }
+
+    private void startWorker(Runnable runUiDisable, Runnable runUiEnable, Runnable onSuccess, Runnable onFailure) {
+        if (callback == null) {
+            onFailure.run();
+            return;
         }
+
+        runUiDisable.run();
+        cancelled = false;
+
+        workerThread = new Thread(() -> {
+            boolean ok = false;
+            Exception err = null;
+            try {
+                if (!cancelled && !Thread.currentThread().isInterrupted()) {
+                    ok = callback.run(buildProject());
+                }
+            } catch (Exception ex) {
+                err = ex;
+                if (ex instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                    cancelled = true;
+                    PaintLogger.infof("Operation interrupted.");
+                } else {
+                    PaintLogger.errorf("Error in callback: %s", ex.getMessage());
+                }
+            }
+
+            final boolean success = ok && !cancelled && !Thread.currentThread().isInterrupted();
+            SwingUtilities.invokeLater(() -> {
+                runUiEnable.run();
+                if (success) onSuccess.run(); else onFailure.run();
+                workerThread = null;
+            });
+        }, "ProjectDialog-Worker");
+        workerThread.start();
     }
 }
