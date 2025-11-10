@@ -607,16 +607,14 @@ public class ViewerFrame extends JFrame
             Toolkit.getDefaultToolkit().beep();
             return;
         }
-        if (recordingEntries.isEmpty() || currentIndex < 0 || currentIndex >= recordingEntries.size()) {
-            JOptionPane.showMessageDialog(this,
-                                          "No recording selected to play.",
-                                          "No Selection",
-                                          JOptionPane.WARNING_MESSAGE);
+        if (recordingEntries.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No recording selected to play.");
             return;
         }
-        RecordingEntry entry = recordingEntries.get(currentIndex);
-        playbackController.playRecording(entry);
+
+        playbackController.playRecording(recordingEntries.get(currentIndex));
     }
+
     private void setGridEnabled(boolean enabled) {
         leftGridPanel.setInteractionEnabled(enabled);  // we'll add this method below if it doesn’t exist
     }
@@ -696,14 +694,17 @@ public class ViewerFrame extends JFrame
         return project;
     }
 
-    // Convenience methods to disable/enable all UI
     public void disableUI() {
-        setActionButtonsEnabled(false);
-        setGridEnabled(false);
+        setActionButtonsEnabled(false);        // right control panel
+        setGridEnabled(false);                 // left grid
+        navigationPanel.setEnabledState(false, false); // nav panel
+        attributesPanel.getComponent().setEnabled(false);    // optional: prevent editing attributes
     }
 
     public void enableUI() {
         setActionButtonsEnabled(true);
         setGridEnabled(true);
+        updateNavButtons();                    // restores first/prev/next/last
+        attributesPanel.getComponent().setEnabled(false);
     }
 }
