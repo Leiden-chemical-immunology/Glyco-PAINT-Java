@@ -250,9 +250,17 @@ public class ReleaseNewVersion {
             MavenSupport.buildAndCollectMacApp(moduleDir, "-Pmacos-appbundle", macOSPath);
 
             List<String> installCmd = Arrays.asList(
-                    "mvn", "-q", "install", "-DskipTests",
-                    "-Dmaven.repo.local=" + System.getProperty("user.home") + "/.m2/repository"
+                    "mvn",
+                    "-q",
+                    "install",
+                    "-DskipTests",
+                    "-Dmaven.repo.local=" + System.getProperty("user.home") + "/.m2/repository",
+                    "-DargLine=--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED "
+                            + "--add-opens=java.base/sun.misc=ALL-UNNAMED "
+                            + "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED "
+                            + "-XX:+IgnoreUnrecognizedVMOptions"
             );
+
             ProcessBuilder pb = new ProcessBuilder(installCmd);
             pb.directory(moduleDir.toFile());
             Process p = ProcessRunner.startAndFilterOutput(pb, module);
@@ -270,36 +278,35 @@ public class ReleaseNewVersion {
         // -------------------------------------------------------------
         // If bump or release: build installers
         // -------------------------------------------------------------
-        if (bumpVersion || doRelease) {
-            Path macInstallerRes = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-macos/src/main/resources");
-            Path winInstallerRes = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-windows/src/main/resources");
-            Files.createDirectories(macInstallerRes);
-            Files.createDirectories(winInstallerRes);
 
-            Path macPayload = macInstallerRes.resolve("payload.zip");
-            Path winPayload = winInstallerRes.resolve("payload.zip");
+        Path macInstallerRes = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-macos/src/main/resources");
+        Path winInstallerRes = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-windows/src/main/resources");
+        Files.createDirectories(macInstallerRes);
+        Files.createDirectories(winInstallerRes);
 
-            Files.deleteIfExists(macPayload);
-            Files.deleteIfExists(winPayload);
+        Path macPayload = macInstallerRes.resolve("payload.zip");
+        Path winPayload = winInstallerRes.resolve("payload.zip");
 
-            FileOps.zipPayload(macOSPath, pluginPath, macPayload);
-            FileOps.zipPayload(windowsPath, pluginPath, winPayload);
+        Files.deleteIfExists(macPayload);
+        Files.deleteIfExists(winPayload);
 
-            MavenSupport.runMavenModule("paint-installer/paint-installer-macos", versionInfo.releaseVersion);
-            MavenSupport.runMavenModule("paint-installer/paint-installer-windows", versionInfo.releaseVersion);
+        FileOps.zipPayload(macOSPath, pluginPath, macPayload);
+        FileOps.zipPayload(windowsPath, pluginPath, winPayload);
 
-            Path macTarget = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-macos/target");
-            Path winTarget = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-windows/target");
+        MavenSupport.runMavenModule("paint-installer/paint-installer-macos", versionInfo.releaseVersion);
+        MavenSupport.runMavenModule("paint-installer/paint-installer-windows", versionInfo.releaseVersion);
 
-            Path macBuilt = FileOps.latestMatching(macTarget, f -> f.contains("installer") && f.endsWith(".jar"));
-            Path winBuilt = FileOps.latestMatching(winTarget, f -> f.matches(".*(exe|jar|shaded\\.jar)$"));
+        Path macTarget = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-macos/target");
+        Path winTarget = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-windows/target");
 
-            Path macFinal = installerPath.resolve("Glyco-PAINT-Installer-macOS-" + versionInfo.releaseVersion + ".jar");
-            Path winFinal = installerPath.resolve("Glyco-PAINT-Installer-Windows-" + versionInfo.releaseVersion + ".jar");
+        Path macBuilt = FileOps.latestMatching(macTarget, f -> f.contains("installer") && f.endsWith(".jar"));
+        Path winBuilt = FileOps.latestMatching(winTarget, f -> f.matches(".*(exe|jar|shaded\\.jar)$"));
 
-            Files.copy(macBuilt, macFinal, StandardCopyOption.REPLACE_EXISTING);
-            Files.copy(winBuilt, winFinal, StandardCopyOption.REPLACE_EXISTING);
-        }
+        Path macFinal = installerPath.resolve("Glyco-PAINT-Installer-macOS-" + versionInfo.releaseVersion + ".jar");
+        Path winFinal = installerPath.resolve("Glyco-PAINT-Installer-Windows-" + versionInfo.releaseVersion + ".jar");
+
+        Files.copy(macBuilt, macFinal, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(winBuilt, winFinal, StandardCopyOption.REPLACE_EXISTING);
 
         // -------------------------------------------------------------
         // Post-release: tag + push + bump back to next SNAPSHOT
