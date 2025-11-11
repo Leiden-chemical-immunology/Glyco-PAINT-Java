@@ -1,8 +1,13 @@
+# v0.0.128
+- (Development) Several large classes have been refactored into small ones for improved maintainability.
+
+
+
 # v0.0.127
 
 - TrackMate plugin supports a parameter sweep on Threshold (handy for the initial determination for optimal threshold values for new a experiment).
 - Misformed JSON files are recognised and handled gracefully. 
-- (Development) Several large classes have been refactored into small ones for imporved maintainability.
+- (Development) Several large classes have been refactored into small ones for improved maintainability.
 
 
 

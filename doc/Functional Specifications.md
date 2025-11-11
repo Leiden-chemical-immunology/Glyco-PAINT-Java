@@ -85,7 +85,7 @@ There are multiple ways to install the Glyco-PAINT pipeline.  The easiest is thr
 
 <img src="Pictures/Installer.png" alt="Installer" style="zoom:33%;" />
 
-For an easy installation route, agree with the developers at Leiden LIC access to the OneDrive Glyco-PAINT distribution site.  Download the installer file for Windows or macOS (typically a 600 MB size) to any folder on your computer (typically your Downloads folder) and double click on the downloaded file. 
+For an easy installation process, agree with the developers at Leiden LIC access to the OneDrive Glyco-PAINT distribution site.  Download the installer file for Windows or macOS (typically a 400 MB size file) to any folder on your computer (e.g. your Downloads folder) and double click on the downloaded file. 
 
 The installer will create a directory Glyco-PAINT in the directory you have specified and will install the selected apps (Generate Squares, Viewer, Get Omero and Create Experiment). 
 
@@ -143,7 +143,9 @@ More information is logged in the Paint Console than can be seen at any one time
 
 The **Highlight Problems** button jumps to [ERROR] and [WARN ] lines in the log to alert you to irregularities.  Repeatedly clicking the button will jump to the next problem.  
 
-A **Save** button saves the information in the console window to a file.  Generally this is not needed as most information is already saved automatically to a log file (see next section).
+A **Save** button saves the information in the console window to a file.  Generally this is not needed as most information is already saved automatically to a log file (see next section). 
+
+The size of the window can be adjusted.
 
 
 
@@ -159,12 +161,7 @@ The Glyco-PAINT plugin is started, after starting Fiji, by selecting from the Pl
 
 ![trackmate-plugin](./Pictures/trackmate-plugin.png)
 
-A Paint Console is also opened to provide you with feedback on the status and progress of the operations. 
-
-<div style="text-align:center;"> 
-<img src="./Pictures/paint-console-initial.png" alt="paint-console-initial" style="zoom: 33%;" />
-
-## The Plugin user interface
+A Paint Console is also opened to provide you with feedback on the status and progress of the operations. The Plugin user interface
 
 On top, the currently selected **Project Root** and **Images Root** are shown; the Browse buttons on the right allow users to change that selection.
 
@@ -176,13 +173,11 @@ At the bottom of the dialog, three checkboxes are shown.
 
 - If the **Save Experiments** option is clicked, the current selection of Experiments will be saved.
 - The **Verbose** option, when clicked, provides more detailed feedback to the user.
-- The **Sweep** option, used only in special analysis cases, performs a parameter sweep.  In this process, TrackMate calculations are performed with varying parameters.  For more information on this option, please refer to ….
+- The **Sweep** option, used only in special analysis cases, performs a parameter sweep.  In this process, TrackMate calculations are performed with varying parameters.  For more information on this option, please refer to [TrackMate Sweep Mode](#TrackMate Sweep Mode)
 
 Pressing the Ok button starts the calculation.  Pressing the Cancel button when a calculation is running stops it.  When no calculations are running, pressing Cancel will close the dialog.
 
 The experiments which are shown are subdirectories directly under the selected Project Root.  To be shown as Experiment, the directory needs to contain an **Experiment Info** file.  If the user selects a different Project Root, the display of Experiments is refreshed.
-
-Note: If 'Sweep' calculations are performed, a Sweep directory will be created in the Project Root, which will contain an 'Experiment Info' file, but it will never be shown as Experiment.
 
 A previously saved selection of 'Experiments' is stored in the **Paint Configuration** file that is present in every Project Root.  This file will be automatically created if it does not exist.  If for some reason it is corrupted, you can safely delete it.
 
@@ -209,7 +204,8 @@ The first step is that the validity of the Experiment Info files in the selected
 - The column names are different from what is expected. 
 - The values in a numeric column are not numeric.
 - The values in a boolean colum are not either TRUE, 1, Yes, Y and T; or FALSE, 0, No, N and F (all case-insensitive).
-- There are differences in attributes of replicates of the same condition..
+- There are differences in attributes of replicates of the same condition.
+- The format of the Paint Configuration file is invalid.
 
 
 
@@ -221,7 +217,7 @@ The TrackMate calculations are influenced by a set of parameters that do normall
 
 Information on TrackMate and TrackMate parameters is found in the [TrackMate manual](https://imagej.net/media/plugins/trackmate/trackmate-manual.pdf).
 
-The processing time is constrained, by two parameters:
+TrackMate processing time is constrained, by two parameters, that you can set in the Paint Configuration file :
 
 - The maximum number of spots in an image.  Experience has shown that when the number of spots in an image exceeds roughly 2,000,000, the tracking takes a long time and rarely delivers meaningful results.  Setting a higher value for the **Threshold** (in the Experiment Info file) for that recording may be required
 - The maximum number of seconds per image provides a hard cut-off on calculation time.
@@ -238,6 +234,10 @@ For each Recording, a **Threshold** value is specified.  A low value for Thresho
 
 ![experiment-info](./Pictures/experiment-info.png)
 
+The TrackMate Sweep mode can be used to determine what Thresholds might be suitable. TrackMate calculations are then performed with initially high Threshold values, that are gradualy lowered. Visual inspection of the tracked images then helps choose a Threshold.
+
+
+
 ### TrackMate Results
 
 Upon completion of a TrackMate run, two new files have been created in each Experiment directory: **Tracks** and **Recordings**.  The Tracks file contains the tracks for all the recordings in the Experiment, with for each tracks calculated attributes (the individual spots of the tracks are not saved).  The Recordings file is an evolution of the Experiment Info file with spots, track and runtime information added:
@@ -249,7 +249,7 @@ Upon completion of a TrackMate run, two new files have been created in each Expe
 - **Run Time**, the time TrackMate took to process the Recording.
 - **Time Stamp**, for references purpose.
 
-In addition to the creating of the 'Tracks' file and the updating of 'Recordings', two directories with images are created.  The **TrackMate Images** directory contains the processed images in which the tracks are shown.  The images in the TrackMate and Brightfield directories are used in the Viewer application.
+In addition to the 'Tracks' and 'Recordings' file , two directories with images are created.  The **TrackMate Images** directory contains the processed images in which the tracks are shown.  The images in the TrackMate and Brightfield directories are used in the Viewer application.
 
 <div style="text-align:center;">
 <img src="./Pictures/trackmate-image.png" alt="trackmate-image" style="zoom:33%;" /> 
@@ -261,6 +261,18 @@ In the **Brightfield Images** directory the brightfield images for recording are
 <div style="text-align:center;">
 <img src="./Pictures/brightfield-image.png" alt="brightfield-image" style="zoom:33%;" /> 
 </div>
+In the Experiment directiry an addittional folder Output is generated if you have the following two options set to 'true' in the Paint Configuration File in the TrackMate section:
+
+- Tau Fitting Plots": true
+
+- Background Plots Plots": true
+
+The effects of these will be explained in the Algorithm descriptions.
+
+> [!NOTE]
+>
+>  Note that a json file will only recognise boolean values written as 'true' and 'false' - in lowercase. 
+
 
 
 ### Generate Squares
@@ -271,7 +283,7 @@ If the Generate Squares checkbox was ticked before the TrackMate calculation was
 
 ## TrackMate Sweep mode 
 
-It is difficult to determine optimal values for individual TrackMate parameters. The pipelinbe supports a calculation mode where individual parameters can be varied to assess the impact of those variations. 
+It is difficult to determine optimal values for individual TrackMate parameters. The pipelinee supports a calculation mode where individual parameters can be varied to assess the impact of those variations. 
 
 To trigger this calculation mode, you haveto check the 'Sweep' checkbox at the bottom left of the plugin dialog. The actual variations are specified in a json file **Paint Sweep Configuration** in the Project Root. 
 
