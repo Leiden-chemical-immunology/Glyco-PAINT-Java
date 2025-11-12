@@ -240,8 +240,8 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
             // Extend the Experiment Info header for RECORDINGS_CSV
             List<String> header = new ArrayList<>(experimentInfoParser.getHeaderMap().keySet());
             header.addAll(Arrays.asList(
-                    "Number of Spots",
-                    "Number of Tracks",
+                    NUMBER_OF_SPOTS,
+                    NUMBER_OF_TRACKS,
                     NUMBER_OF_TRACKS_IN_BACKGROUND,
                     NUMBER_OF_SQUARES_IN_BACKGROUND,
                     AVERAGE_TRACKS_IN_BACKGROUND,

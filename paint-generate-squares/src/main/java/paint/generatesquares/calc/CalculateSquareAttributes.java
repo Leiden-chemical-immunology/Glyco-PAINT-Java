@@ -40,6 +40,8 @@
 =============================================================================*/
 
 package paint.generatesquares.calc;
+import static paint.shared.constants.PaintConstants.*;
+
 
 import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.config.paintconfig.PaintConfig;
@@ -134,22 +136,22 @@ public class CalculateSquareAttributes {
             square.setDensityRatio(                  round(calculateDensityRatio(tracksInSquare.size(), meanBackgroundTracks),                     2));
             square.setDensityRatioOri(               round(calculateDensityRatio(tracksInSquare.size(), backgroundTracksOri),                      2));
 
-            square.setMedianDiffusionCoefficient(    round(tracksInSquareTable.doubleColumn("Diffusion Coefficient").median(),         2));
-            square.setMedianDiffusionCoefficientExt( round(tracksInSquareTable.doubleColumn("Diffusion Coefficient Ext").median(),     2));
+            square.setMedianDiffusionCoefficient(    round(tracksInSquareTable.doubleColumn(DIFFUSION_COEFFICIENT).median(),         2));
+            square.setMedianDiffusionCoefficientExt( round(tracksInSquareTable.doubleColumn(DIFFUSION_COEFFICIENT_EXT).median(),     2));
 
-            square.setMedianDisplacement(            round(tracksInSquareTable.doubleColumn("Track Displacement").median(),            1));
-            square.setMaxDisplacement(               round(tracksInSquareTable.doubleColumn("Track Displacement").max(),               1));
-            square.setTotalDisplacement(             round(tracksInSquareTable.doubleColumn("Track Displacement").sum(),               1));
+            square.setMedianDisplacement(            round(tracksInSquareTable.doubleColumn(TRACK_DISPLACEMENT).median(),            1));
+            square.setMaxDisplacement(               round(tracksInSquareTable.doubleColumn(TRACK_DISPLACEMENT).max(),               1));
+            square.setTotalDisplacement(             round(tracksInSquareTable.doubleColumn(TRACK_DISPLACEMENT).sum(),               1));
 
-            square.setMedianMaxSpeed(                round(tracksInSquareTable.doubleColumn("Track Max Speed").median(),               1));
-            square.setMaxMaxSpeed(                   round(tracksInSquareTable.doubleColumn("Track Max Speed").max(),                  1));
+            square.setMedianMaxSpeed(                round(tracksInSquareTable.doubleColumn(TRACK_MAX_SPEED).median(),               1));
+            square.setMaxMaxSpeed(                   round(tracksInSquareTable.doubleColumn(TRACK_MAX_SPEED).max(),                  1));
 
-            square.setMedianMedianSpeed(             round(tracksInSquareTable.doubleColumn("Track Median Speed").median(),            1));
-            square.setMaxMedianSpeed(                round(tracksInSquareTable.doubleColumn("Track Median Speed").max(),               1));
+            square.setMedianMedianSpeed(             round(tracksInSquareTable.doubleColumn(TRACK_MEDIAN_SPEED).median(),            1));
+            square.setMaxMedianSpeed(                round(tracksInSquareTable.doubleColumn(TRACK_MEDIAN_SPEED).max(),               1));
 
-            square.setMaxTrackDuration(              round(tracksInSquareTable.doubleColumn("Track Duration").max(),                   1));
-            square.setTotalTrackDuration(            round(tracksInSquareTable.doubleColumn("Track Duration").sum(),                   1));
-            square.setMedianTrackDuration(           round(tracksInSquareTable.doubleColumn("Track Duration").median(),                1));
+            square.setMaxTrackDuration(              round(tracksInSquareTable.doubleColumn(TRACK_DURATION).max(),                   1));
+            square.setTotalTrackDuration(            round(tracksInSquareTable.doubleColumn(TRACK_DURATION).sum(),                   1));
+            square.setMedianTrackDuration(           round(tracksInSquareTable.doubleColumn(TRACK_DURATION).median(),                1));
             // @format:on
 
         }
@@ -246,8 +248,8 @@ public class CalculateSquareAttributes {
         double height = IMAGE_WIDTH / dimension;
 
         // Access the columns once
-        DoubleColumn xCol = tracks.doubleColumn("Track X Location");
-        DoubleColumn yCol = tracks.doubleColumn("Track Y Location");
+        DoubleColumn xCol = tracks.doubleColumn(TRACK_X_LOCATION);
+        DoubleColumn yCol = tracks.doubleColumn(TRACK_Y_LOCATION);
 
         // Loop over the tracks and fill the matrix
         for (int i = 0; i < tracks.rowCount(); i++) {

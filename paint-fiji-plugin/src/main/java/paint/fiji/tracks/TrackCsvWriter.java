@@ -155,31 +155,31 @@ public final class TrackCsvWriter {
 
             tracksTable = tracksTable.sortOn(
                     RECORDING_NAME,
-                    "Number of Spots",
-                    "Number of Gaps",
-                    "Longest Gap",
-                    "Track Duration",
-                    "Track X Location",
-                    "Track Y Location",
-                    "Track Displacement",
-                    "Track Max Speed",
-                    "Track Median Speed",
-                    "Diffusion Coefficient",
-                    "Diffusion Coefficient Ext",
-                    "Total Distance",
-                    "Confinement Ratio"
+                    NUMBER_OF_SPOTS,
+                    NUMBER_OF_GAPS,
+                    LONGEST_GAP,
+                    TRACK_DURATION,
+                    TRACK_X_LOCATION,
+                    TRACK_Y_LOCATION,
+                    TRACK_DISPLACEMENT,
+                    TRACK_MAX_SPEED,
+                    TRACK_MEDIAN_SPEED,
+                    DIFFUSION_COEFFICIENT,
+                    DIFFUSION_COEFFICIENT_EXT,
+                    TOTAL_DISTANCE,
+                    CONFINEMENT_RATIO
             );
 
             // Replace Track Ids and generate unique keys
-            IntColumn newIds       = IntColumn.create("Track Id");
-            StringColumn newUniqueKey = StringColumn.create("Unique Key");
+            IntColumn newIds       = IntColumn.create(TRACK_ID);
+            StringColumn newUniqueKey = StringColumn.create(UNIQUE_KEY);
 
             for (int i = 0; i < tracksTable.rowCount(); i++) {
                 newIds.append(i);
                 newUniqueKey.append(recordingName + "-" + i);
             }
-            tracksTable.replaceColumn("Track Id", newIds);
-            tracksTable.replaceColumn("Unique Key", newUniqueKey);
+            tracksTable.replaceColumn(TRACK_ID, newIds);
+            tracksTable.replaceColumn(UNIQUE_KEY, newUniqueKey);
 
             trackTableIO.writeCsv(tracksTable, csvFile.toPath());
         } catch (Exception e) {

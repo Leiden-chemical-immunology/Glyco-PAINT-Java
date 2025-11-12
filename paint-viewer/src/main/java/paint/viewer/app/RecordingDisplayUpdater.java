@@ -1,4 +1,6 @@
 package paint.viewer.app;
+import static paint.shared.constants.PaintConstants.*;
+
 
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.viewer.ui.panels.SquareGridPanel;
@@ -66,7 +68,7 @@ public final class RecordingDisplayUpdater {
         // Update attribute panel
         int numberOfSquares = PaintConfig.getInt(
                 "Generate Squares",
-                "Number of Squares in Recording",
+                NUMBER_OF_SQUARES_IN_RECORDING,
                 -1
         );
 

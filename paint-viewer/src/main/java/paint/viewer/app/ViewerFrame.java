@@ -144,7 +144,7 @@ public class ViewerFrame extends JFrame
         setResizable(false);
 
         // Validate grid configuration
-        int     numberOfSquaresInRecording = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
+        int     numberOfSquaresInRecording = PaintConfig.getInt("Generate Squares", NUMBER_OF_SQUARES_IN_RECORDING, -1);
         int[]   validSquareLayouts         = {25, 100, 225, 400, 900};
         boolean isValidSquareLayout        = false;
 
@@ -498,7 +498,7 @@ public class ViewerFrame extends JFrame
             leftGridPanel.applyVisibilityFilter();
 
             RecordingEntry currentRecordingEntry = recordingEntries.get(currentIndex);
-            int numSquares = PaintConfig.getInt("Generate Squares", "Number of Squares in Recording", -1);
+            int numSquares = PaintConfig.getInt("Generate Squares", NUMBER_OF_SQUARES_IN_RECORDING, -1);
 
             //  --- Reflect results in attribute preview panel ---
             attributesPanel.updatePreview(

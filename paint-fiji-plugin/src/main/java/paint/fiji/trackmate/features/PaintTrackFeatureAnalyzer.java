@@ -1,4 +1,6 @@
 package paint.fiji.trackmate.features;
+import static paint.shared.constants.PaintConstants.*;
+
 
 /* IGNORE START
 import fiji.plugin.trackmate.Dimension;
@@ -36,10 +38,10 @@ public class PaintTrackFeatureAnalyzer implements TrackAnalyzer {
     private static final Map<String, Dimension> FEATURE_DIMENSIONS = new LinkedHashMap<>();
 
     static {
-        FEATURE_NAMES.put(DIFFUSION_COEFF, "Diffusion Coefficient");
+        FEATURE_NAMES.put(DIFFUSION_COEFF, DIFFUSION_COEFFICIENT);
         FEATURE_NAMES.put(DIFFUSION_COEFF_EXT, "Extended Diffusion Coefficient");
-        FEATURE_NAMES.put(TOTAL_DISTANCE, "Total Distance");
-        FEATURE_NAMES.put(CONFINEMENT_RATIO, "Confinement Ratio");
+        FEATURE_NAMES.put(TOTAL_DISTANCE, TOTAL_DISTANCE);
+        FEATURE_NAMES.put(CONFINEMENT_RATIO, CONFINEMENT_RATIO);
 
         FEATURE_SHORT_NAMES.put(DIFFUSION_COEFF, "D");
         FEATURE_SHORT_NAMES.put(DIFFUSION_COEFF_EXT, "Dext");

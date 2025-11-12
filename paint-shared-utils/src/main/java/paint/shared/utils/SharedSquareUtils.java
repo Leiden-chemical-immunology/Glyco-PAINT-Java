@@ -44,6 +44,8 @@
 =============================================================================*/
 
 package paint.shared.utils;
+import static paint.shared.constants.PaintConstants.*;
+
 
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
@@ -79,7 +81,7 @@ public final class SharedSquareUtils {
      * <p>
      * This method handles inclusive or exclusive boundaries depending on whether
      * the square is in the last column or row. It operates on a Tablesaw table
-     * containing at least "Track X Location" and "Track Y Location" columns.
+     * containing at least TRACK_X_LOCATION and TRACK_Y_LOCATION columns.
      * </p>
      *
      * @param tracks     table of track data with X/Y coordinate columns
@@ -101,8 +103,8 @@ public final class SharedSquareUtils {
         double top    = Math.min(y0, y1);
         double bottom = Math.max(y0, y1);
 
-        DoubleColumn x = tracks.doubleColumn("Track X Location");
-        DoubleColumn y = tracks.doubleColumn("Track Y Location");
+        DoubleColumn x = tracks.doubleColumn(TRACK_X_LOCATION);
+        DoubleColumn y = tracks.doubleColumn(TRACK_Y_LOCATION);
 
         Selection selX = isLastCol
                 ? x.isBetweenInclusive(left, right)
