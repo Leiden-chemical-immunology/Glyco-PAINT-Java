@@ -252,7 +252,11 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                     "Exclude",
                     "Tau",
                     "R Squared",
-                    "Density"
+                    "Density",
+                    "Min Required Density Ratio",
+                    "Min Required RSquared",
+                    "Max Allowable Variability",
+                    "Neighbour Mode"
             ));
             allRecordingsPrinter.printRecord(header);
 
@@ -354,17 +358,21 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                     output.addAll(Arrays.asList(
                             String.valueOf(numberOfSpots),
                             String.valueOf(numberOfFilteredTracks),
-                            "",
-                            "",
-                            "",
+                            "",   // Number of Tracks in Background
+                            "",   // Squares in Background
+                            "",   // Average Tracks in Background
                             String.valueOf(numberOfSpotsInAllTracks),
                             String.valueOf(numberOfFrames),
                             String.valueOf(runTime),
                             timeStamp,
                             "False",
-                            "",
-                            "",
-                            ""
+                            "",   // Tau
+                            "",   // R Squared
+                            "",   // Density
+                            "",   // Min Required Density Ratio
+                            "",   // Min Required RSquared
+                            "",   // Max Allowable Variability
+                            ""    // Neighbour Mode
                     ));
                     allRecordingsPrinter.printRecord(output);
 
