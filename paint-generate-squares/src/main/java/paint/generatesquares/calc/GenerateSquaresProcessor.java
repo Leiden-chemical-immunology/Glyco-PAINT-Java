@@ -41,6 +41,7 @@
 
 package paint.generatesquares.calc;
 
+import static paint.shared.constants.PaintConstants.*;
 import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.io.SquareTableIO;
 import paint.shared.io.TrackTableIO;
@@ -55,8 +56,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.IMAGE_HEIGHT;
-import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
 import static paint.shared.io.ExperimentDataLoader.loadExperiment;
 import static paint.shared.io.HelperIO.*;
 import static paint.shared.utils.Miscellaneous.formatDuration;
@@ -153,7 +152,7 @@ public class GenerateSquaresProcessor {
 
         // All Tracks
         Table allTracksTable = compileAllTracks(experiment);
-        allTracksTable = allTracksTable.sortOn("Recording Name", "Track Id");
+        allTracksTable = allTracksTable.sortOn(RECORDING_NAME, "Track Id");
         writeAllTracks(experimentPath, allTracksTable);
 
     }

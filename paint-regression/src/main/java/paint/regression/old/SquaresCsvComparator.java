@@ -1,5 +1,7 @@
 package paint.regression.old;
 
+import static paint.shared.constants.PaintConstants.*;
+
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
@@ -55,7 +57,7 @@ public class SquaresCsvComparator {
         FIELD_MAP.put("Max Track Duration", "Max Track Duration");
         FIELD_MAP.put("Total Track Duration", "Total Track Duration");
         FIELD_MAP.put("Median Track Duration", "Median Track Duration");
-        FIELD_MAP.put("Square Nr", "Square Number");
+        FIELD_MAP.put("Square Nr", SQUARE_NUMBER);
     }
 
     /** Numeric fields eligible for tolerance and precision handling. */
@@ -190,7 +192,7 @@ public class SquaresCsvComparator {
 
         try (PrintWriter pw = new PrintWriter(file.toFile())) {
             List<String> header = new ArrayList<>();
-            header.add("Recording Name");
+            header.add(RECORDING_NAME);
             header.addAll(FIELD_MAP.keySet());
             header.add("Selected");
             pw.println(String.join(",", header));
@@ -245,7 +247,7 @@ public class SquaresCsvComparator {
         for (Map<String,String> r: oldRows){
             Map<String,String> n = new LinkedHashMap<>();
             String rec = r.getOrDefault("Ext Recording Name","");
-            n.put("Recording Name", rec.replaceAll("-threshold-\\d+$","").trim());
+            n.put(RECORDING_NAME, rec.replaceAll("-threshold-\\d+$","").trim());
             for (String f: FIELD_MAP.keySet()) {
                 String v = r.getOrDefault(f,"").trim();
                 if (f.equals("Tau")) {
@@ -265,7 +267,7 @@ public class SquaresCsvComparator {
         List<Map<String,String>> out = new ArrayList<>();
         for (Map<String,String> r: newRows){
             Map<String,String> n = new LinkedHashMap<>();
-            n.put("Recording Name", r.getOrDefault("Recording Name",""));
+            n.put(RECORDING_NAME, r.getOrDefault(RECORDING_NAME,""));
             for (Map.Entry<String,String> e: FIELD_MAP.entrySet())
                 n.put(e.getKey(), r.getOrDefault(e.getValue(),""));
             n.put("Selected", String.valueOf(isSelected(n)));
@@ -349,7 +351,7 @@ public class SquaresCsvComparator {
                     }
 
                     diffs.add(new String[]{
-                            o.get("Recording Name"),
+                            o.get(RECORDING_NAME),
                             o.get("Square Nr"),
                             f,
                             ov,
@@ -361,7 +363,7 @@ public class SquaresCsvComparator {
 
                 } else if (!Objects.equals(ov, nv)) {
                     diffs.add(new String[]{
-                            o.get("Recording Name"),
+                            o.get(RECORDING_NAME),
                             o.get("Square Nr"),
                             f,
                             ov,
@@ -376,7 +378,7 @@ public class SquaresCsvComparator {
             String sOld=o.get("Selected");
             String sNew=n.get("Selected");
             if (!Objects.equals(sOld,sNew)){
-                diffs.add(new String[]{o.get("Recording Name"),o.get("Square Nr"),"Selected",sOld,sNew,"","","DIFFERENT"});
+                diffs.add(new String[]{o.get(RECORDING_NAME),o.get("Square Nr"),"Selected",sOld,sNew,"","","DIFFERENT"});
                 diffCount++;
             }
 
@@ -393,7 +395,7 @@ public class SquaresCsvComparator {
     }
 
     private static String key(Map<String,String> r){
-        return r.getOrDefault("Recording Name","")+" - "+r.getOrDefault("Square Nr","");
+        return r.getOrDefault(RECORDING_NAME,"")+" - "+r.getOrDefault("Square Nr","");
     }
 
     private static boolean numericEqual(String f,String a,String b){

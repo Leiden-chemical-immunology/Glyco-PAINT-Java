@@ -32,6 +32,7 @@
 
 package paint.shared.override;
 
+import static paint.shared.constants.PaintConstants.*;
 import paint.shared.objects.Square;
 import paint.shared.objects.SquareOverride;
 
@@ -124,9 +125,9 @@ public final class SquareOverrideApplier {
         List<Square> squares = new ArrayList<Square>();
         for (int i = 0; i < squaresTable.rowCount(); i++) {
             Square s = new Square();
-            s.setExperimentName(squaresTable.column("Experiment Name").get(i).toString());
-            s.setRecordingName(squaresTable.column("Recording Name").get(i).toString());
-            s.setSquareNumber(Integer.parseInt(squaresTable.column("Square Number").get(i).toString()));
+            s.setExperimentName(squaresTable.column(EXPERIMENT_NAME).get(i).toString());
+            s.setRecordingName(squaresTable.column(RECORDING_NAME).get(i).toString());
+            s.setSquareNumber(Integer.parseInt(squaresTable.column(SQUARE_NUMBER).get(i).toString()));
             s.setCellId(Integer.parseInt(squaresTable.column("Cell Id").get(i).toString()));
             squares.add(s);
         }
@@ -135,9 +136,9 @@ public final class SquareOverrideApplier {
         List<SquareOverride> overrides = new ArrayList<SquareOverride>();
         for (int i = 0; i < overrideTable.rowCount(); i++) {
             SquareOverride o = new SquareOverride();
-            o.setExperimentName(overrideTable.column("Experiment Name").get(i).toString());
-            o.setRecordingName(overrideTable.column("Recording Name").get(i).toString());
-            o.setSquareNumber(Integer.parseInt(overrideTable.column("Square Number").get(i).toString()));
+            o.setExperimentName(overrideTable.column(EXPERIMENT_NAME).get(i).toString());
+            o.setRecordingName(overrideTable.column(RECORDING_NAME).get(i).toString());
+            o.setSquareNumber(Integer.parseInt(overrideTable.column(SQUARE_NUMBER).get(i).toString()));
             o.setCellId(Integer.parseInt(overrideTable.column("Cell Id").get(i).toString()));
             o.setTimestamp(overrideTable.column("Timestamp").get(i).toString());
             overrides.add(o);

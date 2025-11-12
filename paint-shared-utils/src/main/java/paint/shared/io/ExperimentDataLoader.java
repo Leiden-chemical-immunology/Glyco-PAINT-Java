@@ -117,7 +117,7 @@ public final class ExperimentDataLoader {
                 }
 
                 Table recTracks = tracksTable.where(
-                        tracksTable.stringColumn("Recording Name")
+                        tracksTable.stringColumn(RECORDING_NAME)
                                 .isEqualTo(recording.getRecordingName()));
 
                 PaintLogger.debugf("Found %d tracks for recording '%s'",
@@ -160,7 +160,7 @@ public final class ExperimentDataLoader {
 
             for (Recording rec : recordings) {
                 Table recSquares = squaresTable.where(
-                        squaresTable.stringColumn("Recording Name")
+                        squaresTable.stringColumn(RECORDING_NAME)
                                 .matchesRegex("^" + rec.getRecordingName() + "(?:-threshold-\\d{1,3})?$"));
 
                 rec.addSquares(squareIO.toEntities(recSquares));

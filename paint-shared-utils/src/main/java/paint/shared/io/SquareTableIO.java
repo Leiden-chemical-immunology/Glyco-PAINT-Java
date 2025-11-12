@@ -91,9 +91,9 @@ public class SquareTableIO extends BaseTableIO {
         for (Square square : squares) {
             Row tablesawRow = table.appendRow();
             tablesawRow.setString( "Unique Key",                       square.getUniqueKey());
-            tablesawRow.setString( "Experiment Name",                  square.getExperimentName());
-            tablesawRow.setString( "Recording Name",                   square.getRecordingName());
-            tablesawRow.setInt(    "Square Number",                    square.getSquareNumber());
+            tablesawRow.setString( EXPERIMENT_NAME,                  square.getExperimentName());
+            tablesawRow.setString( RECORDING_NAME,                   square.getRecordingName());
+            tablesawRow.setInt(    SQUARE_NUMBER,                    square.getSquareNumber());
             tablesawRow.setInt(    "Row Number",                       square.getRowNumber());
             tablesawRow.setInt(    "Column Number",                    square.getColNumber());
             tablesawRow.setInt(    "Label Number",                     square.getLabelNumber());
@@ -143,9 +143,9 @@ public class SquareTableIO extends BaseTableIO {
         for (Row tablesawRow : table) {
             Square square = new Square();
             square.setUniqueKey(                     tablesawRow.getString(  "Unique Key"));
-            square.setExperimentName(                tablesawRow.getString(  "Experiment Name"));
-            square.setRecordingName(                 tablesawRow.getString(  "Recording Name"));
-            square.setSquareNumber(                  tablesawRow.getInt(     "Square Number"));
+            square.setExperimentName(                tablesawRow.getString(  EXPERIMENT_NAME));
+            square.setRecordingName(                 tablesawRow.getString(  RECORDING_NAME));
+            square.setSquareNumber(                  tablesawRow.getInt(     SQUARE_NUMBER));
             square.setRowNumber(                     tablesawRow.getInt(     "Row Number"));
             square.setColNumber(                     tablesawRow.getInt(     "Column Number"));
             square.setLabelNumber(                   tablesawRow.getInt(     "Label Number"));

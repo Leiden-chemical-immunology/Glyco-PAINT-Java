@@ -50,6 +50,8 @@
 
 package paint.shared.validate;
 
+import static paint.shared.constants.PaintConstants.*;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -150,7 +152,7 @@ public final class ImageRootValidator {
                          .parse(reader)) {
 
                 for (CSVRecord record : parser) {
-                    String recordingName = record.get("Recording Name");
+                    String recordingName = record.get(RECORDING_NAME);
                     String processFlag = record.get("Process Flag").trim().toLowerCase();
 
                     if ("true".equals(processFlag)) {

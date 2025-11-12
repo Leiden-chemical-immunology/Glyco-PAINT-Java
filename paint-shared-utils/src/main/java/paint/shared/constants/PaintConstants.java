@@ -60,6 +60,15 @@ public final class PaintConstants {
 
 
     // =====================
+    // Colunm Names
+    // =====================
+
+    public static final String EXPERIMENT_NAME                 = "Experiment Name";
+    public static final String RECORDING_NAME                  = "Recording Name";
+    public static final String SQUARE_NUMBER                   = "Square Number";
+    public static final String TRACK_ID                        = "Track Id";
+    public static final String NUMBER_OF_SPOTS                 = "Number of Spots";
+    // =====================
     // Filenames
     // =====================
 
@@ -144,10 +153,10 @@ public final class PaintConstants {
 
     public static final String[] TRACKS_COLS = {
             "Unique Key",
-            "Experiment Name",
-            "Recording Name",
-            "Track Id",
-            "Number of Spots",
+            EXPERIMENT_NAME,
+            RECORDING_NAME,
+            TRACK_ID,
+            NUMBER_OF_SPOTS,
             "Number of Gaps",
             "Longest Gap",
             "Track Duration",
@@ -160,7 +169,7 @@ public final class PaintConstants {
             "Diffusion Coefficient Ext",
             "Total Distance",
             "Confinement Ratio",
-            "Square Number",
+            SQUARE_NUMBER,
             "Label Number"
     };
 
@@ -192,9 +201,9 @@ public final class PaintConstants {
 
     public static final String[] SQUARES_COLS = {
             "Unique Key",
-            "Experiment Name",
-            "Recording Name",
-            "Square Number",
+            EXPERIMENT_NAME,
+            RECORDING_NAME,
+            SQUARE_NUMBER,
             "Row Number",
             "Column Number",
             "Label Number",
@@ -269,8 +278,8 @@ public final class PaintConstants {
     // =====================
 
     public static final String[] RECORDINGS_COLS = {
-            "Experiment Name",
-            "Recording Name",
+            EXPERIMENT_NAME,
+            RECORDING_NAME,
             "Condition Number",
             "Replicate Number",
             "Probe Name",
@@ -280,7 +289,7 @@ public final class PaintConstants {
             "Concentration",
             "Process Flag",
             "Threshold",
-            "Number of Spots",
+            NUMBER_OF_SPOTS,
             "Number of Tracks",
             "Number of Tracks in Background",
             "Number of Squares in Background",
@@ -327,7 +336,7 @@ public final class PaintConstants {
             ColumnType.DOUBLE,            // Min Required Density Ratio
             ColumnType.DOUBLE,            // Min Required RSquared
             ColumnType.DOUBLE,            // Max Allowable Variability
-            ColumnType.DOUBLE             // Neighbour Mode
+            ColumnType.STRING             // Neighbour Mode
     };
 
     // =====================
@@ -335,8 +344,8 @@ public final class PaintConstants {
     // =====================
 
     public static final String[] EXPERIMENT_INFO_COLS = {
-            "Experiment Name",
-            "Recording Name",
+            EXPERIMENT_NAME,
+            RECORDING_NAME,
             "Condition Number",
             "Replicate Number",
             "Probe Name",

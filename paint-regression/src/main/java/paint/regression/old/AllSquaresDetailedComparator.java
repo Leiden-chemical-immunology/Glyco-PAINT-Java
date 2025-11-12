@@ -1,5 +1,7 @@
 package paint.regression.old;
 
+import static paint.shared.constants.PaintConstants.*;
+
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
@@ -98,8 +100,8 @@ public class AllSquaresDetailedComparator {
             }
 
             List<String> row = new ArrayList<>();
-            row.add(o.getOrDefault("Recording Name", ""));
-            row.add(n.getOrDefault("Recording Name", ""));
+            row.add(o.getOrDefault(RECORDING_NAME, ""));
+            row.add(n.getOrDefault(RECORDING_NAME, ""));
 
             for (String field : NUMERIC_FIELDS) {
                 String oldVal = o.getOrDefault(field, "");
@@ -129,7 +131,7 @@ public class AllSquaresDetailedComparator {
 
     // ---------------------------------------------------------------------
     private static String key(Map<String, String> r) {
-        return r.getOrDefault("Recording Name", "") + "||" + r.getOrDefault("Square Nr", "");
+        return r.getOrDefault(RECORDING_NAME, "") + "||" + r.getOrDefault("Square Nr", "");
     }
 
     private static double parseDouble(String s) {
@@ -150,7 +152,7 @@ public class AllSquaresDetailedComparator {
 
     private static List<String> header() {
         List<String> h = new ArrayList<>();
-        h.add("Recording Name");
+        h.add(RECORDING_NAME);
         h.add("Recording Name Java");
         for (String f : NUMERIC_FIELDS) {
             h.add(f);

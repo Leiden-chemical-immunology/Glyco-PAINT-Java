@@ -41,6 +41,8 @@
 
 package paint.regression;
 
+import static paint.shared.constants.PaintConstants.*;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -87,7 +89,7 @@ public class SquaresCsvComparatorPythonJava {
         FIELD_MAP.put("Max Track Duration", "Max Track Duration");
         FIELD_MAP.put("Total Track Duration", "Total Track Duration");
         FIELD_MAP.put("Median Track Duration", "Median Track Duration");
-        FIELD_MAP.put("Square Nr", "Square Number");
+        FIELD_MAP.put("Square Nr", SQUARE_NUMBER);
     }
 
     /**
@@ -291,7 +293,7 @@ public class SquaresCsvComparatorPythonJava {
         try (PrintWriter pw = new PrintWriter(file.toFile())) {
             // Write header
             List<String> header = new ArrayList<>();
-            header.add("Recording Name");
+            header.add(RECORDING_NAME);
             header.addAll(FIELD_MAP.keySet());
             header.add("Selected");
             pw.println(String.join(",", header));
@@ -373,7 +375,7 @@ public class SquaresCsvComparatorPythonJava {
 
             // Normalize recording name (strip "-threshold-N")
             String rec = r.getOrDefault("Ext Recording Name", "");
-            n.put("Recording Name", rec.replaceAll("-threshold-\\d+$", "").trim());
+            n.put(RECORDING_NAME, rec.replaceAll("-threshold-\\d+$", "").trim());
 
             // Map and clean all fields
             for (String f : FIELD_MAP.keySet()) {
@@ -411,7 +413,7 @@ public class SquaresCsvComparatorPythonJava {
         List<Map<String, String>> out = new ArrayList<>();
         for (Map<String, String> r : newRows) {
             Map<String, String> n = new LinkedHashMap<>();
-            n.put("Recording Name", r.getOrDefault("Recording Name", ""));
+            n.put(RECORDING_NAME, r.getOrDefault(RECORDING_NAME, ""));
             for (Map.Entry<String, String> e : FIELD_MAP.entrySet()) {
                 n.put(e.getKey(), r.getOrDefault(e.getValue(), ""));
             }
@@ -536,7 +538,7 @@ public class SquaresCsvComparatorPythonJava {
                     if (nvEmpty) {
                         nv = "";
                     }
-                    diffs.add(new String[]{o.get("Recording Name"), o.get("Square Nr"), f, ov, nv, "", "", "MISSING"});
+                    diffs.add(new String[]{o.get(RECORDING_NAME), o.get("Square Nr"), f, ov, nv, "", "", "MISSING"});
                     missingByField.merge(f, 1, Integer::sum);
                     squaresWithDiffs.add(k);
                     continue;
@@ -558,7 +560,7 @@ public class SquaresCsvComparatorPythonJava {
                         if (isZeroOrEmpty(nv)) {
                             nv = "";
                         }
-                        diffs.add(new String[]{o.get("Recording Name"), o.get("Square Nr"), f, ov, nv, "", "", "MISSING"});
+                        diffs.add(new String[]{o.get(RECORDING_NAME), o.get("Square Nr"), f, ov, nv, "", "", "MISSING"});
                         missingByField.merge(f, 1, Integer::sum);
                         squaresWithDiffs.add(k);
                         continue;
@@ -585,7 +587,7 @@ public class SquaresCsvComparatorPythonJava {
                         squaresWithDiffs.add(k);
                     }
 
-                    diffs.add(new String[]{o.get("Recording Name"), o.get("Square Nr"), f,
+                    diffs.add(new String[]{o.get(RECORDING_NAME), o.get("Square Nr"), f,
                             ov, nv, String.valueOf(prec),
                             String.format(Locale.US, "%.3f", dev), status});
                 }
@@ -595,7 +597,7 @@ public class SquaresCsvComparatorPythonJava {
             String sOld = o.get("Selected");
             String sNew = n.get("Selected");
             if (!Objects.equals(sOld, sNew)) {
-                diffs.add(new String[]{o.get("Recording Name"), o.get("Square Nr"),
+                diffs.add(new String[]{o.get(RECORDING_NAME), o.get("Square Nr"),
                         "Selected", sOld, sNew, "", "", "DIFFERENT"});
                 diffCount++;
                 diffByField.merge("Selected", 1, Integer::sum);
@@ -668,8 +670,8 @@ public class SquaresCsvComparatorPythonJava {
             matched++;
 
             List<String> line = new ArrayList<>();
-            line.add(o.getOrDefault("Recording Name", ""));
-            line.add(n.getOrDefault("Recording Name", ""));
+            line.add(o.getOrDefault(RECORDING_NAME, ""));
+            line.add(n.getOrDefault(RECORDING_NAME, ""));
 
             // For each numeric field, compute old/new/diff/diff%
             for (String field : NUMERIC_FIELDS_LIST) {
@@ -693,7 +695,7 @@ public class SquaresCsvComparatorPythonJava {
         // Write output CSV with grouped columns per field
         try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(outFile))) {
             List<String> h = new ArrayList<>();
-            h.add("Recording Name");
+            h.add(RECORDING_NAME);
             h.add("Recording Name Java");
             for (String f : NUMERIC_FIELDS_LIST) {
                 h.add(f);
@@ -868,7 +870,7 @@ public class SquaresCsvComparatorPythonJava {
      * @return composite key
      */
     private static String key(Map<String, String> r) {
-        return r.getOrDefault("Recording Name", "") + " - " + r.getOrDefault("Square Nr", "");
+        return r.getOrDefault(RECORDING_NAME, "") + " - " + r.getOrDefault("Square Nr", "");
     }
 
     /**

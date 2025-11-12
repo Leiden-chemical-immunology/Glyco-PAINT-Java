@@ -43,6 +43,8 @@
 
 package paint.fiji.tracks;
 
+import static paint.shared.constants.PaintConstants.*;
+
 import fiji.plugin.trackmate.FeatureModel;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.TrackMate;
@@ -152,7 +154,7 @@ public final class TrackCsvWriter {
             Table tracksTable = trackTableIO.toTable(tracks);
 
             tracksTable = tracksTable.sortOn(
-                    "Recording Name",
+                    RECORDING_NAME,
                     "Number of Spots",
                     "Number of Gaps",
                     "Longest Gap",

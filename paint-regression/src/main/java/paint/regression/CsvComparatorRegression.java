@@ -44,6 +44,8 @@
 
 package paint.regression;
 
+import static paint.shared.constants.PaintConstants.*;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -161,14 +163,14 @@ public class CsvComparatorRegression {
                 Map<String, String> n = (i < nl.size()) ? nl.get(i) : null;
 
                 if (o == null && n != null) {
-                    String rec = safe(n.get("Recording Name"));
-                    String sq = n.containsKey("Square Number") ? safe(n.get("Square Number")) : "";
+                    String rec = safe(n.get(RECORDING_NAME));
+                    String sq = n.containsKey(SQUARE_NUMBER) ? safe(n.get(SQUARE_NUMBER)) : "";
                     diffs.add(new String[]{rec, sq, String.valueOf(i + 1), "", "", "", "Extra in NEW"});
                     diffCount++;
                     continue;
                 } else if (o != null && n == null) {
-                    String rec = safe(o.get("Recording Name"));
-                    String sq = o.containsKey("Square Number") ? safe(o.get("Square Number")) : "";
+                    String rec = safe(o.get(RECORDING_NAME));
+                    String sq = o.containsKey(SQUARE_NUMBER) ? safe(o.get(SQUARE_NUMBER)) : "";
                     diffs.add(new String[]{rec, sq, String.valueOf(i + 1), "", "", "", "Missing in NEW"});
                     diffCount++;
                     continue;
@@ -179,8 +181,8 @@ public class CsvComparatorRegression {
                 fields.addAll(o.keySet());
                 fields.addAll(n.keySet());
 
-                String rec = safe(o.get("Recording Name"));
-                String sq = o.containsKey("Square Number") ? safe(o.get("Square Number")) : "";
+                String rec = safe(o.get(RECORDING_NAME));
+                String sq = o.containsKey(SQUARE_NUMBER) ? safe(o.get(SQUARE_NUMBER)) : "";
 
                 for (String f : fields) {
                     if (f == null || f.trim().isEmpty()) {
@@ -276,8 +278,8 @@ public class CsvComparatorRegression {
 
     // ----------------------------------------------------------------------
     private static String buildKey(Map<String, String> r) {
-        String rec = safe(r.get("Recording Name"));
-        String sq = r.containsKey("Square Number") ? safe(r.get("Square Number")) : "";
+        String rec = safe(r.get(RECORDING_NAME));
+        String sq = r.containsKey(SQUARE_NUMBER) ? safe(r.get(SQUARE_NUMBER)) : "";
         return sq.isEmpty() ? rec : rec + " - " + sq;
     }
 

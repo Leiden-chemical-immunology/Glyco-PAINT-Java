@@ -4,7 +4,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
-import static paint.shared.constants.PaintConstants.SQUARES_CSV;
+import static paint.shared.constants.PaintConstants.*;
 
 /**
  * ============================================================================
@@ -63,7 +63,7 @@ public class SquaresSidebySideComparator {
         FIELD_MAP.put("Max Track Duration", "Max Track Duration");
         FIELD_MAP.put("Total Track Duration", "Total Track Duration");
         FIELD_MAP.put("Median Track Duration", "Median Track Duration");
-        FIELD_MAP.put("Square Nr", "Square Number");
+        FIELD_MAP.put("Square Nr", SQUARE_NUMBER);
         // "Selected" is computed; not part of FIELD_MAP on purpose
     }
 
@@ -130,13 +130,13 @@ public class SquaresSidebySideComparator {
         List<Map<String, String>> norm = new ArrayList<>();
         for (Map<String, String> row : oldRows) {
             Map<String, String> n = new LinkedHashMap<>();
-            n.put("Recording Name", row.getOrDefault("Ext Recording Name", ""));
+            n.put(RECORDING_NAME, row.getOrDefault("Ext Recording Name", ""));
 
             // Remove trailing "-threshold-<number>"
-            String recName = n.get("Recording Name");
+            String recName = n.get(RECORDING_NAME);
             if (recName != null) {
                 recName = recName.replaceAll("-threshold-\\d+$", "").trim();
-                n.put("Recording Name", recName);
+                n.put(RECORDING_NAME, recName);
             }
 
             for (String oldCol : FIELD_MAP.keySet()) {
@@ -196,7 +196,7 @@ public class SquaresSidebySideComparator {
         List<Map<String, String>> norm = new ArrayList<>();
         for (Map<String, String> row : newRows) {
             Map<String, String> n = new LinkedHashMap<>();
-            n.put("Recording Name", row.getOrDefault("Recording Name", ""));
+            n.put(RECORDING_NAME, row.getOrDefault(RECORDING_NAME, ""));
             for (Map.Entry<String, String> entry : FIELD_MAP.entrySet()) {
                 String oldCol = entry.getKey();
                 String newCol = entry.getValue();
@@ -243,7 +243,7 @@ public class SquaresSidebySideComparator {
 
     // ----------------------------------------------------------------------
     private static String compositeKey(Map<String, String> row) {
-        return row.getOrDefault("Recording Name", "").trim() + " - " +
+        return row.getOrDefault(RECORDING_NAME, "").trim() + " - " +
                 row.getOrDefault("Square Nr", "").trim();
     }
 
@@ -253,7 +253,7 @@ public class SquaresSidebySideComparator {
         try (PrintWriter pw = new PrintWriter(file.toFile())) {
             // Ensure "Selected" exists and appears last in header (after FIELD_MAP)
             List<String> header = new ArrayList<>();
-            header.add("Recording Name");
+            header.add(RECORDING_NAME);
             header.addAll(FIELD_MAP.keySet());
             if (!header.contains("Selected")) header.add("Selected");
             pw.println(String.join(",", header));
@@ -362,7 +362,7 @@ public class SquaresSidebySideComparator {
 
         // Sort inputs
         Comparator<Map<String, String>> sorter = Comparator
-                .comparing((Map<String, String> r) -> r.get("Recording Name"))
+                .comparing((Map<String, String> r) -> r.get(RECORDING_NAME))
                 .thenComparing(r -> {
                     String s = r.get("Square Nr");
                     try { return Integer.parseInt(s); } catch (Exception e) { return 0; }
@@ -382,7 +382,7 @@ public class SquaresSidebySideComparator {
             Map<String, String> newRow = newMap.get(key);
 
             if (newRow == null) {
-                reportRows.add(new String[]{ oldRow.get("Recording Name"), oldRow.get("Square Nr"),
+                reportRows.add(new String[]{ oldRow.get(RECORDING_NAME), oldRow.get("Square Nr"),
                         "", "", "", "", "", "Missing in NEW" });
                 missing++;
                 continue;
@@ -413,7 +413,7 @@ public class SquaresSidebySideComparator {
                     }
 
                     reportRows.add(new String[]{
-                            oldRow.get("Recording Name"),
+                            oldRow.get(RECORDING_NAME),
                             oldRow.get("Square Nr"),
                             field,
                             oldVal,
@@ -432,7 +432,7 @@ public class SquaresSidebySideComparator {
                 diff = true;
                 selectedMismatches++;
                 reportRows.add(new String[]{
-                        oldRow.get("Recording Name"),
+                        oldRow.get(RECORDING_NAME),
                         oldRow.get("Square Nr"),
                         "Selected",
                         selOld,
@@ -452,7 +452,7 @@ public class SquaresSidebySideComparator {
         for (Map<String, String> n : newNorm) {
             if (!oldKeys.contains(compositeKey(n))) {
                 reportRows.add(new String[]{
-                        n.get("Recording Name"), n.get("Square Nr"),
+                        n.get(RECORDING_NAME), n.get("Square Nr"),
                         "", "", "", "", "", "Extra in NEW"
                 });
                 extra++;
@@ -503,7 +503,7 @@ public class SquaresSidebySideComparator {
         Path overviewFile = Paths.get("/Users/Hans/Desktop/Squares Validation - Selected Overview.csv");
 
         Comparator<Map<String, String>> sorter = Comparator
-                .comparing((Map<String, String> r) -> r.get("Recording Name"))
+                .comparing((Map<String, String> r) -> r.get(RECORDING_NAME))
                 .thenComparing(r -> {
                     String s = r.get("Square Nr");
                     try { return Integer.parseInt(s); } catch (Exception e) { return 0; }

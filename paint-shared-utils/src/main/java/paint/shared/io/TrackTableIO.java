@@ -87,8 +87,8 @@ public class TrackTableIO extends BaseTableIO {
         for (Track track : tracks) {
             Row tablesawRow = table.appendRow();
             tablesawRow.setString( "Unique Key",                track.getUniqueKey());
-            tablesawRow.setString( "Experiment Name",           track.getExperimentName());
-            tablesawRow.setString( "Recording Name",            track.getRecordingName());
+            tablesawRow.setString( EXPERIMENT_NAME,           track.getExperimentName());
+            tablesawRow.setString( RECORDING_NAME,            track.getRecordingName());
             tablesawRow.setInt(    "Track Id",                  track.getTrackId());
             tablesawRow.setInt(    "Number of Spots",           track.getNumberOfSpots());
             tablesawRow.setInt(    "Number of Gaps",            track.getNumberOfGaps());
@@ -103,7 +103,7 @@ public class TrackTableIO extends BaseTableIO {
             tablesawRow.setDouble( "Diffusion Coefficient Ext", track.getDiffusionCoefficientExt());
             tablesawRow.setDouble( "Total Distance",            track.getTotalDistance());
             tablesawRow.setDouble( "Confinement Ratio",         track.getConfinementRatio());
-            tablesawRow.setInt(    "Square Number",             track.getSquareNumber());
+            tablesawRow.setInt(    SQUARE_NUMBER,             track.getSquareNumber());
             tablesawRow.setInt(    "Label Number",              track.getLabelNumber());
         }
         return table;
@@ -120,8 +120,8 @@ public class TrackTableIO extends BaseTableIO {
         for (Row row : table) {
             Track track = new Track();
             track.setUniqueKey(              row.getString( "Unique Key"));
-            track.setExperimentName(         row.getString( "Experiment Name"));
-            track.setRecordingName(          row.getString( "Recording Name"));
+            track.setExperimentName(         row.getString( EXPERIMENT_NAME));
+            track.setRecordingName(          row.getString( RECORDING_NAME));
             track.setTrackId(                row.getInt(    "Track Id"));
             track.setNumberOfSpots(          row.getInt(    "Number of Spots"));
             track.setNumberOfGaps(           row.getInt(    "Number of Gaps"));
@@ -136,7 +136,7 @@ public class TrackTableIO extends BaseTableIO {
             track.setDiffusionCoefficientExt(row.getDouble( "Diffusion Coefficient Ext"));
             track.setTotalDistance(          row.getDouble( "Total Distance"));
             track.setConfinementRatio(       row.getDouble( "Confinement Ratio"));
-            track.setSquareNumber(           row.getInt(    "Square Number"));
+            track.setSquareNumber(           row.getInt(    SQUARE_NUMBER));
             track.setLabelNumber(            row.getInt(    "Label Number"));
             tracks.add(track);
         }
@@ -199,8 +199,8 @@ public class TrackTableIO extends BaseTableIO {
     public Track rowToEntity(Row row) {
         Track track = new Track();
         track.setUniqueKey(                row.getString(  "Unique Key"));
-        track.setExperimentName(           row.getString(  "Experiment Name"));
-        track.setRecordingName(            row.getString(  "Recording Name"));
+        track.setExperimentName(           row.getString(  EXPERIMENT_NAME));
+        track.setRecordingName(            row.getString(  RECORDING_NAME));
         track.setTrackId(                  row.getInt(     "Track Id"));
         track.setNumberOfSpots(            row.getInt(     "Number of Spots"));
         track.setNumberOfGaps(             row.getInt(     "Number of Gaps"));
@@ -215,7 +215,7 @@ public class TrackTableIO extends BaseTableIO {
         track.setDiffusionCoefficientExt(  row.getDouble(  "Diffusion Coefficient Ext"));
         track.setTotalDistance(            row.getDouble(  "Total Distance"));
         track.setConfinementRatio(         row.getDouble(  "Confinement Ratio"));
-        track.setSquareNumber(             row.getInt(     "Square Number"));
+        track.setSquareNumber(             row.getInt(     SQUARE_NUMBER));
         track.setLabelNumber(              row.getInt(     "Label Number"));
         return track;
     }

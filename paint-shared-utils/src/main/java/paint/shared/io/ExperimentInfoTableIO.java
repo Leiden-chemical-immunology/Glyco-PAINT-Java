@@ -45,8 +45,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_COLS;
-import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_TYPES;
+import static paint.shared.constants.PaintConstants.*;
 
 /**
  * Provides table input/output utilities for {@code ExperimentInfo}
@@ -116,8 +115,8 @@ public class ExperimentInfoTableIO extends BaseTableIO {
         Table table = emptyTable();
         for (ExperimentInfo info : infos) {
             Row row = table.appendRow();
-            row.setString("Experiment Name",  info.getExperimentName());
-            row.setString("Recording Name",   info.getRecordingName());
+            row.setString(EXPERIMENT_NAME,  info.getExperimentName());
+            row.setString(RECORDING_NAME,   info.getRecordingName());
             row.setInt(   "Condition Number", info.getConditionNumber());
             row.setInt(   "Replicate Number", info.getReplicateNumber());
             row.setString("Probe Name",       info.getProbeName());
@@ -157,8 +156,8 @@ public class ExperimentInfoTableIO extends BaseTableIO {
         List<ExperimentInfo> infos = new ArrayList<>();
         for (Row tablesawRow : table) {
             ExperimentInfo experimentInfo = new ExperimentInfo();
-            experimentInfo.setExperimentName(  tablesawRow.getString( "Experiment Name"));
-            experimentInfo.setRecordingName(   tablesawRow.getString( "Recording Name"));
+            experimentInfo.setExperimentName(  tablesawRow.getString( EXPERIMENT_NAME));
+            experimentInfo.setRecordingName(   tablesawRow.getString( RECORDING_NAME));
             experimentInfo.setConditionNumber( tablesawRow.getInt(    "Condition Number"));
             experimentInfo.setReplicateNumber( tablesawRow.getInt(    "Replicate Number"));
             experimentInfo.setProbeName(       tablesawRow.getString( "Probe Name"));

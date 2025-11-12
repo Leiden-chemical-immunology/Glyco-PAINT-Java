@@ -39,6 +39,7 @@
 
 package paint.shared.objects;
 
+import static paint.shared.constants.PaintConstants.*;
 import paint.shared.utils.Miscellaneous;
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.Table;
@@ -159,8 +160,8 @@ public class ExperimentInfo {
      */
     public ExperimentInfo(Map<String, String> row) {
         try {
-            this.experimentName  = row.get("Experiment Name");
-            this.recordingName   = row.get("Recording Name");
+            this.experimentName  = row.get(EXPERIMENT_NAME);
+            this.recordingName   = row.get(RECORDING_NAME);
             this.conditionNumber = parseInt(row.get("Condition Number"));
             this.replicateNumber = parseInt(row.get("Replicate Number"));
             this.probeName       = row.get("Probe Name");

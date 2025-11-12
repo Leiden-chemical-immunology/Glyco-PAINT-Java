@@ -41,6 +41,8 @@
 
 package paint.regression;
 
+import static paint.shared.constants.PaintConstants.*;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -67,7 +69,7 @@ public class TracksCsvComparatorPythonJava {
      * Standard column order used in normalized CSVs.
      */
     private static final List<String> COMPARE_COLUMNS = Arrays.asList(
-            "Recording Name",
+            RECORDING_NAME,
             "Track Id",
             "Square Nr",
             "Nr Spots",
@@ -92,7 +94,7 @@ public class TracksCsvComparatorPythonJava {
     // ---------------------------------------------------------------------
 
     static {
-        COLUMN_MAP.put("Square Number", "Square Nr");
+        COLUMN_MAP.put(SQUARE_NUMBER, "Square Nr");
         COLUMN_MAP.put("Number of Spots", "Nr Spots");
         COLUMN_MAP.put("Number of Gaps", "Nr Gaps");
     }
@@ -131,13 +133,13 @@ public class TracksCsvComparatorPythonJava {
             List<Map<String, String>> newRows = readCsv(newCsv);
 
             List<Map<String, String>> oldNorm = normalizeAndSort(oldRows, "Ext Recording Name");
-            List<Map<String, String>> newNorm = normalizeAndSort(newRows, "Recording Name");
+            List<Map<String, String>> newNorm = normalizeAndSort(newRows, RECORDING_NAME);
             writeNormalizedCsv(oldNorm, oldNormCsv);
             writeNormalizedCsv(newNorm, newNormCsv);
 
             // === Step 2: Group by recording name ===
             Map<String, List<Map<String, String>>> oldByRec = groupBy(oldNorm, "Ext Recording Name");
-            Map<String, List<Map<String, String>>> newByRec = groupBy(newNorm, "Recording Name");
+            Map<String, List<Map<String, String>>> newByRec = groupBy(newNorm, RECORDING_NAME);
 
             // Build a recording name mapping ignoring threshold suffixes
             Map<String, String> recMapping = new LinkedHashMap<>();
@@ -394,7 +396,7 @@ public class TracksCsvComparatorPythonJava {
             if (idx > 0) {
                 recName = recName.substring(0, idx);
             }
-            row.put("Recording Name", recName);
+            row.put(RECORDING_NAME, recName);
 
             // normalize alternate column names
             for (Map.Entry<String, String> e : COLUMN_MAP.entrySet()) {
@@ -410,8 +412,8 @@ public class TracksCsvComparatorPythonJava {
 
         // sort deterministically
         rows.sort((a, b) -> {
-            String ra = a.getOrDefault("Recording Name", "").toLowerCase(Locale.ROOT);
-            String rb = b.getOrDefault("Recording Name", "").toLowerCase(Locale.ROOT);
+            String ra = a.getOrDefault(RECORDING_NAME, "").toLowerCase(Locale.ROOT);
+            String rb = b.getOrDefault(RECORDING_NAME, "").toLowerCase(Locale.ROOT);
             int cmp = ra.compareTo(rb);
             if (cmp != 0) {
                 return cmp;
@@ -461,7 +463,7 @@ public class TracksCsvComparatorPythonJava {
         for (int i = 0; i < Math.min(3, sortedRows.size()); i++) {
             Map<String, String> r = sortedRows.get(i);
             System.out.printf("    %s | %s%n",
-                              r.getOrDefault("Recording Name", ""), r.getOrDefault("Track Id", ""));
+                              r.getOrDefault(RECORDING_NAME, ""), r.getOrDefault("Track Id", ""));
         }
     }
 
@@ -494,7 +496,7 @@ public class TracksCsvComparatorPythonJava {
             }
 
             // Compare integer-like columns exactly
-            int squareNew  = parseIntSafe(cand.get("Square Number"));
+            int squareNew  = parseIntSafe(cand.get(SQUARE_NUMBER));
             int nSpotsNew  = parseIntSafe(cand.get("Number of Spots"));
             int nGapsNew   = parseIntSafe(cand.get("Number of Gaps"));
             int longestNew = parseIntSafe(cand.get("Longest Gap"));

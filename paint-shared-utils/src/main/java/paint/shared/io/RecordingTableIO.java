@@ -91,8 +91,8 @@ public class RecordingTableIO extends BaseTableIO {
         Table table = emptyTable();
         for (Recording recording : recordings) {
             Row row = table.appendRow();
-            row.setString(  "Experiment Name",                   recording.getExperimentName());
-            row.setString(  "Recording Name",                    recording.getRecordingName());
+            row.setString(  EXPERIMENT_NAME,                   recording.getExperimentName());
+            row.setString(  RECORDING_NAME,                    recording.getRecordingName());
             row.setInt(     "Condition Number",                  recording.getConditionNumber());
             row.setInt(     "Replicate Number",                  recording.getReplicateNumber());
             row.setString(  "Probe Name",                        recording.getProbeName());
@@ -137,8 +137,8 @@ public class RecordingTableIO extends BaseTableIO {
         List<Recording> recordings = new ArrayList<>();
         for (Row tablesawRow : table) {
             Recording recording = new Recording();
-            recording.setExperimentName(              tablesawRow.getString(   "Experiment Name"));
-            recording.setRecordingName(               tablesawRow.getString(   "Recording Name"));
+            recording.setExperimentName(              tablesawRow.getString(   EXPERIMENT_NAME));
+            recording.setRecordingName(               tablesawRow.getString(   RECORDING_NAME));
             recording.setConditionNumber(             tablesawRow.getInt(      "Condition Number"));
             recording.setReplicateNumber(             tablesawRow.getInt(      "Replicate Number"));
             recording.setProbeName(                   tablesawRow.getString(   "Probe Name"));
@@ -162,7 +162,7 @@ public class RecordingTableIO extends BaseTableIO {
             recording.setRSquared(                    tablesawRow.getDouble(   "R Squared"));
             recording.setDensity(                     tablesawRow.getDouble(   "Density"));
 
-            recording.setMinRequiredDensityRatio(     tablesawRow.getDouble(  "Min Required Density Ratio"));
+            recording.setMinRequiredDensityRatio(     tablesawRow.getDouble(   "Min Required Density Ratio"));
             recording.setMinRequiredRSquared(         tablesawRow.getDouble(   "Min Required RSquared"));
             recording.setMaxAllowableVariability(     tablesawRow.getDouble(   "Max Allowable Variability"));
             recording.setNeighbourMode(               tablesawRow.getString(   "Neighbour Mode"));
