@@ -157,7 +157,7 @@ public class RecordingOverrideWriter {
             // Initialize header if missing or malformed
             if (lines.isEmpty() || !lines.get(0).startsWith("recordingName,")) {
                 lines.clear();
-                lines.add("recordingName,timestamp,MinRequiredDensityRatio,MaxAllowableVariability,minRequiredRSquared,neighbourMode");
+                lines.add("Recording Name,Timestamp,Min Required Density Ratio,Max Allowable Variability,Min Required RSquared,Neighbour Mode");
             }
 
             String prefix = recordingName + ",";

@@ -115,7 +115,7 @@ public class SquareOverrideWriter {
             // Initialize CSV with headers if new or malformed
             if (lines.isEmpty() || !lines.get(0).startsWith("experimentName,")) {
                 lines.clear();
-                lines.add("experimentName,recordingName,squareId,cellId,timestamp");
+                lines.add("Experiment Name,Recording Name,Square Number,Cell Id,Timestamp");
             }
 
             // Update or append records for each (squareNumber, cellId) pair
