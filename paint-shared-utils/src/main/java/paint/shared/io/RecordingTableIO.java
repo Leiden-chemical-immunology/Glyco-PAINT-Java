@@ -1,4 +1,4 @@
-/******************************************************************************
+/*=============================================================================
  *  Class:        RecordingTableIO.java
  *  Package:      paint.shared.io
  *
@@ -37,7 +37,7 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ******************************************************************************/
+=============================================================================*/
 
 package paint.shared.io;
 
@@ -166,7 +166,7 @@ public class RecordingTableIO extends BaseTableIO {
             recording.setMinRequiredRSquared(         tablesawRow.getDouble(   "Min Required RSquared"));
             recording.setMaxAllowableVariability(     tablesawRow.getDouble(   "Max Allowable Variability"));
             recording.setNeighbourMode(               tablesawRow.getString(   "Neighbour Mode"));
-            ;recordings.add(recording);
+            recordings.add(recording);
         }
         return recordings;
     }
