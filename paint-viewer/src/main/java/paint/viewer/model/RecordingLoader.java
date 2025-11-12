@@ -38,6 +38,8 @@
  ==============================================================================*/
 
 package paint.viewer.model;
+import static paint.shared.constants.PaintConstants.*;
+
 
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.io.ExperimentDataLoader;
@@ -136,10 +138,10 @@ public class RecordingLoader {
                 }
 
                 // --- Thresholds from config ---
-                double minDensityRatio = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
-                double maxVariability  = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability",  10.0);
-                double minRSquared     = PaintConfig.getDouble("Generate Squares", "Min Required R Squared",     0.1);
-                String neighbourMode   = PaintConfig.getString("Generate Squares", "Neighbour Mode",             "Free");
+                double minDensityRatio = PaintConfig.getDouble("Generate Squares", MIN_REQUIRED_DENSITY_RATIO, 2.0);
+                double maxVariability  = PaintConfig.getDouble("Generate Squares", MAX_ALLOWABLE_VARIABILITY,  10.0);
+                double minRSquared     = PaintConfig.getDouble("Generate Squares", MIN_REQUIRED_R_SQUARED,     0.1);
+                String neighbourMode   = PaintConfig.getString("Generate Squares", NEIGHBOUR_MODE,             "Free");
 
                 // --- Build final entry ---
                 RecordingEntry entry = new RecordingEntry(

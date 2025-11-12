@@ -64,19 +64,19 @@ class SweepConfigWriter {
 
         // 4) Generate Squares Sweep flags + ranges
         JsonObject genSquaresSweep = new JsonObject();
-        genSquaresSweep.addProperty("Min Required R Squared",           false);
-        genSquaresSweep.addProperty("Min Tracks to Calculate Tau",      true);
-        genSquaresSweep.addProperty("Fraction of Squares to Determine Background", false);
-        genSquaresSweep.addProperty("Number of Squares in Row",         false);
-        genSquaresSweep.addProperty("Exclude zero DC tracks from Tau Calculation", false);
-        genSquaresSweep.addProperty("Max Allowable Variability",        false);
-        genSquaresSweep.addProperty("Min Required Density Ratio",       false);
-        genSquaresSweep.addProperty("Number of Squares in Column",      false);
+        genSquaresSweep.addProperty(MIN_REQUIRED_R_SQUARED,                      false);
+        genSquaresSweep.addProperty(MIN_TRACKS_TO_CALCULATE_TAU,                 true);
+        genSquaresSweep.addProperty(FRACTION_OF_SQUARES_TO_DETERMINE_BACKGROUND, false);
+        genSquaresSweep.addProperty(NUMBER_OF_SQUARES_IN_ROW,                    false);
+        genSquaresSweep.addProperty(EXCLUDE_ZERO_DC_TRACKS_FROM_TAU_CALCULATION, false);
+        genSquaresSweep.addProperty(MAX_ALLOWABLE_VARIABILITY,                   false);
+        genSquaresSweep.addProperty(MIN_REQUIRED_DENSITY_RATIO,                  false);
+        genSquaresSweep.addProperty(NUMBER_OF_SQUARES_IN_COLUMN,                 false);
         root.add("Generate Squares Sweep", genSquaresSweep);
 
-        root.add("Min Required R Squared",       values(obj("Value 0", 0.1, "Value 1", 0.2, "Value 2", 0.3, "Value 3", 0.4,
+        root.add(MIN_REQUIRED_R_SQUARED,       values(obj("Value 0", 0.1, "Value 1", 0.2, "Value 2", 0.3, "Value 3", 0.4,
                                                             "Value 4", 0.5, "Value 5", 0.6, "Value 6", 0.7, "Value 7", 0.8)));
-        root.add("Min Tracks to Calculate Tau",  values(obj("Value 0", 5, "Value 1", 10, "Value 2", 15, "Value 3", 20, "Value 4", 25)));
+        root.add(MIN_TRACKS_TO_CALCULATE_TAU,  values(obj("Value 0", 5, "Value 1", 10, "Value 2", 15, "Value 3", 20, "Value 4", 25)));
 
         // 5) Write to disk
         try {

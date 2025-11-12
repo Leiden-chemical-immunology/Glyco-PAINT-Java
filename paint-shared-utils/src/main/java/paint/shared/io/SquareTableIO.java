@@ -40,6 +40,8 @@
 
 package paint.shared.io;
 
+import static paint.shared.constants.PaintConstants.*;
+
 import paint.shared.objects.Square;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
@@ -51,7 +53,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.*;
 
 /**
  * Provides all CSV input/output operations for {@link Square} entities.
@@ -90,40 +91,40 @@ public class SquareTableIO extends BaseTableIO {
 
         for (Square square : squares) {
             Row tablesawRow = table.appendRow();
-            tablesawRow.setString( "Unique Key",                       square.getUniqueKey());
+            tablesawRow.setString( UNIQUE_KEY,                       square.getUniqueKey());
             tablesawRow.setString( EXPERIMENT_NAME,                  square.getExperimentName());
             tablesawRow.setString( RECORDING_NAME,                   square.getRecordingName());
             tablesawRow.setInt(    SQUARE_NUMBER,                    square.getSquareNumber());
-            tablesawRow.setInt(    "Row Number",                       square.getRowNumber());
-            tablesawRow.setInt(    "Column Number",                    square.getColNumber());
-            tablesawRow.setInt(    "Label Number",                     square.getLabelNumber());
-            tablesawRow.setInt(    "Cell ID",                          square.getCellId());
-            tablesawRow.setBoolean("Selected",                         square.isVisible());
-            tablesawRow.setBoolean("Square Manually Excluded",         square.isSquareManuallyExcluded());
-            tablesawRow.setBoolean("Image Excluded",                   square.isImageExcluded());
-            tablesawRow.setDouble( "X0",                               square.getX0());
-            tablesawRow.setDouble( "Y0",                               square.getY0());
-            tablesawRow.setDouble( "X1",                               square.getX1());
-            tablesawRow.setDouble( "Y1",                               square.getY1());
-            tablesawRow.setInt(    "Number of Tracks",                 square.getNumberOfTracks());
-            tablesawRow.setDouble( "Variability",                      square.getVariability());
-            tablesawRow.setDouble( "Density",                          square.getDensity());
-            tablesawRow.setDouble( "Density Ratio",                    square.getDensityRatio());
-            tablesawRow.setDouble( "Density Ratio Ori",                square.getDensityRatioOri());
-            tablesawRow.setDouble( "Tau",                              square.getTau());
-            tablesawRow.setDouble( "R Squared",                        square.getRSquared());
-            tablesawRow.setDouble( "Median Diffusion Coefficient",     square.getMedianDiffusionCoefficient());
-            tablesawRow.setDouble( "Median Diffusion Coefficient Ext", square.getMedianDiffusionCoefficientExt());
-            tablesawRow.setDouble( "Median Displacement",              square.getMedianDisplacement());
-            tablesawRow.setDouble( "Max Displacement",                 square.getMaxDisplacement());
-            tablesawRow.setDouble( "Total Displacement",               square.getTotalDisplacement());
-            tablesawRow.setDouble( "Median Max Speed",                 square.getMedianMaxSpeed());
-            tablesawRow.setDouble( "Max Max Speed",                    square.getMaxMaxSpeed());
-            tablesawRow.setDouble( "Median Mean Speed",                square.getMedianMedianSpeed());
-            tablesawRow.setDouble( "Max Mean Speed",                   square.getMaxMedianSpeed());
-            tablesawRow.setDouble( "Max Track Duration",               square.getMaxTrackDuration());
-            tablesawRow.setDouble( "Total Track Duration",             square.getTotalTrackDuration());
-            tablesawRow.setDouble( "Median Track Duration",            square.getMedianTrackDuration());
+            tablesawRow.setInt(    ROW_NUMBER,                       square.getRowNumber());
+            tablesawRow.setInt(    COLUMN_NUMBER,                    square.getColNumber());
+            tablesawRow.setInt(    LABEL_NUMBER,                     square.getLabelNumber());
+            tablesawRow.setInt(    CELL_ID,                          square.getCellId());
+            tablesawRow.setBoolean(SELECTED,                         square.isVisible());
+            tablesawRow.setBoolean(SQUARE_MANUALLY_EXCLUDED,         square.isSquareManuallyExcluded());
+            tablesawRow.setBoolean(IMAGE_EXCLUDED,                   square.isImageExcluded());
+            tablesawRow.setDouble( X0,                               square.getX0());
+            tablesawRow.setDouble( Y0,                               square.getY0());
+            tablesawRow.setDouble( X1,                               square.getX1());
+            tablesawRow.setDouble( Y1,                               square.getY1());
+            tablesawRow.setInt(    NUMBER_OF_TRACKS,                   square.getNumberOfTracks());
+            tablesawRow.setDouble( VARIABILITY,                        square.getVariability());
+            tablesawRow.setDouble( DENSITY,                            square.getDensity());
+            tablesawRow.setDouble( DENSITY_RATIO,                      square.getDensityRatio());
+            tablesawRow.setDouble( DENSITY_RATIO_ORI,                  square.getDensityRatioOri());
+            tablesawRow.setDouble( TAU,                                square.getTau());
+            tablesawRow.setDouble( R_SQUARED,                          square.getRSquared());
+            tablesawRow.setDouble( MEDIAN_DIFFUSION_COEFFICIENT,       square.getMedianDiffusionCoefficient());
+            tablesawRow.setDouble( MEDIAN_DIFFUSION_COEFFICIENT_EXT,   square.getMedianDiffusionCoefficientExt());
+            tablesawRow.setDouble( MEDIAN_DISPLACEMENT,                square.getMedianDisplacement());
+            tablesawRow.setDouble( MAX_DISPLACEMENT,                   square.getMaxDisplacement());
+            tablesawRow.setDouble( TOTAL_DISPLACEMENT,                 square.getTotalDisplacement());
+            tablesawRow.setDouble( MEDIAN_MAX_SPEED,                   square.getMedianMaxSpeed());
+            tablesawRow.setDouble( MAX_MAX_SPEED,                      square.getMaxMaxSpeed());
+            tablesawRow.setDouble( MEDIAN_MEAN_SPEED,                  square.getMedianMedianSpeed());
+            tablesawRow.setDouble( MAX_MEAN_SPEED,                     square.getMaxMedianSpeed());
+            tablesawRow.setDouble( MAX_TRACK_DURATION,                 square.getMaxTrackDuration());
+            tablesawRow.setDouble( TOTAL_TRACK_DURATION,               square.getTotalTrackDuration());
+            tablesawRow.setDouble( MEDIAN_TRACK_DURATION,              square.getMedianTrackDuration());
         }
         return table;
     }
@@ -142,40 +143,40 @@ public class SquareTableIO extends BaseTableIO {
 
         for (Row tablesawRow : table) {
             Square square = new Square();
-            square.setUniqueKey(                     tablesawRow.getString(  "Unique Key"));
+            square.setUniqueKey(                     tablesawRow.getString(  UNIQUE_KEY));
             square.setExperimentName(                tablesawRow.getString(  EXPERIMENT_NAME));
             square.setRecordingName(                 tablesawRow.getString(  RECORDING_NAME));
             square.setSquareNumber(                  tablesawRow.getInt(     SQUARE_NUMBER));
-            square.setRowNumber(                     tablesawRow.getInt(     "Row Number"));
-            square.setColNumber(                     tablesawRow.getInt(     "Column Number"));
-            square.setLabelNumber(                   tablesawRow.getInt(     "Label Number"));
-            square.setCellId(                        tablesawRow.getInt(     "Cell ID"));
-            square.setVisible(tablesawRow.getBoolean("Selected"));
-            square.setSquareManuallyExcluded(        tablesawRow.getBoolean( "Square Manually Excluded"));
-            square.setImageExcluded(                 tablesawRow.getBoolean( "Image Excluded"));
-            square.setX0(                            tablesawRow.getDouble(  "X0"));
-            square.setY0(                            tablesawRow.getDouble(  "Y0"));
-            square.setX1(                            tablesawRow.getDouble(  "X1"));
-            square.setY1(                            tablesawRow.getDouble(  "Y1"));
-            square.setNumberOfTracks(                tablesawRow.getInt(     "Number of Tracks"));
-            square.setVariability(                   tablesawRow.getDouble(  "Variability"));
-            square.setDensity(                       tablesawRow.getDouble(  "Density"));
-            square.setDensityRatio(                  tablesawRow.getDouble(  "Density Ratio"));
-            square.setDensityRatioOri(               tablesawRow.getDouble(  "Density Ratio Ori"));
-            square.setTau(                           tablesawRow.getDouble(  "Tau"));
-            square.setRSquared(                      tablesawRow.getDouble(  "R Squared"));
-            square.setMedianDiffusionCoefficient(    tablesawRow.getDouble(  "Median Diffusion Coefficient"));
-            square.setMedianDiffusionCoefficientExt( tablesawRow.getDouble(  "Median Diffusion Coefficient Ext"));
-            square.setMedianDisplacement(            tablesawRow.getDouble(  "Median Displacement"));
-            square.setMaxDisplacement(               tablesawRow.getDouble(  "Max Displacement"));
-            square.setTotalDisplacement(             tablesawRow.getDouble(  "Total Displacement"));
-            square.setMedianMaxSpeed(                tablesawRow.getDouble(  "Median Max Speed"));
-            square.setMaxMaxSpeed(                   tablesawRow.getDouble(  "Max Max Speed"));
-            square.setMedianMedianSpeed(             tablesawRow.getDouble(  "Median Mean Speed"));
-            square.setMaxMedianSpeed(                tablesawRow.getDouble(  "Max Mean Speed"));
-            square.setMaxTrackDuration(              tablesawRow.getDouble(  "Max Track Duration"));
-            square.setTotalTrackDuration(            tablesawRow.getDouble(  "Total Track Duration"));
-            square.setMedianTrackDuration(           tablesawRow.getDouble(  "Median Track Duration"));
+            square.setRowNumber(                     tablesawRow.getInt(     ROW_NUMBER));
+            square.setColNumber(                     tablesawRow.getInt(     COLUMN_NUMBER));
+            square.setLabelNumber(                   tablesawRow.getInt(     LABEL_NUMBER));
+            square.setCellId(                        tablesawRow.getInt(     CELL_ID));
+            square.setVisible(                       tablesawRow.getBoolean(SELECTED));
+            square.setSquareManuallyExcluded(        tablesawRow.getBoolean( SQUARE_MANUALLY_EXCLUDED));
+            square.setImageExcluded(                 tablesawRow.getBoolean( IMAGE_EXCLUDED));
+            square.setX0(                            tablesawRow.getDouble(  X0));
+            square.setY0(                            tablesawRow.getDouble(  Y0));
+            square.setX1(                            tablesawRow.getDouble(  X1));
+            square.setY1(                            tablesawRow.getDouble(  Y1));
+            square.setNumberOfTracks(                tablesawRow.getInt(     NUMBER_OF_TRACKS));
+            square.setVariability(                   tablesawRow.getDouble(  VARIABILITY));
+            square.setDensity(                       tablesawRow.getDouble(  DENSITY));
+            square.setDensityRatio(                  tablesawRow.getDouble(  DENSITY_RATIO));
+            square.setDensityRatioOri(               tablesawRow.getDouble(  DENSITY_RATIO_ORI));
+            square.setTau(                           tablesawRow.getDouble(  TAU));
+            square.setRSquared(                      tablesawRow.getDouble(  R_SQUARED));
+            square.setMedianDiffusionCoefficient(    tablesawRow.getDouble(  MEDIAN_DIFFUSION_COEFFICIENT));
+            square.setMedianDiffusionCoefficientExt( tablesawRow.getDouble(  MEDIAN_DIFFUSION_COEFFICIENT_EXT));
+            square.setMedianDisplacement(            tablesawRow.getDouble(  MEDIAN_DISPLACEMENT));
+            square.setMaxDisplacement(               tablesawRow.getDouble(  MAX_DISPLACEMENT));
+            square.setTotalDisplacement(             tablesawRow.getDouble(  TOTAL_DISPLACEMENT));
+            square.setMedianMaxSpeed(                tablesawRow.getDouble(  MEDIAN_MAX_SPEED));
+            square.setMaxMaxSpeed(                   tablesawRow.getDouble(  MAX_MAX_SPEED));
+            square.setMedianMedianSpeed(             tablesawRow.getDouble(  MEDIAN_MEAN_SPEED));
+            square.setMaxMedianSpeed(                tablesawRow.getDouble(  MAX_MEAN_SPEED));
+            square.setMaxTrackDuration(              tablesawRow.getDouble(  MAX_TRACK_DURATION));
+            square.setTotalTrackDuration(            tablesawRow.getDouble(  TOTAL_TRACK_DURATION));
+            square.setMedianTrackDuration(           tablesawRow.getDouble(  MEDIAN_TRACK_DURATION));
             squares.add(square);
         }
         return squares;

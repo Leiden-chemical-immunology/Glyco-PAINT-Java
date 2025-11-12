@@ -39,6 +39,8 @@
  ==============================================================================*/
 
 package paint.viewer.ui.dialogs;
+import static paint.shared.constants.PaintConstants.*;
+
 
 import paint.viewer.ui.panels.RecordingControlsPanel;
 import paint.viewer.ui.panels.SquareGridPanel;
@@ -136,7 +138,7 @@ public class SquareControlDialog extends JDialog {
         }
 
         JPanel neighbourPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        neighbourPanel.setBorder(BorderFactory.createTitledBorder("Neighbour Mode"));
+        neighbourPanel.setBorder(BorderFactory.createTitledBorder(NEIGHBOUR_MODE));
         neighbourPanel.add(neighbourFree);
         neighbourPanel.add(neighbourRelaxed);
         neighbourPanel.add(neighbourStrict);

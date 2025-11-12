@@ -185,12 +185,12 @@ public class GenerateSquaresHeadless {
 
     private static void logContextAndConfiguration(Path projectPath, List<String> experimentNames) {
 
-        int nSquares      = PaintConfig.getInt(   "Generate Squares", "Number of Squares in Recording", 400);
+        int nSquares      = PaintConfig.getInt(   "Generate Squares", NUMBER_OF_SQUARES_IN_RECORDING, 400);
         int side          = (int) Math.round(Math.sqrt(nSquares));
-        int minTracks     = PaintConfig.getInt(   "Generate Squares", "Min Tracks to Calculate Tau", 20);
-        double minRSq     = PaintConfig.getDouble("Generate Squares", "Min Required R Squared", 0.1);
-        double minDensity = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio", 2.0);
-        double maxVar     = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability", 10.0);
+        int minTracks     = PaintConfig.getInt(   "Generate Squares", MIN_TRACKS_TO_CALCULATE_TAU,    20);
+        double minRSq     = PaintConfig.getDouble("Generate Squares", MIN_REQUIRED_R_SQUARED,         0.1);
+        double minDensity = PaintConfig.getDouble("Generate Squares", MIN_REQUIRED_DENSITY_RATIO,     2.0);
+        double maxVar     = PaintConfig.getDouble("Generate Squares", MAX_ALLOWABLE_VARIABILITY,      10.0);
 
         // Neatly wrapped experiment list
         String formattedExperiments;
