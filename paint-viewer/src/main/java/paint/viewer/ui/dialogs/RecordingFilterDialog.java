@@ -16,6 +16,8 @@
  ==============================================================================*/
 
 package paint.viewer.ui.dialogs;
+import static paint.shared.constants.PaintConstants.*;
+
 
 import paint.viewer.model.RecordingEntry;
 
@@ -95,11 +97,11 @@ public class RecordingFilterDialog extends JDialog {
         concentrationList = createList(concentrations);
 
         // Register metadata for each list box
-        titles.put(cellTypeList,      "Cell Type");
-        titles.put(probeNameList,     "Probe Name");
-        titles.put(probeTypeList,     "Probe Type");
-        titles.put(adjuvantList,      "Adjuvant");
-        titles.put(concentrationList, "Concentration");
+        titles.put(cellTypeList,      CELL_TYPE);
+        titles.put(probeNameList,     PROBE_NAME);
+        titles.put(probeTypeList,     PROBE_TYPE);
+        titles.put(adjuvantList,      ADJUVANT);
+        titles.put(concentrationList, CONCENTRATION);
 
         valueExtractors.put(cellTypeList,      RecordingEntry::getCellType);
         valueExtractors.put(probeNameList,     RecordingEntry::getProbeName);

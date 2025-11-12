@@ -117,15 +117,15 @@ public class ExperimentInfoTableIO extends BaseTableIO {
             Row row = table.appendRow();
             row.setString(EXPERIMENT_NAME,  info.getExperimentName());
             row.setString(RECORDING_NAME,   info.getRecordingName());
-            row.setInt(   "Condition Number", info.getConditionNumber());
-            row.setInt(   "Replicate Number", info.getReplicateNumber());
-            row.setString("Probe Name",       info.getProbeName());
-            row.setString("Probe Type",       info.getProbeType());
-            row.setString("Cell Type",        info.getCellType());
-            row.setString("Adjuvant",         info.getAdjuvant());
-            row.setDouble("Concentration",    info.getConcentration());
-            row.setBoolean("Process Flag",    info.isProcessFlag());
-            row.setDouble("Threshold",        info.getThreshold());
+            row.setInt(   CONDITION_NUMBER, info.getConditionNumber());
+            row.setInt(   REPLICATE_NUMBER, info.getReplicateNumber());
+            row.setString(PROBE_NAME,       info.getProbeName());
+            row.setString(PROBE_TYPE,       info.getProbeType());
+            row.setString(CELL_TYPE,        info.getCellType());
+            row.setString(ADJUVANT,         info.getAdjuvant());
+            row.setDouble(CONCENTRATION,    info.getConcentration());
+            row.setBoolean(PROCESS_FLAG,    info.isProcessFlag());
+            row.setDouble(THRESHOLD,        info.getThreshold());
         }
         return table;
     }
@@ -158,15 +158,15 @@ public class ExperimentInfoTableIO extends BaseTableIO {
             ExperimentInfo experimentInfo = new ExperimentInfo();
             experimentInfo.setExperimentName(  tablesawRow.getString( EXPERIMENT_NAME));
             experimentInfo.setRecordingName(   tablesawRow.getString( RECORDING_NAME));
-            experimentInfo.setConditionNumber( tablesawRow.getInt(    "Condition Number"));
-            experimentInfo.setReplicateNumber( tablesawRow.getInt(    "Replicate Number"));
-            experimentInfo.setProbeName(       tablesawRow.getString( "Probe Name"));
-            experimentInfo.setProbeType(       tablesawRow.getString( "Probe Type"));
-            experimentInfo.setCellType(        tablesawRow.getString( "Cell Type"));
-            experimentInfo.setAdjuvant(        tablesawRow.getString( "Adjuvant"));
-            experimentInfo.setConcentration(   tablesawRow.getDouble( "Concentration"));
-            experimentInfo.setProcessFlag(     tablesawRow.getBoolean("Process Flag"));
-            experimentInfo.setThreshold(       tablesawRow.getDouble( "Threshold"));
+            experimentInfo.setConditionNumber( tablesawRow.getInt(    CONDITION_NUMBER));
+            experimentInfo.setReplicateNumber( tablesawRow.getInt(    REPLICATE_NUMBER));
+            experimentInfo.setProbeName(       tablesawRow.getString( PROBE_NAME));
+            experimentInfo.setProbeType(       tablesawRow.getString( PROBE_TYPE));
+            experimentInfo.setCellType(        tablesawRow.getString( CELL_TYPE));
+            experimentInfo.setAdjuvant(        tablesawRow.getString( ADJUVANT));
+            experimentInfo.setConcentration(   tablesawRow.getDouble( CONCENTRATION));
+            experimentInfo.setProcessFlag(     tablesawRow.getBoolean(PROCESS_FLAG));
+            experimentInfo.setThreshold(       tablesawRow.getDouble( THRESHOLD));
             infos.add(experimentInfo);
         }
         return infos;

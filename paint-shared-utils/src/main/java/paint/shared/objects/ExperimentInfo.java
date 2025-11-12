@@ -162,15 +162,15 @@ public class ExperimentInfo {
         try {
             this.experimentName  = row.get(EXPERIMENT_NAME);
             this.recordingName   = row.get(RECORDING_NAME);
-            this.conditionNumber = parseInt(row.get("Condition Number"));
-            this.replicateNumber = parseInt(row.get("Replicate Number"));
-            this.probeName       = row.get("Probe Name");
-            this.probeType       = row.get("Probe Type");
-            this.cellType        = row.get("Cell Type");
-            this.adjuvant        = row.get("Adjuvant");
-            this.concentration   = parseDouble(row.get("Concentration"));
-            this.processFlag     = Miscellaneous.isBooleanTrue(row.get("Process Flag"));
-            this.threshold       = parseDouble(row.get("Threshold"));
+            this.conditionNumber = parseInt(row.get(CONDITION_NUMBER));
+            this.replicateNumber = parseInt(row.get(REPLICATE_NUMBER));
+            this.probeName       = row.get(PROBE_NAME);
+            this.probeType       = row.get(PROBE_TYPE);
+            this.cellType        = row.get(CELL_TYPE);
+            this.adjuvant        = row.get(ADJUVANT);
+            this.concentration   = parseDouble(row.get(CONCENTRATION));
+            this.processFlag     = Miscellaneous.isBooleanTrue(row.get(PROCESS_FLAG));
+            this.threshold       = parseDouble(row.get(THRESHOLD));
         } catch (Exception e) {
             PaintLogger.errorf("Problem parsing Experiment Info");
             PaintLogger.errorf(row.toString());

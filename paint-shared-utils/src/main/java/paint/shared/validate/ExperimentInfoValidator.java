@@ -12,7 +12,7 @@
  *    • Verifies column types match {@link PaintConstants#EXPERIMENT_INFO_TYPES}.
  *    • Performs a post-validation consistency check via
  *      {@link ConditionConsistencyChecker} to ensure all rows with the same
- *      "Condition Number" have identical probe/cell/adjuvant/concentration values.
+ *      CONDITION_NUMBER have identical probe/cell/adjuvant/concentration values.
  *
  *  RESPONSIBILITIES:
  *    • Provide schema-level validation for experiment metadata CSV files.
@@ -46,6 +46,8 @@
 =============================================================================*/
 
 package paint.shared.validate;
+import static paint.shared.constants.PaintConstants.*;
+
 
 import paint.shared.constants.PaintConstants;
 import tech.tablesaw.api.ColumnType;
@@ -101,7 +103,7 @@ public final class ExperimentInfoValidator extends AbstractFileValidator {
 
     /**
      * Runs header and type validation, followed by a consistency check ensuring
-     * all rows with the same "Condition Number" have identical associated attributes.
+     * all rows with the same CONDITION_NUMBER have identical associated attributes.
      *
      * @param file           the {@code experiment_info.csv} file to validate
      * @return a {@link ValidationResult} summarizing all detected issues

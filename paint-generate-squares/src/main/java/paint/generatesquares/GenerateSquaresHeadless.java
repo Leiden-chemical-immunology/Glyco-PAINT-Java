@@ -123,7 +123,7 @@ public class GenerateSquaresHeadless {
             }
 
             // Generate the background plots
-            if (PaintConfig.getBoolean("Generate Squares", "Background Plots Plots", false)) {
+            if (PaintConfig.getBoolean(GENERATE_SQUARES, "Background Plots Plots", false)) {
 
                 try {
                     Experiment experiment = loadExperiment(projectPath,
@@ -185,12 +185,12 @@ public class GenerateSquaresHeadless {
 
     private static void logContextAndConfiguration(Path projectPath, List<String> experimentNames) {
 
-        int nSquares      = PaintConfig.getInt(   "Generate Squares", NUMBER_OF_SQUARES_IN_RECORDING, 400);
+        int nSquares      = PaintConfig.getInt(   GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING, 400);
         int side          = (int) Math.round(Math.sqrt(nSquares));
-        int minTracks     = PaintConfig.getInt(   "Generate Squares", MIN_TRACKS_TO_CALCULATE_TAU,    20);
-        double minRSq     = PaintConfig.getDouble("Generate Squares", MIN_REQUIRED_R_SQUARED,         0.1);
-        double minDensity = PaintConfig.getDouble("Generate Squares", MIN_REQUIRED_DENSITY_RATIO,     2.0);
-        double maxVar     = PaintConfig.getDouble("Generate Squares", MAX_ALLOWABLE_VARIABILITY,      10.0);
+        int minTracks     = PaintConfig.getInt(   GENERATE_SQUARES, MIN_TRACKS_TO_CALCULATE_TAU,    20);
+        double minRSq     = PaintConfig.getDouble(GENERATE_SQUARES, MIN_REQUIRED_R_SQUARED,         0.1);
+        double minDensity = PaintConfig.getDouble(GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,     2.0);
+        double maxVar     = PaintConfig.getDouble(GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY,      10.0);
 
         // Neatly wrapped experiment list
         String formattedExperiments;
@@ -228,7 +228,7 @@ public class GenerateSquaresHeadless {
             formattedExperiments = sb.toString();
         }
 
-        PaintLogger.doc("Generate Squares", Arrays.asList(
+        PaintLogger.doc(GENERATE_SQUARES, Arrays.asList(
                 "Starting Generate Squares analysis for project: " + projectPath.getFileName(),
                 "",
                 "Selected experiments:",

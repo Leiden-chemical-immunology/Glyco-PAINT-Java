@@ -41,6 +41,8 @@
 =============================================================================*/
 
 package paint.generatesquares;
+import static paint.shared.constants.PaintConstants.*;
+
 
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
@@ -58,14 +60,14 @@ import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
 
 /**
- * The GenerateSquares class is the main entry point for running the "Generate Squares" GUI application.
+ * The GenerateSquares class is the main entry point for running the GENERATE_SQUARES GUI application.
  * This application initializes required configurations, manages project directories, and performs
  * square generation calculations in response to user inputs.
  */
 public class GenerateSquares {
 
     /**
-     * The main entry point for the "Generate Squares" application. This method initializes the
+     * The main entry point for the GENERATE_SQUARES application. This method initializes the
      * application's environment, configuration, logging, and graphical user interface (GUI)
      * components to manage project directories and perform square generation calculations
      * based on user input.
@@ -93,7 +95,7 @@ public class GenerateSquares {
             }
 
             // --- Step 2: Create console, initialise config and logger early ---
-            PaintConsoleWindow.createConsoleFor("Generate Squares");
+            PaintConsoleWindow.createConsoleFor(GENERATE_SQUARES);
             PaintLogger.initialise(projectPath, "Generate Squares.log");
             PaintConfig.initialise(projectPath);
 

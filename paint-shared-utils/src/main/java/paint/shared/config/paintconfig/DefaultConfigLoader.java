@@ -22,7 +22,7 @@ class DefaultConfigLoader {
         generateSquares.addProperty(NUMBER_OF_SQUARES_IN_RECORDING, 400);
         generateSquares.addProperty(TAU_FITTING_PLOTS,              true);
         generateSquares.addProperty(BACKGROUND_PLOTS,               true);
-        root.add("Generate Squares", generateSquares);
+        root.add(GENERATE_SQUARES, generateSquares);
 
         // TrackMate
         JsonObject trackMate = new JsonObject();

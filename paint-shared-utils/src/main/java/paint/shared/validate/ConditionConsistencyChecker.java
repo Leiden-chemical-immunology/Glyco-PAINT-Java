@@ -5,11 +5,11 @@
  *  PURPOSE:
  *    Performs consistency validation across condition groups in experiment
  *    metadata CSV files. Ensures that all rows sharing the same
- *    "Condition Number" have identical key attributes such as probe and cell
+ *    CONDITION_NUMBER have identical key attributes such as probe and cell
  *    properties.
  *
  *  DESCRIPTION:
- *    • Groups all records by "Condition Number".
+ *    • Groups all records by CONDITION_NUMBER.
  *    • Compares attribute values (Probe Name, Probe Type, Cell Type,
  *      Adjuvant, Concentration) across rows of each group.
  *    • Reports inconsistencies if any attribute differs within a group.
@@ -46,6 +46,8 @@
 =============================================================================*/
 
 package paint.shared.validate;
+import static paint.shared.constants.PaintConstants.*;
+
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -59,7 +61,7 @@ import java.util.*;
 /**
  * Performs cross-row consistency checks for condition metadata in PAINT experiment CSVs.
  * <p>
- * Ensures that all rows with the same "Condition Number" share identical values for
+ * Ensures that all rows with the same CONDITION_NUMBER share identical values for
  * critical attributes (probe, cell type, adjuvant, concentration, etc.).
  * </p>
  */
@@ -69,8 +71,12 @@ public final class ConditionConsistencyChecker {
      * Required columns used for consistency comparison.
      */
     private static final List<String> REQUIRED = Arrays.asList(
-            "Condition Number", "Probe Name", "Probe Type",
-            "Cell Type", "Adjuvant", "Concentration"
+            CONDITION_NUMBER,
+            PROBE_NAME,
+            PROBE_TYPE,
+            CELL_TYPE,
+            ADJUVANT,
+            CONCENTRATION
     );
 
     // ───────────────────────────────────────────────────────────────────────────────
@@ -103,19 +109,19 @@ public final class ConditionConsistencyChecker {
             Map<String, Map<String, String>> conditionGroups = new HashMap<>();
 
             for (CSVRecord record : parser) {
-                String condition      = record.get("Condition Number");
-                String probeName      = record.get("Probe Name");
-                String probeType      = record.get("Probe Type");
-                String cellType       = record.get("Cell Type");
-                String adjuvant       = record.get("Adjuvant");
-                String concentration  = record.get("Concentration");
+                String condition      = record.get(CONDITION_NUMBER);
+                String probeName      = record.get(PROBE_NAME);
+                String probeType      = record.get(PROBE_TYPE);
+                String cellType       = record.get(CELL_TYPE);
+                String adjuvant       = record.get(ADJUVANT);
+                String concentration  = record.get(CONCENTRATION);
 
                 Map<String, String> current = new LinkedHashMap<>();
-                current.put("Probe Name",    probeName);
-                current.put("Probe Type",    probeType);
-                current.put("Cell Type",     cellType);
-                current.put("Adjuvant",      adjuvant);
-                current.put("Concentration", concentration);
+                current.put(PROBE_NAME,    probeName);
+                current.put(PROBE_TYPE,    probeType);
+                current.put(CELL_TYPE,     cellType);
+                current.put(ADJUVANT,      adjuvant);
+                current.put(CONCENTRATION, concentration);
 
                 // First occurrence of condition — record as baseline
                 if (!conditionGroups.containsKey(condition)) {

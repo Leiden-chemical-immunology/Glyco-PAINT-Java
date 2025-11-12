@@ -153,7 +153,7 @@ public final class ImageRootValidator {
 
                 for (CSVRecord record : parser) {
                     String recordingName = record.get(RECORDING_NAME);
-                    String processFlag = record.get("Process Flag").trim().toLowerCase();
+                    String processFlag = record.get(PROCESS_FLAG).trim().toLowerCase();
 
                     if ("true".equals(processFlag)) {
                         Path recordingFile = imageDir.resolve(recordingName + ".nd2");

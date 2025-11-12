@@ -165,7 +165,7 @@ public class RunTrackMateOnProjectSweep {
 
                 // Store original parameter value for restoration
                 String originalValue = null;
-                if (!"Threshold".equals(parameter)) {
+                if (!THRESHOLD.equals(parameter)) {
                     originalValue = PaintConfig.getString("TrackMate", parameter, "undefined");
                 }
 
@@ -193,7 +193,7 @@ public class RunTrackMateOnProjectSweep {
                     PaintConfig.reinitialise(sweepPath);
 
                     // Apply updated parameter value if it is value that need to be changed in the configuration
-                    if (!"Threshold".equals(parameter)) {
+                    if (!THRESHOLD.equals(parameter)) {
                         if (val.doubleValue() == val.intValue()) {
                             PaintConfig.setInt("TrackMate", parameter, val.intValue());
                         } else {
@@ -214,7 +214,7 @@ public class RunTrackMateOnProjectSweep {
                                 Files.createDirectories(expDstDir);
                                 Files.copy(expSrc, expDst, StandardCopyOption.REPLACE_EXISTING);
 
-                                if ("Threshold".equals(parameter)) {
+                                if (THRESHOLD.equals(parameter)) {
                                     PaintLogger.infof("Updating threshold %f for %s", val.doubleValue(), expDst);
                                     updateThreshold(expDst, val.doubleValue());
                                 }
@@ -240,7 +240,7 @@ public class RunTrackMateOnProjectSweep {
                 }
 
                 // Optionally restore original value after each parameter sweep
-                if (!"Threshold".equals(parameter)) {
+                if (!THRESHOLD.equals(parameter)) {
                     PaintConfig.setString("TrackMate", parameter, originalValue);
                 }
             }
@@ -283,7 +283,7 @@ public class RunTrackMateOnProjectSweep {
         int      thresholdIndex = -1;
 
         for (int i = 0; i < cols.length; i++) {
-            if ("Threshold".equalsIgnoreCase(cols[i].trim())) {
+            if (THRESHOLD.equalsIgnoreCase(cols[i].trim())) {
                 thresholdIndex = i;
                 break;
             }

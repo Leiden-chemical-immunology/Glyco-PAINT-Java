@@ -12,7 +12,7 @@
  *    • Validates project root and configuration state.
  *    • Displays a user dialog for selecting and running experiments.
  *    • Supports sweep configurations when enabled.
- *    • Optionally executes "Generate Squares" after successful completion.
+ *    • Optionally executes GENERATE_SQUARES after successful completion.
  *    • Ensures only one processing instance runs at a time.
  *
  *  KEY FEATURES:
@@ -40,6 +40,8 @@
 =============================================================================*/
 
 package paint.fiji.trackmate;
+import static paint.shared.constants.PaintConstants.*;
+
 
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
@@ -84,7 +86,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
      *   <li>Initializes logging and configuration state.</li>
      *   <li>Displays a project dialog for experiment selection.</li>
      *   <li>Runs the appropriate TrackMate pipeline (sweep or standard).</li>
-     *   <li>Optionally triggers "Generate Squares" after completion.</li>
+     *   <li>Optionally triggers GENERATE_SQUARES after completion.</li>
      * </ul>
      */
     @Override
