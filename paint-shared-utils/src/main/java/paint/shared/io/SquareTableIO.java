@@ -99,7 +99,7 @@ public class SquareTableIO extends BaseTableIO {
             tablesawRow.setInt(    COLUMN_NUMBER,                     square.getColNumber());
             tablesawRow.setInt(    LABEL_NUMBER,                      square.getLabelNumber());
             tablesawRow.setInt(    CELL_ID,                           square.getCellId());
-            tablesawRow.setBoolean(SELECTED,                          square.isVisible());
+            tablesawRow.setBoolean(VISIBLE,                          square.isVisible());
             tablesawRow.setBoolean(SQUARE_MANUALLY_EXCLUDED,          square.isSquareManuallyExcluded());
             tablesawRow.setBoolean(IMAGE_EXCLUDED,                    square.isImageExcluded());
             tablesawRow.setDouble( X0,                                square.getX0());
@@ -151,7 +151,7 @@ public class SquareTableIO extends BaseTableIO {
             square.setColNumber(                     tablesawRow.getInt(     COLUMN_NUMBER));
             square.setLabelNumber(                   tablesawRow.getInt(     LABEL_NUMBER));
             square.setCellId(                        tablesawRow.getInt(     CELL_ID));
-            square.setVisible(                       tablesawRow.getBoolean( SELECTED));
+            square.setVisible(                       tablesawRow.getBoolean( VISIBLE));
             square.setSquareManuallyExcluded(        tablesawRow.getBoolean( SQUARE_MANUALLY_EXCLUDED));
             square.setImageExcluded(                 tablesawRow.getBoolean( IMAGE_EXCLUDED));
             square.setX0(                            tablesawRow.getDouble(  X0));

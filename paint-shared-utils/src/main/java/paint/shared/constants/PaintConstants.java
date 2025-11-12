@@ -139,7 +139,7 @@ public final class PaintConstants {
     public static final String REPLICATE_NUMBER                            = "Replicate Number";
     public static final String ROW_NUMBER                                  = "Row Number";
     public static final String RUN_TIME                                    = "Run Time";
-    public static final String SELECTED                                    = "Selected";
+    public static final String VISIBLE                                     = "Visible";
     public static final String SPLITTING_MAX_DISTANCE                      = "SPLITTING_MAX_DISTANCE";
     public static final String SQUARE_MANUALLY_EXCLUDED                    = "Square Manually Excluded";
     public static final String SQUARE_NUMBER                               = "Square Number";
@@ -264,7 +264,7 @@ public final class PaintConstants {
             COLUMN_NUMBER,
             LABEL_NUMBER,
             CELL_ID,
-            SELECTED,
+            VISIBLE,
             SQUARE_MANUALLY_EXCLUDED,
             IMAGE_EXCLUDED,
             X0,
