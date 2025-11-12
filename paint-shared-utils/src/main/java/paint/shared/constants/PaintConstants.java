@@ -292,7 +292,11 @@ public final class PaintConstants {
             "Exclude",
             "Tau",
             "R Squared",
-            "Density"
+            "Density",
+            "Min Required Density Ratio",
+            "Min Required RSquared",
+            "Max Allowable Variability",
+            "Neighbour Mode"
     };
 
     public static final ColumnType[] RECORDINGS_TYPES = {
@@ -319,7 +323,11 @@ public final class PaintConstants {
             ColumnType.BOOLEAN,           // Exclude
             ColumnType.DOUBLE,            // Tau
             ColumnType.DOUBLE,            // R Squared
-            ColumnType.DOUBLE             // Density
+            ColumnType.DOUBLE,            // Density
+            ColumnType.DOUBLE,            // Min Required Density Ratio
+            ColumnType.DOUBLE,            // Min Required RSquared
+            ColumnType.DOUBLE,            // Max Allowable Variability
+            ColumnType.DOUBLE             // Neighbour Mode
     };
 
     // =====================

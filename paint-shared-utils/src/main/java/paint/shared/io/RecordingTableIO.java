@@ -115,6 +115,10 @@ public class RecordingTableIO extends BaseTableIO {
             row.setDouble(  "Tau",                               recording.getTau());
             row.setDouble(  "R Squared",                         recording.getRSquared());
             row.setDouble(  "Density",                           recording.getDensity());
+            row.setDouble(  "Min Required Density Ratio",        recording.getTau());
+            row.setDouble(  "Min Required RSquared",             recording.getRSquared());
+            row.setDouble(  "Max Allowable Variability",         recording.getDensity());
+            row.setString(  "Neighbour Mode",                    recording.getExperimentName());
         }
         return table;
     }
@@ -157,11 +161,15 @@ public class RecordingTableIO extends BaseTableIO {
             recording.setTau(                         tablesawRow.getDouble(   "Tau"));
             recording.setRSquared(                    tablesawRow.getDouble(   "R Squared"));
             recording.setDensity(                     tablesawRow.getDouble(   "Density"));
-            recordings.add(recording);
+
+            recording.setMinRequiredDensityRatio(     tablesawRow.getDouble(  "Min Required Density Ratio"));
+            recording.setMinRequiredRSquared(         tablesawRow.getDouble(   "Min Required RSquared"));
+            recording.setMaxAllowableVariability(     tablesawRow.getDouble(   "Max Allowable Variability"));
+            recording.setNeighbourMode(               tablesawRow.getString(   "Neighbour Mode"));
+            ;recordings.add(recording);
         }
         return recordings;
     }
-
     // ───────────────────────────────────────────────────────────────────────────────
     // CSV READ / APPEND
     // ───────────────────────────────────────────────────────────────────────────────

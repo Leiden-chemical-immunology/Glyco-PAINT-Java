@@ -1,4 +1,4 @@
-/******************************************************************************
+/*================================================================================
  *  Class:        Recording.java
  *  Package:      paint.shared.objects
  *
@@ -30,7 +30,7 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ******************************************************************************/
+================================================================================*/
 
 package paint.shared.objects;
 
@@ -58,7 +58,7 @@ public class Recording {
     private String        cellType;
     private String        adjuvant;
     private double        concentration;
-    private boolean       processFlag;               // renamed from doProcess
+    private boolean       processFlag;
     private double        threshold;
 
     // ───────────────────────────────────────────────────────────────────────────────
@@ -80,13 +80,22 @@ public class Recording {
     private double        density;
 
     // ───────────────────────────────────────────────────────────────────────────────
+    // FILTER OBJECTS
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    private double        minRequiredDensityRatio;
+    private double        minRequiredRSquared;
+    private double        maxAllowableVariability;
+    private String        neighbourMode;
+
+
+    // ───────────────────────────────────────────────────────────────────────────────
     // ASSOCIATED OBJECTS
     // ───────────────────────────────────────────────────────────────────────────────
 
     private List<Square> squares = new ArrayList<>();
     private List<Track>  tracks  = new ArrayList<>();
     private Table        tracksTable;
-    
 
 
     // ───────────────────────────────────────────────────────────────────────────────
@@ -360,6 +369,42 @@ public class Recording {
     }
 
     // ───────────────────────────────────────────────────────────────────────────────
+    // FILTER OBJECTS
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    // Getters and Setters
+    public double getMinRequiredDensityRatio() {
+        return minRequiredDensityRatio;
+    }
+
+    public void setMinRequiredDensityRatio(double minRequiredDensityRatio) {
+        this.minRequiredDensityRatio = minRequiredDensityRatio;
+    }
+
+    public double getMinRequiredRSquared() {
+        return minRequiredRSquared;
+    }
+
+    public void setMinRequiredRSquared(double minRequiredRSquared) {
+        this.minRequiredRSquared = minRequiredRSquared;
+    }
+
+    public double getMaxAllowableVariability() {
+        return maxAllowableVariability;
+    }
+
+    public void setMaxAllowableVariability(double maxAllowableVariability) {
+        this.maxAllowableVariability = maxAllowableVariability;
+    }
+
+    public String getNeighbourMode() {
+        return neighbourMode;
+    }
+
+    public void setNeighbourMode(String neighbourMode) {
+        this.neighbourMode = neighbourMode;
+    }
+    // ───────────────────────────────────────────────────────────────────────────────
     // CONVENIENCE METHODS
     // ───────────────────────────────────────────────────────────────────────────────
 
@@ -435,6 +480,11 @@ public class Recording {
             }
         }
         sb.append(String.format("\tNumber of squares with tracks : %d%n", numberOfSquaresWithTracks));
+
+        sb.append(String.format("\t                Min Required Density Ratio     : %.4f%n", minRequiredDensityRatio));
+        sb.append(String.format("\t                Min Required R Squared         : %.4f%n", minRequiredRSquared));
+        sb.append(String.format("\t                Max Allowable Variability      : %.4f%n", maxAllowableVariability));
+        sb.append(String.format("\t                Neighbour Mode                 : %s%n", neighbourMode));
 
         return sb.toString();
     }
