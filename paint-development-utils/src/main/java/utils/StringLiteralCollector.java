@@ -45,7 +45,7 @@ public final class StringLiteralCollector {
 //        }
 
         Path sourceRoot = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
-        Path outputFile = Paths.get("/Users/hans/Downloads/strings_to_replace.txt");
+        Path outputFile = Paths.get("/Users/hans/Downloads/strings_to_replace_ori.txt");
 
         if (!Files.exists(sourceRoot)) {
             System.err.println("❌ Source path does not exist: " + sourceRoot);

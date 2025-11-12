@@ -66,7 +66,7 @@ public class Square {
     private int     colNumber;                       // 5
     private int     labelNumber;                     // 6
     private int     cellId;                          // 7
-    private boolean visible;                        // 8
+    private boolean visible;                         // 8
     private boolean squareManuallyExcluded;          // 9
     private boolean imageExcluded;                   // 10
     private double  x0;                              // 11
@@ -134,7 +134,7 @@ public class Square {
         initialiseDoublesToNaN();
         this.uniqueKey       = uniqueKey;
         this.experimentName  = experimentName;
-        this.recordingName  = recordingName;
+        this.recordingName   = recordingName;
         this.squareNumber    = squareNumber;
         this.rowNumber       = rowNumber;
         this.colNumber       = colNumber;

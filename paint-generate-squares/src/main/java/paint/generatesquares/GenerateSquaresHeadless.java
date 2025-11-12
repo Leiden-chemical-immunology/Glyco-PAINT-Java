@@ -123,7 +123,7 @@ public class GenerateSquaresHeadless {
             }
 
             // Generate the background plots
-            if (PaintConfig.getBoolean(GENERATE_SQUARES, "Background Plots Plots", false)) {
+            if (PaintConfig.getBoolean(GENERATE_SQUARES, BACKGROUND_PLOTS, false)) {
 
                 try {
                     Experiment experiment = loadExperiment(projectPath,

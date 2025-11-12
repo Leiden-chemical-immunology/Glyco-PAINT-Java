@@ -443,23 +443,23 @@ public class Recording {
         StringBuilder sb = new StringBuilder();
 
         sb.append("\tRecording Information");
-        sb.append(String.format("\t                Experiment Name               : %s%n", experimentName));
-        sb.append(String.format("\t                Recording Name                : %s%n", recordingName));
-        sb.append(String.format("\t                Condition Nr                  : %d%n", conditionNumber));
-        sb.append(String.format("\t                Replicate Nr                  : %d%n", replicateNumber));
-        sb.append(String.format("\t                Probe Name                    : %s%n", probeName));
-        sb.append(String.format("\t                Probe Type                    : %s%n", probeType));
-        sb.append(String.format("\t                Cell Type                     : %s%n", cellType));
-        sb.append(String.format("\t                Adjuvant                      : %s%n", adjuvant));
+        sb.append(String.format("\t                Experiment Name               : %s%n",   experimentName));
+        sb.append(String.format("\t                Recording Name                : %s%n",   recordingName));
+        sb.append(String.format("\t                Condition Nr                  : %d%n",   conditionNumber));
+        sb.append(String.format("\t                Replicate Nr                  : %d%n",   replicateNumber));
+        sb.append(String.format("\t                Probe Name                    : %s%n",   probeName));
+        sb.append(String.format("\t                Probe Type                    : %s%n",   probeType));
+        sb.append(String.format("\t                Cell Type                     : %s%n",   cellType));
+        sb.append(String.format("\t                Adjuvant                      : %s%n",   adjuvant));
         sb.append(String.format("\t                Concentration                 : %.2f%n", concentration));
         sb.append(String.format("\t                Threshold                     : %.2f%n", threshold));
-        sb.append(String.format("\t                Exclude                       : %b%n", exclude));
-        sb.append(String.format("\t                Time Stamp                    : %s%n", timeStamp));
-        sb.append(String.format("\t                Number of Spots               : %d%n", numberOfSpots));
-        sb.append(String.format("\t                Number of Tracks              : %d%n", numberOfTracks));
-        sb.append(String.format("\t                Number of Spots in All Tracks : %d%n", numberOfSpotsInAllTracks));
+        sb.append(String.format("\t                Exclude                       : %b%n",   exclude));
+        sb.append(String.format("\t                Time Stamp                    : %s%n",   timeStamp));
+        sb.append(String.format("\t                Number of Spots               : %d%n",   numberOfSpots));
+        sb.append(String.format("\t                Number of Tracks              : %d%n",   numberOfTracks));
+        sb.append(String.format("\t                Number of Spots in All Tracks : %d%n",   numberOfSpotsInAllTracks));
         sb.append(String.format("\t                Run Time                      : %.2f%n", runTime));
-        sb.append(String.format("\t                Number of Frames              : %d%n", numberOfFrames));
+        sb.append(String.format("\t                Number of Frames              : %d%n",   numberOfFrames));
         sb.append(String.format("\t                Tau                           : %.2f%n", tau));
         sb.append(String.format("\t                R Squared                     : %.2f%n", rSquared));
         sb.append(String.format("\t                Density                       : %.2f%n", density));
@@ -484,7 +484,7 @@ public class Recording {
         sb.append(String.format("\t                Min Required Density Ratio     : %.4f%n", minRequiredDensityRatio));
         sb.append(String.format("\t                Min Required R Squared         : %.4f%n", minRequiredRSquared));
         sb.append(String.format("\t                Max Allowable Variability      : %.4f%n", maxAllowableVariability));
-        sb.append(String.format("\t                Neighbour Mode                 : %s%n", neighbourMode));
+        sb.append(String.format("\t                Neighbour Mode                 : %s%n",   neighbourMode));
 
         return sb.toString();
     }

@@ -108,7 +108,7 @@ public class CalculateSquareAttributes {
             if (tracksInSquare.size() >= minTracksForTau) {
                 CalculateTau.CalculateTauResult results = calculateTau(tracksInSquare, minRequiredRSquared);
 
-                if (PaintConfig.getBoolean(GENERATE_SQUARES, "Tau Fitting Plots", false)) {
+                if (PaintConfig.getBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS, false)) {
                     if (tracksInSquare.size() >= minTracksForTau){
                         saveTauFitPlot(tracksInSquare, results, experimentPath, recording.getRecordingName(), squareNumber);
                     }

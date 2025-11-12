@@ -44,6 +44,8 @@
 =============================================================================*/
 
 package paint.generatesquares.calc;
+import static paint.shared.constants.PaintConstants.*;
+
 
 import de.rototor.pdfbox.graphics2d.PdfBoxGraphics2D;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -307,7 +309,7 @@ public class PlotUtils {
      * @throws IOException If any image cannot be written.
      */
     public static void exportBackgroundHistogramsToPngs(Experiment experiment, Path experimentPath) throws IOException {
-        Path outputDir = experimentPath.resolve("Output").resolve("Background Plots");
+        Path outputDir = experimentPath.resolve("Output").resolve(BACKGROUND_PLOTS);
         Files.createDirectories(outputDir);
 
         for (Recording recording : experiment.getRecordings()) {
@@ -406,7 +408,7 @@ public class PlotUtils {
 
         BufferedImage img = renderTauPlot(x, y, tauResult, fitFailed, 900, 600);
 
-        Path rootDir   = experimentPath.resolve("Output").resolve("Tau Fitting Plots");
+        Path rootDir   = experimentPath.resolve("Output").resolve(TAU_FITTING_PLOTS);
         Path targetDir = rootDir.resolve(fitFailed ? "Failed" : "Success");
 
         try {
