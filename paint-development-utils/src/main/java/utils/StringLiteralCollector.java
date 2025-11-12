@@ -24,7 +24,7 @@
  *    2025-11-12
  *============================================================================*/
 
-package paint.shared.utils;
+package utils;
 
 import java.io.*;
 import java.nio.file.*;
@@ -38,13 +38,14 @@ public final class StringLiteralCollector {
             Pattern.compile("\"((?:[^\"\\\\]|\\\\.)*)\"");
 
     public static void main(String[] args) throws IOException {
-        if (args.length != 2) {
-            System.out.println("Usage: java StringLiteralCollector <SourceRoot> <OutputFile>");
-            return;
-        }
 
-        Path sourceRoot = Paths.get(args[0]);
-        Path outputFile = Paths.get(args[1]);
+//        if (args.length != 2) {
+//            System.out.println("Usage: java StringLiteralCollector <SourceRoot> <OutputFile>");
+//            return;
+//        }
+
+        Path sourceRoot = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
+        Path outputFile = Paths.get("/Users/hans/Downloads/strings_to_replace.txt");
 
         if (!Files.exists(sourceRoot)) {
             System.err.println("❌ Source path does not exist: " + sourceRoot);

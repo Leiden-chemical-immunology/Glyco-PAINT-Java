@@ -7,15 +7,17 @@
  *    defined in PaintConstants.java. Uses an external list of approved
  *    replacements for safety.
  *
- *  DESCRIPTION:
- *    - Reads allowed strings from a text file (one per line).
- *    - Converts each to a constant name (uppercase, underscores).
- *    - Replaces those literals across the source tree.
- *    - Adds new constants to PaintConstants.java if not present.
- *    - Ensures each file has `import static paint.shared.constants.PaintConstants.*;`
+ *  DRY RUN MODE:
+ *    If invoked with `--dry-run` as the first argument, no files are changed.
+ *    The tool only reports which replacements and additions would occur.
+ *
+ *  FILE LIST MODE:
+ *    If a file called "files_to_update.txt" exists (one filename per line),
+ *    only those Java files are processed.
  *
  *  USAGE:
  *    java paint.shared.utils.StringConstantReplacer \
+ *         [--dry-run] \
  *         /path/to/PaintConstants.java \
  *         /path/to/source/root \
  *         /path/to/strings_to_replace.txt
@@ -26,7 +28,7 @@
  *    2025-11-12
  *============================================================================*/
 
-package paint.shared.utils;
+package utils;
 
 import java.io.*;
 import java.nio.file.*;
@@ -35,23 +37,25 @@ import java.util.regex.*;
 
 public final class StringConstantReplacer {
 
-    private static final String IMPORT_LINE = "import static paint.shared.constants.PaintConstants.*;";
+    private static final String IMPORT_LINE    = "import static paint.shared.constants.PaintConstants.*;";
     private static final String CONST_TEMPLATE = "public static final String %s = \"%s\";";
+    private static boolean applyAllRemaining   = false; // for interactive approval
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 3) {
-            System.out.println("Usage: java StringConstantReplacer <PaintConstantsPath> <SourceRoot> <StringListFile>");
-            return;
+        boolean dryRun = false;
+        List<String> arguments = new ArrayList<>(Arrays.asList(args));
+
+        if (!arguments.isEmpty() && arguments.get(0).equals("--dry-run")) {
+            dryRun = true;
+            arguments.remove(0);
+            System.out.println("🔎 Running in DRY-RUN mode — no files will be modified.\n");
         }
 
-        Path constantsPath = Paths.get(args[0]);
-        Path sourceRoot = Paths.get(args[1]);
-        Path listFile = Paths.get(args[2]);
-
-        if (!Files.exists(constantsPath) || !Files.exists(sourceRoot) || !Files.exists(listFile)) {
-            System.err.println("❌ One or more paths are invalid.");
-            return;
-        }
+        // Hardcoded for testing — you can revert to arguments later
+        //dryRun = true;
+        Path constantsPath = Paths.get("/users/Hans/Downloads/constants.txt");
+        Path sourceRoot    = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
+        Path listFile      = Paths.get("/users/Hans/Downloads/strings_to_replace.txt");
 
         // Load list of approved strings
         List<String> targetStrings = Files.readAllLines(listFile);
@@ -74,6 +78,19 @@ public final class StringConstantReplacer {
             if (m.find()) existingConstants.add(m.group(1));
         }
 
+        // Optional restriction: files_to_update.txt
+        Path includeListPath = Paths.get("/Users/hans/Downloads/files_to_update.txt");
+        Set<String> includeFiles = new HashSet<>();
+        if (Files.exists(includeListPath)) {
+            for (String line : Files.readAllLines(includeListPath)) {
+                line = line.trim();
+                if (!line.isEmpty()) includeFiles.add(line.toLowerCase());
+            }
+            System.out.println("📂 Restricting to files from list file: " + includeFiles + "\n");
+        } else {
+            System.out.println("⚠️  No files_to_update.txt found — all .java files will be scanned.\n");
+        }
+
         // Traverse source tree
         List<File> javaFiles = new ArrayList<>();
         collectJavaFiles(sourceRoot.toFile(), javaFiles);
@@ -82,32 +99,51 @@ public final class StringConstantReplacer {
 
         for (File f : javaFiles) {
             if (f.getName().equals("PaintConstants.java")) continue;
-            processFile(f, replacements, existingConstants, newConstants);
+            if (!includeFiles.isEmpty() && !includeFiles.contains(f.getName().toLowerCase())) continue;
+            processFile(f, replacements, existingConstants, newConstants, dryRun);
         }
 
         // Append new constants to PaintConstants.java if needed
         if (!newConstants.isEmpty()) {
-            System.out.println("\n✳ Adding new constants to PaintConstants.java:");
-            BufferedWriter writer = new BufferedWriter(new FileWriter(constantsPath.toFile(), true));
-            writer.write("\n// Auto-added constants\n");
+            System.out.println("\n✳ Constants that would be added to PaintConstants.java:");
             for (Map.Entry<String, String> e : newConstants.entrySet()) {
                 String def = String.format(CONST_TEMPLATE, e.getKey(), e.getValue());
-                writer.write(def + "\n");
                 System.out.println("   + " + def);
             }
-            writer.close();
+
+            if (!dryRun) {
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(constantsPath.toFile(), true))) {
+                    writer.write("\n// Auto-added constants\n");
+                    for (Map.Entry<String, String> e : newConstants.entrySet()) {
+                        String def = String.format(CONST_TEMPLATE, e.getKey(), e.getValue());
+                        writer.write(def + "\n");
+                    }
+                }
+                System.out.println("✅ Constants appended to PaintConstants.java");
+            }
         }
 
-        System.out.println("\n✅ Done. Updated files and constants where needed.");
+        if (dryRun) {
+            System.out.println("\n✅ DRY-RUN complete — no files were changed.");
+        } else {
+            System.out.println("\n✅ Done. Updated files and constants where needed.");
+        }
     }
+
+    // ───────────────────────────────────────────────────────────────────────────────
 
     private static void processFile(File file,
             Map<String, String> replacements,
             Set<String> existingConstants,
-            Map<String, String> newConstants) throws IOException {
+            Map<String, String> newConstants,
+            boolean dryRun) throws IOException {
+
+        if (!file.getName().endsWith(".java")) return;
 
         String content = new String(Files.readAllBytes(file.toPath()));
         boolean modified = false;
+        boolean needsImport = false;
+        StringBuilder report = new StringBuilder();
 
         for (Map.Entry<String, String> e : replacements.entrySet()) {
             String literal = e.getKey();
@@ -115,23 +151,49 @@ public final class StringConstantReplacer {
 
             String quoted = "\"" + literal + "\"";
             if (content.contains(quoted)) {
-                content = content.replace(quoted, constant);
                 modified = true;
+                report.append("   → Replace ").append(quoted)
+                      .append(" → ").append(constant).append("\n");
 
                 if (!existingConstants.contains(constant) && !newConstants.containsKey(constant)) {
                     newConstants.put(constant, literal);
+                }
+
+                if (!dryRun) {
+                    content = content.replace(quoted, constant);
                 }
             }
         }
 
         if (modified) {
-            // Ensure static import exists
-            if (!content.contains(IMPORT_LINE)) {
-                content = insertImport(content);
+            if (!content.contains(IMPORT_LINE)) needsImport = true;
+
+            System.out.println("\n📝 " + (dryRun ? "[DRY]" : "[MOD]") + " " + file.getPath());
+            System.out.print(report.toString());
+            if (needsImport) System.out.println("   → Would add import: " + IMPORT_LINE);
+
+            // Interactive confirmation (only in real mode)
+            if (!dryRun && !applyAllRemaining) {
+                System.out.print("Apply changes to this file? [y]es / [n]o / [a]ll / [q]uit: ");
+                Scanner sc = new Scanner(System.in);
+                String answer = sc.nextLine().trim().toLowerCase();
+
+                if (answer.equals("q")) {
+                    System.out.println("❌ Aborted by user.");
+                    System.exit(0);
+                } else if (answer.equals("a")) {
+                    applyAllRemaining = true;
+                } else if (!answer.equals("y")) {
+                    System.out.println("⏭ Skipped: " + file.getName());
+                    return;
+                }
             }
 
-            Files.write(file.toPath(), content.getBytes());
-            System.out.println("📝 Updated: " + file.getPath());
+            if (!dryRun) {
+                if (needsImport) content = insertImport(content);
+                Files.write(file.toPath(), content.getBytes());
+                System.out.println("✅ Changes applied to: " + file.getName());
+            }
         }
     }
 
@@ -141,7 +203,7 @@ public final class StringConstantReplacer {
         int end = content.indexOf(";", idx);
         if (end == -1) return content;
         String before = content.substring(0, end + 1);
-        String after = content.substring(end + 1);
+        String after  = content.substring(end + 1);
         return before + "\n" + IMPORT_LINE + "\n" + after;
     }
 
