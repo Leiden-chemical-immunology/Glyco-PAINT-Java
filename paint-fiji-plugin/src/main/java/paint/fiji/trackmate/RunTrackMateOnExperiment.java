@@ -195,11 +195,11 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
 
         // Save configuration snapshot
         try {
-            Path filePath = experimentPath.resolve("Output").resolve("ParametersUsed.txt");
+            Path filePath = experimentPath.resolve("Output").resolve("Parameters Used.txt");
             Files.createDirectories(filePath.getParent());
             trackMateConfigToFile(trackMateConfig, filePath);
         } catch (Exception ex) {
-            PaintLogger.errorf("Could not write file '%s'", "ParametersUsed.txt");
+            PaintLogger.errorf("Could not write file '%s'", "Parameters Used.txt");
         }
 
         // ---------------------------------------------------------------------
