@@ -48,8 +48,12 @@ public class CleanupUtility {
 
     // --- Constants for file names ---
     private static final String RECORDINGS_OLD = "All Recordings.csv";
-    private static final String TRACKS_OLD     =  "All Tracks.csv";
+    private static final String TRACKS_OLD     = "All Tracks.csv";
     private static final String SQUARES_OLD    = "All Squares.csv";
+
+    private static final String OUTPUT_DIR     = "Output";
+    private static final String LOG_DIR        = "Logs";
+
 
     /**
      * Command-line entry point.
@@ -82,8 +86,8 @@ public class CleanupUtility {
 
         // Parse options
         boolean dryRun = false;
-        boolean old = false;
-        boolean all = false;
+        boolean old    = false;
+        boolean all    = false;
 
         for (int i = 2; i < args.length; i++) {
             String opt = normalizeOption(args[i]);
@@ -183,7 +187,7 @@ public class CleanupUtility {
             @Override
             public FileVisitResult preVisitDirectory(Path dir, java.nio.file.attribute.BasicFileAttributes attrs) throws IOException {
                 String name = dir.getFileName() != null ? dir.getFileName().toString() : "";
-                if (equalsDirName(name, DIR_BRIGHTFIELD_IMAGES) || equalsDirName(name, DIR_TRACKMATE_IMAGES)) {
+                if (equalsDirName(name, DIR_BRIGHTFIELD_IMAGES) || equalsDirName(name, DIR_TRACKMATE_IMAGES) || equalsDirName(name, OUTPUT_DIR) || equalsDirName(name, LOG_DIR)) {
                     handleDirectory(dir, dryRun, count);
                     return FileVisitResult.SKIP_SUBTREE;
                 }
