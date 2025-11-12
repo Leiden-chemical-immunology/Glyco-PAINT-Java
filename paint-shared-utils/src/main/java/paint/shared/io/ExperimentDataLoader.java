@@ -79,7 +79,7 @@ public final class ExperimentDataLoader {
         try {
             Table recTable = recIO.readCsvWithSchema(
                     experimentPath.resolve(RECORDINGS_CSV),
-                    RECORDINGS,
+                    RECORDINGS_CSV,
                     RECORDINGS_COLS,
                     RECORDINGS_TYPES,
                     false
@@ -99,7 +99,7 @@ public final class ExperimentDataLoader {
             try {
                 tracksTable = trackIO.readCsvWithSchema(
                         experimentPath.resolve(TRACKS_CSV),
-                        TRACKS,
+                        TRACKS_CSV,
                         TRACKS_COLS,
                         TRACKS_TYPES,
                         false
@@ -135,7 +135,7 @@ public final class ExperimentDataLoader {
             try {
                 squaresTable = squareIO.readCsvWithSchema(
                         experimentPath.resolve(SQUARES_CSV),
-                        SQUARES,
+                        SQUARES_CSV,
                         SQUARES_COLS,
                         SQUARES_TYPES,
                         false

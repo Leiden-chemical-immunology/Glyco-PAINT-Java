@@ -194,7 +194,7 @@ public class SquareTableIO extends BaseTableIO {
      * @throws IOException if the file cannot be read or validated
      */
     public Table readCsv(Path csvPath) throws IOException {
-        return readCsvWithSchema(csvPath, SQUARES, SQUARES_COLS, SQUARES_TYPES, false);
+        return readCsvWithSchema(csvPath, SQUARES_CSV, SQUARES_COLS, SQUARES_TYPES, false);
     }
 
     /**

@@ -155,7 +155,7 @@ public class TrackTableIO extends BaseTableIO {
      * @throws IOException if the file cannot be read or validated
      */
     public Table readCsv(Path csvPath) throws IOException {
-        return readCsvWithSchema(csvPath, TRACKS, TRACKS_COLS, TRACKS_TYPES, false);
+        return readCsvWithSchema(csvPath, TRACKS_CSV, TRACKS_COLS, TRACKS_TYPES, false);
     }
 
     /**
