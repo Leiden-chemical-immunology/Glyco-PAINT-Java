@@ -110,7 +110,7 @@ public class RecordingLoader {
                     continue;
                 }
 
-                Path brightfieldDirPath = experimentPath.resolve("BrightField Images");
+                Path brightfieldDirPath = experimentPath.resolve("Brightfield Images");
                 Path brightfieldImagePath = null;
 
                 if (!Files.isDirectory(brightfieldDirPath)) {
@@ -133,7 +133,7 @@ public class RecordingLoader {
                 }
 
                 if (brightfieldImagePath == null) {
-                    PaintLogger.errorf("Missing BrightField image for '%s'", recordingName);
+                    PaintLogger.errorf("Missing Brightfield image for '%s'", recordingName);
                     continue;
                 }
 

@@ -7,7 +7,7 @@
  *    recordings within the PAINT Viewer application.
  *
  *  DESCRIPTION:
- *    This frame manages synchronized visualization of TrackMate and BrightField
+ *    This frame manages synchronized visualization of TrackMate and Brightfield
  *    images alongside grid-based square data derived from quantitative analyses.
  *    It coordinates recording navigation, filtering, and interactive manipulation
  *    of square attributes, enabling users to refine visibility and assignment logic.
@@ -18,7 +18,7 @@
  *    and density calculations, and playback of ND2/TIFF recordings.
  *
  *  KEY FEATURES:
- *    • Displays paired TrackMate and BrightField recordings with overlayed grids.
+ *    • Displays paired TrackMate and Brightfield recordings with overlayed grids.
  *    • Integrates attribute and control panels for dynamic threshold adjustments.
  *    • Enables square filtering by density ratio, variability, and R².
  *    • Supports cell assignment and undo management through dedicated dialogs.

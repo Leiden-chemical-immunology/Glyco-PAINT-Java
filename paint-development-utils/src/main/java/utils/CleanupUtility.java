@@ -46,15 +46,15 @@ public class CleanupUtility {
 
     // --- Constants for file names ---
     private static final String RECORDINGS_CSV = "Recordings.csv";
-    private static final String TRACKS_CSV = "Tracks.csv";
-    private static final String SQUARES_CSV = "Squares.csv";
+    private static final String TRACKS_CSV     = "Tracks.csv";
+    private static final String SQUARES_CSV    = "Squares.csv";
 
     private static final String RECORDINGS_OLD = "All Recordings.csv";
-    private static final String TRACKS_OLD = "All Tracks.csv";
-    private static final String SQUARES_OLD = "All Squares.csv";
+    private static final String TRACKS_OLD     =  "All Tracks.csv";
+    private static final String SQUARES_OLD    = "All Squares.csv";
 
     private static final String DIR_BRIGHTFIELD = "Brightfield Images";
-    private static final String DIR_TRACKMATE = "TrackMate Images";
+    private static final String DIR_TRACKMATE   = "TrackMate Images";
 
     /**
      * Command-line entry point.

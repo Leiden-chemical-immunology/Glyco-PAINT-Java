@@ -129,9 +129,9 @@ public abstract class BaseTableIO {
      * @return a validated {@link Table}
      * @throws IOException if the file cannot be read or validation fails
      */
-    public Table readCsvWithSchema(Path csvPath,
-                                   String logicalName,
-                                   String[] expectedCols,
+    public Table readCsvWithSchema(Path         csvPath,
+                                   String       logicalName,
+                                   String[]     expectedCols,
                                    ColumnType[] expectedTypes,
                                    boolean allowSuperset) throws IOException {
 
