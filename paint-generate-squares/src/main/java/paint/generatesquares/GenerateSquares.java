@@ -99,7 +99,7 @@ public class GenerateSquares {
 
             JarInfoLogger.JarInfo info = getJarInfo(GenerateSquares.class);
             if (info != null) {
-                PaintLogger.infof("Version: %s", info.implementationVersion);
+                PaintLogger.infof("Version: %s",  info.implementationVersion);
                 PaintLogger.infof("Compiled: %s", info.implementationDate);
             }
             PaintLogger.infof("Verbose mode is %s", PaintRuntime.isVerbose() ? "enabled" : "disabled");

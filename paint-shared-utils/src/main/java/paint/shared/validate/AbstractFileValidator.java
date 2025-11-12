@@ -112,10 +112,10 @@ public abstract class AbstractFileValidator {
                 .setIgnoreSurroundingSpaces(true)
                 .build();
 
-        try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
+        try (Reader    reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
              CSVParser parser = format.parse(reader)) {
 
-            List<String> header = parser.getHeaderNames();
+            List<String>    header  = parser.getHeaderNames();
             List<CSVRecord> records = parser.getRecords();
 
             validateHeader(header, result);
@@ -124,8 +124,8 @@ public abstract class AbstractFileValidator {
                 return result; // Stop early if only header check or header invalid
             }
 
-            ColumnType[] types = getExpectedTypes();
-            boolean reportedMismatch = false;
+            ColumnType[] types            = getExpectedTypes();
+            boolean      reportedMismatch = false;
 
             for (int i = 0; i < records.size(); i++) {
                 CSVRecord record = records.get(i);
