@@ -114,7 +114,7 @@ public class RecordingAttributesPanel {
         model.addRow(new Object[]{"Threshold",         recordingEntry.getThreshold()});
         model.addRow(new Object[]{"Min Density Ratio", recordingEntry.getMinRequiredDensityRatio()});
         model.addRow(new Object[]{"Max Variability",   recordingEntry.getMaxAllowableVariability()});
-        model.addRow(new Object[]{"Min R²",            recordingEntry.getMinRequiredRSquared()});
+        model.addRow(new Object[]{"Min Required R²",   recordingEntry.getMinRequiredRSquared()});
         model.addRow(new Object[]{"Neighbour Mode",    recordingEntry.getNeighbourMode()});
     }
 

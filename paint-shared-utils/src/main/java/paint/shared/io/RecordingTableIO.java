@@ -116,7 +116,7 @@ public class RecordingTableIO extends BaseTableIO {
             row.setDouble(  "R Squared",                         recording.getRSquared());
             row.setDouble(  "Density",                           recording.getDensity());
             row.setDouble(  "Min Required Density Ratio",        recording.getMinRequiredDensityRatio());
-            row.setDouble(  "Min Required RSquared",             recording.getMinRequiredRSquared());
+            row.setDouble(  "Min Required R Squared",             recording.getMinRequiredRSquared());
             row.setDouble(  "Max Allowable Variability",         recording.getMaxAllowableVariability());
             row.setString(  "Neighbour Mode",                    recording.getNeighbourMode());
         }
@@ -163,7 +163,7 @@ public class RecordingTableIO extends BaseTableIO {
             recording.setDensity(                     tablesawRow.getDouble(   "Density"));
 
             recording.setMinRequiredDensityRatio(     tablesawRow.getDouble(   "Min Required Density Ratio"));
-            recording.setMinRequiredRSquared(         tablesawRow.getDouble(   "Min Required RSquared"));
+            recording.setMinRequiredRSquared(         tablesawRow.getDouble(   "Min Required R Squared"));
             recording.setMaxAllowableVariability(     tablesawRow.getDouble(   "Max Allowable Variability"));
             recording.setNeighbourMode(               tablesawRow.getString(   "Neighbour Mode"));
             recordings.add(recording);

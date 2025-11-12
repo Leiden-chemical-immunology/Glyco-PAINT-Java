@@ -254,7 +254,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                     "R Squared",
                     "Density",
                     "Min Required Density Ratio",
-                    "Min Required RSquared",
+                    "Min Required R Squared",
                     "Max Allowable Variability",
                     "Neighbour Mode"
             ));
@@ -370,7 +370,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                             "",   // R Squared
                             "",   // Density
                             "",   // Min Required Density Ratio
-                            "",   // Min Required RSquared
+                            "",   // Min Required R Squared
                             "",   // Max Allowable Variability
                             ""    // Neighbour Mode
                     ));

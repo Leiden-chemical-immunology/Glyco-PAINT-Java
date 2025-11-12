@@ -303,7 +303,7 @@ Squares will be generated for all the Recordings in the selected Experiments.  Y
 
 - **Min Required Density Ratio**, only squares with a higher density ratio are visible.  
 
-- **Max Allowed Variability**, only squares with a lower Variability are visible. . 
+- **Max Allowable Variability**, only squares with a lower Variability are visible. . 
 
 
 

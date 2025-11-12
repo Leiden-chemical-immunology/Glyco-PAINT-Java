@@ -410,11 +410,11 @@ Squares are generated for all recordings in the selected experiments. The workfl
 Several parameters control square generation. These can be set  via the plugin dialog or in the Paint Configuration file:
 
 | Parameter                       | Description                                 | Default |
-| ------------------------------- | ------------------------------------------- | ------- |
+|---------------------------------| ------------------------------------------- | ------- |
 | **Number of Squares**           | Grid size (e.g., 20×20 is recommended)      | 400     |
 | **Min Required R²**             | Minimum curve fit quality for visibility    | 0.1     |
 | **Min Required Density Ratio**  | Minimum density ratio for visibility        | 2.0     |
-| **Max Allowed Variability**     | Upper limit for variability                 | 10.0    |
+| **Max Allowable Variability**   | Upper limit for variability                 | 10.0    |
 | **Min Tracks to Calculate Tau** | Minimum tracks required for Tau calculation | 20      |
 
 

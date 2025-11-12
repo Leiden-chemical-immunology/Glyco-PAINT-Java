@@ -127,7 +127,7 @@ public class GenerateSquaresConfig {
         return "GenerateSquaresConfig{" +
                 "Number of Squares in Row      = " + numberOfSquaresInRecording +
                 ", Min Tracks To Calculate Tau = " + minTracksToCalculateTau +
-                ", Min Required RSquared       = " + minRequiredRSquared +
+                ", Min Required R Squared      = " + minRequiredRSquared +
                 ", Min Required Density Ratio  = " + minRequiredDensityRatio +
                 ", Max Allowable Variability   = " + maxAllowableVariability +
                 ", Neighbour Mode              = '"+ neighbourMode + '\'' +

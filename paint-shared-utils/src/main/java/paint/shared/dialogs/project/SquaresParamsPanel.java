@@ -91,7 +91,7 @@ public class SquaresParamsPanel {
         // Max Variability
         pg.gridx = 0;
         pg.gridy = row;
-        label(panel, "Max Allowed Variability", labelSize, pg);
+        label(panel, "Max Allowable Variability", labelSize, pg);
         pg.gridx = 1;
         maxVariabilityField = text(String.valueOf(maxVar), fieldSize, true);
         panel.add(maxVariabilityField, pg);

@@ -303,7 +303,7 @@ public final class PaintConstants {
             "R Squared",
             "Density",
             "Min Required Density Ratio",
-            "Min Required RSquared",
+            "Min Required R Squared",
             "Max Allowable Variability",
             "Neighbour Mode"
     };
@@ -334,7 +334,7 @@ public final class PaintConstants {
             ColumnType.DOUBLE,            // R Squared
             ColumnType.DOUBLE,            // Density
             ColumnType.DOUBLE,            // Min Required Density Ratio
-            ColumnType.DOUBLE,            // Min Required RSquared
+            ColumnType.DOUBLE,            // Min Required R Squared
             ColumnType.DOUBLE,            // Max Allowable Variability
             ColumnType.STRING             // Neighbour Mode
     };
