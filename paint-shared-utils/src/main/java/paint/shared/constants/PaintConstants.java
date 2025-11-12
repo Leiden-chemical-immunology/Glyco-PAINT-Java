@@ -31,29 +31,6 @@ package paint.shared.constants;
 
 import tech.tablesaw.api.ColumnType;
 
-/**
- * The PaintConstants class defines a set of constants used within the application.
- * It includes constants related to file names, directories, geometry, timing, and
- * schema definitions for tracks, squares, and . This utility class is
- * final and cannot be instantiated.
- * <p>
- * Purpose:
- * - Provides a centralized location for all constant values used across the application.
- * - Ensures consistency and avoids hard-coding of values throughout the codebase.
- * <p>
- * Structure:
- * 1. File Names: Constants for default file names used for storing and retrieving data.
- * 2. Directories: Paths for storing specific categories of files.
- * 3. Geometry: Constants related to pixel dimensions and image sizes.
- * 4. Timing: Constants specifying intervals, frame counts, and durations.
- * 5. Schema Definitions: Column names and their data types for track, square, and recording metadata.
-
-
- * <p>
- * Usage:
- * - The constants in this class can be accessed directly as they are declared public static final.
- * - Modifications to these values require adjustments only in this class, promoting maintainability.
- */
 public final class PaintConstants {
 
     private PaintConstants() {
@@ -169,38 +146,38 @@ public final class PaintConstants {
     // Filenames
     // =====================
 
-    public static final String RECORDINGS_CSV                  = "Recordings.csv";
-    public static final String TRACKS_CSV                      = "Tracks.csv";
-    public static final String SQUARES_CSV                     = "Squares.csv";
-    public static final String EXPERIMENT_INFO_CSV             = "Experiment Info.csv";
-    public static final String PAINT_CONFIGURATION_JSON        = "Paint Configuration.json";
-    public static final String PAINT_SWEEP_CONFIGURATION_JSON  = "Paint Sweep Configuration.json";
+    public static final String RECORDINGS_CSV                              = "Recordings.csv";
+    public static final String TRACKS_CSV                                  = "Tracks.csv";
+    public static final String SQUARES_CSV                                 = "Squares.csv";
+    public static final String EXPERIMENT_INFO_CSV                         = "Experiment Info.csv";
+    public static final String PAINT_CONFIGURATION_JSON                    = "Paint Configuration.json";
+    public static final String PAINT_SWEEP_CONFIGURATION_JSON              = "Paint Sweep Configuration.json";
 
     // =====================
     // Directories
     // =====================
 
-    public static final String DIR_TRACKMATE_IMAGES            = "TrackMate Images";
-    public static final String DIR_BRIGHTFIELD_IMAGES          = "Brightfield Images";
+    public static final String DIR_TRACKMATE_IMAGES                        = "TrackMate Images";
+    public static final String DIR_BRIGHTFIELD_IMAGES                      = "Brightfield Images";
 
     // =====================
     // Geometry
     // =====================
 
-    public static final double PIXEL_WIDTH                     = 0.1603251;              // Specified by Nikon (in µm)
-    public static final double PIXEL_HEIGHT                    = 0.1603251;              // Specified by Nikon (in µm)
-    public static final int    NUMBER_PIXELS_WIDTH             = 512;                    // Specified by Nikon
-    public static final int    NUMBER_PIXELS_HEIGHT            = 512;                    // Specified by Nikon
-    public static final double IMAGE_WIDTH                     = PIXEL_WIDTH * NUMBER_PIXELS_WIDTH;      // 82.08645 (in µm)
-    public static final double IMAGE_HEIGHT                    = PIXEL_HEIGHT * NUMBER_PIXELS_HEIGHT;    // 82.08645 (in µm)
+    public static final double PIXEL_WIDTH                                 = 0.1603251;              // Specified by Nikon (in µm)
+    public static final double PIXEL_HEIGHT                                = 0.1603251;              // Specified by Nikon (in µm)
+    public static final int    NUMBER_PIXELS_WIDTH                         = 512;                    // Specified by Nikon
+    public static final int    NUMBER_PIXELS_HEIGHT                        = 512;                    // Specified by Nikon
+    public static final double IMAGE_WIDTH                                 = PIXEL_WIDTH * NUMBER_PIXELS_WIDTH;      // 82.08645 (in µm)
+    public static final double IMAGE_HEIGHT                                = PIXEL_HEIGHT * NUMBER_PIXELS_HEIGHT;    // 82.08645 (in µm)
 
     // =====================
     // Timing
     // =====================
 
-    public static final double TIME_INTERVAL                   = 0.05;                    // The time between images (in seconds)
-    public static final double FRAMES                          = 2000;                    // The number of images in a recording
-    public static final double RECORDING_DURATION              = FRAMES * TIME_INTERVAL;  // The timespan of a recording
+    public static final double TIME_INTERVAL                               = 0.05;                    // The time between images (in seconds)
+    public static final double FRAMES                                      = 2000;                    // The number of images in a recording
+    public static final double RECORDING_DURATION                          = FRAMES * TIME_INTERVAL;  // The timespan of a recording
     // TODO These should be JSON parameters
 
     // =====================
@@ -230,25 +207,25 @@ public final class PaintConstants {
     };
 
     public static final ColumnType[] TRACKS_TYPES = {
-            ColumnType.STRING,  // Unique Key
-            ColumnType.STRING,  // Experiment Name
-            ColumnType.STRING,  // Recording Name
-            ColumnType.INTEGER, // Track Id
-            ColumnType.INTEGER, // Number of Spots
-            ColumnType.INTEGER, // Number of Gaps
-            ColumnType.INTEGER, // Longest Gap
-            ColumnType.DOUBLE,  // Track Duration
-            ColumnType.DOUBLE,  // Track X Location
-            ColumnType.DOUBLE,  // Track Y Location
-            ColumnType.DOUBLE,  // Track Displacement
-            ColumnType.DOUBLE,  // Track Max Speed
-            ColumnType.DOUBLE,  // Track Median Speed
-            ColumnType.DOUBLE,  // Diffusion Coefficient
-            ColumnType.DOUBLE,  // Diffusion Coefficient Ext
-            ColumnType.DOUBLE,  // Total Distance
-            ColumnType.DOUBLE,  // Confinement Ratio
-            ColumnType.INTEGER, // Square Number
-            ColumnType.INTEGER  // Label Number
+            ColumnType.STRING,  // UNIQUE_KEY
+            ColumnType.STRING,  // EXPERIMENT_NAME
+            ColumnType.STRING,  // RECORDING_NAME
+            ColumnType.INTEGER, // TRACK_ID
+            ColumnType.INTEGER, // NUMBER_OF_SPOTS
+            ColumnType.INTEGER, // NUMBER_OF_GAPS
+            ColumnType.INTEGER, // LONGEST_GAP
+            ColumnType.DOUBLE,  // TRACK_DURATION
+            ColumnType.DOUBLE,  // TRACK_X_LOCATION
+            ColumnType.DOUBLE,  // TRACK_Y_LOCATION,
+            ColumnType.DOUBLE,  // TRACK_DISPLACEMENT
+            ColumnType.DOUBLE,  // TRACK_MAX_SPEED
+            ColumnType.DOUBLE,  // TRACK_MEDIAN_SPEED
+            ColumnType.DOUBLE,  // DIFFUSION_COEFFICIENT
+            ColumnType.DOUBLE,  // DIFFUSION_COEFFICIENT_EXT
+            ColumnType.DOUBLE,  // TOTAL_DISTANCE
+            ColumnType.DOUBLE,  // CONFINEMENT_RATIO
+            ColumnType.INTEGER, // SQUARE_NUMBER
+            ColumnType.INTEGER  // LABEL_NUMBER
     };
 
     // =====================
@@ -293,40 +270,40 @@ public final class PaintConstants {
     };
 
     public static final ColumnType[] SQUARES_TYPES = {
-            ColumnType.STRING,   // Unique Key
-            ColumnType.STRING,   // Experiment Name
-            ColumnType.STRING,   // Recording Name
-            ColumnType.INTEGER,  // Square Number
-            ColumnType.INTEGER,  // Row Number
-            ColumnType.INTEGER,  // Column Number
-            ColumnType.INTEGER,  // Label Number
-            ColumnType.INTEGER,  // Cell ID
-            ColumnType.BOOLEAN,  // Selected
-            ColumnType.BOOLEAN,  // Square Manually Excluded
-            ColumnType.BOOLEAN,  // Image Excluded
+            ColumnType.STRING,   // UNIQUE_KEY
+            ColumnType.STRING,   // EXPERIMENT_NAME
+            ColumnType.STRING,   // RECORDING_NAME
+            ColumnType.INTEGER,  // SQUARE_NUMBER
+            ColumnType.INTEGER,  // ROW_NUMBER
+            ColumnType.INTEGER,  // COLUMN_NUMBER
+            ColumnType.INTEGER,  // LABEL_NUMBER
+            ColumnType.INTEGER,  // CELL_ID
+            ColumnType.BOOLEAN,  // VISIBLE
+            ColumnType.BOOLEAN,  // SQUARE_MANUALLY_EXCLUDED
+            ColumnType.BOOLEAN,  // IMAGE_EXCLUDED
             ColumnType.DOUBLE,   // X0
             ColumnType.DOUBLE,   // Y0
             ColumnType.DOUBLE,   // X1
             ColumnType.DOUBLE,   // Y1
-            ColumnType.INTEGER,  // Number of Tracks
-            ColumnType.DOUBLE,   // Variability
-            ColumnType.DOUBLE,   // Density
-            ColumnType.DOUBLE,   // Density Ratio
-            ColumnType.DOUBLE,   // Density Ratio Ori
-            ColumnType.DOUBLE,   // Tau
-            ColumnType.DOUBLE,   // R Squared
-            ColumnType.DOUBLE,   // Median Diffusion Coefficient
-            ColumnType.DOUBLE,   // Median Diffusion Coefficient Ext
-            ColumnType.DOUBLE,   // Median Displacement
-            ColumnType.DOUBLE,   // Max Displacement
-            ColumnType.DOUBLE,   // Total Displacement
-            ColumnType.DOUBLE,   // Median Max Speed
-            ColumnType.DOUBLE,   // Max Max Speed
-            ColumnType.DOUBLE,   // Median Mean Speed
-            ColumnType.DOUBLE,   // Max Mean Speed
-            ColumnType.DOUBLE,   // Max Track Duration
-            ColumnType.DOUBLE,   // Total Track Duration
-            ColumnType.DOUBLE    // Median Track Duration
+            ColumnType.INTEGER,  // NUMBER_OF_TRACKS
+            ColumnType.DOUBLE,   // VARIABILITY
+            ColumnType.DOUBLE,   // DENSITY
+            ColumnType.DOUBLE,   // DENSITY_RATIO
+            ColumnType.DOUBLE,   // DENSITY_RATIO_ORI
+            ColumnType.DOUBLE,   // TAU
+            ColumnType.DOUBLE,   // R_SQUARED
+            ColumnType.DOUBLE,   // MEDIAN_DIFFUSION_COEFFICIENT
+            ColumnType.DOUBLE,   // MEDIAN_DIFFUSION_COEFFICIENT_EXT
+            ColumnType.DOUBLE,   // MEDIAN_DISPLACEMENT
+            ColumnType.DOUBLE,   // MAX_DISPLACEMENT
+            ColumnType.DOUBLE,   // TOTAL_DISPLACEMENT
+            ColumnType.DOUBLE,   // MEDIAN_MAX_SPEED
+            ColumnType.DOUBLE,   // MAX_MAX_SPEED
+            ColumnType.DOUBLE,   // MEDIAN_MEAN_SPEED
+            ColumnType.DOUBLE,   // MAX_MEAN_SPEED
+            ColumnType.DOUBLE,   // MAX_TRACK_DURATION
+            ColumnType.DOUBLE,   // TOTAL_TRACK_DURATION
+            ColumnType.DOUBLE    // MEDIAN_TRACK_DURATION
     };
 
     // =====================
@@ -365,34 +342,34 @@ public final class PaintConstants {
     };
 
     public static final ColumnType[] RECORDINGS_TYPES = {
-            ColumnType.STRING,            // Recording Name
-            ColumnType.STRING,            // Recording Name
-            ColumnType.INTEGER,           // Condition Number
-            ColumnType.INTEGER,           // Replicate Number
-            ColumnType.STRING,            // Probe Name
-            ColumnType.STRING,            // Probe Type
-            ColumnType.STRING,            // Cell Type
-            ColumnType.STRING,            // Adjuvant
-            ColumnType.DOUBLE,            // Concentration
-            ColumnType.BOOLEAN,           // Process Flag
-            ColumnType.DOUBLE,            // Threshold
-            ColumnType.INTEGER,           // Number of Spots
-            ColumnType.INTEGER,           // Number of Tracks
-            ColumnType.INTEGER,           // Number of Tracks in Background
-            ColumnType.INTEGER,           // Number of Squares in Background
-            ColumnType.DOUBLE,            // Average Tracks in Background
-            ColumnType.INTEGER,           // Number of Spots in All Tracks
-            ColumnType.INTEGER,           // Number of Frames
-            ColumnType.DOUBLE,            // Run Time
-            ColumnType.LOCAL_DATE_TIME,   // Time Stamp
-            ColumnType.BOOLEAN,           // Exclude
-            ColumnType.DOUBLE,            // Tau
-            ColumnType.DOUBLE,            // R Squared
-            ColumnType.DOUBLE,            // Density
-            ColumnType.DOUBLE,            // Min Required Density Ratio
-            ColumnType.DOUBLE,            // Min Required R Squared
-            ColumnType.DOUBLE,            // Max Allowable Variability
-            ColumnType.STRING             // Neighbour Mode
+            ColumnType.STRING,            // EXPERIMENT_NAME
+            ColumnType.STRING,            // RECORDING_NAME
+            ColumnType.INTEGER,           // CONDITION_NUMBER
+            ColumnType.INTEGER,           // REPLICATE_NUMBER
+            ColumnType.STRING,            // PROBE_NAME
+            ColumnType.STRING,            // PROBE_TYPE
+            ColumnType.STRING,            // CELL_TYPE
+            ColumnType.STRING,            // ADJUVANT
+            ColumnType.DOUBLE,            // CONCENTRATION
+            ColumnType.BOOLEAN,           // PROCESS_FLAG
+            ColumnType.DOUBLE,            // THRESHOLD
+            ColumnType.INTEGER,           // NUMBER_OF_SPOTS
+            ColumnType.INTEGER,           // NUMBER_OF_TRACKS
+            ColumnType.INTEGER,           // NUMBER_OF_TRACKS_IN_BACKGROUND
+            ColumnType.INTEGER,           // NUMBER_OF_SQUARES_IN_BACKGROUND
+            ColumnType.DOUBLE,            // AVERAGE_TRACKS_IN_BACKGROUND
+            ColumnType.INTEGER,           // NUMBER_OF_SPOTS_IN_ALL_TRACKS
+            ColumnType.INTEGER,           // NUMBER_OF_FRAMES
+            ColumnType.DOUBLE,            // RUN_TIME
+            ColumnType.LOCAL_DATE_TIME,   // TIME_STAMP
+            ColumnType.BOOLEAN,           // EXCLUDE
+            ColumnType.DOUBLE,            // TAU
+            ColumnType.DOUBLE,            // R_SQUARED
+            ColumnType.DOUBLE,            // DENSITY
+            ColumnType.DOUBLE,            // MIN_REQUIRED_DENSITY_RATIO
+            ColumnType.DOUBLE,            // MIN_REQUIRED_R_SQUARED
+            ColumnType.DOUBLE,            // MAX_ALLOWABLE_VARIABILITY
+            ColumnType.STRING             // NEIGHBOUR_MODE
     };
 
     // =====================
@@ -414,17 +391,17 @@ public final class PaintConstants {
     };
 
     public static final ColumnType[] EXPERIMENT_INFO_TYPES = {
-            ColumnType.STRING,   // Experiment Name
-            ColumnType.STRING,   // Recording Name
-            ColumnType.INTEGER,  // Condition Number
-            ColumnType.INTEGER,  // Replicate Number
-            ColumnType.STRING,   // Probe Name
-            ColumnType.STRING,   // Probe Type
-            ColumnType.STRING,   // Cell Type
-            ColumnType.STRING,   // Adjuvant
-            ColumnType.DOUBLE,   // Concentration
-            ColumnType.BOOLEAN,  // Process Flag
-            ColumnType.DOUBLE    // Threshold
+            ColumnType.STRING,   // EXPERIMENT_NAME
+            ColumnType.STRING,   // RECORDING_NAME
+            ColumnType.INTEGER,  // CONDITION_NUMBER
+            ColumnType.INTEGER,  // REPLICATE_NUMBER
+            ColumnType.STRING,   // PROBE_NAME
+            ColumnType.STRING,   // PROBE_TYPE
+            ColumnType.STRING,   // CELL_TYPE
+            ColumnType.STRING,   // ADJUVANT
+            ColumnType.DOUBLE,   // CONCENTRATION
+            ColumnType.BOOLEAN,  // PROCESS_FLAG
+            ColumnType.DOUBLE    // THRESHOLD
     };
 }
 
