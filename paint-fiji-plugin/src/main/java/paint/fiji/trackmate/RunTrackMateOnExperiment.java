@@ -242,21 +242,21 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
             header.addAll(Arrays.asList(
                     "Number of Spots",
                     "Number of Tracks",
-                    "Number of Tracks in Background",
-                    "Number of Squares in Background",
-                    "Average Tracks in Background",
-                    "Number of Spots in All Tracks",
-                    "Number of Frames",
-                    "Run Time",
-                    "Time Stamp",
-                    "Exclude",
-                    "Tau",
-                    "R Squared",
-                    "Density",
-                    "Min Required Density Ratio",
-                    "Min Required R Squared",
-                    "Max Allowable Variability",
-                    "Neighbour Mode"
+                    NUMBER_OF_TRACKS_IN_BACKGROUND,
+                    NUMBER_OF_SQUARES_IN_BACKGROUND,
+                    AVERAGE_TRACKS_IN_BACKGROUND,
+                    NUMBER_OF_SPOTS_IN_ALL_TRACKS,
+                    NUMBER_OF_FRAMES,
+                    RUN_TIME,
+                    TIME_STAMP,
+                    EXCLUDE,
+                    TAU,
+                    R_SQUARED,
+                    DENSITY,
+                    MIN_REQUIRED_DENSITY_RATIO,
+                    MIN_REQUIRED_R_SQUARED,
+                    MAX_ALLOWABLE_VARIABILITY,
+                    NEIGHBOUR_MODE
             ));
             allRecordingsPrinter.printRecord(header);
 

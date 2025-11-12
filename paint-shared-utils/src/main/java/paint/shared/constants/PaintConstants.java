@@ -68,6 +68,21 @@ public final class PaintConstants {
     public static final String SQUARE_NUMBER                   = "Square Number";
     public static final String TRACK_ID                        = "Track Id";
     public static final String NUMBER_OF_SPOTS                 = "Number of Spots";
+    public static final String MAX_ALLOWABLE_VARIABILITY       = "Max Allowable Variability";
+    public static final String MIN_REQUIRED_DENSITY_RATIO      = "Min Required Density Ratio";
+    public static final String MIN_REQUIRED_R_SQUARED          = "Min Required R Squared";
+    public static final String NUMBER_OF_SQUARES_IN_BACKGROUND = "Number of Squares in Background";
+    public static final String NUMBER_OF_TRACKS_IN_BACKGROUND  = "Number of Tracks in Background";
+    public static final String AVERAGE_TRACKS_IN_BACKGROUND    = "Average Tracks in Background";
+    public static final String NUMBER_OF_SPOTS_IN_ALL_TRACKS   = "Number of Spots in All Tracks";
+    public static final String NUMBER_OF_FRAMES                = "Number of Frames";
+    public static final String RUN_TIME                        = "Run Time";
+    public static final String TIME_STAMP                      = "Time Stamp";
+    public static final String EXCLUDE                         = "Exclude";
+    public static final String TAU                             = "Tau";
+    public static final String R_SQUARED                       = "R Squared";
+    public static final String DENSITY                         = "Density";
+    public static final String NEIGHBOUR_MODE                  = "Neighbour Mode";
     // =====================
     // Filenames
     // =====================
@@ -132,10 +147,6 @@ public final class PaintConstants {
 
     public static final String NUMBER_OF_SQUARES_IN_RECORDING  = "Number of Squares in Recording";
     public static final String MIN_TRACKS_TO_CALCULATE_TAU     = "Min Tracks to Calculate Tau";
-    public static final String MIN_REQUIRED_R_SQUARED          = "Min Required R Squared";
-    public static final String MIN_REQUIRED_DENSITY_RATIO      = "Min Required Density Ratio";
-    public static final String MAX_ALLOWABLE_VARIABILITY       = "Max Allowable Variability";
-    public static final String NEIGHBOUR_MODE                  = "Neighbour Mode";
     public static final String MIN_TRACK_DURATION              = "Min Track Duration";
     public static final String MAX_TRACK_DURATION              = "Max Track Duration";
     public static final String TAU_FITTING_PLOTS               = "Tau Fitting plots";
