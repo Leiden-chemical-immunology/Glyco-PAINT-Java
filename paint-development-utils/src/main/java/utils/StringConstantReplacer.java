@@ -51,9 +51,9 @@ public final class StringConstantReplacer {
             System.out.println("🔎 Running in DRY-RUN mode — no files will be modified.\n");
         }
 
-        // Hardcoded for testing — you can revert to arguments later
-        //dryRun = true;
-        Path constantsPath = Paths.get("/users/Hans/Downloads/constants.txt");
+        Path constantsPath = Paths.get(
+                "/Users/hans/JavaPaintProjects/Glyco-PAINT-Java/paint-shared-utils/src/main/java/paint/shared/constants/PaintConstants.java"
+        );
         Path sourceRoot    = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
         Path listFile      = Paths.get("/users/Hans/Downloads/strings_to_replace.txt");
 
@@ -103,7 +103,7 @@ public final class StringConstantReplacer {
             processFile(f, replacements, existingConstants, newConstants, dryRun);
         }
 
-        // Append new constants to PaintConstants.java if needed
+        // Insert new constants at correct section
         if (!newConstants.isEmpty()) {
             System.out.println("\n✳ Constants that would be added to PaintConstants.java:");
             for (Map.Entry<String, String> e : newConstants.entrySet()) {
@@ -112,14 +112,36 @@ public final class StringConstantReplacer {
             }
 
             if (!dryRun) {
-                try (BufferedWriter writer = new BufferedWriter(new FileWriter(constantsPath.toFile(), true))) {
-                    writer.write("\n// Auto-added constants\n");
+                List<String> lines = Files.readAllLines(constantsPath);
+                List<String> updated = new ArrayList<>();
+                boolean inserted = false;
+
+                for (String line : lines) {
+                    // Detect the Filenames section marker (case-insensitive)
+                    if (!inserted && line.toLowerCase().contains("filenames")) {
+                        // Insert constants just BEFORE the Filenames section
+                        updated.add("// Auto-added constants (Column Names)");
+                        for (Map.Entry<String, String> e : newConstants.entrySet()) {
+                            String def = String.format(CONST_TEMPLATE, e.getKey(), e.getValue());
+                            updated.add(def);
+                        }
+                        updated.add(""); // blank line after inserted constants
+                        inserted = true;
+                    }
+                    updated.add(line);
+                }
+
+                if (!inserted) {
+                    // fallback: append at end of file
+                    updated.add("\n// Auto-added constants (fallback)");
                     for (Map.Entry<String, String> e : newConstants.entrySet()) {
                         String def = String.format(CONST_TEMPLATE, e.getKey(), e.getValue());
-                        writer.write(def + "\n");
+                        updated.add(def);
                     }
                 }
-                System.out.println("✅ Constants appended to PaintConstants.java");
+
+                Files.write(constantsPath, updated, StandardOpenOption.TRUNCATE_EXISTING);
+                System.out.println("✅ Constants inserted before the 'Filenames' section in PaintConstants.java");
             }
         }
 
