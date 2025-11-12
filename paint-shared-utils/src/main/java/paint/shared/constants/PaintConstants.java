@@ -154,8 +154,17 @@ public final class PaintConstants {
     public static final String CONFINEMENT_RATIO                           = "Confinement Ratio";
     public static final String DIFFUSION_COEFFICIENT_EXT                   = "Diffusion Coefficient Ext";
     public static final String UNIQUE_KEY                                  = "Unique Key";
-
-
+    public static final String ADJUVANT                                    = "Adjuvant";
+    public static final String CONCENTRATION                               = "Concentration";
+    public static final String PROCESS_FLAG                                = "Process Flag";
+    public static final String CELL_TYPE                                   = "Cell Type";
+    public static final String PROBE_TYPE                                  = "Probe Type";
+    public static final String CONDITION_NUMBER                            = "Condition Number";
+    public static final String REPLICATE_NUMBER                            = "Replicate Number";
+    public static final String PROBE_NAME                                  = "Probe Name";
+    public static final String MIN_DENSITY_RATIO                           = "Min Density Ratio";
+    public static final String MAX_VARIABILITY                             = "Max Variability";
+    public static final String GENERATE_SQUARES                            = "Generate Squares";
 
     // Filenames
     // =====================

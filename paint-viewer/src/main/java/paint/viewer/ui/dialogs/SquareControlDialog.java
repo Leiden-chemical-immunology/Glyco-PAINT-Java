@@ -109,8 +109,8 @@ public class SquareControlDialog extends JDialog {
 
         JPanel slidersPanel = new JPanel(new GridLayout(1, 3, 15, 0));
         slidersPanel.setBorder(BorderFactory.createTitledBorder("Square Filters"));
-        slidersPanel.add(wrapSlider(densityRatioSlider, "Min Density Ratio", densityRatioValue));
-        slidersPanel.add(wrapSlider(variabilitySlider, "Max Variability", variabilityValue));
+        slidersPanel.add(wrapSlider(densityRatioSlider, MIN_DENSITY_RATIO, densityRatioValue));
+        slidersPanel.add(wrapSlider(variabilitySlider,  MAX_VARIABILITY,   variabilityValue));
         slidersPanel.add(wrapSlider(rSquaredSlider, "Min R²", rSquaredValue));
 
         // ─────────────────────────────────────────────────────────────────────

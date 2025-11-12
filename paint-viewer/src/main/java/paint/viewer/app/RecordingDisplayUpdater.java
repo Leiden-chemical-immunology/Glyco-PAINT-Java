@@ -67,7 +67,7 @@ public final class RecordingDisplayUpdater {
 
         // Update attribute panel
         int numberOfSquares = PaintConfig.getInt(
-                "Generate Squares",
+                GENERATE_SQUARES,
                 NUMBER_OF_SQUARES_IN_RECORDING,
                 -1
         );

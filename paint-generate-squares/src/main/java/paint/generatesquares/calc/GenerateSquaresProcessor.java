@@ -8,7 +8,7 @@
  *    persistence of results.
  *
  *  DESCRIPTION:
- *    This class drives the "Generate Squares" workflow for the Paint project.
+ *    This class drives the GENERATE_SQUARES workflow for the Paint project.
  *    It segments recordings into grid squares, assigns tracks to each square,
  *    calculates both per-square and per-recording attributes (via CalculateAttributes),
  *    and compiles the final results into experiment-level tables written to disk.
