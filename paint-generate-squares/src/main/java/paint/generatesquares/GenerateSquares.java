@@ -92,7 +92,7 @@ public class GenerateSquares {
                 return;
             }
 
-            // --- Step 2: Create console,initialise config and logger early ---
+            // --- Step 2: Create console, initialise config and logger early ---
             PaintConsoleWindow.createConsoleFor("Generate Squares");
             PaintLogger.initialise(projectPath, "Generate Squares.log");
             PaintConfig.initialise(projectPath);
