@@ -22,6 +22,7 @@ library(gridExtra)
 library(kableExtra)
 library(ggpmisc)
 library(ggtext)
+library(dplyr)
 ```
 
 ```{r cars}
@@ -35,6 +36,19 @@ read_data <- function(root_directory) {
   # Remove spaces from column names
   names(Squares)    <- str_replace_all(names(Squares), c(" " = "_" ))
   names(Recordings) <- str_replace_all(names(Recordings), c(" " = "_" ))
+  
+  Squares <- Squares %>%
+  left_join(
+    Recordings %>%
+      select(Recording_Name,
+             `Probe_Name`, Adjuvant, `Probe_Type`, Cell_Type, Concentration),
+    by = "Recording_Name"
+  ) %>%
+  relocate(Unique_Key,
+           `Probe_Name`, Adjuvant, `Probe_Type`, Cell_Type, Concentration,
+           .before = everything())
+
+
 
   # Multiply density and diffusion coefficient such that units are correct. 
   # Density is evts/µm2/ms and diffusion coefficient is in nm2/ms (or µm2/s)
@@ -56,18 +70,18 @@ read_data <- function(root_directory) {
     filter(Recording_Name %in% Recordings$Recording_Name)
 
   # Create Valency and Structure in Squares master. This only works for Regular probes
-  # if (!('Valency' %in% names(Squares))) {
-  # 
-  #   # Suppressing both messages and warnings within the code block
-  #   Squares <- suppressMessages(suppressWarnings (
-  #     Squares %>%
-  #       separate(Probe_Name, into = c('Valency', 'Structure'), sep = ' ', remove = FALSE) %>%
-  #       mutate(
-  #         Structure = replace_na(Structure, 'Not specified'),
-  #         Valency = if_else(Structure == "Not specified", "Not specified", Valency)
-  #       )
-  #   ))
-  # }
+  if (!('Valency' %in% names(Squares))) {
+
+    # Suppressing both messages and warnings within the code block
+    Squares <- suppressMessages(suppressWarnings (
+      Squares %>%
+        separate(Probe_Name, into = c('Valency', 'Structure'), sep = ' ', remove = FALSE) %>%
+        mutate(
+          Structure = replace_na(Structure, 'Not specified'),
+          Valency = if_else(Structure == "Not specified", "Not specified", Valency)
+        )
+    ))
+  }
 
   # Set Structure to Control when Probe is Control
   # Squares$Structure[Squares$Probe_Name == 'Control'] <- 'Control'
@@ -97,12 +111,12 @@ read_data <- function(root_directory) {
   # Squares$Concentration <- as.numeric(Squares$Concentration)
 
   # Make columns factor where necessary
-  probe_factor = c('1 Mono', '2 Mono', '6 Mono', '1 Bi', '2 Bi', '6 Bi', '1 Tri', '2 Tri', '6 Tri', 'Control')
-  probe_type_factor = c('Simple', 'Epitope')
-  cell_type_factor = c('BMDC', 'CHOMR', 'BMDCMRko', 'iCD103', 'spDC', 'BMDM', 'BMDMMRko', 'CHO')
-  adjuvant_factor = c('CytD', 'None', 'LPS', 'LPS+CytD', 'MPLA', 'M1', 'M2', 'M0', 'M1 + SI', 'M2pep')
-  valency_factor = c('1', '2', '6', 'Control')
-  structure_factor = c('Mono', 'Bi', 'Tri', 'Control')
+  probe_factor      <- c('1 Mono', '2 Mono', '6 Mono', '1 Bi', '2 Bi', '6 Bi', '1 Tri', '2 Tri', '6 Tri', 'Control')
+  probe_type_factor <- c('Simple', 'Epitope')
+  cell_type_factor  <- c('BMDC', 'CHOMR', 'BMDCMRko', 'iCD103', 'spDC', 'BMDM', 'BMDMMRko', 'CHO')
+  adjuvant_factor   <- c('CytD', 'None', 'LPS', 'LPS+CytD', 'MPLA', 'M1', 'M2', 'M0', 'M1 + SI', 'M2pep')
+  valency_factor    <- c('1', '2', '6', 'Control')
+  structure_factor  <- c('Mono', 'Bi', 'Tri', 'Control')
 
   # Make columns factor where necessary
   Recordings$Probe_Name <- factor(Recordings$Probe_Name,  levels = probe_factor)
@@ -110,6 +124,11 @@ read_data <- function(root_directory) {
   Recordings$Cell_Type  <- factor(Recordings$Cell_Type,   levels = cell_type_factor)
   Recordings$Adjuvant   <- factor(Recordings$Adjuvant,    levels = adjuvant_factor)
 
+  Squares$Probe_Name <- factor(Squares$Probe_Name,  levels = probe_factor)
+  Squares$Probe_Type <- factor(Squares$Probe_Type,  levels = probe_type_factor)
+  Squares$Cell_Type  <- factor(Squares$Cell_Type,   levels = cell_type_factor)
+  Squares$Adjuvant   <- factor(Squares$Adjuvant,    levels = adjuvant_factor)
+  
   # Ensure Median Filtering is Boolean
   # Recordings$Median_Filtering <- as.logical(Recordings$Median_Filtering)
 
@@ -124,22 +143,9 @@ read_data <- function(root_directory) {
 ```{r , echo=FALSE}
 
 root_directory <- '/Users/hans/Paint Test Project'
-data <- read_data(root_directory)
-Squares <- data$Squares
+data       <- read_data(root_directory)
+Squares    <- data$Squares
 Recordings <- data$Recordings
 
-library(dplyr)
 
-library(dplyr)
-
-Merged <- Squares %>%
-  left_join(
-    Recordings %>%
-      select(Recording_Name,
-             `Probe_Name`, Adjuvant, `Probe_Type`, Cell_Type, Concentration),
-    by = "Recording_Name"
-  ) %>%
-  relocate(Unique_Key,
-           `Probe_Name`, Adjuvant, `Probe_Type`, Cell_Type, Concentration,
-           .before = everything())
 ```
