@@ -85,7 +85,7 @@ public class ExperimentInfo {
      * The collection of squares associated with this experiment.
      */
     private List<Square> squares = new ArrayList<>();
-    private List<Track>  tracks   = new ArrayList<>();
+    private List<Track>  tracks  = new ArrayList<>();
     private Table        tracksTable;
 
     // ───────────────────────────────────────────────────────────────────────────────

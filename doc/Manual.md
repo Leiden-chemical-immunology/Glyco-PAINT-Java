@@ -510,8 +510,7 @@ MSD = \frac{1}{n_r \, \text{spots}} \sum_{i=1}^{n_r \, \text{spots}} \left( (x_i
 ## Overview
 
 The **Viewer** lets you inspect TrackMate results and determine which squares meet the selection criteria.
-The initial dialog resembles the TrackMate plugin, allowing you to select the **Project Root** and **Experiments**.
-You can also specify the **Images Root** (necessary if you want to replay microscope recordings). Previous Experiment selections (e.g., from TrackMate or Generate Squares) are preserved.
+The initial dialog resembles the TrackMate plugin, allowing you to select the **Project Root** and **Experiments**. You can also specify the **Images Root** (necessary if you want to replay microscope recordings). Previous Experiment selections (e.g., from TrackMate or Generate Squares) are preserved.
 
 <div style="text-align:center;">
  <img src="./Pictures/viewer-1.png" alt="viewer-1" style="zoom:33%;" />
@@ -520,7 +519,7 @@ You can also specify the **Images Root** (necessary if you want to replay micros
 
 ## Viewer Layout
 
-Once selections are made, the Viewer dialog opens with three panels:
+Once the Project, Images amd Experiment  selections have been made, the Viewer dialog opens with three panels:
 
 - **Left**: attributes of the current recording (criteria such as Min Density Ratio, Max Variability, Min R², Neighbour Mode).
 - **Center**: TrackMate image (left) and brightfield image (right). 
