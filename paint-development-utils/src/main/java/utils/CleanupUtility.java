@@ -1,5 +1,7 @@
 package utils;
 
+import static paint.shared.constants.PaintConstants.*;
+
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Arrays;
@@ -45,16 +47,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class CleanupUtility {
 
     // --- Constants for file names ---
-    private static final String RECORDINGS_CSV = "Recordings.csv";
-    private static final String TRACKS_CSV     = "Tracks.csv";
-    private static final String SQUARES_CSV    = "Squares.csv";
-
     private static final String RECORDINGS_OLD = "All Recordings.csv";
     private static final String TRACKS_OLD     =  "All Tracks.csv";
     private static final String SQUARES_OLD    = "All Squares.csv";
-
-    private static final String DIR_BRIGHTFIELD = "Brightfield Images";
-    private static final String DIR_TRACKMATE   = "TrackMate Images";
 
     /**
      * Command-line entry point.
@@ -188,7 +183,7 @@ public class CleanupUtility {
             @Override
             public FileVisitResult preVisitDirectory(Path dir, java.nio.file.attribute.BasicFileAttributes attrs) throws IOException {
                 String name = dir.getFileName() != null ? dir.getFileName().toString() : "";
-                if (equalsDirName(name, DIR_BRIGHTFIELD) || equalsDirName(name, DIR_TRACKMATE)) {
+                if (equalsDirName(name, DIR_BRIGHTFIELD_IMAGES) || equalsDirName(name, DIR_TRACKMATE_IMAGES)) {
                     handleDirectory(dir, dryRun, count);
                     return FileVisitResult.SKIP_SUBTREE;
                 }
