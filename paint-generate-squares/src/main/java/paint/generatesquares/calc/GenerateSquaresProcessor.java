@@ -147,6 +147,14 @@ public class GenerateSquaresProcessor {
         Path experimentPath = project.getProjectRootPath().resolve(experiment.getExperimentName());
         writeAllSquares(experimentPath, allSquaresTable);
 
+        // Update with filter information
+        for (Recording recording : experiment.getRecordings()) {
+            recording.setMinRequiredRSquared(generateSquaresConfig.getMinRequiredRSquared());
+            recording.setMaxAllowableVariability(generateSquaresConfig.getMaxAllowableVariability());
+            recording.setMinRequiredDensityRatio(generateSquaresConfig.getMinRequiredDensityRatio());
+            recording.setNeighbourMode(generateSquaresConfig.getNeighbourMode());
+        }
+
         // Write recordings
         writeAllRecordings(experimentPath, experiment.getRecordings());
 
