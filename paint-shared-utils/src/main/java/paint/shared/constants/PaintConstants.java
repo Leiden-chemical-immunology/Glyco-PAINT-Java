@@ -34,7 +34,7 @@ import tech.tablesaw.api.ColumnType;
 /**
  * The PaintConstants class defines a set of constants used within the application.
  * It includes constants related to file names, directories, geometry, timing, and
- * schema definitions for tracks, squares, and recordings. This utility class is
+ * schema definitions for tracks, squares, and . This utility class is
  * final and cannot be instantiated.
  * <p>
  * Purpose:
@@ -208,25 +208,25 @@ public final class PaintConstants {
     // =====================
 
     public static final String[] TRACKS_COLS = {
-            "Unique Key",
+            UNIQUE_KEY,
             EXPERIMENT_NAME,
             RECORDING_NAME,
             TRACK_ID,
             NUMBER_OF_SPOTS,
-            "Number of Gaps",
-            "Longest Gap",
-            "Track Duration",
-            "Track X Location",
-            "Track Y Location",
-            "Track Displacement",
-            "Track Max Speed",
-            "Track Median Speed",
-            "Diffusion Coefficient",
-            "Diffusion Coefficient Ext",
-            "Total Distance",
-            "Confinement Ratio",
+            NUMBER_OF_GAPS,
+            LONGEST_GAP,
+            TRACK_DURATION,
+            TRACK_X_LOCATION,
+            TRACK_Y_LOCATION,
+            TRACK_DISPLACEMENT,
+            TRACK_MAX_SPEED,
+            TRACK_MEDIAN_SPEED,
+            DIFFUSION_COEFFICIENT,
+            DIFFUSION_COEFFICIENT_EXT,
+            TOTAL_DISTANCE,
+            CONFINEMENT_RATIO,
             SQUARE_NUMBER,
-            "Label Number"
+            LABEL_NUMBER
     };
 
     public static final ColumnType[] TRACKS_TYPES = {
@@ -256,40 +256,40 @@ public final class PaintConstants {
     // =====================
 
     public static final String[] SQUARES_COLS = {
-            "Unique Key",
+            UNIQUE_KEY,
             EXPERIMENT_NAME,
             RECORDING_NAME,
             SQUARE_NUMBER,
-            "Row Number",
-            "Column Number",
-            "Label Number",
-            "Cell ID",
-            "Selected",
-            "Square Manually Excluded",
-            "Image Excluded",
-            "X0",
-            "Y0",
-            "X1",
-            "Y1",
-            "Number of Tracks",
-            "Variability",
-            "Density",
-            "Density Ratio",
-            "Density Ratio Ori",
-            "Tau",
-            "R Squared",
-            "Median Diffusion Coefficient",
-            "Median Diffusion Coefficient Ext",
-            "Median Displacement",
-            "Max Displacement",
-            "Total Displacement",
-            "Median Max Speed",
-            "Max Max Speed",
-            "Median Mean Speed",
-            "Max Mean Speed",
-            "Max Track Duration",
-            "Total Track Duration",
-            "Median Track Duration"
+            ROW_NUMBER,
+            COLUMN_NUMBER,
+            LABEL_NUMBER,
+            CELL_ID,
+            SELECTED,
+            SQUARE_MANUALLY_EXCLUDED,
+            IMAGE_EXCLUDED,
+            X0,
+            Y0,
+            X1,
+            Y1,
+            NUMBER_OF_TRACKS,
+            VARIABILITY,
+            DENSITY,
+            DENSITY_RATIO,
+            DENSITY_RATIO_ORI,
+            TAU,
+            R_SQUARED,
+            MEDIAN_DIFFUSION_COEFFICIENT,
+            MEDIAN_DIFFUSION_COEFFICIENT_EXT,
+            MEDIAN_DISPLACEMENT,
+            MAX_DISPLACEMENT,
+            TOTAL_DISPLACEMENT,
+            MEDIAN_MAX_SPEED,
+            MAX_MAX_SPEED,
+            MEDIAN_MAX_SPEED,
+            MAX_MEAN_SPEED,
+            MAX_TRACK_DURATION,
+            TOTAL_TRACK_DURATION,
+            MEDIAN_TRACK_DURATION
     };
 
     public static final ColumnType[] SQUARES_TYPES = {
@@ -336,32 +336,32 @@ public final class PaintConstants {
     public static final String[] RECORDINGS_COLS = {
             EXPERIMENT_NAME,
             RECORDING_NAME,
-            "Condition Number",
-            "Replicate Number",
-            "Probe Name",
-            "Probe Type",
-            "Cell Type",
-            "Adjuvant",
-            "Concentration",
-            "Process Flag",
-            "Threshold",
+            CONDITION_NUMBER,
+            REPLICATE_NUMBER,
+            PROBE_NAME,
+            PROBE_TYPE,
+            CELL_TYPE,
+            ADJUVANT,
+            CONCENTRATION,
+            PROCESS_FLAG,
+            THRESHOLD,
             NUMBER_OF_SPOTS,
-            "Number of Tracks",
-            "Number of Tracks in Background",
-            "Number of Squares in Background",
-            "Average Tracks in Background",
-            "Number of Spots in All Tracks",
-            "Number of Frames",
-            "Run Time",
-            "Time Stamp",
-            "Exclude",
-            "Tau",
-            "R Squared",
-            "Density",
-            "Min Required Density Ratio",
-            "Min Required R Squared",
-            "Max Allowable Variability",
-            "Neighbour Mode"
+            NUMBER_OF_TRACKS,
+            NUMBER_OF_TRACKS_IN_BACKGROUND,
+            NUMBER_OF_SQUARES_IN_BACKGROUND,
+            AVERAGE_TRACKS_IN_BACKGROUND,
+            NUMBER_OF_SPOTS_IN_ALL_TRACKS,
+            NUMBER_OF_FRAMES,
+            RUN_TIME,
+            TIME_STAMP,
+            EXCLUDE,
+            TAU,
+            R_SQUARED,
+            DENSITY,
+            MIN_REQUIRED_DENSITY_RATIO,
+            MIN_REQUIRED_R_SQUARED,
+            MAX_ALLOWABLE_VARIABILITY,
+            NEIGHBOUR_MODE
     };
 
     public static final ColumnType[] RECORDINGS_TYPES = {
@@ -402,15 +402,15 @@ public final class PaintConstants {
     public static final String[] EXPERIMENT_INFO_COLS = {
             EXPERIMENT_NAME,
             RECORDING_NAME,
-            "Condition Number",
-            "Replicate Number",
-            "Probe Name",
-            "Probe Type",
-            "Cell Type",
-            "Adjuvant",
-            "Concentration",
-            "Process Flag",
-            "Threshold"
+            CONDITION_NUMBER,
+            REPLICATE_NUMBER,
+            PROBE_NAME,
+            PROBE_TYPE,
+            CELL_TYPE,
+            ADJUVANT,
+            CONCENTRATION,
+            PROCESS_FLAG,
+            THRESHOLD
     };
 
     public static final ColumnType[] EXPERIMENT_INFO_TYPES = {
@@ -428,13 +428,4 @@ public final class PaintConstants {
     };
 }
 
-
-
-
-
-
-// Auto-added constants
-
-
-// Auto-added constants
 
