@@ -191,7 +191,7 @@ public final class StringConstantReplacer {
             if (!content.contains(IMPORT_LINE)) needsImport = true;
 
             System.out.println("\n📝 " + (dryRun ? "[DRY]" : "[MOD]") + " " + file.getPath());
-            System.out.print(report.toString());
+            System.out.print(report);
             if (needsImport) System.out.println("   → Would add import: " + IMPORT_LINE);
 
             // Interactive confirmation (only in real mode)

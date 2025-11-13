@@ -46,8 +46,6 @@
 =============================================================================*/
 
 package paint.shared.validate;
-import static paint.shared.constants.PaintConstants.*;
-
 
 import paint.shared.constants.PaintConstants;
 import tech.tablesaw.api.ColumnType;

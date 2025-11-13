@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * This call would perform a dry run of deleting all matching files (both legacy and new names)
  * in TRACKMATE mode.
  */
+@SuppressWarnings("NullableProblems")
 public class CleanupUtility {
 
     // --- Constants for file names ---

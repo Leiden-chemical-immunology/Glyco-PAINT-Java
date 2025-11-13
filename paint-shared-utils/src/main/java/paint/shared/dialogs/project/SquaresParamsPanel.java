@@ -4,7 +4,6 @@ import paint.shared.config.paintconfig.PaintConfig;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.text.AbstractDocument;
 import java.awt.*;
 
 import static paint.shared.dialogs.ProjectDialog.DialogMode;
