@@ -19,14 +19,15 @@ import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH;
 public class ViewerLayoutBuilder {
 
     public static class LayoutComponents {
-        public final JPanel rootPanel;
-        public final JLabel rightImageLabel;
-        public final JLabel experimentLabel;
-        public final JLabel recordingLabel;
-        public final SquareGridPanel leftGridPanel;
+        public final JPanel                   rootPanel;
+        public final JLabel                   rightImageLabel;
+        public final JLabel                   experimentLabel;
+        public final JLabel                   recordingLabel;
+        public final SquareGridPanel          leftGridPanel;
         public final RecordingAttributesPanel attributesPanel;
-        public final NavigationPanel navigationPanel;
-        public final RecordingControlsPanel controlsPanel;
+        public final NavigationPanel          navigationPanel;
+        public final RecordingControlsPanel   controlsPanel;
+        public final JCheckBox                importOverridesCheckBox;
 
         LayoutComponents(
                 JPanel                   rootPanel,
@@ -100,10 +101,19 @@ public class ViewerLayoutBuilder {
         root.add(imagesWithNav,                  BorderLayout.CENTER);
         root.add(controlsPanel.getComponent(),   BorderLayout.EAST);
 
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        // --- Bottom panel with checkbox and close button ---
+        JPanel bottomPanel = new JPanel(new BorderLayout(10, 10));
+
+        JCheckBox importOverridesCheckBox = new JCheckBox("Import Overrides");
+        bottomPanel.add(importOverridesCheckBox, BorderLayout.WEST);
+
         JButton closeButton = new JButton("Close Viewer");
         closeButton.addActionListener(e -> SwingUtilities.getWindowAncestor(root).dispose());
-        bottomPanel.add(closeButton);
+
+        JPanel rightBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        rightBox.add(closeButton);
+        bottomPanel.add(rightBox, BorderLayout.EAST);
+
         root.add(bottomPanel, BorderLayout.SOUTH);
 
         return new LayoutComponents(
@@ -114,7 +124,8 @@ public class ViewerLayoutBuilder {
                 leftGridPanel,
                 attributesPanel,
                 navigationPanel,
-                controlsPanel
+                controlsPanel,
+                importOverridesCheckBox
         );
     }
 

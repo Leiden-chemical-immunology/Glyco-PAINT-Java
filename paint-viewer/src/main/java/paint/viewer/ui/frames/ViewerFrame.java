@@ -65,10 +65,9 @@ import paint.viewer.ui.panels.SquareGridPanel;
 import paint.viewer.model.SquareControlParams;
 import paint.viewer.model.RecordingEntry;
 
-import java.io.IOException;  // already present in your imports; if not, add it
-
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -125,6 +124,9 @@ public class ViewerFrame extends JFrame
     private       RecordingDisplayUpdater      displayUpdater;
     private final RecordingNavigator           navigator;
 
+    // New: checkbox in bottom-left for "Import Overrides"
+    private       JCheckBox                    importOverridesCheckBox;
+
     /**
      * Constructs a {@code RecordingViewerFrame} that initializes and displays the complete
      * recording viewer environment. The frame sets up grid visualization, navigation,
@@ -136,8 +138,8 @@ public class ViewerFrame extends JFrame
     public ViewerFrame(Project project, List<RecordingEntry> recordingEntries) {
         super("Recording Viewer - " + project.getProjectRootPath().getFileName());
         this.project                 = project;
-        this.allRecordingEntries     = new java.util.ArrayList<>(recordingEntries);
-        this.recordingEntries        = new java.util.ArrayList<>(recordingEntries);
+        this.allRecordingEntries     = new java.util.ArrayList<RecordingEntry>(recordingEntries);
+        this.recordingEntries        = new java.util.ArrayList<RecordingEntry>(recordingEntries);
         this.recordingOverrideWriter = new RecordingOverrideWriter(project.getProjectRootPath());
         this.squareOverrideWriter    = new SquareOverrideWriter(project.getProjectRootPath());
 
@@ -178,19 +180,14 @@ public class ViewerFrame extends JFrame
         setContentPane(ui.rootPanel);
 
         // Store references
-        this.leftGridPanel   = ui.leftGridPanel;
-        this.rightImageLabel = ui.rightImageLabel;
-        this.experimentLabel = ui.experimentLabel;
-        this.recordingLabel  = ui.recordingLabel;
-        this.attributesPanel = ui.attributesPanel;
-        this.navigationPanel = ui.navigationPanel;
-        this.controlsPanel   = ui.controlsPanel;
         this.leftGridPanel           = ui.leftGridPanel;
         this.rightImageLabel         = ui.rightImageLabel;
+        this.experimentLabel         = ui.experimentLabel;
         this.recordingLabel          = ui.recordingLabel;
         this.attributesPanel         = ui.attributesPanel;
         this.navigationPanel         = ui.navigationPanel;
         this.controlsPanel           = ui.controlsPanel;
+        this.importOverridesCheckBox = ui.importOverridesCheckBox;
 
         this.displayUpdater = new RecordingDisplayUpdater(
                 this.leftGridPanel,
@@ -200,6 +197,9 @@ public class ViewerFrame extends JFrame
                 this.attributesPanel
         );
 
+        // Wire behaviour for "Import Overrides" checkbox
+        initImportOverridesBehaviour();
+
         setSize(1500, 700);
         setLocationRelativeTo(null);
 
@@ -207,6 +207,51 @@ public class ViewerFrame extends JFrame
         if (!recordingEntries.isEmpty()) {
             showRecordingEntry(0);
         }
+    }
+
+    /**
+     * Initializes startup and runtime behaviour for the "Import Overrides" checkbox:
+     * - If checked at startup → perform override import once.
+     * - If user checks it later → perform override import.
+     * - If user unchecks it   → show a message asking to restart the viewer.
+     */
+    private void initImportOverridesBehaviour() {
+        if (importOverridesCheckBox == null) {
+            return;
+        }
+
+        // Attach listener for runtime toggles
+        importOverridesCheckBox.addActionListener(e -> {
+            if (importOverridesCheckBox.isSelected()) {
+                performImportOverrides();
+            } else {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Import Overrides has been turned off.\n" +
+                                "Please restart the Viewer for this change to take full effect.",
+                        "Restart Recommended",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+            }
+        });
+
+        // Startup behaviour: if already selected, perform import once
+        if (importOverridesCheckBox.isSelected()) {
+            performImportOverrides();
+        }
+    }
+
+    /**
+     * Performs the actual "Import Overrides" action.
+     * <p>
+     * TODO: Wire this to your existing override-import logic
+     * (e.g. reading override CSVs and applying them to the current project/recordings).
+     */
+    private void performImportOverrides() {
+        // Example stub logging only — replace with real implementation.
+        PaintLogger.infof("Import Overrides requested (checkbox is checked).");
+        // e.g.:
+        // someOverrideImporter.applyOverrides(project, recordingEntries);
     }
 
     /**
