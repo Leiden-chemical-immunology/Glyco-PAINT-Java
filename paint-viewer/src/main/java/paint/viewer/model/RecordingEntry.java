@@ -58,11 +58,11 @@ import java.nio.file.Path;
  * can be lazily fetched and cached from the experiment context.</p>
  */
 public class RecordingEntry {
-    private final Recording     recording;
-    private final String        experimentName;
+    private final Recording  recording;
+    private final String     experimentName;
 
-    private final ImageIcon     leftImage;
-    private final ImageIcon     rightImage;
+    private final ImageIcon  leftImage;
+    private final ImageIcon  rightImage;
 
     /**
      * Constructs a new {@code RecordingEntry} with associated images and control parameters.
@@ -76,10 +76,10 @@ public class RecordingEntry {
                           Path      trackmateImagePath,
                           Path      brightfieldImagePath,
                           String    experimentName) {
-        this.recording               = recording;
-        this.experimentName          = experimentName;
-        this.leftImage               = loadImage(trackmateImagePath, "TrackMate");
-        this.rightImage              = loadImage(brightfieldImagePath, "Brightfield");
+        this.recording        = recording;
+        this.experimentName   = experimentName;
+        this.leftImage        = loadImage(trackmateImagePath,   "TrackMate");
+        this.rightImage       = loadImage(brightfieldImagePath, "Brightfield");
     }
 
     // =========================================================================================
@@ -112,7 +112,7 @@ public class RecordingEntry {
 
         try {
             ij.io.Opener opener = new ij.io.Opener();
-            ij.ImagePlus imp = opener.openImage(imagePath.toString());
+            ij.ImagePlus imp    = opener.openImage(imagePath.toString());
             if (imp != null && imp.getImage() != null) {
                 PaintLogger.debugf("[%s] Loaded via ImageJ Opener: %s", label, imagePath);
                 return new ImageIcon(imp.getImage());
