@@ -55,9 +55,9 @@ import paint.viewer.ui.dialogs.CellAssignmentDialog;
 import paint.viewer.ui.dialogs.RecordingFilterDialog;
 import paint.viewer.ui.dialogs.SquareControlDialog;
 import paint.viewer.control.CellAssignmentManager;
-import paint.viewer.io.RecordingOverrideWriter;
+import paint.viewer.override.RecordingOverrideWriter;
 import paint.viewer.control.SquareControlHandler;
-import paint.viewer.io.SquareOverrideWriter;
+import paint.viewer.override.SquareOverrideWriter;
 import paint.viewer.ui.panels.NavigationPanel;
 import paint.viewer.ui.panels.RecordingAttributesPanel;
 import paint.viewer.ui.panels.RecordingControlsPanel;
@@ -73,6 +73,8 @@ import java.util.List;
 import java.util.Map;
 
 import static paint.shared.constants.PaintConstants.*;
+import static paint.viewer.override.RecordingOverrideApplier.applyRecordingOverrides;
+import static paint.viewer.override.SquareOverrideApplier.applySquareOverrides;
 
 /**
  * The {@code RecordingViewerFrame} class defines the main window of the PAINT Viewer.
@@ -248,10 +250,47 @@ public class ViewerFrame extends JFrame
      * (e.g. reading override CSVs and applying them to the current project/recordings).
      */
     private void performImportOverrides() {
-        // Example stub logging only — replace with real implementation.
         PaintLogger.infof("Import Overrides requested (checkbox is checked).");
-        // e.g.:
-        // someOverrideImporter.applyOverrides(project, recordingEntries);
+
+        // 1) Apply overrides to all RecordingEntry objects
+        applyRecordingOverrides(allRecordingEntries, project.getProjectRootPath());
+        applySquareOverrides(allRecordingEntries, project.getProjectRootPath());
+
+        // 2) Re-apply filter for the currently visible recording
+        if (recordingEntries.isEmpty()
+                || currentIndex < 0
+                || currentIndex >= recordingEntries.size()) {
+            leftGridPanel.repaint();
+            return;
+        }
+
+        RecordingEntry current = recordingEntries.get(currentIndex);
+
+        // Build params from the now-updated recording
+        SquareControlParams params = new SquareControlParams(
+                current.getRecording().getMinRequiredDensityRatio(),
+                current.getRecording().getMaxAllowableVariability(),
+                current.getRecording().getMinRequiredRSquared(),
+                current.getRecording().getNeighbourMode()
+        );
+
+        // 3) Re-apply control handler + filter to the grid
+        controlHandler.apply(params, leftGridPanel);
+        leftGridPanel.applyVisibilityFilter();
+
+        // 4) Update the attributes panel preview to reflect the new thresholds
+        int numSquares = PaintConfig.getInt(GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING, -1);
+        attributesPanel.updatePreview(
+                current,
+                numSquares,
+                params.minRequiredDensityRatio,
+                params.maxAllowableVariability,
+                params.minRequiredRSquared,
+                params.neighbourMode
+        );
+
+        // 5) Redraw the left grid
+        leftGridPanel.repaint();
     }
 
     /**

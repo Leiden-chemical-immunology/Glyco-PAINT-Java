@@ -35,7 +35,7 @@
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
 ==============================================================================*/
-package paint.viewer.io;
+package paint.viewer.override;
 
 import paint.shared.utils.PaintLogger;
 import paint.viewer.model.RecordingEntry;
@@ -48,6 +48,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static paint.shared.constants.PaintConstants.*;
 
 /**
  * Handles per-square cell assignment persistence by writing overrides to
@@ -66,7 +68,7 @@ import java.util.Map;
  * <p>
  * The writer ensures the Viewer directory exists, headers are created if
  * missing, and each update replaces any previous record for the same square.
- * This mirrors {@link paint.viewer.io.RecordingOverrideWriter} in structure
+ * This mirrors {@link paint.viewer.override.RecordingOverrideWriter} in structure
  * and reliability, but applies to square-level (cell) granularity.
  */
 public class SquareOverrideWriter {
@@ -81,13 +83,9 @@ public class SquareOverrideWriter {
      */
     public SquareOverrideWriter(Path projectPath) {
         Path viewerPath = projectPath.resolve("Viewer");
-        if (Files.notExists(viewerPath)) {
-            try {
-                Files.createDirectories(viewerPath);   // ensures Viewer folder exists
-            } catch (IOException e) {
-                PaintLogger.warnf("Failed to create Viewer directory: %s", e.getMessage());
-            }
-        }
+        try {
+            Files.createDirectories(viewerPath);
+        } catch (IOException ignored) {}
         this.csvFilePath = viewerPath.resolve("Square Override.csv");
     }
 
@@ -101,7 +99,8 @@ public class SquareOverrideWriter {
      * @param squareAssignments the list of squares that have been assigned to a cell
      */
     public void writeSquareOverrides(RecordingEntry recordingEntry,
-                                     Map<Integer, Integer> squareAssignments) {
+            Map<Integer, Integer> squareAssignments) {
+
         String timestamp      = LocalDateTime.now().toString();
         String experimentName = recordingEntry.getExperimentName();
         String recordingName  = recordingEntry.getRecordingName();
@@ -112,13 +111,18 @@ public class SquareOverrideWriter {
                 lines = Files.readAllLines(csvFilePath);
             }
 
-            // Initialize CSV with headers if new or malformed
-            if (lines.isEmpty() || !lines.get(0).startsWith("experimentName,")) {
+            // Use constants — no hard-coded strings
+            String header = EXPERIMENT_NAME + "," +
+                            RECORDING_NAME  + "," +
+                            SQUARE_NUMBER   + "," +
+                            CELL_ID         + "," +
+                            TIME_STAMP;
+
+            if (lines.isEmpty() || !lines.get(0).equals(header)) {
                 lines.clear();
-                lines.add("Experiment Name,Recording Name,Square Number,Cell Id,Timestamp");
+                lines.add(header);
             }
 
-            // Update or append records for each (squareNumber, cellId) pair
             for (Map.Entry<Integer, Integer> entry : squareAssignments.entrySet()) {
                 int squareNumber = entry.getKey();
                 int cellId       = entry.getValue();
@@ -129,33 +133,37 @@ public class SquareOverrideWriter {
                 for (int i = 1; i < lines.size(); i++) {
                     if (lines.get(i).startsWith(prefix)) {
                         found = true;
+
                         if (cellId == 0) {
-                            // Remove entry if it exists and cellId == 0
                             lines.remove(i);
                         } else {
-                            // Replace existing record
-                            String newLine = experimentName + "," + recordingName + "," + squareNumber + "," + cellId + "," + timestamp;
+                            String newLine = experimentName + "," +
+                                             recordingName  + "," +
+                                             squareNumber   + "," +
+                                             cellId         + "," +
+                                             timestamp;
                             lines.set(i, newLine);
                         }
                         break;
                     }
                 }
 
-                // Add new entry only if cellId > 0 and not found
-                if (cellId != 0 && !found) {
-                    String newLine = experimentName + "," + recordingName + "," + squareNumber + "," + cellId + "," + timestamp;
+                if (!found && cellId != 0) {
+                    String newLine = experimentName + "," +
+                                     recordingName  + "," +
+                                     squareNumber   + "," +
+                                     cellId         + "," +
+                                     timestamp;
                     lines.add(newLine);
                 }
             }
 
-            // Atomic write via temporary file to prevent data loss
-            Path tmpFilePath = csvFilePath.resolveSibling(csvFilePath.getFileName().toString() + ".tmp");
-            Files.write(tmpFilePath, lines);
-            Files.move(tmpFilePath, csvFilePath, StandardCopyOption.REPLACE_EXISTING);
+            Path tmp = csvFilePath.resolveSibling("Square Override.tmp");
+            Files.write(tmp, lines);
+            Files.move(tmp, csvFilePath, StandardCopyOption.REPLACE_EXISTING);
 
         } catch (IOException ex) {
             PaintLogger.errorf("Error writing square overrides: %s", ex.getMessage());
-            ex.printStackTrace();
         }
     }
 }
