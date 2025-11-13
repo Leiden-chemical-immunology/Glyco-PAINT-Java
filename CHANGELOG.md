@@ -1,5 +1,8 @@
 # v0.0.128
+- (Development) Significant refactoring of packages
+- (Development) Significant replacement of hard-coded strings with constants (involving most classes)
 - (Development) Several large classes have been refactored into small ones for improved maintainability.
+- Implemented the Viewer option to import overrides of earlier sessions (checkbox left bottom).
 
 
 
