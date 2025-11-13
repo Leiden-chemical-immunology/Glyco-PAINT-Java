@@ -1,6 +1,4 @@
 package paint.fiji.trackmate.features;
-import static paint.shared.constants.PaintConstants.*;
-
 
 /* IGNORE START
 import fiji.plugin.trackmate.Dimension;
