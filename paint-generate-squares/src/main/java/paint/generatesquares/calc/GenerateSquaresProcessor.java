@@ -144,7 +144,7 @@ public class GenerateSquaresProcessor {
 
         // Compile all squares and write
         Table allSquaresTable = compileAllSquares(experiment);
-        Path experimentPath = project.getProjectRootPath().resolve(experiment.getExperimentName());
+        Path  experimentPath  = project.getProjectRootPath().resolve(experiment.getExperimentName());
         writeAllSquares(experimentPath, allSquaresTable);
 
         // Update with filter information
@@ -287,8 +287,8 @@ public class GenerateSquaresProcessor {
      *         or an empty table if no square data exists
      */
     private static Table compileAllSquares(Experiment experiment) {
-        SquareTableIO squaresTableIO = new SquareTableIO();
-        Table allSquaresTable = squaresTableIO.emptyTable();
+        SquareTableIO squaresTableIO  = new SquareTableIO();
+        Table         allSquaresTable = squaresTableIO.emptyTable();
 
         for (Recording recording : experiment.getRecordings()) {
             Table table = squaresTableIO.toTable(recording.getSquaresOfRecording());
@@ -312,8 +312,8 @@ public class GenerateSquaresProcessor {
      *         or an empty table if no track data exists
      */
     private static Table compileAllTracks(Experiment experiment) {
-        TrackTableIO trackTableIO = new TrackTableIO();
-        Table allTracksTable = trackTableIO.emptyTable();
+        TrackTableIO trackTableIO   = new TrackTableIO();
+        Table        allTracksTable = trackTableIO.emptyTable();
 
         for (Recording recording : experiment.getRecordings()) {
             PaintLogger.debugf("Processing squares for experiment '%s'  - recording '%s'", experiment.getExperimentName(), recording.getRecordingName());
