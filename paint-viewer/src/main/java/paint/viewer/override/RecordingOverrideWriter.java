@@ -1,4 +1,4 @@
-package paint.viewer.io;
+package paint.viewer.override;
 
 import paint.shared.utils.PaintLogger;
 import paint.viewer.model.SquareControlParams;
@@ -16,6 +16,7 @@ public class RecordingOverrideWriter {
     private final Path csvFilePath;
 
     private static final String[] HEADER = {
+            EXPERIMENT_NAME,
             RECORDING_NAME,
             TIME_STAMP,
             MIN_REQUIRED_DENSITY_RATIO,
@@ -43,7 +44,7 @@ public class RecordingOverrideWriter {
 
         if ("Recording".equals(scope)) {
             RecordingEntry recordingEntry = recordings.get(currentIndex);
-            writeOrUpdate(recordingEntry.getRecordingName(), params, timestamp);
+            writeOrUpdate(recordingEntry.getExperimentName(), recordingEntry.getRecordingName(), params, timestamp);
             updateMemory(recordingEntry, params);
             return;
         }
@@ -52,7 +53,7 @@ public class RecordingOverrideWriter {
             String exp = recordings.get(currentIndex).getExperimentName();
             for (RecordingEntry recordingEntry : recordings) {
                 if (recordingEntry.getExperimentName().equals(exp)) {
-                    writeOrUpdate(recordingEntry.getRecordingName(), params, timestamp);
+                    writeOrUpdate(recordingEntry.getExperimentName(), recordingEntry.getRecordingName(), params, timestamp);
                     updateMemory(recordingEntry, params);
                 }
             }
@@ -61,7 +62,7 @@ public class RecordingOverrideWriter {
 
         if ("Project".equals(scope)) {
             for (RecordingEntry recordingEntry : recordings) {
-                writeOrUpdate(recordingEntry.getRecordingName(), params, timestamp);
+                writeOrUpdate(recordingEntry.getExperimentName(), recordingEntry.getRecordingName(), params, timestamp);
                 updateMemory(recordingEntry, params);
             }
         }
@@ -71,19 +72,20 @@ public class RecordingOverrideWriter {
     // WRITE / UPDATE LOGIC (NON-DESTRUCTIVE)
     // ====================================================================================
     private void writeOrUpdate(
+            String              experimentName,
             String              recordingName,
             SquareControlParams params,
             String              timestamp) {
 
         Map<String, String> map = loadExistingRows();
 
-        String line =
-                recordingName + "," +
-                        timestamp + "," +
-                        params.minRequiredDensityRatio + "," +
-                        params.maxAllowableVariability + "," +
-                        params.minRequiredRSquared + "," +
-                        params.neighbourMode;
+        String line = experimentName  + "," +
+                      recordingName + "," +
+                      timestamp + "," +
+                      params.minRequiredDensityRatio + "," +
+                      params.maxAllowableVariability + "," +
+                      params.minRequiredRSquared + "," +
+                      params.neighbourMode;
 
         map.put(recordingName, line);
 
