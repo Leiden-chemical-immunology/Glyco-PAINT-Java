@@ -40,7 +40,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
 =============================================================================*/
 
-package paint.generatesquares;
+package paint.generatesquares.app;
 import static paint.shared.constants.PaintConstants.*;
 
 

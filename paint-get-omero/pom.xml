@@ -67,7 +67,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>paint.getomero.GetOmeroUI</mainClass>
+                            <mainClass>paint.getomero.app.GetOmeroUI</mainClass>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix></classpathPrefix>
                         </manifest>
@@ -228,7 +228,7 @@ exec "$JAVA_CMD" -Xmx2G -jar "${project.artifactId}-${project.version}.jar"
                                         <minVersion>1.8.0</minVersion>
                                     </jre>
                                     <classPath>
-                                        <mainClass>paint.getomero.GetOmeroUI</mainClass>
+                                        <mainClass>paint.getomero.app.GetOmeroUI</mainClass>
                                     </classPath>
                                     <headerType>gui</headerType>
                                     <errTitle>${app.name}</errTitle>

@@ -34,7 +34,7 @@
  *    Licensed under the MIT License.
 =============================================================================*/
 
-package paint.getomero;
+package paint.getomero.app;
 
 import java.io.File;
 import java.io.IOException;

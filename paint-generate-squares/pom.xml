@@ -122,7 +122,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>paint.generatesquares.GenerateSquares</mainClass>
+                            <mainClass>paint.generatesquares.app.GenerateSquares</mainClass>
                         </manifest>
                         <manifestEntries>
                             <Implementation-Title>${project.name}</Implementation-Title>
@@ -160,7 +160,7 @@
                             </filters>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>paint.generatesquares.GenerateSquares</mainClass>
+                                    <mainClass>paint.generatesquares.app.GenerateSquares</mainClass>
                                     <manifestEntries>
                                         <Implementation-Title>${project.name}</Implementation-Title>
                                         <Implementation-Version>${project.version}</Implementation-Version>
@@ -308,7 +308,7 @@ exec "$JAVA_CMD" -Xmx2G -jar "${project.artifactId}-${project.version}.jar"
                                         <minVersion>1.8.0</minVersion>
                                     </jre>
                                     <classPath>
-                                        <mainClass>paint.generatesquares.GenerateSquares</mainClass>
+                                        <mainClass>paint.generatesquares.app.GenerateSquares</mainClass>
                                     </classPath>
                                     <headerType>gui</headerType>
                                     <errTitle>${app.name}</errTitle>

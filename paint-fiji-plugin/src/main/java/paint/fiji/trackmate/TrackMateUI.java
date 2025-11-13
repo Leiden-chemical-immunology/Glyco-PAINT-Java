@@ -40,12 +40,11 @@
 =============================================================================*/
 
 package paint.fiji.trackmate;
-import static paint.shared.constants.PaintConstants.*;
 
 
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
-import paint.generatesquares.GenerateSquaresHeadless;
+import paint.generatesquares.app.GenerateSquaresHeadless;
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
 import paint.shared.utils.PaintPrefs;

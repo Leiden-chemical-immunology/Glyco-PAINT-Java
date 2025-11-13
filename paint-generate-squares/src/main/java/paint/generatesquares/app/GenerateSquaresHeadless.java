@@ -39,7 +39,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
 =============================================================================*/
 
-package paint.generatesquares;
+package paint.generatesquares.app;
 
 import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.config.paintconfig.PaintConfig;

@@ -43,7 +43,7 @@
 package paint.fiji.utils;
 
 import org.apache.commons.io.FileUtils;
-import paint.generatesquares.GenerateSquaresHeadless;
+import paint.generatesquares.app.GenerateSquaresHeadless;
 import paint.shared.utils.PaintLogger;
 
 import java.io.IOException;

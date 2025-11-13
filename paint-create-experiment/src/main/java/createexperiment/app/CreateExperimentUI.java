@@ -34,7 +34,7 @@
  *    Licensed under the MIT License.
 =============================================================================*/
 
-package createexperiment;
+package createexperiment.app;
 
 import javax.swing.*;
 import java.awt.*;

@@ -71,7 +71,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>createexperiment.CreateExperimentUI</mainClass>
+                            <mainClass>createexperiment.app.CreateExperimentUI</mainClass>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix></classpathPrefix>
                         </manifest>
@@ -232,7 +232,7 @@ exec "$JAVA_CMD" -Xmx2G -jar "${project.artifactId}-${project.version}.jar"
                                         <minVersion>1.8.0</minVersion>
                                     </jre>
                                     <classPath>
-                                        <mainClass>createexperiment.CreateExperimentUI</mainClass>
+                                        <mainClass>createexperiment.app.CreateExperimentUI</mainClass>
                                     </classPath>
                                     <headerType>gui</headerType>
                                     <errTitle>${app.name}</errTitle>

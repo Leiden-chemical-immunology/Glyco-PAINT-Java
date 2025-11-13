@@ -35,7 +35,7 @@
  *    Licensed under the MIT License.
 =============================================================================*/
 
-package createexperiment;
+package createexperiment.app;
 
 import paint.shared.io.ExperimentInfoTableIO;
 import paint.shared.objects.ExperimentInfo;

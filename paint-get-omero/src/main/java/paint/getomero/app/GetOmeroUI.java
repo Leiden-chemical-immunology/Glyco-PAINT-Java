@@ -35,7 +35,7 @@
  *    Licensed under the MIT License.
 =============================================================================*/
 
-package paint.getomero;
+package paint.getomero.app;
 
 import javax.swing.*;
 import java.awt.*;
