@@ -262,7 +262,7 @@ public final class PaintConstants {
             TOTAL_DISPLACEMENT,
             MEDIAN_MAX_SPEED,
             MAX_MAX_SPEED,
-            MEDIAN_MAX_SPEED,
+            MEDIAN_MEAN_SPEED,
             MAX_MEAN_SPEED,
             MAX_TRACK_DURATION,
             TOTAL_TRACK_DURATION,
