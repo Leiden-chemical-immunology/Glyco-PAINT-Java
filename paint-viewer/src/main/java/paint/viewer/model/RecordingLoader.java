@@ -38,10 +38,7 @@
  ==============================================================================*/
 
 package paint.viewer.model;
-import static paint.shared.constants.PaintConstants.*;
 
-
-import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.io.ExperimentDataLoader;
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Project;
@@ -137,22 +134,12 @@ public class RecordingLoader {
                     continue;
                 }
 
-                // --- Thresholds from config ---
-                double minDensityRatio = PaintConfig.getDouble(GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO, 2.0);
-                double maxVariability  = PaintConfig.getDouble(GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY,  10.0);
-                double minRSquared     = PaintConfig.getDouble(GENERATE_SQUARES, MIN_REQUIRED_R_SQUARED,     0.1);
-                String neighbourMode   = PaintConfig.getString(GENERATE_SQUARES, NEIGHBOUR_MODE,             "Free");
-
                 // --- Build final entry ---
                 RecordingEntry entry = new RecordingEntry(
                         recording,
                         trackmateImagePath,
                         brightfieldImagePath,
-                        experimentName,
-                        minDensityRatio,
-                        maxVariability,
-                        minRSquared,
-                        neighbourMode
+                        experimentName
                 );
 
                 recordingEntries.add(entry);

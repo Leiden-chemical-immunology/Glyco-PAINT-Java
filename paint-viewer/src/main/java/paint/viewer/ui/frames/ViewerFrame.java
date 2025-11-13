@@ -376,9 +376,9 @@ public class ViewerFrame extends JFrame
                 leftGridPanel,
                 this,
                 new SquareControlParams(
-                        current.getMinRequiredDensityRatio(),
-                        current.getMaxAllowableVariability(),
-                        current.getMinRequiredRSquared(),
+                        current.getRecording().getMinRequiredDensityRatio(),
+                        current.getRecording().getMaxAllowableVariability(),
+                        current.getRecording().getMinRequiredRSquared(),
                         "Free"
                 )
         );

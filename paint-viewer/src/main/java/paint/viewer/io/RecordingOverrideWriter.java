@@ -198,9 +198,9 @@ public class RecordingOverrideWriter {
      */
     private void update(RecordingEntry recordingEntry,
                         SquareControlParams params) {
-        recordingEntry.setMaxAllowableVariability(params.maxAllowableVariability);
-        recordingEntry.setMinRequiredDensityRatio(params.minRequiredDensityRatio);
-        recordingEntry.setNeighbourMode(params.neighbourMode);
-        recordingEntry.setMinRequiredRSquared(params.minRequiredRSquared);
+        recordingEntry.getRecording().setMaxAllowableVariability(params.maxAllowableVariability);
+        recordingEntry.getRecording().setMinRequiredDensityRatio(params.minRequiredDensityRatio);
+        recordingEntry.getRecording().setNeighbourMode(params.neighbourMode);
+        recordingEntry.getRecording().setMinRequiredRSquared(params.minRequiredRSquared);
     }
 }

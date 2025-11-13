@@ -61,11 +61,6 @@ public class RecordingEntry {
     private final Recording     recording;
     private final String        experimentName;
 
-    private       double        minRequiredDensityRatio;
-    private       double        maxAllowableVariability;
-    private       double        minRequiredRSquared;
-    private       String        neighbourMode;
-
     private final ImageIcon     leftImage;
     private final ImageIcon     rightImage;
 
@@ -76,25 +71,13 @@ public class RecordingEntry {
      * @param trackmateImagePath      path to the TrackMate overlay image
      * @param brightfieldImagePath    path to the Brightfield reference image
      * @param experimentName          name of the parent experiment
-     * @param minRequiredDensityRatio minimum required density ratio threshold
-     * @param maxAllowableVariability maximum allowable variability threshold
-     * @param minRequiredRSquared     minimum R² value (0.0–1.0)
-     * @param neighbourMode           neighbour visibility mode as string
      */
     public RecordingEntry(Recording recording,
                           Path      trackmateImagePath,
                           Path      brightfieldImagePath,
-                          String    experimentName,
-                          double    minRequiredDensityRatio,
-                          double    maxAllowableVariability,
-                          double    minRequiredRSquared,
-                          String    neighbourMode) {
+                          String    experimentName) {
         this.recording               = recording;
         this.experimentName          = experimentName;
-        this.minRequiredDensityRatio = minRequiredDensityRatio;
-        this.maxAllowableVariability = maxAllowableVariability;
-        this.minRequiredRSquared     = minRequiredRSquared;
-        this.neighbourMode           = neighbourMode;
         this.leftImage               = loadImage(trackmateImagePath, "TrackMate");
         this.rightImage              = loadImage(brightfieldImagePath, "Brightfield");
     }
@@ -193,38 +176,6 @@ public class RecordingEntry {
 
     public double getDensity() {
         return recording.getDensity();
-    }
-
-    public double getMinRequiredDensityRatio() {
-        return minRequiredDensityRatio;
-    }
-
-    public void setMinRequiredDensityRatio(double minRequiredDensityRatio) {
-        this.minRequiredDensityRatio = minRequiredDensityRatio;
-    }
-
-    public double getMaxAllowableVariability() {
-        return maxAllowableVariability;
-    }
-
-    public void setMaxAllowableVariability(double maxAllowableVariability) {
-        this.maxAllowableVariability = maxAllowableVariability;
-    }
-
-    public double getMinRequiredRSquared() {
-        return minRequiredRSquared;
-    }
-
-    public void setMinRequiredRSquared(double minRequiredRSquared) {
-        this.minRequiredRSquared = minRequiredRSquared;
-    }
-
-    public String getNeighbourMode() {
-        return neighbourMode;
-    }
-
-    public void setNeighbourMode(String neighbourMode) {
-        this.neighbourMode = neighbourMode;
     }
 
     public ImageIcon getLeftImage() {
