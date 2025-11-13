@@ -29,23 +29,25 @@ public class ViewerLayoutBuilder {
         public final RecordingControlsPanel controlsPanel;
 
         LayoutComponents(
-                JPanel rootPanel,
-                JLabel rightImageLabel,
-                JLabel experimentLabel,
-                JLabel recordingLabel,
-                SquareGridPanel leftGridPanel,
+                JPanel                   rootPanel,
+                JLabel                   rightImageLabel,
+                JLabel                   experimentLabel,
+                JLabel                   recordingLabel,
+                SquareGridPanel          leftGridPanel,
                 RecordingAttributesPanel attributesPanel,
-                NavigationPanel navigationPanel,
-                RecordingControlsPanel controlsPanel
+                NavigationPanel          navigationPanel,
+                RecordingControlsPanel   controlsPanel,
+                JCheckBox                importOverridesCheckBox
         ) {
-            this.rootPanel         = rootPanel;
-            this.rightImageLabel   = rightImageLabel;
-            this.experimentLabel   = experimentLabel;
-            this.recordingLabel    = recordingLabel;
-            this.leftGridPanel     = leftGridPanel;
-            this.attributesPanel   = attributesPanel;
-            this.navigationPanel   = navigationPanel;
-            this.controlsPanel     = controlsPanel;
+            this.rootPanel               = rootPanel;
+            this.rightImageLabel         = rightImageLabel;
+            this.experimentLabel         = experimentLabel;
+            this.recordingLabel          = recordingLabel;
+            this.leftGridPanel           = leftGridPanel;
+            this.attributesPanel         = attributesPanel;
+            this.navigationPanel         = navigationPanel;
+            this.controlsPanel           = controlsPanel;
+            this.importOverridesCheckBox = importOverridesCheckBox;
         }
     }
 

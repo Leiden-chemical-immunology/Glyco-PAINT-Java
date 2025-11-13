@@ -100,30 +100,30 @@ public class ViewerFrame extends JFrame
     // Remembers the last used filter criteria for the filter dialog
     private RecordingFilterDialog.FilterCriteria lastFilterCriteria = null;
 
-    private final Project                              project;
-    private final List<RecordingEntry>                 allRecordingEntries;  // full unfiltered list
-    private final List<RecordingEntry>                 recordingEntries;     // currently visible (may be filtered)
-    private       int                                  currentIndex      = 0;
+    private final Project                      project;
+    private final List<RecordingEntry>         allRecordingEntries;  // full unfiltered list
+    private final List<RecordingEntry>         recordingEntries;     // currently visible (may be filtered)
+    private       int                          currentIndex      = 0;
 
-    private        SquareGridPanel leftGridPanel;
-    private JLabel rightImageLabel;
-    private JLabel experimentLabel;
-    private JLabel recordingLabel;
+    private       SquareGridPanel              leftGridPanel;
+    private       JLabel                       rightImageLabel;
+    private       JLabel                       experimentLabel;
+    private       JLabel                       recordingLabel;
 
-    private        RecordingAttributesPanel attributesPanel;
-    private        NavigationPanel navigationPanel;
-    private        RecordingControlsPanel controlsPanel;
+    private       RecordingAttributesPanel     attributesPanel;
+    private       NavigationPanel              navigationPanel;
+    private       RecordingControlsPanel       controlsPanel;
 
-    private final CellAssignmentManager                assignmentManager = new CellAssignmentManager();
-    private final SquareControlHandler                 controlHandler    = new SquareControlHandler();
-    private       JDialog                              activeDialog      = null;
+    private final CellAssignmentManager        assignmentManager = new CellAssignmentManager();
+    private final SquareControlHandler         controlHandler    = new SquareControlHandler();
+    private       JDialog                      activeDialog      = null;
 
-    private final RecordingOverrideWriter              recordingOverrideWriter;
-    private final SquareOverrideWriter                 squareOverrideWriter;
+    private final RecordingOverrideWriter      recordingOverrideWriter;
+    private final SquareOverrideWriter         squareOverrideWriter;
 
-    private final RecordingPlaybackController playbackController = new RecordingPlaybackController(this);
-    private       RecordingDisplayUpdater     displayUpdater;
-    private final RecordingNavigator          navigator;
+    private final RecordingPlaybackController  playbackController = new RecordingPlaybackController(this);
+    private       RecordingDisplayUpdater      displayUpdater;
+    private final RecordingNavigator           navigator;
 
     /**
      * Constructs a {@code RecordingViewerFrame} that initializes and displays the complete
@@ -185,6 +185,12 @@ public class ViewerFrame extends JFrame
         this.attributesPanel = ui.attributesPanel;
         this.navigationPanel = ui.navigationPanel;
         this.controlsPanel   = ui.controlsPanel;
+        this.leftGridPanel           = ui.leftGridPanel;
+        this.rightImageLabel         = ui.rightImageLabel;
+        this.recordingLabel          = ui.recordingLabel;
+        this.attributesPanel         = ui.attributesPanel;
+        this.navigationPanel         = ui.navigationPanel;
+        this.controlsPanel           = ui.controlsPanel;
 
         this.displayUpdater = new RecordingDisplayUpdater(
                 this.leftGridPanel,
@@ -308,17 +314,16 @@ public class ViewerFrame extends JFrame
         setActionButtonsEnabled(false);
         leftGridPanel.hideSquareInfoIfVisible();
         activeDialog = new RecordingFilterDialog(this, recordingEntries, allRecordingEntries, lastFilterCriteria);
-        setGridEnabled(false); // 🔹 Disable grid interaction
+        setGridEnabled(false); // Disable grid interaction
 
         activeDialog.addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent e) {
-                setGridEnabled(true); // 🔹 Re-enable grid
+                setGridEnabled(true); // Re-enable grid
                 setActionButtonsEnabled(true);
                 activeDialog = null;
             }
         });
 
-        // 🔹 SHOW THE DIALOG
         activeDialog.setVisible(true);
 
         // Now handle user result after closing
@@ -382,12 +387,12 @@ public class ViewerFrame extends JFrame
                         "Free"
                 )
         );
-        setGridEnabled(false); // 🔹 Disable grid
+        setGridEnabled(false); // Disable grid
 
         activeDialog.addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent e) {
-                setGridEnabled(true); // 🔹 Re-enable grid
-                setActionButtonsEnabled(true);  // ✅ Re-enable buttons
+                setGridEnabled(true); // Re-enable grid
+                setActionButtonsEnabled(true);
                 activeDialog = null;
             }
         });
@@ -408,7 +413,7 @@ public class ViewerFrame extends JFrame
         setActionButtonsEnabled(false);
         leftGridPanel.hideSquareInfoIfVisible();
         leftGridPanel.setSelectionEnabled(true);
-        leftGridPanel.setInfoPopupsEnabled(false); // 🔸 keep selection, suppress info popups
+        leftGridPanel.setInfoPopupsEnabled(false);
 
         final JFrame owner = this;
         activeDialog = new CellAssignmentDialog(owner, new CellAssignmentDialog.Listener() {
@@ -435,8 +440,8 @@ public class ViewerFrame extends JFrame
         activeDialog.addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent e) {
                 leftGridPanel.setSelectionEnabled(false);
-                leftGridPanel.setInfoPopupsEnabled(true); // 🔸 re-enable popups
-                setActionButtonsEnabled(true);            // ✅ add this
+                leftGridPanel.setInfoPopupsEnabled(true);
+                setActionButtonsEnabled(true);
                 activeDialog = null;
             }
         });
@@ -518,7 +523,7 @@ public class ViewerFrame extends JFrame
             return;
         }
 
-        // --- Full application: persist thresholds and repaint ---
+        // Full application: persist thresholds and repaint
         controlHandler.apply(params, leftGridPanel);
         recordingOverrideWriter.applyAndWrite(scope, params, recordingEntries, currentIndex);
         leftGridPanel.repaint();
@@ -556,7 +561,7 @@ public class ViewerFrame extends JFrame
     }
 
     private void setGridEnabled(boolean enabled) {
-        leftGridPanel.setInteractionEnabled(enabled);  // we'll add this method below if it doesn’t exist
+        leftGridPanel.setInteractionEnabled(enabled);
     }
 
     private void setActionButtonsEnabled(boolean enabled) {
@@ -564,7 +569,6 @@ public class ViewerFrame extends JFrame
             controlsPanel.setButtonsEnabled(enabled);
         }
     }
-
 
     private void openSquaresForCurrentRecording() {
         try {
@@ -598,7 +602,7 @@ public class ViewerFrame extends JFrame
     public void enableUI() {
         setActionButtonsEnabled(true);
         setGridEnabled(true);
-        updateNavButtons();                    // restores first/prev/next/last
+        updateNavButtons();
         attributesPanel.getComponent().setEnabled(true);
     }
 
