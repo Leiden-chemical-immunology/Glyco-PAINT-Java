@@ -1,4 +1,4 @@
-package paint.viewer.app;
+package paint.viewer.ui;
 
 import paint.viewer.model.RecordingEntry;
 

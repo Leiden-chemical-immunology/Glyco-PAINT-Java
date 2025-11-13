@@ -1,9 +1,10 @@
-package paint.viewer.app;
+package paint.viewer.ui;
 
 import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintPrefs;
 import paint.viewer.model.RecordingEntry;
 import paint.viewer.io.TiffMoviePlayer;
+import paint.viewer.ui.frames.ViewerFrame;
 
 import javax.swing.*;
 import java.awt.*;

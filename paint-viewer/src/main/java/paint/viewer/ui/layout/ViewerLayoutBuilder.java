@@ -1,4 +1,4 @@
-package paint.viewer.app;
+package paint.viewer.ui.layout;
 
 import paint.viewer.ui.panels.NavigationPanel;
 import paint.viewer.ui.panels.RecordingAttributesPanel;

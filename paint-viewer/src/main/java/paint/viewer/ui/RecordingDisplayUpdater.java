@@ -1,4 +1,4 @@
-package paint.viewer.app;
+package paint.viewer.ui;
 import static paint.shared.constants.PaintConstants.*;
 
 

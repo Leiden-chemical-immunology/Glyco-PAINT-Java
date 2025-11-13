@@ -39,13 +39,18 @@
  *    © 2025 Hans Bakker. All rights reserved.
 ==============================================================================*/
 
-package paint.viewer.app;
+package paint.viewer.ui.frames;
 
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.objects.Project;
 import paint.shared.utils.PaintLogger;
+import paint.viewer.app.Viewer;
 import paint.viewer.io.FileHelper;
 import paint.viewer.io.PanelExporter;
+import paint.viewer.ui.RecordingDisplayUpdater;
+import paint.viewer.ui.RecordingNavigator;
+import paint.viewer.ui.RecordingPlaybackController;
+import paint.viewer.ui.layout.ViewerLayoutBuilder;
 import paint.viewer.ui.dialogs.CellAssignmentDialog;
 import paint.viewer.ui.dialogs.RecordingFilterDialog;
 import paint.viewer.ui.dialogs.SquareControlDialog;
@@ -59,7 +64,6 @@ import paint.viewer.ui.panels.RecordingControlsPanel;
 import paint.viewer.ui.panels.SquareGridPanel;
 import paint.viewer.model.SquareControlParams;
 import paint.viewer.model.RecordingEntry;
-import paint.viewer.app.ViewerLayoutBuilder;
 
 import java.io.IOException;  // already present in your imports; if not, add it
 
