@@ -38,7 +38,7 @@ public final class RecordingOverrideApplier {
     private static void applyInternal(List<RecordingEntry> entries,
             List<RecordingOverride> overrides) {
 
-        Map<String, RecordingOverride> map = new HashMap<String, RecordingOverride>();
+        Map<String, RecordingOverride> map = new HashMap<>();
 
         for (RecordingOverride o : overrides) {
             map.put(key(o.experimentName, o.recordingName), o);
@@ -70,7 +70,7 @@ public final class RecordingOverrideApplier {
     // ────────────────────────────────────────────────────────────
     private static List<RecordingOverride> load(Path csvFile) {
 
-        List<RecordingOverride> list = new ArrayList<RecordingOverride>();
+        List<RecordingOverride> list = new ArrayList<>();
 
         try {
             Table table = Table.read().csv(csvFile.toString());

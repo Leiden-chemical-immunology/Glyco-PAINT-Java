@@ -32,7 +32,7 @@ public final class SquareOverrideApplier {
         List<SquareOverride> overrides = load(csvPath);
 
         // Flatten all squares from all RecordingEntries
-        List<Square> allSquares = new ArrayList<Square>();
+        List<Square> allSquares = new ArrayList<>();
         for (RecordingEntry recordingEntry : recordingEntries) {
             allSquares.addAll(recordingEntry.getRecording().getSquaresOfRecording());
         }
@@ -46,7 +46,7 @@ public final class SquareOverrideApplier {
     private static void applyInternal(List<Square> squares,
             List<SquareOverride> overrides) {
 
-        Map<String, Integer> overrideCellIds = new HashMap<String, Integer>();
+        Map<String, Integer> overrideCellIds = new HashMap<>();
 
         for (SquareOverride override : overrides) {
             String key = key(override.getExperimentName(),
@@ -89,7 +89,7 @@ public final class SquareOverrideApplier {
     // ────────────────────────────────────────────────────────────
     private static List<SquareOverride> load(Path csvFile) {
 
-        List<SquareOverride> list = new ArrayList<SquareOverride>();
+        List<SquareOverride> list = new ArrayList<>();
 
         try {
             Table table = Table.read().csv(csvFile.toString());

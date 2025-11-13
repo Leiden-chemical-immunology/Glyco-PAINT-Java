@@ -140,8 +140,8 @@ public class ViewerFrame extends JFrame
     public ViewerFrame(Project project, List<RecordingEntry> recordingEntries) {
         super("Recording Viewer - " + project.getProjectRootPath().getFileName());
         this.project                 = project;
-        this.allRecordingEntries     = new java.util.ArrayList<RecordingEntry>(recordingEntries);
-        this.recordingEntries        = new java.util.ArrayList<RecordingEntry>(recordingEntries);
+        this.allRecordingEntries     = new java.util.ArrayList<>(recordingEntries);
+        this.recordingEntries        = new java.util.ArrayList<>(recordingEntries);
         this.recordingOverrideWriter = new RecordingOverrideWriter(project.getProjectRootPath());
         this.squareOverrideWriter    = new SquareOverrideWriter(project.getProjectRootPath());
 
