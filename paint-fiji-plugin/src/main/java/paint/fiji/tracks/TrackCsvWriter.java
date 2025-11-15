@@ -49,7 +49,7 @@ import fiji.plugin.trackmate.FeatureModel;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.TrackMate;
 import fiji.plugin.trackmate.TrackModel;
-import paint.shared.io.TrackTableIO;
+import paint.shared.io.TracksTableIO;
 import paint.shared.objects.Track;
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.IntColumn;
@@ -106,8 +106,8 @@ public final class TrackCsvWriter {
         final FeatureModel featureModel = model.getFeatureModel();
 
         // Collect and sort track IDs for deterministic output order
-        final Set<Integer> trackIDsSet = trackModel.trackIDs(visibleOnly);
-        final List<Integer> trackIDs = new ArrayList<>(trackIDsSet);
+        final Set<Integer>  trackIDsSet = trackModel.trackIDs(visibleOnly);
+        final List<Integer> trackIDs    = new ArrayList<>(trackIDsSet);
         Collections.sort(trackIDs);
 
         final List<Track> tracks = new ArrayList<>();
@@ -124,7 +124,7 @@ public final class TrackCsvWriter {
             track.setRecordingName(recordingName);
 
             // Native TrackMate features
-            track.setNumberOfSpots(     asInt(    featureModel.getTrackFeature(trackId, "NUMBER_SPOTS")));
+            track.setNumberOfSpots(     asInt(   featureModel.getTrackFeature(trackId, "NUMBER_SPOTS")));
             track.setNumberOfGaps(      asInt(   featureModel.getTrackFeature(trackId, "NUMBER_GAPS")));
             track.setLongestGap(        asInt(   featureModel.getTrackFeature(trackId, "LONGEST_GAP")));
             track.setTrackDuration(     roundOr( featureModel.getTrackFeature(trackId, "TRACK_DURATION"),     3, -1));
@@ -150,8 +150,8 @@ public final class TrackCsvWriter {
         // Step 3 – Build and export table
         // ---------------------------------------------------------------------
         try {
-            TrackTableIO trackTableIO = new TrackTableIO();
-            Table tracksTable = trackTableIO.toTable(tracks);
+            TracksTableIO tracksTableIO = new TracksTableIO();
+            Table         tracksTable   = tracksTableIO.toTable(tracks);
 
             tracksTable = tracksTable.sortOn(
                     RECORDING_NAME,
@@ -171,7 +171,7 @@ public final class TrackCsvWriter {
             );
 
             // Replace Track Ids and generate unique keys
-            IntColumn newIds       = IntColumn.create(TRACK_ID);
+            IntColumn    newIds       = IntColumn.create(TRACK_ID);
             StringColumn newUniqueKey = StringColumn.create(UNIQUE_KEY);
 
             for (int i = 0; i < tracksTable.rowCount(); i++) {
@@ -181,7 +181,7 @@ public final class TrackCsvWriter {
             tracksTable.replaceColumn(TRACK_ID, newIds);
             tracksTable.replaceColumn(UNIQUE_KEY, newUniqueKey);
 
-            trackTableIO.writeCsv(tracksTable, csvFile.toPath());
+            tracksTableIO.writeCsv(tracksTable, csvFile.toPath());
         } catch (Exception e) {
             PaintLogger.errorf("Failed writing track CSV: %s", e.getMessage());
             e.printStackTrace();

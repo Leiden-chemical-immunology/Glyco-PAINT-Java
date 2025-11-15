@@ -1,5 +1,5 @@
 /*=============================================================================
- *  Class:        TrackTableIO.java
+ *  Class:        TracksTableIO.java
  *  Package:      paint.shared.io
  *
  *  PURPOSE:
@@ -57,7 +57,7 @@ import static paint.shared.constants.PaintConstants.*;
  * {@code tracks.csv} and guarantees alignment with the schema definitions
  * provided in {@link PaintConstants}.</p>
  */
-public class TrackTableIO extends BaseTableIO {
+public class TracksTableIO extends BaseTableIO {
 
     // ───────────────────────────────────────────────────────────────────────────────
     // TABLE CREATION

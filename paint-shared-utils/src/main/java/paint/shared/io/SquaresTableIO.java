@@ -1,5 +1,5 @@
 /*=============================================================================
- *  Class:        SquareTableIO.java
+ *  Class:        SquaresTableIO.java
  *  Package:      paint.shared.io
  *
  *  PURPOSE:
@@ -60,7 +60,7 @@ import java.util.List;
  * <p>Handles CSV reading, schema validation, entity conversion, and table
  * appending in a consistent manner across PAINT’s square-level datasets.</p>
  */
-public class SquareTableIO extends BaseTableIO {
+public class SquaresTableIO extends BaseTableIO {
 
     // ───────────────────────────────────────────────────────────────────────────────
     // TABLE CREATION

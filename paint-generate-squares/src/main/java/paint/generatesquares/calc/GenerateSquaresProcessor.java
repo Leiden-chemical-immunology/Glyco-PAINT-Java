@@ -43,8 +43,8 @@ package paint.generatesquares.calc;
 
 import static paint.shared.constants.PaintConstants.*;
 import paint.shared.config.GenerateSquaresConfig;
-import paint.shared.io.SquareTableIO;
-import paint.shared.io.TrackTableIO;
+import paint.shared.io.SquaresTableIO;
+import paint.shared.io.TracksTableIO;
 import paint.shared.objects.*;
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.Table;
@@ -220,9 +220,9 @@ public class GenerateSquaresProcessor {
      *                  and updating their track-related attributes.
      */
     public static void assignTracksToSquares(Recording recording) {
-        Table tracksOfRecording   = recording.getTracksTable();
-        TrackTableIO trackTableIO = new TrackTableIO();
-        Table recordingTrackTable = trackTableIO.emptyTable();
+        Table         tracksOfRecording   = recording.getTracksTable();
+        TracksTableIO tracksTableIO       = new TracksTableIO();
+        Table         recordingTrackTable = tracksTableIO.emptyTable();
 
         int lastRowCol            = numberOfSquaresInOneDimension - 1;
         int labelNumber           = 0;
@@ -242,7 +242,7 @@ public class GenerateSquaresProcessor {
             }
 
             // Convert rows to Track entities
-            List<Track> tracks = trackTableIO.toEntities(squareTracksTable);
+            List<Track> tracks = tracksTableIO.toEntities(squareTracksTable);
 
             // Update the fields on each Track
             for (Track track : tracks) {
@@ -251,7 +251,7 @@ public class GenerateSquaresProcessor {
             }
 
             // Rebuild the table from the modified tracks (ensures the table reflects the updates)
-            Table updatedSquareTracks = trackTableIO.toTable(tracks);
+            Table updatedSquareTracks = tracksTableIO.toTable(tracks);
 
             // Append updated tracks into the global recording table
             recordingTrackTable.append(updatedSquareTracks);
@@ -287,7 +287,7 @@ public class GenerateSquaresProcessor {
      *         or an empty table if no square data exists
      */
     private static Table compileAllSquares(Experiment experiment) {
-        SquareTableIO squaresTableIO  = new SquareTableIO();
+        SquaresTableIO squaresTableIO  = new SquaresTableIO();
         Table         allSquaresTable = squaresTableIO.emptyTable();
 
         for (Recording recording : experiment.getRecordings()) {
@@ -312,7 +312,7 @@ public class GenerateSquaresProcessor {
      *         or an empty table if no track data exists
      */
     private static Table compileAllTracks(Experiment experiment) {
-        TrackTableIO trackTableIO   = new TrackTableIO();
+        TracksTableIO trackTableIO   = new TracksTableIO();
         Table        allTracksTable = trackTableIO.emptyTable();
 
         for (Recording recording : experiment.getRecordings()) {

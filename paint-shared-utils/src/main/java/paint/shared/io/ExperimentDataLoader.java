@@ -74,17 +74,17 @@ public final class ExperimentDataLoader {
         Experiment experiment = new Experiment(experimentName);
 
         // ─── Recordings ───────────────────────────────────────────────────────
-        RecordingTableIO recIO = new RecordingTableIO();
+        RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
         List<Recording> recordings;
         try {
-            Table recTable = recIO.readCsvWithSchema(
+            Table recTable = recordingsTableIO.readCsvWithSchema(
                     experimentPath.resolve(RECORDINGS_CSV),
                     RECORDINGS_CSV,
                     RECORDINGS_COLS,
                     RECORDINGS_TYPES,
                     false
             );
-            recordings = recIO.toEntities(recTable);
+            recordings = recordingsTableIO.toEntities(recTable);
             recordings.forEach(experiment::addRecording);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to read %s in %s", RECORDINGS_CSV, experimentName);
@@ -92,8 +92,8 @@ public final class ExperimentDataLoader {
         }
 
         // ─── Tracks (optional) ────────────────────────────────────────────────
-        Table tracksTable    = null;
-        TrackTableIO trackIO = new TrackTableIO();
+        Table         tracksTable = null;
+        TracksTableIO trackIO     = new TracksTableIO();
 
         if (loadTracks) {
             try {
@@ -130,10 +130,10 @@ public final class ExperimentDataLoader {
 
         // ─── Squares (optional) ───────────────────────────────────────────────
         if (loadSquares) {
-            SquareTableIO squareIO = new SquareTableIO();
+            SquaresTableIO squaresTableIO = new SquaresTableIO();
             Table squaresTable;
             try {
-                squaresTable = squareIO.readCsvWithSchema(
+                squaresTable = squaresTableIO.readCsvWithSchema(
                         experimentPath.resolve(SQUARES_CSV),
                         SQUARES_CSV,
                         SQUARES_COLS,
@@ -163,7 +163,7 @@ public final class ExperimentDataLoader {
                         squaresTable.stringColumn(RECORDING_NAME)
                                 .matchesRegex("^" + rec.getRecordingName() + "(?:-threshold-\\d{1,3})?$"));
 
-                rec.addSquares(squareIO.toEntities(recSquares));
+                rec.addSquares(squaresTableIO.toEntities(recSquares));
 
                 // Only map tracks into squares if tracks were loaded
                 if (loadTracks && numberOfRows > 0) {
@@ -171,8 +171,8 @@ public final class ExperimentDataLoader {
                     Table recTracks = rec.getTracksTable();
 
                     for (Square square : rec.getSquaresOfRecording()) {
-                        Table squareTracks = filterTracksInSquare(recTracks, square, lastRowCol);
-                        square.setTracks(trackIO.toEntities(squareTracks));
+                        Table SquaresTracks = filterTracksInSquare(recTracks, square, lastRowCol);
+                        square.setTracks(trackIO.toEntities(SquaresTracks));
                     }
                 }
             }

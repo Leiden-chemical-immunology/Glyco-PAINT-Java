@@ -1,5 +1,5 @@
 /*=============================================================================
- *  Class:        RecordingTableIO.java
+ *  Class:        RecordingsTableIO.java
  *  Package:      paint.shared.io
  *
  *  PURPOSE:
@@ -61,7 +61,7 @@ import static paint.shared.constants.PaintConstants.*;
  * {@code recordings.csv} files. Each method ensures full consistency
  * with the column definitions in PaintConstants.</p>
  */
-public class RecordingTableIO extends BaseTableIO {
+public class RecordingsTableIO extends BaseTableIO {
 
     // ───────────────────────────────────────────────────────────────────────────────
     // TABLE CREATION
