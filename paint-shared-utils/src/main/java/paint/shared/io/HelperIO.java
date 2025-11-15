@@ -80,7 +80,7 @@ public final class HelperIO {
      * @param experimentPath the experiment directory containing {@code recordings.csv}
      * @return a list of {@link Recording} entities, or {@code null} if reading fails
      */
-    public static List<Recording> readAllRecordings(Path experimentPath) {
+    public static List<Recording> readRecordings(Path experimentPath) {
         RecordingTableIO recIO = new RecordingTableIO();
         try {
             Table recTable = recIO.readCsvWithSchema(
@@ -125,10 +125,10 @@ public final class HelperIO {
      * @param experimentPath the experiment folder path
      * @return a list of squares, or {@code null} if reading fails
      */
-    public static List<Square> readAllSquares(Path experimentPath) {
+    public static List<Square> readSquares(Path experimentPath) {
         SquareTableIO squareIO = new SquareTableIO();
         try {
-            Table squareTable = readAllSquaresTable(experimentPath);
+            Table squareTable = readSquaresTable(experimentPath);
             return squareIO.toEntities(squareTable);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to read %s: %s", SQUARES_CSV, friendlyMessage(e));
@@ -142,7 +142,7 @@ public final class HelperIO {
      * @param experimentPath the experiment directory containing {@code squares.csv}
      * @return the loaded table, or {@code null} if reading fails
      */
-    public static Table readAllSquaresTable(Path experimentPath) {
+    public static Table readSquaresTable(Path experimentPath) {
         SquareTableIO squareIO = new SquareTableIO();
         try {
             return squareIO.readCsvWithSchema(
@@ -201,10 +201,10 @@ public final class HelperIO {
      * @param experimentPath the experiment folder path
      * @return a list of tracks, or {@code null} if reading fails
      */
-    public static List<Track> readAllTracks(Path experimentPath) {
+    public static List<Track> readTracks(Path experimentPath) {
         TrackTableIO trackIO = new TrackTableIO();
         try {
-            Table tracksTable = readAllTracksTable(experimentPath);
+            Table tracksTable = readTracksTable(experimentPath);
             return trackIO.toEntities(tracksTable);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to read %s: %s", TRACKS_CSV, friendlyMessage(e));
@@ -218,7 +218,7 @@ public final class HelperIO {
      * @param experimentPath the experiment directory containing {@code tracks.csv}
      * @return the loaded table, or {@code null} if reading fails
      */
-    public static Table readAllTracksTable(Path experimentPath) {
+    public static Table readTracksTable(Path experimentPath) {
         TrackTableIO trackIO = new TrackTableIO();
         try {
             return trackIO.readCsvWithSchema(
@@ -278,9 +278,9 @@ public final class HelperIO {
      */
     public static void main(String[] args) {
         Path            experimentPath = Paths.get("/Users/hans/Paint Test Project/221012");
-        List<Recording> recordings     = readAllRecordings(experimentPath);
-        List<Square>    squares        = readAllSquares(experimentPath);
-        List<Track>     tracks         = readAllTracks(experimentPath);
+        List<Recording> recordings     = readRecordings(experimentPath);
+        List<Square>    squares        = readSquares(experimentPath);
+        List<Track>     tracks         = readTracks(experimentPath);
 
         if (recordings == null || squares == null || tracks == null) {
             int i = 1; // breakpoint marker for inspection
