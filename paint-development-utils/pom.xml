@@ -17,7 +17,7 @@
     <!-- =========================================================== -->
     <artifactId>paint-development-utils</artifactId>
     <packaging>jar</packaging>
-    <name>Paint Development Utilities</name>
+    <name>Development Utilities</name>
     <description>Developer utilities for building and packaging PAINT applications</description>
 
     <!-- =========================================================== -->

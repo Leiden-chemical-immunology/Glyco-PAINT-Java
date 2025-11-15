@@ -17,7 +17,7 @@
 
     <artifactId>paint-generate-squares</artifactId>
     <packaging>jar</packaging>
-    <name>Paint Generate Squares</name>
+    <name>Generate Squares</name>
     <description>Standalone desktop application for generating experiment squares</description>
 
     <!-- =============================================================== -->

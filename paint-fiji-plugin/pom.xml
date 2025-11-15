@@ -9,7 +9,7 @@
     </parent>
     <artifactId>paint-fiji-plugin</artifactId>
     <packaging>jar</packaging>
-    <name>Paint Fiji Plugin</name>
+    <name>Fiji Plugin</name>
     <description>Integration of Paint application with Fiji/TrackMate plugin</description>
     <properties>
         <fiji.dir>/Applications/Fiji.app</fiji.dir>

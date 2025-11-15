@@ -18,7 +18,7 @@
     <artifactId>paint-create-experiment</artifactId>
     <packaging>jar</packaging>
 
-    <name>Paint Create Experiment</name>
+    <name>Create Experiment</name>
     <description>Standalone desktop app for creating experiments</description>
 
     <!-- =============================================================== -->

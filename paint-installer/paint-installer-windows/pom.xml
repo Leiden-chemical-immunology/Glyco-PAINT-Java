@@ -15,7 +15,7 @@
     <artifactId>paint-installer-windows</artifactId>
     <packaging>jar</packaging>
 
-    <name>Glyco-PAINT Installer (Windows)</name>
+    <name>Installer (Windows)</name>
     <description>Self-extracting GUI installer for Glyco-PAINT (Windows)</description>
 
     <properties>

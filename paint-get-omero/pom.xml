@@ -18,7 +18,7 @@
     <artifactId>paint-get-omero</artifactId>
     <packaging>jar</packaging>
 
-    <name>Paint Get Omero</name>
+    <name>Get Omero</name>
     <description>Standalone desktop app for loading Omero data</description>
 
     <!-- =============================================================== -->

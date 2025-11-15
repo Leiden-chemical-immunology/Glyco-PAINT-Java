@@ -15,7 +15,7 @@
     <artifactId>paint-installer-macos</artifactId>
     <packaging>jar</packaging>
 
-    <name>Glyco-PAINT Installer (macOS)</name>
+    <name>Installer (macOS)</name>
     <description>Self-extracting GUI installer for Glyco-PAINT (macOS)</description>
 
     <properties>
