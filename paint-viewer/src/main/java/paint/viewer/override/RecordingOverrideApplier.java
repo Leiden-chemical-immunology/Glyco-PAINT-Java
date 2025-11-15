@@ -2,6 +2,7 @@ package paint.viewer.override;
 
 import static paint.shared.constants.PaintConstants.*;
 
+import paint.viewer.override.RecordingOverride;
 import paint.viewer.model.RecordingEntry;
 
 import tech.tablesaw.api.Table;
@@ -28,20 +29,19 @@ public final class RecordingOverrideApplier {
             return;
         }
 
-        List<RecordingOverride> overrides = load(csvPath);
+        List<RecordingOverride> overrides = loadRecordingOverride(csvPath);
         applyInternal(recordingEntries, overrides);
     }
 
     // ────────────────────────────────────────────────────────────
     // INTERNAL APPLY
     // ────────────────────────────────────────────────────────────
-    private static void applyInternal(List<RecordingEntry> entries,
-            List<RecordingOverride> overrides) {
+    private static void applyInternal(List<RecordingEntry> entries, List<RecordingOverride> overrides) {
 
         Map<String, RecordingOverride> map = new HashMap<>();
 
         for (RecordingOverride o : overrides) {
-            map.put(key(o.experimentName, o.recordingName), o);
+            map.put(key(o.getExperimentName(), o.getRecordingName()), o);
         }
 
         int applied = 0;
@@ -53,10 +53,10 @@ public final class RecordingOverrideApplier {
 
             if (override != null) {
 
-                entry.getRecording().setMinRequiredDensityRatio(override.minRequiredDensityRatio);
-                entry.getRecording().setMinRequiredRSquared(override.minRequiredRSquared);
-                entry.getRecording().setMaxAllowableVariability(override.maxAllowableVariability);
-                entry.getRecording().setNeighbourMode(override.neighbourMode);
+                entry.getRecording().setMinRequiredDensityRatio(override.getMinRequiredDensityRatio());
+                entry.getRecording().setMinRequiredRSquared(override.getMinRequiredRSquared());
+                entry.getRecording().setMaxAllowableVariability(override.getMaxAllowableVariability());
+                entry.getRecording().setNeighbourMode(override.getNeighbourMode());
 
                 applied++;
             }
@@ -68,7 +68,7 @@ public final class RecordingOverrideApplier {
     // ────────────────────────────────────────────────────────────
     // CSV LOADING
     // ────────────────────────────────────────────────────────────
-    private static List<RecordingOverride> load(Path csvFile) {
+    public static List<RecordingOverride> loadRecordingOverride(Path csvFile) {
 
         List<RecordingOverride> list = new ArrayList<>();
 
@@ -78,12 +78,12 @@ public final class RecordingOverrideApplier {
             for (int i = 0; i < table.rowCount(); i++) {
                 RecordingOverride recordingOverride = new RecordingOverride();
 
-                recordingOverride.experimentName          = table.column(EXPERIMENT_NAME).get(i).toString();
-                recordingOverride.recordingName           = table.column(RECORDING_NAME).get(i).toString();
-                recordingOverride.minRequiredDensityRatio = Double.parseDouble(table.column(MIN_REQUIRED_DENSITY_RATIO).get(i).toString());
-                recordingOverride.minRequiredRSquared     = Double.parseDouble(table.column(MIN_REQUIRED_R_SQUARED).get(i).toString());
-                recordingOverride.maxAllowableVariability = Double.parseDouble(table.column(MAX_ALLOWABLE_VARIABILITY).get(i).toString());
-                recordingOverride.neighbourMode           = table.column(NEIGHBOUR_MODE).get(i).toString();
+                recordingOverride.setExperimentName(          table.column(EXPERIMENT_NAME).get(i).toString());
+                recordingOverride.setRecordingName(           table.column(RECORDING_NAME).get(i).toString());
+                recordingOverride.setMinRequiredDensityRatio( Double.parseDouble(table.column(MIN_REQUIRED_DENSITY_RATIO).get(i).toString()));
+                recordingOverride.setMinRequiredRSquared(     Double.parseDouble(table.column(MIN_REQUIRED_R_SQUARED).get(i).toString()));
+                recordingOverride.setMaxAllowableVariability( Double.parseDouble(table.column(MAX_ALLOWABLE_VARIABILITY).get(i).toString()));
+                recordingOverride.setNeighbourMode(           table.column(NEIGHBOUR_MODE).get(i).toString());
 
                 list.add(recordingOverride);
             }
@@ -94,17 +94,17 @@ public final class RecordingOverrideApplier {
         return list;
     }
 
-    // ────────────────────────────────────────────────────────────
-    // MODEL + KEY
-    // ────────────────────────────────────────────────────────────
-    private static final class RecordingOverride {
-        String experimentName;
-        String recordingName;
-        double minRequiredDensityRatio;
-        double minRequiredRSquared;
-        double maxAllowableVariability;
-        String neighbourMode;
-    }
+//    // ────────────────────────────────────────────────────────────
+//    // MODEL + KEY
+//    // ────────────────────────────────────────────────────────────
+//    public static final class RecordingOverride {
+//        String experimentName;
+//        String recordingName;
+//        double minRequiredDensityRatio;
+//        double minRequiredRSquared;
+//        double maxAllowableVariability;
+//        String neighbourMode;
+//    }
 
     private static String key(String experimentName, String recordingName) {
         return experimentName + "§" + recordingName;

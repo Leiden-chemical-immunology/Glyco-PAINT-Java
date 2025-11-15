@@ -3,7 +3,6 @@ package paint.viewer.override;
 import static paint.shared.constants.PaintConstants.*;
 
 import paint.shared.objects.Square;
-import paint.shared.objects.SquareOverride;
 import paint.viewer.model.RecordingEntry;
 
 import tech.tablesaw.api.Table;
@@ -29,7 +28,7 @@ public final class SquareOverrideApplier {
             return;
         }
 
-        List<SquareOverride> overrides = load(csvPath);
+        List<SquareOverride> overrides = loadSquareOverride(csvPath);
 
         // Flatten all squares from all RecordingEntries
         List<Square> allSquares = new ArrayList<>();
@@ -87,7 +86,7 @@ public final class SquareOverrideApplier {
     // ────────────────────────────────────────────────────────────
     // CSV LOADING
     // ────────────────────────────────────────────────────────────
-    private static List<SquareOverride> load(Path csvFile) {
+    public static List<SquareOverride> loadSquareOverride(Path csvFile) {
 
         List<SquareOverride> list = new ArrayList<>();
 

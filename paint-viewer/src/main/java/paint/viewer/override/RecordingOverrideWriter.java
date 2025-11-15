@@ -3,6 +3,7 @@ package paint.viewer.override;
 import paint.shared.utils.PaintLogger;
 import paint.viewer.model.SquareControlParams;
 import paint.viewer.model.RecordingEntry;
+import paint.viewer.override.RecordingOverride;
 
 import java.io.IOException;
 import java.nio.file.*;
