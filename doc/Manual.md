@@ -548,6 +548,8 @@ Settings can be applied to:
 
 Selections are saved in a **Recording Override** file under the Viewer directory in the Project Root.
 
+When the **Import Overrides** checkbox (left bottom of the main dialog) is clicked, previously made square selections are applied.
+
 <img src="./Pictures/select-squares-dialog.png" alt="select-squares-dialog" style="zoom:33%;" />
 
 
@@ -556,7 +558,10 @@ Selections are saved in a **Recording Override** file under the Viewer directory
 The **Assign Cells** dialog lets you group squares into cells (1–6) or mark them unassigned.  
 - Select squares by dragging with the mouse.
 - Click **Assign** to confirm.
+
 Assignments are saved in a **Square Override** file under the Viewer directory.
+
+When the **Import Overrides** checkbox (left bottom of the main dialog) is clicked, previously made cell assignments  are applied.
 
 <div style="text-align:center;">
 <img src="./Pictures/assign-cells-dialog.png" alt="assign-cells-dialog" style="zoom:33%;" />
@@ -578,6 +583,10 @@ The Viewer can replay original microscope recordings used by TrackMate.
 The **Export Image** option saves the current view as a high-resolution RGB `.png` file.
 
 
+
+## Show Squares
+
+The **Show Squares** option displays the square data of the currently displayed recording in your computer's default viewer for `.csv` files.
 
 
 
@@ -614,8 +623,13 @@ The end result of the Glyco-PAINT pipeline is a set of CSV files in the **Projec
 - **Tracks** 
 - **Recordings**
 
-These files contain experiment metadata and calculation results. 
-They can be imported into **RStudio** or other analysis environments for statistical processing and visualization.
+These files contain experiment metadata and calculation results.  They can be imported into **RStudio** (or any other analysis environment) for statistical processing and visualization.
+
+The data in the Squares, Tracks and Recordings files are a compilation from the last time you ran Generate Squares (either directly or throught the TrackMate plugin). You can verify manually by for example opening the Recording file in Excel, apply a filter and see which Experiments are included. Per Experiment only the recordings are included for which the Process Flag was set to True.
+
+The values you selected for Min Required Density Ratio, Min Required R Squared, Max Allowable Variability and Neighbour mode are incorporated in the Recordings file. The changes you may have made in the Viewer with the **Selecting Squares** or **Assign Cells** options are not included in the data, but stored in separate **Square Override** and **Recording Override** files (in the Project Root) yet and still need to be incorporated.  A separate command line utility is avaiulable for that.
+
+
 
 
 # Development
