@@ -25,23 +25,23 @@ public class ProjectDialogController {
         };
     }
 
-    private final DialogMode  mode;
-    private final JDialog     dialog;
-    private final PaintConfig cfg;
+    private final DialogMode         mode;
+    private final JDialog            dialog;
+    private final PaintConfig        cfg;
 
-    private final Supplier<Path> getProjectPath;
-    private final Consumer<Path> setProjectPath;
+    private final Supplier<Path>     getProjectPath;
+    private final Consumer<Path>     setProjectPath;
 
     private final ProjectPathsPanel  paths;
     private final SquaresParamsPanel params;       // null in VIEWER
     private final ExperimentsPanel   experiments;
     private final BottomBarPanel     bottom;
 
-    private final Supplier<Object> buildProject; // returns Project
-    private final QuadRunnable     startWorker;  // (runUiDisable, runUiEnable, onSuccess, onFailure)
-    private final Supplier<Thread> getWorker;
-    private final Runnable         setCancelled;
-    private final Runnable         clearCancelled;
+    private final Supplier<Object>   buildProject; // returns Project
+    private final QuadRunnable       startWorker;  // (runUiDisable, runUiEnable, onSuccess, onFailure)
+    private final Supplier<Thread>   getWorker;
+    private final Runnable           setCancelled;
+    private final Runnable           clearCancelled;
 
     public ProjectDialogController(
             DialogMode mode,
@@ -59,26 +59,26 @@ public class ProjectDialogController {
             Runnable setCancelled,
             Runnable clearCancelled
     ) {
-        this.mode = mode;
-        this.dialog = dialog;
-        this.cfg = cfg;
+        this.mode           = mode;
+        this.dialog         = dialog;
+        this.cfg            = cfg;
         this.getProjectPath = getProjectPath;
         this.setProjectPath = setProjectPath;
-        this.paths = paths;
-        this.params = params;
-        this.experiments = experiments;
-        this.bottom = bottom;
-        this.buildProject = buildProject;
-        this.startWorker = startWorker;
-        this.getWorker = getWorker;
-        this.setCancelled = setCancelled;
+        this.paths          = paths;
+        this.params         = params;
+        this.experiments    = experiments;
+        this.bottom         = bottom;
+        this.buildProject   = buildProject;
+        this.startWorker    = startWorker;
+        this.getWorker      = getWorker;
+        this.setCancelled   = setCancelled;
         this.clearCancelled = clearCancelled;
     }
 
     public void init() {
         // browse handlers
         paths.onBrowseProject(dir -> updateProjectRoot(dir.toPath()));
-        paths.onBrowseImages(dir -> bottom.updateOkEnabled(validToRun()));
+        paths.onBrowseImages( dir -> bottom.updateOkEnabled(validToRun()));
 
         // text listeners
         paths.onRootsChanged(() -> bottom.updateOkEnabled(validToRun()));

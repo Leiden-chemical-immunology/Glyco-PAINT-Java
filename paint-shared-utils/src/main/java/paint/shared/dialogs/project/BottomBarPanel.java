@@ -102,12 +102,6 @@ public class BottomBarPanel {
         cancelBtn.setEnabled(enabled);
     }
 
-    public void setSweepSelected(boolean selected) {
-        if (sweep != null) {
-            sweep.setSelected(selected);
-        }
-    }
-
     public boolean isSaveExperiments() {
         return saveExperiments.isSelected();
     }
@@ -137,6 +131,12 @@ public class BottomBarPanel {
      * Only meaningful when mode is TRACKMATE; otherwise returns false.
      */
     public boolean isSweepSelected() {
-        return sweep!= null && sweep.isSelected();
+        return sweep != null && sweep.isSelected();
+    }
+
+    public void setSweepSelected(boolean selected) {
+        if (sweep != null) {
+            sweep.setSelected(selected);
+        }
     }
 }
