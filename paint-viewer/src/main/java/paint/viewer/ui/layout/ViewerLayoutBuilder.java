@@ -11,7 +11,6 @@ import java.awt.*;
 
 import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_HEIGHT;
 import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH;
-import static paint.viewer.override.OverrideTool.processOverride;
 
 /**
  * Builds the full layout for the ViewerFrame and returns all
@@ -63,7 +62,7 @@ public class ViewerLayoutBuilder {
      */
     public LayoutComponents build(
             int                             gridDim,
-            NavigationPanel.Listener        navListener,
+            NavigationPanel.Listener        navigationListener,
             RecordingControlsPanel.Listener controlsListener,
             CloseListener                   closeListener) {
 
@@ -72,10 +71,10 @@ public class ViewerLayoutBuilder {
         JLabel experimentLabel = new JLabel("", SwingConstants.CENTER);
         JLabel recordingLabel  = new JLabel("", SwingConstants.CENTER);
 
-        SquareGridPanel leftGridPanel = new SquareGridPanel(gridDim, gridDim);
+        SquareGridPanel          leftGridPanel   = new SquareGridPanel(gridDim, gridDim);
         RecordingAttributesPanel attributesPanel = new RecordingAttributesPanel();
-        NavigationPanel navigationPanel           = new NavigationPanel(navListener);
-        RecordingControlsPanel controlsPanel      = new RecordingControlsPanel(controlsListener);
+        NavigationPanel          navigationPanel = new NavigationPanel(navigationListener);
+        RecordingControlsPanel   controlsPanel   = new RecordingControlsPanel(controlsListener);
 
         // --- Images panel ---
         JPanel imagesInner = new JPanel(new GridLayout(1, 2, 15, 0));
@@ -99,8 +98,8 @@ public class ViewerLayoutBuilder {
         imagesWithNav.setBorder(BorderFactory.createCompoundBorder(outer, inner));
 
         imagesWithNav.add(navigationPanel.getComponent(), BorderLayout.NORTH);
-        imagesWithNav.add(imagesInner,                        BorderLayout.CENTER);
-        imagesWithNav.add(labelsPanel,                        BorderLayout.SOUTH);
+        imagesWithNav.add(imagesInner,                    BorderLayout.CENTER);
+        imagesWithNav.add(labelsPanel,                    BorderLayout.SOUTH);
 
         // --- Main layout ---
         JPanel root = new JPanel(new BorderLayout());

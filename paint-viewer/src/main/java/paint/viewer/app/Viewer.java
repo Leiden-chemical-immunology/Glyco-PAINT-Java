@@ -88,15 +88,14 @@ public class Viewer {
 
             // --- Step 1: Load the last used project root from preferences ---
             String lastProject = PaintPrefs.getString("Path", "Project Root", System.getProperty("user.home"));
-            Path projectPath = Paths.get(lastProject);
+            Path   projectPath = Paths.get(lastProject);
 
             // --- Step 2: Initialise logging/config ---
             PaintConfig.initialise(projectPath);
             PaintLogger.initialise(projectPath, "Viewer");
 
             // --- Step 3: Open the Project Specification dialog directly ---
-            ProjectDialog specificationDialog =
-                    new ProjectDialog(null, projectPath, DialogMode.VIEWER);
+            ProjectDialog specificationDialog = new ProjectDialog(null, projectPath, DialogMode.VIEWER);
 
             // ✅ Callback for the OK button — launches the viewer
             specificationDialog.setCalculationCallback(project -> {

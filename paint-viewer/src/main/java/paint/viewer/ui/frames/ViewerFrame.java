@@ -69,6 +69,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -127,7 +128,6 @@ public class ViewerFrame extends JFrame
     private       RecordingDisplayUpdater      displayUpdater;
     private final RecordingNavigator           navigator;
 
-    // New: checkbox in bottom-left for "Import Overrides"
     private       JCheckBox                    importOverridesCheckBox;
 
     /**
@@ -141,18 +141,17 @@ public class ViewerFrame extends JFrame
     public ViewerFrame(Project project, List<RecordingEntry> recordingEntries) {
         super("Recording Viewer - " + project.getProjectRootPath().getFileName());
         this.project                 = project;
-        this.allRecordingEntries     = new java.util.ArrayList<>(recordingEntries);
-        this.recordingEntries        = new java.util.ArrayList<>(recordingEntries);
+        this.allRecordingEntries     = new ArrayList<>(recordingEntries);                          // This is the unfiltered set of recordings
+        this.recordingEntries        = new ArrayList<>(recordingEntries);                          // This is the filtered set of recordings
         this.recordingOverrideWriter = new RecordingOverrideWriter(project.getProjectRootPath());
         this.squareOverrideWriter    = new SquareOverrideWriter(project.getProjectRootPath());
-
         this.navigator               = new RecordingNavigator(newIndex -> showRecordingEntry(newIndex));
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         setResizable(false);
 
-        // Validate grid configuration
+        // Validate grid configuration: can only be a liomited set
         int     numberOfSquaresInRecording = PaintConfig.getInt(GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING, -1);
         int[]   validSquareLayouts         = {25, 100, 225, 400, 900};
         boolean isValidSquareLayout        = false;
@@ -178,8 +177,6 @@ public class ViewerFrame extends JFrame
                         this,
                         this,
                         () -> {
-
-                            // Only run overrides if the checkbox is selected
                             if (importOverridesCheckBox != null && importOverridesCheckBox.isSelected()) {
                                 try {
                                     processOverride(project.getProjectRootPath(), "-override");
@@ -193,8 +190,6 @@ public class ViewerFrame extends JFrame
                                     );
                                 }
                             }
-
-                            // Always close afterwards
                             this.dispose();
                         }
                 );

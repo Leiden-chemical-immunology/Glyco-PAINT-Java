@@ -1,4 +1,4 @@
-# v0.0.128
+# v0.0.129
 - (Development) Significant refactoring of packages
 - (Development) Significant replacement of hard-coded strings with constants (involving most classes)
 - (Development) Several large classes have been refactored into small ones for improved maintainability.
