@@ -98,7 +98,9 @@ import static paint.viewer.override.SquareOverrideApplier.applySquareOverrides;
  * project initialization. All UI updates occur on the Swing event dispatch thread.
  */
 public class ViewerFrame extends JFrame
-        implements RecordingControlsPanel.Listener, NavigationPanel.Listener {
+        implements RecordingControlsPanel.Listener,
+                   NavigationPanel.Listener,
+                   ViewerLayoutBuilder.CloseListener {
 
     // Remembers the last used filter criteria for the filter dialog
     private RecordingFilterDialog.FilterCriteria lastFilterCriteria = null;
@@ -176,22 +178,7 @@ public class ViewerFrame extends JFrame
                         numberOfSquareInOneDimension,
                         this,
                         this,
-                        () -> {
-                            if (importOverridesCheckBox != null && importOverridesCheckBox.isSelected()) {
-                                try {
-                                    processOverride(project.getProjectRootPath(), "-override");
-                                } catch (Exception ex) {
-                                    ex.printStackTrace();
-                                    JOptionPane.showMessageDialog(
-                                            this,
-                                            "Error while processing overrides:\n" + ex.getMessage(),
-                                            "Error",
-                                            JOptionPane.ERROR_MESSAGE
-                                    );
-                                }
-                            }
-                            this.dispose();
-                        }
+                        this
                 );
         // Apply content pane
         setContentPane(ui.rootPanel);
@@ -707,5 +694,25 @@ public class ViewerFrame extends JFrame
 
     public void onNavigateTo(int newIndex) {
         showRecordingEntry(newIndex);
+    }
+
+    @Override
+    public void onClose() {
+        if (importOverridesCheckBox != null && importOverridesCheckBox.isSelected()) {
+            try {
+                processOverride(project.getProjectRootPath(), "-override");
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Error while processing overrides:\n" + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+
+        // Always close the window afterwards
+        this.dispose();
     }
 }
