@@ -11,12 +11,17 @@ import java.awt.*;
 
 import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_HEIGHT;
 import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH;
+import static paint.viewer.override.OverrideTool.processOverride;
 
 /**
  * Builds the full layout for the ViewerFrame and returns all
  * top-level UI components that the frame must retain.
  */
 public class ViewerLayoutBuilder {
+
+    public interface CloseListener {
+        void onClose();
+    }
 
     public static class LayoutComponents {
         public final JPanel                   rootPanel;
@@ -56,9 +61,11 @@ public class ViewerLayoutBuilder {
      * Builds the full viewer layout and returns all UI components
      * needed by ViewerFrame.
      */
-    public LayoutComponents build(int gridDim,
-            NavigationPanel.Listener navListener,
-            RecordingControlsPanel.Listener controlsListener) {
+    public LayoutComponents build(
+            int                             gridDim,
+            NavigationPanel.Listener        navListener,
+            RecordingControlsPanel.Listener controlsListener,
+            CloseListener                   closeListener) {
 
         // --- Components created here so ViewerFrame does not ---
         JLabel rightImageLabel = new JLabel("", SwingConstants.CENTER);
@@ -108,9 +115,7 @@ public class ViewerLayoutBuilder {
         bottomPanel.add(importOverridesCheckBox, BorderLayout.WEST);
 
         JButton closeButton = new JButton("Close Viewer");
-        closeButton.addActionListener(e -> SwingUtilities.getWindowAncestor(root).dispose());
-
-        JPanel rightBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        closeButton.addActionListener(e -> closeListener.onClose());        JPanel rightBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         rightBox.add(closeButton);
         bottomPanel.add(rightBox, BorderLayout.EAST);
 
@@ -144,4 +149,5 @@ public class ViewerLayoutBuilder {
         panel.add(comp, BorderLayout.CENTER);
         return panel;
     }
+
 }

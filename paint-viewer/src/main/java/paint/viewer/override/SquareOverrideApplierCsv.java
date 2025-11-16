@@ -1,10 +1,7 @@
 package paint.viewer.override;
 
-import static paint.shared.constants.PaintConstants.*;
-
 import paint.shared.objects.Square;
 import paint.viewer.model.RecordingEntry;
-
 import tech.tablesaw.api.Table;
 
 import java.nio.file.Files;
@@ -12,7 +9,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import static paint.shared.constants.PaintConstants.*;
+
 public final class SquareOverrideApplierCsv {
+
+    private SquareOverrideApplierCsv() {
+    }
 
     // ──────────────────────────────────────────────
     // Apply overrides from Squares.csv into memory
@@ -25,30 +27,36 @@ public final class SquareOverrideApplierCsv {
             throw new Exception("Squares.csv not found in project");
         }
 
-        Table t = Table.read().csv(csv.toString());
+        Table table = Table.read().csv(csv.toString());
 
         List<SquareOverride> overrides = new ArrayList<>();
-        for (int i = 0; i < t.rowCount(); i++) {
-            SquareOverride o = new SquareOverride();
-            o.setExperimentName(t.column(EXPERIMENT_NAME).get(i).toString());
-            o.setRecordingName(t.column(RECORDING_NAME).get(i).toString());
-            o.setSquareNumber(Integer.parseInt(t.column(SQUARE_NUMBER).get(i).toString()));
-            o.setCellId(Integer.parseInt(t.column(CELL_ID).get(i).toString()));
-            o.setTimestamp(t.column(TIME_STAMP).get(i).toString());
-            overrides.add(o);
+        for (int i = 0; i < table.rowCount(); i++) {
+            SquareOverride override = new SquareOverride();
+            override.setExperimentName(table.column(EXPERIMENT_NAME).get(i).toString());
+            override.setRecordingName(table.column(RECORDING_NAME).get(i).toString());
+            override.setSquareNumber(Integer.parseInt(table.column(SQUARE_NUMBER).get(i).toString()));
+            override.setCellId(Integer.parseInt(table.column(CELL_ID).get(i).toString()));
+            override.setTimestamp(table.column(TIME_STAMP).get(i).toString());
+            overrides.add(override);
         }
 
         for (RecordingEntry re : entries) {
             List<Square> squares = re.getRecording().getSquaresOfRecording();
 
-            for (SquareOverride o : overrides) {
-                for (Square s : squares) {
+            for (SquareOverride override : overrides) {
+                for (Square square : squares) {
 
-                    if (!o.getExperimentName().equals(s.getExperimentName())) continue;
-                    if (!o.getRecordingName().equals(s.getRecordingName())) continue;
-                    if (o.getSquareNumber() != s.getSquareNumber()) continue;
+                    if (!override.getExperimentName().equals(square.getExperimentName())) {
+                        continue;
+                    }
+                    if (!override.getRecordingName().equals(square.getRecordingName())) {
+                        continue;
+                    }
+                    if (override.getSquareNumber() != square.getSquareNumber()) {
+                        continue;
+                    }
 
-                    s.setCellId(o.getCellId());
+                    square.setCellId(override.getCellId());
                 }
             }
         }
@@ -70,20 +78,19 @@ public final class SquareOverrideApplierCsv {
 
         Table t = Table.create("Squares");
 
-        int n = allSquares.size();
-        String[] exp = new String[n];
-        String[] rec = new String[n];
-        int[] sqNum = new int[n];
-        int[] cellId = new int[n];
-        String[] ts = new String[n];
+        int      n      = allSquares.size();
+        String[] exp    = new String[n];
+        String[] rec    = new String[n];
+        int[]    sqNum  = new int[n];
+        int[]    cellId = new int[n];
+        String[] ts     = new String[n];
 
         for (int i = 0; i < n; i++) {
-            Square s = allSquares.get(i);
-            exp[i] = s.getExperimentName();
-            rec[i] = s.getRecordingName();
-            sqNum[i] = s.getSquareNumber();
+            Square s  = allSquares.get(i);
+            exp[i]    = s.getExperimentName();
+            rec[i]    = s.getRecordingName();
+            sqNum[i]  = s.getSquareNumber();
             cellId[i] = s.getCellId();
-            // ts[i] = s.getTimestamp();
         }
 
         t.addColumns(
@@ -97,6 +104,4 @@ public final class SquareOverrideApplierCsv {
         t.write().csv(out.toString());
         System.out.println("Wrote: " + out.getFileName());
     }
-
-    private SquareOverrideApplierCsv() {}
 }

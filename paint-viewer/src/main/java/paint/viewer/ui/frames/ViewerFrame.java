@@ -73,6 +73,7 @@ import java.util.List;
 import java.util.Map;
 
 import static paint.shared.constants.PaintConstants.*;
+import static paint.viewer.override.OverrideTool.processOverride;
 import static paint.viewer.override.RecordingOverrideApplier.applyRecordingOverrides;
 import static paint.viewer.override.SquareOverrideApplier.applySquareOverrides;
 
@@ -174,10 +175,29 @@ public class ViewerFrame extends JFrame
         ViewerLayoutBuilder.LayoutComponents ui =
                 builder.build(
                         numberOfSquareInOneDimension,
-                        this,   // navigation listener
-                        this    // controls listener
-                );
+                        this,
+                        this,
+                        () -> {
 
+                            // Only run overrides if the checkbox is selected
+                            if (importOverridesCheckBox != null && importOverridesCheckBox.isSelected()) {
+                                try {
+                                    processOverride(project.getProjectRootPath(), "-override");
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                    JOptionPane.showMessageDialog(
+                                            this,
+                                            "Error while processing overrides:\n" + ex.getMessage(),
+                                            "Error",
+                                            JOptionPane.ERROR_MESSAGE
+                                    );
+                                }
+                            }
+
+                            // Always close afterwards
+                            this.dispose();
+                        }
+                );
         // Apply content pane
         setContentPane(ui.rootPanel);
 

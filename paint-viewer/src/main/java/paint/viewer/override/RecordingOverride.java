@@ -40,7 +40,6 @@ public class RecordingOverride {
     private double minRequiredDensityRatio;
     private double minRequiredRSquared;
     private double maxAllowableVariability;
-
     private String neighbourMode;
 
     // ───────────────────────────────────────────────────────────────────────────────

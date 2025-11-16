@@ -95,15 +95,15 @@ public final class SquareOverrideApplier {
 
             for (int i = 0; i < table.rowCount(); i++) {
 
-                SquareOverride o = new SquareOverride();
+                SquareOverride squareOverride = new SquareOverride();
 
-                o.setExperimentName(table.column(EXPERIMENT_NAME).get(i).toString());
-                o.setRecordingName(table.column(RECORDING_NAME).get(i).toString());
-                o.setSquareNumber(Integer.parseInt(table.column(SQUARE_NUMBER).get(i).toString()));
-                o.setCellId(Integer.parseInt(table.column(CELL_ID).get(i).toString()));
-                o.setTimestamp(table.column(TIME_STAMP).get(i).toString());
+                squareOverride.setExperimentName(table.column(EXPERIMENT_NAME).get(i).toString());
+                squareOverride.setRecordingName(table.column(RECORDING_NAME).get(i).toString());
+                squareOverride.setSquareNumber(Integer.parseInt(table.column(SQUARE_NUMBER).get(i).toString()));
+                squareOverride.setCellId(Integer.parseInt(table.column(CELL_ID).get(i).toString()));
+                squareOverride.setTimestamp(table.column(TIME_STAMP).get(i).toString());
 
-                list.add(o);
+                list.add(squareOverride);
             }
 
         } catch (Exception ex) {

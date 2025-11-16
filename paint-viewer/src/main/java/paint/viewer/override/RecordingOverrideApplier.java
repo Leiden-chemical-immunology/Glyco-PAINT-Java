@@ -2,7 +2,6 @@ package paint.viewer.override;
 
 import static paint.shared.constants.PaintConstants.*;
 
-import paint.viewer.override.RecordingOverride;
 import paint.viewer.model.RecordingEntry;
 
 import tech.tablesaw.api.Table;
@@ -40,8 +39,8 @@ public final class RecordingOverrideApplier {
 
         Map<String, RecordingOverride> map = new HashMap<>();
 
-        for (RecordingOverride o : overrides) {
-            map.put(key(o.getExperimentName(), o.getRecordingName()), o);
+        for (RecordingOverride override : overrides) {
+            map.put(key(override.getExperimentName(), override.getRecordingName()), override);
         }
 
         int applied = 0;
@@ -93,18 +92,6 @@ public final class RecordingOverrideApplier {
 
         return list;
     }
-
-//    // ────────────────────────────────────────────────────────────
-//    // MODEL + KEY
-//    // ────────────────────────────────────────────────────────────
-//    public static final class RecordingOverride {
-//        String experimentName;
-//        String recordingName;
-//        double minRequiredDensityRatio;
-//        double minRequiredRSquared;
-//        double maxAllowableVariability;
-//        String neighbourMode;
-//    }
 
     private static String key(String experimentName, String recordingName) {
         return experimentName + "§" + recordingName;
