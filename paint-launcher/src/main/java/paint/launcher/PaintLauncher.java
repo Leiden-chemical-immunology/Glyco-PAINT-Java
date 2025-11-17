@@ -47,13 +47,13 @@ public class PaintLauncher {
 
     /**
      * Initializes and displays the main graphical user interface (GUI) for the Glyco-PAINT Launcher.
-     *
+     * <p>
      * This method sets up the main window of the application with a fixed size and layout, featuring
      * a title, a workflow panel with buttons and visual elements, and a footer. Buttons in the workflow
      * panel are dynamically created based on the {@code APP_MAP} field, each associated with specific
      * functionalities or applications. The GUI elements use customized styles, colors, and layouts
      * optimized for a consistent appearance.
-     *
+     * <p>
      * The window is designed to be non-resizable, centered on the screen, and includes functionality
      * for launching external applications defined by app mappings.
      */

@@ -39,7 +39,6 @@ package paint.getomero.app;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 
@@ -92,7 +91,7 @@ public class GetOmeroUI extends JFrame {
         JButton browseButton = new JButton("Browse…");
         browseButton.setFont(baseFont);
         browseButton.setMargin(new Insets(2, 8, 2, 8));
-        browseButton.addActionListener(this::onBrowse);
+        browseButton.addActionListener(e -> onBrowse());
 
         gbc.gridx  = 0;
         gbc.anchor = GridBagConstraints.WEST;
@@ -117,7 +116,7 @@ public class GetOmeroUI extends JFrame {
         buttonPanel.add(processButton);
         buttonPanel.add(closeButton);
 
-        processButton.addActionListener(this::onProcess);
+        processButton.addActionListener(e -> onProcess());
         closeButton.addActionListener(e -> dispose());
 
         // Layout
@@ -137,10 +136,8 @@ public class GetOmeroUI extends JFrame {
     /**
      * Handles the action event triggered when the user clicks the "Browse" button.
      * Opens a directory chooser dialog and updates the directory path display.
-     *
-     * @param e the triggered {@link ActionEvent}
      */
-    private void onBrowse(ActionEvent e) {
+    private void onBrowse() {
         JFileChooser chooser = new JFileChooser(directoryField.getText());
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
@@ -153,10 +150,8 @@ public class GetOmeroUI extends JFrame {
      * Executes when the "Process" button is clicked. Processes all "Fileset" subdirectories
      * of the selected folder by invoking {@code ProcessOmeroFiles.process()}, then displays
      * a summary of remaining files in a scrollable dialog.
-     *
-     * @param e the triggered {@link ActionEvent}
      */
-    private void onProcess(ActionEvent e) {
+    private void onProcess() {
         String path = directoryField.getText();
         if (path == null || path.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please select a directory first.",

@@ -464,13 +464,6 @@ public class Square {
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Adds a single {@link Track} to this square.
-     */
-    public void addTrack(Track track) {
-        this.tracks.add(track);
-    }
-
-    /**
      * Initializes all double fields in this object to {@code NaN}.
      * Used to ensure undefined numeric values are recognizable.
      */
@@ -570,22 +563,5 @@ public class Square {
             squares.add(new Square(i, 100));
         }
         System.out.println(squares);
-
-        double areaOriginal         = calcSquareAreaOriginal(20);
-        double areaNew              = calculateSquareArea(400);
-        double difference           = areaNew - areaOriginal;
-        double percentualDifference = (areaNew - areaOriginal) / areaOriginal * 100;
-        System.out.println("Area original: " + areaOriginal);
-        System.out.println("Area new: " + areaNew);
-        System.out.printf("Difference: %.6f%n", difference);
-        System.out.printf("Percentual difference: %.4f%%%n", percentualDifference);
-    }
-
-    private static double calcSquareAreaOriginal(int nrSquaresInRow) {
-        double micrometerPerPixel = 0.1602804;
-        int pixelsPerImage = 512;
-        double micrometerPerImageAxis = micrometerPerPixel * pixelsPerImage;
-        double micrometerPerSquareAxis = micrometerPerImageAxis / nrSquaresInRow;
-        return micrometerPerSquareAxis * micrometerPerSquareAxis;
     }
 }

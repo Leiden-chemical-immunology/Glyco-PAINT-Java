@@ -44,7 +44,6 @@ import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.Table;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static paint.shared.constants.PaintConstants.*;
@@ -233,22 +232,5 @@ public final class HelperIO {
         } catch (Exception e) {
             PaintLogger.errorf("Failed to write %s : %s", TRACKS_CSV, friendlyMessage(e));
         }
-    }
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // TESTING ENTRY POINT
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Diagnostic entry point for quick local verification.
-     * <p>Reads and logs all core tables from a given experiment directory.</p>
-     *
-     * @param args unused command-line arguments
-     */
-    public static void main(String[] args) {
-        Path            experimentPath = Paths.get("/Users/hans/Paint Test Project/221012");
-        List<Recording> recordings     = readRecordings(experimentPath);
-        List<Square>    squares        = readSquares(experimentPath);
-        List<Track>     tracks         = readTracks(experimentPath);
     }
 }

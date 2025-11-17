@@ -43,7 +43,7 @@ final class MavenSupport {
 
         List<String> cmd = new ArrayList<>();
         cmd.addAll(Arrays.asList("mvn", "-U", "-q", "clean", "package"));
-        if (profile != null && profile.trim().length() > 0) {
+        if (profile != null && !profile.trim().isEmpty()) {
             cmd.add(profile.trim());
         }
         cmd.addAll(Arrays.asList(

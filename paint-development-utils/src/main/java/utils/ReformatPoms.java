@@ -15,7 +15,7 @@ import org.w3c.dom.*;
  *   - Remove blank/whitespace-only lines
  *   - Add one blank line before a comment block
  *   - Add one blank line after </dependency> and </repository>
- *
+ * <p>
  * AUTHOR: Herr Doctor
  * MODULE: paint-development-utils
  * UPDATED: 2025-11-05
@@ -144,8 +144,7 @@ public class ReformatPoms {
         StringBuilder sb = new StringBuilder();
         String[] lines = text.split("\\r?\\n");
         boolean prevIsComment = false;
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
+        for (String line : lines) {
             boolean isComment = line.trim().startsWith("<!--");
             if (isComment && !prevIsComment) sb.append("\n"); // before block
             sb.append(line).append("\n");

@@ -64,7 +64,7 @@ public class CleanupUtility {
      * Terminates the JVM with a non-zero status code on errors.
      * </p>
      *
-     * @param args CLI arguments (see class-level JavaDoc for usage)
+     * @param args CLI arguments (see class-level Javadoc for usage)
      */
     public static void main(String[] args) {
         if (args.length < 2) {
@@ -126,7 +126,7 @@ public class CleanupUtility {
      * Executes cleanup of CSV files and experiment directories.
      *
      * @param rootDir project root directory
-     * @param mode    cleanup mode, must be either {@code TRACKMATE} or {@code GENERATE_SQUARES}
+     * @param mode    cleanup mode must be either {@code TRACKMATE} or {@code GENERATE_SQUARES}
      * @param dryRun  if {@code true}, only print what would be deleted without removing anything
      * @param old     if {@code true}, target only legacy CSV names (without {@code " Java"} suffix);
      *                ignored if {@code all} is {@code true}
@@ -242,8 +242,8 @@ public class CleanupUtility {
 
     private static String normalizeOption(String raw) {
         if (raw == null) return "";
-        String o = raw.replace('\u2013', '-')
-                .replace('\u2014', '-')
+        String o = raw.replace('_', '-')
+                .replace('—', '-')
                 .trim()
                 .toLowerCase();
         switch (o) {

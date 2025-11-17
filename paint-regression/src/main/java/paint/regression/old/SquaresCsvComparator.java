@@ -10,16 +10,16 @@ import java.util.*;
  * ============================================================================
  *  SquaresCsvComparator.java
  *  Part of the Paint Regression module.
- *
+ * <p>
  *  Purpose:
  *    Compares two versions of the "Squares" CSV output (old Python vs new Java)
  *    and produces several comparison reports:
- *
+ * <p>
  *       +-- Squares Validation - Comparison.csv
  *       +-- Squares Validation - Old Normalized.csv
  *       +-- Squares Validation - New Normalized.csv
  *       \-- Squares Validation - Selected Overview.csv
- *
+ * <p>
  *  Author: Hans Bakker
  *  Module: paint-regression
  * ============================================================================
@@ -490,7 +490,6 @@ public class SquaresCsvComparator {
 
         // --- Read comparison CSV and extract relative differences ---
         try (BufferedReader br = Files.newBufferedReader(comparisonCsv, java.nio.charset.StandardCharsets.UTF_8)) {
-            String header = br.readLine(); // skip header
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.trim().isEmpty() || line.startsWith("SUMMARY")) continue;

@@ -40,7 +40,6 @@ package paint.shared.utils;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -219,7 +218,7 @@ public final class PaintConsoleWindow {
         highlightButton.addActionListener(e -> highlightProblemsOrNext());
         JButton saveButton  = new JButton("Save");
         JButton closeButton = new JButton("Close");
-        saveButton.addActionListener(PaintConsoleWindow::saveConsoleContent);
+        saveButton.addActionListener( e -> PaintConsoleWindow.saveConsoleContent());
         closeButton.addActionListener(e -> close());
 
         buttonPanel.add(highlightButton);
@@ -257,7 +256,7 @@ public final class PaintConsoleWindow {
     /**
      * Saves console output to a user-selected file.
      */
-    private static void saveConsoleContent(ActionEvent e) {
+    private static void saveConsoleContent() {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Save Console Output");
         int choice = chooser.showSaveDialog(frame);

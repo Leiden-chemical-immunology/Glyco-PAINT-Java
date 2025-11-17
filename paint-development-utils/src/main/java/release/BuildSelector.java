@@ -48,17 +48,15 @@ public class BuildSelector {
                      "mvn", "-q", "-U", "clean", "install")
     );
     private final Map<Task, JCheckBox> boxes = new LinkedHashMap<>();
-    private JFrame    frame;
     private JTextArea log;
     private JButton   runBtn;
-    private JButton   closeBtn;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new BuildSelector().show());
     }
 
     private void show() {
-        frame = new JFrame("Glyco-PAINT – Deliverables Builder");
+        JFrame frame = new JFrame("Glyco-PAINT – Deliverables Builder");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(700, 800);
         frame.setLocationRelativeTo(null);
@@ -85,7 +83,7 @@ public class BuildSelector {
         frame.add(new JScrollPane(log), BorderLayout.CENTER);
 
         JPanel south = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        closeBtn = new JButton("Close");
+        JButton closeBtn = new JButton("Close");
         runBtn = new JButton("Generate");
 
         closeBtn.addActionListener(e -> System.exit(0));

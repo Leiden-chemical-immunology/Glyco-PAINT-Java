@@ -62,6 +62,7 @@ import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.io.*;
 import java.nio.file.*;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -114,10 +115,8 @@ public class GlycoPaintInstallerWindows {
 
         java.util.List<String> out = new java.util.ArrayList<>();
         for (String base : bases) {
-            if (base != null && !base.isEmpty()) {
-                for (String name : FIJI_DIR_NAMES) {
-                    out.add(base + File.separator + name);
-                }
+            for (String name : FIJI_DIR_NAMES) {
+                out.add(base + File.separator + name);
             }
         }
         return out.toArray(new String[0]);
@@ -209,8 +208,8 @@ public class GlycoPaintInstallerWindows {
      *   paint-<module>-X.Y[.Z]
      */
     private void detectVersion() {
-        try (InputStream in = getClass().getResourceAsStream(PAYLOAD_NAME);
-             ZipInputStream zis = new ZipInputStream(in)) {
+        try (InputStream inputStream = getClass().getResourceAsStream(PAYLOAD_NAME);
+             ZipInputStream zis = new ZipInputStream(inputStream)) {
             ZipEntry entry;
             Pattern pat = Pattern.compile("paint-[a-zA-Z-]+-([0-9]+\\.[0-9]+(\\.[0-9]+)?)");
             while ((entry = zis.getNextEntry()) != null) {
@@ -612,24 +611,29 @@ public class GlycoPaintInstallerWindows {
      * If multiple candidates exist, choose the lexicographically last name.
      */
     private Optional<Path> findPluginJar(Path root) throws IOException {
+
+        // Comparator selecting lexicographically LAST filename
+        Comparator<Path> byNameDescending =
+                (a, b) -> b.getFileName().toString().compareTo(a.getFileName().toString());
+
         // Preferred: paint-fiji-plugin-*.jar
         try (java.util.stream.Stream<Path> s = Files.walk(root)) {
             Optional<Path> preferred =
                     s.filter(Files::isRegularFile)
                      .filter(p -> p.getFileName().toString().endsWith(".jar"))
                      .filter(p -> p.getFileName().toString().startsWith("paint-fiji-plugin-"))
-                     .sorted((a, b) -> b.getFileName().toString().compareTo(a.getFileName().toString()))
-                     .findFirst();
+                     .min(byNameDescending);      // <-- replaces sorted().findFirst()
 
-            if (preferred.isPresent()) return preferred;
+            if (preferred.isPresent()) {
+                return preferred;
+            }
         }
 
-        // Fallback: any *.jar
+        // Fallback: any .jar
         try (java.util.stream.Stream<Path> s2 = Files.walk(root)) {
             return s2.filter(Files::isRegularFile)
                      .filter(p -> p.getFileName().toString().endsWith(".jar"))
-                     .sorted((a, b) -> b.getFileName().toString().compareTo(a.getFileName().toString()))
-                     .findFirst();
+                     .min(byNameDescending);        // <-- also using min()
         }
     }
 }

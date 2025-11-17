@@ -8,6 +8,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -35,10 +36,10 @@ final class PomUtils {
             files.filter(p -> p.getFileName().toString().equals("pom.xml"))
                     .forEach(p -> {
                         try {
-                            String text = new String(Files.readAllBytes(p), "UTF-8");
+                            String text = new String(Files.readAllBytes(p), StandardCharsets.UTF_8);
                             String cleaned = text.replaceAll("-SNAPSHOT", "");
                             if (!text.equals(cleaned)) {
-                                Files.write(p, cleaned.getBytes("UTF-8"));
+                                Files.write(p, cleaned.getBytes(StandardCharsets.UTF_8));
                                 System.out.println("🧹 Cleaned -SNAPSHOT from " + p);
                             }
                         } catch (IOException e) {

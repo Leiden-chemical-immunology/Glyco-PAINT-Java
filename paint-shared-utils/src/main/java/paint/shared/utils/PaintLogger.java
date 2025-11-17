@@ -334,18 +334,6 @@ public final class PaintLogger {
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Returns formatted stack trace text for a given throwable.
-     */
-    private static String getStackTrace(Throwable t) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(t.toString()).append("\n");
-        for (StackTraceElement el : t.getStackTrace()) {
-            sb.append("    at ").append(el.toString()).append("\n");
-        }
-        return sb.toString();
-    }
-
-    /**
      * Java 8-compatible implementation of String.repeat(int).
      */
     private static String repeat(String s, int count) {

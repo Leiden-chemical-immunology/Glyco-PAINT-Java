@@ -115,7 +115,6 @@ public final class ValidProjectPath {
         }
 
         // Validate configuration file presence
-        Path confPath = projectPath.resolve(PAINT_CONFIGURATION_JSON);
         if (!validateProjectFolder(projectPath)) {
             projectPath = Paths.get(System.getProperty("user.home"));
             needToAsk   = true;

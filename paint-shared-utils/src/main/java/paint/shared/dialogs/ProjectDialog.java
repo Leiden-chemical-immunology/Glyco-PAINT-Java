@@ -4,7 +4,6 @@
 package paint.shared.dialogs;
 
 import paint.shared.config.GenerateSquaresConfig;
-import paint.shared.config.TrackMateConfig;
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.dialogs.project.BottomBarPanel;
 import paint.shared.dialogs.project.ExperimentsPanel;
@@ -38,7 +37,6 @@ public class ProjectDialog {
     // ----- state -----
     private final JDialog     dialog;
     private final DialogMode  mode;
-    private final PaintConfig cfg;
 
     private          Path                projectPath;
     private          CalculationCallback callback;
@@ -54,7 +52,7 @@ public class ProjectDialog {
     public ProjectDialog(Frame owner, Path initialProjectPath, DialogMode mode) {
         this.mode        = mode;
         this.projectPath = initialProjectPath;
-        this.cfg         = PaintConfig.instance();
+        PaintConfig cfg = PaintConfig.instance();
 
         final String projectName = (projectPath != null && projectPath.getFileName() != null)
                 ? projectPath.getFileName().toString() : "(none)";
@@ -169,17 +167,12 @@ public class ProjectDialog {
             paramsPanel.persistTo(mode);
         }
 
-        final TrackMateConfig       tm  = new TrackMateConfig();
         final GenerateSquaresConfig gs  = new GenerateSquaresConfig();
 
-        return new paint.shared.objects.Project(
-                true,               // okPressed
-                projectPath,
+        return new paint.shared.objects.Project(projectPath,
                 imagesPath,
                 experimentNames,
-                cfg,
                 gs,
-                tm,
                 null
         );
     }

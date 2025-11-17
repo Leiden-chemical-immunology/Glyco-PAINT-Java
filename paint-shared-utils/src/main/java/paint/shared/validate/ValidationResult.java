@@ -123,14 +123,6 @@ public final class ValidationResult {
         return !errors.isEmpty();
     }
 
-    /**
-     * Checks if the validation result contains one or more warnings.
-     *
-     * @return {@code true} if warnings exist; {@code false} otherwise
-     */
-//    public boolean hasWarnings() {
-//        return !warnings.isEmpty();
-//    }
 
     /**
      * Determines whether the validation result is completely valid.

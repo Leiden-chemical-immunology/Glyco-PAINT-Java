@@ -35,8 +35,6 @@
 package paint.shared.objects;
 
 import paint.shared.config.GenerateSquaresConfig;
-import paint.shared.config.paintconfig.PaintConfig;
-import paint.shared.config.TrackMateConfig;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -55,12 +53,12 @@ public class Project {
     // ATTRIBUTES
     // ───────────────────────────────────────────────────────────────────────────────
 
-    private Path                   projectRootPath;
-    private Path                   imagesRootPath;
-    private String                 projectName;
-    private GenerateSquaresConfig  generateSquaresConfig;
-    private List<String>           experimentNames;
-    private List<Experiment>       experiments;
+    private       Path                   projectRootPath;
+    private       Path                   imagesRootPath;
+    private       String                 projectName;
+    private       GenerateSquaresConfig  generateSquaresConfig;
+    private       List<String>           experimentNames;
+    private final List<Experiment>       experiments;
 
     // ───────────────────────────────────────────────────────────────────────────────
     // CONSTRUCTORS
@@ -69,22 +67,16 @@ public class Project {
     /**
      * Constructs a fully-specified {@code Project} instance.
      *
-     * @param status                the project status
      * @param projectRootPath       the root directory of the project
      * @param imagesRootPath        the images directory path
      * @param experimentNames       list of experiment names
-     * @param paintConfig           PAINT configuration instance
      * @param generateSquaresConfig GenerateSquares configuration instance
-     * @param trackMateConfig       TrackMate configuration instance
      * @param experiments           list of experiment objects
      */
-    public Project(boolean status,
-                   Path                  projectRootPath,
+    public Project(Path                  projectRootPath,
                    Path                  imagesRootPath,
                    List<String>          experimentNames,
-                   PaintConfig           paintConfig,
                    GenerateSquaresConfig generateSquaresConfig,
-                   TrackMateConfig       trackMateConfig,
                    List<Experiment>      experiments) {
         this.projectRootPath       = projectRootPath;
         this.imagesRootPath        = imagesRootPath;

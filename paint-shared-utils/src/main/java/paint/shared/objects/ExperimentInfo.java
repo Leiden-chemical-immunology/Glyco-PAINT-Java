@@ -42,7 +42,6 @@ package paint.shared.objects;
 import static paint.shared.constants.PaintConstants.*;
 import paint.shared.utils.Miscellaneous;
 import paint.shared.utils.PaintLogger;
-import tech.tablesaw.api.Table;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -98,44 +97,6 @@ public class ExperimentInfo {
     public ExperimentInfo() {
     }
 
-    /**
-     * Constructs a fully specified {@code ExperimentInfo} instance.
-     *
-     * @param experimentName  the experiment name
-     * @param recordingName   the recording name
-     * @param conditionNumber the condition number
-     * @param replicateNumber the replicate number
-     * @param probeName       the probe name
-     * @param probeType       the probe type
-     * @param cellType        the cell type
-     * @param adjuvant        the adjuvant used
-     * @param concentration   the concentration value
-     * @param processFlag     whether this recording should be processed
-     * @param threshold       the threshold for processing
-     */
-    public ExperimentInfo(String  experimentName,
-                          String  recordingName,
-                          int     conditionNumber,
-                          int     replicateNumber,
-                          String  probeName,
-                          String  probeType,
-                          String  cellType,
-                          String  adjuvant,
-                          double  concentration,
-                          boolean processFlag,
-                          double threshold) {
-        this.experimentName  = experimentName;
-        this.recordingName   = recordingName;
-        this.conditionNumber = conditionNumber;
-        this.replicateNumber = replicateNumber;
-        this.probeName       = probeName;
-        this.probeType       = probeType;
-        this.cellType        = cellType;
-        this.adjuvant        = adjuvant;
-        this.concentration   = concentration;
-        this.processFlag     = processFlag;
-        this.threshold       = threshold;
-    }
 
     /**
      * Constructs an {@code ExperimentInfo} instance from a map of string key-value pairs.
