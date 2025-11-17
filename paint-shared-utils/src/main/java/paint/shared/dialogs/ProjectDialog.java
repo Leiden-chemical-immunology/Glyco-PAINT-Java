@@ -44,15 +44,15 @@ public class ProjectDialog {
     private volatile Thread              workerThread;
 
     // sub-components
-    private final ProjectPathsPanel  pathsPanel;
-    private final SquaresParamsPanel paramsPanel;         // null in VIEWER
+    private final ProjectPathsPanel  projectPathsPanel;
+    private final SquaresParamsPanel squaresParamsPanel;         // null in VIEWER
     private final ExperimentsPanel   experimentsPanel;
-    private final BottomBarPanel     bottomBar;
+    private final BottomBarPanel     bottomBarPanel;
 
     public ProjectDialog(Frame owner, Path initialProjectPath, DialogMode mode) {
-        this.mode        = mode;
-        this.projectPath = initialProjectPath;
-        PaintConfig cfg = PaintConfig.instance();
+        this.mode               = mode;
+        this.projectPath        = initialProjectPath;
+        PaintConfig paintConfig = PaintConfig.instance();
 
         final String projectName = (projectPath != null && projectPath.getFileName() != null)
                 ? projectPath.getFileName().toString() : "(none)";
@@ -78,51 +78,46 @@ public class ProjectDialog {
         final JPanel root = new JPanel(new BorderLayout());
         final JPanel form = new JPanel(new BorderLayout());
 
-        pathsPanel  = new ProjectPathsPanel(mode, projectPath);
-        paramsPanel = (mode == DialogMode.VIEWER) ? null : new SquaresParamsPanel(mode);
-        if (paramsPanel != null) {
-            form.add(pathsPanel.component(), BorderLayout.NORTH);
-            form.add(paramsPanel.component(), BorderLayout.CENTER);
+        projectPathsPanel  = new ProjectPathsPanel(mode, projectPath);
+        squaresParamsPanel = (mode == DialogMode.VIEWER) ? null : new SquaresParamsPanel(mode);
+        if (squaresParamsPanel != null) {
+            form.add(projectPathsPanel.component(), BorderLayout.NORTH);
+            form.add(squaresParamsPanel.component(), BorderLayout.CENTER);
         } else {
-            form.add(pathsPanel.component(), BorderLayout.NORTH);
+            form.add(projectPathsPanel.component(), BorderLayout.NORTH);
         }
         experimentsPanel = new ExperimentsPanel(projectPath);
 
         final JPanel center = new JPanel(new BorderLayout());
         center.add(experimentsPanel.component(), BorderLayout.CENTER);
 
-        bottomBar = new BottomBarPanel(mode, PaintRuntime.isVerbose());
+        bottomBarPanel = new BottomBarPanel(mode, PaintRuntime.isVerbose());
 
         root.add(form, BorderLayout.NORTH);
         root.add(center, BorderLayout.CENTER);
-        root.add(bottomBar.component(), BorderLayout.SOUTH);
+        root.add(bottomBarPanel.component(), BorderLayout.SOUTH);
 
         dialog.setContentPane(root);
 
         // ---- wire controller ----
         final ProjectDialogController controller = new ProjectDialogController(
-                mode,
-                dialog,
-                cfg,
-                () -> projectPath,
-                p -> {
+                mode,                                                   // mode
+                dialog,                                                 // dialog
+                paintConfig,                                            // paintConfig
+                () -> projectPath,                                      // Supplier getProjectPath
+                p -> {                                             // Consumer setProjectPAth
                     projectPath = p;
                     experimentsPanel.reload(projectPath);
-                    pathsPanel.onProjectRootChanged(projectPath);
+                    projectPathsPanel.onProjectRootChanged(projectPath);
                 },
-                pathsPanel,
-                paramsPanel,
-                experimentsPanel,
-                bottomBar,
-                this::buildProject,
-                this::startWorker,
-                () -> workerThread,
-                () -> {
-                    cancelled = true;
-                },
-                () -> {
-                    cancelled = false;
-                }
+                projectPathsPanel,                                      // projectPathsPanel
+                squaresParamsPanel,                                     // squaresParamsPanel
+                experimentsPanel,                                       // experimentsPanel
+                bottomBarPanel,                                         // bottomBarPanel
+                this::startWorker,                                      // startWorker
+                () -> workerThread,                                     // getWorker
+                () -> cancelled = true,                                 // setCancelled
+                () -> cancelled = false                                 // clearCancelled
         );
         controller.init();
 
@@ -155,16 +150,16 @@ public class ProjectDialog {
     // ---------- internals ----------
     private Project buildProject() {
         final List<String> experimentNames = experimentsPanel.selectedExperimentNames();
-        final Path imagesPath = pathsPanel.imagesRootText().isEmpty()
-                ? null : Paths.get(pathsPanel.imagesRootText());
+        final Path imagesPath = projectPathsPanel.imagesRootText().isEmpty()
+                ? null : Paths.get(projectPathsPanel.imagesRootText());
 
         // persist roots
-        PaintPrefs.putString("Path", "Project Root",  pathsPanel.projectRootText());
-        PaintPrefs.putString("Path", "Images Root",   pathsPanel.imagesRootText());
+        PaintPrefs.putString("Path", "Project Root", projectPathsPanel.projectRootText());
+        PaintPrefs.putString("Path", "Images Root", projectPathsPanel.imagesRootText());
 
         // persist params
-        if (paramsPanel != null) {
-            paramsPanel.persistTo(mode);
+        if (squaresParamsPanel != null) {
+            squaresParamsPanel.persistTo(mode);
         }
 
         final GenerateSquaresConfig gs  = new GenerateSquaresConfig();
@@ -216,6 +211,6 @@ public class ProjectDialog {
     }
 
     public boolean isSweepSelected() {
-        return bottomBar.isSweepSelected();
+        return bottomBarPanel.isSweepSelected();
     }
 }

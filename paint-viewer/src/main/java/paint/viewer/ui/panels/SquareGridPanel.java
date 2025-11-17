@@ -586,12 +586,6 @@ public class SquareGridPanel extends JPanel {
         this.repaint();
     }
 
-    /**
-     * Sets the associated {@link Recording} object for this panel.
-     */
-    public void setRecording(Recording recording) {
-    }
-
 
     /**
      * Hides the square information popup if it is currently visible.

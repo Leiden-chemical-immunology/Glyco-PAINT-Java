@@ -24,7 +24,6 @@ public class PaintConfig {
 
     public static final String SECTION_GENERATE_SQUARES = "Generate Squares"; // Section name for Generate Squares configuration
     public static final String SECTION_TRACKMATE        = "TrackMate";        // Section name for TrackMate configuration.
-    public static final String SECTION_DEBUG            = "Debug";            // Section name for Debug configuration.
 
     // ============================================================================
     // Singleton + Shared Resources
@@ -188,30 +187,30 @@ public class PaintConfig {
         if (autoSave) save();
     }
 
-    public void removeValue(String section, String key, boolean autoSave) {
-        JsonObject sec = getSection(section);
-        if (sec != null) {
-            String real = jsonCase.findKeyIgnoreCase(sec, key);
-            if (real != null) {
-                sec.remove(real);
-                if (autoSave) save();
-            }
-        }
-    }
+//    public void removeValue(String section, String key, boolean autoSave) {
+//        JsonObject sec = getSection(section);
+//        if (sec != null) {
+//            String real = jsonCase.findKeyIgnoreCase(sec, key);
+//            if (real != null) {
+//                sec.remove(real);
+//                if (autoSave) save();
+//            }
+//        }
+//    }
 
-    public void removeSectionValue(String section, boolean autoSave) {
-        store.removeSection(section);
-        if (autoSave) save();
-    }
+//    public void removeSectionValue(String section, boolean autoSave) {
+//        store.removeSection(section);
+//        if (autoSave) save();
+//    }
 
     public Set<String> keys(String section) {
         JsonObject sec = getSection(section);
         return (sec != null) ? sec.keySet() : Collections.<String>emptySet();
     }
 
-    public Set<String> sections() {
-        return store.sections();
-    }
+//    public Set<String> sections() {
+//        return store.sections();
+//    }
 
     public JsonObject getJson() {
         return store.root();

@@ -99,15 +99,6 @@ public final class PaintRuntime {
         return verbose;
     }
 
-    /**
-     * Returns the current log level as a string (e.g. "INFO", "DEBUG", "WARN").
-     *
-     * @return current log level string
-     */
-    public static String getLogLevel() {
-        return logLevel;
-    }
-
     // ───────────────────────────────────────────────────────────────────────────────
     // MUTATORS
     // ───────────────────────────────────────────────────────────────────────────────
@@ -120,15 +111,5 @@ public final class PaintRuntime {
     public static void setVerbose(boolean v) {
         verbose = v;
         PaintPrefs.putBoolean("Runtime", "Verbose", v);
-    }
-
-    /**
-     * Updates the global log level and persists the change to preferences.
-     *
-     * @param level new log level string (e.g. "DEBUG", "INFO", "WARN", "ERROR")
-     */
-    public static void setLogLevel(String level) {
-        logLevel = level;
-        PaintPrefs.putString("Runtime", "Log Level", level);
     }
 }

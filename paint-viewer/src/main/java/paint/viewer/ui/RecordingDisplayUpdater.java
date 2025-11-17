@@ -101,7 +101,6 @@ public final class RecordingDisplayUpdater {
     public void show(RecordingEntry entry, int index, int totalSize) {
 
         // --- Left grid panel ---
-        leftGridPanel.setRecording(entry.getRecording());
         leftGridPanel.setBackgroundImage(entry.getLeftImage());
         leftGridPanel.setSquares(entry.getRecording().getSquaresOfRecording());
 

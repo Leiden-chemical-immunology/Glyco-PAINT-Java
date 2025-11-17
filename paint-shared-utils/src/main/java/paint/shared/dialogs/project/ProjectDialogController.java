@@ -43,24 +43,23 @@ public class ProjectDialogController {
     private final Runnable           clearCancelled;
 
     public ProjectDialogController(
-            DialogMode mode,
-            JDialog dialog,
-            PaintConfig cfg,
-            Supplier<Path> getProjectPath,
-            Consumer<Path> setProjectPath,
-            ProjectPathsPanel paths,
+            DialogMode         mode,
+            JDialog            dialog,
+            PaintConfig        paintConfig,
+            Supplier<Path>     getProjectPath,
+            Consumer<Path>     setProjectPath,
+            ProjectPathsPanel  paths,
             SquaresParamsPanel params,
-            ExperimentsPanel experiments,
-            BottomBarPanel bottom,
-            Supplier<Object> buildProject,
-            QuadRunnable startWorker,
-            Supplier<Thread> getWorker,
-            Runnable setCancelled,
-            Runnable clearCancelled
+            ExperimentsPanel   experiments,
+            BottomBarPanel     bottom,
+            QuadRunnable       startWorker,
+            Supplier<Thread>   getWorker,
+            Runnable           setCancelled,
+            Runnable           clearCancelled
     ) {
         this.mode           = mode;
         this.dialog         = dialog;
-        this.cfg            = cfg;
+        this.cfg            = paintConfig;
         this.getProjectPath = getProjectPath;
         this.setProjectPath = setProjectPath;
         this.paths          = paths;

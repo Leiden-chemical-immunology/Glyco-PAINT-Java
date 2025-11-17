@@ -274,14 +274,15 @@ public class ExperimentInfo {
         if (tracks != null) {
             sb.append(String.format("\t              Number of tracks              : %d%n", tracks.size()));
         }
-        if (squares != null) {
-            sb.append(String.format("\t              Number of squares             : %d%n", squares.size()));
-        }
 
         int numberOfSquaresWithTracks = 0;
-        for (Square square : squares) {
-            if (square.getTracks() != null && !square.getTracks().isEmpty()) {
-                numberOfSquaresWithTracks++;
+        if (squares != null) {
+            sb.append(String.format("\t              Number of squares             : %d%n", squares.size()));
+
+            for (Square square : squares) {
+                if (square.getTracks() != null && !square.getTracks().isEmpty()) {
+                    numberOfSquaresWithTracks++;
+                }
             }
         }
 

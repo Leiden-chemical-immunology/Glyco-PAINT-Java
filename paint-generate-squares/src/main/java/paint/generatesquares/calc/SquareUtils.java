@@ -175,11 +175,11 @@ public class SquareUtils {
                                                                   int nrOfAverageCountSquares) {
 
         List<Integer> trackCounts = squaresOfRecording.stream()
-                .map(Square::getNumberOfTracks)
-                .collect(Collectors.toList());
+                                                      .map(Square::getNumberOfTracks)
+                                                      .sorted(Comparator.reverseOrder())
+                                                      .collect(Collectors.toList());
 
         // Sort descending
-        trackCounts.sort(Comparator.reverseOrder());
 
         double total = 0.0;
         int n = 0;
