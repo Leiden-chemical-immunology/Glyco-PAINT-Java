@@ -1,3 +1,46 @@
+/*==============================================================================
+ *  Class:        SquareOverrideApplier.java
+ *  Package:      paint.viewer.override
+ *
+ *  PURPOSE:
+ *    Applies per-square cell assignment overrides to in-memory Square objects
+ *    during project loading or batch override processing. Overrides may be
+ *    defined for any combination of experiment, recording, and square number.
+ *
+ *  DESCRIPTION:
+ *    This utility reads "Square Override.csv" from the <project>/Viewer
+ *    directory and applies the cellId values to Square objects held inside
+ *    RecordingEntry instances or provided via direct square lists.
+ *
+ *    The override file contains rows structured as:
+ *
+ *        experimentName, recordingName, squareNumber, cellId, timestamp
+ *
+ *    Overrides are matched via a composite key:
+ *
+ *        experimentName + "§" + recordingName + "§" + squareNumber
+ *
+ *    Only in-memory mutation occurs here. The writer responsible for
+ *    generating the override CSV is {@link paint.viewer.override.SquareOverrideWriter}.
+ *
+ *  KEY FEATURES:
+ *    • Reads and applies overrides to Square objects.
+ *    • Composite-key lookup for fast matching.
+ *    • Supports applying overrides to RecordingEntry collections or raw Square lists.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-viewer
+ *
+ *  UPDATED:
+ *    2025-11-17
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+==============================================================================*/
+
 package paint.viewer.override;
 
 import static paint.shared.constants.PaintConstants.*;
@@ -14,11 +57,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Loads and applies per-square override values to Square objects.
+ * <p>
+ * Each override row in the CSV sets a new {@code cellId} for one specific square
+ * in a specific recording. Matching uses a stable composite key:
+ * <pre>
+ *   experimentName + "§" + recordingName + "§" + squareNumber
+ * </pre>
+ */
 public final class SquareOverrideApplier {
 
     // ────────────────────────────────────────────────────────────
     // PUBLIC ENTRY POINT (RecordingEntries + projectPath)
     // ────────────────────────────────────────────────────────────
+
+    /**
+     * Loads overrides (if present) and applies them to all Square objects
+     * found inside the provided RecordingEntry list.
+     *
+     * @param recordingEntries all recordings whose squares should be updated
+     * @param projectPath      the project root containing /Viewer/Square Override.csv
+     */
     public static void applySquareOverrides(List<RecordingEntry> recordingEntries,
             Path projectPath) {
 
@@ -30,7 +90,7 @@ public final class SquareOverrideApplier {
 
         List<SquareOverride> overrides = loadSquareOverride(csvPath);
 
-        // Flatten all squares from all RecordingEntries
+        // Flatten all squares from all recordings
         List<Square> allSquares = new ArrayList<>();
         for (RecordingEntry recordingEntry : recordingEntries) {
             allSquares.addAll(recordingEntry.getRecording().getSquaresOfRecording());
@@ -42,9 +102,18 @@ public final class SquareOverrideApplier {
     // ────────────────────────────────────────────────────────────
     // INTERNAL APPLY
     // ────────────────────────────────────────────────────────────
+
+    /**
+     * Applies overrides to the provided list of Square objects.
+     * Only squares with a matching composite key are updated.
+     *
+     * @param squares   list of Square objects from one or more recordings
+     * @param overrides parsed override objects from CSV
+     */
     private static void applyInternal(List<Square> squares,
             List<SquareOverride> overrides) {
 
+        // Map: key(exp, rec, square) → cellId
         Map<String, Integer> overrideCellIds = new HashMap<>();
 
         for (SquareOverride override : overrides) {
@@ -64,6 +133,7 @@ public final class SquareOverrideApplier {
 
             Integer newCellId = overrideCellIds.get(k);
 
+            // Only apply if present and different
             if (newCellId != null && newCellId != square.getCellId()) {
 
                 square.setCellId(newCellId);
@@ -86,6 +156,13 @@ public final class SquareOverrideApplier {
     // ────────────────────────────────────────────────────────────
     // CSV LOADING
     // ────────────────────────────────────────────────────────────
+
+    /**
+     * Loads square overrides from "Square Override.csv".
+     *
+     * @param csvFile full path to the override file
+     * @return a list of SquareOverride objects
+     */
     public static List<SquareOverride> loadSquareOverride(Path csvFile) {
 
         List<SquareOverride> list = new ArrayList<>();
@@ -113,6 +190,9 @@ public final class SquareOverrideApplier {
         return list;
     }
 
+    /**
+     * Builds a composite override lookup key.
+     */
     private static String key(String experimentName,
             String recordingName,
             int squareId) {

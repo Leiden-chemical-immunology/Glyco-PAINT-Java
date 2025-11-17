@@ -1,8 +1,55 @@
+/*==============================================================================
+ *  Class:        OverrideTool.java
+ *  Package:      paint.viewer.override
+ *
+ *  PURPOSE:
+ *    Standalone command-line utility for applying Recording and Square override
+ *    CSV files to a PAINT project. This tool reads the project's Recordings.csv
+ *    and Squares.csv files, loads applicable overrides from the Viewer folder,
+ *    applies all modifications, and writes new CSV files suffixed with a
+ *    user-defined extension (default: "-override").
+ *
+ *  DESCRIPTION:
+ *    The OverrideTool performs four major operations:
+ *
+ *      1. Loads the Squares.csv and Recordings.csv tables for a project.
+ *      2. Loads "Recording Override.csv" and "Square Override.csv" files when
+ *         present in the project's Viewer directory.
+ *      3. Applies the loaded overrides:
+ *          • Recording overrides: update filtering thresholds (density ratio,
+ *            R², variability, neighbour mode) and recompute square visibility.
+ *          • Square overrides: update cell assignments for individual squares.
+ *      4. Writes new CSV files containing the overridden data, preserving the
+ *         original versions and preventing accidental overwrites.
+ *
+ *    The tool is typically executed automatically when the Viewer closes with
+ *    "Import Overrides" enabled, but may be run manually for batch processing.
+ *
+ *  KEY FEATURES:
+ *    • Fully CLI-driven, no GUI dependencies.
+ *    • Reads/writes Tablesaw CSV structures.
+ *    • Atomic override handling for both recordings and squares.
+ *    • Recomputes square visibility after filtering thresholds are replaced.
+ *    • Produces new CSV files with a safe extension suffix.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-viewer
+ *
+ *  UPDATED:
+ *    2025-11-17
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+==============================================================================*/
+
 package paint.viewer.override;
 
 import paint.shared.io.RecordingsTableIO;
 import paint.shared.io.SquaresTableIO;
-import paint.viewer.model.RecordingEntry;
+import paint.shared.objects.Square;
 import tech.tablesaw.api.Table;
 
 import java.io.IOException;
@@ -12,15 +59,35 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.utils.SharedSquareUtils.applyVisibilityFilterOnRecording;
 import static paint.viewer.override.RecordingOverrideApplier.loadRecordingOverride;
 import static paint.viewer.override.SquareOverrideApplier.loadSquareOverride;
 
+/**
+ * Command-line utility for applying both Recording and Square override files
+ * to a PAINT project. This tool processes:
+ * <ul>
+ *   <li>{@code Recording Override.csv}</li>
+ *   <li>{@code Square Override.csv}</li>
+ * </ul>
+ * and generates updated CSV files containing the applied corrections.
+ * <p>
+ * Intended for automatic or manual batch override processing.
+ */
 public class OverrideTool {
 
+    /**
+     * Entry point for command-line execution.
+     *
+     * @param args 1 or 2 arguments:
+     *             <ul>
+     *               <li>args[0] → project path</li>
+     *               <li>args[1] → optional extension suffix</li>
+     *             </ul>
+     */
     public static void main(String[] args) {
 
         String extension;
-
 
         if (args.length != 1 && args.length != 2) {
             System.err.println("Usage: java -cp paint-viewer.jar paint.viewer.cli.OverrideTool <Project-Path> <Extension>");
@@ -29,6 +96,7 @@ public class OverrideTool {
 
         Path projectPath = Paths.get(args[0]);
 
+        // Optional suffix for newly written CSVs
         if (args.length == 2) {
             extension = "-" + args[1];
         } else {
@@ -37,6 +105,12 @@ public class OverrideTool {
         processOverride(projectPath, extension);
     }
 
+    /**
+     * Executes the full override procedure on the given project path.
+     *
+     * @param projectPath project root directory
+     * @param extension   extension added to output CSV files (e.g. "-override")
+     */
     public static void processOverride(Path projectPath, String extension) {
         // Does the project root exist?
         if (!Files.exists(projectPath) || !Files.isDirectory(projectPath)) {
@@ -45,48 +119,7 @@ public class OverrideTool {
         }
 
         ////////////////////////////////////////
-        // Process recordings
-        ////////////////////////////////////////
-
-        // Read the Recordings if it exists
-        Table recordingsTable;
-        Path  recordingsCsvPath = projectPath.resolve(RECORDINGS_CSV);
-
-        if (!Files.exists(recordingsCsvPath)) {
-            System.err.println("Info: Recordings file does not exist: " + recordingsCsvPath);
-            System.exit(2);
-        }
-
-        RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
-        try {
-            recordingsTable = recordingsTableIO.readCsv(recordingsCsvPath);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        // Read the Recordings Override if it exists
-        Path recordingOverridePath = projectPath.resolve("Viewer").resolve("Recording Override.csv");
-        List<RecordingOverride> recordingOverrides = null;
-        if (Files.exists(recordingOverridePath)) {
-            recordingOverrides = loadRecordingOverride(recordingOverridePath);
-        }
-
-        // Apply the overrides and save the recordings
-        if (recordingOverrides != null) {
-            applyRecordingOverride(recordingsTable, recordingOverrides);
-
-            String name                    = RECORDINGS_CSV.replaceFirst("(?i)\\.csv$", "");   // remove .csv (any case)
-            name                           = name + extension + ".csv";
-            Path overrideRecordingsCsvPath = projectPath.resolve(name);
-            try {
-                recordingsTableIO.writeCsv(recordingsTable, overrideRecordingsCsvPath);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        ////////////////////////////////////////
-        // Process squares
+        // Read Squares and Recordings
         ////////////////////////////////////////
 
         // Read the Squares if it exists
@@ -104,6 +137,51 @@ public class OverrideTool {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        // Read the Recordings if it exists
+        Table recordingsTable;
+        Path  recordingsCsvPath = projectPath.resolve(RECORDINGS_CSV);
+
+        if (!Files.exists(recordingsCsvPath)) {
+            System.err.println("Info: Recordings file does not exist: " + recordingsCsvPath);
+            System.exit(2);
+        }
+
+        RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
+        try {
+            recordingsTable = recordingsTableIO.readCsv(recordingsCsvPath);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        ////////////////////////////////////////
+        // Process recordings
+        ////////////////////////////////////////
+
+        // Read the Recordings Override if it exists
+        Path recordingOverridePath = projectPath.resolve("Viewer").resolve("Recording Override.csv");
+        List<RecordingOverride> recordingOverrides = null;
+        if (Files.exists(recordingOverridePath)) {
+            recordingOverrides = loadRecordingOverride(recordingOverridePath);
+        }
+
+        // Apply the overrides and save the recordings
+        if (recordingOverrides != null) {
+            applyRecordingOverride(recordingsTable, squaresTable, recordingOverrides);
+
+            String name                    = RECORDINGS_CSV.replaceFirst("(?i)\\.csv$", "");   // remove .csv (any case)
+            name                           = name + extension + ".csv";
+            Path overrideRecordingsCsvPath = projectPath.resolve(name);
+            try {
+                recordingsTableIO.writeCsv(recordingsTable, overrideRecordingsCsvPath);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        ////////////////////////////////////////
+        // Process squares
+        ////////////////////////////////////////
 
         // Read the Squares Override if it exists
         Path squareOverridePath = projectPath.resolve("Viewer").resolve("Square Override.csv");
@@ -127,7 +205,15 @@ public class OverrideTool {
         }
     }
 
-    public static void applyRecordingOverride(Table recordingsTable, List<RecordingOverride> overrides) {
+    /**
+     * Applies all RecordingOverride rows to the recordings table and recalculates
+     * visibility of squares for the affected recordings.
+     *
+     * @param recordingsTable target recordings table
+     * @param squaresTable    target squares table
+     * @param overrides       list of RecordingOverride objects
+     */
+    public static void applyRecordingOverride(Table recordingsTable, Table squaresTable, List<RecordingOverride> overrides) {
 
         // Build a fast lookup by (experimentName, recordingName)
         // Key format: expName + "§" + recName
@@ -145,7 +231,7 @@ public class OverrideTool {
             String experimentName = recordingsTable.stringColumn(EXPERIMENT_NAME).get(row);
             String recordingName  = recordingsTable.stringColumn(RECORDING_NAME).get(row);
 
-            String key = key(experimentName, recordingName);
+            String            key      = key(experimentName, recordingName);
             RecordingOverride override = map.get(key);
 
             if (override != null) {
@@ -155,12 +241,36 @@ public class OverrideTool {
                 recordingsTable.doubleColumn(MAX_ALLOWABLE_VARIABILITY).set(  row, override.getMaxAllowableVariability());
                 recordingsTable.stringColumn(NEIGHBOUR_MODE).set(             row, override.getNeighbourMode());
                 applied++;
+
+                // Now apply the filter criteria to the Squares of the Recordings
+
+                SquaresTableIO squaresTableIO = new SquaresTableIO();
+                List<Square>   squares        = squaresTableIO.toEntities(squaresTable);
+
+                applyVisibilityFilterOnRecording(
+                        squares,
+                        recordingName,
+                        override.getMinRequiredDensityRatio(),
+                        override.getMinRequiredRSquared(),
+                        override.getMaxAllowableVariability(),
+                        override.getNeighbourMode());
+
+                Table updatedSquares = squaresTableIO.toTable(squares);
+                squaresTable.clear();                   // This is a trick to ensure that old references are not invalidated
+                squaresTable.append(updatedSquares);
             }
         }
 
         System.out.println("Recording overrides applied: " + applied);
     }
 
+    /**
+     * Applies all SquareOverride rows to the squares table.
+     * Only squares matching (experiment, recording, squareNumber) are updated.
+     *
+     * @param squaresTable target squares table
+     * @param overrides    list of SquareOverride objects
+     */
     public static void applySquareOverride(Table squaresTable, List<SquareOverride> overrides) {
 
         // Build lookup map: "exp§rec§squareNumber" → SquareOverride
@@ -195,12 +305,17 @@ public class OverrideTool {
         System.out.println("Square overrides applied: " + applied);
     }
 
+    /**
+     * Composite key utility for (experiment, recording, square).
+     */
     private static String key(String exp, String rec, int sq) {
         return exp + "§" + rec + "§" + sq;
     }
 
+    /**
+     * Composite key utility for (experiment, recording).
+     */
     private static String key(String exp, String rec) {
         return exp + "§" + rec;
     }
-
 }
