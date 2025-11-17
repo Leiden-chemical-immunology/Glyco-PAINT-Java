@@ -229,13 +229,13 @@ public class ViewerFrame extends JFrame
             if (importOverridesCheckBox.isSelected()) {
                 performImportOverrides();
             } else {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Import Overrides has been turned off.\n" +
-                                "Please restart the Viewer for this change to take full effect.",
-                        "Restart Recommended",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+//                JOptionPane.showMessageDialog(
+//                        this,
+//                        "Import Overrides has been turned off.\n" +
+//                                "Please restart the Viewer for this change to take full effect.",
+//                        "Restart Recommended",
+//                        JOptionPane.INFORMATION_MESSAGE
+//                );
             }
         });
 
@@ -740,17 +740,37 @@ public class ViewerFrame extends JFrame
     @Override
     public void onClose() {
         if (importOverridesCheckBox != null && importOverridesCheckBox.isSelected()) {
-            try {
-                processOverride(project.getProjectRootPath(), "-override");
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Error while processing overrides:\n" + ex.getMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
+
+            int choice = JOptionPane.showConfirmDialog(
+                    this,
+                    "You are about to save override data into '-override' files.\n"
+                            + "This may take a while.\n\n"
+                            + "Do you want to save overrides now?",
+                    "Process Overrides?",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            if (choice == JOptionPane.CANCEL_OPTION) {
+                // User aborted closing
+                return;
             }
+
+            if (choice == JOptionPane.YES_OPTION) {
+                try {
+                    processOverride(project.getProjectRootPath(), "-override");
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Error while processing overrides:\n" + ex.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                }
+            }
+
+            // NO_OPTION → skip override processing and continue closing
         }
 
         // Always close the window afterwards
