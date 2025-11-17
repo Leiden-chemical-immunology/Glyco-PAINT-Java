@@ -138,15 +138,17 @@ public class ProjectDialogController {
             clearCancelled.run();
 
             // validate images root
-            final String img = paths.imagesRootText().trim();
-            if (!new File(img).isDirectory()) {
-                JOptionPane.showMessageDialog(
-                        dialog,
-                        "The Images Root directory does not exist. Please select a valid directory.",
-                        "Invalid Images Root",
-                        JOptionPane.WARNING_MESSAGE
-                );
-                return;
+            if (mode == DialogMode.TRACKMATE) {
+                final String img = paths.imagesRootText().trim();
+                if (!new File(img).isDirectory()) {
+                    JOptionPane.showMessageDialog(
+                            dialog,
+                            "The Images Root directory does not exist. Please select a valid directory.",
+                            "Invalid Images Root",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+                    return;
+                }
             }
 
             Runnable uiDisable = () -> {
