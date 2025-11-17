@@ -50,6 +50,7 @@ package paint.viewer.override;
 import paint.shared.io.RecordingsTableIO;
 import paint.shared.io.SquaresTableIO;
 import paint.shared.objects.Square;
+import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.Table;
 
 import java.io.IOException;
@@ -261,7 +262,7 @@ public class OverrideTool {
             }
         }
 
-        System.out.println("Recording overrides applied: " + applied);
+        PaintLogger.infof("Recording overrides applied: " + applied);
     }
 
     /**
@@ -302,7 +303,7 @@ public class OverrideTool {
             }
         }
 
-        System.out.println("Square overrides applied: " + applied);
+        PaintLogger.infof("Square overrides applied: " + applied);
     }
 
     /**

@@ -46,6 +46,7 @@ package paint.viewer.override;
 import static paint.shared.constants.PaintConstants.*;
 
 import paint.shared.objects.Square;
+import paint.shared.utils.PaintLogger;
 import paint.viewer.model.RecordingEntry;
 
 import tech.tablesaw.api.Table;
@@ -84,7 +85,7 @@ public final class SquareOverrideApplier {
 
         Path csvPath = projectPath.resolve("Viewer").resolve("Square Override.csv");
         if (!Files.exists(csvPath)) {
-            System.out.println("Square Override.csv not found → no overrides applied.");
+            PaintLogger.warnf("Square Override.csv not found → no overrides applied.");
             return;
         }
 
@@ -136,21 +137,23 @@ public final class SquareOverrideApplier {
             // Only apply if present and different
             if (newCellId != null && newCellId != square.getCellId()) {
 
+                int oldCellId = square.getCellId();   // capture BEFORE change
+
                 square.setCellId(newCellId);
                 applied++;
 
-                System.out.println(
-                        "Updated square: " +
-                                square.getExperimentName() + " / " +
-                                square.getRecordingName() + " / #" +
-                                square.getSquareNumber() +
-                                " | cellId " + square.getCellId() +
-                                " → " + newCellId
+                PaintLogger.infof(
+                        "Updated square: %s / %s / #%3d | cellId %d → %d",
+                        square.getExperimentName(),
+                        square.getRecordingName(),
+                        square.getSquareNumber(),
+                        oldCellId,
+                        newCellId
                 );
             }
         }
 
-        System.out.println("Square overrides applied: " + applied);
+        PaintLogger.infof("Square overrides applied: " + applied);
     }
 
     // ────────────────────────────────────────────────────────────
@@ -184,7 +187,7 @@ public final class SquareOverrideApplier {
             }
 
         } catch (Exception ex) {
-            System.err.println("Error reading Square Override.csv → " + ex.getMessage());
+           PaintLogger.errorf("Error reading Square Override.csv → " + ex.getMessage());
         }
 
         return list;

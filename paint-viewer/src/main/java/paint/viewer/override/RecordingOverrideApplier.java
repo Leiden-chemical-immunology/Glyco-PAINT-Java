@@ -41,6 +41,7 @@ package paint.viewer.override;
 
 import static paint.shared.constants.PaintConstants.*;
 
+import paint.shared.utils.PaintLogger;
 import paint.viewer.model.RecordingEntry;
 import tech.tablesaw.api.Table;
 
@@ -85,7 +86,7 @@ public final class RecordingOverrideApplier {
         Path csvPath = projectPath.resolve("Viewer").resolve("Recording Override.csv");
 
         if (!Files.exists(csvPath)) {
-            System.out.println("Recording Override.csv not found → no overrides applied.");
+            PaintLogger.warnf("Recording Override.csv not found → no overrides applied.");
             return;
         }
 
@@ -107,7 +108,8 @@ public final class RecordingOverrideApplier {
      * @param entries   recording entries to update
      * @param overrides list of overrides parsed from CSV
      */
-    private static void applyInternal(List<RecordingEntry> entries, List<RecordingOverride> overrides) {
+    private static void applyInternal(List<RecordingEntry> entries,
+            List<RecordingOverride> overrides) {
 
         // Map: "exp§rec" → RecordingOverride
         Map<String, RecordingOverride> map = new HashMap<>();
@@ -120,22 +122,47 @@ public final class RecordingOverrideApplier {
 
         for (RecordingEntry entry : entries) {
 
-            String key = key(entry.getExperimentName(), entry.getRecordingName());
-            RecordingOverride override = map.get(key);
+            String k = key(entry.getExperimentName(), entry.getRecordingName());
+            RecordingOverride override = map.get(k);
 
             if (override != null) {
 
-                // Apply overridden threshold values
+                // BEFORE applying, capture old values for logging
+                double oldDensityRatio   = entry.getRecording().getMinRequiredDensityRatio();
+                double oldRSquared       = entry.getRecording().getMinRequiredRSquared();
+                double oldVariability    = entry.getRecording().getMaxAllowableVariability();
+                String oldNeighbourMode  = entry.getRecording().getNeighbourMode();
+
+                // APPLY overrides
                 entry.getRecording().setMinRequiredDensityRatio(override.getMinRequiredDensityRatio());
                 entry.getRecording().setMinRequiredRSquared(override.getMinRequiredRSquared());
                 entry.getRecording().setMaxAllowableVariability(override.getMaxAllowableVariability());
                 entry.getRecording().setNeighbourMode(override.getNeighbourMode());
 
                 applied++;
+
+                // LOG full detail for this recording
+                PaintLogger.infof(
+                        "Recording override applied: %s / %s\n" +
+                                "                    DensityRatio:   %.4f → %.4f\n" +
+                                "                    R²:             %.4f → %.4f\n" +
+                                "                    Variability:    %.4f → %.4f\n" +
+                                "                    NeighbourMode:  %s → %s",
+                        entry.getExperimentName(),
+                        entry.getRecordingName(),
+                        oldDensityRatio,
+                        override.getMinRequiredDensityRatio(),
+                        oldRSquared,
+                        override.getMinRequiredRSquared(),
+                        oldVariability,
+                        override.getMaxAllowableVariability(),
+                        oldNeighbourMode,
+                        override.getNeighbourMode()
+                );
             }
         }
 
-        System.out.println("Recording overrides applied: " + applied);
+        PaintLogger.infof("Recording overrides applied: " + applied);
     }
 
     // ────────────────────────────────────────────────────────────
@@ -169,7 +196,7 @@ public final class RecordingOverrideApplier {
                 list.add(recordingOverride);
             }
         } catch (Exception ex) {
-            System.err.println("Error reading Recording Override.csv → " + ex.getMessage());
+            PaintLogger.errorf( "Error reading Recording Override.csv → " + ex.getMessage());
         }
 
         return list;
