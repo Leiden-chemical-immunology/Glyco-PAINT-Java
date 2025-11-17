@@ -144,23 +144,13 @@ public abstract class AbstractFileValidator {
                     }
                     continue;
                 }
-                rowMatchesTypes(row, types, header, i + 2, result);
+                rowMatchesTypes(row, types, header, result);
             }
         } catch (IOException e) {
             result.addError("Error reading file: " + e.getMessage());
         }
 
         return result;
-    }
-
-    /**
-     * Validates headers only (no row data).
-     *
-     * @param file CSV file to validate
-     * @return {@link ValidationResult} with header validation results
-     */
-    public ValidationResult validateHeadersOnly(File file) {
-        return validate(file, false);
     }
 
     /**
@@ -235,14 +225,12 @@ public abstract class AbstractFileValidator {
      * @param row      string array of CSV values
      * @param types    expected column types
      * @param headers  header names
-     * @param rowIndex row index (1-based)
      * @param result   validation accumulator
       */
     protected void rowMatchesTypes(String[]         row,
-                                      ColumnType[]     types,
-                                      List<String>     headers,
-                                      int              rowIndex,
-                                      ValidationResult result) {
+            ColumnType[]     types,
+            List<String>     headers,
+            ValidationResult result) {
         for (int i = 0; i < types.length; i++) {
             String value = row[i];
             ColumnType type = types[i];

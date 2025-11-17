@@ -190,33 +190,6 @@ public final class PaintPrefs {
         save();
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // PUT METHODS (TOP-LEVEL)
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Stores a string at the top-level (no section) and persists it.
-     */
-    public static synchronized void putString(String key, String value) {
-        plist.put(key, value);
-        save();
-    }
-
-    /**
-     * Stores a boolean at the top-level (no section) and persists it.
-     */
-    public static synchronized void putBoolean(String key, boolean value) {
-        plist.put(key, value);
-        save();
-    }
-
-    /**
-     * Stores an integer at the top-level (no section) and persists it.
-     */
-    public static synchronized void putInt(String key, int value) {
-        plist.put(key, value);
-        save();
-    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // FILE MANAGEMENT
@@ -231,23 +204,6 @@ public final class PaintPrefs {
             PropertyListParser.saveAsXML(plist, PREF_FILE);
         } catch (Exception e) {
             PaintLogger.errorf("Could not save plist: %s", e.getMessage());
-        }
-    }
-
-    /**
-     * Reloads preferences from disk, replacing the in-memory dictionary.
-     * If loading fails, resets to a new empty dictionary.
-     */
-    public static synchronized void reload() {
-        try {
-            if (PREF_FILE.exists()) {
-                plist = (NSDictionary) PropertyListParser.parse(PREF_FILE);
-            } else {
-                plist = new NSDictionary();
-            }
-        } catch (Exception e) {
-            PaintLogger.errorf("Could not reload plist: %s", e.getMessage());
-            plist = new NSDictionary();
         }
     }
 }

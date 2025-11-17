@@ -97,14 +97,6 @@ public final class PaintConsoleWindow {
     }
 
 
-    /**
-     * Prints a single character with the specified color.
-     */
-    public static synchronized void printChar(char c, Color color) {
-        ensureConsoleCreated();
-        SwingUtilities.invokeLater(() -> appendText(String.valueOf(c), color));
-    }
-
     // ───────────────────────────────────────────────────────────────────────────────
     // WINDOW CONTROL
     // ───────────────────────────────────────────────────────────────────────────────

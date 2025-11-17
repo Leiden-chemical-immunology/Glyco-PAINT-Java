@@ -101,16 +101,6 @@ public class Project {
     }
 
     /**
-     * Constructs a {@code Project} using only a root path and experiments list.
-     *
-     * @param projectRootPath the project’s root directory
-     * @param experiments     list of experiments in the project
-     */
-    public Project(Path projectRootPath, List<Experiment> experiments) {
-        this(false, projectRootPath, null, null, null, null, null, experiments);
-    }
-
-    /**
      * Constructs an empty {@code Project} instance.
      */
     public Project() {
@@ -118,29 +108,10 @@ public class Project {
         this.experiments     = new ArrayList<>();
     }
 
-    /**
-     * Constructs a {@code Project} with a root path and an empty experiment list.
-     *
-     * @param projectRootPath the root path of the project
-     */
-    public Project(Path projectRootPath) {
-        this.projectRootPath = projectRootPath;
-        this.projectName     = projectRootPath != null ? projectRootPath.getFileName().toString() : "(none)";
-        this.experimentNames = new ArrayList<>();
-        this.experiments     = new ArrayList<>();
-    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // ACCESSORS AND MUTATORS
     // ───────────────────────────────────────────────────────────────────────────────
-
-    public boolean isStatus() {
-        return status;
-    }
-
-    public void setStatus(boolean status) {
-        this.status = status;
-    }
 
     /**
      * Sets the root path for the project and updates the project name.
@@ -162,34 +133,6 @@ public class Project {
         return imagesRootPath;
     }
 
-    public void setImagesRootPath(Path imagesRootPath) {
-        this.imagesRootPath = imagesRootPath;
-    }
-
-    public String getProjectName() {
-        return projectName;
-    }
-
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-    }
-
-    public PaintConfig getPaintConfig() {
-        return paintConfig;
-    }
-
-    public void setPaintConfig(PaintConfig paintConfig) {
-        this.paintConfig = paintConfig;
-    }
-
-    public TrackMateConfig getTrackMateConfig() {
-        return trackMateConfig;
-    }
-
-    public void setTrackMateConfig(TrackMateConfig trackMateConfig) {
-        this.trackMateConfig = trackMateConfig;
-    }
-
     public GenerateSquaresConfig getGenerateSquaresConfig() {
         return generateSquaresConfig;
     }
@@ -206,47 +149,6 @@ public class Project {
         this.experimentNames = experimentNames;
     }
 
-    public List<Experiment> getExperiments() {
-        return experiments;
-    }
-
-    public void setExperiments(List<Experiment> experiments) {
-        this.experiments = experiments;
-    }
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // EXPERIMENT MANAGEMENT
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Adds an {@link Experiment} instance to this project.
-     *
-     * @param experiment the experiment to add
-     */
-    public void addExperiment(Experiment experiment) {
-        if (this.experiments == null) {
-            this.experiments = new ArrayList<>();
-        }
-        this.experiments.add(experiment);
-    }
-
-    /**
-     * Retrieves an {@link Experiment} by name.
-     *
-     * @param experimentName the name of the experiment
-     * @return the matching experiment, or {@code null} if not found
-     */
-    public Experiment getExperiment(String experimentName) {
-        if (experiments == null) {
-            return null;
-        }
-        for (Experiment experiment : experiments) {
-            if (experimentName.equals(experiment.getExperimentName())) {
-                return experiment;
-            }
-        }
-        return null;
-    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // STRING REPRESENTATION

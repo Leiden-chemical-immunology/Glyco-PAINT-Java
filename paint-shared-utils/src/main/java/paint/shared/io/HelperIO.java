@@ -250,9 +250,5 @@ public final class HelperIO {
         List<Recording> recordings     = readRecordings(experimentPath);
         List<Square>    squares        = readSquares(experimentPath);
         List<Track>     tracks         = readTracks(experimentPath);
-
-        if (recordings == null || squares == null || tracks == null) {
-            int i = 1; // breakpoint marker for inspection
-        }
     }
 }

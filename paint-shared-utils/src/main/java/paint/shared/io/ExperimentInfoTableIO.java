@@ -42,7 +42,6 @@ import tech.tablesaw.columns.Column;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 import static paint.shared.constants.PaintConstants.*;
@@ -57,10 +56,6 @@ import static paint.shared.constants.PaintConstants.*;
  * <ul>
  *   <li>Creating an empty table with the correct schema
  *       via {@link #emptyTable()}.</li>
- *   <li>Converting between lists of {@link ExperimentInfo} objects
- *       and a {@link tech.tablesaw.api.Table}
- *       via {@link #toTable(java.util.List)} and
- *       {@link #toEntities(tech.tablesaw.api.Table)}.</li>
  *   <li>Reading CSV files into validated tables
  *       via {@link #readCsv(java.nio.file.Path)}.</li>
  *   <li>Appending rows from one table to another with type-safe coercion
@@ -130,47 +125,7 @@ public class ExperimentInfoTableIO extends BaseTableIO {
         return table;
     }
 
-    /**
-     * Converts a {@link Table} into a list of {@link ExperimentInfo} objects.
-     *
-     * <p>The table is expected to have already been validated against the
-     * experiment schema. Each row is mapped to a new {@code ExperimentInfo}
-     * instance, with values extracted from the following columns:</p>
-     * <ul>
-     *   <li>{@code Recording Name} → {@code ExperimentInfo.setRecordingName(String)}</li>
-     *   <li>{@code Condition Number} → {@code ExperimentInfo.setConditionNumber(int)}</li>
-     *   <li>{@code Replicate Number} → {@code ExperimentInfo.setReplicateNumber(int)}</li>
-     *   <li>{@code Probe Name} → {@code ExperimentInfo.setProbeName(String)}</li>
-     *   <li>{@code Probe Type} → {@code ExperimentInfo.setProbeType(String)}</li>
-     *   <li>{@code Cell Type} → {@code ExperimentInfo.setCellType(String)}</li>
-     *   <li>{@code Adjuvant} → {@code ExperimentInfo.setAdjuvant(String)}</li>
-     *   <li>{@code Concentration} → {@code ExperimentInfo.setConcentration(double)}</li>
-     *   <li>{@code Process Flag} → {@code ExperimentInfo.setProcessFlag(boolean)}</li>
-     *   <li>{@code Threshold} → {@code ExperimentInfo.setThreshold(double)}</li>
-     * </ul>
-     *
-     * @param table the validated table to convert
-     * @return a list of {@code ExperimentInfo} objects populated from the table rows
-     */
-    public List<ExperimentInfo> toEntities(Table table) {
-        List<ExperimentInfo> infos = new ArrayList<>();
-        for (Row tablesawRow : table) {
-            ExperimentInfo experimentInfo = new ExperimentInfo();
-            experimentInfo.setExperimentName(  tablesawRow.getString( EXPERIMENT_NAME));
-            experimentInfo.setRecordingName(   tablesawRow.getString( RECORDING_NAME));
-            experimentInfo.setConditionNumber( tablesawRow.getInt(    CONDITION_NUMBER));
-            experimentInfo.setReplicateNumber( tablesawRow.getInt(    REPLICATE_NUMBER));
-            experimentInfo.setProbeName(       tablesawRow.getString( PROBE_NAME));
-            experimentInfo.setProbeType(       tablesawRow.getString( PROBE_TYPE));
-            experimentInfo.setCellType(        tablesawRow.getString( CELL_TYPE));
-            experimentInfo.setAdjuvant(        tablesawRow.getString( ADJUVANT));
-            experimentInfo.setConcentration(   tablesawRow.getDouble( CONCENTRATION));
-            experimentInfo.setProcessFlag(     tablesawRow.getBoolean(PROCESS_FLAG));
-            experimentInfo.setThreshold(       tablesawRow.getDouble( THRESHOLD));
-            infos.add(experimentInfo);
-        }
-        return infos;
-    }
+
 
     /**
      * Reads a CSV file as a {@link Table}, enforcing the
