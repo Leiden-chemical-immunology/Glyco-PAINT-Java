@@ -11,7 +11,6 @@ import static paint.shared.dialogs.ProjectDialog.DialogMode;
 public class SquaresParamsPanel {
 
     private final JPanel            panel = new JPanel(new GridBagLayout());
-    private final DialogMode        mode;
     private       JCheckBox         runAfterTrackMate;
     private final JComboBox<String> gridSizeCombo;
     private final JTextField        minRSqField;
@@ -22,7 +21,6 @@ public class SquaresParamsPanel {
     };
 
     public SquaresParamsPanel(DialogMode mode) {
-        this.mode = mode;
 
         panel.setBorder(new TitledBorder("Generate Squares Parameters"));
         final GridBagConstraints pg = new GridBagConstraints();

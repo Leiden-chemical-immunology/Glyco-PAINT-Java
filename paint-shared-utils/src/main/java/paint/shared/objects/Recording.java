@@ -405,25 +405,12 @@ public class Recording {
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Adds a {@link Square} to this recording.
-     */
-//    public void addSquare(Square square) {
-//        this.squares.add(square);
-//    }
-
-    /**
      * Adds a list of {@link Square} objects to this recording.
      */
     public void addSquares(List<Square> squares) {
         this.squares.addAll(squares);
     }
 
-    /**
-     * Adds a {@link Track} to this recording.
-     */
-//    public void addTrack(Track track) {
-//        this.tracks.add(track);
-//    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // STRING REPRESENTATION

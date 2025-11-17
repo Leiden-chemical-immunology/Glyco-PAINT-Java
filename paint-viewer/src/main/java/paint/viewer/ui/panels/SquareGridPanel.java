@@ -87,7 +87,6 @@ import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH;
  */
 public class SquareGridPanel extends JPanel {
 
-    private       Recording    recording;
     private final int          rows;
     private final int          cols;
 
@@ -591,7 +590,6 @@ public class SquareGridPanel extends JPanel {
      * Sets the associated {@link Recording} object for this panel.
      */
     public void setRecording(Recording recording) {
-        this.recording = recording;
     }
 
 

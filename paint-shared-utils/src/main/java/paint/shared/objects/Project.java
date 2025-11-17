@@ -55,12 +55,9 @@ public class Project {
     // ATTRIBUTES
     // ───────────────────────────────────────────────────────────────────────────────
 
-    private boolean                status;
     private Path                   projectRootPath;
     private Path                   imagesRootPath;
     private String                 projectName;
-    private PaintConfig            paintConfig;
-    private TrackMateConfig        trackMateConfig;
     private GenerateSquaresConfig  generateSquaresConfig;
     private List<String>           experimentNames;
     private List<Experiment>       experiments;
@@ -89,14 +86,11 @@ public class Project {
                    GenerateSquaresConfig generateSquaresConfig,
                    TrackMateConfig       trackMateConfig,
                    List<Experiment>      experiments) {
-        this.status                = status;
         this.projectRootPath       = projectRootPath;
         this.imagesRootPath        = imagesRootPath;
         this.projectName           = projectRootPath != null ? projectRootPath.getFileName().toString() : "(none)";
         this.experimentNames       = experimentNames != null ? experimentNames : new ArrayList<>();
-        this.paintConfig           = paintConfig;
         this.generateSquaresConfig = generateSquaresConfig;
-        this.trackMateConfig       = trackMateConfig;
         this.experiments           = experiments != null ? experiments : new ArrayList<>();
     }
 

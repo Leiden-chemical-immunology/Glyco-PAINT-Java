@@ -48,9 +48,10 @@ public class BuildSelector {
                      "mvn", "-q", "-U", "clean", "install")
     );
     private final Map<Task, JCheckBox> boxes = new LinkedHashMap<>();
-    private JFrame frame;
+    private JFrame    frame;
     private JTextArea log;
-    private JButton runBtn, closeBtn;
+    private JButton   runBtn;
+    private JButton   closeBtn;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new BuildSelector().show());

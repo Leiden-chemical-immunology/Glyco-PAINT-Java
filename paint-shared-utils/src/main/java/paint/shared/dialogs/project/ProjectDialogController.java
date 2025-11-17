@@ -37,7 +37,6 @@ public class ProjectDialogController {
     private final ExperimentsPanel   experiments;
     private final BottomBarPanel     bottom;
 
-    private final Supplier<Object>   buildProject; // returns Project
     private final QuadRunnable       startWorker;  // (runUiDisable, runUiEnable, onSuccess, onFailure)
     private final Supplier<Thread>   getWorker;
     private final Runnable           setCancelled;
@@ -68,7 +67,6 @@ public class ProjectDialogController {
         this.params         = params;
         this.experiments    = experiments;
         this.bottom         = bottom;
-        this.buildProject   = buildProject;
         this.startWorker    = startWorker;
         this.getWorker      = getWorker;
         this.setCancelled   = setCancelled;
