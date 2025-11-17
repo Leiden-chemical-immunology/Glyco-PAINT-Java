@@ -99,10 +99,29 @@ public class SquareControlDialog extends JDialog {
         // ─────────────────────────────────────────────────────────────────────
         // Sliders
         // ─────────────────────────────────────────────────────────────────────
-        densityRatioSlider = createSlider(0, 20000, (int) Math.round(initParams.minRequiredDensityRatio * 10));
-        variabilitySlider  = createSlider(0, 200,   (int) Math.round(initParams.maxAllowableVariability * 10));
-        rSquaredSlider     = createSlider(0, 100,   (int) Math.round(initParams.minRequiredRSquared * 100));
+//        densityRatioSlider = createSlider(0, 20000, (int) Math.round(initParams.minRequiredDensityRatio * 10));
+//        variabilitySlider  = createSlider(0, 200,   (int) Math.round(initParams.maxAllowableVariability * 10));
+//        rSquaredSlider     = createSlider(0, 100,   (int) Math.round(initParams.minRequiredRSquared * 100));
 
+        densityRatioSlider = createSteppedSlider(
+                0,               // min
+                2000,            // max
+                2,               // step
+                initParams.minRequiredDensityRatio
+        );
+        variabilitySlider = createSteppedSlider(
+                0,
+                20,
+                1,
+                initParams.maxAllowableVariability
+        );
+
+        rSquaredSlider = createSteppedSlider(
+                0.0,
+                1.0,
+                0.05,
+                initParams.minRequiredRSquared
+        );
         densityRatioValue = new JLabel();
         variabilityValue  = new JLabel();
         rSquaredValue     = new JLabel();
@@ -190,9 +209,9 @@ public class SquareControlDialog extends JDialog {
         variabilitySlider.addChangeListener(sliderListener);
         rSquaredSlider.addChangeListener(sliderListener);
 
-        neighbourFree.addActionListener(e -> propagatePreview());
+        neighbourFree.addActionListener(   e -> propagatePreview());
         neighbourRelaxed.addActionListener(e -> propagatePreview());
-        neighbourStrict.addActionListener(e -> propagatePreview());
+        neighbourStrict.addActionListener( e -> propagatePreview());
 
         // Apply button actions (commit and write to the file)
         applyRecording.addActionListener(e -> {
@@ -229,30 +248,6 @@ public class SquareControlDialog extends JDialog {
     }
 
     /**
-     * Creates a vertical slider with labeled ticks.
-     */
-    private JSlider createSlider(int min, int max, int value) {
-        JSlider slider = new JSlider(JSlider.VERTICAL, min, max, Math.min(max, Math.max(min, value)));
-        slider.setMajorTickSpacing(Math.max(1, (max - min) / 5));
-        slider.setPaintTicks(true);
-        slider.setPaintLabels(true);
-
-        boolean isRSquared = (max == 100);
-        double divisor = isRSquared ? 100.0 : 10.0;
-
-        java.util.Hashtable<Integer, JLabel> table = new java.util.Hashtable<>();
-        int major = Math.max(1, (max - min) / 5);
-        for (int v = min; v <= max; v += major) {
-            String text = isRSquared
-                    ? ONE_DEC.format(v / divisor)
-                    : String.valueOf((int) Math.round(v / divisor));
-            table.put(v, new JLabel(text));
-        }
-        slider.setLabelTable(table);
-        return slider;
-    }
-
-    /**
      * Wraps a slider and value label inside a titled panel.
      */
     private JPanel wrapSlider(JSlider slider, String title, JLabel valueLabel) {
@@ -268,9 +263,15 @@ public class SquareControlDialog extends JDialog {
      * Updates the numeric labels to reflect current slider values.
      */
     private void updateValueLabels() {
-        densityRatioValue.setText(ONE_DEC.format(densityRatioSlider.getValue() / 10.0));
-        variabilityValue.setText(ONE_DEC.format(variabilitySlider.getValue() / 10.0));
-        rSquaredValue.setText(ONE_DEC.format(rSquaredSlider.getValue() / 100.0));
+        densityRatioValue.setText(
+                formatSliderValue(getSliderDouble(densityRatioSlider, 0, 2), 2)
+        );
+        variabilityValue.setText(
+                formatSliderValue(getSliderDouble(variabilitySlider, 0, 1), 1)
+        );
+        rSquaredValue.setText(
+                formatSliderValue(getSliderDouble(rSquaredSlider, 0.0, 0.05), 0.05)
+        );
     }
 
     /**
@@ -298,9 +299,9 @@ public class SquareControlDialog extends JDialog {
      * Restores original slider and neighbour mode values, updating the preview.
      */
     private void restoreOriginals() {
-        densityRatioSlider.setValue((int) Math.round(origDensityRatio * 10));
-        variabilitySlider.setValue((int) Math.round(origVariability * 10));
-        rSquaredSlider.setValue((int) Math.round(origRSquared * 100));
+        densityRatioSlider.setValue((int) Math.round(origDensityRatio / 2.0));
+        variabilitySlider.setValue((int) Math.round(origVariability / 1.0));
+        rSquaredSlider.setValue((int) Math.round(origRSquared / 0.1));
 
         switch (origNeighbourMode) {
             case "Relaxed":
@@ -322,10 +323,71 @@ public class SquareControlDialog extends JDialog {
      */
     private SquareControlParams collectParams() {
         return new SquareControlParams(
-                densityRatioSlider.getValue() / 10.0,
-                variabilitySlider.getValue() / 10.0,
-                rSquaredSlider.getValue() / 100.0,
+                getSliderDouble(densityRatioSlider, 0, 2),
+                getSliderDouble(variabilitySlider, 0, 1),
+                getSliderDouble(rSquaredSlider, 0.0, 0.05),
                 getNeighbourMode()
         );
+    }
+
+    private JSlider createSteppedSlider(double min, double max, double step, double initialValue) {
+
+        int steps = (int) Math.round((max - min) / step);
+        int initial = (int) Math.round((initialValue - min) / step);
+
+        JSlider slider = new JSlider(JSlider.VERTICAL, 0, steps,
+                                     Math.max(0, Math.min(steps, initial)));
+
+        // We want major ticks ONLY
+        slider.setPaintTicks(true);
+        slider.setSnapToTicks(false);  // IMPORTANT: manual snapping below
+        slider.setMinorTickSpacing(0); // no minor ticks
+
+        // Major tick spacing (labelled)
+        int major = Math.max(1, steps / 5);
+        slider.setMajorTickSpacing(major);
+
+        // Label table for major ticks only
+        java.util.Hashtable<Integer, JLabel> table = new java.util.Hashtable<>();
+        for (int i = 0; i <= steps; i += major) {
+            double v = min + (i * step);
+            table.put(i, new JLabel(formatSliderValue(v, step)));
+        }
+        slider.setLabelTable(table);
+        slider.setPaintLabels(true);
+
+        // Manual snapping to step values (NOT to major ticks!)
+        slider.addChangeListener(e -> {
+            int raw = slider.getValue();
+            int snapped = Math.round(raw); // raw represents the step index
+            if (raw != snapped) slider.setValue(snapped);
+        });
+
+        return slider;
+    }
+
+    private String formatSliderValue(double v, double step) {
+
+        // Integer step → format as integer
+        if (step >= 1.0) {
+            return Integer.toString((int) Math.round(v));
+        }
+
+        // Step of 0.1 → one decimal
+        if (Math.abs(step - 0.1) < 1e-9) {
+            return String.format("%.1f", v);
+        }
+
+        // Step of 0.05 → two decimals
+        if (Math.abs(step - 0.05) < 1e-9) {
+            return String.format("%.2f", v);
+        }
+
+        // Default fallback
+        return String.valueOf(v);
+    }
+
+    private double getSliderDouble(JSlider slider, double min, double step) {
+        return min + slider.getValue() * step;
     }
 }
