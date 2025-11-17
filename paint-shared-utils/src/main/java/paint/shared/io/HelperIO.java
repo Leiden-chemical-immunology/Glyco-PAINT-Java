@@ -159,22 +159,6 @@ public final class HelperIO {
     }
 
     /**
-     * Writes all {@link Square} entities to {@code squares.csv}.
-     *
-     * @param experimentPath the experiment folder path
-     * @param squares        the list of squares to write
-     */
-    public static void writeAllSquares(Path experimentPath, List<Square> squares) {
-        SquaresTableIO SquaresTableIO = new SquaresTableIO();
-        try {
-            Table squaresTable = SquaresTableIO.toTable(squares);
-            writeAllSquares(experimentPath, squaresTable);
-        } catch (Exception e) {
-            PaintLogger.errorf("Failed to create table %s : %s", SQUARES_CSV, friendlyMessage(e));
-        }
-    }
-
-    /**
      * Writes a full {@link Table} of square data to {@code squares.csv}.
      *
      * @param experimentPath the experiment folder path
@@ -240,15 +224,15 @@ public final class HelperIO {
      * @param experimentPath the experiment folder path
      * @param tracks         the list of tracks to write
      */
-    public static void writeAllTracks(Path experimentPath, List<Track> tracks) {
-        TracksTableIO TracksTableIO = new TracksTableIO();
-        try {
-            Table tracksTable = TracksTableIO.toTable(tracks);
-            writeAllTracks(experimentPath, tracksTable);
-        } catch (Exception e) {
-            PaintLogger.errorf("Failed to create table %s : %s", TRACKS_CSV, friendlyMessage(e));
-        }
-    }
+//    public static void writeAllTracks(Path experimentPath, List<Track> tracks) {
+//        TracksTableIO TracksTableIO = new TracksTableIO();
+//        try {
+//            Table tracksTable = TracksTableIO.toTable(tracks);
+//            writeAllTracks(experimentPath, tracksTable);
+//        } catch (Exception e) {
+//            PaintLogger.errorf("Failed to create table %s : %s", TRACKS_CSV, friendlyMessage(e));
+//        }
+//    }
 
     /**
      * Writes a full {@link Table} of track data to {@code tracks.csv}.

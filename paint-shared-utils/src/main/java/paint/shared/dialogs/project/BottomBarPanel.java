@@ -101,10 +101,6 @@ public class BottomBarPanel {
         cancelBtn.setEnabled(enabled);
     }
 
-    public boolean isSaveExperiments() {
-        return saveExperiments.isSelected();
-    }
-
     public void updateOkEnabled(boolean enabled) {
         okBtn.setEnabled(enabled);
     }

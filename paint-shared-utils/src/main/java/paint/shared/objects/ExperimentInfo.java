@@ -288,14 +288,6 @@ public class ExperimentInfo {
         this.tracks = tracks;
     }
 
-    public Table getTracksTable() {
-        return tracksTable;
-    }
-
-    public void setTracksTable(Table tracksTable) {
-        this.tracksTable = tracksTable;
-    }
-
     // ───────────────────────────────────────────────────────────────────────────────
     // CONVENIENCE METHODS
     // ───────────────────────────────────────────────────────────────────────────────
@@ -305,27 +297,27 @@ public class ExperimentInfo {
      *
      * @param square the square to add
      */
-    public void addSquare(Square square) {
-        this.squares.add(square);
-    }
+//    public void addSquare(Square square) {
+//        this.squares.add(square);
+//    }
 
     /**
      * Adds a list of {@link Square} instances to this experiment.
      *
      * @param squares list of squares to add
      */
-    public void addSquares(List<Square> squares) {
-        this.squares.addAll(squares);
-    }
+//    public void addSquares(List<Square> squares) {
+//        this.squares.addAll(squares);
+//    }
 
     /**
      * Adds a single {@link Track} to this experiment.
      *
      * @param track the track to add
      */
-    public void addTrack(Track track) {
-        this.tracks.add(track);
-    }
+//    public void addTrack(Track track) {
+//        this.tracks.add(track);
+//    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // STRING REPRESENTATION

@@ -32,7 +32,7 @@ public class ReleaseNewVersion {
             }
 
             // Compute what bumping would do
-            VersionInfo info = PomUtils.computeVersions(currentVersion, null);
+            VersionInfo info = PomUtils.computeVersions(currentVersion);
 
             System.out.println();
             System.out.println("Current version: " + currentVersion);
@@ -135,29 +135,6 @@ public class ReleaseNewVersion {
         }
     }
 
-    private static boolean isValidBump(String s) {
-        return s.matches("^(major|minor|patch|[0-9]+\\.[0-9]+\\.[0-9]+)$");
-    }
-
-    private static void abort(String message) {
-        System.err.println("❌ " + message);
-        System.err.println();
-        System.err.println("Usage:");
-        System.err.println("  java -jar release-tool.jar [options]");
-        System.err.println();
-        System.err.println("Options:");
-        System.err.println("  -bump <major|minor|patch|X.Y.Z>   Bump version or set explicitly");
-        System.err.println("  --no-release                      Do not perform a release");
-        System.err.println("  --push-tag                        Push tags after release");
-        System.err.println();
-        System.err.println("Examples:");
-        System.err.println("  -bump patch");
-        System.err.println("  -bump 1.4.0");
-        System.err.println("  -bump minor --no-release");
-        System.err.println();
-        System.exit(1);
-    }
-
     private void run(boolean bumpVersion, boolean doRelease) throws Exception {
         System.out.println("=== Building Glyco-PAINT apps for macOS and Windows ===");
 
@@ -193,7 +170,7 @@ public class ReleaseNewVersion {
         // -------------------------------------------------------------
         else if (bumpVersion && !doRelease) {
 
-            versionInfo = PomUtils.computeVersions(currentVersion, null);
+            versionInfo = PomUtils.computeVersions(currentVersion);
 
             System.out.println("🔧 Bumping version only (no release).");
             System.out.println("🔢  Current : " + currentVersion);
@@ -210,7 +187,7 @@ public class ReleaseNewVersion {
         // -------------------------------------------------------------
         else {
 
-            versionInfo = PomUtils.computeVersions(currentVersion, null);
+            versionInfo = PomUtils.computeVersions(currentVersion);
 
             System.out.println("🚀 Full release mode.");
             System.out.println("🔢  Current : " + currentVersion);

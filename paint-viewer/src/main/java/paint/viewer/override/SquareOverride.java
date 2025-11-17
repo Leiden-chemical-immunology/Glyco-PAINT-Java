@@ -47,17 +47,6 @@ public class SquareOverride {
     public SquareOverride() {
     }
 
-    public SquareOverride(String experimentName,
-            String recordingName,
-            int    squareNumber,
-            int    cellId,
-            String timestamp) {
-        this.experimentName = experimentName;
-        this.recordingName  = recordingName;
-        this.squareNumber   = squareNumber;
-        this.cellId         = cellId;
-        this.timestamp      = timestamp;
-    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // ACCESSORS
@@ -93,10 +82,6 @@ public class SquareOverride {
 
     public void setCellId(int cellId) {
         this.cellId = cellId;
-    }
-
-    public String getTimestamp() {
-        return timestamp;
     }
 
     public void setTimestamp(String timestamp) {

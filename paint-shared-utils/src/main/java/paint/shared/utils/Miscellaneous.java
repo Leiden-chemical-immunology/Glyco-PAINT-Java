@@ -192,28 +192,6 @@ public final class Miscellaneous {
         return yesValues.contains(value) || noValues.contains(value);
     }
 
-    /**
-     * Parses a flexible string-based boolean expression into a {@code Boolean}.
-     * <p>
-     * Logs an error if the input cannot be parsed and defaults to {@code false}.
-     *
-     * @param value input string
-     * @return parsed boolean value, defaults to {@code false} for invalid input
-     */
-    public static Boolean getBooleanValue(String value) {
-        value                 = value.trim().toLowerCase();
-        Set<String> yesValues = new HashSet<>(Arrays.asList("y", "ye", "yes", "ok", "true", "t", "1"));
-        Set<String> noValues  = new HashSet<>(Arrays.asList("n", "no", "false", "f", "0"));
-
-        if (yesValues.contains(value)) {
-            return true;
-        } else if (noValues.contains(value)) {
-            return false;
-        } else {
-            PaintLogger.errorf("Invalid boolean value: %s, default to 'false'", value);
-            return false;
-        }
-    }
 
     /**
      * Returns {@code true} if the input string is a recognized affirmative boolean value.

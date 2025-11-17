@@ -74,13 +74,6 @@ public final class PaintConsoleWindow {
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Logs a message in black text.
-     */
-    public static synchronized void log(String message) {
-        log(message, Color.BLACK);
-    }
-
-    /**
      * Logs a message with a specified color.
      */
     public static synchronized void log(String message, Color color) {
@@ -106,9 +99,9 @@ public final class PaintConsoleWindow {
     /**
      * Prints a single character in black.
      */
-    public static synchronized void printChar(char c) {
-        printChar(c, Color.BLACK);
-    }
+//    public static synchronized void printChar(char c) {
+//        printChar(c, Color.BLACK);
+//    }
 
     /**
      * Prints a single character with the specified color.
@@ -427,25 +420,25 @@ public final class PaintConsoleWindow {
      * @param regex    the regular expression pattern to search for
      * @param color    the color used for highlighting the matched pattern
      */
-    private static void highlightPattern(String fullText, String regex, Color color) {
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
-        java.util.regex.Matcher matcher = pattern.matcher(fullText);
-
-        while (matcher.find()) {
-            int start = matcher.start();
-            int end = matcher.end();
-            try {
-                textPane.getHighlighter().addHighlight(
-                        start, end,
-                        new DefaultHighlighter.DefaultHighlightPainter(color)
-                );
-                problemPositions.add(start);
-            } catch (BadLocationException e) {
-                e.printStackTrace();
-                break;
-            }
-        }
-    }
+//    private static void highlightPattern(String fullText, String regex, Color color) {
+//        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
+//        java.util.regex.Matcher matcher = pattern.matcher(fullText);
+//
+//        while (matcher.find()) {
+//            int start = matcher.start();
+//            int end = matcher.end();
+//            try {
+//                textPane.getHighlighter().addHighlight(
+//                        start, end,
+//                        new DefaultHighlighter.DefaultHighlightPainter(color)
+//                );
+//                problemPositions.add(start);
+//            } catch (BadLocationException e) {
+//                e.printStackTrace();
+//                break;
+//            }
+//        }
+//    }
 
     /**
      * Highlights and selects a specific text region in a text pane based on the given position.

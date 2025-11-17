@@ -39,11 +39,6 @@ public final class StringLiteralCollector {
 
     public static void main(String[] args) throws IOException {
 
-//        if (args.length != 2) {
-//            System.out.println("Usage: java StringLiteralCollector <SourceRoot> <OutputFile>");
-//            return;
-//        }
-
         Path sourceRoot = Paths.get("/Users/hans/JavaPaintProjects/Glyco-PAINT-Java");
         Path outputFile = Paths.get("/Users/hans/Downloads/strings_to_replace_ori.txt");
 

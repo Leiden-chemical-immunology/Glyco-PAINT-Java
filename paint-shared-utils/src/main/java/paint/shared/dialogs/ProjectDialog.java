@@ -88,7 +88,7 @@ public class ProjectDialog {
         } else {
             form.add(pathsPanel.component(), BorderLayout.NORTH);
         }
-        experimentsPanel = new ExperimentsPanel(mode, projectPath);
+        experimentsPanel = new ExperimentsPanel(projectPath);
 
         final JPanel center = new JPanel(new BorderLayout());
         center.add(experimentsPanel.component(), BorderLayout.CENTER);
@@ -148,10 +148,6 @@ public class ProjectDialog {
 
     public boolean isCancelled() {
         return cancelled;
-    }
-
-    public boolean isCancelledOrInterrupted() {
-        return cancelled || (workerThread != null && workerThread.isInterrupted());
     }
 
     public JDialog getDialog() {

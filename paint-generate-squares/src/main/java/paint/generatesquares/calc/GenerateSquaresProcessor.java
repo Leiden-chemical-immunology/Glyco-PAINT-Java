@@ -80,7 +80,6 @@ public class GenerateSquaresProcessor {
         Experiment            experiment            = null;
         List<Recording>       recordings;
 
-        Path          projectPath       = project.getProjectRootPath();
         LocalDateTime start             = LocalDateTime.now();
         PaintLogger.debugf("Loading Experiment '%s'", experimentName);
 

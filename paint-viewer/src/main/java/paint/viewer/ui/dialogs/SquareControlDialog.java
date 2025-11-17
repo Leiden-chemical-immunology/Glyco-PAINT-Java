@@ -60,7 +60,7 @@ import java.text.DecimalFormat;
  * viewer; pressing an Apply button commits and saves the configuration.
  */
 public class SquareControlDialog extends JDialog {
-    private static final DecimalFormat ONE_DEC = new DecimalFormat("0.0");
+//    private static final DecimalFormat ONE_DEC = new DecimalFormat("0.0");
     private final JSlider                         densityRatioSlider;
     private final JSlider                         variabilitySlider;
     private final JSlider                         rSquaredSlider;
@@ -99,9 +99,6 @@ public class SquareControlDialog extends JDialog {
         // ─────────────────────────────────────────────────────────────────────
         // Sliders
         // ─────────────────────────────────────────────────────────────────────
-//        densityRatioSlider = createSlider(0, 20000, (int) Math.round(initParams.minRequiredDensityRatio * 10));
-//        variabilitySlider  = createSlider(0, 200,   (int) Math.round(initParams.maxAllowableVariability * 10));
-//        rSquaredSlider     = createSlider(0, 100,   (int) Math.round(initParams.minRequiredRSquared * 100));
 
         densityRatioSlider = createSteppedSlider(
                 0,               // min

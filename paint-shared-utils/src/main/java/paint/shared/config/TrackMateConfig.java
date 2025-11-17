@@ -87,68 +87,6 @@ public class TrackMateConfig {
     private final double  mergingMaxDistance;
 
     /**
-     * Constructs a configuration object for TrackMate with various parameters used for
-     * defining track linking, merging, splitting, and other track-based operations.
-     *
-     * @param maxFrameGap                  Maximum allowable frame gap for linking spots in a track.
-     * @param alternativeLinkingCostFactor Factor affecting the costs during alternative linking of spots.
-     * @param doSubpixelLocalization       Flag indicating whether subpixel spot localization should be performed.
-     * @param minNrSpotsInTrack            Minimum number of spots required for a track to be considered valid.
-     * @param linkingMaxDistance           Maximum allowable distance for linking neighboring spots.
-     * @param maxNumberOfSpotsInImage      Maximum number of spots allowed in a single image/frame.
-     * @param maxNumberOfSecondsPerImage   Maximum number of seconds allowed for a single image/frame.
-     * @param gapClosingMaxDistance        Maximum distance permitted for closing gaps between track segments.
-     * @param targetChannel                The target channel to be used for track analysis.
-     * @param splittingMaxDistance         Maximum allowable distance for splitting tracks.
-     * @param trackColouring               Colouring scheme to use for visualizing tracks.
-     * @param radius                       The radius used for spatial filtering of the spots.
-     * @param allowGapClosing              Flag indicating whether gap closing in tracks is allowed.
-     * @param doMedianFiltering            Flag indicating whether median filtering should be applied to the tracks.
-     * @param allowTrackSplitting          Flag indicating if track splitting at branching points is allowed.
-     * @param allowTrackMerging            Flag indicating if merging of separate tracks is allowed.
-     * @param mergingMaxDistance           Maximum allowable distance for merging tracks.
-     */
-    private TrackMateConfig(
-
-            int     maxFrameGap,
-            double  alternativeLinkingCostFactor,
-            boolean doSubpixelLocalization,
-            int     minNrSpotsInTrack,
-            double  linkingMaxDistance,
-            int     maxNumberOfSpotsInImage,
-            int     maxNumberOfSecondsPerImage,
-            double  gapClosingMaxDistance,
-            int     targetChannel,
-            double  splittingMaxDistance,
-            String  trackColouring,
-            double  radius,
-            boolean allowGapClosing,
-            boolean doMedianFiltering,
-            boolean allowTrackSplitting,
-            boolean allowTrackMerging,
-            double  mergingMaxDistance) {
-
-        this.maxFrameGap                  = maxFrameGap;
-        this.alternativeLinkingCostFactor = alternativeLinkingCostFactor;
-        this.doSubpixelLocalization       = doSubpixelLocalization;
-        this.minNumberOfSpotsInTrack      = minNrSpotsInTrack;
-        this.linkingMaxDistance           = linkingMaxDistance;
-        this.maxNumberOfSpotsInImage      = maxNumberOfSpotsInImage;
-        this.maxNumberOfSecondsPerImage   = maxNumberOfSecondsPerImage;
-        this.gapClosingMaxDistance        = gapClosingMaxDistance;
-        this.targetChannel                = targetChannel;
-        this.splittingMaxDistance         = splittingMaxDistance;
-        this.trackColouring               = trackColouring;
-        this.radius                       = radius;
-        this.allowGapClosing              = allowGapClosing;
-        this.medianFiltering              = doMedianFiltering;
-        this.allowTrackSplitting          = allowTrackSplitting;
-        this.allowTrackMerging            = allowTrackMerging;
-        this.mergingMaxDistance           = mergingMaxDistance;
-        
-    }
-
-    /**
      * Constructs a configuration object for TrackMate using the parameters provided
      * in the given PaintConfig instance. The configuration parameters set here are
      * used for defining track-related operations such as linking, merging, splitting,

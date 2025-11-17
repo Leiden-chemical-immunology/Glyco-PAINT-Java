@@ -24,7 +24,7 @@ public class ExperimentsPanel {
     private Runnable onChanged = () -> {
     };
 
-    public ExperimentsPanel(DialogMode mode, Path projectRoot) {
+    public ExperimentsPanel(Path projectRoot) {
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
         JScrollPane scroll = new JScrollPane(list);
         scroll.setPreferredSize(new Dimension(680, 240));

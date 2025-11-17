@@ -241,13 +241,6 @@ public final class PaintLogger {
     }
 
     /**
-     * Logs an empty INFO line.
-     */
-    public static void infof() {
-        log(Level.INFO, "");
-    }
-
-    /**
      * Logs a DEBUG message with printf-style formatting.
      */
     public static void debugf(String fmt, Object... args) {
@@ -255,24 +248,10 @@ public final class PaintLogger {
     }
 
     /**
-     * Logs an empty DEBUG line.
-     */
-    public static void debugf() {
-        log(Level.DEBUG, "");
-    }
-
-    /**
      * Logs a WARN message with printf-style formatting.
      */
     public static void warnf(String fmt, Object... args) {
         log(Level.WARN, String.format(fmt, args));
-    }
-
-    /**
-     * Logs an empty WARN line.
-     */
-    public static void warnf() {
-        log(Level.WARN, "");
     }
 
     /**
@@ -287,13 +266,6 @@ public final class PaintLogger {
      */
     public static void errorf(Throwable t) {
         log(Level.ERROR, getStackTrace(t));
-    }
-
-    /**
-     * Logs an empty ERROR line.
-     */
-    public static void errorf() {
-        log(Level.ERROR, "");
     }
 
     // ───────────────────────────────────────────────────────────────────────────────

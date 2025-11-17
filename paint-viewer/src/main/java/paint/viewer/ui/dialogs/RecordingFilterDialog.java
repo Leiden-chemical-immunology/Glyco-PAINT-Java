@@ -69,7 +69,7 @@ public class RecordingFilterDialog extends JDialog {
         // Compute the base list (start subset) from the current visible subset and incoming criteria
         // visible subset when dialog opened
         List<RecordingEntry> baseList;
-        if (!criteria.isEmpty()) {
+        if (criteria.isNotEmpty()) {
             baseList = currentVisibleRecordings.stream()
                                                .filter(e -> criteria.cellTypes.isEmpty()      || criteria.cellTypes.contains(e.getCellType()))
                                                .filter(e -> criteria.probeNames.isEmpty()     || criteria.probeNames.contains(e.getProbeName()))
@@ -182,7 +182,7 @@ public class RecordingFilterDialog extends JDialog {
         }
 
         // Restore incoming criteria -> selections/activeFilters, apply, and highlight
-        if (!criteria.isEmpty()) {
+        if (criteria.isNotEmpty()) {
             restoreSelectionsFromCriteria(criteria);
             filteredRecordings = applyAllFilters(); // apply all selected lists
             updateAllListsFrom(filteredRecordings);
@@ -416,6 +416,10 @@ public class RecordingFilterDialog extends JDialog {
                     && probeTypes.isEmpty()
                     && adjuvants.isEmpty()
                     && concentrations.isEmpty();
+        }
+
+        public boolean isNotEmpty() {
+            return !isEmpty();
         }
     }
 

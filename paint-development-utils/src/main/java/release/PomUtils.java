@@ -48,7 +48,7 @@ final class PomUtils {
         }
     }
 
-    static VersionInfo computeVersions(String currentVersion, String bumpFlag) {
+    static VersionInfo computeVersions(String currentVersion) {
         String base = currentVersion.replace("-SNAPSHOT", "").trim();
         String[] parts = base.split("\\.");
         int lastNum = Integer.parseInt(parts[parts.length - 1]);

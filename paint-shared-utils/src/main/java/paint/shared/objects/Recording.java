@@ -352,10 +352,6 @@ public class Recording {
         this.squares = squares;
     }
 
-    public List<Track> getTracks() {
-        return tracks;
-    }
-
     public void setTracks(List<Track> tracks) {
         this.tracks = tracks;
     }
@@ -411,9 +407,9 @@ public class Recording {
     /**
      * Adds a {@link Square} to this recording.
      */
-    public void addSquare(Square square) {
-        this.squares.add(square);
-    }
+//    public void addSquare(Square square) {
+//        this.squares.add(square);
+//    }
 
     /**
      * Adds a list of {@link Square} objects to this recording.
@@ -425,9 +421,9 @@ public class Recording {
     /**
      * Adds a {@link Track} to this recording.
      */
-    public void addTrack(Track track) {
-        this.tracks.add(track);
-    }
+//    public void addTrack(Track track) {
+//        this.tracks.add(track);
+//    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // STRING REPRESENTATION

@@ -567,20 +567,6 @@ public class SquareGridPanel extends JPanel {
         this.repaint();
     }
 
-    /**
-     * Assigns all selected squares to a given cell ID.
-     */
-    public void assignSelectedToCell(int cellId) {
-        if (squares == null) {
-            return;
-        }
-        for (Square square : squares) {
-            if (square.isVisible()) {
-                square.setCellId(cellId);
-            }
-        }
-        this.repaint();
-    }
 
     /**
      * Clears all mouse-based selection highlights.
@@ -608,12 +594,6 @@ public class SquareGridPanel extends JPanel {
         this.recording = recording;
     }
 
-    /**
-     * @return the {@link Recording} currently associated with this panel.
-     */
-    public Recording getRecording() {
-        return recording;
-    }
 
     /**
      * Hides the square information popup if it is currently visible.

@@ -168,7 +168,8 @@ public final class JarInfoLogger {
         try {
             ClassLoader cl = clazz.getClassLoader();
             Enumeration<URL> en = cl.getResources("META-INF/MANIFEST.MF");
-            while (en.hasMoreElements()) {
+
+            if (en.hasMoreElements()) {
                 URL u = en.nextElement();
                 try (InputStream is = u.openStream()) {
                     return new Manifest(is);
@@ -178,7 +179,6 @@ public final class JarInfoLogger {
         }
         return null;
     }
-
     // ───────────────────────────────────────────────────────────────────────────────
     // DATE/TIME UTILITIES
     // ───────────────────────────────────────────────────────────────────────────────
@@ -305,21 +305,5 @@ public final class JarInfoLogger {
             );
         }
 
-        /**
-         * @return a detailed report including specification metadata.
-         */
-        public String toStringLONG() {
-            return String.format(
-                    "Implementation Title  : %s%n" +
-                            "Implementation Version: %s%n" +
-                            "Implementation Vendor : %s%n" +
-                            "Implementation Date   : %s%n" +
-                            "Specification Title   : %s%n" +
-                            "Specification Version : %s%n" +
-                            "Specification Vendor  : %s",
-                    implementationTitle, implementationVersion, implementationVendor,
-                    implementationDate, specificationTitle, specificationVersion, specificationVendor
-            );
-        }
     }
 }

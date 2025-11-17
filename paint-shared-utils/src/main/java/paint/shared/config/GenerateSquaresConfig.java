@@ -87,16 +87,6 @@ public class GenerateSquaresConfig {
         
     }
 
-    /**
-     * Static factory method to obtain an instance of this config.
-     *
-     * @return a new instance of GenerateSquaresConfig loaded from configuration
-     */
-    public static GenerateSquaresConfig from() {
-        return new GenerateSquaresConfig();
-    }
-
-
     public int getNumberOfSquaresInRecording() {
         return numberOfSquaresInRecording;
     }

@@ -49,21 +49,6 @@ public class RecordingOverride {
     public RecordingOverride() {
     }
 
-    public RecordingOverride(String experimentName,
-            String recordingName,
-            double minRequiredDensityRatio,
-            double minRequiredRSquared,
-            double maxAllowableVariability,
-            String neighbourMode) {
-
-        this.experimentName          = experimentName;
-        this.recordingName           = recordingName;
-        this.minRequiredDensityRatio = minRequiredDensityRatio;
-        this.minRequiredRSquared     = minRequiredRSquared;
-        this.maxAllowableVariability = maxAllowableVariability;
-        this.neighbourMode           = neighbourMode;
-    }
-
     // ───────────────────────────────────────────────────────────────────────────────
     // ACCESSORS
     // ───────────────────────────────────────────────────────────────────────────────

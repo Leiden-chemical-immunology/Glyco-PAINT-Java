@@ -109,7 +109,6 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
                                                            ExperimentInfo experimentInfoRecord,
                                                            ProjectDialog dialog) {
 
-        final boolean debugFlag = getBoolean("Debug", DEBUG_RUNTRACKMATEONRECORDING, false);
         LocalDateTime start = LocalDateTime.now();
         DebugTools.setRootLevel("OFF");
 

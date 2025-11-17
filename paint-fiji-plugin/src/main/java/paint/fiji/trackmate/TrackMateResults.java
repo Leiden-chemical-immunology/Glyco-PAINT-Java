@@ -61,28 +61,6 @@ public class TrackMateResults {
 
 
     /**
-     * Default constructor.
-     * <p>
-     * Creates an immutable {@code TrackMateResults} instance with all
-     * values initialized to default (false, zero, or null).
-     * </p>
-     */
-    public TrackMateResults() {
-        this(false, false, 0, 0, 0, 0, null, 0);
-    }
-
-    /**
-     * Constructs a {@code TrackMateResults} instance with a success flag and
-     * calculation state only, setting all numeric values to zero.
-     *
-     * @param success              whether the analysis succeeded
-     * @param calculationPerformed whether the TrackMate pipeline was executed
-     */
-    public TrackMateResults(boolean success, boolean calculationPerformed) {
-        this(success, calculationPerformed, 0, 0, 0, 0, null, 0);
-    }
-
-    /**
      * Constructs a {@code TrackMateResults} instance with only a success flag.
      * Assumes no calculations were performed and sets all numeric fields to zero.
      *
@@ -145,13 +123,6 @@ public class TrackMateResults {
      */
     public int getNumberOfSpots() {
         return numberOfSpots;
-    }
-
-    /**
-     * @return total number of generated tracks
-     */
-    public int getNumberOfTracks() {
-        return numberOfTracks;
     }
 
     /**
