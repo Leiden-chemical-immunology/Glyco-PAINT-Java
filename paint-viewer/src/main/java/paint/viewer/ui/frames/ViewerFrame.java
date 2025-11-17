@@ -512,9 +512,41 @@ public class ViewerFrame extends JFrame
             public void onAssign(int cellId) {
                 Map<Integer, Integer> userSelectedSquares =
                         assignmentManager.assignUserSelectedSquares(cellId, leftGridPanel);
-                RecordingEntry currentRecording = recordingEntries.get(currentIndex);
-                if (!userSelectedSquares.isEmpty()) {
-                    squareOverrideWriter.writeSquareOverrides(currentRecording, userSelectedSquares);
+
+                if (userSelectedSquares.isEmpty()) {
+                    return;
+                }
+
+                RecordingEntry current = recordingEntries.get(currentIndex);
+
+                // --- Ask the user what to do with existing overrides ---
+                boolean hasExisting = squareOverrideWriter.hasOverridesFor(current);
+
+                boolean keepOld = true;
+
+                if (hasExisting) {
+                    int choice = JOptionPane.showConfirmDialog(
+                            owner,
+                            "There are existing cell assignments for this recording.\n\n" +
+                                    "Do you want to keep those and only update the selected squares?\n\n" +
+                                    "Choose 'Yes' to merge assignments.\n" +
+                                    "Choose 'No' to replace all existing assignments.",
+                            "Existing Assignments Found",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.QUESTION_MESSAGE
+                    );
+
+                    if (choice == JOptionPane.CANCEL_OPTION || choice == JOptionPane.CLOSED_OPTION) {
+                        return; // abort
+                    }
+
+                    keepOld = (choice == JOptionPane.YES_OPTION);
+                }
+
+                if (keepOld) {
+                    squareOverrideWriter.mergeSquareOverrides(current, userSelectedSquares);
+                } else {
+                    squareOverrideWriter.replaceSquareOverrides(current, userSelectedSquares);
                 }
             }
 
