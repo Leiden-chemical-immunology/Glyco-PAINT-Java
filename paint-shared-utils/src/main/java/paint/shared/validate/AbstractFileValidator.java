@@ -112,7 +112,7 @@ public abstract class AbstractFileValidator {
                 .setIgnoreSurroundingSpaces(true)
                 .build();
 
-        try (Reader    reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
+        try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
              CSVParser parser = format.parse(reader)) {
 
             List<String>    header  = parser.getHeaderNames();

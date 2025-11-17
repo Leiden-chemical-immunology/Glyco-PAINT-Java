@@ -355,10 +355,10 @@ public class GlycoPaintInstallerWindows {
             Files.deleteIfExists(tmpZip);
 
             if (pluginInstalled) {
-                /* Remove temp plugin payload */
-                Files.walk(pluginTmp)
-                        .sorted((a, b) -> b.compareTo(a))
+                try (java.util.stream.Stream<Path> walk = Files.walk(pluginTmp)) {
+                    walk.sorted((a, b) -> b.compareTo(a))
                         .forEach(p -> p.toFile().delete());
+                }
             } else {
                 if (cbPlugin.isSelected()) {
                     Path manual = installRoot.resolve("plugin");
@@ -531,8 +531,8 @@ public class GlycoPaintInstallerWindows {
 
     /** Recursively copies one directory tree into another (REPLACE_EXISTING). */
     private void copyDirectory(Path src, Path dst) {
-        try {
-            Files.walk(src).forEach(source -> {
+        try (java.util.stream.Stream<Path> walk = Files.walk(src)) {
+            walk.forEach(source -> {
                 Path target = dst.resolve(src.relativize(source));
                 try {
                     if (Files.isDirectory(source)) {
