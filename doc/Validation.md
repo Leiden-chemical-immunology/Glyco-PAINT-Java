@@ -1,3 +1,0 @@
-- Use 221012 as the basis for comparison
-- Compare the tracks.csv by summing all the value and comparing these (the sequence of tracks is not the same)
-- Overall mostly identical, relatively large deviaton in Confinement Ratio (0.18%). The Track displacement and Total distance errors are however low (respectively 0.00582% and 0.00030%).

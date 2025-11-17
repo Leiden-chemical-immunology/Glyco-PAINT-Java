@@ -31,9 +31,9 @@
    The user workflow has been significantly simplified and now follows three straightforward steps:
 
    - Organise downloaded Omero data with the 'Get Omero' app.
-   - Generate an Experinent info file with the 'Get Experiment' app.
+   - Generate an Experiment info file with the 'Get Experiment' app.
    - Run the TrackMate plugin
-   - Generate squares and calculate attaributes with the 'Generate Squares' app.
+   - Generate squares and calculate attributes with the 'Generate Squares' app.
    - Analyze data in R (or another statistical environment)
 
 8. **Unified, Simplified User Interface**
@@ -87,7 +87,7 @@ Log file are no longer kept in a central place, but stored project specifically.
 
 #### PaintLogger uses a console window dedicated to Paint
 
-The Paint plugin and apps use its dedicated Console window (previously the Fiji plugin used Fiji's console and Generate Squares did not have a console). The Fiji console is no longet used and the heavy dump of Fiji messages and AWT stack dumps are now hidden: considerably less distraction.
+The Paint plugin and apps use its dedicated Console window (previously the Fiji plugin used Fiji's console and Generate Squares did not have a console). The Fiji console is no longer used and the heavy dump of Fiji messages and AWT stack dumps are now hidden: considerably less distraction.
 
 All messages are shown in the console and additionally stored in the log file. The Logger supports four levels of messages: debug, info, warning and error, The logging level be set so that only 'equal and higher' message are displayed. Info and debug messages are coloured in black, warning and error messages are amber and red.  The console can be closed, saved and auto scrolling can be (to allow the user to inspect a section higher up).
 
@@ -132,13 +132,13 @@ Support for parameter sweeps is implemented allowing TrackMate and Generate Squa
 
 #### Background determination
 
-A new statistical method has been introduced to determibe which squares are considered to be background and which squares represent cell suface. A histogram of cell/background allocation is prepared.
+A new statistical method has been introduced to determine which squares are considered to be background and which squares represent cell surface. A histogram of cell/background allocation is prepared.
 
 
 
-#### Curvefitting
+#### Curve-fitting
 
-A new more sophisticated curvefitting methodology has been introduced, leading to generaly better curve fitting and better rejection of distributions that can not be relaibly fitted. Curve fit plots are generated for visual confirmation. 
+A new more sophisticated curvefitting methodology has been introduced, leading to generally better curve fitting and better rejection of distributions that can not be reliably fitted. Curve fit plots are generated for visual confirmation. 
 
 
 
@@ -150,18 +150,18 @@ An imperfection in the original code has been addressed, where tracks on the squ
 
 #### New Get Omero app
 
-A simple app has been introduced to transform the downloaded Omero structure into a Glycol-PAint image directory.
+A simple app has been introduced to transform the downloaded Omero structure into a Glyco-Psint image directory.
 
 
 
 #### Updated viewer
 
-Operation of the Viewer app has been sreamlined. The need to remember (undocumented) key shortcuts has been eliminated. A new mode has been added to watch the original movies (provided that the images root directory is reachable).
+Operation of the Viewer app has been streamlined. The need to remember (undocumented) key shortcuts has been eliminated. A new mode has been added to watch the original movies (provided that the images root directory is reachable).
 
 
 
 #### New Glyco-PAINT launcher
 
-A simple GlycoPaint launcer allows the user to start the Glycol-PAINT apps.
+A simple GlycoPaint launcher allows the user to start the Glycol-PAINT apps.
 
  
