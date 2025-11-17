@@ -1,29 +1,35 @@
 /*==============================================================================
  *  Class:        SquareGridPanel.java
- *  Package:      paint.viewer.panels
+ *  Package:      paint.viewer.ui.panels
  *
  *  PURPOSE:
- *    Displays and manages an interactive grid of squares within the PAINT
- *    viewer, supporting visual selection, annotation, and visibility control
- *    features for experimental image data.
+ *    Renders and manages an interactive grid of squares inside the PAINT Viewer,
+ *    supporting visual selection, annotation, shading, numeric display modes,
+ *    and visibility filtering based on configurable analysis parameters.
  *
  *  DESCRIPTION:
- *    The {@code SquareGridPanel} provides a graphical interface that renders
- *    a structured grid of {@link paint.shared.objects.Square} elements. Each
- *    square can represent data such as density, variability, or R² statistics
- *    and may be interactively selected, filtered, or annotated.
+ *    The {@code SquareGridPanel} provides a graphical representation of
+ *    {@link paint.shared.objects.Square} objects arranged in a fixed grid.
+ *    Each square corresponds to a defined spatial region of an experiment and may
+ *    contain metrics such as density, density ratio, variability, R², and track count.
  *
- *    The panel supports dynamic updates, overlay shading, numeric display
- *    modes, and contextual popups showing detailed square information. It can
- *    operate independently or as part of a larger viewer managed by
- *    {@link paint.viewer.control.SquareControlHandler}.
+ *    The panel supports:
+ *      • User-driven selection (click and drag).
+ *      • Dynamic visibility filtering (via {@link SharedSquareUtils}).
+ *      • Colored cell assignments and shading overlays.
+ *      • Flexible numeric display modes (label numbers or square numbers).
+ *      • On-demand contextual popups showing square-specific statistics.
+ *
+ *    It is typically coordinated by {@link paint.viewer.control.SquareControlHandler}
+ *    as part of the full viewer interface (see {@code ViewerFrame}).
  *
  *  KEY FEATURES:
- *    • Renders an interactive, data-driven grid of squares.
- *    • Supports shaded overlays, numeric modes, and border control.
- *    • Allows user-driven selection and assignment of cell IDs.
- *    • Integrates with visibility filtering based on configurable parameters.
- *    • Provides contextual info popups for detailed square statistics.
+ *    • High-performance grid rendering with overlays and borders.
+ *    • Click or drag-based interactive selection with visibility-aware behavior.
+ *    • Supports contextual info popups for any visible square.
+ *    • Integrates directly with visibility filters and control parameters.
+ *    • Stable and deterministic color mapping for assigned cell IDs.
+ *    • Independent component usable outside of the viewer if needed.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -36,8 +42,7 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ==============================================================================*/
-
+==============================================================================*/
 package paint.viewer.ui.panels;
 
 import paint.shared.objects.Recording;
@@ -58,17 +63,27 @@ import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_HEIGHT;
 import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH;
 
 /**
- * The {@code SquareGridPanel} is a graphical component that renders a grid of
- * {@link paint.shared.objects.Square} objects, each representing an individual
- * region of interest. It provides rich interactivity such as selection,
- * annotation, and contextual information popups.
+ * A Swing component that renders a grid of {@link Square} objects and provides
+ * extensive interactivity including selection, shading, numeric labels, and
+ * contextual information popups.
  *
- * <p>Users can interactively select squares, assign them to cells, and toggle
- * visibility or shading modes. Control parameters for filtering and display
- * can be applied through integration with {@code SquareControlHandler}.</p>
+ * <p>This panel is designed for integration with the PAINT Viewer and is used
+ * to display region-level quantitative metrics overlaid on a TrackMate or
+ * Brightfield image. Each square corresponds to a fixed spatial region whose
+ * properties can be visualized, filtered, or interactively selected.</p>
  *
- * <p>The panel automatically handles painting of overlays, borders, and
- * numerical annotations depending on its configured state.</p>
+ * <p>Features include:</p>
+ * <ul>
+ *   <li>Drag or click-based selection of visible squares.</li>
+ *   <li>Visibility filtering based on density ratio, variability, R², and neighbour mode.</li>
+ *   <li>Deterministic color shading based on assigned cell IDs.</li>
+ *   <li>Configurable numeric display modes (none, label, square number).</li>
+ *   <li>Contextual statistical popups for detailed inspection.</li>
+ * </ul>
+ *
+ * <p>Rendering is resolution-adaptive and automatically scales to the component's
+ * current size. Interaction can be selectively enabled or disabled by calling
+ * {@link #setInteractionEnabled(boolean)} or {@link #setSelectionEnabled(boolean)}.</p>
  */
 public class SquareGridPanel extends JPanel {
 
@@ -242,8 +257,8 @@ public class SquareGridPanel extends JPanel {
             return;
         }
 
-        Square square = squares.get(index);
-        int trackCount = square.getNumberOfTracks();
+        Square square     = squares.get(index);
+        int    trackCount = square.getNumberOfTracks();
 
         String html = String.format(
                 "<html><body style='font-family:sans-serif;font-size:11px;'>"
@@ -406,9 +421,9 @@ public class SquareGridPanel extends JPanel {
             int x = square.getColNumber() * squareW;
             int y = square.getRowNumber() * squareH;
 
-            boolean visible = square.isVisible(); // selected == visible (from filter)
+            boolean visible      = square.isVisible(); // selected == visible (from filter)
             boolean userSelected = selectedSquaresNumbers.contains(square.getSquareNumber());
-            boolean hasCell = square.getCellId() > 0;
+            boolean hasCell      = square.getCellId() > 0;
 
             // --- Base fill ---
             if (!visible) {
@@ -482,12 +497,12 @@ public class SquareGridPanel extends JPanel {
      */
     private void drawCenteredString(Graphics g, String text, int x, int y, int w, int h) {
         Font original = g.getFont();
-        Font small = original.deriveFont(original.getSize2D() * 0.8f);
+        Font small    = original.deriveFont(original.getSize2D() * 0.8f);
         g.setFont(small);
 
         FontMetrics fm = g.getFontMetrics();
-        int tx = x + (w - fm.stringWidth(text)) / 2;
-        int ty = y + (h + fm.getAscent() - fm.getDescent()) / 2;
+        int         tx = x + (w - fm.stringWidth(text)) / 2;
+        int         ty = y + (h + fm.getAscent() - fm.getDescent()) / 2;
         g.setColor(Color.WHITE);
         g.drawString(text, tx, ty);
         g.setFont(original);
@@ -574,7 +589,7 @@ public class SquareGridPanel extends JPanel {
         selectedSquaresNumbers.clear();
         dragSelectedSquares.clear();
         selectionRect = null;
-        dragStart = null;
+        dragStart     = null;
         this.repaint();
     }
 
@@ -621,13 +636,17 @@ public class SquareGridPanel extends JPanel {
 
     @Override
     protected void processMouseEvent(MouseEvent e) {
-        if (!interactionEnabled) return;
+        if (!interactionEnabled) {
+            return;
+        }
         super.processMouseEvent(e);
     }
 
     @Override
     protected void processMouseMotionEvent(MouseEvent e) {
-        if (!interactionEnabled) return;
+        if (!interactionEnabled) {
+            return;
+        }
         super.processMouseMotionEvent(e);
     }
 

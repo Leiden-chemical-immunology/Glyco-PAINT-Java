@@ -1,3 +1,40 @@
+/*==============================================================================
+ *  Class:        FileHelper.java
+ *  Package:      paint.viewer.io
+ *
+ *  PURPOSE:
+ *    Provides static utility methods for exporting viewer panels as high-resolution
+ *    images and for generating temporary, filtered CSV files from project data.
+ *
+ *  DESCRIPTION:
+ *    This class contains general-purpose file operations used by the PAINT Viewer:
+ *
+ *      • High-resolution PNG export of any Swing component (e.g. the square grid).
+ *      • Extraction of a temporary CSV containing only rows for a given recording.
+ *      • Automatic directory creation and safe file handling.
+ *
+ *    {@code FileHelper} is strictly a static utility class and cannot be
+ *    instantiated.
+ *
+ *  KEY FEATURES:
+ *    • Scaled PNG export with high-quality rendering hints.
+ *    • CSV filtering by recording name with automatic temp-file creation.
+ *    • Desktop integration to immediately open generated CSV files.
+ *    • Zero state — all methods are pure utilities.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-viewer
+ *
+ *  UPDATED:
+ *    2025-10-29
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *==============================================================================*/
+
 package paint.viewer.io;
 
 import javax.swing.*;
@@ -9,28 +46,56 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * Static utility class providing file operations for the PAINT Viewer, including:
+ * <ul>
+ *     <li>Exporting Swing components as high-resolution PNG images</li>
+ *     <li>Filtering a project's {@code squares.csv} to a temporary CSV</li>
+ *     <li>Automatically opening filtered results via Desktop integration</li>
+ * </ul>
+ *
+ * <p>Instantiation is prevented via a private constructor.</p>
+ */
 public final class FileHelper {
 
+    /** Prevent instantiation. */
     private FileHelper() {
-        // prevent instantiation
     }
 
+    // =========================================================================
+    // IMAGE EXPORT
+    // =========================================================================
+
     /**
-     * Exports the given panel (component) and its overlay as a high‑resolution PNG.
+     * Exports the given Swing component to a high-resolution PNG file. The component
+     * is rendered at a user-defined scale factor (e.g., {@code 2.0} = double size).
      *
-     * @param panel the panel to export (e.g. your leftGridPanel)
-     * @param outputPath the file path to write to
-     * @param scale the scale factor (1.0 = current size, 2.0 = double size, etc.)
-     * @throws IOException if the export fails
+     * <p>The method applies high-quality rendering hints and ensures that the target
+     * directory exists prior to writing.</p>
+     *
+     * @param panel      the Swing component to render
+     * @param outputPath path of the output PNG file
+     * @param scale      scale factor (1.0 = actual size)
+     * @throws IOException if the file cannot be written
      */
-    public static void exportPanelAsImage(JComponent panel, Path outputPath, double scale) throws IOException {
+    public static void exportPanelAsImage(JComponent panel,
+            Path outputPath,
+            double scale) throws IOException {
+
         int width  = (int) (panel.getWidth() * scale);
         int height = (int) (panel.getHeight() * scale);
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+        BufferedImage image =
+                new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
         Graphics2D g2 = image.createGraphics();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                            RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING,
+                            RenderingHints.VALUE_RENDER_QUALITY);
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                            RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+
         g2.scale(scale, scale);
         panel.paintAll(g2);
         g2.dispose();
@@ -41,31 +106,46 @@ public final class FileHelper {
         javax.imageio.ImageIO.write(image, "png", outputPath.toFile());
     }
 
+    // =========================================================================
+    // CSV FILTERING
+    // =========================================================================
+
     /**
-     * Creates a temporary CSV file containing only rows from the original squares.csv
-     * that match the given recordingName, then opens that file. If no matching rows
-     * are found, it still opens the empty file so the user sees nothing matched.
+     * Extracts only the rows from an experiment's {@code squares.csv} matching the
+     * given recording name, writes them to a temporary CSV file, marks the file
+     * read-only, and opens it using the desktop's default CSV viewer.
      *
-     * @param projectRoot the project root (where your experiment folders live)
-     * @param experimentName the current experiment name
-     * @param recordingName the current recording name
-     * @throws IOException if IO errors occur
+     * <p>If no rows match, an empty CSV (with header) is still produced.</p>
+     *
+     * @param projectRoot   the root directory of the PAINT project
+     * @param experimentName the experiment folder containing {@code squares.csv}
+     * @param recordingName  the recording name to filter for
+     * @throws IOException if reading or writing fails, or Desktop integration is unavailable
      */
     public static void filterAndOpenSquaresCsv(Path projectRoot,
             String experimentName,
-            String recordingName) throws IOException {
-        Path origCsv = projectRoot.resolve(experimentName).resolve("squares.csv");
+            String recordingName)
+            throws IOException {
+
+        Path origCsv = projectRoot
+                .resolve(experimentName)
+                .resolve("squares.csv");
+
         if (!Files.exists(origCsv)) {
             throw new IOException("Squares.csv not found: " + origCsv);
         }
 
+        // Create temporary filtered file
         Path tempFile = Files.createTempFile("Squares " + recordingName, ".csv");
+
         try (BufferedReader r = Files.newBufferedReader(origCsv);
              BufferedWriter w = Files.newBufferedWriter(tempFile)) {
+
             String header = r.readLine();
             if (header != null) {
                 w.write(header);
                 w.newLine();
+
                 String line;
                 while ((line = r.readLine()) != null) {
                     if (line.contains(recordingName)) {
@@ -75,7 +155,9 @@ public final class FileHelper {
                 }
             }
         }
+
         tempFile.toFile().setReadOnly();
+
         if (Desktop.isDesktopSupported()) {
             Desktop.getDesktop().open(tempFile.toFile());
         } else {

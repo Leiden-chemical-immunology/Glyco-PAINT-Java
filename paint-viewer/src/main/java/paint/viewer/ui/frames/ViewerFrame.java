@@ -147,13 +147,13 @@ public class ViewerFrame extends JFrame
         this.recordingEntries        = new ArrayList<>(recordingEntries);                          // This is the filtered set of recordings
         this.recordingOverrideWriter = new RecordingOverrideWriter(project.getProjectRootPath());
         this.squareOverrideWriter    = new SquareOverrideWriter(project.getProjectRootPath());
-        this.navigator               = new RecordingNavigator(newIndex -> showRecordingEntry(newIndex));
+        this.navigator               = new RecordingNavigator(this::showRecordingEntry);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         setResizable(false);
 
-        // Validate grid configuration: can only be a liomited set
+        // Validate grid configuration: can only be a limited set
         int     numberOfSquaresInRecording = PaintConfig.getInt(GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING, -1);
         int[]   validSquareLayouts         = {25, 100, 225, 400, 900};
         boolean isValidSquareLayout        = false;
@@ -217,7 +217,7 @@ public class ViewerFrame extends JFrame
      * Initializes startup and runtime behaviour for the "Import Overrides" checkbox:
      * - If checked at startup → perform override import once.
      * - If user checks it later → perform override import.
-     * - If user unchecks it   → show a message asking to restart the viewer.
+     * - If user unchecks it → show a message asking to restart the viewer.
      */
     private void initImportOverridesBehaviour() {
         if (importOverridesCheckBox == null) {
@@ -246,10 +246,8 @@ public class ViewerFrame extends JFrame
     }
 
     /**
-     * Performs the actual "Import Overrides" action.
-     * <p>
-     * TODO: Wire this to your existing override-import logic
-     * (e.g. reading override CSVs and applying them to the current project/recordings).
+     * Performs the actual "Import Overrides" action by reading override CSV files
+     * and applying them to the current project's recording and square metadata.
      */
     private void performImportOverrides() {
         PaintLogger.infof("Import Overrides requested (checkbox is checked).");
@@ -492,8 +490,13 @@ public class ViewerFrame extends JFrame
     }
 
     /**
-     * Opens a dialog for assigning the currently selected squares to a specific cell ID.
-     * Includes undo and cancel functions and disables selection when the dialog closes.
+     * Opens a dialog for assigning a cell ID to the user-selected squares.
+     * If previous assignments exist for the current recording, the user is
+     * asked whether to merge the new assignments with the old ones or to
+     * replace all existing assignments entirely.
+     * A CANCEL option aborts the operation without modifying any data.
+     * Includes undo and cancel functions and temporarily disables regular grid
+     * selection until the dialog is closed.
      */
     @Override
     public void onAssignCellsRequested() {

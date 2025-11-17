@@ -42,7 +42,7 @@ public class RecordingFilterDialog extends JDialog {
     private final JList<String> adjuvantList;
     private final JList<String> concentrationList;
 
-    // ----- Book-keeping for highlighting & per-column behavior -----
+    // ----- Book-keeping for highlighting and per-column behavior -----
     private final Map<JList<String>, JPanel> listPanels                                = new HashMap<>();
     private final Map<JList<String>, JButton> resetButtons                             = new HashMap<>();
     private final Map<JList<String>, String> titles                                    = new HashMap<>();
@@ -59,8 +59,7 @@ public class RecordingFilterDialog extends JDialog {
                                  FilterCriteria initialCriteria) {
         super(owner, "Filter Recordings", true);
 
-        final FilterCriteria criteria =
-                (initialCriteria == null) ? FilterCriteria.empty() : initialCriteria;
+        final FilterCriteria criteria = (initialCriteria == null) ? FilterCriteria.empty() : initialCriteria;
 
         setLayout(new BorderLayout(10, 10));
         setResizable(false);
@@ -68,7 +67,7 @@ public class RecordingFilterDialog extends JDialog {
         // Store full dataset
         this.originalRecordings = new ArrayList<>(allRecordings);
 
-        // Compute the base list (start subset) from the current visible subset + incoming criteria
+        // Compute the base list (start subset) from the current visible subset and incoming criteria
         if (!criteria.isEmpty()) {
             this.baseList = currentVisibleRecordings.stream()
                     .filter(e -> criteria.cellTypes.isEmpty()      || criteria.cellTypes.contains(e.getCellType()))
@@ -83,12 +82,22 @@ public class RecordingFilterDialog extends JDialog {
 
         this.filteredRecordings = new ArrayList<>(this.baseList);
 
-        // Build initial listbox contents from baseList (not the full dataset)
-        Set<String> cellTypes      = this.baseList.stream().map(RecordingEntry::getCellType).collect(Collectors.toCollection(TreeSet::new));
-        Set<String> probeNames     = this.baseList.stream().map(RecordingEntry::getProbeName).collect(Collectors.toCollection(TreeSet::new));
-        Set<String> probeTypes     = this.baseList.stream().map(RecordingEntry::getProbeType).collect(Collectors.toCollection(TreeSet::new));
-        Set<String> adjuvants      = this.baseList.stream().map(RecordingEntry::getAdjuvant).collect(Collectors.toCollection(TreeSet::new));
-        Set<String> concentrations = this.baseList.stream().map(e -> String.valueOf(e.getConcentration())).collect(Collectors.toCollection(TreeSet::new));
+        // Build initial list box contents from baseList (not the full dataset)
+        Set<String> cellTypes      = this.baseList.stream()
+                                                  .map(RecordingEntry::getCellType)
+                                                  .collect(Collectors.toCollection(TreeSet::new));
+        Set<String> probeNames     = this.baseList.stream()
+                                                  .map(RecordingEntry::getProbeName)
+                                                  .collect(Collectors.toCollection(TreeSet::new));
+        Set<String> probeTypes     = this.baseList.stream()
+                                                  .map(RecordingEntry::getProbeType)
+                                                  .collect(Collectors.toCollection(TreeSet::new));
+        Set<String> adjuvants      = this.baseList.stream()
+                                                  .map(RecordingEntry::getAdjuvant)
+                                                  .collect(Collectors.toCollection(TreeSet::new));
+        Set<String> concentrations = this.baseList.stream()
+                                                  .map(e -> String.valueOf(e.getConcentration()))
+                                                  .collect(Collectors.toCollection(TreeSet::new));
 
         cellTypeList      = createList(cellTypes);
         probeNameList     = createList(probeNames);
@@ -166,7 +175,7 @@ public class RecordingFilterDialog extends JDialog {
         pack();
         setLocationRelativeTo(owner);
 
-        // Initialize selections map with empties
+        // Initialize the selection map with empties
         for (JList<String> l : Arrays.asList(cellTypeList, probeNameList, probeTypeList, adjuvantList, concentrationList)) {
             selections.put(l, Collections.emptyList());
         }
@@ -243,7 +252,7 @@ public class RecordingFilterDialog extends JDialog {
     }
 
     private void onResetClicked(JList<String> list) {
-        // Clear only THIS column’s selection & flag
+        // Clear only THIS column’s selection and flag
         selections.put(list, Collections.emptyList());
         activeFilters.remove(list);
 
@@ -271,10 +280,12 @@ public class RecordingFilterDialog extends JDialog {
     private List<RecordingEntry> applyAllFilters() {
         // Always reapply filters to the full dataset, not the baseList.
         List<RecordingEntry> current = new ArrayList<>(originalRecordings);
-        for (Map.Entry<JList<String>, List<String>> e : selections.entrySet()) {
-            JList<String> l = e.getKey();
-            List<String> sel = e.getValue();
-            if (sel == null || sel.isEmpty()) continue;
+        for (Map.Entry<JList<String>, List<String>> entry : selections.entrySet()) {
+            JList<String> l = entry.getKey();
+            List<String> sel = entry.getValue();
+            if (sel == null || sel.isEmpty()) {
+                continue;
+            }
 
             Function<RecordingEntry, String> extractor = valueExtractors.get(l);
             current = current.stream()
@@ -329,28 +340,10 @@ public class RecordingFilterDialog extends JDialog {
         }
     }
 
-//    private void updateHighlighting() {
-//        for (Map.Entry<JList<String>, JPanel> e : listPanels.entrySet()) {
-//            JList<String> list = e.getKey();
-//            JPanel panel = e.getValue();
-//            String title = titles.get(list);
-//
-//            boolean isActive = activeFilters.contains(list);
-//            Border border = isActive
-//                    ? BorderFactory.createTitledBorder(
-//                    BorderFactory.createLineBorder(new Color(30, 144, 255), 2),
-//                    title)
-//                    : BorderFactory.createTitledBorder(title);
-//
-//            panel.setBorder(border);
-//            panel.repaint();
-//        }
-//    }
-
     // ===== Criteria restore =====
 
     private void restoreSelectionsFromCriteria(FilterCriteria filterCriteria) {
-        // Copy criteria into selections map and mark active filters
+        // Copy criteria into the selection map and mark active filters
         setSelectionFrom(cellTypeList,      filterCriteria.cellTypes);
         setSelectionFrom(probeNameList,     filterCriteria.probeNames);
         setSelectionFrom(probeTypeList,     filterCriteria.probeTypes);

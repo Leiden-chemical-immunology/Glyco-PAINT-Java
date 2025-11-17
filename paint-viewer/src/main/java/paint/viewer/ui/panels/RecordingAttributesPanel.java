@@ -1,6 +1,6 @@
 /*==============================================================================
  *  Class:        RecordingAttributesPanel.java
- *  Package:      paint.viewer.panels
+ *  Package:      paint.viewer.ui.panels
  *
  *  PURPOSE:
  *    Displays the attributes of a {@link paint.viewer.model.RecordingEntry}
@@ -9,13 +9,14 @@
  *  DESCRIPTION:
  *    Provides a graphical panel for visualizing the key metadata of a
  *    recording entry, including probe characteristics, experiment parameters,
- *    and derived statistics such as Tau, Density, and R² thresholds.
+ *    and derived threshold statistics such as density ratio, variability, and
+ *    minimum R².
  *
  *    The panel uses a non-editable {@link JTable} backed by a
  *    {@link javax.swing.table.DefaultTableModel}, allowing data to be
- *    refreshed dynamically from a given {@link RecordingEntry}.
- *    It supports both permanent updates and transient previews of
- *    parameter changes.
+ *    refreshed dynamically from a given {@link RecordingEntry}. It supports
+ *    both permanent updates and transient previews when users adjust
+ *    visibility thresholds in the Square Control dialog.
  *
  *  KEY FEATURES:
  *    • Displays probe, cell type, and recording statistics in a table view.
@@ -34,7 +35,6 @@
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
 ==============================================================================*/
-
 package paint.viewer.ui.panels;
 
 import paint.viewer.model.RecordingEntry;
@@ -149,25 +149,25 @@ public class RecordingAttributesPanel {
         model.addRow(new Object[]{"Number of Squares",   numSquares});
         model.addRow(new Object[]{"Threshold",           recordingEntry.getThreshold()});
         model.addRow(new Object[]{"Min Density Ratio",   format(minDensityRatio, 1)});
-        model.addRow(new Object[]{"Max Variability",     format(maxVariability, 1)});
-        model.addRow(new Object[]{"Min R²",              format(minRSquared, 2)});
+        model.addRow(new Object[]{"Max Variability",     format(maxVariability,  1)});
+        model.addRow(new Object[]{"Min R²",              format(minRSquared,     2)});
         model.addRow(new Object[]{"Neighbour Mode",      neighbourMode});
     }
 
     /**
      * Formats a numeric value to the specified precision, handling NaN and infinity cases.
      *
-     * @param v the value to format
-     * @param p number of decimal places
+     * @param value the value to format
+     * @param precision number of decimal places
      * @return formatted string representation of the value
      */
-    private static String format(double v, int p) {
-        if (Double.isNaN(v)) {
+    private static String format(double value, int precision) {
+        if (Double.isNaN(value)) {
             return "NaN";
         }
-        if (Double.isInfinite(v)) {
-            return v > 0 ? "∞" : "-∞";
+        if (Double.isInfinite(value)) {
+            return value > 0 ? "∞" : "-∞";
         }
-        return String.format("%." + p + "f", v);
+        return String.format("%." + precision + "f", value);
     }
 }

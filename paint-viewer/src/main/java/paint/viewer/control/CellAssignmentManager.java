@@ -1,6 +1,6 @@
 /*==============================================================================
  *  Class:        CellAssignmentManager.java
- *  Package:      paint.viewer.logic
+ *  Package:      paint.viewer.control
  *
  *  PURPOSE:
  *    Manages cell assignment and undo functionality for square grids within
@@ -8,19 +8,18 @@
  *    supports reverting to the previous assignment state.
  *
  *  DESCRIPTION:
- *    This class maintains an internal mapping of square numbers to assigned
- *    cell IDs. It provides operations to:
- *      • Assign a given cell ID to all currently selected squares.
- *      • Store historical assignment states for undo operations.
- *      • Restore a previous state upon undo.
+ *    This class maintains a mapping between square numbers and assigned cell IDs.
+ *    Assignments are applied to the currently selected squares, and each operation
+ *    records the previous state in an undo stack to allow reversal.
  *
- *    Integration occurs via {@link paint.viewer.ui.panels.SquareGridPanel},
- *    which provides access to squares and their selection state.
+ *    Collaboration occurs with {@link paint.viewer.ui.panels.SquareGridPanel},
+ *    which exposes square lists, selection state, and repaint triggering.
  *
  *  KEY FEATURES:
- *    • Assigns cell IDs to selected squares in bulk.
- *    • Maintains an undo stack for reversing recent assignments.
- *    • Automatically repaints the grid after each update.
+ *    • Bulk assignment of a cell ID to selected squares.
+ *    • Undo support by restoring previous assignment snapshots.
+ *    • Automatic grid refresh after each modification.
+ *    • Fully self-contained logic with no retained UI state.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -33,7 +32,7 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ==============================================================================*/
+==============================================================================*/
 
 package paint.viewer.control;
 
@@ -45,22 +44,35 @@ import java.util.*;
 /**
  * Handles cell assignment operations for a grid of {@link Square} objects.
  * <p>
- * Supports both assigning a cell ID to selected squares and undoing
- * the last assignment operation by restoring the previous state.
+ * Provides:
+ * <ul>
+ *   <li>Assigning a common cell ID to all currently selected squares.</li>
+ *   <li>Undoing the latest assignment by restoring the previous state.</li>
+ *   <li>Clearing state when switching recordings.</li>
+ * </ul>
+ * All repainting is delegated to the {@link SquareGridPanel}.
  */
 public class CellAssignmentManager {
 
-    private final Map<Integer, Integer>        squareAssignments = new HashMap<>();   // This holds the pairs cellId and SquareNumber
-    private final Deque<Map<Integer, Integer>> undoStack         = new ArrayDeque<>();
+    /** Maps squareNumber → cellId for all assigned squares. */
+    private final Map<Integer, Integer> squareAssignments = new HashMap<>();
+
+    /** Stack of previous assignment snapshots, enabling undo. */
+    private final Deque<Map<Integer, Integer>> undoStack = new ArrayDeque<>();
 
     /**
-     * Assigns the specified cell ID to all currently selected squares in the grid.
-     * The current assignment state is saved before modification, allowing undo.
+     * Assigns the specified cell ID to all user-selected squares.
+     * <p>
+     * The current assignment map is copied and pushed onto the undo stack
+     * before any modification occurs, ensuring a reversible operation.
      *
-     * @param cellId the identifier to assign to the selected squares
-     * @param grid   the grid panel containing the squares to be modified
+     * @param cellId ID to assign to each selected square
+     * @param grid   the grid panel containing square objects and selection info
+     * @return an unmodifiable view of the updated squareAssignments map
      */
     public Map<Integer, Integer> assignUserSelectedSquares(int cellId, SquareGridPanel grid) {
+
+        // All square numbers currently selected by the user
         Set<Integer> userSelectedSquaresNumbers = grid.getUserSelectedSquaresNumbers();
 
         if (userSelectedSquaresNumbers.isEmpty()) {
@@ -70,33 +82,39 @@ public class CellAssignmentManager {
         // Save the current state for undo
         undoStack.push(new HashMap<>(squareAssignments));
 
+        // Apply new assignments
         for (Square square : grid.getSquares()) {
             if (userSelectedSquaresNumbers.contains(square.getSquareNumber())) {
                 square.setCellId(cellId);
-                squareAssignments.put(square.getSquareNumber(), cellId);    // Adds (or updates) the pair
+                squareAssignments.put(square.getSquareNumber(), cellId);
             }
         }
 
+        // Clear temporary selection markers and repaint the UI
         grid.clearMouseSelection();
         grid.repaint();
+
         return Collections.unmodifiableMap(squareAssignments);
     }
 
     /**
-     * Undoes the most recent assignment operation by restoring the previous
-     * state from the undo stack. Updates the grid to reflect the restored
-     * assignments and triggers a repaint.
+     * Reverts the most recent assignment operation.
+     * <p>
+     * Restores the assignment map to the previous snapshot and applies the
+     * restored values to the grid's square objects, followed by a repaint.
      *
-     * @param grid the grid panel containing the squares to revert
+     * @param grid the grid panel whose displayed squares must be updated
      */
     public void undo(SquareGridPanel grid) {
         if (undoStack.isEmpty()) {
             return;
         }
 
+        // Restore prior assignment snapshot
         squareAssignments.clear();
         squareAssignments.putAll(undoStack.pop());
 
+        // Apply restored IDs to the actual square objects
         for (Square square : grid.getSquares()) {
             int cellId = squareAssignments.containsKey(square.getSquareNumber())
                     ? squareAssignments.get(square.getSquareNumber())
@@ -108,11 +126,11 @@ public class CellAssignmentManager {
     }
 
     /**
-     * Clears all assignment state when switching recordings.
+     * Clears all assignment and undo state, used whenever the viewer
+     * navigates to a different recording.
      */
     public void clear() {
         undoStack.clear();
         squareAssignments.clear();
     }
-
 }

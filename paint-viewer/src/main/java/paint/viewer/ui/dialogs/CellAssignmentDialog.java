@@ -75,7 +75,7 @@ public class CellAssignmentDialog extends JDialog {
         void onCancelSelection();
     }
 
-    private final ButtonGroup group = new ButtonGroup();
+    private final ButtonGroup group                       = new ButtonGroup();
     private final Map<JRadioButton, JPanel> squareByRadio = new LinkedHashMap<>();
 
     /**
@@ -209,9 +209,9 @@ public class CellAssignmentDialog extends JDialog {
     private void updateVisualSelection() {
         for (Map.Entry<JRadioButton, JPanel> e : squareByRadio.entrySet()) {
             JRadioButton radioButton = e.getKey();
-            JPanel square = e.getValue();
-            int id = (Integer) radioButton.getClientProperty("cellId");
-            Color base = (id == 0) ? Color.GRAY : SquareGridPanel.getColorForCell(id);
+            JPanel       square      = e.getValue();
+            int          id          = (Integer) radioButton.getClientProperty("cellId");
+            Color        base        = (id == 0) ? Color.GRAY : SquareGridPanel.getColorForCell(id);
 
             if (radioButton.isSelected()) {
                 square.setBackground(base);

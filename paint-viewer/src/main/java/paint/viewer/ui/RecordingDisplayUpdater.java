@@ -1,26 +1,82 @@
+/*==============================================================================
+ *  Class:        RecordingDisplayUpdater.java
+ *  Package:      paint.viewer.ui
+ *
+ *  PURPOSE:
+ *    Centralizes all UI updates required when the viewer navigates to a new
+ *    {@link paint.viewer.model.RecordingEntry}. Ensures that every visible
+ *    component in the ViewerFrame reflects the newly selected recording.
+ *
+ *  DESCRIPTION:
+ *    This class updates the PAINT viewer UI whenever the user steps forward or
+ *    backward through the list of loaded recording entries. It refreshes:
+ *
+ *      • The left grid panel (recording, square list, and background image)
+ *      • The right image display (scaled image preview)
+ *      • The experiment and recording labels
+ *      • The attribute table showing recording metadata
+ *
+ *    All updates are performed in a coordinated manner to avoid inconsistent
+ *    or partially refreshed UI states. This class is stateless; it operates
+ *    exclusively on the components passed in via the constructor.
+ *
+ *  KEY FEATURES:
+ *    • Fully refreshes the grid, images, labels, and attributes panel.
+ *    • Performs deterministic high-quality scaling of the right-side image.
+ *    • Reads the expected square count from {@link PaintConfig}.
+ *    • Lightweight utility class with no retained business logic.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-viewer
+ *
+ *  UPDATED:
+ *    2025-10-29
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ ==============================================================================*/
+
 package paint.viewer.ui;
+
 import static paint.shared.constants.PaintConstants.*;
 
-
 import paint.shared.config.paintconfig.PaintConfig;
+import paint.viewer.model.RecordingEntry;
 import paint.viewer.ui.panels.SquareGridPanel;
 import paint.viewer.ui.panels.RecordingAttributesPanel;
-import paint.viewer.model.RecordingEntry;
 
 import javax.swing.*;
 
 /**
- * Handles updating the viewer UI when the user navigates
- * to a different recording entry.
+ * Utility class responsible for synchronizing the UI with a newly selected
+ * {@link RecordingEntry}. Called whenever the user navigates between recordings
+ * in the viewer.
+ *
+ * <p>This updater replaces the displayed grid, rescaled images, labels, and
+ * attribute table to reflect the active recording. No state is stored inside
+ * this class—its job is to apply a complete UI refresh against the components
+ * provided to the constructor.</p>
  */
 public final class RecordingDisplayUpdater {
 
-    private final SquareGridPanel leftGridPanel;
-    private final JLabel rightImageLabel;
-    private final JLabel experimentLabel;
-    private final JLabel recordingLabel;
+    private final SquareGridPanel          leftGridPanel;
+    private final JLabel                   rightImageLabel;
+    private final JLabel                   experimentLabel;
+    private final JLabel                   recordingLabel;
     private final RecordingAttributesPanel attributesPanel;
 
+    /**
+     * Creates a new updater bound to the UI components it controls.
+     *
+     * @param leftGridPanel     the grid used for displaying square layout and overlays
+     * @param rightImageLabel   the label used to show the right-side image
+     * @param experimentLabel   the label displaying the experiment name
+     * @param recordingLabel    the label displaying the recording name
+     * @param attributesPanel   the table panel showing recording metadata
+     */
     public RecordingDisplayUpdater(
             SquareGridPanel leftGridPanel,
             JLabel rightImageLabel,
@@ -28,44 +84,46 @@ public final class RecordingDisplayUpdater {
             JLabel recordingLabel,
             RecordingAttributesPanel attributesPanel
     ) {
-        this.leftGridPanel = leftGridPanel;
-        this.rightImageLabel = rightImageLabel;
-        this.experimentLabel = experimentLabel;
-        this.recordingLabel = recordingLabel;
-        this.attributesPanel = attributesPanel;
+        this.leftGridPanel     = leftGridPanel;
+        this.rightImageLabel   = rightImageLabel;
+        this.experimentLabel   = experimentLabel;
+        this.recordingLabel    = recordingLabel;
+        this.attributesPanel   = attributesPanel;
     }
 
     /**
-     * Updates all UI components to show the given recording.
+     * Updates all UI components to show the given recording entry.
+     *
+     * @param entry      the new {@link RecordingEntry} to display
+     * @param index      the zero-based index of the entry in the full list
+     * @param totalSize  the total number of loaded recording entries
      */
     public void show(RecordingEntry entry, int index, int totalSize) {
 
-        // Update left grid panel
+        // --- Left grid panel ---
         leftGridPanel.setRecording(entry.getRecording());
         leftGridPanel.setBackgroundImage(entry.getLeftImage());
         leftGridPanel.setSquares(entry.getRecording().getSquaresOfRecording());
 
-        // Update right panel image
+        // --- Right image ---
         ImageIcon scaled = new ImageIcon(
                 entry.getRightImage().getImage().getScaledInstance(
-                        paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH,
-                        paint.shared.constants.PaintConstants.NUMBER_PIXELS_HEIGHT,
+                        NUMBER_PIXELS_WIDTH,
+                        NUMBER_PIXELS_HEIGHT,
                         java.awt.Image.SCALE_SMOOTH
                 )
         );
         rightImageLabel.setIcon(scaled);
 
-        // Update labels
+        // --- Labels ---
         experimentLabel.setText(
                 "Experiment: " + entry.getExperimentName()
                         + "   [" + (index + 1) + "/" + totalSize + "]"
         );
 
-        recordingLabel.setText(
-                "Recording: " + entry.getRecordingName()
-        );
+        recordingLabel.setText("Recording: " + entry.getRecordingName());
 
-        // Update attribute panel
+        // --- Attribute table ---
         int numberOfSquares = PaintConfig.getInt(
                 GENERATE_SQUARES,
                 NUMBER_OF_SQUARES_IN_RECORDING,
@@ -74,6 +132,7 @@ public final class RecordingDisplayUpdater {
 
         attributesPanel.updateFromEntry(entry, numberOfSquares);
 
+        // --- Refresh grid ---
         leftGridPanel.repaint();
     }
 }

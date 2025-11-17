@@ -1,28 +1,36 @@
 /*==============================================================================
  *  Class:        RecordingLoader.java
- *  Package:      paint.viewer.utils
+ *  Package:      paint.viewer.model
  *
  *  PURPOSE:
- *    Loads and validates recording data and associated images from a PAINT
- *    project directory, constructing {@link RecordingEntry} instances that
- *    represent complete experiment recordings.
+ *    Loads and validates all experiment recordings for a PAINT project,
+ *    constructing fully populated {@link RecordingEntry} objects that include
+ *    metadata, square data, and preloaded image resources.
  *
  *  DESCRIPTION:
- *    The {@code RecordingLoader} iterates over all experiment folders within
- *    a project, loads each experiment using {@link paint.shared.io.ExperimentDataLoader},
- *    and constructs {@link RecordingEntry} objects for all recordings that meet
- *    process and file-availability requirements.
+ *    The {@code RecordingLoader} iterates over experiment folders inside a
+ *    {@link paint.shared.objects.Project}, loads each experiment using
+ *    {@link paint.shared.io.ExperimentDataLoader}, and creates a
+ *    {@link RecordingEntry} for each recording that:
  *
- *    Each recording entry combines metadata, images (TrackMate and Brightfield),
- *    and configuration thresholds loaded from {@link paint.shared.config.paintconfig.PaintConfig}.
- *    Invalid or incomplete recordings are skipped with diagnostic logging.
+ *      • Has its process flag enabled.
+ *      • Has a valid TrackMate overlay image.
+ *      • Has a matching Brightfield reference image.
+ *
+ *    Recordings missing mandatory resources are skipped with diagnostic logging.
+ *    TrackMate images are expected in:
+ *
+ *      <experiment>/TrackMate Images/<recording>.jpg
+ *
+ *    Brightfield images are expected in:
+ *
+ *      <experiment>/Brightfield Images/<recording>[-BF*].jpg
  *
  *  KEY FEATURES:
- *    • Loads complete experiments with squares and track data.
- *    • Validates existence of TrackMate and Brightfield images.
- *    • Reads density, variability, and R² thresholds from configuration.
- *    • Constructs structured {@link RecordingEntry} objects for UI or analysis use.
- *    • Provides detailed logging via {@link paint.shared.utils.PaintLogger}.
+ *    • Loads experiments, recordings, squares (no tracks).
+ *    • Validates all required image assets.
+ *    • Returns a complete, ready-to-display list of {@link RecordingEntry}.
+ *    • Uses {@link paint.shared.utils.PaintLogger} for structured diagnostics.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -35,7 +43,7 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- ==============================================================================*/
+ *==============================================================================*/
 
 package paint.viewer.model;
 
@@ -51,25 +59,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Provides functionality for loading and filtering recordings from a project directory.
- * <p>
- * The {@code RecordingLoader} ensures that required images and metadata exist for each
- * recording, applying configuration-defined thresholds to build {@link RecordingEntry}
- * instances ready for visualization or further processing.
- * </p>
+ * Loads and validates {@link RecordingEntry} objects for a full PAINT project.
+ *
+ * <p>The loader ensures:</p>
+ * <ul>
+ *   <li>Each recording has its process flag set.</li>
+ *   <li>Required TrackMate and Brightfield images exist.</li>
+ *   <li>Square data is loaded via {@link ExperimentDataLoader}.</li>
+ * </ul>
+ *
+ * <p>Invalid or incomplete recordings are skipped, and diagnostic messages are
+ * logged via {@link PaintLogger}. Returned entries are ready for direct use in
+ * the PAINT viewer.</p>
  */
 public class RecordingLoader {
 
     /**
-     * Loads all {@link RecordingEntry} instances from the specified {@link Project}.
-     * <p>
-     * This method iterates over all experiment directories, loads their full content
-     * (including squares and tracks), and constructs valid entries only for recordings
-     * meeting both process requirements and file availability conditions.
-     * </p>
+     * Loads all valid {@link RecordingEntry} objects from a project.
      *
-     * @param project the project context containing experiments, recordings, and file data
-     * @return list of valid {@link RecordingEntry} instances; empty if no valid recordings found
+     * @param project the project containing experiment directories and metadata
+     * @return list of validated {@link RecordingEntry} objects; empty if none valid
      */
     public static List<RecordingEntry> loadFromProject(Project project) {
 
@@ -79,62 +88,87 @@ public class RecordingLoader {
 
             Path experimentPath = project.getProjectRootPath().resolve(experimentName);
 
-            // ✅ Load full experiment (recordings + tracks + squares)
+            // ------------------------------------------------------------------
+            // Load full experiment (squares only; tracks intentionally disabled)
+            // ------------------------------------------------------------------
             Experiment experiment = ExperimentDataLoader.loadExperiment(
                     project.getProjectRootPath(),
                     experimentName,
-                    true, // load squares
-                    false // don't load tracks
+                    true,   // load squares
+                    false   // do not load tracks
             );
 
             if (experiment == null || experiment.getRecordings().isEmpty()) {
+                PaintLogger.warnf("Experiment '%s' contains no valid recordings.", experimentName);
                 continue;
             }
 
             for (Recording recording : experiment.getRecordings()) {
+
                 String recordingName = recording.getRecordingName();
+
+                // Skip recordings not flagged for processing
                 if (!recording.isProcessFlag()) {
                     continue;
                 }
 
-                // --- Image paths ---
+                // ------------------------------------------------------------------
+                // TrackMate image (*.jpg)
+                // ------------------------------------------------------------------
                 Path trackmateImagePath = experimentPath
                         .resolve("TrackMate Images")
                         .resolve(recordingName + ".jpg");
 
                 if (!Files.exists(trackmateImagePath)) {
-                    PaintLogger.errorf("Missing TrackMate image for '%s'", recordingName);
+                    PaintLogger.errorf(
+                            "Missing TrackMate image for recording '%s' (%s)",
+                            recordingName, trackmateImagePath
+                    );
                     continue;
                 }
 
+                // ------------------------------------------------------------------
+                // Brightfield images (recording*.jpg or recording-BF*.jpg)
+                // ------------------------------------------------------------------
                 Path brightfieldDirPath = experimentPath.resolve("Brightfield Images");
-                Path brightfieldImagePath = null;
 
                 if (!Files.isDirectory(brightfieldDirPath)) {
-                    PaintLogger.errorf("Missing Brightfield directory '%s' image for recording '%s'",
-                                       brightfieldDirPath, recordingName);
+                    PaintLogger.errorf(
+                            "Missing Brightfield directory '%s' for recording '%s'",
+                            brightfieldDirPath, recordingName
+                    );
                     continue;
                 }
+
+                Path brightfieldImagePath = null;
 
                 try {
                     for (Path p : (Iterable<Path>) Files.list(brightfieldDirPath)::iterator) {
                         String fileName = p.getFileName().toString();
-                        if ((fileName.startsWith(recordingName + "-BF") || fileName.startsWith(recordingName))
-                                && fileName.endsWith(".jpg")) {
+
+                        // Accept "<recording>.jpg" OR "<recording>-BF*.jpg"
+                        boolean isMatch =
+                                (fileName.startsWith(recordingName + "-BF") ||
+                                        fileName.startsWith(recordingName))
+                                        && fileName.endsWith(".jpg");
+
+                        if (isMatch) {
                             brightfieldImagePath = p;
                             break;
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    PaintLogger.errorf("Error scanning Brightfield directory: %s", e.getMessage());
                 }
 
                 if (brightfieldImagePath == null) {
-                    PaintLogger.errorf("Missing Brightfield image for '%s'", recordingName);
+                    PaintLogger.errorf("Missing Brightfield image for recording '%s'", recordingName);
                     continue;
                 }
 
-                // --- Build final entry ---
+                // ------------------------------------------------------------------
+                // Construct final entry
+                // ------------------------------------------------------------------
                 RecordingEntry entry = new RecordingEntry(
                         recording,
                         trackmateImagePath,

@@ -1,29 +1,32 @@
 /*==============================================================================
  *  Class:        RecordingEntry.java
- *  Package:      paint.viewer.utils
+ *  Package:      paint.viewer.model
  *
  *  PURPOSE:
- *    Represents a single recording entry within an experiment, encapsulating
- *    metadata, image references, and square-level visibility control parameters.
+ *    Represents a single recording entry inside a PAINT experiment, providing
+ *    structured access to metadata, TrackMate/Brightfield images, and the
+ *    associated {@link paint.shared.objects.Recording} containing square data.
  *
  *  DESCRIPTION:
- *    Each {@code RecordingEntry} provides access to both image representations
- *    (TrackMate and Brightfield) and data-related parameters such as minimum
- *    density ratio, maximum variability, R² threshold, and neighbour mode.
+ *    A {@code RecordingEntry} acts as the viewer-facing wrapper around a
+ *    {@link Recording}. It provides:
  *
- *    It also provides a high-level interface for retrieving {@link paint.shared.objects.Square}
- *    data associated with a recording, as well as convenience methods for
- *    metadata access (probe type, adjuvant, cell type, etc.).
+ *      • Preloaded TrackMate and Brightfield images.
+ *      • Access to all standard metadata fields (probe name/type, adjuvant,
+ *        cell type, concentration, threshold, density, etc.).
+ *      • Delegation to the underlying {@link Recording} object for all
+ *        square-level and measurement-level data.
  *
- *    Images are preloaded using either {@code ImageIO} or ImageJ’s {@code Opener}
- *    for compatibility with both standard and scientific formats.
+ *    Images are loaded using standard {@code ImageIO} first, with automatic
+ *    fallback to ImageJ's {@code Opener} to support scientific formats such
+ *    as TIFF, JPEG2000, and some ND2 conversions.
  *
  *  KEY FEATURES:
- *    • Encapsulates per-recording configuration and visibility parameters.
- *    • Loads and caches TrackMate and Brightfield images automatically.
- *    • Provides structured access to recording metadata and square data.
- *    • Performs consistency validation against expected square counts.
- *    • Fully integrated with PAINT’s logging framework ({@link paint.shared.utils.PaintLogger}).
+ *    • Simple immutable wrapper around a {@link Recording}.
+ *    • Automatic, robust image loading with verbosity via {@link PaintLogger}.
+ *    • Supplies the ViewerFrame and its panels with pre-scaled image icons.
+ *    • Does not perform filtering or control-parameter logic itself; this is
+ *      delegated to the controlling UI classes.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -36,10 +39,9 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ *==============================================================================*/
 
 package paint.viewer.model;
-
 
 import paint.shared.objects.Recording;
 import paint.shared.utils.PaintLogger;
@@ -48,38 +50,47 @@ import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 
-
 /**
- * Represents a single recording entry within an experiment.
- * Each {@code RecordingEntry} encapsulates metadata, image paths, and adjustable
- * visibility control parameters (e.g., density ratio, variability, and R² threshold).
+ * Viewer-level wrapper for a {@link Recording} containing all metadata and
+ * preloaded image resources for a single experiment recording.
  *
- * <p>Images are preloaded via ImageIO or ImageJ Opener, and associated square data
- * can be lazily fetched and cached from the experiment context.</p>
+ * <p>This entry supplies:</p>
+ * <ul>
+ *   <li>TrackMate overlay image (left display)</li>
+ *   <li>Brightfield image (right display)</li>
+ *   <li>Delegated metadata access (probe, adjuvant, concentration, density, etc.)</li>
+ *   <li>Access to the full {@link Recording} for retrieving squares</li>
+ * </ul>
+ *
+ * <p>The entry is immutable after construction. All square-level access and
+ * data manipulation occur on the underlying {@link Recording} instance.</p>
  */
 public class RecordingEntry {
-    private final Recording  recording;
-    private final String     experimentName;
 
-    private final ImageIcon  leftImage;
-    private final ImageIcon  rightImage;
+    private final Recording recording;
+    private final String    experimentName;
+
+    private final ImageIcon leftImage;   // TrackMate overlay
+    private final ImageIcon rightImage;  // Brightfield
 
     /**
-     * Constructs a new {@code RecordingEntry} with associated images and control parameters.
+     * Creates a new immutable entry representing one recording inside an experiment.
      *
-     * @param recording               the underlying {@link Recording} metadata
-     * @param trackmateImagePath      path to the TrackMate overlay image
-     * @param brightfieldImagePath    path to the Brightfield reference image
-     * @param experimentName          name of the parent experiment
+     * @param recording            the underlying domain object containing metadata and square data
+     * @param trackmateImagePath   file path to the TrackMate image (left panel)
+     * @param brightfieldImagePath file path to the Brightfield image (right panel)
+     * @param experimentName       parent experiment name
      */
     public RecordingEntry(Recording recording,
-                          Path      trackmateImagePath,
-                          Path      brightfieldImagePath,
-                          String    experimentName) {
-        this.recording        = recording;
-        this.experimentName   = experimentName;
-        this.leftImage        = loadImage(trackmateImagePath,   "TrackMate");
-        this.rightImage       = loadImage(brightfieldImagePath, "Brightfield");
+            Path      trackmateImagePath,
+            Path      brightfieldImagePath,
+            String    experimentName) {
+
+        this.recording      = recording;
+        this.experimentName = experimentName;
+
+        this.leftImage  = loadImage(trackmateImagePath,   "TrackMate");
+        this.rightImage = loadImage(brightfieldImagePath, "Brightfield");
     }
 
     // =========================================================================================
@@ -87,32 +98,34 @@ public class RecordingEntry {
     // =========================================================================================
 
     /**
-     * Attempts to load an image from disk using {@code ImageIO}, falling back to
-     * ImageJ’s {@code Opener} for extended format support. Returns an {@link ImageIcon}
-     * suitable for Swing rendering or {@code null} if loading fails.
+     * Attempts to load an image using {@code ImageIO}, falling back to ImageJ’s
+     * {@code Opener} for formats ImageIO cannot handle (common for scientific data).
      *
-     * @param imagePath path to the image file
+     * @param imagePath the file path to load
      * @param label     descriptive label for logging
-     * @return {@link ImageIcon} for the image, or {@code null} if load fails
+     * @return a Swing-compatible {@link ImageIcon}, or {@code null} on failure
      */
     private static ImageIcon loadImage(Path imagePath, String label) {
         if (imagePath == null) {
             return null;
         }
+
+        // Attempt ImageIO first
         try {
             BufferedImage img = javax.imageio.ImageIO.read(imagePath.toFile());
             if (img != null) {
                 PaintLogger.debugf("[%s] Loaded via ImageIO: %s", label, imagePath);
                 return new ImageIcon(img);
             }
-            PaintLogger.warnf("[%s] ImageIO returned null for %s", label, imagePath);
+            PaintLogger.warnf("[%s] ImageIO returned null: %s", label, imagePath);
         } catch (Exception e) {
             PaintLogger.warnf("[%s] ImageIO failed for %s (%s)", label, imagePath, e.getMessage());
         }
 
+        // Fallback to ImageJ Opener
         try {
             ij.io.Opener opener = new ij.io.Opener();
-            ij.ImagePlus imp    = opener.openImage(imagePath.toString());
+            ij.ImagePlus imp = opener.openImage(imagePath.toString());
             if (imp != null && imp.getImage() != null) {
                 PaintLogger.debugf("[%s] Loaded via ImageJ Opener: %s", label, imagePath);
                 return new ImageIcon(imp.getImage());
@@ -122,70 +135,90 @@ public class RecordingEntry {
             PaintLogger.warnf("[%s] ImageJ Opener threw error for %s (%s)", label, imagePath, t.getMessage());
         }
 
+        // Failure
         PaintLogger.errorf("[%s] Failed to load image: %s", label, imagePath);
         return null;
     }
 
     // =========================================================================================
-    // GETTERS AND SETTERS
+    // METADATA ACCESS
     // =========================================================================================
 
+    /** @return the recording name (e.g., "Well A1", "Replicate 03") */
     public String getRecordingName() {
         return recording.getRecordingName();
     }
 
+    /** @return name of the experiment this entry belongs to */
     public String getExperimentName() {
         return experimentName;
     }
 
+    /** @return probe name used in the recording */
     public String getProbeName() {
         return recording.getProbeName();
     }
 
+    /** @return probe type (e.g., Fab, F(ab')₂, etc.) */
     public String getProbeType() {
         return recording.getProbeType();
     }
 
+    /** @return adjuvant label */
     public String getAdjuvant() {
         return recording.getAdjuvant();
     }
 
+    /** @return biological cell type being probed */
     public String getCellType() {
         return recording.getCellType();
     }
 
+    /** @return concentration of probe */
     public double getConcentration() {
         return recording.getConcentration();
     }
 
+    /** @return number of detected spots */
     public int getNumberOfSpots() {
         return recording.getNumberOfSpots();
     }
 
+    /** @return number of extracted TrackMate tracks */
     public int getNumberOfTracks() {
         return recording.getNumberOfTracks();
     }
 
+    /** @return detection threshold used for analysis */
     public double getThreshold() {
         return recording.getThreshold();
     }
 
+    /** @return tau parameter (track characteristic) */
     public double getTau() {
         return recording.getTau();
     }
 
+    /** @return density metric calculated for the recording */
     public double getDensity() {
         return recording.getDensity();
     }
 
+    // =========================================================================================
+    // IMAGE AND RECORDING ACCESS
+    // =========================================================================================
+
+    /** @return TrackMate overlay image (left panel) */
     public ImageIcon getLeftImage() {
         return leftImage;
     }
 
+    /** @return Brightfield reference image (right panel) */
     public ImageIcon getRightImage() {
         return rightImage;
     }
 
+    /** @return underlying {@link Recording} containing all square-level data */
     public Recording getRecording() {
         return recording;
     }

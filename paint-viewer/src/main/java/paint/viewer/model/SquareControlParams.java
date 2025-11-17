@@ -62,9 +62,9 @@ public class SquareControlParams {
      * @param neighbourMode the neighborhood interaction mode
      */
     public SquareControlParams(double minRequiredDensityRatio,
-                               double maxAllowableVariability,
-                               double minRequiredRSquared,
-                               String neighbourMode) {
+            double maxAllowableVariability,
+            double minRequiredRSquared,
+            String neighbourMode) {
         this.minRequiredDensityRatio = minRequiredDensityRatio;
         this.maxAllowableVariability = maxAllowableVariability;
         this.minRequiredRSquared     = minRequiredRSquared;

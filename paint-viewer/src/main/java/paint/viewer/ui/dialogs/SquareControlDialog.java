@@ -194,7 +194,7 @@ public class SquareControlDialog extends JDialog {
         neighbourRelaxed.addActionListener(e -> propagatePreview());
         neighbourStrict.addActionListener(e -> propagatePreview());
 
-        // Apply button actions (commit and write to file)
+        // Apply button actions (commit and write to the file)
         applyRecording.addActionListener(e -> {
             listener.onApplySquareControl("Recording", collectParams());
             dispose();

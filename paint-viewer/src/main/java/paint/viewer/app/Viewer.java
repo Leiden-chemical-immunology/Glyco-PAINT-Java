@@ -1,6 +1,6 @@
 /*==============================================================================
- *  Class:        RecordingViewer.java
- *  Package:      paint.viewer
+ *  Class:        Viewer.java
+ *  Package:      paint.viewer.app
  *
  *  PURPOSE:
  *    Serves as the entry point for the PAINT Viewer application, initializing
@@ -8,22 +8,23 @@
  *    visualization interface.
  *
  *  DESCRIPTION:
- *    The {@code RecordingViewer} initializes application components such as
- *    {@link paint.shared.utils.PaintPrefs}, {@link paint.shared.config.paintconfig.PaintConfig},
- *    and {@link paint.shared.utils.PaintLogger}, and presents the user with a
- *    {@link paint.shared.dialogs.ProjectDialog} for project selection.
+ *    The {@code Viewer} class prepares the complete runtime environment for the
+ *    PAINT Viewer. It loads user preferences, initializes application-wide
+ *    configuration and logging systems, and displays the project specification
+ *    dialog used to select a project directory.
  *
- *    Upon confirmation, it loads experiment data via
- *    {@link paint.viewer.model.RecordingLoader}, and if valid recordings are found,
- *    launches the {@link paint.viewer.app.ViewerFrame} interface.
+ *    When the user confirms the project settings, recordings are loaded via
+ *    {@link paint.viewer.model.RecordingLoader}. If valid recordings are found,
+ *    the {@link paint.viewer.ui.frames.ViewerFrame} is launched to provide the
+ *    main visualization and interaction interface.
  *
  *  KEY FEATURES:
- *    • Loads the last used project directory from user preferences.
- *    • Initializes configuration and logging systems.
- *    • Presents a project selection dialog for the user.
- *    • Loads and validates recordings for display.
- *    • Launches the main viewer interface if data is valid.
- *    • Displays error or warning dialogs when necessary.
+ *    • Loads last-used project root from user preferences.
+ *    • Initializes PaintConfig and PaintLogger for the application session.
+ *    • Presents a project selection dialog (viewer mode).
+ *    • Loads and validates recordings for all selected experiments.
+ *    • Launches the viewer interface when data is valid.
+ *    • Displays clear diagnostic dialogs for missing or invalid data.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -55,76 +56,69 @@ import java.nio.file.Paths;
 import java.util.List;
 
 /**
- * Entry point for the PAINT Viewer application.
+ * Main entry point for the PAINT Viewer application.
  * <p>
- * Initializes preferences, logging, and configuration before launching the
- * recording viewer interface. The viewer enables users to inspect and
- * interact with experiment recordings loaded from a project.
+ * This class sets up preferences, configuration, and logging, and then opens
+ * the project selection dialog. Once the user confirms their selection, it
+ * loads the corresponding recordings and launches the main viewer interface.
  * </p>
- *
- * <p><strong>Responsibilities:</strong></p>
- * <ul>
- *   <li>Load the last used project root directory via {@link PaintPrefs}.</li>
- *   <li>Initialize configuration and logging via {@link PaintConfig} and {@link PaintLogger}.</li>
- *   <li>Display a project specification dialog for user selection.</li>
- *   <li>Load recordings from the selected project using {@link RecordingLoader}.</li>
- *   <li>Launch the {@link ViewerFrame} interface if valid recordings are found.</li>
- * </ul>
  */
 public class Viewer {
 
     /**
-     * Main entry point for the PAINT Viewer application.
-     * <p>
-     * This method initializes preferences, configuration, and logging, then
-     * opens the project dialog for user input. If valid recordings are loaded,
-     * it launches the viewer frame for visualization.
-     * </p>
+     * Application entry point.
      *
      * @param args command-line arguments (unused)
      */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
 
-            // --- Step 1: Load the last used project root from preferences ---
-            String lastProject = PaintPrefs.getString("Path", "Project Root", System.getProperty("user.home"));
-            Path   projectPath = Paths.get(lastProject);
+            // --- Step 1: Load last-used project from preferences ---
+            String lastProject =
+                    PaintPrefs.getString("Path", "Project Root", System.getProperty("user.home"));
+            Path projectPath = Paths.get(lastProject);
 
-            // --- Step 2: Initialise logging/config ---
+            // --- Step 2: Initialise logging and configuration ---
             PaintConfig.initialise(projectPath);
             PaintLogger.initialise(projectPath, "Viewer");
 
-            // --- Step 3: Open the Project Specification dialog directly ---
-            ProjectDialog specificationDialog = new ProjectDialog(null, projectPath, DialogMode.VIEWER);
+            // --- Step 3: Show the project specification dialog ---
+            ProjectDialog specificationDialog =
+                    new ProjectDialog(null, projectPath, DialogMode.VIEWER);
 
-            // ✅ Callback for the OK button — launches the viewer
+            // Callback when user presses OK
             specificationDialog.setCalculationCallback(project -> {
                 try {
-                    // Load the data for experiments (images, squares, etc.)
-                    List<RecordingEntry> recordingEntries = RecordingLoader.loadFromProject(project);
+                    List<RecordingEntry> recordingEntries =
+                            RecordingLoader.loadFromProject(project);
+
                     if (recordingEntries.isEmpty()) {
-                        JOptionPane.showMessageDialog(null,
-                                                      "No valid recordings found in selected experiments.",
-                                                      "No Recordings",
-                                                      JOptionPane.WARNING_MESSAGE);
+                        JOptionPane.showMessageDialog(
+                                null,
+                                "No valid recordings found in selected experiments.",
+                                "No Recordings",
+                                JOptionPane.WARNING_MESSAGE
+                        );
                         return false;
                     }
 
-                    // With the recordingEntries info available, the viewer can be started
                     ViewerFrame viewer = new ViewerFrame(project, recordingEntries);
                     viewer.setVisible(true);
                     return true;
+
                 } catch (Exception ex) {
                     PaintLogger.errorf("Viewer launch failed: %s", ex.getMessage());
-                    JOptionPane.showMessageDialog(null,
-                                                  "Viewer launch failed:\n" + ex.getMessage(),
-                                                  "Error",
-                                                  JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Viewer launch failed:\n" + ex.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
                     return false;
                 }
             });
 
-            // --- Step 4: Show dialog and keep it open ---
+            // --- Step 4: Open dialog (blocking) ---
             specificationDialog.showDialog();
         });
     }

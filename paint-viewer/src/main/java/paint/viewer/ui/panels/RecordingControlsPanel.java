@@ -3,24 +3,27 @@
  *  Package:      paint.viewer.panels
  *
  *  PURPOSE:
- *    Provides a control panel for managing recordings and display options
- *    in the PAINT viewer. Enables actions such as filtering, square selection,
- *    cell assignment, playback, and visualization toggling.
+ *    Provides a control panel for managing recording-related actions and
+ *    grid display options in the PAINT viewer. Supports filtering, square
+ *    selection, cell assignment, playback, data export, and visualization
+ *    toggling.
  *
  *  DESCRIPTION:
- *    The panel offers grouped user interface controls for interacting with
- *    recording data and the square grid display. It supports both functional
- *    controls (filter, select, assign, play) and visual toggles (borders,
- *    shading, numbering modes).
+ *    The panel organizes a structured set of user controls into three groups:
+ *      1) Recording and grid action buttons (Filter, Select, Assign, Play,
+ *         Export, Show Squares)
+ *      2) Visualization toggles for borders and shading
+ *      3) Number display mode options (None, Label, Square)
  *
- *    A {@link Listener} interface defines callback methods for handling
- *    user-triggered events such as filtering or display state changes.
- *    The panel layout uses vertical grouping for clarity and accessibility.
+ *    A {@link Listener} interface defines callbacks for all interactive
+ *    controls, allowing the parent viewer frame to handle the actions.
+ *    Layout is vertical for readability, with consistent sizing and spacing
+ *    across buttons and toggle groups.
  *
  *  KEY FEATURES:
- *    • Centralized control panel for recording-related actions.
- *    • Live toggles for borders, shading, and numeric label modes.
- *    • Integrated listener interface for external event handling.
+ *    • Centralized control panel for recording actions and display settings.
+ *    • Live toggles for borders, shading, and number-display modes.
+ *    • Listener interface for flexible integration with viewer logic.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -44,24 +47,49 @@ import java.awt.*;
 
 /**
  * A user interface panel containing interactive controls for managing recordings
- * and grid visualization options within the PAINT viewer.
+ * and grid visualization settings within the PAINT viewer.
  */
 public class RecordingControlsPanel {
 
     /**
-     * Defines callback methods for handling user actions triggered by this panel.
+     * Defines callback methods for handling user actions triggered
+     * by buttons or toggle components on this panel.
      */
     public interface Listener {
+
+        /** Called when the user requests to filter the recording list. */
         void onFilterRequested();
+
+        /** Called when the user opens the square-selection dialog. */
         void onSelectSquaresRequested();
+
+        /** Called when the user opens the cell-assignment dialog. */
         void onAssignCellsRequested();
+
+        /** Called when the user requests to play the current recording. */
         void onPlayRecordingRequested();
+
+        /** Called when the user requests to export the left grid image. */
         void onExportLeftImageRequested();
+
+        /** Called when the user requests to view the squares CSV. */
         void onShowSquaresRequested();
 
+        /** Triggered when borders are toggled on or off. */
         void onBordersToggled(boolean showBorders);
+
+        /** Triggered when shading is toggled on or off. */
         void onShadingToggled(boolean showShading);
+
+        /** Called when the numeric display mode (None, Label, Square) is changed. */
         void onNumberModeChanged(SquareGridPanel.NumberMode mode);
+
+        /**
+         * Called when square control parameters are applied or previewed.
+         *
+         * @param scope  either "Preview" or "Apply"
+         * @param params container for visibility threshold settings
+         */
         void onApplySquareControl(String scope, SquareControlParams params);
     }
 
@@ -74,10 +102,11 @@ public class RecordingControlsPanel {
     private       JButton showSquaresButton;
 
     /**
-     * Constructs a {@code RecordingControlsPanel} providing buttons, checkboxes,
-     * and radio buttons for managing recording and grid behavior.
+     * Constructs a {@code RecordingControlsPanel} containing action buttons,
+     * visualization toggles, and numbering mode options. All actions are
+     * delegated to the provided {@link Listener}.
      *
-     * @param listener the {@link Listener} that handles user actions
+     * @param listener the listener that receives callbacks when user actions occur
      */
     public RecordingControlsPanel(final Listener listener) {
 
@@ -99,7 +128,7 @@ public class RecordingControlsPanel {
         exportImageButton      = new JButton("Export Image");
         showSquaresButton      = new JButton("Show Squares");
 
-        for (JButton b : new JButton[]{
+        for (JButton button : new JButton[]{
                 filterRecordingsButton,
                 selectSquaresButton,
                 assignCellsButton,
@@ -107,8 +136,8 @@ public class RecordingControlsPanel {
                 exportImageButton,
                 showSquaresButton
         }) {
-            b.setAlignmentX(Component.CENTER_ALIGNMENT);
-            b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
+            button.setAlignmentX(Component.CENTER_ALIGNMENT);
+            button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
         }
 
         JPanel controls = new JPanel();
@@ -147,10 +176,10 @@ public class RecordingControlsPanel {
         JRadioButton label  = new JRadioButton("Label");
         JRadioButton square = new JRadioButton("Square");
 
-        ButtonGroup g = new ButtonGroup();
-        g.add(none);
-        g.add(label);
-        g.add(square);
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(none);
+        buttonGroup.add(label);
+        buttonGroup.add(square);
 
         JPanel numbers = new JPanel();
         numbers.setLayout(new BoxLayout(numbers, BoxLayout.Y_AXIS));
@@ -197,6 +226,15 @@ public class RecordingControlsPanel {
         return root;
     }
 
+    /**
+     * Enables or disables all action buttons on the panel.
+     * <p>
+     * This is used to disable user interaction while modal dialogs
+     * are open or while long-running operations are in progress.
+     *
+     * @param enabled {@code true} to enable all action buttons,
+     *                {@code false} to disable them
+     */
     public void setButtonsEnabled(boolean enabled) {
         filterRecordingsButton.setEnabled(enabled);
         selectSquaresButton.setEnabled(enabled);

@@ -46,15 +46,6 @@ public class SquareControlHandler {
 
     private SquareGridPanel grid;
 
-    /**
-     * Attaches the specified {@link SquareGridPanel} to this handler.
-     * All subsequent parameter applications will target this grid.
-     *
-     * @param panel the grid panel to be managed
-     */
-    public void attach(SquareGridPanel panel) {
-        this.grid = panel;
-    }
 
     /**
      * Applies the specified square control parameters to a grid panel.
