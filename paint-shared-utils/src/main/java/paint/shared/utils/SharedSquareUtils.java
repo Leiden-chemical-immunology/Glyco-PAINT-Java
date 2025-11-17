@@ -139,13 +139,15 @@ public final class SharedSquareUtils {
      * </ul>
      *
      * @param squares         the list of squares
+     * @param recordingName   the name of the recording, if null applt to all
      * @param minDensityRatio minimum density ratio for selection
      * @param maxVariability  maximum allowed variability
      * @param minRSquared     minimum R² value for selection
      * @param neighbourMode   neighbour logic: "Free", "Relaxed", or "Strict"
      */
-    public static void applyVisibilityFilter(
+    public static void applyVisibilityFilterOnRecording(
             List<Square> squares,
+            String       recordingName,
             double       minDensityRatio,
             double       maxVariability,
             double       minRSquared,
@@ -159,6 +161,11 @@ public final class SharedSquareUtils {
 
         // Pass 1 — Numeric filter
         for (Square square : squares) {
+
+            if (recordingName != null && !recordingName.equals(square.getRecordingName())) {
+                continue;
+            }
+
             boolean passes = square.getDensityRatio() >= minDensityRatio
                     && square.getVariability() <= maxVariability
                     && square.getRSquared() >= minRSquared
@@ -184,15 +191,15 @@ public final class SharedSquareUtils {
             }
 
             boolean hasNeighbour = false;
-            int r = square.getRowNumber();
-            int c = square.getColNumber();
+            int     rowNumber    = square.getRowNumber();
+            int     colNumber    = square.getColNumber();
 
-            for (Square other : squares) {
-                if (other == square || !other.isVisible()) {
+            for (Square otherSquare : squares) {
+                if (otherSquare == square || !otherSquare.isVisible()) {
                     continue;
                 }
-                int dr = Math.abs(other.getRowNumber() - r);
-                int dc = Math.abs(other.getColNumber() - c);
+                int dr = Math.abs(otherSquare.getRowNumber() - rowNumber);
+                int dc = Math.abs(otherSquare.getColNumber() - colNumber);
 
                 if ("Relaxed".equalsIgnoreCase(neighbourMode)) {
                     // Corner or edge adjacency allowed
@@ -225,6 +232,17 @@ public final class SharedSquareUtils {
         PaintLogger.debugf("NeighbourMode [%s] neighbour-filtered: %d / %d retained",
                            neighbourMode, keptCount, visibleBasic);
     }
+
+
+    public static void applyVisibilityFilter(
+            List<Square> squares,
+            double       minDensityRatio,
+            double       maxVariability,
+            double       minRSquared,
+            String       neighbourMode) {
+        applyVisibilityFilterOnRecording(squares, null, minDensityRatio, maxVariability,  minRSquared, neighbourMode);
+    }
+
 
     /**
      * Retrieves a list of tracks from all selected squares in the provided recording.
