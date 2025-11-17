@@ -60,13 +60,10 @@ public class ReleaseNewVersion {
 
                 switch (choice) {
                     case "1":
-                        bumpVersion = false;
-                        doRelease   = false;
                         break;
 
                     case "2":
                         bumpVersion = true;
-                        doRelease   = false;
                         break;
 
                     case "3":
@@ -76,21 +73,17 @@ public class ReleaseNewVersion {
 
                     default:
                         System.out.println("Invalid option. Defaulting to: rebuild only.");
-                        bumpVersion = false;
-                        doRelease   = false;
+                        break;
                 }
 
             } catch (Exception e) {
                 System.out.println("Input error. Defaulting to: rebuild only.");
-                bumpVersion = false;
-                doRelease   = false;
             }
 
             System.out.println();
         }
 
-        for (int i = 0; i < args.length; i++) {
-            String arg = args[i];
+        for (String arg : args) {
 
             if ("--bump-version".equalsIgnoreCase(arg)) {
                 bumpVersion = true;
@@ -148,7 +141,7 @@ public class ReleaseNewVersion {
             currentVersion = currentVersion + "-SNAPSHOT";
         }
 
-        VersionInfo versionInfo = null;   // created only if bump or release requested
+        VersionInfo versionInfo;   // created only if bump or release requested
 
         // -------------------------------------------------------------
         // MODE 1 : Rebuild only

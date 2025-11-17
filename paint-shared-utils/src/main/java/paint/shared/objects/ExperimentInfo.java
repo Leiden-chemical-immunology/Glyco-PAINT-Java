@@ -87,7 +87,6 @@ public class ExperimentInfo {
      */
     private List<Square> squares = new ArrayList<>();
     private List<Track>  tracks  = new ArrayList<>();
-    private Table        tracksTable;
 
     // ───────────────────────────────────────────────────────────────────────────────
     // CONSTRUCTORS
@@ -287,37 +286,6 @@ public class ExperimentInfo {
     public void setTracks(List<Track> tracks) {
         this.tracks = tracks;
     }
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // CONVENIENCE METHODS
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Adds a single {@link Square} to this experiment.
-     *
-     * @param square the square to add
-     */
-//    public void addSquare(Square square) {
-//        this.squares.add(square);
-//    }
-
-    /**
-     * Adds a list of {@link Square} instances to this experiment.
-     *
-     * @param squares list of squares to add
-     */
-//    public void addSquares(List<Square> squares) {
-//        this.squares.addAll(squares);
-//    }
-
-    /**
-     * Adds a single {@link Track} to this experiment.
-     *
-     * @param track the track to add
-     */
-//    public void addTrack(Track track) {
-//        this.tracks.add(track);
-//    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // STRING REPRESENTATION

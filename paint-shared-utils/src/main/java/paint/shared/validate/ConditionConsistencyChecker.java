@@ -67,18 +67,6 @@ import java.util.*;
  */
 public final class ConditionConsistencyChecker {
 
-    /**
-     * Required columns used for consistency comparison.
-     */
-    private static final List<String> REQUIRED = Arrays.asList(
-            CONDITION_NUMBER,
-            PROBE_NAME,
-            PROBE_TYPE,
-            CELL_TYPE,
-            ADJUVANT,
-            CONCENTRATION
-    );
-
     // ───────────────────────────────────────────────────────────────────────────────
     // MAIN VALIDATION METHOD
     // ───────────────────────────────────────────────────────────────────────────────
@@ -87,8 +75,8 @@ public final class ConditionConsistencyChecker {
      * Validates the specified CSV file for consistency among rows sharing the same
      * {@code Condition Number}.
      * <p>
-     * For each unique condition number, all attribute columns listed in
-     * {@link #REQUIRED} are compared. Any inconsistency between rows is reported
+     * For each unique condition number, all attribute columns are compared.
+     * Any inconsistency between rows is reported
      * as an error. Duplicate errors are suppressed to reduce log noise.
      * </p>
      *

@@ -722,10 +722,6 @@ public class ViewerFrame extends JFrame
         attributesPanel.getComponent().setEnabled(true);
     }
 
-    public void onNavigateTo(int newIndex) {
-        showRecordingEntry(newIndex);
-    }
-
     @Override
     public void onClose() {
         if (importOverridesCheckBox != null && importOverridesCheckBox.isSelected()) {

@@ -108,10 +108,7 @@ public final class JarInfoLogger {
                     attribute.getValue("Implementation-Title"),
                     attribute.getValue("Implementation-Version"),
                     attribute.getValue("Implementation-Vendor"),
-                    formattedTs,
-                    attribute.getValue("Specification-Title"),
-                    attribute.getValue("Specification-Version"),
-                    attribute.getValue("Specification-Vendor")
+                    formattedTs
             );
         } catch (Exception e) {
             PaintLogger.errorf("JarInfoLogger.getJarInfo(): %s", e);
@@ -258,10 +255,6 @@ public final class JarInfoLogger {
         public final String implementationVendor;
         public final String implementationDate;
 
-        public final String specificationTitle;
-        public final String specificationVersion;
-        public final String specificationVendor;
-
         /**
          * Constructs a new {@code JarInfo} container with all metadata values.
          *
@@ -269,25 +262,15 @@ public final class JarInfoLogger {
          * @param implVersion implementation version
          * @param implVendor  implementation vendor
          * @param implDate    implementation build date/time
-         * @param specTitle   specification title
-         * @param specVersion specification version
-         * @param specVendor  specification vendor
          */
         public JarInfo(String implTitle,
                        String implVersion,
                        String implVendor,
-                       String implDate,
-                       String specTitle,
-                       String specVersion,
-                       String specVendor) {
+                       String implDate) {
             this.implementationTitle   = implTitle;
             this.implementationVersion = implVersion;
             this.implementationVendor  = implVendor;
             this.implementationDate    = implDate;
-
-            this.specificationTitle    = specTitle;
-            this.specificationVersion  = specVersion;
-            this.specificationVendor   = specVendor;
         }
 
         /**

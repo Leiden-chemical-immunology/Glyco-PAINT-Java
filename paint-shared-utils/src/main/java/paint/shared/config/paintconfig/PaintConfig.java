@@ -235,9 +235,6 @@ public class PaintConfig {
     public static void setDouble (String s, String k, double v)  { instance().setDoubleValue (s, k, v, true); }
     public static void setBoolean(String s, String k, boolean v) { instance().setBooleanValue(s, k, v, true); }
 
-    public static void remove       (String s, String k) { instance().removeValue       (s, k, true); }
-    public static void removeSection(String s)           { instance().removeSectionValue(s, true); }
-
     // ---------------------------------------------------------------------
     // Internals
     // ---------------------------------------------------------------------

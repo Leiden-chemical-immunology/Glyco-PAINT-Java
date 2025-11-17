@@ -46,13 +46,6 @@
 package paint.generatesquares.calc;
 import static paint.shared.constants.PaintConstants.*;
 
-
-import de.rototor.pdfbox.graphics2d.PdfBoxGraphics2D;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
@@ -88,10 +81,12 @@ public class PlotUtils {
      * @param height    the height of the generated image in pixels
      * @return a BufferedImage representing the rendered Tau plot
      */
-    public static BufferedImage renderTauPlot(double[] x, double[] y,
-                                              CalculateTau.CalculateTauResult result,
-                                              boolean fitFailed,
-                                              int width, int height) {
+    public static BufferedImage renderTauPlot(double[] x,
+            double[]                        y,
+            CalculateTau.CalculateTauResult result,
+            boolean                         fitFailed,
+            int                             width,
+            int                             height) {
 
         // --- Initialize blank image and 2D context ---
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);

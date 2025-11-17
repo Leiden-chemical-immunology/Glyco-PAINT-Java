@@ -50,7 +50,6 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.text.DecimalFormat;
 
 /**
  * A dialog for configuring square control parameters in the viewer.

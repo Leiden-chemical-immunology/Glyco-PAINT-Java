@@ -96,12 +96,6 @@ public final class PaintConsoleWindow {
         SwingUtilities.invokeLater(() -> appendText(message, color));
     }
 
-    /**
-     * Prints a single character in black.
-     */
-//    public static synchronized void printChar(char c) {
-//        printChar(c, Color.BLACK);
-//    }
 
     /**
      * Prints a single character with the specified color.
@@ -413,32 +407,6 @@ public final class PaintConsoleWindow {
         }
     }
 
-    /**
-     * Highlights all occurrences of a given regex pattern in the provided text with the specified color.
-     *
-     * @param fullText the text in which to search for the pattern
-     * @param regex    the regular expression pattern to search for
-     * @param color    the color used for highlighting the matched pattern
-     */
-//    private static void highlightPattern(String fullText, String regex, Color color) {
-//        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
-//        java.util.regex.Matcher matcher = pattern.matcher(fullText);
-//
-//        while (matcher.find()) {
-//            int start = matcher.start();
-//            int end = matcher.end();
-//            try {
-//                textPane.getHighlighter().addHighlight(
-//                        start, end,
-//                        new DefaultHighlighter.DefaultHighlightPainter(color)
-//                );
-//                problemPositions.add(start);
-//            } catch (BadLocationException e) {
-//                e.printStackTrace();
-//                break;
-//            }
-//        }
-//    }
 
     /**
      * Highlights and selects a specific text region in a text pane based on the given position.

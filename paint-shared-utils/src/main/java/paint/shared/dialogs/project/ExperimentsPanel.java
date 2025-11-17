@@ -13,7 +13,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
-import static paint.shared.dialogs.ProjectDialog.DialogMode;
 
 public class ExperimentsPanel {
 

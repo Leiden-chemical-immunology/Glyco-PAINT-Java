@@ -261,12 +261,6 @@ public final class PaintLogger {
         log(Level.ERROR, String.format(fmt, args));
     }
 
-    /**
-     * Logs an ERROR stack trace for a {@link Throwable}.
-     */
-    public static void errorf(Throwable t) {
-        log(Level.ERROR, getStackTrace(t));
-    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // SPECIALIZED OUTPUT

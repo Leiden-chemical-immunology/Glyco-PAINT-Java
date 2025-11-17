@@ -185,38 +185,4 @@ public class TracksTableIO extends BaseTableIO {
             }
         }
     }
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // SINGLE ROW CONVERSION
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Converts a single {@link Row} into a {@link Track} entity.
-     *
-     * @param row the {@link Row} containing track data
-     * @return a {@link Track} populated with values from the row
-     */
-    public Track rowToEntity(Row row) {
-        Track track = new Track();
-        track.setUniqueKey(                row.getString(  UNIQUE_KEY));
-        track.setExperimentName(           row.getString(  EXPERIMENT_NAME));
-        track.setRecordingName(            row.getString(  RECORDING_NAME));
-        track.setTrackId(                  row.getInt(     TRACK_ID));
-        track.setNumberOfSpots(            row.getInt(     NUMBER_OF_SPOTS));
-        track.setNumberOfGaps(             row.getInt(     NUMBER_OF_GAPS));
-        track.setLongestGap(               row.getInt(     LONGEST_GAP));
-        track.setTrackDuration(            row.getDouble(  TRACK_DURATION));
-        track.setTrackXLocation(           row.getDouble(  TRACK_X_LOCATION));
-        track.setTrackYLocation(           row.getDouble(  TRACK_Y_LOCATION));
-        track.setTrackDisplacement(        row.getDouble(  TRACK_DISPLACEMENT));
-        track.setTrackMaxSpeed(            row.getDouble(  TRACK_MAX_SPEED));
-        track.setTrackMedianSpeed(         row.getDouble(  TRACK_MEDIAN_SPEED));
-        track.setDiffusionCoefficient(     row.getDouble(  DIFFUSION_COEFFICIENT));
-        track.setDiffusionCoefficientExt(  row.getDouble(  DIFFUSION_COEFFICIENT_EXT));
-        track.setTotalDistance(            row.getDouble(  TOTAL_DISTANCE));
-        track.setConfinementRatio(         row.getDouble(  CONFINEMENT_RATIO));
-        track.setSquareNumber(             row.getInt(     SQUARE_NUMBER));
-        track.setLabelNumber(              row.getInt(     LABEL_NUMBER));
-        return track;
-    }
 }

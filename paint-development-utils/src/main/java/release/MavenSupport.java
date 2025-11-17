@@ -1,6 +1,7 @@
 package release;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,7 +41,7 @@ final class MavenSupport {
 
         String localRepo = System.getProperty("user.home") + "/.m2/repository";
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         cmd.addAll(Arrays.asList("mvn", "-U", "-q", "clean", "package"));
         if (profile != null && profile.trim().length() > 0) {
             cmd.add(profile.trim());
@@ -129,9 +130,9 @@ final class MavenSupport {
         Path tmpPom = Files.createTempFile("parent-release-", ".xml");
         Files.copy(parentPom, tmpPom, StandardCopyOption.REPLACE_EXISTING);
 
-        String content = new String(Files.readAllBytes(tmpPom), "UTF-8")
+        String content = new String(Files.readAllBytes(tmpPom), StandardCharsets.UTF_8)
                 .replaceAll("<version>.*?</version>", "<version>" + releaseVersion + "</version>");
-        Files.write(tmpPom, content.getBytes("UTF-8"));
+        Files.write(tmpPom, content.getBytes(StandardCharsets.UTF_8));
 
         List<String> cmd = Arrays.asList(
                 "mvn", "-q", "install:install-file",

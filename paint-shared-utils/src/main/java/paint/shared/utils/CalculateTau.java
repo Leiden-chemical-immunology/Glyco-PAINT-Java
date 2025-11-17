@@ -141,7 +141,6 @@ public class CalculateTau {
 
         public enum Status {
             TAU_SUCCESS,
-            TAU_INSUFFICIENT_POINTS,
             TAU_RSQUARED_TOO_LOW,
             TAU_NO_FIT
         }

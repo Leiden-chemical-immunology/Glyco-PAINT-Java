@@ -78,23 +78,6 @@ public final class ValidationResult {
         errors.add(message);
     }
 
-    /**
-     * Adds a new warning message to the validation result.
-     *
-     * @param message descriptive text of the warning
-     */
-    public void addWarning(String message) {
-        warnings.add(message);
-    }
-
-    /**
-     * Adds an informational message to the validation result.
-     *
-     * @param message descriptive text of the information
-     */
-    public void addInfo(String message) {
-        infos.add(message);
-    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // ACCESSORS
@@ -145,9 +128,9 @@ public final class ValidationResult {
      *
      * @return {@code true} if warnings exist; {@code false} otherwise
      */
-    public boolean hasWarnings() {
-        return !warnings.isEmpty();
-    }
+//    public boolean hasWarnings() {
+//        return !warnings.isEmpty();
+//    }
 
     /**
      * Determines whether the validation result is completely valid.

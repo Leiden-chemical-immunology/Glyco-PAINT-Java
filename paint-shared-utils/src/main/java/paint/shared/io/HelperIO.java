@@ -218,21 +218,6 @@ public final class HelperIO {
         }
     }
 
-    /**
-     * Writes all {@link Track} entities to {@code tracks.csv}.
-     *
-     * @param experimentPath the experiment folder path
-     * @param tracks         the list of tracks to write
-     */
-//    public static void writeAllTracks(Path experimentPath, List<Track> tracks) {
-//        TracksTableIO TracksTableIO = new TracksTableIO();
-//        try {
-//            Table tracksTable = TracksTableIO.toTable(tracks);
-//            writeAllTracks(experimentPath, tracksTable);
-//        } catch (Exception e) {
-//            PaintLogger.errorf("Failed to create table %s : %s", TRACKS_CSV, friendlyMessage(e));
-//        }
-//    }
 
     /**
      * Writes a full {@link Table} of track data to {@code tracks.csv}.

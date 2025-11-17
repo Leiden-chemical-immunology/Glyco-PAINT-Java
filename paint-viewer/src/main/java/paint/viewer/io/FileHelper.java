@@ -62,49 +62,6 @@ public final class FileHelper {
     private FileHelper() {
     }
 
-    // =========================================================================
-    // IMAGE EXPORT
-    // =========================================================================
-
-    /**
-     * Exports the given Swing component to a high-resolution PNG file. The component
-     * is rendered at a user-defined scale factor (e.g., {@code 2.0} = double size).
-     *
-     * <p>The method applies high-quality rendering hints and ensures that the target
-     * directory exists prior to writing.</p>
-     *
-     * @param panel      the Swing component to render
-     * @param outputPath path of the output PNG file
-     * @param scale      scale factor (1.0 = actual size)
-     * @throws IOException if the file cannot be written
-     */
-    public static void exportPanelAsImage(JComponent panel,
-            Path outputPath,
-            double scale) throws IOException {
-
-        int width  = (int) (panel.getWidth() * scale);
-        int height = (int) (panel.getHeight() * scale);
-
-        BufferedImage image =
-                new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-
-        Graphics2D g2 = image.createGraphics();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                            RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setRenderingHint(RenderingHints.KEY_RENDERING,
-                            RenderingHints.VALUE_RENDER_QUALITY);
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                            RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-
-        g2.scale(scale, scale);
-        panel.paintAll(g2);
-        g2.dispose();
-
-        if (outputPath.getParent() != null) {
-            Files.createDirectories(outputPath.getParent());
-        }
-        javax.imageio.ImageIO.write(image, "png", outputPath.toFile());
-    }
 
     // =========================================================================
     // CSV FILTERING

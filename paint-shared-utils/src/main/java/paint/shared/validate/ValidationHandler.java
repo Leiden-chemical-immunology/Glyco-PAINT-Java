@@ -246,26 +246,4 @@ public final class ValidationHandler {
 
         validate(projectPath, experimentNames, fileNames);
     }
-
-    private static void testCase1(Path projectPath) {
-        PaintLogger.initialise(projectPath, "Test");
-
-        List<String> experimentNames = Arrays.asList(
-                "221012 Experiment Info Test 0",
-                "221012 Experiment Info Test 1",
-                "221012 Experiment Info Test 2",
-                "221012 Experiment Info Test 3",
-                "221012 Experiment Info Test 4",
-                "221012 Experiment Info Test 5"
-        );
-
-        List<String> fileNames = Arrays.asList(
-                EXPERIMENT_INFO_CSV,
-                RECORDINGS_CSV,
-                SQUARES_CSV,
-                TRACKS_CSV
-        );
-
-        validate(projectPath, experimentNames, fileNames);
-    }
 }
