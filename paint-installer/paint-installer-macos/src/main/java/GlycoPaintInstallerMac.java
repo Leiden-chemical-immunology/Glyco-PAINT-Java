@@ -362,7 +362,7 @@ public class GlycoPaintInstallerMac {
                 pluginInstalled = installFijiPlugin(pluginTmp);
             }
 
-            // Remove macOS quarantine attributes from installed apps
+            // Remove macOS quarantine attributes
             removeQuarantineAttributes(installRoot);
 
             // Cleanup temp ZIP
@@ -370,24 +370,21 @@ public class GlycoPaintInstallerMac {
 
             if (installPlugin) {
                 if (pluginInstalled) {
-                    // Plugin installed into Fiji: remove temp plugin payload
-                    try {
-                        Files.walk(pluginTmp)
-                                .sorted(Comparator.reverseOrder())
-                                .forEach(p -> p.toFile().delete());
+                    // Delete pluginTmp recursively
+                    try (java.util.stream.Stream<Path> stream = Files.walk(pluginTmp)) {
+                        stream.sorted(Comparator.reverseOrder())
+                              .forEach(p -> p.toFile().delete());
                     } catch (IOException ignored) {}
                 } else {
-                    // Export plugin for manual install
                     Path manual = installRoot.resolve("plugin");
                     log("Fiji.app not found — copying plugin folder for manual installation: " + manual);
                     copyDirectory(pluginTmp, manual);
                 }
             } else {
-                // Not installing plugin: discard extracted plugin payload
-                try {
-                    Files.walk(pluginTmp)
-                            .sorted(Comparator.reverseOrder())
-                            .forEach(p -> p.toFile().delete());
+                // Delete pluginTmp recursively
+                try (java.util.stream.Stream<Path> stream = Files.walk(pluginTmp)) {
+                    stream.sorted(Comparator.reverseOrder())
+                          .forEach(p -> p.toFile().delete());
                 } catch (IOException ignored) {}
             }
 
@@ -442,7 +439,6 @@ public class GlycoPaintInstallerMac {
             log("Trying saved Fiji path: " + savedFiji);
             Path pluginsDir = Paths.get(savedFiji, "plugins");
             if (Files.isDirectory(pluginsDir)) {
-                // log("Saved Fiji path is valid.");
                 installJarIntoFijiDir(jar, pluginsDir);
                 PaintPrefs.putString("Installer", "Fiji Dir", savedFiji);
                 return true;
@@ -495,12 +491,14 @@ public class GlycoPaintInstallerMac {
      */
     private void installJarIntoFijiDir(Path jar, Path pluginsDir) throws IOException {
         // Remove older paint-* jars
-        Files.list(pluginsDir)
-                .filter(p -> {
-                    String fn = p.getFileName().toString();
-                    return fn.startsWith("paint-") && fn.endsWith(".jar");
-                })
-                .forEach(p -> { try { Files.delete(p); } catch (IOException ignored) {} });
+        try (java.util.stream.Stream<Path> stream = Files.list(pluginsDir)) {
+            stream.filter(p -> {
+                String fn = p.getFileName().toString();
+                return fn.startsWith("paint-") && fn.endsWith(".jar");
+            }).forEach(p -> {
+                try { Files.delete(p); } catch (IOException ignored) {}
+            });
+        }
 
         // Copy new jar
         Files.copy(jar, pluginsDir.resolve(jar.getFileName()), StandardCopyOption.REPLACE_EXISTING);
@@ -518,20 +516,18 @@ public class GlycoPaintInstallerMac {
      * @param dir root directory to scan
      */
     private void removeQuarantineAttributes(Path dir) {
-        try {
-            Files.walk(dir)
-                    .filter(p -> {
-                        String fn = p.getFileName().toString();
-                        return p.toString().endsWith(".app")
-                                || fn.endsWith(".command")
-                                || fn.endsWith(".sh");
-                    })
-                    .forEach(p -> {
-                        try {
-                            new ProcessBuilder("xattr", "-dr", "com.apple.quarantine", p.toString())
-                                    .inheritIO().start().waitFor();
-                        } catch (Exception ignored) {}
-                    });
+        try (java.util.stream.Stream<Path> stream = Files.walk(dir)) {
+            stream.filter(p -> {
+                String fn = p.getFileName().toString();
+                return p.toString().endsWith(".app")
+                        || fn.endsWith(".command")
+                        || fn.endsWith(".sh");
+            }).forEach(p -> {
+                try {
+                    new ProcessBuilder("xattr", "-dr", "com.apple.quarantine", p.toString())
+                            .inheritIO().start().waitFor();
+                } catch (Exception ignored) {}
+            });
         } catch (IOException ignored) {}
     }
 
@@ -645,18 +641,20 @@ public class GlycoPaintInstallerMac {
      * @throws IOException on IO failure
      */
     private void copyDirectory(Path src, Path dst) throws IOException {
-        Files.walk(src).forEach(source -> {
-            Path target = dst.resolve(src.relativize(source));
-            try {
-                if (Files.isDirectory(source)) {
-                    Files.createDirectories(target);
-                } else {
-                    Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+        try (java.util.stream.Stream<Path> stream = Files.walk(src)) {
+            stream.forEach(source -> {
+                Path target = dst.resolve(src.relativize(source));
+                try {
+                    if (Files.isDirectory(source)) {
+                        Files.createDirectories(target);
+                    } else {
+                        Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+                    }
+                } catch (IOException e) {
+                    log("Failed to copy " + source + " -> " + target + ": " + e.getMessage());
                 }
-            } catch (IOException e) {
-                log("Failed to copy " + source + " -> " + target + ": " + e.getMessage());
-            }
-        });
+            });
+        }
     }
 
     /* ======================================================================

@@ -548,7 +548,7 @@ Settings can be applied to:
 
 Selections are saved in a **Recording Override** file under the Viewer directory in the Project Root.
 
-When the **Import Overrides** checkbox (left bottom of the main dialog) is clicked, previously made square selections are applied.
+When the **Overrides** checkbox (left bottom of the main dialog) is clicked, previously made square selections are applied.
 
 <img src="./Pictures/select-squares-dialog.png" alt="select-squares-dialog" style="zoom:33%;" />
 
@@ -561,7 +561,7 @@ The **Assign Cells** dialog lets you group squares into cells (1–6) or mark th
 
 Assignments are saved in a **Square Override** file under the Viewer directory.
 
-When the **Import Overrides** checkbox (left bottom of the main dialog) is clicked, previously made cell assignments  are applied.
+When the **Overrides** checkbox (left bottom of the main dialog) is clicked, previously made cell assignments  are applied.
 
 <div style="text-align:center;">
 <img src="./Pictures/assign-cells-dialog.png" alt="assign-cells-dialog" style="zoom:33%;" />

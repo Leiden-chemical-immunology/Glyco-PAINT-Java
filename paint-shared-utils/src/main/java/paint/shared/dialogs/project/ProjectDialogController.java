@@ -92,7 +92,7 @@ public class ProjectDialogController {
         }
 
         // Sweep checkbox + verbose + OK/Cancel
-        bottom.onVerboseToggle(PaintLogger::infof); // already persisted by bottom
+        bottom.onVerboseToggle();
         bottom.onSweepToggle(selected -> {
 
             if (selected) {

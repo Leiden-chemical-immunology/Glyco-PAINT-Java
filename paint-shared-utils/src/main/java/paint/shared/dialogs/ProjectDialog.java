@@ -81,7 +81,7 @@ public class ProjectDialog {
         final JPanel form = new JPanel(new BorderLayout());
 
         pathsPanel  = new ProjectPathsPanel(mode, projectPath);
-        paramsPanel = (mode == DialogMode.VIEWER) ? null : new SquaresParamsPanel(mode, cfg);
+        paramsPanel = (mode == DialogMode.VIEWER) ? null : new SquaresParamsPanel(mode);
         if (paramsPanel != null) {
             form.add(pathsPanel.component(), BorderLayout.NORTH);
             form.add(paramsPanel.component(), BorderLayout.CENTER);
@@ -93,7 +93,7 @@ public class ProjectDialog {
         final JPanel center = new JPanel(new BorderLayout());
         center.add(experimentsPanel.component(), BorderLayout.CENTER);
 
-        bottomBar = new BottomBarPanel(mode, PaintRuntime.isVerbose(), cfg);
+        bottomBar = new BottomBarPanel(mode, PaintRuntime.isVerbose());
 
         root.add(form, BorderLayout.NORTH);
         root.add(center, BorderLayout.CENTER);
@@ -128,7 +128,7 @@ public class ProjectDialog {
         );
         controller.init();
 
-        // size & show defaults
+        // size and show defaults
         final int width  = 820;
         final int height = 600;
         dialog.setMinimumSize(new Dimension(width, height));
@@ -170,7 +170,7 @@ public class ProjectDialog {
 
         // persist params
         if (paramsPanel != null) {
-            paramsPanel.persistTo(cfg, mode);
+            paramsPanel.persistTo(mode);
         }
 
         final TrackMateConfig       tm  = new TrackMateConfig();
@@ -199,13 +199,11 @@ public class ProjectDialog {
 
         workerThread = new Thread(() -> {
             boolean ok = false;
-            Exception err = null;
             try {
                 if (!cancelled && !Thread.currentThread().isInterrupted()) {
                     ok = callback.run(buildProject());
                 }
             } catch (Exception ex) {
-                err = ex;
                 if (ex instanceof InterruptedException) {
                     Thread.currentThread().interrupt();
                     cancelled = true;

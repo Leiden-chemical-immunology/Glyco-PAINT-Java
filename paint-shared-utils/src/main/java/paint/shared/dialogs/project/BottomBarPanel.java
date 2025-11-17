@@ -1,6 +1,5 @@
 package paint.shared.dialogs.project;
 
-import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.utils.PaintRuntime;
 
 import javax.swing.*;
@@ -32,7 +31,7 @@ public class BottomBarPanel {
     private Consumer<Boolean> onSweep = s -> {
     };
 
-    public BottomBarPanel(DialogMode mode, boolean verboseDefault, PaintConfig cfg) {
+    public BottomBarPanel(DialogMode mode, boolean verboseDefault) {
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
@@ -85,7 +84,7 @@ public class BottomBarPanel {
         });
     }
 
-    public void onVerboseToggle(Consumer<String> noopLog) {
+    public void onVerboseToggle() {
         this.onVerbose = v -> {
         };
     }

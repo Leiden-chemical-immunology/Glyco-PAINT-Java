@@ -58,8 +58,6 @@ import java.util.List;
 
 import static paint.generatesquares.calc.PlotUtils.saveTauFitPlot;
 import static paint.generatesquares.calc.SquareUtils.*;
-import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
-import static paint.shared.constants.PaintConstants.RECORDING_DURATION;
 import static paint.shared.objects.Square.calculateSquareArea;
 import static paint.shared.utils.CalculateTau.calculateTau;
 import static paint.shared.utils.Miscellaneous.round;

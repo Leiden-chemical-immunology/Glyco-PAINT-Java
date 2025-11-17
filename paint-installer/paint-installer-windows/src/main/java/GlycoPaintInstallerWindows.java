@@ -99,7 +99,7 @@ public class GlycoPaintInstallerWindows {
      *   - ProgramFiles
      *   - ProgramFiles(x86)
      *   - LOCALAPPDATA
-     *
+     * <p>
      * Examples (depending on system):
      *   C:\Program Files\Fiji
      *   C:\Program Files (x86)\Fiji-win64
@@ -393,7 +393,7 @@ public class GlycoPaintInstallerWindows {
      *  1) Saved path
      *  2) Auto-detected paths (see header for full list)
      *  3) Ask the user (warning first, then chooser if OK)
-     *
+     * <p>
      * Returns true if installed into a valid Fiji\plugins directory, else false.
      */
     private boolean installFijiPlugin(Path pluginSourceRoot) throws IOException {
@@ -457,9 +457,12 @@ public class GlycoPaintInstallerWindows {
 
     /** Deletes old paint-*.jar and copies the new plugin into Fiji\plugins. */
     private void installJarIntoFijiDir(Path jar, Path pluginsDir) throws IOException {
-        Files.list(pluginsDir)
-                .filter(p -> p.getFileName().toString().startsWith("paint-") && p.toString().endsWith(".jar"))
-                .forEach(p -> { try { Files.delete(p); } catch (IOException ignored) {} });
+        try (java.util.stream.Stream<Path> stream = Files.list(pluginsDir)) {
+            stream
+                    .filter(p -> p.getFileName().toString().startsWith("paint-") &&
+                            p.getFileName().toString().endsWith(".jar"))
+                    .forEach(p -> { try { Files.delete(p); } catch (IOException ignored) {} });
+        }
 
         Files.copy(jar, pluginsDir.resolve(jar.getFileName()), StandardCopyOption.REPLACE_EXISTING);
         log("Installed plugin to: " + pluginsDir);
@@ -609,21 +612,24 @@ public class GlycoPaintInstallerWindows {
      * If multiple candidates exist, choose the lexicographically last name.
      */
     private Optional<Path> findPluginJar(Path root) throws IOException {
+        // Preferred: paint-fiji-plugin-*.jar
         try (java.util.stream.Stream<Path> s = Files.walk(root)) {
-            Optional<Path> preferred = s
-                    .filter(Files::isRegularFile)
-                    .filter(p -> p.getFileName().toString().endsWith(".jar"))
-                    .filter(p -> p.getFileName().toString().startsWith("paint-fiji-plugin-"))
-                    .sorted((a, b) -> b.getFileName().toString().compareTo(a.getFileName().toString()))
-                    .findFirst();
+            Optional<Path> preferred =
+                    s.filter(Files::isRegularFile)
+                     .filter(p -> p.getFileName().toString().endsWith(".jar"))
+                     .filter(p -> p.getFileName().toString().startsWith("paint-fiji-plugin-"))
+                     .sorted((a, b) -> b.getFileName().toString().compareTo(a.getFileName().toString()))
+                     .findFirst();
+
             if (preferred.isPresent()) return preferred;
         }
+
+        // Fallback: any *.jar
         try (java.util.stream.Stream<Path> s2 = Files.walk(root)) {
-            return s2
-                    .filter(Files::isRegularFile)
-                    .filter(p -> p.getFileName().toString().endsWith(".jar"))
-                    .sorted((a, b) -> b.getFileName().toString().compareTo(a.getFileName().toString()))
-                    .findFirst();
+            return s2.filter(Files::isRegularFile)
+                     .filter(p -> p.getFileName().toString().endsWith(".jar"))
+                     .sorted((a, b) -> b.getFileName().toString().compareTo(a.getFileName().toString()))
+                     .findFirst();
         }
     }
 }

@@ -94,12 +94,12 @@ public class RecordingControlsPanel {
     }
 
     private final JPanel  root;
-    private       JButton filterRecordingsButton;
-    private       JButton selectSquaresButton;
-    private       JButton assignCellsButton;
-    private       JButton playRecordingButton;
-    private       JButton exportImageButton;
-    private       JButton showSquaresButton;
+    private final JButton filterRecordingsButton;
+    private final JButton selectSquaresButton;
+    private final JButton assignCellsButton;
+    private final JButton playRecordingButton;
+    private final JButton exportImageButton;
+    private final JButton showSquaresButton;
 
     /**
      * Constructs a {@code RecordingControlsPanel} containing action buttons,

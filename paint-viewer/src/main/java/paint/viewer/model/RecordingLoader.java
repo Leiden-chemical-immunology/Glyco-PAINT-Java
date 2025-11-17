@@ -56,6 +56,7 @@ import paint.shared.utils.PaintLogger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -142,11 +143,11 @@ public class RecordingLoader {
 
                 Path brightfieldImagePath = null;
 
-                try {
-                    for (Path p : (Iterable<Path>) Files.list(brightfieldDirPath)::iterator) {
+                try (java.util.stream.Stream<Path> stream = Files.list(brightfieldDirPath)) {
+                    for (Iterator<Path> it = stream.iterator(); it.hasNext(); ) {
+                        Path p = it.next();
                         String fileName = p.getFileName().toString();
 
-                        // Accept "<recording>.jpg" OR "<recording>-BF*.jpg"
                         boolean isMatch =
                                 (fileName.startsWith(recordingName + "-BF") ||
                                         fileName.startsWith(recordingName))

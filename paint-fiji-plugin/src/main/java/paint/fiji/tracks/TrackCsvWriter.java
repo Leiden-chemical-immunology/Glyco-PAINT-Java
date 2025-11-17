@@ -63,7 +63,6 @@ import java.util.List;
 import java.util.Set;
 
 import static paint.fiji.tracks.TrackAttributeCalculations.calculateTrackAttributes;
-import static paint.shared.constants.PaintConstants.TIME_INTERVAL;
 
 /**
  * Provides functionality to export TrackMate tracks to a CSV file.

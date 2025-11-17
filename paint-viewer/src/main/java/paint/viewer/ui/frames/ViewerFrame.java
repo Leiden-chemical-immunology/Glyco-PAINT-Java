@@ -107,13 +107,10 @@ public class ViewerFrame extends JFrame
 
     private final Project                      project;
     private final List<RecordingEntry>         allRecordingEntries;  // full unfiltered list
-    private final List<RecordingEntry>         recordingEntries;     // currently visible (may be filtered)
+    private final List<RecordingEntry>         recordingEntries;     // currently visible (can be filtered)
     private       int                          currentIndex      = 0;
 
     private       SquareGridPanel              leftGridPanel;
-    private       JLabel                       rightImageLabel;
-    private       JLabel                       experimentLabel;
-    private       JLabel                       recordingLabel;
 
     private       RecordingAttributesPanel     attributesPanel;
     private       NavigationPanel              navigationPanel;
@@ -185,9 +182,9 @@ public class ViewerFrame extends JFrame
 
         // Store references
         this.leftGridPanel           = ui.leftGridPanel;
-        this.rightImageLabel         = ui.rightImageLabel;
-        this.experimentLabel         = ui.experimentLabel;
-        this.recordingLabel          = ui.recordingLabel;
+        JLabel rightImageLabel       = ui.rightImageLabel;
+        JLabel experimentLabel       = ui.experimentLabel;
+        JLabel recordingLabel        = ui.recordingLabel;
         this.attributesPanel         = ui.attributesPanel;
         this.navigationPanel         = ui.navigationPanel;
         this.controlsPanel           = ui.controlsPanel;
@@ -195,9 +192,9 @@ public class ViewerFrame extends JFrame
 
         this.displayUpdater = new RecordingDisplayUpdater(
                 this.leftGridPanel,
-                this.rightImageLabel,
-                this.experimentLabel,
-                this.recordingLabel,
+                rightImageLabel,
+                experimentLabel,
+                recordingLabel,
                 this.attributesPanel
         );
 
@@ -228,14 +225,6 @@ public class ViewerFrame extends JFrame
         importOverridesCheckBox.addActionListener(e -> {
             if (importOverridesCheckBox.isSelected()) {
                 performImportOverrides();
-            } else {
-//                JOptionPane.showMessageDialog(
-//                        this,
-//                        "Import Overrides has been turned off.\n" +
-//                                "Please restart the Viewer for this change to take full effect.",
-//                        "Restart Recommended",
-//                        JOptionPane.INFORMATION_MESSAGE
-//                );
             }
         });
 

@@ -32,7 +32,6 @@ public class RecordingFilterDialog extends JDialog {
 
     // ----- Data sets -----
     private final List<RecordingEntry> originalRecordings; // full dataset (for Reset All)
-    private final List<RecordingEntry> baseList;           // visible subset when dialog opened
     private       List<RecordingEntry> filteredRecordings; // current filtered result
 
     // ----- UI lists -----
@@ -68,36 +67,38 @@ public class RecordingFilterDialog extends JDialog {
         this.originalRecordings = new ArrayList<>(allRecordings);
 
         // Compute the base list (start subset) from the current visible subset and incoming criteria
+        // visible subset when dialog opened
+        List<RecordingEntry> baseList;
         if (!criteria.isEmpty()) {
-            this.baseList = currentVisibleRecordings.stream()
-                    .filter(e -> criteria.cellTypes.isEmpty()      || criteria.cellTypes.contains(e.getCellType()))
-                    .filter(e -> criteria.probeNames.isEmpty()     || criteria.probeNames.contains(e.getProbeName()))
-                    .filter(e -> criteria.probeTypes.isEmpty()     || criteria.probeTypes.contains(e.getProbeType()))
-                    .filter(e -> criteria.adjuvants.isEmpty()      || criteria.adjuvants.contains(e.getAdjuvant()))
-                    .filter(e -> criteria.concentrations.isEmpty() || criteria.concentrations.contains(String.valueOf(e.getConcentration())))
-                    .collect(Collectors.toList());
+            baseList = currentVisibleRecordings.stream()
+                                               .filter(e -> criteria.cellTypes.isEmpty()      || criteria.cellTypes.contains(e.getCellType()))
+                                               .filter(e -> criteria.probeNames.isEmpty()     || criteria.probeNames.contains(e.getProbeName()))
+                                               .filter(e -> criteria.probeTypes.isEmpty()     || criteria.probeTypes.contains(e.getProbeType()))
+                                               .filter(e -> criteria.adjuvants.isEmpty()      || criteria.adjuvants.contains(e.getAdjuvant()))
+                                               .filter(e -> criteria.concentrations.isEmpty() || criteria.concentrations.contains(String.valueOf(e.getConcentration())))
+                                               .collect(Collectors.toList());
         } else {
-            this.baseList = new ArrayList<>(currentVisibleRecordings);
+            baseList = new ArrayList<>(currentVisibleRecordings);
         }
 
-        this.filteredRecordings = new ArrayList<>(this.baseList);
+        this.filteredRecordings = new ArrayList<>(baseList);
 
         // Build initial list box contents from baseList (not the full dataset)
-        Set<String> cellTypes      = this.baseList.stream()
-                                                  .map(RecordingEntry::getCellType)
-                                                  .collect(Collectors.toCollection(TreeSet::new));
-        Set<String> probeNames     = this.baseList.stream()
-                                                  .map(RecordingEntry::getProbeName)
-                                                  .collect(Collectors.toCollection(TreeSet::new));
-        Set<String> probeTypes     = this.baseList.stream()
-                                                  .map(RecordingEntry::getProbeType)
-                                                  .collect(Collectors.toCollection(TreeSet::new));
-        Set<String> adjuvants      = this.baseList.stream()
-                                                  .map(RecordingEntry::getAdjuvant)
-                                                  .collect(Collectors.toCollection(TreeSet::new));
-        Set<String> concentrations = this.baseList.stream()
-                                                  .map(e -> String.valueOf(e.getConcentration()))
-                                                  .collect(Collectors.toCollection(TreeSet::new));
+        Set<String> cellTypes      = baseList.stream()
+                                             .map(RecordingEntry::getCellType)
+                                             .collect(Collectors.toCollection(TreeSet::new));
+        Set<String> probeNames     = baseList.stream()
+                                             .map(RecordingEntry::getProbeName)
+                                             .collect(Collectors.toCollection(TreeSet::new));
+        Set<String> probeTypes     = baseList.stream()
+                                             .map(RecordingEntry::getProbeType)
+                                             .collect(Collectors.toCollection(TreeSet::new));
+        Set<String> adjuvants      = baseList.stream()
+                                             .map(RecordingEntry::getAdjuvant)
+                                             .collect(Collectors.toCollection(TreeSet::new));
+        Set<String> concentrations = baseList.stream()
+                                             .map(e -> String.valueOf(e.getConcentration()))
+                                             .collect(Collectors.toCollection(TreeSet::new));
 
         cellTypeList      = createList(cellTypes);
         probeNameList     = createList(probeNames);

@@ -12,18 +12,16 @@ public class SquaresParamsPanel {
 
     private final JPanel            panel = new JPanel(new GridBagLayout());
     private final DialogMode        mode;
-
-    private JCheckBox               runAfterTrackMate;
-    private JComboBox<String>       gridSizeCombo;
-    private JTextField              minTracksField;
-    private JTextField              minRSqField;
-    private JTextField              minDensityField;
-    private JTextField              maxVariabilityField;
+    private       JCheckBox         runAfterTrackMate;
+    private final JComboBox<String> gridSizeCombo;
+    private final JTextField        minRSqField;
+    private final JTextField        minDensityField;
+    private final JTextField        maxVariabilityField;
 
     private Runnable onChange = () -> {
     };
 
-    public SquaresParamsPanel(DialogMode mode, PaintConfig cfg) {
+    public SquaresParamsPanel(DialogMode mode) {
         this.mode = mode;
 
         panel.setBorder(new TitledBorder("Generate Squares Parameters"));
@@ -33,7 +31,6 @@ public class SquaresParamsPanel {
         pg.fill    = GridBagConstraints.NONE;
 
         int nrSquares   = PaintConfig.getInt(   "Generate Squares", "Number of Squares in Recording", 400);
-        int minTracks   = PaintConfig.getInt(   "Generate Squares", "Min Tracks to Calculate Tau",    20);
         double minRSq   = PaintConfig.getDouble("Generate Squares", "Min Required R Squared",         0.1);
         double minDens  = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio",     2.0);
         double maxVar   = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability",      10.0);
@@ -74,7 +71,7 @@ public class SquaresParamsPanel {
         pg.gridy = row;
         label(panel, "Min Required R²", labelSize, pg);
         pg.gridx = 1;
-        minRSqField = text(String.valueOf(minRSq), fieldSize, true);
+        minRSqField = text(String.valueOf(minRSq), fieldSize);
         panel.add(minRSqField, pg);
         row++;
 
@@ -83,7 +80,7 @@ public class SquaresParamsPanel {
         pg.gridy = row;
         label(panel, "Min Required Density Ratio", labelSize, pg);
         pg.gridx = 1;
-        minDensityField = text(String.valueOf(minDens), fieldSize, true);
+        minDensityField = text(String.valueOf(minDens), fieldSize);
         panel.add(minDensityField, pg);
         row++;
 
@@ -92,7 +89,7 @@ public class SquaresParamsPanel {
         pg.gridy = row;
         label(panel, "Max Allowable Variability", labelSize, pg);
         pg.gridx = 1;
-        maxVariabilityField = text(String.valueOf(maxVar), fieldSize, true);
+        maxVariabilityField = text(String.valueOf(maxVar), fieldSize);
         panel.add(maxVariabilityField, pg);
 
         gridSizeCombo.addActionListener(e -> onChange.run());
@@ -125,7 +122,7 @@ public class SquaresParamsPanel {
         maxVariabilityField.setEnabled(squaresEnabled);
     }
 
-    public void persistTo(PaintConfig cfg, DialogMode mode) {
+    public void persistTo(DialogMode mode) {
         if (gridSizeCombo != null) {
             String sel = (String) gridSizeCombo.getSelectedItem();
             if (sel != null && sel.contains("x")) {
@@ -157,7 +154,7 @@ public class SquaresParamsPanel {
         p.add(l, pg);
     }
 
-    private static JTextField text(String v, Dimension size, boolean numeric) {
+    private static JTextField text(String v, Dimension size) {
         JTextField t = new JTextField(v);
         t.setColumns(8);
         t.setPreferredSize(size);
