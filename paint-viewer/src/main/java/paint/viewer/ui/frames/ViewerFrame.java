@@ -314,6 +314,12 @@ public class ViewerFrame extends JFrame
             return;
         }
 
+        assignmentManager.clear();
+
+        // clear grid selection
+        leftGridPanel.clearSelection();
+        leftGridPanel.applyVisibilityFilter();
+
         currentIndex = index;
         RecordingEntry entry = recordingEntries.get(index);
         displayUpdater.show(entry, index, recordingEntries.size());

@@ -106,4 +106,13 @@ public class CellAssignmentManager {
 
         grid.repaint();
     }
+
+    /**
+     * Clears all assignment state when switching recordings.
+     */
+    public void clear() {
+        undoStack.clear();
+        squareAssignments.clear();
+    }
+
 }
