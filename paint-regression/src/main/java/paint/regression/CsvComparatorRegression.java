@@ -387,12 +387,14 @@ public class CsvComparatorRegression {
         try {
             setupDualLogging(Paths.get("/Users/hans/Paint Test Project/221012/logs"));
 
+            Path projectRoot = Paths.get(System.getProperty("user.dir"));
+
             baseline = Paths.get("/Users/hans/Paint Test Project/221012/Squares.csv");
-            testfile = Paths.get("/Users/hans/JavaPaintProjects/paint-regression/src/main/resources/221012 reference/Squares.csv");
+            testfile = projectRoot.resolve("paint-regression/src/main/resources/221012 reference/Squares.csv");
             diffs += compare_stub(baseline, testfile);
 
             baseline = Paths.get("/Users/hans/Paint Test Project/221012/Recordings.csv");
-            testfile = Paths.get("/Users/hans/JavaPaintProjects/paint-regression/src/main/resources/221012 reference/Recordings.csv");
+            testfile = projectRoot.resolve("paint-regression/src/main/resources/221012 reference/Recordings.csv");
             diffs += compare_stub(baseline, testfile);
 
             System.out.println("\n\n🔢 Total differences detected: " + diffs);
