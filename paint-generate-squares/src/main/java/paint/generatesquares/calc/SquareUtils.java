@@ -63,9 +63,9 @@ public class SquareUtils {
      * Estimates the background density from a list of squares. This is done
      * by iteratively excluding squares whose track counts exceed a dynamically
      * computed threshold:
-     *
+     * <p>
      *      threshold = mean + 2 * standardDeviation
-     *
+     * <p>
      * The mean is recalculated each iteration until:
      *   • It stabilizes (relative change < EPSILON), or
      *   • A maximum number of iterations is reached.

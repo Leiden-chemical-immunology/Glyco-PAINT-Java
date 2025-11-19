@@ -149,9 +149,9 @@ public class PlotUtils {
 
     /**
      * Exports a background-track histogram for each recording as a PNG file:
-     *
+     * <p>
      *     Output/Background Plots/<recording>.png
-     *
+     * <p>
      * @param experiment      the experiment containing the recordings
      * @param experimentPath  the experiment root path
      * @throws IOException    if image output fails
@@ -229,9 +229,9 @@ public class PlotUtils {
      *
      *     Output/Tau-Fitting Plots/Success/<...>.png
      *     Output/Tau-Fitting Plots/Failed/<...>.png
-     *
+     * <p>
      * The output directory tree is created automatically.
-     *
+     * <p>
      * @param tracks         the tracks used in Tau fitting
      * @param tauResult      the Tau fitting result (may indicate failure)
      * @param experimentPath the root path of the experiment
@@ -297,11 +297,11 @@ public class PlotUtils {
 
     /**
      * Draws a histogram into the given Graphics2D context. The histogram displays:
-     *
+     * <p>
      *   • Track-count distribution across all squares
      *   • Track-count distribution among "background" squares
      *   • Summary statistics rendered as text in the upper-right corner
-     *
+     * <p>
      * All layout calculations are pixel-accurate to ensure consistent rendering
      * regardless of image size.
      */
