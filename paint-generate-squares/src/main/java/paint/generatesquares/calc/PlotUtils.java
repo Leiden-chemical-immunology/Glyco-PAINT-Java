@@ -1,48 +1,3 @@
-/*=============================================================================
- *  Class:        PlotUtils.java
- *  Package:      paint.generatesquares.calc
- *
- *  PURPOSE:
- *    Provides lightweight rendering utilities for generating Tau-fitting plots,
- *    histograms and related graphical visualizations within the Paint experiment
- *    workflow.
- *
- *  DESCRIPTION:
- *    This utility class supports rendering of 2D visual representations such as:
- *      • Frequency–duration scatter plots with exponential curve fits
- *      • Histograms of track counts per square and background estimation
- *      • Saving Tau-fit plots (PNG) under “Success” or “Failed” directories
- *    Plots are rendered into BufferedImages, PDF documents or image files
- *    and can be saved or embedded in reports and GUIs.
- *
- *  RESPONSIBILITIES:
- *    • Draw frequency–duration scatter plots and fitted exponential curves
- *    • Display Tau and R² annotations on plots
- *    • Build histograms of track counts and background counts per square
- *    • Save Tau-fit images, handling directory structure and failure/success classification
- *    • Produce antialiased BufferedImage or PDF or PNG output for use in Paint analysis
- *
- *  USAGE EXAMPLE:
- *    BufferedImage img = PlotUtils.renderTauPlot(x, y, result, false, 800,600);
- *    PlotUtils.exportExperimentHistogramsToPdf(experiment, outputFile);
- *    PlotUtils.saveTauFitPlot(tracks, tauResult, experimentPath, recordingName, squareIndex);
- *
- *  DEPENDENCIES:
- *    – paint.shared.objects.{Experiment, Recording, Square, Track}
- *    – paint.shared.utils.PaintLogger
- *    – paint.generatesquares.calc.SquareUtils
- *    – org.apache.pdfbox and de.rototor.pdfbox.graphics2d.PdfBoxGraphics2D
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  UPDATED:
- *    2025-10-27
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
-
 package paint.generatesquares.calc;
 import static paint.shared.constants.PaintConstants.*;
 
@@ -71,15 +26,16 @@ public class PlotUtils {
     }
 
     /**
-     * Renders a Tau plot with given data points, fit curve, axes, labels, and annotations.
+     * Renders a Tau plot with the given data points, the fitted curve (if available),
+     * axes, labels, and annotation text.
      *
-     * @param x         the array of x-coordinate values for the data points to be plotted
-     * @param y         the array of y-coordinate values for the data points to be plotted
-     * @param result    the calculated result containing the Tau value and R² value for the exponential fit
-     * @param fitFailed a flag indicating whether the exponential fit failed
-     * @param width     the width of the generated image in pixels
-     * @param height    the height of the generated image in pixels
-     * @return a BufferedImage representing the rendered Tau plot
+     * @param x         the x-coordinates of the data points
+     * @param y         the y-coordinates of the data points
+     * @param result    the Tau-fit result, including Tau and R²
+     * @param fitFailed true if the exponential fit failed
+     * @param width     image width in pixels
+     * @param height    image height in pixels
+     * @return          a BufferedImage containing the rendered plot
      */
     public static BufferedImage renderTauPlot(double[] x,
             double[]                        y,
@@ -98,7 +54,6 @@ public class PlotUtils {
         g2.fillRect(0, 0, width, height);
 
         // --- Define margins and plotting area ---
-
         // @format:off
         int marginLeft   = 70;
         int marginRight  = 40;
@@ -117,43 +72,38 @@ public class PlotUtils {
         // Add 5% padding on both axes so points stay within the frame
         double padX = (maxX - minX) * 0.05;
         double padY = (maxY - minY) * 0.05;
-        if (padX == 0) {
-            padX = 1.0; // avoid zero-division for flat x data
-        }
-        if (padY == 0) {
-            padY = 1.0; // avoid zero-division for flat y data
-        }
+        if (padX == 0) padX = 1.0;
+        if (padY == 0) padY = 1.0;
 
         minX -= padX;
         maxX += padX;
         minY -= padY;
         maxY += padY;
 
-        // --- Calculate scaling factors ---
+        // --- Scaling factors ---
         double xScale = (width - marginLeft - marginRight) / (maxX - minX);
         double yScale = (height - marginTop - marginBottom) / (maxY - minY);
 
-        // --- Draw X and Y axes ---
+        // --- Axes ---
         g2.setColor(Color.GRAY);
-        g2.drawLine(x0, y0, width - marginRight, y0); // X-axis
-        g2.drawLine(x0, y0, x0, marginTop);           // Y-axis
+        g2.drawLine(x0, y0, width - marginRight, y0);
+        g2.drawLine(x0, y0, x0, marginTop);
 
-        // --- Draw data points ---
-        g2.setColor(new Color(30, 100, 200)); // blue tone
+        // --- Data points ---
+        g2.setColor(new Color(30, 100, 200));
         for (int i = 0; i < x.length; i++) {
             int px = (int)(marginLeft + (x[i] - minX) * xScale);
             int py = (int)(y0 - (y[i] - minY) * yScale);
             g2.fillOval(px - 3, py - 3, 6, 6);
         }
 
-        // --- Draw fitted exponential curve (if available) ---
+        // --- Fitted exponential curve ---
         if (!fitFailed && result != null && Double.isFinite(result.getTau())) {
             double tau = result.getTau();
-            // Convert to rate constant (1/ms) — arbitrary scaling for display
             double t = (tau > 0) ? 1000.0 / tau : Double.NaN;
 
-            double m = Arrays.stream(y).max().orElse(1); // amplitude
-            double b = Arrays.stream(y).min().orElse(0); // baseline
+            double m = Arrays.stream(y).max().orElse(1);
+            double b = Arrays.stream(y).min().orElse(0);
             g2.setColor(Color.RED);
 
             int steps = 200;
@@ -185,32 +135,28 @@ public class PlotUtils {
         g2.drawString("Frequency", -height / 2 - 30, 20);
         g2.rotate(Math.PI / 2);
 
-        // --- Fit annotation (Tau/R² or "Fit failed") ---
+        // --- Fit annotation ---
         g2.setColor(fitFailed ? Color.RED.darker() : new Color(0, 128, 0));
         String msg = fitFailed
                 ? "Fit failed"
-                : String.format("Tau = %.1f ms, R² = %.3f",
-                                result.getTau(), result.getRSquared());
+                : String.format("Tau = %.1f ms, R² = %.3f", result.getTau(), result.getRSquared());
         g2.setFont(g2.getFont().deriveFont(Font.BOLD, 14f));
         g2.drawString(msg, marginLeft + 10, marginTop + 20);
 
-        // --- Cleanup and return image ---
         g2.dispose();
         return img;
     }
 
-
     /**
-     * Exports histograms of the experimental data as individual PNG images.
-     * Each recording is rendered to a separate file under:
-     *    Output/Background Plots/<recordingName>.png
+     * Exports a background-track histogram for each recording as a PNG file:
      *
-     * @param experiment The experiment containing recordings with track count data.
-     * @param experimentPath The root directory of the experiment (used to resolve Output path).
-     * @throws IOException If any image cannot be written.
+     *     Output/Background Plots/<recording>.png
+     *
+     * @param experiment      the experiment containing the recordings
+     * @param experimentPath  the experiment root path
+     * @throws IOException    if image output fails
      */
-    public static void exportBackgroundHistogramsToPngs(Experiment experiment, Path experimentPath) throws IOException {
-        Path outputDir = experimentPath.resolve("Output").resolve(BACKGROUND_PLOTS);
+    public static void exportBackgroundHistogramsToPngs(Experiment experiment, Path experimentPath) throws IOException {        Path outputDir = experimentPath.resolve("Output").resolve(BACKGROUND_PLOTS);
         Files.createDirectories(outputDir);
 
         for (Recording recording : experiment.getRecordings()) {
@@ -249,18 +195,22 @@ public class PlotUtils {
             int plotHeight = 600;
             BufferedImage img = new BufferedImage(plotWidth, plotHeight, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = img.createGraphics();
-            drawHistogram(g2,
-                          plotWidth,
-                          plotHeight,
-                          allBins,
-                          bgBins,
-                          binSize,
-                          recording.getRecordingName(),
-                          totalSquares,
-                          totalTracks,
-                          nBackground,
-                          backgroundTracksTotal,
-                          backgroundTracksPerSquare);
+
+            // Draw histogram into the graphics context
+            drawHistogram(
+                    g2,
+                    plotWidth,
+                    plotHeight,
+                    allBins,
+                    bgBins,
+                    binSize,
+                    recording.getRecordingName(),
+                    totalSquares,
+                    totalTracks,
+                    nBackground,
+                    backgroundTracksTotal,
+                    backgroundTracksPerSquare
+            );
             g2.dispose();
 
             Path outFile = outputDir.resolve(recording.getRecordingName() + ".png");
@@ -269,29 +219,39 @@ public class PlotUtils {
         }
     }
 
-    // ========== Tau-fit PNG output ==========
+    // ========================================================================
+    // Tau-fit PNG output
+    // ========================================================================
 
     /**
-     * Saves a plot visualizing the Tau-fit result for a square as a PNG file under
-     * “Success” or “Failed”, within the current experiment’s output directory.
+     * Saves a Tau-fit plot (successful or failed) for the given square.
+     * Output is stored as:
      *
-     * @param tracks         the list of tracks used to compute the frequency distribution
-     *                       (their durations will form the x-axis)
-     * @param tauResult      the result of the Tau calculation (may indicate failure)
-     * @param experimentPath the base path of the experiment directory
-     * @param recordingName  the name of the recording
-     * @param squareIndex    the index of the square region (used to name the file)
+     *     Output/Tau-Fitting Plots/Success/<...>.png
+     *     Output/Tau-Fitting Plots/Failed/<...>.png
+     *
+     * The output directory tree is created automatically.
+     *
+     * @param tracks         the tracks used in Tau fitting
+     * @param tauResult      the Tau fitting result (may indicate failure)
+     * @param experimentPath the root path of the experiment
+     * @param recordingName  the recording name
+     * @param squareIndex    the square index (used in file naming)
      */
-    public static void saveTauFitPlot(List<Track> tracks,
-                                      CalculateTau.CalculateTauResult tauResult,
-                                      Path experimentPath,
-                                      String recordingName,
-                                      int squareIndex) {
-        boolean fitFailed = (tauResult == null ||
-                tauResult.getStatus() != CalculateTau.CalculateTauResult.Status.TAU_SUCCESS ||
-                !Double.isFinite(tauResult.getTau()) ||
-                !Double.isFinite(tauResult.getRSquared()));
+    public static void saveTauFitPlot(
+            List<Track> tracks,
+            CalculateTau.CalculateTauResult tauResult,
+            Path experimentPath,
+            String recordingName,
+            int squareIndex
+    ) {
+        boolean fitFailed =
+                (tauResult == null) ||
+                        (tauResult.getStatus() != CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) ||
+                        !Double.isFinite(tauResult.getTau()) ||
+                        !Double.isFinite(tauResult.getRSquared());
 
+        // Build frequency distribution: duration → count
         Map<Double, Integer> freqMap = new TreeMap<>();
         for (Track track : tracks) {
             double d = track.getTrackDuration();
@@ -307,67 +267,94 @@ public class PlotUtils {
             idx++;
         }
 
+        // Render plot
         BufferedImage img = renderTauPlot(x, y, tauResult, fitFailed, 900, 600);
 
+        // Determine output directory
         Path rootDir   = experimentPath.resolve("Output").resolve(TAU_FITTING_PLOTS);
         Path targetDir = rootDir.resolve(fitFailed ? "Failed" : "Success");
 
         try {
             Files.createDirectories(targetDir);
-            Path plotPath = targetDir.resolve(String.format("%s_square_%03d.png", recordingName, squareIndex));
+            Path plotPath = targetDir.resolve(
+                    String.format("%s_square_%03d.png", recordingName, squareIndex)
+            );
             ImageIO.write(img, "png", plotPath.toFile());
         } catch (Exception e) {
-            // Log failure but do *not* throw
-            PaintLogger.errorf("Failed to save Tau-fit plot for '%s' square %03d: %s",
-                               recordingName, squareIndex, e.getMessage());
+            // Log failure without throwing
+            PaintLogger.errorf(
+                    "Failed to save Tau-fit plot for '%s' square %03d: %s",
+                    recordingName,
+                    squareIndex,
+                    e.getMessage()
+            );
         }
     }
 
-    // ========== Helper method: drawHistogram ==========
+    // ========================================================================
+    // Histogram drawing helper
+    // ========================================================================
 
-    private static void drawHistogram(Graphics2D g2,
-                                      int w,
-                                      int h,
-                                      int[] allBins,
-                                      int[] bgBins,
-                                      int binSize,
-                                      String title,
-                                      int totalSquares,
-                                      int totalTracks,
-                                      int nBackground,
-                                      int backgroundTracksTotal,
-                                      double avgTracksInBackground) {
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                            RenderingHints.VALUE_ANTIALIAS_ON);
+    /**
+     * Draws a histogram into the given Graphics2D context. The histogram displays:
+     *
+     *   • Track-count distribution across all squares
+     *   • Track-count distribution among "background" squares
+     *   • Summary statistics rendered as text in the upper-right corner
+     *
+     * All layout calculations are pixel-accurate to ensure consistent rendering
+     * regardless of image size.
+     */
+    private static void drawHistogram(
+            Graphics2D g2,
+            int w,
+            int h,
+            int[] allBins,
+            int[] bgBins,
+            int binSize,
+            String title,
+            int totalSquares,
+            int totalTracks,
+            int nBackground,
+            int backgroundTracksTotal,
+            double avgTracksInBackground
+    ) {
+        g2.setRenderingHint(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON
+        );
         g2.setColor(Color.WHITE);
         g2.fillRect(0, 0, w, h);
 
-        int    marginLeft   = 70;
-        int    marginBottom = 50;
-        int    marginTop    = 50;
-        int    marginRight  = 40;
+        int marginLeft   = 70;
+        int marginBottom = 50;
+        int marginTop    = 50;
+        int marginRight  = 40;
 
-        int    binCount     = allBins.length;
-        int    maxBinCount  = Arrays.stream(allBins).max().orElse(1);
+        int binCount    = allBins.length;
+        int maxBinCount = Arrays.stream(allBins).max().orElse(1);
 
-        double xStep        = (double)(w - marginLeft - marginRight) / binCount;
-        double yScale       = (double)(h - marginTop - marginBottom) / maxBinCount;
+        double xStep  = (double)(w - marginLeft - marginRight) / binCount;
+        double yScale = (double)(h - marginTop - marginBottom) / maxBinCount;
 
+        // Axes
         g2.setColor(Color.GRAY);
         int x0 = marginLeft;
         int y0 = h - marginBottom;
         g2.drawLine(x0, y0, w - marginRight, y0);
         g2.drawLine(x0, y0, x0, marginTop);
 
+        // Tick marks
         g2.setColor(Color.BLACK);
         int nTicks = 5;
         for (int i = 0; i <= nTicks; i++) {
             int y = y0 - (i * (h - marginTop - marginBottom) / nTicks);
-            int value = (int) Math.round(i * (double) maxBinCount / nTicks);
+            int value = (int)Math.round(i * (double)maxBinCount / nTicks);
             g2.drawLine(x0 - 5, y, x0, y);
             g2.drawString(String.valueOf(value), x0 - 45, y + 5);
         }
 
+        // Bars
         for (int i = 0; i < binCount; i++) {
             int total      = allBins[i];
             int background = bgBins[i];
@@ -375,30 +362,40 @@ public class PlotUtils {
             int barW       = (int)(xStep * 0.8);
 
             if (background > 0) {
-                int bgHeight = (int) (background * yScale);
+                int bgHeight = (int)(background * yScale);
                 int bgY      = y0 - bgHeight;
                 g2.setColor(new Color(100, 160, 255, 180));
                 g2.fillRect(x, bgY, barW, bgHeight);
             }
 
-            int fgHeight = (int) ((total - background) * yScale);
+            int fgHeight = (int)((total - background) * yScale);
             if (fgHeight > 0) {
-                int fgY = y0 - fgHeight - (int) (background * yScale);
+                int fgY = y0 - fgHeight - (int)(background * yScale);
                 g2.setColor(new Color(180, 180, 180));
                 g2.fillRect(x, fgY, barW, fgHeight);
             }
 
             g2.setColor(Color.BLACK);
-            g2.drawRect(x, y0 - (int) (total * yScale), barW, (int) (total * yScale));
+            g2.drawRect(x, y0 - (int)(total * yScale), barW, (int)(total * yScale));
         }
 
+        // Labels
         g2.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        g2.drawString("Track count bins (bin size ≈ " + binSize + ")", w / 2 - 90, h - 15);
+        g2.drawString(
+                "Track count bins (bin size ≈ " + binSize + ")",
+                w / 2 - 90,
+                h - 15
+        );
         g2.drawString("Number of squares", 10, marginTop - 10);
 
         g2.setFont(new Font("SansSerif", Font.BOLD, 16));
-        g2.drawString("Track Count Histogram – " + title, w / 2 - 150, marginTop - 20);
+        g2.drawString(
+                "Track Count Histogram – " + title,
+                w / 2 - 150,
+                marginTop - 20
+        );
 
+        // Right-side summary panel
         g2.setFont(new Font("SansSerif", Font.BOLD, 14));
         g2.setColor(new Color(0, 70, 180));
 
@@ -433,7 +430,6 @@ public class PlotUtils {
         int colonX = textX + maxLabelW + colonPad;
         int valueX = colonX + fm.stringWidth(":") + valuePad;
 
-        // Draw rows with pixel-accurate alignment
         for (int i = 0; i < labels.length; i++) {
             int y = textY + i * lineSpacing;
             g2.drawString(labels[i], textX, y);

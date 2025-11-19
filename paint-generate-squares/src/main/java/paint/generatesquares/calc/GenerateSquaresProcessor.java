@@ -10,8 +10,9 @@
  *  DESCRIPTION:
  *    This class drives the GENERATE_SQUARES workflow for the Paint project.
  *    It segments recordings into grid squares, assigns tracks to each square,
- *    calculates both per-square and per-recording attributes (via CalculateAttributes),
- *    and compiles the final results into experiment-level tables written to disk.
+ *    calculates both per-square and per-recording attributes (via
+ *    CalculateSquareAttributes), and compiles the final results into
+ *    experiment-level tables written to disk.
  *
  *  RESPONSIBILITIES:
  *    • Generate geometric square grids for each recording
@@ -26,7 +27,7 @@
  *    - paint.shared.config.GenerateSquaresConfig
  *    - paint.shared.objects.{Project, Experiment, Recording, Square, Track}
  *    - paint.shared.io.{SquareTableIO, TrackTableIO}
- *    - generatesquares.calc.CalculateAttributes
+ *    - generatesquares.calc.CalculateSquareAttributes
  *    - tech.tablesaw.api.Table
  *
  *  AUTHOR:
@@ -42,10 +43,15 @@
 package paint.generatesquares.calc;
 
 import static paint.shared.constants.PaintConstants.*;
+
 import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.io.SquaresTableIO;
 import paint.shared.io.TracksTableIO;
-import paint.shared.objects.*;
+import paint.shared.objects.Experiment;
+import paint.shared.objects.Project;
+import paint.shared.objects.Recording;
+import paint.shared.objects.Square;
+import paint.shared.objects.Track;
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.Table;
 
@@ -61,15 +67,15 @@ import static paint.shared.io.HelperIO.*;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
 
-
 public class GenerateSquaresProcessor {
 
-    private static int  numberOfSquaresInOneDimension;  // Total number of squares per on one dimension.
+    // Total number of squares in one dimension (e.g., 20 for a 20×20 grid).
+    private static int numberOfSquaresInOneDimension;
 
     /**
      * Processes an experiment to generate square regions for each recording, compute attributes,
-     * and compile data tables for all squares and tracks. The method applies geometric segmentations,
-     * assigns tracks to the generated squares, and calculates additional square and recording-level attributes.
+     * and compile data tables for all squares and tracks. The method applies geometric segmentation,
+     * assigns tracks to generated squares, and calculates both square-level and recording-level attributes.
      * Finally, it writes compiled results to the file system.
      *
      * @param project        the project containing configurations and experiment data
@@ -77,17 +83,19 @@ public class GenerateSquaresProcessor {
      */
     public static void generateSquaresForExperiment(Project project, String experimentName) {
         GenerateSquaresConfig generateSquaresConfig = project.getGenerateSquaresConfig();
-        Experiment            experiment            = null;
+        Experiment            experiment;
         List<Recording>       recordings;
 
-        LocalDateTime start             = LocalDateTime.now();
+        LocalDateTime start = LocalDateTime.now();
         PaintLogger.debugf("Loading Experiment '%s'", experimentName);
 
         // Load the experiment (without squares, with tracks)
-        experiment = loadExperiment(project.getProjectRootPath(),
-                                    experimentName,
-                                    false,   // No Squares
-                                    true);  // No Tracks
+        experiment = loadExperiment(
+                project.getProjectRootPath(),
+                experimentName,
+                false,   // No Squares
+                true     // With Tracks
+        );
 
         if (experiment == null) {
             PaintLogger.errorf("Failed to load experiment: %s", experimentName);
@@ -105,7 +113,8 @@ public class GenerateSquaresProcessor {
 
             // CHECK before starting each recording
             if (Thread.currentThread().isInterrupted()) {
-                PaintLogger.infof("Cancelled before processing recording %s", recording.getRecordingName());
+                PaintLogger.infof("Cancelled before processing recording %s",
+                                  recording.getRecordingName());
                 return;
             }
 
@@ -121,18 +130,28 @@ public class GenerateSquaresProcessor {
 
             // CHECK mid-work before calculating attributes
             if (Thread.currentThread().isInterrupted()) {
-                PaintLogger.infof("Cancelled before attribute calculation for %s", recording.getRecordingName());
+                PaintLogger.infof("Cancelled before attribute calculation for %s",
+                                  recording.getRecordingName());
                 return;
             }
 
             // Calculate square-level and recording-level attributes
-            Path experimentPath = project.getProjectRootPath().resolve(experiment.getExperimentName());
-            CalculateSquareAttributes.calculateSquareAttributes(experimentPath, recording, generateSquaresConfig);
-            CalculateSquareAttributes.calculateRecordingAttributes(recording, generateSquaresConfig);
+            Path experimentPath = project.getProjectRootPath()
+                                         .resolve(experiment.getExperimentName());
+            CalculateSquareAttributes.calculateSquareAttributes(
+                    experimentPath,
+                    recording,
+                    generateSquaresConfig
+            );
+            CalculateSquareAttributes.calculateRecordingAttributes(
+                    recording,
+                    generateSquaresConfig
+            );
         }
 
         Duration duration = Duration.between(start, LocalDateTime.now());
-        PaintLogger.infof("Finished processing experiment '%s' in %s", experimentName, formatDuration(duration));
+        PaintLogger.infof("Finished processing experiment '%s' in %s",
+                          experimentName, formatDuration(duration));
         PaintLogger.blankline();
 
         // CHECK before writing output files
@@ -143,10 +162,11 @@ public class GenerateSquaresProcessor {
 
         // Compile all squares and write
         Table allSquaresTable = compileAllSquares(experiment);
-        Path  experimentPath  = project.getProjectRootPath().resolve(experiment.getExperimentName());
+        Path  experimentPath  = project.getProjectRootPath()
+                                       .resolve(experiment.getExperimentName());
         writeAllSquares(experimentPath, allSquaresTable);
 
-        // Update with filter information
+        // Update recordings with filter information
         for (Recording recording : experiment.getRecordings()) {
             recording.setMinRequiredRSquared(generateSquaresConfig.getMinRequiredRSquared());
             recording.setMaxAllowableVariability(generateSquaresConfig.getMaxAllowableVariability());
@@ -157,11 +177,10 @@ public class GenerateSquaresProcessor {
         // Write recordings
         writeAllRecordings(experimentPath, experiment.getRecordings());
 
-        // All Tracks
+        // All tracks
         Table allTracksTable = compileAllTracks(experiment);
         allTracksTable = allTracksTable.sortOn(RECORDING_NAME, TRACK_ID);
         writeAllTracks(experimentPath, allTracksTable);
-
     }
 
     /**
@@ -172,24 +191,24 @@ public class GenerateSquaresProcessor {
      * @param generateSquaresConfig the configuration specifying the number of squares and related parameters
      * @return a list of {@code Square} objects representing the segmented areas of the recording
      */
-    public static List<Square> generateSquaresForRecording(Recording recording, GenerateSquaresConfig generateSquaresConfig) {
+    public static List<Square> generateSquaresForRecording(Recording recording,
+            GenerateSquaresConfig generateSquaresConfig) {
 
         // Total number of squares per recording.
         int numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
-        numberOfSquaresInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);   // Number of squares in one dimension (e.g., 20 for 20x20).
+        numberOfSquaresInOneDimension  = (int) Math.sqrt(numberOfSquaresInRecording);
 
-        List<Square> squares = new ArrayList<>();
-        double squareWidth   = IMAGE_WIDTH / numberOfSquaresInOneDimension;
-        double squareHeight  = IMAGE_HEIGHT / numberOfSquaresInOneDimension;
-        
+        List<Square> squares      = new ArrayList<>();
+        double       squareWidth  = IMAGE_WIDTH  / numberOfSquaresInOneDimension;
+        double       squareHeight = IMAGE_HEIGHT / numberOfSquaresInOneDimension;
 
         int squareNumber = 0;
         for (int rowNumber = 0; rowNumber < numberOfSquaresInOneDimension; rowNumber++) {
             for (int columnNumber = 0; columnNumber < numberOfSquaresInOneDimension; columnNumber++) {
                 double X0 = columnNumber * squareWidth;
-                double Y0 = rowNumber * squareHeight;
+                double Y0 = rowNumber    * squareHeight;
                 double X1 = (columnNumber + 1) * squareWidth;
-                double Y1 = (rowNumber + 1) * squareHeight;
+                double Y1 = (rowNumber    + 1) * squareHeight;
 
                 squares.add(new Square(
                         recording.getRecordingName() + '-' + squareNumber,
@@ -201,7 +220,8 @@ public class GenerateSquaresProcessor {
                         X0,
                         Y0,
                         X1,
-                        Y1));
+                        Y1
+                ));
 
                 squareNumber++;
             }
@@ -227,14 +247,16 @@ public class GenerateSquaresProcessor {
         int labelNumber           = 0;
         int incrementalTrackCount = 0;
 
-        PaintLogger.debugf("Assigning tracks to squares (%d total tracks)", tracksOfRecording.rowCount());
+        PaintLogger.debugf("Assigning tracks to squares (%d total tracks)",
+                           tracksOfRecording.rowCount());
+
         for (Square square : recording.getSquaresOfRecording()) {
 
             Table squareTracksTable = filterTracksInSquare(tracksOfRecording, square, lastRowCol);
             incrementalTrackCount += squareTracksTable.rowCount();
 
             if (squareTracksTable.rowCount() == 0) {
-                square.setTracks(Collections.emptyList());
+                square.setTracks(Collections.<Track>emptyList());
                 square.setTracksTable(squareTracksTable);
                 square.setNumberOfTracks(0);
                 continue;
@@ -266,13 +288,19 @@ public class GenerateSquaresProcessor {
 
             labelNumber++;
         }
-        PaintLogger.debugf("assignTracksToSquare - The numbers of tracks assigned is %d  the recording is %s", incrementalTrackCount, tracksOfRecording.rowCount());
+
+        PaintLogger.debugf(
+                "assignTracksToSquare - number of tracks assigned is %d; tracks in recording: %d",
+                incrementalTrackCount,
+                tracksOfRecording.rowCount()
+        );
 
         // Update the recording table
         recording.setTracksTable(recordingTrackTable);
 
         PaintLogger.debugf("✅ Total %d tracks assigned to %d squares.",
-                           recordingTrackTable.rowCount(), recording.getSquaresOfRecording().size());
+                           recordingTrackTable.rowCount(),
+                           recording.getSquaresOfRecording().size());
     }
 
     /**
@@ -286,15 +314,16 @@ public class GenerateSquaresProcessor {
      *         or an empty table if no square data exists
      */
     private static Table compileAllSquares(Experiment experiment) {
-        SquaresTableIO squaresTableIO  = new SquaresTableIO();
-        Table         allSquaresTable = squaresTableIO.emptyTable();
+        SquaresTableIO squaresTableIO   = new SquaresTableIO();
+        Table          allSquaresTable  = squaresTableIO.emptyTable();
 
         for (Recording recording : experiment.getRecordings()) {
             Table table = squaresTableIO.toTable(recording.getSquaresOfRecording());
             if (table != null) {
                 squaresTableIO.appendInPlace(allSquaresTable, table);
             } else {
-                PaintLogger.errorf("compileAllSquares - squares table does not exist for '%s'", recording.getRecordingName());
+                PaintLogger.errorf("compileAllSquares - squares table does not exist for '%s'",
+                                   recording.getRecordingName());
             }
         }
         return allSquaresTable;
@@ -312,15 +341,19 @@ public class GenerateSquaresProcessor {
      */
     private static Table compileAllTracks(Experiment experiment) {
         TracksTableIO trackTableIO   = new TracksTableIO();
-        Table        allTracksTable = trackTableIO.emptyTable();
+        Table         allTracksTable = trackTableIO.emptyTable();
 
         for (Recording recording : experiment.getRecordings()) {
-            PaintLogger.debugf("Processing squares for experiment '%s'  - recording '%s'", experiment.getExperimentName(), recording.getRecordingName());
+            PaintLogger.debugf("Processing tracks for experiment '%s' - recording '%s'",
+                               experiment.getExperimentName(),
+                               recording.getRecordingName());
+
             Table table = recording.getTracksTable();
             if (table != null) {
                 trackTableIO.appendInPlace(allTracksTable, table);
             } else {
-                PaintLogger.errorf("compileAllSquares - squares table does not exist for '%s'", recording.getRecordingName());
+                PaintLogger.errorf("compileAllTracks - tracks table does not exist for '%s'",
+                                   recording.getRecordingName());
             }
         }
         return allTracksTable;

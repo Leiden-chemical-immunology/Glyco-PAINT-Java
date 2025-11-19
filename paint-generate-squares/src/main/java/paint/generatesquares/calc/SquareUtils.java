@@ -3,21 +3,24 @@
  *  Package:      paint.generatesquares.calc
  *
  *  PURPOSE:
- *    Provides utility methods for analysis of square-based track data in the Paint
- *    experiment workflow, including background estimation, density calculations,
- *    and extraction of tracks from selected squares.
+ *    Provides utility methods for analyzing square-based track data in the
+ *    Paint experiment workflow. Supports background estimation, density
+ *    calculations, and extraction of tracks from selected squares.
  *
  *  DESCRIPTION:
- *    Contains static methods that compute densities, filter and categorize squares
- *    based on track counts, extract tracks from selected squares within a recording,
- *    and count selected squares. Also includes an inner class to hold results of
- *    background estimation.
+ *    Includes static methods for:
+ *      • Computing density values
+ *      • Estimating background densities using iterative filtering
+ *      • Extracting tracks from squares flagged as selected
+ *      • Counting selected squares
+ *
+ *    Also defines an inner class for returning background estimation results.
  *
  *  RESPONSIBILITIES:
- *    • calculateDensity: compute density given tracks, area, time, concentration
- *    • calculateBackgroundDensity: iterative filtering to estimate background mean
- *    • getTracksFromSelectedSquares: extract tracks from squares flagged as selected
- *    • getNumberOfSelectedSquares: count squares marked as selected in a recording
+ *    • calculateDensity — compute density from counts, area, time, concentration
+ *    • calculateBackgroundDensity — iterative background estimation
+ *    • getTracksFromSelectedSquares — extract tracks from selected squares
+ *    • getNumberOfSelectedSquares — count selected squares in a recording
  *
  *  USAGE EXAMPLE:
  *    List<Square> squares = recording.getSquaresOfRecording();
@@ -36,7 +39,7 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ *============================================================================*/
 
 package paint.generatesquares.calc;
 
@@ -57,15 +60,19 @@ public class SquareUtils {
     }
 
     /**
-     * Estimates the background density of track counts from a list of squares.
-     * The method iteratively filters squares with track counts exceeding a dynamically
-     * calculated threshold (mean + 2 * standard deviation), recalculates the mean,
-     * and repeats until the mean stabilizes or a maximum number of iterations is reached.
+     * Estimates the background density from a list of squares. This is done
+     * by iteratively excluding squares whose track counts exceed a dynamically
+     * computed threshold:
      *
-     * @param squares List of Square objects containing track count information.
-     *                Must not be null or empty.
-     * @return A BackgroundEstimationResult object containing the estimated mean track count
-     * for the background and the list of squares identified as background.
+     *      threshold = mean + 2 * standardDeviation
+     *
+     * The mean is recalculated each iteration until:
+     *   • It stabilizes (relative change < EPSILON), or
+     *   • A maximum number of iterations is reached.
+     *
+     * @param squares List of squares containing track counts; must not be null or empty.
+     * @return BackgroundEstimationResult containing the estimated mean and the squares
+     *         considered part of the background.
      */
     public static BackgroundEstimationResult calculateBackgroundDensity(List<Square> squares) {
         if (squares == null || squares.isEmpty()) {
@@ -73,26 +80,30 @@ public class SquareUtils {
         }
 
         double mean = squares.stream()
-                .mapToDouble(Square::getNumberOfTracks)
-                .average().orElse(Double.NaN);
+                             .mapToDouble(Square::getNumberOfTracks)
+                             .average()
+                             .orElse(Double.NaN);
 
         if (Double.isNaN(mean) || mean == 0) {
             return new BackgroundEstimationResult(mean, Collections.emptyList());
         }
 
-        final double EPSILON   = 0.01;
-        final int    MAX_ITER  = 10;
-        double       prevMean;
+        final double EPSILON  = 0.01;
+        final int    MAX_ITER = 10;
 
+        double prevMean;
         List<Square> current = new ArrayList<>(squares);
 
         for (int iter = 0; iter < MAX_ITER; iter++) {
             prevMean = mean;
             final double meanForLambda = mean;
 
-            double std = Math.sqrt(current.stream()
-                                           .mapToDouble(square -> Math.pow(square.getNumberOfTracks() - meanForLambda, 2))
-                                           .average().orElse(0));
+            double std = Math.sqrt(
+                    current.stream()
+                           .mapToDouble(square -> Math.pow(square.getNumberOfTracks() - meanForLambda, 2))
+                           .average()
+                           .orElse(0)
+            );
 
             final double threshold = meanForLambda + 2 * std;
 
@@ -108,12 +119,13 @@ public class SquareUtils {
             }
 
             mean = filtered.stream()
-                    .mapToDouble(Square::getNumberOfTracks)
-                    .average().orElse(mean);
+                           .mapToDouble(Square::getNumberOfTracks)
+                           .average()
+                           .orElse(mean);
 
             current = filtered;
 
-            // Stop if the mean stabilizes
+            // Stop when convergence is reached
             if (Math.abs(mean - prevMean) / prevMean < EPSILON) {
                 break;
             }
@@ -123,68 +135,59 @@ public class SquareUtils {
     }
 
     /**
-     * Represents the result of a background estimation process for track counts.
-     * Contains the mean track count of the estimated background and the list of
-     * squares identified as background.
+     * Holds the results of a background estimation: the mean background track count
+     * and the list of squares that were categorized as background.
      */
     public static class BackgroundEstimationResult {
+
         private final double backgroundMean;
         private final List<Square> backgroundSquares;
 
         /**
-         * Constructs a new BackgroundEstimationResult with the provided mean background value
-         * and the list of squares classified as background.
+         * Constructs an immutable result object.
          *
-         * @param backgroundMean    the mean value of tracks estimated as background
-         * @param backgroundSquares the list of squares identified as background
+         * @param backgroundMean    estimated background track mean
+         * @param backgroundSquares squares identified as belonging to the background
          */
         public BackgroundEstimationResult(double backgroundMean, List<Square> backgroundSquares) {
             this.backgroundMean    = backgroundMean;
             this.backgroundSquares = backgroundSquares;
         }
 
-        /**
-         * @return Estimated mean background track count.
-         */
+        /** @return mean background track count */
         public double getBackgroundMean() {
             return backgroundMean;
         }
 
-        /**
-         * @return List of squares classified as background.
-         */
+        /** @return list of background squares */
         public List<Square> getBackgroundSquares() {
             return backgroundSquares;
         }
     }
 
     /**
-     * Calculates the average track count in a specified number of background squares
-     * by selecting a configurable number of the smallest non-zero track counts from
-     * the provided list of squares.
+     * Computes the average number of tracks among the smallest non-zero track counts
+     * in the recording. The number of squares to average over is configurable.
      *
-     * @param squaresOfRecording      A list of Square objects, each containing track count data.
-     *                                Must not be null.
-     * @param nrOfAverageCountSquares The number of smallest non-zero track counts to include
-     *                                in the average calculation. Must be greater than zero.
-     * @return The average track count as a double, calculated from the smallest non-zero
-     * track counts in the specified number of squares. Returns 0.0 if none are found
-     * or if the number of valid squares is zero.
+     * @param squaresOfRecording      list of squares (must not be null)
+     * @param nrOfAverageCountSquares number of smallest non-zero values to average
+     * @return average of selected small non-zero track counts, or 0.0 if none found
      */
-    public static double calcAverageTrackCountInBackgroundSquares(List<Square> squaresOfRecording,
-                                                                  int nrOfAverageCountSquares) {
+    public static double calcAverageTrackCountInBackgroundSquares(
+            List<Square> squaresOfRecording,
+            int nrOfAverageCountSquares
+    ) {
 
-        List<Integer> trackCounts = squaresOfRecording.stream()
-                                                      .map(Square::getNumberOfTracks)
-                                                      .sorted(Comparator.reverseOrder())
-                                                      .collect(Collectors.toList());
-
-        // Sort descending
+        List<Integer> trackCounts =
+                squaresOfRecording.stream()
+                                  .map(Square::getNumberOfTracks)
+                                  .sorted(Comparator.reverseOrder())
+                                  .collect(Collectors.toList());
 
         double total = 0.0;
         int n = 0;
 
-        // Traverse backward (smallest to largest)
+        // Walk backwards (smallest values first)
         for (int i = trackCounts.size() - 1; i >= 0; i--) {
             int value = trackCounts.get(i);
             if (value > 0) {

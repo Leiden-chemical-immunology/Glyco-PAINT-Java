@@ -1,5 +1,5 @@
 /*=============================================================================
- *  Class:        CalculateAttributes.java
+ *  Class:        CalculateSquareAttributes.java
  *  Package:      generatesquares.calc
  *
  *  PURPOSE:
@@ -8,9 +8,12 @@
  *
  *  DESCRIPTION:
  *    This class provides static computational methods used by the “Generate Squares”
- *    process. It computes detailed per-square and per-recording attributes such as:
- *    Tau fitting, variability, density ratios, and background estimation.
- *    It also applies visibility filtering and labeling logic to identify valid squares.
+ *    pipeline. It computes detailed per-square and per-recording attributes such as:
+ *      • Tau fitting and R² evaluation
+ *      • Variability metrics
+ *      • Density and density ratio calculations
+ *      • Background density estimation
+ *    It also applies visibility filters and assigns label numbers to valid squares.
  *
  *  RESPONSIBILITIES:
  *    • Calculate Tau and R² values from track data
@@ -19,14 +22,14 @@
  *    • Aggregate per-square metrics into recording-level summaries
  *
  *  USAGE EXAMPLE:
- *    CalculateAttributes.calculateSquareAttributes(experimentPath, recording, config);
- *    CalculateAttributes.calculateRecordingAttributes(recording, config);
+ *    CalculateSquareAttributes.calculateSquareAttributes(expPath, recording, config);
+ *    CalculateSquareAttributes.calculateRecordingAttributes(recording, config);
  *
  *  DEPENDENCIES:
  *    - paint.shared.config.GenerateSquaresConfig
  *    - paint.shared.objects.{Square, Recording, Track}
- *    - paint.shared.utils.{SquareUtils, PaintLogger}
- *    - generatesquares.calc.CalculateTau
+ *    - paint.shared.utils.{SquareUtils, PaintLogger, CalculateTau}
+ *    - generatesquares.calc.PlotUtils
  *    - tech.tablesaw.api.Table
  *
  *  AUTHOR:
@@ -40,8 +43,6 @@
 =============================================================================*/
 
 package paint.generatesquares.calc;
-import static paint.shared.constants.PaintConstants.*;
-
 
 import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.config.paintconfig.PaintConfig;
@@ -58,6 +59,7 @@ import java.util.List;
 
 import static paint.generatesquares.calc.PlotUtils.saveTauFitPlot;
 import static paint.generatesquares.calc.SquareUtils.*;
+import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.objects.Square.calculateSquareArea;
 import static paint.shared.utils.CalculateTau.calculateTau;
 import static paint.shared.utils.Miscellaneous.round;
@@ -66,16 +68,18 @@ import static paint.shared.utils.SharedSquareUtils.*;
 public class CalculateSquareAttributes {
 
     /**
-     * Calculates attributes for each square in a recording, such as Tau, density, variability, and density ratio.
-     * It also applies visibility filtering based on given parameters and assigns label numbers to selected squares.
+     * Calculates attributes for every square in a recording, including Tau,
+     * density, variability, density ratio, and various kinematic statistics.
+     * Visibility filtering is performed based on configuration parameters,
+     * followed by label number assignment for visible squares.
      *
-     * @param experimentPath        the file path of the current experiment for saving generated files
-     * @param recording             the recording containing squares and associated track data
-     * @param generateSquaresConfig the configuration parameters used for generating square attributes and analysis
+     * @param experimentPath        the experiment path (used for plot output)
+     * @param recording             the recording containing track and square data
+     * @param generateSquaresConfig configuration parameters for the calculation
      */
     public static void calculateSquareAttributes(Path experimentPath,
-                                                 Recording recording,
-                                                 GenerateSquaresConfig generateSquaresConfig) {
+            Recording recording,
+            GenerateSquaresConfig generateSquaresConfig) {
         double       minRequiredRSquared        = generateSquaresConfig.getMinRequiredRSquared();
         int          minTracksForTau            = generateSquaresConfig.getMinTracksToCalculateTau();
         double       maxAllowableVariability    = generateSquaresConfig.getMaxAllowableVariability();
@@ -86,30 +90,37 @@ public class CalculateSquareAttributes {
         double       concentration              = recording.getConcentration();
         List<Square> squaresOfRecording         = recording.getSquaresOfRecording();
 
-        SquareUtils.BackgroundEstimationResult result = calculateBackgroundDensity(squaresOfRecording);
-        double meanBackgroundTracks                   = result.getBackgroundMean();
-        double backgroundTracksOri                    = calcAverageTrackCountInBackgroundSquares(recording.getSquaresOfRecording(), (int) (0.1 * numberOfSquaresInRecording));
+        BackgroundEstimationResult result  = calculateBackgroundDensity(squaresOfRecording);
+        double meanBackgroundTracks = result.getBackgroundMean();
+        double backgroundTracksOri  = calcAverageTrackCountInBackgroundSquares(
+                squaresOfRecording,
+                (int) (0.1 * numberOfSquaresInRecording));
 
         PaintLogger.debugf("Estimated Background track count = %.2f, n = %d%n",
                            meanBackgroundTracks, result.getBackgroundSquares().size());
 
         for (Square square : squaresOfRecording) {
-            List<Track> tracksInSquare  = square.getTracks();
-            Table       table           = square.getTracksTable();
-            int         squareNumber    = square.getSquareNumber();
-            Table tracksInSquareTable   = square.getTracksTable();
 
+            List<Track> tracksInSquare = square.getTracks();
             if (tracksInSquare == null || tracksInSquare.isEmpty()) {
                 continue;
             }
 
+            Table table = square.getTracksTable();
+            if (table.rowCount() == 0) {
+                continue;
+            }
+
+            int squareNumber = square.getSquareNumber();
+
+            // --- Tau fitting ---
             if (tracksInSquare.size() >= minTracksForTau) {
-                CalculateTau.CalculateTauResult results = calculateTau(tracksInSquare, minRequiredRSquared);
+                CalculateTau.CalculateTauResult results =
+                        calculateTau(tracksInSquare, minRequiredRSquared);
 
                 if (PaintConfig.getBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS, false)) {
-                    if (tracksInSquare.size() >= minTracksForTau){
-                        saveTauFitPlot(tracksInSquare, results, experimentPath, recording.getRecordingName(), squareNumber);
-                    }
+                    saveTauFitPlot(tracksInSquare, results, experimentPath,
+                                   recording.getRecordingName(), squareNumber);
                 }
 
                 if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
@@ -124,44 +135,40 @@ public class CalculateSquareAttributes {
                 square.setRSquared(Double.NaN);
             }
 
-            if (table.rowCount() == 0) {
-                continue;
-            }
+            // --- Variability, density, kinematic metrics ---
+            square.setVariability(round(calculateVariability(table, squareNumber, numberOfSquaresInRecording, 10), 2));
+            square.setDensity(round(calculateDensity(tracksInSquare.size(), squareArea, RECORDING_DURATION, concentration), 3));
+            square.setDensityRatio(round(calculateDensityRatio(tracksInSquare.size(), meanBackgroundTracks), 2));
+            square.setDensityRatioOri(round(calculateDensityRatio(tracksInSquare.size(), backgroundTracksOri), 2));
 
-            // @format:off
-            square.setVariability(                   round(calculateVariability(table, squareNumber, numberOfSquaresInRecording, 10),    2));
-            square.setDensity(                       round(calculateDensity(tracksInSquare.size(), squareArea, RECORDING_DURATION, concentration), 3));
-            square.setDensityRatio(                  round(calculateDensityRatio(tracksInSquare.size(), meanBackgroundTracks),                     2));
-            square.setDensityRatioOri(               round(calculateDensityRatio(tracksInSquare.size(), backgroundTracksOri),                      2));
+            square.setMedianDiffusionCoefficient(round(table.doubleColumn(DIFFUSION_COEFFICIENT).median(), 2));
+            square.setMedianDiffusionCoefficientExt(round(table.doubleColumn(DIFFUSION_COEFFICIENT_EXT).median(), 2));
 
-            square.setMedianDiffusionCoefficient(    round(tracksInSquareTable.doubleColumn(DIFFUSION_COEFFICIENT).median(),         2));
-            square.setMedianDiffusionCoefficientExt( round(tracksInSquareTable.doubleColumn(DIFFUSION_COEFFICIENT_EXT).median(),     2));
+            square.setMedianDisplacement(round(table.doubleColumn(TRACK_DISPLACEMENT).median(), 1));
+            square.setMaxDisplacement(round(table.doubleColumn(TRACK_DISPLACEMENT).max(), 1));
+            square.setTotalDisplacement(round(table.doubleColumn(TRACK_DISPLACEMENT).sum(), 1));
 
-            square.setMedianDisplacement(            round(tracksInSquareTable.doubleColumn(TRACK_DISPLACEMENT).median(),            1));
-            square.setMaxDisplacement(               round(tracksInSquareTable.doubleColumn(TRACK_DISPLACEMENT).max(),               1));
-            square.setTotalDisplacement(             round(tracksInSquareTable.doubleColumn(TRACK_DISPLACEMENT).sum(),               1));
+            square.setMedianMaxSpeed(round(table.doubleColumn(TRACK_MAX_SPEED).median(), 1));
+            square.setMaxMaxSpeed(round(table.doubleColumn(TRACK_MAX_SPEED).max(), 1));
 
-            square.setMedianMaxSpeed(                round(tracksInSquareTable.doubleColumn(TRACK_MAX_SPEED).median(),               1));
-            square.setMaxMaxSpeed(                   round(tracksInSquareTable.doubleColumn(TRACK_MAX_SPEED).max(),                  1));
+            square.setMedianMedianSpeed(round(table.doubleColumn(TRACK_MEDIAN_SPEED).median(), 1));
+            square.setMaxMedianSpeed(round(table.doubleColumn(TRACK_MEDIAN_SPEED).max(), 1));
 
-            square.setMedianMedianSpeed(             round(tracksInSquareTable.doubleColumn(TRACK_MEDIAN_SPEED).median(),            1));
-            square.setMaxMedianSpeed(                round(tracksInSquareTable.doubleColumn(TRACK_MEDIAN_SPEED).max(),               1));
-
-            square.setMaxTrackDuration(              round(tracksInSquareTable.doubleColumn(TRACK_DURATION).max(),                   1));
-            square.setTotalTrackDuration(            round(tracksInSquareTable.doubleColumn(TRACK_DURATION).sum(),                   1));
-            square.setMedianTrackDuration(           round(tracksInSquareTable.doubleColumn(TRACK_DURATION).median(),                1));
-            // @format:on
-
+            square.setMaxTrackDuration(round(table.doubleColumn(TRACK_DURATION).max(), 1));
+            square.setTotalTrackDuration(round(table.doubleColumn(TRACK_DURATION).sum(), 1));
+            square.setMedianTrackDuration(round(table.doubleColumn(TRACK_DURATION).median(), 1));
         }
 
+        // --- Apply visibility filters ---
         applyVisibilityFilter(squaresOfRecording,
                               minRequiredDensityRatio,
                               maxAllowableVariability,
                               minRequiredRSquared,
                               neighbourMode);
 
+        // --- Assign label numbers to visible squares ---
         int labelNumber = 0;
-        for (Square sq : recording.getSquaresOfRecording()) {
+        for (Square sq : squaresOfRecording) {
             if (sq.isVisible()) {
                 sq.setLabelNumber(labelNumber++);
             }
@@ -169,92 +176,92 @@ public class CalculateSquareAttributes {
     }
 
     /**
-     * Calculates various attributes for a recording, including Tau, density,
-     * background statistics, and R-squared values. This method processes detailed
-     * information about the recording and applies configuration settings to compute
-     * the necessary metrics.
+     * Computes recording-level attributes, including Tau, R², background statistics,
+     * and density estimates based on selected (visible) squares.
      *
-     * @param recording             the recording object containing square and track data to process
-     * @param generateSquaresConfig the configuration parameters for generating square attributes
+     * @param recording             the recording being processed
+     * @param generateSquaresConfig configuration parameters
      */
     public static void calculateRecordingAttributes(Recording recording,
-                                                    GenerateSquaresConfig generateSquaresConfig) {
+            GenerateSquaresConfig generateSquaresConfig) {
 
         double minRequiredRSquared = generateSquaresConfig.getMinRequiredRSquared();
 
-        BackgroundEstimationResult result = SquareUtils.calculateBackgroundDensity(recording.getSquaresOfRecording());
-        double       meanBackgroundTracks = result.getBackgroundMean();
-        int          backgroundTracks     = result.getBackgroundSquares().stream().mapToInt(Square::getNumberOfTracks).sum();
+        BackgroundEstimationResult result =
+                calculateBackgroundDensity(recording.getSquaresOfRecording());
 
-        PaintLogger.debugf("Estimated Background track count = %.2f, n = %d%n", meanBackgroundTracks, result.getBackgroundSquares().size());
+        double meanBackgroundTracks = result.getBackgroundMean();
+        int backgroundTracks = result.getBackgroundSquares()
+                                     .stream()
+                                     .mapToInt(Square::getNumberOfTracks)
+                                     .sum();
+
+        PaintLogger.debugf(
+                "Estimated Background track count = %.2f, n = %d%n",
+                meanBackgroundTracks,
+                result.getBackgroundSquares().size()
+        );
 
         recording.setNumberOfSquaresInBackground(result.getBackgroundSquares().size());
         recording.setNumberOfTracksInBackground(backgroundTracks);
         recording.setAverageTracksInBackGround(round(meanBackgroundTracks, 3));
 
-        List<Track> tracksFromSelectedSquares = getTracksFromSelectedSquares(recording.getSquaresOfRecording());
-        CalculateTau.CalculateTauResult results = calculateTau(tracksFromSelectedSquares, minRequiredRSquared);
-        if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
-            recording.setTau(round(results.getTau(), 0));
-            recording.setRSquared(round(results.getRSquared(), 3));
+        List<Track> selectedTracks = getTracksFromSelectedSquares(recording.getSquaresOfRecording());
+        CalculateTau.CalculateTauResult tauResult =
+                calculateTau(selectedTracks, minRequiredRSquared);
+
+        if (tauResult.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
+            recording.setTau(round(tauResult.getTau(), 0));
+            recording.setRSquared(round(tauResult.getRSquared(), 3));
         } else {
             recording.setTau(Double.NaN);
             recording.setRSquared(Double.NaN);
         }
 
         double density = calculateDensity(
-                tracksFromSelectedSquares.size(),
+                selectedTracks.size(),
                 calculateSquareArea(getNumberOfSelectedSquares(recording)),
                 RECORDING_DURATION,
-                recording.getConcentration()
-        );
+                recording.getConcentration());
+
         recording.setDensity(round(density, 2));
     }
 
-    public static double calculateDensityRatio(int numberOfTracksInSquare, double numberOfTracksInBackgroundSquare) {
-        if (numberOfTracksInBackgroundSquare == 0) {
-            return 0;
-        } else {
-            return numberOfTracksInSquare / numberOfTracksInBackgroundSquare;
-        }
+    /**
+     * Returns the density ratio between a square and the background track density.
+     */
+    public static double calculateDensityRatio(int numberOfTracksInSquare,
+            double numberOfTracksInBackgroundSquare) {
+        return (numberOfTracksInBackgroundSquare == 0)
+                ? 0
+                : numberOfTracksInSquare / numberOfTracksInBackgroundSquare;
     }
 
     /**
-     * Computes the spatial variability of track positions within a selected square of a recording.
-     * The square is subdivided into a grid of size `granularity × granularity`, and the count
-     * of tracks falling into each grid cell is determined. Variability is then quantified
-     * as the coefficient of variation (standard deviation divided by mean) of the cell counts.
-     *
-     * @param tracks                     A table of track data, including x- and y-coordinate columns.
-     * @param squareNumber               The index of the square region within the recording which is being analysed.
-     * @param numberOfSquaresInRecording The total number of spatial squares defined for the recording.
-     * @param granularity                The number of subdivisions (cells) along each dimension of the square’s grid.
-     * @return                           The coefficient of variation (σ / μ) of the grid-cell counts;
-     *                                   returns 0.0 if the mean cell count is zero (no tracks).
+     * Computes spatial variability of track positions within a square.
+     * Variability is defined as the coefficient of variation (σ / μ) over
+     * grid-cell track counts within a `granularity × granularity` subdivision
+     * of the square.
      */
     public static double calculateVariability(Table tracks,
-                                              int   squareNumber,
-                                              int   numberOfSquaresInRecording,
-                                              int   granularity) {
+            int squareNumber,
+            int numberOfSquaresInRecording,
+            int granularity) {
 
-        // Matrix for variability analysis
         int[][] matrix = new int[granularity][granularity];
 
-        // Width and height of a square
         int dimension = (int) Math.sqrt(numberOfSquaresInRecording);
-        double width  = IMAGE_WIDTH / dimension;
+        double width = IMAGE_WIDTH / dimension;
         double height = IMAGE_WIDTH / dimension;
 
         // Access the columns once
         DoubleColumn xCol = tracks.doubleColumn(TRACK_X_LOCATION);
         DoubleColumn yCol = tracks.doubleColumn(TRACK_Y_LOCATION);
 
-        // Loop over the tracks and fill the matrix
         for (int i = 0; i < tracks.rowCount(); i++) {
             double x = xCol.get(i);  // The x-coordinate of the track
             double y = yCol.get(i);  // The y-coordinate of the track
 
-            // Get grid indices
             int[] indices = getIndices(x, y, width, height, squareNumber, dimension, granularity);
             int xi = indices[0];
             int yi = indices[1];
@@ -267,6 +274,7 @@ public class CalculateSquareAttributes {
         // Flatten matrix into an 1D array for stats
         int totalCells = granularity * granularity;
         double[] values = new double[totalCells];
+
         int idx = 0;
         for (int r = 0; r < granularity; r++) {
             for (int c = 0; c < granularity; c++) {
@@ -280,17 +288,12 @@ public class CalculateSquareAttributes {
         }
 
         double std = std(values, mean);
-        return std / mean; // coefficient of variation
+        return std / mean;
     }
 
     /**
-     * Computes the mean of the given array of double values.
-     *
-     * @param values an array of double values for which the mean is to be calculated.
-     *               The array must not be empty and must contain at least one value.
-     * @return the mean (average) of the given array of double values.
+     * Computes the mean of an array of doubles.
      */
-    // Utility: compute mean
     private static double mean(double[] values) {
         double sum = 0.0;
         for (double v : values) {
@@ -300,14 +303,8 @@ public class CalculateSquareAttributes {
     }
 
     /**
-     * Calculates the population standard deviation of the given array of double values.
-     *
-     * @param values an array of double values for which the population standard deviation is to be calculated.
-     *               The array must not be empty and must contain at least one value.
-     * @param mean   the mean (average) of the values in the array, precomputed to optimize calculation.
-     * @return the population standard deviation of the given array of double values.
+     * Computes the population standard deviation of an array of doubles.
      */
-    // Utility: compute std (population standard deviation)
     private static double std(double[] values, double mean) {
         double sumSq = 0.0;
         for (double v : values) {
@@ -333,17 +330,16 @@ public class CalculateSquareAttributes {
      * and the second value is the y-index (row index) of the point in the finer grid
      */
     private static int[] getIndices(double x1,
-                                    double y1,
-                                    double width,
-                                    double height,
-                                    int squareSeqNr,
-                                    int nrOfSquaresInRow,
-                                    int granularity) {
-        // Calculate the top-left corner (x0, y0) of the square
+            double y1,
+            double width,
+            double height,
+            int squareSeqNr,
+            int nrOfSquaresInRow,
+            int granularity) {
+
         double x0 = (squareSeqNr % nrOfSquaresInRow) * width;
         double y0 = (squareSeqNr / nrOfSquaresInRow) * height;     // Integer division is intended
 
-        // Calculate the grid indices (xi, yi) for the track
         int xi = (int) (((x1 - x0) / width) * granularity);
         int yi = (int) (((y1 - y0) / height) * granularity);
 

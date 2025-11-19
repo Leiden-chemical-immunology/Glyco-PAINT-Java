@@ -8,13 +8,15 @@
  *    analyses on TrackMate output data.
  *
  *  DESCRIPTION:
- *    This class handles orchestration and user interaction. It initializes
- *    project configurations, sets up logging and runtime parameters, and
- *    launches a Swing-based interface allowing users to:
+ *    This class orchestrates initialization and user interaction. It sets up
+ *    project configurations, logging, and runtime parameters, and launches
+ *    a Swing-based interface that allows users to:
  *      • Select a project directory
  *      • Configure analysis parameters
- *      • Run square-level calculations and data exports
- *    Computational work is delegated to {@link paint.generatesquares.GenerateSquaresHeadless}.
+ *      • Run square-level calculations and export resulting data
+ *
+ *    Computational work is delegated to
+ *    {@link paint.generatesquares.GenerateSquaresHeadless}.
  *
  *  RESPONSIBILITIES:
  *    • Initialize PaintConfig, logging, and runtime environment
@@ -27,7 +29,8 @@
  *  DEPENDENCIES:
  *    - paint.shared.config.paintconfig.PaintConfig
  *    - paint.shared.dialogs.ProjectDialog
- *    - paint.shared.utils.{PaintLogger, PaintConsoleWindow, PaintRuntime, JarInfoLogger}
+ *    - paint.shared.utils.{PaintLogger, PaintConsoleWindow,
+ *                          PaintRuntime, JarInfoLogger}
  *    - javax.swing.*
  *
  *  AUTHOR:
@@ -41,8 +44,8 @@
 =============================================================================*/
 
 package paint.generatesquares.app;
-import static paint.shared.constants.PaintConstants.*;
 
+import static paint.shared.constants.PaintConstants.*;
 
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
@@ -60,19 +63,23 @@ import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
 
 /**
- * The GenerateSquares class is the main entry point for running the GENERATE_SQUARES GUI application.
- * This application initializes required configurations, manages project directories, and performs
- * square generation calculations in response to user inputs.
+ * The GenerateSquares class serves as the main entry point for launching the
+ * GENERATE_SQUARES GUI application. It initializes project configuration,
+ * logging, and the runtime environment, and provides an interactive interface
+ * for selecting projects and triggering square-generation workflows.
+ * <p>
+ * Square computation and data export tasks are performed by
+ * {@link paint.generatesquares.app.GenerateSquaresHeadless}.
  */
 public class GenerateSquares {
 
     /**
-     * The main entry point for the GENERATE_SQUARES application. This method initializes the
-     * application's environment, configuration, logging, and graphical user interface (GUI)
-     * components to manage project directories and perform square generation calculations
-     * based on user input.
+     * The main entry point for the GENERATE_SQUARES application. This method sets
+     * up the environment, applies system look-and-feel settings, and initializes
+     * configuration, logging, and GUI components used for selecting project
+     * directories and executing square-generation workflows.
      *
-     * @param args command-line arguments (not used by this application)
+     * @param args command-line arguments (not used)
      */
     public static void main(String[] args) {
 
@@ -86,50 +93,59 @@ public class GenerateSquares {
             e.printStackTrace();
         }
 
-        SwingUtilities.invokeLater(() -> {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
 
-            // --- Step 1: Determine last used project directory ---
-            Path projectPath = getValidProjectPath();
-            if (projectPath == null) {
-                return;
-            }
-
-            // --- Step 2: Create console, initialise config and logger early ---
-            PaintConsoleWindow.createConsoleFor(GENERATE_SQUARES);
-            PaintLogger.initialise(projectPath, "Generate Squares.log");
-            PaintConfig.initialise(projectPath);
-
-            JarInfoLogger.JarInfo info = getJarInfo(GenerateSquares.class);
-            if (info != null) {
-                PaintLogger.infof("Version: %s",  info.implementationVersion);
-                PaintLogger.infof("Compiled: %s", info.implementationDate);
-            }
-            PaintLogger.infof("Verbose mode is %s", PaintRuntime.isVerbose() ? "enabled" : "disabled");
-            String formattedTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            PaintLogger.infof("Current time is: %s", formattedTime);
-            PaintLogger.blankline();
-
-            // --- Step 3: Show the integrated configuration dialog ---
-            ProjectDialog dialog = new ProjectDialog(
-                    null,
-                    projectPath,
-                    ProjectDialog.DialogMode.GENERATE_SQUARES
-            );
-            PaintConsoleWindow.closeOnDialogDispose(dialog.getDialog());
-
-            // --- Step 4: Run calculations when the user presses OK ---
-            dialog.setCalculationCallback(project -> {
-                try {
-                    GenerateSquaresHeadless.run(project.getProjectRootPath(), project.getExperimentNames());
-                    return true;
-                } catch (Exception e) {
-                    PaintLogger.errorf("Generate Squares failed: %s", e.getMessage());
-                    return false;
+                // --- Step 1: Determine the last used valid project directory ---
+                Path projectPath = getValidProjectPath();
+                if (projectPath == null) {
+                    return;
                 }
-            });
 
-            // --- Step 5: Show dialog ---
-            dialog.showDialog();
+                // --- Step 2: Create console, initialize config and logger early ---
+                PaintConsoleWindow.createConsoleFor(GENERATE_SQUARES);
+                PaintLogger.initialise(projectPath, "Generate Squares.log");
+                PaintConfig.initialise(projectPath);
+
+                JarInfoLogger.JarInfo info = getJarInfo(GenerateSquares.class);
+                if (info != null) {
+                    PaintLogger.infof("Version: %s", info.implementationVersion);
+                    PaintLogger.infof("Compiled: %s", info.implementationDate);
+                }
+                PaintLogger.infof("Verbose mode is %s",
+                                  PaintRuntime.isVerbose() ? "enabled" : "disabled");
+
+                String formattedTime = LocalDateTime.now()
+                                                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                PaintLogger.infof("Current time is: %s", formattedTime);
+                PaintLogger.blankline();
+
+                // --- Step 3: Show the integrated configuration dialog ---
+                ProjectDialog dialog = new ProjectDialog(
+                        null,
+                        projectPath,
+                        ProjectDialog.DialogMode.GENERATE_SQUARES
+                );
+                PaintConsoleWindow.closeOnDialogDispose(dialog.getDialog());
+
+                // --- Step 4: Run calculations when the user presses OK ---
+                dialog.setCalculationCallback(project -> {
+                    try {
+                        GenerateSquaresHeadless.run(
+                                project.getProjectRootPath(),
+                                project.getExperimentNames()
+                        );
+                        return true;
+                    } catch (Exception e) {
+                        PaintLogger.errorf("Generate Squares failed: %s", e.getMessage());
+                        return false;
+                    }
+                });
+
+                // --- Step 5: Show dialog ---
+                dialog.showDialog();
+            }
         });
     }
 }

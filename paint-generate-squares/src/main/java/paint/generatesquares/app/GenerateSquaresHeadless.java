@@ -8,16 +8,17 @@
  *    histogram export, and project-level CSV consolidation.
  *
  *  DESCRIPTION:
- *    This class is responsible for orchestrating the core “Generate Squares”
- *    logic without any user interface. It loads configuration parameters,
- *    validates experiments, delegates computation to
- *    {@link paint.generatesquares.calc.GenerateSquaresProcessor}, and exports results.
+ *    This class orchestrates the core “Generate Squares” logic without any
+ *    user interface. It loads configuration parameters, validates experiments,
+ *    delegates computation to
+ *    {@link paint.generatesquares.calc.GenerateSquaresProcessor}, and exports
+ *    all resulting files.
  *
  *  RESPONSIBILITIES:
- *    • Validate experiment input files before computation
+ *    • Validate experiment input files prior to computation
  *    • Execute square-based calculations for each experiment
- *    • Export per-experiment histogram PDFs
- *    • Concatenate experiment-level CSVs into project summaries
+ *    • Export per-experiment histogram PNGs
+ *    • Concatenate experiment-level CSVs into project-level summaries
  *
  *  USAGE EXAMPLE:
  *    GenerateSquaresHeadless.run(projectPath, Arrays.asList("Exp01", "Exp02"));
@@ -25,7 +26,7 @@
  *  DEPENDENCIES:
  *    - paint.shared.config.{PaintConfig, GenerateSquaresConfig}
  *    - paint.shared.objects.{Project, Experiment}
- *    - paint.shared.utils.{PaintLogger, HistogramPdfExporter}
+ *    - paint.shared.utils.{PaintLogger}
  *    - paint.shared.validate.ValidationHandler
  *    - generatesquares.calc.GenerateSquaresProcessor
  *
@@ -65,12 +66,20 @@ import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.validate.ValidationHandler.validateExperiments;
 
 /**
- * Runs the Generate Squares pipeline headlessly:
- * validates experiments, performs calculations, exports results,
- * and builds project-level summary CSVs.
+ * Executes the Generate Squares pipeline in headless mode. This includes
+ * validating experiments, running per-experiment calculations, generating
+ * histogram plots, and producing project-level summary CSVs.
  */
 public class GenerateSquaresHeadless {
 
+    /**
+     * Runs the Generate Squares workflow for the specified project and list of
+     * experiments. The process includes validation, computation, histogram
+     * export, and final CSV aggregation.
+     *
+     * @param projectPath     the root path of the project
+     * @param experimentNames the experiments to process
+     */
     public static void run(Path projectPath, List<String> experimentNames)  {
 
         // --- Early abort check ---
@@ -98,7 +107,7 @@ public class GenerateSquaresHeadless {
         logContextAndConfiguration(projectPath, experimentNames);
         LocalDateTime start = LocalDateTime.now();
 
-        // --- Prepare project ---
+        // --- Prepare project container ---
         GenerateSquaresConfig generateSquaresConfig = new GenerateSquaresConfig();
         Project project = new Project();
         project.setProjectRootPath(projectPath);
@@ -122,28 +131,33 @@ public class GenerateSquaresHeadless {
                 continue;
             }
 
-            // Generate the background plots
+            // --- Generate background histogram plots, if enabled ---
             if (PaintConfig.getBoolean(GENERATE_SQUARES, BACKGROUND_PLOTS, false)) {
 
                 try {
-                    Experiment experiment = loadExperiment(projectPath,
-                                                           experimentName,
-                                                           true,   // Load Squares
-                                                           false); // Don't load Tracks
-                    Path outPath = projectPath
-                            .resolve(experimentName)
-                            .resolve("Output");
+                    Experiment experiment = loadExperiment(
+                            projectPath,
+                            experimentName,
+                            true,   // Load Squares
+                            false   // Skip Tracks
+                    );
 
+                    Path outPath = projectPath.resolve(experimentName).resolve("Output");
                     Files.createDirectories(outPath);
-                    exportBackgroundHistogramsToPngs(experiment, projectPath.resolve(experimentName));
+
+                    exportBackgroundHistogramsToPngs(
+                            experiment,
+                            projectPath.resolve(experimentName)
+                    );
 
                 } catch (Exception e) {
-                    PaintLogger.errorf("Failed to export histograms for %s: %s", experimentName, e.getMessage());
+                    PaintLogger.errorf("Failed to export histograms for %s: %s",
+                                       experimentName, e.getMessage());
                 }
             }
         }
 
-        // --- Concatenate results ---
+        // --- Concatenate project-level CSVs ---
         if (Thread.currentThread().isInterrupted()) {
             PaintLogger.infof("Cancelled before concatenating project-level CSVs.");
             return;
@@ -176,13 +190,18 @@ public class GenerateSquaresHeadless {
             PaintLogger.blankline();
 
             Duration duration = Duration.between(start, LocalDateTime.now());
-            PaintLogger.infof("Finished Generate Squares for all experiments in %s", formatDuration(duration));
+            PaintLogger.infof("Finished Generate Squares for all experiments in %s",
+                              formatDuration(duration));
 
         } catch (Exception e) {
             PaintLogger.errorf("Failed to concatenate CSVs: %s", e.getMessage());
         }
     }
 
+    /**
+     * Logs project and configuration context before execution begins, including
+     * selected experiments and all relevant parameter settings.
+     */
     private static void logContextAndConfiguration(Path projectPath, List<String> experimentNames) {
 
         int nSquares      = PaintConfig.getInt(   GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING, 400);
@@ -192,7 +211,7 @@ public class GenerateSquaresHeadless {
         double minDensity = PaintConfig.getDouble(GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,     2.0);
         double maxVar     = PaintConfig.getDouble(GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY,      10.0);
 
-        // Neatly wrapped experiment list
+        // Pretty-print experiment list (with wrapping)
         String formattedExperiments;
         if (experimentNames.isEmpty()) {
             formattedExperiments = "                   (none selected — please verify selection)";
@@ -242,9 +261,9 @@ public class GenerateSquaresHeadless {
                 String.format(Locale.getDefault(), "  • Maximum variability:       %.1f", maxVar),
                 "",
                 "Each recording will be divided into spatial squares, and per-square track statistics will be calculated.",
-                "Results will be prepared per experiment and squares and tracks files updated",
+                "Results will be prepared per experiment, and squares and tracks files updated.",
                 "",
-                "The results will then be compiled into project level files:",
+                "The results will then be compiled into project-level files:",
                 String.format("  • %s", SQUARES_CSV),
                 String.format("  • %s (with updated Square Number and Label Number fields)", TRACKS_CSV),
                 String.format("  • %s", RECORDINGS_CSV),
