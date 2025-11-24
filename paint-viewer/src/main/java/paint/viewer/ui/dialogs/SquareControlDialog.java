@@ -298,7 +298,7 @@ public class SquareControlDialog extends JDialog {
      */
     private void restoreOriginals() {
         densityRatioSlider.setValue((int) Math.round(origDensityRatio / 2.0));
-        variabilitySlider.setValue((int) Math.round(origVariability / 1.0));
+        variabilitySlider.setValue((int) Math.round(origVariability));
         rSquaredSlider.setValue((int) Math.round(origRSquared / 0.1));
 
         switch (origNeighbourMode) {

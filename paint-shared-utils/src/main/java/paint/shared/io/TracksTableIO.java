@@ -46,8 +46,6 @@ import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -142,25 +140,6 @@ public class TracksTableIO extends BaseTableIO {
             tracks.add(track);
         }
         return tracks;
-    }
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // CSV READ / APPEND
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Reads a CSV file into a {@link Table} using the expected track schema.
-     *
-     * @param csvPath path to the {@code tracks.csv} file
-     * @return the parsed and validated {@link Table}
-     * @throws IOException if the file cannot be read or validated
-     */
-    public Table readCsv(Path csvPath) throws IOException {
-        return readCsvWithSchema(
-                csvPath,
-                TrackSchema.COLUMNS,
-                TrackSchema.TYPES,
-                false);
     }
 
     /**

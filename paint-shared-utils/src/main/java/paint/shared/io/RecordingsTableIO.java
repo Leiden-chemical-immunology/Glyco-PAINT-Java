@@ -49,12 +49,9 @@ import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
 import static paint.shared.constants.PaintColumnNames.*;
 
 /**
@@ -164,7 +161,6 @@ public class RecordingsTableIO extends BaseTableIO {
             recording.setTau(                         tablesawRow.getDouble(   TAU));
             recording.setRSquared(                    tablesawRow.getDouble(   R_SQUARED));
             recording.setDensity(                     tablesawRow.getDouble(   DENSITY));
-
             recording.setMinRequiredDensityRatio(     tablesawRow.getDouble(   MIN_REQUIRED_DENSITY_RATIO));
             recording.setMinRequiredRSquared(         tablesawRow.getDouble(   MIN_REQUIRED_R_SQUARED));
             recording.setMaxAllowableVariability(     tablesawRow.getDouble(   MAX_ALLOWABLE_VARIABILITY));
@@ -172,24 +168,6 @@ public class RecordingsTableIO extends BaseTableIO {
             recordings.add(recording);
         }
         return recordings;
-    }
-    // ───────────────────────────────────────────────────────────────────────────────
-    // CSV READ / APPEND
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Reads a CSV file containing recording data into a validated {@link Table}.
-     *
-     * @param csvPath path to the {@code recordings.csv} file
-     * @return a {@link Table} conforming to the recordings schema
-     * @throws IOException if the file cannot be read or parsed
-     */
-    public Table readCsv(Path csvPath) throws IOException {
-        return readCsvWithSchema(
-                csvPath,
-                RecordingSchema.COLUMNS,
-                RecordingSchema.TYPES,
-                false);
     }
 
     /**

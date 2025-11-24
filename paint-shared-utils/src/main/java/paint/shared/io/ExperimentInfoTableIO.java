@@ -39,11 +39,8 @@ import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 
-import static paint.shared.constants.PaintColumnNames.EXPERIMENT_NAME;
 import paint.shared.schema.ExperimentInfoSchema;
 import static paint.shared.constants.PaintColumnNames.*;
 
@@ -57,8 +54,7 @@ import static paint.shared.constants.PaintColumnNames.*;
  * <ul>
  *   <li>Creating an empty table with the correct schema
  *       via {@link #emptyTable()}.</li>
- *   <li>Reading CSV files into validated tables
- *       via {@link #readCsv(java.nio.file.Path)}.</li>
+ *   <li>Reading CSV files into validated tables </li>
  *   <li>Appending rows from one table to another with type-safe coercion
  *       via {@link #appendInPlace(tech.tablesaw.api.Table, tech.tablesaw.api.Table)}.</li>
  * </ul>
@@ -126,26 +122,6 @@ public class ExperimentInfoTableIO extends BaseTableIO {
         return table;
     }
 
-
-    /**
-     * Reads a CSV file as a {@link Table}, enforcing the
-     * {@code Experiment Info} schema.
-     *
-     * <p>The schema is defined by {@link ExperimentInfoSchema#COLUMNS} (column names) and
-     * {@link ExperimentInfoSchema#TYPES} (column types). Header order and types are
-     * validated before returning the table.</p>
-     *
-     * @param csvPath the path to the CSV file
-     * @return a {@code Table} containing the experiment info data
-     * @throws IOException if the file cannot be read or parsed
-     */
-    public Table readCsv(Path csvPath) throws IOException {
-        return readCsvWithSchema(
-                csvPath,
-                ExperimentInfoSchema.COLUMNS,
-                ExperimentInfoSchema.TYPES,
-                false);
-    }
 
     /**
      * Appends all rows from a source {@link Table} into a target {@link Table},

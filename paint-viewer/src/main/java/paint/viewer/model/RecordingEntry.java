@@ -144,62 +144,51 @@ public class RecordingEntry {
     // METADATA ACCESS
     // =========================================================================================
 
-    /** @return the recording name (e.g., "Well A1", "Replicate 03") */
+
     public String getRecordingName() {
         return recording.getRecordingName();
     }
 
-    /** @return name of the experiment this entry belongs to */
     public String getExperimentName() {
         return experimentName;
     }
 
-    /** @return probe name used in the recording */
     public String getProbeName() {
         return recording.getProbeName();
     }
 
-    /** @return probe type (e.g., Fab, F(ab')₂, etc.) */
     public String getProbeType() {
         return recording.getProbeType();
     }
 
-    /** @return adjuvant label */
     public String getAdjuvant() {
         return recording.getAdjuvant();
     }
 
-    /** @return biological cell type being probed */
     public String getCellType() {
         return recording.getCellType();
     }
 
-    /** @return concentration of probe */
     public double getConcentration() {
         return recording.getConcentration();
     }
 
-    /** @return number of detected spots */
     public int getNumberOfSpots() {
         return recording.getNumberOfSpots();
     }
 
-    /** @return number of extracted TrackMate tracks */
     public int getNumberOfTracks() {
         return recording.getNumberOfTracks();
     }
 
-    /** @return detection threshold used for analysis */
     public double getThreshold() {
         return recording.getThreshold();
     }
 
-    /** @return tau parameter (track characteristic) */
     public double getTau() {
         return recording.getTau();
     }
 
-    /** @return density metric calculated for the recording */
     public double getDensity() {
         return recording.getDensity();
     }
@@ -208,17 +197,14 @@ public class RecordingEntry {
     // IMAGE AND RECORDING ACCESS
     // =========================================================================================
 
-    /** @return TrackMate overlay image (left panel) */
     public ImageIcon getLeftImage() {
         return leftImage;
     }
 
-    /** @return Brightfield reference image (right panel) */
     public ImageIcon getRightImage() {
         return rightImage;
     }
 
-    /** @return underlying {@link Recording} containing all square-level data */
     public Recording getRecording() {
         return recording;
     }

@@ -206,7 +206,7 @@ public class PaintConfig {
 
     public Set<String> keys(String section) {
         JsonObject sec = getSection(section);
-        return (sec != null) ? sec.keySet() : Collections.<String>emptySet();
+        return (sec != null) ? sec.keySet() : Collections.emptySet();
     }
 
 //    public Set<String> sections() {

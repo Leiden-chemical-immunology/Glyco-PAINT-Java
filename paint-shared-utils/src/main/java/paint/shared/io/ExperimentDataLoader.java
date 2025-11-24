@@ -38,15 +38,13 @@ package paint.shared.io;
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
-import paint.shared.schema.TrackSchema;
-import paint.shared.schema.RecordingSchema;
-import paint.shared.schema.SquareSchema;
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.Table;
 
 import java.nio.file.Path;
 import java.util.List;
 
+import static paint.shared.io.HelperIO.*;
 import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
 
 import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
@@ -82,17 +80,12 @@ public final class ExperimentDataLoader {
         Experiment experiment = new Experiment(experimentName);
 
         // ─── Recordings ───────────────────────────────────────────────────────
-        RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
         List<Recording> recordings;
         try {
-            Table recTable = recordingsTableIO.readCsvWithSchema(
-                    experimentPath.resolve(RECORDINGS_CSV),
-                    RecordingSchema.COLUMNS,
-                    RecordingSchema.TYPES,
-                    false
-            );
-            recordings = recordingsTableIO.toEntities(recTable);
-            recordings.forEach(experiment::addRecording);
+            recordings = readRecordings(experimentPath);
+            for (Recording recording : recordings) {
+                experiment.addRecording(recording);
+            }
         } catch (Exception e) {
             PaintLogger.errorf("Failed to read %s in %s", RECORDINGS_CSV, experimentName);
             return null;
@@ -104,12 +97,7 @@ public final class ExperimentDataLoader {
 
         if (loadTracks) {
             try {
-                tracksTable = trackIO.readCsvWithSchema(
-                        experimentPath.resolve(TRACKS_CSV),
-                        TrackSchema.COLUMNS,
-                        TrackSchema.TYPES,
-                        false
-                );
+                tracksTable = readTracksTable(experimentPath);
             } catch (Exception e) {
                 PaintLogger.errorf("Failed to read %s in %s", TRACKS_CSV, experimentName);
                 return null;
@@ -139,12 +127,7 @@ public final class ExperimentDataLoader {
             SquaresTableIO squaresTableIO = new SquaresTableIO();
             Table squaresTable;
             try {
-                squaresTable = squaresTableIO.readCsvWithSchema(
-                        experimentPath.resolve(SQUARES_CSV),
-                        SquareSchema.COLUMNS,
-                        SquareSchema.TYPES,
-                        false
-                );
+                squaresTable = readSquaresTable(experimentPath);
             } catch (Exception e) {
                 PaintLogger.errorf("Failed to read %s in %s", SQUARES_CSV, experimentName);
                 return null;

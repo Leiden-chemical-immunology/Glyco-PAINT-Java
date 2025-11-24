@@ -39,8 +39,6 @@
 package paint.shared.io;
 
 import static paint.shared.constants.PaintColumnNames.*;
-import static paint.shared.constants.PaintFileNames.*;
-
 import paint.shared.objects.Square;
 import paint.shared.schema.SquareSchema;
 
@@ -49,8 +47,6 @@ import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -183,24 +179,6 @@ public class SquaresTableIO extends BaseTableIO {
         return squares;
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // CSV READ
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Reads a {@code squares.csv} file and validates its schema.
-     *
-     * @param csvPath the path to the CSV file
-     * @return a schema-compliant {@link Table} of square data
-     * @throws IOException if the file cannot be read or validated
-     */
-    public Table readCsv(Path csvPath) throws IOException {
-        return readCsvWithSchema(
-                csvPath,
-                SquareSchema.COLUMNS,
-                SquareSchema.TYPES,
-                false);
-    }
 
     /**
      * Appends all rows from a source {@link Table} into a target {@link Table},

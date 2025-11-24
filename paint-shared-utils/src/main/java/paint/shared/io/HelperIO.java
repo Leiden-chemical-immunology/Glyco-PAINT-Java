@@ -87,17 +87,39 @@ public final class HelperIO {
      * @return a list of {@link Recording} entities, or {@code null} if reading fails
      */
     public static List<Recording> readRecordings(Path experimentPath) {
-        RecordingsTableIO recIO = new RecordingsTableIO();
+        RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
         try {
-            Table recTable = recIO.readCsvWithSchema(
+            Table recTable = recordingsTableIO.readCsvWithSchema(
                     experimentPath.resolve(RECORDINGS_CSV),
                     RecordingSchema.COLUMNS,
                     RecordingSchema.TYPES,
                     false
             );
-            return recIO.toEntities(recTable);
+            return recordingsTableIO.toEntities(recTable);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to read %s : %s", RECORDINGS_CSV, friendlyMessage(e));
+            return null;
+        }
+    }
+
+
+    /**
+     * Reads all square data into a {@link Table}.
+     *
+     * @param experimentPath the experiment directory containing {@code squares.csv}
+     * @return the loaded table, or {@code null} if reading fails
+     */
+    public static Table readRecordingsTable(Path experimentPath) {
+        RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
+        try {
+            return recordingsTableIO.readCsvWithSchema(
+                    experimentPath.resolve(RECORDINGS_CSV),
+                    RecordingSchema.COLUMNS,
+                    RecordingSchema.TYPES,
+                    false
+            );
+        } catch (Exception e) {
+            PaintLogger.errorf("Failed to read %s: %s", RECORDINGS_CSV, friendlyMessage(e));
             return null;
         }
     }
@@ -110,15 +132,16 @@ public final class HelperIO {
      * @param recordings     the list of recordings to write
      */
     public static void writeRecordings(Path experimentPath, List<Recording> recordings) {
-        RecordingsTableIO RecordingsTableIO = new RecordingsTableIO();
+        RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
         try {
-            Table table = RecordingsTableIO.toTable(recordings);
+            Table table = recordingsTableIO.toTable(recordings);
             Path  path  = experimentPath.resolve(RECORDINGS_CSV);
-            RecordingsTableIO.writeCsv(table, path);
+            recordingsTableIO.writeCsv(table, path);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to write %s : %s", RECORDINGS_CSV, friendlyMessage(e));
         }
     }
+
 
     // ───────────────────────────────────────────────────────────────────────────────
     // SQUARES
@@ -131,10 +154,10 @@ public final class HelperIO {
      * @return a list of squares, or {@code null} if reading fails
      */
     public static List<Square> readSquares(Path experimentPath) {
-        SquaresTableIO squareIO = new SquaresTableIO();
+        SquaresTableIO squaresTableIO = new SquaresTableIO();
         try {
-            Table SquaresTable = readSquaresTable(experimentPath);
-            return squareIO.toEntities(SquaresTable);
+            Table squaresTable = readSquaresTable(experimentPath);
+            return squaresTableIO.toEntities(squaresTable);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to read %s: %s", SQUARES_CSV, friendlyMessage(e));
             return null;
@@ -148,9 +171,9 @@ public final class HelperIO {
      * @return the loaded table, or {@code null} if reading fails
      */
     public static Table readSquaresTable(Path experimentPath) {
-        SquaresTableIO squareIO = new SquaresTableIO();
+        SquaresTableIO squaresTableIO = new SquaresTableIO();
         try {
-            return squareIO.readCsvWithSchema(
+            return squaresTableIO.readCsvWithSchema(
                     experimentPath.resolve(SQUARES_CSV),
                     SquareSchema.COLUMNS,
                     SquareSchema.TYPES,
@@ -170,10 +193,10 @@ public final class HelperIO {
      */
     public static void writeSquares(Path experimentPath, Table squaresTable) {
 
-        SquaresTableIO SquaresTableIO = new SquaresTableIO();
+        SquaresTableIO squaresTableIO = new SquaresTableIO();
         try {
             Path path = experimentPath.resolve(SQUARES_CSV);
-            SquaresTableIO.writeCsv(squaresTable, path);
+            squaresTableIO.writeCsv(squaresTable, path);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to write %s : %s", SQUARES_CSV, friendlyMessage(e));
         }
@@ -190,10 +213,10 @@ public final class HelperIO {
      * @return a list of tracks, or {@code null} if reading fails
      */
     public static List<Track> readTracks(Path experimentPath) {
-        TracksTableIO trackIO = new TracksTableIO();
+        TracksTableIO tracksTableIO = new TracksTableIO();
         try {
             Table tracksTable = readTracksTable(experimentPath);
-            return trackIO.toEntities(tracksTable);
+            return tracksTableIO.toEntities(tracksTable);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to read %s: %s", TRACKS_CSV, friendlyMessage(e));
             return null;
@@ -207,9 +230,9 @@ public final class HelperIO {
      * @return the loaded table, or {@code null} if reading fails
      */
     public static Table readTracksTable(Path experimentPath) {
-        TracksTableIO trackIO = new TracksTableIO();
+        TracksTableIO tracksTableIO = new TracksTableIO();
         try {
-            return trackIO.readCsvWithSchema(
+            return tracksTableIO.readCsvWithSchema(
                     experimentPath.resolve(TRACKS_CSV),
                     TrackSchema.COLUMNS,
                     TrackSchema.TYPES,
@@ -229,10 +252,10 @@ public final class HelperIO {
      * @param tracksTable    the table containing all track data
      */
     public static void writeTracks(Path experimentPath, Table tracksTable) {
-        TracksTableIO TracksTableIO = new TracksTableIO();
+        TracksTableIO tracksTableIO = new TracksTableIO();
         try {
             Path path = experimentPath.resolve(TRACKS_CSV);
-            TracksTableIO.writeCsv(tracksTable, path);
+            tracksTableIO.writeCsv(tracksTable, path);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to write %s : %s", TRACKS_CSV, friendlyMessage(e));
         }
