@@ -157,12 +157,15 @@ public final class ValidProjectPath {
         Path confPath = projectPath.resolve(EXPERIMENT_INFO_CSV);
 
         // Debugging output for Windows issues
-        System.out.println("=== Project Folder Validation ===");
-        System.out.println("projectPath = [" + projectPath + "]");
-        System.out.println("confPath    = [" + confPath + "]");
-        System.out.println("Exists      = " + Files.exists(confPath));
-        System.out.println("IsRegular   = " + Files.isRegularFile(confPath));
-        System.out.println("=================================");
+        String debugLevel = PaintPrefs.getString("Runtime", "Log Level", "INFO");
+        if (debugLevel.equals("DEBUG")) {
+            PaintLogger.infof("=== Project Folder Validation ===");
+            PaintLogger.infof("projectPath = [" + projectPath + "]");
+            PaintLogger.infof("confPath    = [" + confPath + "]");
+            PaintLogger.infof("Exists      = " + Files.exists(confPath));
+            PaintLogger.infof("IsRegular   = " + Files.isRegularFile(confPath));
+            PaintLogger.infof("=================================");
+        }
 
         // Final decision
         if (!Files.exists(confPath) || !Files.isRegularFile(confPath)) {
