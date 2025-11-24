@@ -107,8 +107,8 @@ public class SweepConfig {
         }
 
         for (Map.Entry<String, JsonElement> entry : sweep.entrySet()) {
-            String attribute = entry.getKey();
-            boolean enabled = entry.getValue().getAsBoolean();
+            String  attribute = entry.getKey();
+            boolean enabled   = entry.getValue().getAsBoolean();
 
             if (enabled && root.has(attribute) && root.get(attribute).isJsonObject()) {
                 JsonObject section = root.getAsJsonObject(attribute);

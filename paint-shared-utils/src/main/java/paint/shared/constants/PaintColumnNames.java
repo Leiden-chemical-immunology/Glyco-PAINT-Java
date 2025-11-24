@@ -28,10 +28,6 @@ public final class PaintColumnNames {
         // Prevent instantiation
     }
 
-    // =====================
-    // Column Names
-    // =====================
-
     public static final String ADJUVANT                                    = "Adjuvant";
     public static final String ALLOW_GAP_CLOSING                           = "ALLOW_GAP_CLOSING";
     public static final String ALLOW_TRACK_MERGING                         = "ALLOW_TRACK_MERGING";

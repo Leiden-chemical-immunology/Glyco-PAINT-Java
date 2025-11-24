@@ -14,10 +14,6 @@ public final class PaintDirectories {
         // Prevent instantiation
     }
 
-    // =====================
-    // Directories
-    // =====================
-
     public static final String DIR_TRACKMATE_IMAGES   = "TrackMate Images";
     public static final String DIR_BRIGHTFIELD_IMAGES = "Brightfield Images";
 }

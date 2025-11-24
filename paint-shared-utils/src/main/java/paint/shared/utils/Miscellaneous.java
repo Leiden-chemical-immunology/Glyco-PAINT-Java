@@ -36,6 +36,7 @@
 
 package paint.shared.utils;
 
+import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;

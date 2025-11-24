@@ -14,25 +14,10 @@ public final class PaintGeometry {
         // Prevent instantiation
     }
 
-    // =====================
-    // Geometry
-    // =====================
-
-    /** Pixel width in µm (specified by Nikon). */
-    public static final double PIXEL_WIDTH  = 0.1603251;
-
-    /** Pixel height in µm (specified by Nikon). */
-    public static final double PIXEL_HEIGHT = 0.1603251;
-
-    /** Number of pixels in image width (specified by Nikon). */
-    public static final int NUMBER_PIXELS_WIDTH  = 512;
-
-    /** Number of pixels in image height (specified by Nikon). */
-    public static final int NUMBER_PIXELS_HEIGHT = 512;
-
-    /** Image width in µm. */
-    public static final double IMAGE_WIDTH  = PIXEL_WIDTH * NUMBER_PIXELS_WIDTH;
-
-    /** Image height in µm. */
-    public static final double IMAGE_HEIGHT = PIXEL_HEIGHT * NUMBER_PIXELS_HEIGHT;
+    public static final double PIXEL_WIDTH          = 0.1603251;                           // Pixel width in µm (specified by Nikon).
+    public static final double PIXEL_HEIGHT         = 0.1603251;                           // Pixel height in µm (specified by Nikon).
+    public static final int    NUMBER_PIXELS_WIDTH  = 512;                                 // Number of pixels in image width (specified by Nikon).
+    public static final int    NUMBER_PIXELS_HEIGHT = 512;                                 // Number of pixels in image width (specified by Nikon).
+    public static final double IMAGE_WIDTH          = PIXEL_WIDTH * NUMBER_PIXELS_WIDTH;   // in µm
+    public static final double IMAGE_HEIGHT         = PIXEL_HEIGHT * NUMBER_PIXELS_HEIGHT; // in µm
 }

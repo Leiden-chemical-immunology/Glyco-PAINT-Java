@@ -78,12 +78,12 @@ public class GenerateSquaresConfig {
      */
     public GenerateSquaresConfig() {
         
-        this.numberOfSquaresInRecording  = PaintConfig.getInt(   SECTION_GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING,  400);
-        this.minTracksToCalculateTau     = PaintConfig.getInt(   SECTION_GENERATE_SQUARES, MIN_TRACKS_TO_CALCULATE_TAU,     20);
-        this.minRequiredRSquared         = PaintConfig.getDouble(SECTION_GENERATE_SQUARES, MIN_REQUIRED_R_SQUARED,          0.1);
-        this.minRequiredDensityRatio     = PaintConfig.getDouble(SECTION_GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,      0.1);
-        this.maxAllowableVariability     = PaintConfig.getDouble(SECTION_GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY,       10.0);
-        this.neighbourMode               = PaintConfig.getString(SECTION_GENERATE_SQUARES, NEIGHBOUR_MODE,                  "Free");
+        this.numberOfSquaresInRecording  = PaintConfig.getInt(    SECTION_GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING,  400);
+        this.minTracksToCalculateTau     = PaintConfig.getInt(    SECTION_GENERATE_SQUARES, MIN_TRACKS_TO_CALCULATE_TAU,     20);
+        this.minRequiredRSquared         = PaintConfig.getDouble( SECTION_GENERATE_SQUARES, MIN_REQUIRED_R_SQUARED,          0.1);
+        this.minRequiredDensityRatio     = PaintConfig.getDouble( SECTION_GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,      0.1);
+        this.maxAllowableVariability     = PaintConfig.getDouble( SECTION_GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY,       10.0);
+        this.neighbourMode               = PaintConfig.getString( SECTION_GENERATE_SQUARES, NEIGHBOUR_MODE,                  "Free");
         
     }
 

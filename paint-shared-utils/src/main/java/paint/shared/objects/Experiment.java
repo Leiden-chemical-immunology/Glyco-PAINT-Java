@@ -96,38 +96,18 @@ public class Experiment {
     // ACCESSORS & MUTATORS
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Sets the experiment name.
-     *
-     * @param experimentName the name to assign
-     */
-    public void setExperimentName(String experimentName) {
+    public void   setExperimentName(String experimentName) {
         this.experimentName = experimentName;
     }
 
-    /**
-     * Returns the experiment name.
-     *
-     * @return the experiment name
-     */
     public String getExperimentName() {
         return experimentName;
     }
 
-    /**
-     * Adds a {@link Recording} to this experiment.
-     *
-     * @param recording the recording to add
-     */
-    public void addRecording(Recording recording) {
+    public void   addRecording(Recording recording) {
         this.recordings.add(recording);
     }
 
-    /**
-     * Returns the list of {@link Recording} objects for this experiment.
-     *
-     * @return list of recordings
-     */
     public List<Recording> getRecordings() {
         return recordings;
     }

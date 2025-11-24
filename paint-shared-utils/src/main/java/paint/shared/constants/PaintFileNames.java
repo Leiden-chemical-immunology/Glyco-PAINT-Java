@@ -18,10 +18,6 @@ public final class PaintFileNames {
         // Prevent instantiation
     }
 
-    // =====================
-    // Filenames
-    // =====================
-
     public static final String RECORDINGS_CSV                 = "Recordings.csv";
     public static final String TRACKS_CSV                     = "Tracks.csv";
     public static final String SQUARES_CSV                    = "Squares.csv";
