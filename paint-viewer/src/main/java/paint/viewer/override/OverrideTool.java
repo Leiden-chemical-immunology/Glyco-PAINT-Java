@@ -59,10 +59,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.utils.SharedSquareUtils.applyVisibilityFilterOnRecording;
 import static paint.viewer.override.RecordingOverrideApplier.loadRecordingOverride;
 import static paint.viewer.override.SquareOverrideApplier.loadSquareOverride;
+
+import static paint.shared.constants.PaintColumnNames.*;
+import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
+import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
 
 /**
  * Command-line utility for applying both Recording and Square override files

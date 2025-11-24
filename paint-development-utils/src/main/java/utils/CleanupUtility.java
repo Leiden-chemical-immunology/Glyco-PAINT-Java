@@ -1,7 +1,5 @@
 package utils;
 
-import static paint.shared.constants.PaintConstants.*;
-
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Arrays;
@@ -9,6 +7,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static paint.shared.constants.PaintDirectories.DIR_BRIGHTFIELD_IMAGES;
+import static paint.shared.constants.PaintDirectories.DIR_TRACKMATE_IMAGES;
+
+import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
+import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
+import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
 /**
  * Utility for cleaning up generated CSV files and experiment image directories
  * in a Paint project workspace.

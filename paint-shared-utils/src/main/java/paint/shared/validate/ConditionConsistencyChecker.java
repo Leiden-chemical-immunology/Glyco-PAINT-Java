@@ -46,8 +46,7 @@
 =============================================================================*/
 
 package paint.shared.validate;
-import static paint.shared.constants.PaintConstants.*;
-
+import static paint.shared.constants.PaintColumnNames.*;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;

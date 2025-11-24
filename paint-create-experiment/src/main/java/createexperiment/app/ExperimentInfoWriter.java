@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
+import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
 
 /**
  * Provides functionality to generate and write an experiment information CSV file

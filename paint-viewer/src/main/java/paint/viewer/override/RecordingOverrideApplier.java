@@ -39,7 +39,7 @@
 
 package paint.viewer.override;
 
-import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.constants.PaintColumnNames.*;
 
 import paint.shared.utils.PaintLogger;
 import paint.viewer.model.RecordingEntry;

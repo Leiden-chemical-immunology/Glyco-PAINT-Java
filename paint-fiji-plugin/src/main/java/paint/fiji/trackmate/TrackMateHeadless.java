@@ -56,7 +56,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
+import static paint.shared.constants.PaintFileNames.PAINT_CONFIGURATION_JSON;
 import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
 
 /**

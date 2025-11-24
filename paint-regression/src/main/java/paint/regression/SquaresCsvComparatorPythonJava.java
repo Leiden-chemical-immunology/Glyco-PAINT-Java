@@ -41,8 +41,6 @@
 
 package paint.regression;
 
-import static paint.shared.constants.PaintConstants.*;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -50,6 +48,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+
+import static paint.shared.constants.PaintColumnNames.RECORDING_NAME;
+import static paint.shared.constants.PaintColumnNames.SQUARE_NUMBER;
 
 public class SquaresCsvComparatorPythonJava {
 

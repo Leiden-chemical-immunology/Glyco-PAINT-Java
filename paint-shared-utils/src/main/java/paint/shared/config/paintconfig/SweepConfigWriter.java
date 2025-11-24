@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.constants.PaintColumnNames.*;
 
 /** Builds and writes the “Paint Sweep Configuration.json” file. */
 class SweepConfigWriter {

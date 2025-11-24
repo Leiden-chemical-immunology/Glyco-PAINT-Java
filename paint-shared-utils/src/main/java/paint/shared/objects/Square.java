@@ -43,8 +43,8 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.IMAGE_HEIGHT;
-import static paint.shared.constants.PaintConstants.IMAGE_WIDTH;
+import static paint.shared.constants.PaintGeometry.IMAGE_HEIGHT;
+import static paint.shared.constants.PaintGeometry.IMAGE_WIDTH;
 import static paint.shared.utils.Miscellaneous.round;
 
 /**

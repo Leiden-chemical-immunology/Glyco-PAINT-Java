@@ -10,7 +10,8 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Set;
 
-import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.constants.PaintFileNames.PAINT_CONFIGURATION_JSON;
+
 
 /**
  * Thin façade over a JSON-backed config store.

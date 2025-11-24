@@ -42,8 +42,6 @@
 
 package paint.generatesquares.calc;
 
-import static paint.shared.constants.PaintConstants.*;
-
 import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.io.SquaresTableIO;
 import paint.shared.io.TracksTableIO;
@@ -66,6 +64,12 @@ import static paint.shared.io.ExperimentDataLoader.loadExperiment;
 import static paint.shared.io.HelperIO.*;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
+
+import static paint.shared.constants.PaintGeometry.IMAGE_HEIGHT;
+import static paint.shared.constants.PaintGeometry.IMAGE_WIDTH;
+
+import static paint.shared.constants.PaintColumnNames.RECORDING_NAME;
+import static paint.shared.constants.PaintColumnNames.TRACK_ID;
 
 public class GenerateSquaresProcessor {
 

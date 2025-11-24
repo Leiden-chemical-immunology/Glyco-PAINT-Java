@@ -41,14 +41,18 @@
 
 package paint.viewer.ui;
 
-import static paint.shared.constants.PaintConstants.*;
-
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.viewer.model.RecordingEntry;
 import paint.viewer.ui.panels.SquareGridPanel;
 import paint.viewer.ui.panels.RecordingAttributesPanel;
 
 import javax.swing.*;
+
+import static paint.shared.constants.PaintColumnNames.GENERATE_SQUARES;
+import static paint.shared.constants.PaintColumnNames.NUMBER_OF_SQUARES_IN_RECORDING;
+
+import static paint.shared.constants.PaintGeometry.NUMBER_PIXELS_HEIGHT;
+import static paint.shared.constants.PaintGeometry.NUMBER_PIXELS_WIDTH;
 
 /**
  * Utility class responsible for synchronizing the UI with a newly selected

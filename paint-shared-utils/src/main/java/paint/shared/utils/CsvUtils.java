@@ -54,7 +54,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static paint.shared.constants.PaintConstants.RECORDINGS_CSV;
+import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
 
 /**
  * Utility class for common CSV file operations such as concatenation,

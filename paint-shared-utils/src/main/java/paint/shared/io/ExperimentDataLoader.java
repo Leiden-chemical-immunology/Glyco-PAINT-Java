@@ -44,9 +44,16 @@ import tech.tablesaw.api.Table;
 import java.nio.file.Path;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.*;
 import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
 
+import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
+import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
+import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
+
+import static paint.shared.constants.PaintRecordingSchema.*;
+import static paint.shared.constants.PaintTrackSchema.*;
+import static paint.shared.constants.PaintSquareSchema.*;
+import static paint.shared.constants.PaintColumnNames.*;
 /**
  * Provides centralized functionality for loading experiment-related data:
  * recordings, optionally tracks, and optionally squares.

@@ -43,12 +43,13 @@
 
 package paint.fiji.tracks;
 
-import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.constants.PaintColumnNames.*;
 
 import fiji.plugin.trackmate.FeatureModel;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.TrackMate;
 import fiji.plugin.trackmate.TrackModel;
+import paint.shared.constants.PaintTiming;
 import paint.shared.io.TracksTableIO;
 import paint.shared.objects.Track;
 import paint.shared.utils.PaintLogger;
@@ -116,7 +117,7 @@ public final class TrackCsvWriter {
         // Step 2 – Process each track
         // ---------------------------------------------------------------------
         for (Integer trackId : trackIDs) {
-            TrackAttributes trackAttributes = calculateTrackAttributes(trackModel, trackId, TIME_INTERVAL);
+            TrackAttributes trackAttributes = calculateTrackAttributes(trackModel, trackId, PaintTiming.TIME_INTERVAL);
 
             Track track = new Track();
             track.setExperimentName(experimentName);

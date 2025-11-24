@@ -47,7 +47,7 @@
 
 package paint.shared.validate;
 
-import paint.shared.constants.PaintConstants;
+import paint.shared.constants.PaintExperimentInfoSchema;
 import tech.tablesaw.api.ColumnType;
 
 import java.io.File;
@@ -69,14 +69,14 @@ public final class ExperimentInfoValidator extends AbstractFileValidator {
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Validates that the CSV header matches {@link PaintConstants#EXPERIMENT_INFO_COLS}.
+     * Validates that the CSV header matches {@link paint.shared.constants.PaintExperimentInfoSchema#EXPERIMENT_INFO_COLS}.
      *
      * @param actualHeader actual CSV header read from the file
      * @param result       validation result collector
      */
     @Override
     protected void validateHeader(List<String> actualHeader, ValidationResult result) {
-        List<String> expectedHeader = Arrays.asList(PaintConstants.EXPERIMENT_INFO_COLS);
+        List<String> expectedHeader = Arrays.asList(PaintExperimentInfoSchema.EXPERIMENT_INFO_COLS);
         headersMatch(expectedHeader, actualHeader, result);
     }
 
@@ -86,13 +86,13 @@ public final class ExperimentInfoValidator extends AbstractFileValidator {
 
     /**
      * Returns the expected column data types as defined in
-     * {@link PaintConstants#EXPERIMENT_INFO_TYPES}.
+     * {@link paint.shared.constants.PaintExperimentInfoSchema#EXPERIMENT_INFO_TYPES}.
      *
      * @return array of expected {@link ColumnType}s
      */
     @Override
     protected ColumnType[] getExpectedTypes() {
-        return PaintConstants.EXPERIMENT_INFO_TYPES;
+        return PaintExperimentInfoSchema.EXPERIMENT_INFO_TYPES;
     }
 
     // ───────────────────────────────────────────────────────────────────────────────

@@ -40,7 +40,10 @@
 
 package paint.shared.io;
 
-import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
+import static paint.shared.constants.PaintSquareSchema.SQUARES_COLS;
+import static paint.shared.constants.PaintSquareSchema.SQUARES_TYPES;
+import static paint.shared.constants.PaintColumnNames.*;
 
 import paint.shared.objects.Square;
 import tech.tablesaw.api.ColumnType;

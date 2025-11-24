@@ -69,7 +69,17 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static paint.shared.config.TrackMateConfig.trackMateConfigToFile;
-import static paint.shared.constants.PaintConstants.*;
+
+import static paint.shared.constants.PaintDirectories.DIR_BRIGHTFIELD_IMAGES;
+import static paint.shared.constants.PaintDirectories.DIR_TRACKMATE_IMAGES;
+
+import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
+import static paint.shared.constants.PaintFileNames.PAINT_CONFIGURATION_JSON;
+import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
+import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
+
+import static paint.shared.constants.PaintColumnNames.*;
+
 import static paint.shared.utils.CsvUtils.concatenateCsvFiles;
 import static paint.shared.utils.CsvUtils.countProcessed;
 import static paint.shared.utils.Miscellaneous.formatDuration;

@@ -73,7 +73,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.constants.PaintColumnNames.GENERATE_SQUARES;
+import static paint.shared.constants.PaintColumnNames.NUMBER_OF_SQUARES_IN_RECORDING;
 import static paint.viewer.override.OverrideTool.processOverride;
 import static paint.viewer.override.RecordingOverrideApplier.applyRecordingOverrides;
 import static paint.viewer.override.SquareOverrideApplier.applySquareOverrides;

@@ -36,7 +36,9 @@
 
 package paint.shared.io;
 
-import paint.shared.constants.PaintConstants;
+import static paint.shared.constants.PaintColumnNames.*;
+import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
+import static paint.shared.constants.PaintTrackSchema.*;
 import paint.shared.objects.Track;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
@@ -48,14 +50,13 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.*;
 
 /**
  * Provides CSV I/O and schema enforcement for {@link Track} entities.
  *
  * <p>This class encapsulates reading, writing, and conversion logic for
  * {@code tracks.csv} and guarantees alignment with the schema definitions
- * provided in {@link PaintConstants}.</p>
+ * provided in {@link paint.shared.constants.PaintTrackSchema}.</p>
  */
 public class TracksTableIO extends BaseTableIO {
 

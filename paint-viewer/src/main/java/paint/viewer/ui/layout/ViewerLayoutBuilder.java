@@ -85,8 +85,8 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 
-import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_HEIGHT;
-import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH;
+import static paint.shared.constants.PaintGeometry.NUMBER_PIXELS_HEIGHT;
+import static paint.shared.constants.PaintGeometry.NUMBER_PIXELS_WIDTH;
 
 /**
  * Builds the full layout structure for the ViewerFrame. All components required

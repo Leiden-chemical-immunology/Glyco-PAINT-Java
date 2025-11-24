@@ -55,7 +55,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
+import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
+import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
+import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
+
 import static paint.shared.utils.CsvUtils.addCase;
 import static paint.shared.utils.CsvUtils.concatenateNamedCsvFiles;
 

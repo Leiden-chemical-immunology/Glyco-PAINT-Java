@@ -60,7 +60,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
+import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
+import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
 
 /**
  * Central coordinator for validating multiple experiment CSV files within

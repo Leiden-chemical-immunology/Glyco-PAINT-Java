@@ -2,7 +2,7 @@ package paint.shared.config.paintconfig;
 
 import com.google.gson.JsonObject;
 
-import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.constants.PaintColumnNames.*;
 
 /** Populates initial defaults into the store when no file exists. */
 class DefaultConfigLoader {

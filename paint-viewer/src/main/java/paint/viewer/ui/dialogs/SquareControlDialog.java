@@ -39,8 +39,6 @@
  ==============================================================================*/
 
 package paint.viewer.ui.dialogs;
-import static paint.shared.constants.PaintConstants.*;
-
 
 import paint.viewer.ui.panels.RecordingControlsPanel;
 import paint.viewer.ui.panels.SquareGridPanel;
@@ -50,6 +48,10 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+
+import static paint.shared.constants.PaintColumnNames.MAX_VARIABILITY;
+import static paint.shared.constants.PaintColumnNames.MIN_DENSITY_RATIO;
+import static paint.shared.constants.PaintColumnNames.NEIGHBOUR_MODE;
 
 /**
  * A dialog for configuring square control parameters in the viewer.

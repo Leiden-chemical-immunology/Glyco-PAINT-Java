@@ -59,11 +59,18 @@ import java.util.Locale;
 
 import static paint.generatesquares.calc.GenerateSquaresProcessor.generateSquaresForExperiment;
 import static paint.generatesquares.calc.PlotUtils.exportBackgroundHistogramsToPngs;
-import static paint.shared.constants.PaintConstants.*;
+
 import static paint.shared.io.ExperimentDataLoader.loadExperiment;
 import static paint.shared.utils.CsvUtils.concatenateNamedCsvFiles;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.validate.ValidationHandler.validateExperiments;
+
+import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
+import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
+import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
+import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
+
+import static paint.shared.constants.PaintColumnNames.*;
 
 /**
  * Executes the Generate Squares pipeline in headless mode. This includes

@@ -44,8 +44,6 @@
 =============================================================================*/
 
 package paint.shared.utils;
-import static paint.shared.constants.PaintConstants.*;
-
 
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
@@ -58,6 +56,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static paint.shared.constants.PaintColumnNames.TRACK_X_LOCATION;
+import static paint.shared.constants.PaintColumnNames.TRACK_Y_LOCATION;
 
 /**
  * Utility class providing methods for filtering and evaluating square regions

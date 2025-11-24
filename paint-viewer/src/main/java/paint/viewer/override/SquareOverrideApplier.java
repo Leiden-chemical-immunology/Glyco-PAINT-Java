@@ -43,7 +43,11 @@
 
 package paint.viewer.override;
 
-import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.constants.PaintColumnNames.SQUARE_NUMBER;
+import static paint.shared.constants.PaintColumnNames.CELL_ID;
+import static paint.shared.constants.PaintColumnNames.TIME_STAMP;
+import static paint.shared.constants.PaintColumnNames.EXPERIMENT_NAME;
+import static paint.shared.constants.PaintColumnNames.RECORDING_NAME;
 
 import paint.shared.objects.Square;
 import paint.shared.utils.PaintLogger;

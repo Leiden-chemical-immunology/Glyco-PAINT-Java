@@ -44,7 +44,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.constants.PaintColumnNames.EXPERIMENT_NAME;
+import static paint.shared.constants.PaintExperimentInfoSchema.*;
+import static paint.shared.constants.PaintColumnNames.*;
 
 /**
  * Provides table input/output utilities for {@code ExperimentInfo}

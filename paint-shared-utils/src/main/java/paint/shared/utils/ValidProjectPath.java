@@ -57,8 +57,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
-import static paint.shared.constants.PaintConstants.PAINT_CONFIGURATION_JSON;
+import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
 
 /**
  * Validates and retrieves a usable project root folder path for the PAINT application.

@@ -50,8 +50,6 @@
 
 package paint.shared.validate;
 
-import static paint.shared.constants.PaintConstants.*;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -63,6 +61,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+
+import static paint.shared.constants.PaintColumnNames.PROCESS_FLAG;
+import static paint.shared.constants.PaintColumnNames.RECORDING_NAME;
 
 /**
  * Validates that all required experiment and image directories exist, and that

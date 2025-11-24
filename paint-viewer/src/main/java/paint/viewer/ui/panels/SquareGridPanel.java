@@ -59,8 +59,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_HEIGHT;
-import static paint.shared.constants.PaintConstants.NUMBER_PIXELS_WIDTH;
+import static paint.shared.constants.PaintGeometry.NUMBER_PIXELS_HEIGHT;
+import static paint.shared.constants.PaintGeometry.NUMBER_PIXELS_WIDTH;
 
 /**
  * A Swing component that renders a grid of {@link Square} objects and provides

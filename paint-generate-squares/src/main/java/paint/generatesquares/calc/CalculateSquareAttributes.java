@@ -59,11 +59,15 @@ import java.util.List;
 
 import static paint.generatesquares.calc.PlotUtils.saveTauFitPlot;
 import static paint.generatesquares.calc.SquareUtils.*;
-import static paint.shared.constants.PaintConstants.*;
+
 import static paint.shared.objects.Square.calculateSquareArea;
 import static paint.shared.utils.CalculateTau.calculateTau;
 import static paint.shared.utils.Miscellaneous.round;
 import static paint.shared.utils.SharedSquareUtils.*;
+
+import static paint.shared.constants.PaintGeometry.IMAGE_WIDTH;
+import static paint.shared.constants.PaintTiming.RECORDING_DURATION;
+import static paint.shared.constants.PaintColumnNames.*;
 
 public class CalculateSquareAttributes {
 
@@ -251,7 +255,7 @@ public class CalculateSquareAttributes {
         int[][] matrix = new int[granularity][granularity];
 
         int dimension = (int) Math.sqrt(numberOfSquaresInRecording);
-        double width = IMAGE_WIDTH / dimension;
+        double width  = IMAGE_WIDTH / dimension;
         double height = IMAGE_WIDTH / dimension;
 
         // Access the columns once

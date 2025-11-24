@@ -42,6 +42,7 @@
 
 package paint.shared.validate;
 
+import paint.shared.constants.PaintTrackSchema;
 import paint.shared.constants.PaintConstants;
 import tech.tablesaw.api.ColumnType;
 
@@ -50,8 +51,8 @@ import java.util.List;
 
 /**
  * Validates the schema of {@code tracks.csv} by checking header correctness
- * and column data types according to {@link PaintConstants#TRACKS_COLS} and
- * {@link PaintConstants#TRACKS_TYPES}.
+ * and column data types according to {@link PaintTrackSchema#TRACKS_COLS} and
+ * {@link PaintTrackSchema#TRACKS_TYPES}.
  */
 public final class TracksValidator extends AbstractFileValidator {
 
@@ -60,14 +61,14 @@ public final class TracksValidator extends AbstractFileValidator {
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Validates that the header matches {@link PaintConstants#TRACKS_COLS}.
+     * Validates that the header matches {@link PaintTrackSchema#TRACKS_COLS}.
      *
      * @param actualHeader the CSV header read from the file
      * @param result       validation result collector
      */
     @Override
     protected void validateHeader(List<String> actualHeader, ValidationResult result) {
-        List<String> expectedHeader = Arrays.asList(PaintConstants.TRACKS_COLS);
+        List<String> expectedHeader = Arrays.asList(PaintTrackSchema.TRACKS_COLS);
         headersMatch(expectedHeader, actualHeader, result);
     }
 
@@ -77,12 +78,12 @@ public final class TracksValidator extends AbstractFileValidator {
 
     /**
      * Returns the expected column data types as defined in
-     * {@link PaintConstants#TRACKS_TYPES}.
+     * {@link PaintTrackSchema#TRACKS_TYPES}.
      *
      * @return array of expected {@link ColumnType}s
      */
     @Override
     protected ColumnType[] getExpectedTypes() {
-        return PaintConstants.TRACKS_TYPES;
+        return PaintTrackSchema.TRACKS_TYPES;
     }
 }

@@ -1,10 +1,10 @@
 package paint.regression.old;
 
-import static paint.shared.constants.PaintConstants.*;
-
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+
+import static paint.shared.constants.PaintColumnNames.RECORDING_NAME;
 
 public class AllSquaresDetailedComparator {
 

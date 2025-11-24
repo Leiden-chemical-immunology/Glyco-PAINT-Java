@@ -46,7 +46,7 @@
 
 package paint.shared.validate;
 
-import paint.shared.constants.PaintConstants;
+import paint.shared.constants.PaintRecordingSchema;
 import tech.tablesaw.api.ColumnType;
 
 import java.io.File;
@@ -67,14 +67,14 @@ public final class RecordingsValidator extends AbstractFileValidator {
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Validates that the header matches {@link PaintConstants#RECORDINGS_COLS}.
+     * Validates that the header matches {@link PaintRecordingSchema#RECORDINGS_COLS}.
      *
      * @param actualHeader the CSV header read from the file
      * @param result       validation result collector
      */
     @Override
     protected void validateHeader(List<String> actualHeader, ValidationResult result) {
-        List<String> expectedHeader = Arrays.asList(PaintConstants.RECORDINGS_COLS);
+        List<String> expectedHeader = Arrays.asList(PaintRecordingSchema.RECORDINGS_COLS);
         headersMatch(expectedHeader, actualHeader, result);
     }
 
@@ -84,13 +84,13 @@ public final class RecordingsValidator extends AbstractFileValidator {
 
     /**
      * Returns the expected column data types as defined in
-     * {@link PaintConstants#RECORDINGS_TYPES}.
+     * {@link PaintRecordingSchema#RECORDINGS_TYPES}.
      *
      * @return array of expected {@link ColumnType}s
      */
     @Override
     protected ColumnType[] getExpectedTypes() {
-        return PaintConstants.RECORDINGS_TYPES;
+        return PaintRecordingSchema.RECORDINGS_TYPES;
     }
 
     // ───────────────────────────────────────────────────────────────────────────────

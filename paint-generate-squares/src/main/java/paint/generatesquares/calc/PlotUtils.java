@@ -1,5 +1,4 @@
 package paint.generatesquares.calc;
-import static paint.shared.constants.PaintConstants.*;
 
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Recording;
@@ -18,6 +17,8 @@ import java.util.*;
 import java.util.List;
 
 import static paint.generatesquares.calc.SquareUtils.calculateBackgroundDensity;
+import static paint.shared.constants.PaintColumnNames.BACKGROUND_PLOTS;
+import static paint.shared.constants.PaintColumnNames.TAU_FITTING_PLOTS;
 
 public class PlotUtils {
 

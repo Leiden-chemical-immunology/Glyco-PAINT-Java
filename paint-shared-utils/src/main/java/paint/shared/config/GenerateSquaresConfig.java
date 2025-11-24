@@ -45,7 +45,7 @@ package paint.shared.config;
 import paint.shared.config.paintconfig.PaintConfig;
 
 import static paint.shared.config.paintconfig.PaintConfig.SECTION_GENERATE_SQUARES;
-import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.constants.PaintColumnNames.*;
 
 /**
  * Holds configuration parameters used during the “generate squares” phase of the

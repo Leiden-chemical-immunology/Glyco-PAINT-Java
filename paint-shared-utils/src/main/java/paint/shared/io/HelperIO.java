@@ -46,8 +46,14 @@ import tech.tablesaw.api.Table;
 import java.nio.file.Path;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.constants.PaintRecordingSchema.*;
+import static paint.shared.constants.PaintTrackSchema.*;
+import static paint.shared.constants.PaintSquareSchema.*;
 import static paint.shared.utils.Miscellaneous.friendlyMessage;
+
+import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
+import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
+import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
 
 /**
  * Utility class providing static helper methods for reading and writing

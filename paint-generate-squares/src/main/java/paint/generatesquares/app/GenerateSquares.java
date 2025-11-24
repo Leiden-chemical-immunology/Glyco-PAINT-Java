@@ -45,7 +45,7 @@
 
 package paint.generatesquares.app;
 
-import static paint.shared.constants.PaintConstants.*;
+// import static paint.shared.constants.PaintColumnNames.*;
 
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
@@ -59,6 +59,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static paint.shared.constants.PaintColumnNames.GENERATE_SQUARES;
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
 

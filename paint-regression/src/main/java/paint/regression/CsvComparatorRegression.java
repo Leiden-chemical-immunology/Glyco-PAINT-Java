@@ -44,7 +44,7 @@
 
 package paint.regression;
 
-import static paint.shared.constants.PaintConstants.*;
+//import static paint.shared.constants.PaintColumnNames.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -55,6 +55,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static paint.shared.constants.PaintColumnNames.RECORDING_NAME;
+import static paint.shared.constants.PaintColumnNames.SQUARE_NUMBER;
 
 /**
  * Provides functionality to compare two CSV files line by line and report

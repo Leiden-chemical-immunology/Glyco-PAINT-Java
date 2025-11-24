@@ -44,7 +44,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
+import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
 
 /**
  * A Swing panel that displays a selectable list of experiment directories.

@@ -16,7 +16,7 @@
  ==============================================================================*/
 
 package paint.viewer.ui.dialogs;
-import static paint.shared.constants.PaintConstants.*;
+import static paint.shared.constants.PaintColumnNames.*;
 
 
 import paint.viewer.model.RecordingEntry;

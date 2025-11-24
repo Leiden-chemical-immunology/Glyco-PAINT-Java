@@ -39,7 +39,6 @@
 
 package paint.shared.objects;
 
-import static paint.shared.constants.PaintConstants.*;
 import paint.shared.utils.Miscellaneous;
 import paint.shared.utils.PaintLogger;
 
@@ -51,6 +50,8 @@ import java.util.Map;
 
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
+
+import static paint.shared.constants.PaintColumnNames.*;
 
 /**
  * Represents metadata and associated data objects for a single experiment.

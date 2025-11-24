@@ -57,7 +57,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static paint.shared.constants.PaintConstants.EXPERIMENT_INFO_CSV;
+import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.validate.ImageRootValidator.validateImageRoot;
 import static paint.shared.validate.ValidationHandler.validateExperiments;
