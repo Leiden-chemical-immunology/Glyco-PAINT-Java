@@ -9,10 +9,10 @@
  *
  *  DESCRIPTION:
  *    Defines all I/O logic for {@code tracks.csv}, using schema definitions
- *    from {@link paint.shared.constants.PaintConstants}. Each operation
- *    ensures strict type and column consistency. Supports creation of
- *    schema-compliant tables, conversion of lists of {@link Track} objects
- *    to tables, and reading or appending data with type enforcement.
+ *    from {@link paint.shared.schema.TrackSchema}. Each operation ensures
+ *    strict type and column consistency. Supports creation of schema-compliant
+ *    tables, conversion of lists of {@link Track} objects to tables, and
+ *    reading or appending data with type enforcement.
  *
  *  KEY FEATURES:
  *    • Enforces consistent schema and column typing for tracks.
@@ -38,8 +38,10 @@ package paint.shared.io;
 
 import static paint.shared.constants.PaintColumnNames.*;
 import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
-import static paint.shared.constants.PaintTrackSchema.*;
+
+import paint.shared.schema.TrackSchema;
 import paint.shared.objects.Track;
+
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
@@ -50,13 +52,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  * Provides CSV I/O and schema enforcement for {@link Track} entities.
  *
  * <p>This class encapsulates reading, writing, and conversion logic for
  * {@code tracks.csv} and guarantees alignment with the schema definitions
- * provided in {@link paint.shared.constants.PaintTrackSchema}.</p>
+ * provided in {@link TrackSchema}.</p>
  */
 public class TracksTableIO extends BaseTableIO {
 
@@ -70,7 +71,7 @@ public class TracksTableIO extends BaseTableIO {
      * @return a new empty {@link Table} with all track columns defined
      */
     public Table emptyTable() {
-        return newEmptyTable("Tracks", TRACKS_COLS, TRACKS_TYPES);
+        return newEmptyTable("Tracks", TrackSchema.COLUMNS, TrackSchema.TYPES);
     }
 
     // ───────────────────────────────────────────────────────────────────────────────
@@ -156,14 +157,14 @@ public class TracksTableIO extends BaseTableIO {
      * @throws IOException if the file cannot be read or validated
      */
     public Table readCsv(Path csvPath) throws IOException {
-        return readCsvWithSchema(csvPath, TRACKS_CSV, TRACKS_COLS, TRACKS_TYPES, false);
+        return readCsvWithSchema(csvPath, TRACKS_CSV, TrackSchema.COLUMNS, TrackSchema.TYPES, false);
     }
 
     /**
      * Appends all rows from the source {@link Table} into the target {@link Table}.
      *
      * <p>This method performs manual type matching and enforces the schema
-     * for all columns defined in {@code TRACKS_COLS}.</p>
+     * for all columns defined in {@link TrackSchema#COLUMNS}.</p>
      *
      * @param target the destination {@link Table}
      * @param source the source {@link Table}
@@ -171,7 +172,7 @@ public class TracksTableIO extends BaseTableIO {
     public void appendInPlace(Table target, Table source) {
         for (Row row : source) {
             Row newRow = target.appendRow();
-            for (String col : TRACKS_COLS) {
+            for (String col : TrackSchema.COLUMNS) {
                 Column<?> targetCol = target.column(col);
 
                 if (targetCol.type() == ColumnType.STRING) {

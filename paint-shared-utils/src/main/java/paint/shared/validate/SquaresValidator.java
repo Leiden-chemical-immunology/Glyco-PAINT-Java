@@ -7,9 +7,9 @@
  *    adheres to the expected schema definition for square-level experiment data.
  *
  *  DESCRIPTION:
- *    • Verifies that the header matches {@link PaintConstants#SQUARES_COLS}.
+ *    • Verifies that the header matches {@link paint.shared.schema.SquareSchema#COLUMNS}.
  *    • Validates that each column conforms to its expected data type as defined
- *      in {@link PaintConstants#SQUARES_TYPES}.
+ *      in {@link paint.shared.schema.SquareSchema#TYPES}.
  *
  *  RESPONSIBILITIES:
  *    • Detect schema inconsistencies in `squares.csv`.
@@ -23,7 +23,7 @@
  *    if (!result.isValid()) { result.printSummary(); }
  *
  *  DEPENDENCIES:
- *    – paint.shared.constants.PaintConstants
+ *    – paint.shared.schema.SquareSchema
  *    – paint.shared.validate.{AbstractFileValidator, ValidationResult}
  *    – tech.tablesaw.api.ColumnType
  *
@@ -42,7 +42,7 @@
 
 package paint.shared.validate;
 
-import paint.shared.constants.PaintSquareSchema;
+import paint.shared.schema.SquareSchema;
 import tech.tablesaw.api.ColumnType;
 
 import java.util.Arrays;
@@ -50,8 +50,8 @@ import java.util.List;
 
 /**
  * Validates the schema of {@code squares.csv} by checking header correctness
- * and column data types according to {@link PaintSquareSchema#SQUARES_COLS} and
- * {@link PaintSquareSchema#SQUARES_TYPES}.
+ * and column data types according to {@link SquareSchema#COLUMNS} and
+ * {@link SquareSchema#TYPES}.
  */
 public final class SquaresValidator extends AbstractFileValidator {
 
@@ -60,14 +60,14 @@ public final class SquaresValidator extends AbstractFileValidator {
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Validates that the header matches {@link PaintSquareSchema#SQUARES_COLS}.
+     * Validates that the header matches {@link SquareSchema#COLUMNS}.
      *
      * @param actualHeader the CSV header read from the file
      * @param result       validation result collector
      */
     @Override
     protected void validateHeader(List<String> actualHeader, ValidationResult result) {
-        List<String> expectedHeader = Arrays.asList(PaintSquareSchema.SQUARES_COLS);
+        List<String> expectedHeader = Arrays.asList(SquareSchema.COLUMNS);
         headersMatch(expectedHeader, actualHeader, result);
     }
 
@@ -77,12 +77,12 @@ public final class SquaresValidator extends AbstractFileValidator {
 
     /**
      * Returns the expected column data types as defined in
-     * {@link PaintSquareSchema#SQUARES_TYPES}.
+     * {@link SquareSchema#TYPES}.
      *
      * @return array of expected {@link ColumnType}s
      */
     @Override
     protected ColumnType[] getExpectedTypes() {
-        return PaintSquareSchema.SQUARES_TYPES;
+        return SquareSchema.TYPES;
     }
 }

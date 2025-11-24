@@ -8,8 +8,8 @@
  *    experiment condition groups.
  *
  *  DESCRIPTION:
- *    • Verifies headers match {@link PaintConstants#EXPERIMENT_INFO_COLS}.
- *    • Verifies column types match {@link PaintConstants#EXPERIMENT_INFO_TYPES}.
+ *    • Verifies headers match {@link paint.shared.schema.ExperimentInfoSchema#COLUMNS}.
+ *    • Verifies column types match {@link paint.shared.schema.ExperimentInfoSchema#TYPES}.
  *    • Performs a post-validation consistency check via
  *      {@link ConditionConsistencyChecker} to ensure all rows with the same
  *      CONDITION_NUMBER have identical probe/cell/adjuvant/concentration values.
@@ -26,7 +26,7 @@
  *    if (!result.isValid()) { result.printSummary(); }
  *
  *  DEPENDENCIES:
- *    – paint.shared.constants.PaintConstants
+ *    – paint.shared.schema.ExperimentInfoSchema
  *    – paint.shared.validate.AbstractFileValidator
  *    – paint.shared.validate.ConditionConsistencyChecker
  *    – paint.shared.validate.ValidationResult
@@ -47,7 +47,7 @@
 
 package paint.shared.validate;
 
-import paint.shared.constants.PaintExperimentInfoSchema;
+import paint.shared.schema.ExperimentInfoSchema;
 import tech.tablesaw.api.ColumnType;
 
 import java.io.File;
@@ -69,14 +69,15 @@ public final class ExperimentInfoValidator extends AbstractFileValidator {
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Validates that the CSV header matches {@link paint.shared.constants.PaintExperimentInfoSchema#EXPERIMENT_INFO_COLS}.
+     * Validates that the CSV header matches
+     * {@link paint.shared.schema.ExperimentInfoSchema#COLUMNS}.
      *
      * @param actualHeader actual CSV header read from the file
      * @param result       validation result collector
      */
     @Override
     protected void validateHeader(List<String> actualHeader, ValidationResult result) {
-        List<String> expectedHeader = Arrays.asList(PaintExperimentInfoSchema.EXPERIMENT_INFO_COLS);
+        List<String> expectedHeader = Arrays.asList(ExperimentInfoSchema.COLUMNS);
         headersMatch(expectedHeader, actualHeader, result);
     }
 
@@ -86,13 +87,13 @@ public final class ExperimentInfoValidator extends AbstractFileValidator {
 
     /**
      * Returns the expected column data types as defined in
-     * {@link paint.shared.constants.PaintExperimentInfoSchema#EXPERIMENT_INFO_TYPES}.
+     * {@link paint.shared.schema.ExperimentInfoSchema#TYPES}.
      *
      * @return array of expected {@link ColumnType}s
      */
     @Override
     protected ColumnType[] getExpectedTypes() {
-        return PaintExperimentInfoSchema.EXPERIMENT_INFO_TYPES;
+        return ExperimentInfoSchema.TYPES;
     }
 
     // ───────────────────────────────────────────────────────────────────────────────
@@ -103,7 +104,7 @@ public final class ExperimentInfoValidator extends AbstractFileValidator {
      * Runs header and type validation, followed by a consistency check ensuring
      * all rows with the same CONDITION_NUMBER have identical associated attributes.
      *
-     * @param file           the {@code experiment_info.csv} file to validate
+     * @param file the {@code experiment_info.csv} file to validate
      * @return a {@link ValidationResult} summarizing all detected issues
      */
     public ValidationResult validateWithConsistency(File file) {

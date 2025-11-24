@@ -9,8 +9,7 @@
  *  DESCRIPTION:
  *    This class defines conversion logic between Tablesaw {@link tech.tablesaw.api.Table}
  *    objects and {@link paint.shared.objects.ExperimentInfo} instances. It validates
- *    and enforces the schema defined in {@code PaintConstants.EXPERIMENT_INFO_COLS}
- *    and {@code PaintConstants.EXPERIMENT_INFO_TYPES}.
+ *    and enforces the schema defined in {@link paint.shared.schema.ExperimentInfoSchema}.
  *
  *  KEY FEATURES:
  *    • Reads and validates Experiment Info CSV files against the expected schema.
@@ -45,7 +44,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static paint.shared.constants.PaintColumnNames.EXPERIMENT_NAME;
-import static paint.shared.constants.PaintExperimentInfoSchema.*;
+import paint.shared.schema.ExperimentInfoSchema;
 import static paint.shared.constants.PaintColumnNames.*;
 
 /**
@@ -53,7 +52,7 @@ import static paint.shared.constants.PaintColumnNames.*;
  * records (per-recording metadata).
  *
  * <p>This class enforces a fixed schema defined by
- * {@code EXPERIMENT_INFO_COLS} and {@code EXPERIMENT_INFO_TYPES}.
+ * {@link ExperimentInfoSchema#COLUMNS} and {@link ExperimentInfoSchema#TYPES}
  * It supports:</p>
  * <ul>
  *   <li>Creating an empty table with the correct schema
@@ -73,14 +72,14 @@ public class ExperimentInfoTableIO extends BaseTableIO {
      * Creates an empty {@link Table} with the {@code Experiment Info} schema.
      *
      * <p>The table has all expected columns defined by
-     * {@code EXPERIMENT_INFO_COLS} and {@code EXPERIMENT_INFO_TYPES}, but
+     * {@link ExperimentInfoSchema#COLUMNS} and {@link ExperimentInfoSchema#TYPES}, but
      * contains zero rows.</p>
      *
      * @return a new empty {@code Table} ready to receive rows with the
      * Experiment Info schema
      */
     public Table emptyTable() {
-        return newEmptyTable("Experiment Info", EXPERIMENT_INFO_COLS, EXPERIMENT_INFO_TYPES);
+        return newEmptyTable("Experiment Info", ExperimentInfoSchema.COLUMNS, ExperimentInfoSchema.TYPES);
     }
 
     /**
@@ -112,29 +111,28 @@ public class ExperimentInfoTableIO extends BaseTableIO {
         Table table = emptyTable();
         for (ExperimentInfo info : infos) {
             Row row = table.appendRow();
-            row.setString(EXPERIMENT_NAME,  info.getExperimentName());
-            row.setString(RECORDING_NAME,   info.getRecordingName());
-            row.setInt(   CONDITION_NUMBER, info.getConditionNumber());
-            row.setInt(   REPLICATE_NUMBER, info.getReplicateNumber());
-            row.setString(PROBE_NAME,       info.getProbeName());
-            row.setString(PROBE_TYPE,       info.getProbeType());
-            row.setString(CELL_TYPE,        info.getCellType());
-            row.setString(ADJUVANT,         info.getAdjuvant());
-            row.setDouble(CONCENTRATION,    info.getConcentration());
-            row.setBoolean(PROCESS_FLAG,    info.isProcessFlag());
-            row.setDouble(THRESHOLD,        info.getThreshold());
+            row.setString(  EXPERIMENT_NAME,  info.getExperimentName());
+            row.setString(  RECORDING_NAME,   info.getRecordingName());
+            row.setInt(     CONDITION_NUMBER, info.getConditionNumber());
+            row.setInt(     REPLICATE_NUMBER, info.getReplicateNumber());
+            row.setString(  PROBE_NAME,       info.getProbeName());
+            row.setString(  PROBE_TYPE,       info.getProbeType());
+            row.setString(  CELL_TYPE,        info.getCellType());
+            row.setString(  ADJUVANT,         info.getAdjuvant());
+            row.setDouble(  CONCENTRATION,    info.getConcentration());
+            row.setBoolean( PROCESS_FLAG,     info.isProcessFlag());
+            row.setDouble(  THRESHOLD,        info.getThreshold());
         }
         return table;
     }
-
 
 
     /**
      * Reads a CSV file as a {@link Table}, enforcing the
      * {@code Experiment Info} schema.
      *
-     * <p>The schema is defined by {@code EXPERIMENT_INFO_COLS} (column names) and
-     * {@code EXPERIMENT_INFO_TYPES} (column types). Header order and types are
+     * <p>The schema is defined by {@link ExperimentInfoSchema#COLUMNS} (column names) and
+     * {@link ExperimentInfoSchema#TYPES} (column types). Header order and types are
      * validated before returning the table.</p>
      *
      * @param csvPath the path to the CSV file
@@ -143,7 +141,7 @@ public class ExperimentInfoTableIO extends BaseTableIO {
      */
     public Table readCsv(Path csvPath) throws IOException {
         return readCsvWithSchema(csvPath, "Experiment Info",
-                                 EXPERIMENT_INFO_COLS, EXPERIMENT_INFO_TYPES, false);
+                                 ExperimentInfoSchema.COLUMNS, ExperimentInfoSchema.TYPES, false);
     }
 
     /**
@@ -153,8 +151,8 @@ public class ExperimentInfoTableIO extends BaseTableIO {
      * <p>Behavior:</p>
      * <ul>
      *   <li>Rows are appended one by one to the {@code target}.</li>
-     *   <li>Columns are matched against {@code EXPERIMENT_INFO_COLS} with types from
-     *       {@code EXPERIMENT_INFO_TYPES}.</li>
+     *   <li>Columns are matched against {@link ExperimentInfoSchema#COLUMNS} with types from
+     *       {@link ExperimentInfoSchema#TYPES}.</li>
      *   <li>If the source table is missing a column, that column is skipped.</li>
      *   <li>Missing cell values in the source remain missing in the destination.</li>
      *   <li>{@code INTEGER -> DOUBLE} upcasts are allowed when the schema expects a double.</li>
@@ -174,9 +172,9 @@ public class ExperimentInfoTableIO extends BaseTableIO {
             Row dst = target.appendRow();
             int r   = srcRow.getRowNumber();
 
-            for (int i = 0; i < EXPERIMENT_INFO_COLS.length; i++) {
-                String col = EXPERIMENT_INFO_COLS[i];
-                ColumnType expected = EXPERIMENT_INFO_TYPES[i];
+            for (int i = 0; i < ExperimentInfoSchema.COLUMNS.length; i++) {
+                String     col      = ExperimentInfoSchema.COLUMNS[i];
+                ColumnType expected = ExperimentInfoSchema.TYPES[i];
 
                 if (!source.columnNames().contains(col)) {
                     continue; // Source missing the column — skip

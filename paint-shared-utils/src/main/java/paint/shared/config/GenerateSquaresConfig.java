@@ -28,7 +28,7 @@
  *
  *  DEPENDENCIES:
  *    – {@link PaintConfig} for reading configuration values
- *    – {@link paint.shared.constants.PaintConstants} for default keys/values
+ *    – {@link paint.shared.constants.PaintColumnNames} for configuration keys
  *
  *  AUTHOR:
  *    Hans Bakker (jjabakker)

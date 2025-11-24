@@ -9,8 +9,7 @@
  *
  *  DESCRIPTION:
  *    This class defines I/O behavior for {@code squares.csv}, enforcing the
- *    schema defined in {@link paint.shared.constants.PaintConstants#SQUARES_COLS}
- *    and {@link paint.shared.constants.PaintConstants#SQUARES_TYPES}.
+ *    schema defined in {@link paint.shared.schema.SquareSchema}.
  *
  *    It supports:
  *      • Creating schema-compliant Tablesaw tables.
@@ -22,7 +21,6 @@
  *    • Enforces consistent schema across all square operations.
  *    • Converts bi-directionally between tables and Java entities.
  *    • Handles INTEGER→DOUBLE coercion where applicable.
- *    • Robust for batch import/export workflows.
  *    • Fully compatible with Java 8 and Tablesaw 0.43+.
  *
  *  AUTHOR:
@@ -40,12 +38,12 @@
 
 package paint.shared.io;
 
-import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
-import static paint.shared.constants.PaintSquareSchema.SQUARES_COLS;
-import static paint.shared.constants.PaintSquareSchema.SQUARES_TYPES;
 import static paint.shared.constants.PaintColumnNames.*;
+import static paint.shared.constants.PaintFileNames.*;
 
 import paint.shared.objects.Square;
+import paint.shared.schema.SquareSchema;
+
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
@@ -75,11 +73,11 @@ public class SquaresTableIO extends BaseTableIO {
      * @return a new empty table named “Squares”
      */
     public Table emptyTable() {
-        return newEmptyTable("Squares", SQUARES_COLS, SQUARES_TYPES);
+        return newEmptyTable("Squares", SquareSchema.COLUMNS, SquareSchema.TYPES);
     }
 
     // ───────────────────────────────────────────────────────────────────────────────
-    // ENTITY ⇄ TABLE CONVERSION
+    // ENTITY → TABLE CONVERSION
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
@@ -94,58 +92,56 @@ public class SquaresTableIO extends BaseTableIO {
 
         for (Square square : squares) {
             Row tablesawRow = table.appendRow();
-            tablesawRow.setString( UNIQUE_KEY,                        square.getUniqueKey());
-            tablesawRow.setString( EXPERIMENT_NAME,                   square.getExperimentName());
-            tablesawRow.setString( RECORDING_NAME,                    square.getRecordingName());
-            tablesawRow.setInt(    SQUARE_NUMBER,                     square.getSquareNumber());
-            tablesawRow.setInt(    ROW_NUMBER,                        square.getRowNumber());
-            tablesawRow.setInt(    COLUMN_NUMBER,                     square.getColNumber());
-            tablesawRow.setInt(    LABEL_NUMBER,                      square.getLabelNumber());
-            tablesawRow.setInt(    CELL_ID,                           square.getCellId());
-            tablesawRow.setBoolean(VISIBLE,                          square.isVisible());
-            tablesawRow.setBoolean(SQUARE_MANUALLY_EXCLUDED,          square.isSquareManuallyExcluded());
-            tablesawRow.setBoolean(IMAGE_EXCLUDED,                    square.isImageExcluded());
-            tablesawRow.setDouble( X0,                                square.getX0());
-            tablesawRow.setDouble( Y0,                                square.getY0());
-            tablesawRow.setDouble( X1,                                square.getX1());
-            tablesawRow.setDouble( Y1,                                square.getY1());
-            tablesawRow.setInt(    NUMBER_OF_TRACKS,                  square.getNumberOfTracks());
-            tablesawRow.setDouble( VARIABILITY,                       square.getVariability());
-            tablesawRow.setDouble( DENSITY,                           square.getDensity());
-            tablesawRow.setDouble( DENSITY_RATIO,                     square.getDensityRatio());
-            tablesawRow.setDouble( DENSITY_RATIO_ORI,                 square.getDensityRatioOri());
-            tablesawRow.setDouble( TAU,                               square.getTau());
-            tablesawRow.setDouble( R_SQUARED,                         square.getRSquared());
-            tablesawRow.setDouble( MEDIAN_DIFFUSION_COEFFICIENT,      square.getMedianDiffusionCoefficient());
-            tablesawRow.setDouble( MEDIAN_DIFFUSION_COEFFICIENT_EXT,  square.getMedianDiffusionCoefficientExt());
-            tablesawRow.setDouble( MEDIAN_DISPLACEMENT,               square.getMedianDisplacement());
-            tablesawRow.setDouble( MAX_DISPLACEMENT,                  square.getMaxDisplacement());
-            tablesawRow.setDouble( TOTAL_DISPLACEMENT,                square.getTotalDisplacement());
-            tablesawRow.setDouble( MEDIAN_MAX_SPEED,                  square.getMedianMaxSpeed());
-            tablesawRow.setDouble( MAX_MAX_SPEED,                     square.getMaxMaxSpeed());
-            tablesawRow.setDouble( MEDIAN_MEAN_SPEED,                 square.getMedianMedianSpeed());
-            tablesawRow.setDouble( MAX_MEAN_SPEED,                    square.getMaxMedianSpeed());
-            tablesawRow.setDouble( MAX_TRACK_DURATION,                square.getMaxTrackDuration());
-            tablesawRow.setDouble( TOTAL_TRACK_DURATION,              square.getTotalTrackDuration());
-            tablesawRow.setDouble( MEDIAN_TRACK_DURATION,             square.getMedianTrackDuration());
+
+            tablesawRow.setString(  UNIQUE_KEY,                        square.getUniqueKey());
+            tablesawRow.setString(  EXPERIMENT_NAME,                   square.getExperimentName());
+            tablesawRow.setString(  RECORDING_NAME,                    square.getRecordingName());
+            tablesawRow.setInt(     SQUARE_NUMBER,                     square.getSquareNumber());
+            tablesawRow.setInt(     ROW_NUMBER,                        square.getRowNumber());
+            tablesawRow.setInt(     COLUMN_NUMBER,                     square.getColNumber());
+            tablesawRow.setInt(     LABEL_NUMBER,                      square.getLabelNumber());
+            tablesawRow.setInt(     CELL_ID,                           square.getCellId());
+            tablesawRow.setBoolean( VISIBLE,                           square.isVisible());
+            tablesawRow.setBoolean( SQUARE_MANUALLY_EXCLUDED,          square.isSquareManuallyExcluded());
+            tablesawRow.setBoolean( IMAGE_EXCLUDED,                    square.isImageExcluded());
+            tablesawRow.setDouble(  X0,                                square.getX0());
+            tablesawRow.setDouble(  Y0,                                square.getY0());
+            tablesawRow.setDouble(  X1,                                square.getX1());
+            tablesawRow.setDouble(  Y1,                                square.getY1());
+            tablesawRow.setInt(     NUMBER_OF_TRACKS,                  square.getNumberOfTracks());
+            tablesawRow.setDouble(  VARIABILITY,                       square.getVariability());
+            tablesawRow.setDouble(  DENSITY,                           square.getDensity());
+            tablesawRow.setDouble(  DENSITY_RATIO,                     square.getDensityRatio());
+            tablesawRow.setDouble(  DENSITY_RATIO_ORI,                 square.getDensityRatioOri());
+            tablesawRow.setDouble(  TAU,                               square.getTau());
+            tablesawRow.setDouble(  R_SQUARED,                         square.getRSquared());
+            tablesawRow.setDouble(  MEDIAN_DIFFUSION_COEFFICIENT,      square.getMedianDiffusionCoefficient());
+            tablesawRow.setDouble(  MEDIAN_DIFFUSION_COEFFICIENT_EXT,  square.getMedianDiffusionCoefficientExt());
+            tablesawRow.setDouble(  MEDIAN_DISPLACEMENT,               square.getMedianDisplacement());
+            tablesawRow.setDouble(  MAX_DISPLACEMENT,                  square.getMaxDisplacement());
+            tablesawRow.setDouble(  TOTAL_DISPLACEMENT,                square.getTotalDisplacement());
+            tablesawRow.setDouble(  MEDIAN_MAX_SPEED,                  square.getMedianMaxSpeed());
+            tablesawRow.setDouble(  MAX_MAX_SPEED,                     square.getMaxMaxSpeed());
+            tablesawRow.setDouble(  MEDIAN_MEAN_SPEED,                 square.getMedianMedianSpeed());
+            tablesawRow.setDouble(  MAX_MEAN_SPEED,                    square.getMaxMedianSpeed());
+            tablesawRow.setDouble(  MAX_TRACK_DURATION,                square.getMaxTrackDuration());
+            tablesawRow.setDouble(  TOTAL_TRACK_DURATION,              square.getTotalTrackDuration());
+            tablesawRow.setDouble(  MEDIAN_TRACK_DURATION,             square.getMedianTrackDuration());
         }
+
         return table;
     }
 
-    /**
-     * Converts a {@link Table} into a list of {@link Square} entities.
-     *
-     * <p>The table must conform to the {@code squares.csv} schema.
-     * Each row is mapped directly to a {@code Square} instance.</p>
-     *
-     * @param table the validated table to convert
-     * @return a list of {@link Square} entities
-     */
+    // ───────────────────────────────────────────────────────────────────────────────
+    // TABLE → ENTITY CONVERSION
+    // ───────────────────────────────────────────────────────────────────────────────
+
     public List<Square> toEntities(Table table) {
         List<Square> squares = new ArrayList<>();
 
         for (Row tablesawRow : table) {
             Square square = new Square();
+
             square.setUniqueKey(                     tablesawRow.getString(  UNIQUE_KEY));
             square.setExperimentName(                tablesawRow.getString(  EXPERIMENT_NAME));
             square.setRecordingName(                 tablesawRow.getString(  RECORDING_NAME));
@@ -180,13 +176,15 @@ public class SquaresTableIO extends BaseTableIO {
             square.setMaxTrackDuration(              tablesawRow.getDouble(  MAX_TRACK_DURATION));
             square.setTotalTrackDuration(            tablesawRow.getDouble(  TOTAL_TRACK_DURATION));
             square.setMedianTrackDuration(           tablesawRow.getDouble(  MEDIAN_TRACK_DURATION));
+
             squares.add(square);
         }
+
         return squares;
     }
 
     // ───────────────────────────────────────────────────────────────────────────────
-    // CSV READ / APPEND
+    // CSV READ
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
@@ -197,7 +195,7 @@ public class SquaresTableIO extends BaseTableIO {
      * @throws IOException if the file cannot be read or validated
      */
     public Table readCsv(Path csvPath) throws IOException {
-        return readCsvWithSchema(csvPath, SQUARES_CSV, SQUARES_COLS, SQUARES_TYPES, false);
+        return readCsvWithSchema(csvPath, SQUARES_CSV, SquareSchema.COLUMNS, SquareSchema.TYPES, false);
     }
 
     /**
@@ -213,7 +211,8 @@ public class SquaresTableIO extends BaseTableIO {
     public void appendInPlace(Table target, Table source) {
         for (Row row : source) {
             Row newRow = target.appendRow();
-            for (String col : SQUARES_COLS) {
+            for (String col : SquareSchema.COLUMNS) {
+
                 Column<?> targetCol = target.column(col);
                 if (targetCol.type() == ColumnType.STRING) {
                     newRow.setString(col, row.getString(col));

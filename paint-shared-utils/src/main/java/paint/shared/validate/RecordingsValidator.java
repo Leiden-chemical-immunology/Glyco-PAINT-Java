@@ -8,9 +8,9 @@
  *    condition groups shared with `experiment_info.csv`.
  *
  *  DESCRIPTION:
- *    • Verifies that the header matches {@link PaintConstants#RECORDINGS_COLS}.
+ *    • Verifies that the header matches {@link paint.shared.schema.RecordingSchema#COLUMNS}.
  *    • Checks that each column’s data type conforms to
- *      {@link PaintConstants#RECORDINGS_TYPES}.
+ *      {@link paint.shared.schema.RecordingSchema#TYPES}.
  *    • Performs a consistency check ensuring that all rows with the same
  *      “Condition Number” share identical Probe, Cell Type, Adjuvant, and
  *      Concentration values, consistent with `experiment_info.csv`.
@@ -27,7 +27,7 @@
  *    if (!result.isValid()) { result.printSummary(); }
  *
  *  DEPENDENCIES:
- *    – paint.shared.constants.PaintConstants
+ *    – paint.shared.schema.RecordingSchema
  *    – paint.shared.validate.{AbstractFileValidator, ConditionConsistencyChecker, ValidationResult}
  *    – tech.tablesaw.api.ColumnType
  *
@@ -46,7 +46,7 @@
 
 package paint.shared.validate;
 
-import paint.shared.constants.PaintRecordingSchema;
+import paint.shared.schema.RecordingSchema;
 import tech.tablesaw.api.ColumnType;
 
 import java.io.File;
@@ -67,14 +67,14 @@ public final class RecordingsValidator extends AbstractFileValidator {
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Validates that the header matches {@link PaintRecordingSchema#RECORDINGS_COLS}.
+     * Validates that the header matches {@link RecordingSchema#COLUMNS}.
      *
      * @param actualHeader the CSV header read from the file
      * @param result       validation result collector
      */
     @Override
     protected void validateHeader(List<String> actualHeader, ValidationResult result) {
-        List<String> expectedHeader = Arrays.asList(PaintRecordingSchema.RECORDINGS_COLS);
+        List<String> expectedHeader = Arrays.asList(RecordingSchema.COLUMNS);
         headersMatch(expectedHeader, actualHeader, result);
     }
 
@@ -84,13 +84,13 @@ public final class RecordingsValidator extends AbstractFileValidator {
 
     /**
      * Returns the expected column data types as defined in
-     * {@link PaintRecordingSchema#RECORDINGS_TYPES}.
+     * {@link RecordingSchema#TYPES}.
      *
      * @return array of expected {@link ColumnType}s
      */
     @Override
     protected ColumnType[] getExpectedTypes() {
-        return PaintRecordingSchema.RECORDINGS_TYPES;
+        return RecordingSchema.TYPES;
     }
 
     // ───────────────────────────────────────────────────────────────────────────────

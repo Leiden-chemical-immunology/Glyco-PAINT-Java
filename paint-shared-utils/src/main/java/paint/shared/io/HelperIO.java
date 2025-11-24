@@ -40,15 +40,16 @@ package paint.shared.io;
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
 import paint.shared.objects.Track;
+import paint.shared.schema.TrackSchema;
+import paint.shared.schema.SquareSchema;
+import paint.shared.schema.RecordingSchema;
+
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.Table;
 
 import java.nio.file.Path;
 import java.util.List;
 
-import static paint.shared.constants.PaintRecordingSchema.*;
-import static paint.shared.constants.PaintTrackSchema.*;
-import static paint.shared.constants.PaintSquareSchema.*;
 import static paint.shared.utils.Miscellaneous.friendlyMessage;
 
 import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
@@ -91,8 +92,8 @@ public final class HelperIO {
             Table recTable = recIO.readCsvWithSchema(
                     experimentPath.resolve(RECORDINGS_CSV),
                     "Recordings",
-                    RECORDINGS_COLS,
-                    RECORDINGS_TYPES,
+                    RecordingSchema.COLUMNS,
+                    RecordingSchema.TYPES,
                     false
             );
             return recIO.toEntities(recTable);
@@ -153,8 +154,8 @@ public final class HelperIO {
             return squareIO.readCsvWithSchema(
                     experimentPath.resolve(SQUARES_CSV),
                     "Squares",
-                    SQUARES_COLS,
-                    SQUARES_TYPES,
+                    SquareSchema.COLUMNS,
+                    SquareSchema.TYPES,
                     false
             );
         } catch (Exception e) {
@@ -213,8 +214,8 @@ public final class HelperIO {
             return trackIO.readCsvWithSchema(
                     experimentPath.resolve(TRACKS_CSV),
                     "Tracks",
-                    TRACKS_COLS,
-                    TRACKS_TYPES,
+                    TrackSchema.COLUMNS,
+                    TrackSchema.TYPES,
                     false
             );
         } catch (Exception e) {

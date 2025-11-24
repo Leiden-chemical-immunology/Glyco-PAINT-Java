@@ -38,6 +38,9 @@ package paint.shared.io;
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
+import paint.shared.schema.TrackSchema;
+import paint.shared.schema.RecordingSchema;
+import paint.shared.schema.SquareSchema;
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.Table;
 
@@ -50,10 +53,8 @@ import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
 import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
 import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
 
-import static paint.shared.constants.PaintRecordingSchema.*;
-import static paint.shared.constants.PaintTrackSchema.*;
-import static paint.shared.constants.PaintSquareSchema.*;
 import static paint.shared.constants.PaintColumnNames.*;
+
 /**
  * Provides centralized functionality for loading experiment-related data:
  * recordings, optionally tracks, and optionally squares.
@@ -73,9 +74,9 @@ public final class ExperimentDataLoader {
      * @return an {@link Experiment} with requested data layers loaded, or {@code null} on failure
      */
     public static Experiment loadExperiment(Path    projectPath,
-                                            String  experimentName,
-                                            boolean loadSquares,
-                                            boolean loadTracks) {
+            String  experimentName,
+            boolean loadSquares,
+            boolean loadTracks) {
 
         Path experimentPath   = projectPath.resolve(experimentName);
         Experiment experiment = new Experiment(experimentName);
@@ -87,8 +88,8 @@ public final class ExperimentDataLoader {
             Table recTable = recordingsTableIO.readCsvWithSchema(
                     experimentPath.resolve(RECORDINGS_CSV),
                     RECORDINGS_CSV,
-                    RECORDINGS_COLS,
-                    RECORDINGS_TYPES,
+                    RecordingSchema.COLUMNS,
+                    RecordingSchema.TYPES,
                     false
             );
             recordings = recordingsTableIO.toEntities(recTable);
@@ -107,8 +108,8 @@ public final class ExperimentDataLoader {
                 tracksTable = trackIO.readCsvWithSchema(
                         experimentPath.resolve(TRACKS_CSV),
                         TRACKS_CSV,
-                        TRACKS_COLS,
-                        TRACKS_TYPES,
+                        TrackSchema.COLUMNS,
+                        TrackSchema.TYPES,
                         false
                 );
             } catch (Exception e) {
@@ -125,7 +126,7 @@ public final class ExperimentDataLoader {
 
                 Table recTracks = tracksTable.where(
                         tracksTable.stringColumn(RECORDING_NAME)
-                                .isEqualTo(recording.getRecordingName()));
+                                   .isEqualTo(recording.getRecordingName()));
 
                 PaintLogger.debugf("Found %d tracks for recording '%s'",
                                    recTracks.rowCount(), recording.getRecordingName());
@@ -143,8 +144,8 @@ public final class ExperimentDataLoader {
                 squaresTable = squaresTableIO.readCsvWithSchema(
                         experimentPath.resolve(SQUARES_CSV),
                         SQUARES_CSV,
-                        SQUARES_COLS,
-                        SQUARES_TYPES,
+                        SquareSchema.COLUMNS,
+                        SquareSchema.TYPES,
                         false
                 );
             } catch (Exception e) {
@@ -168,14 +169,14 @@ public final class ExperimentDataLoader {
             for (Recording rec : recordings) {
                 Table recSquares = squaresTable.where(
                         squaresTable.stringColumn(RECORDING_NAME)
-                                .matchesRegex("^" + rec.getRecordingName() + "(?:-threshold-\\d{1,3})?$"));
+                                    .matchesRegex("^" + rec.getRecordingName() + "(?:-threshold-\\d{1,3})?$"));
 
                 rec.addSquares(squaresTableIO.toEntities(recSquares));
 
                 // Only map tracks into squares if tracks were loaded
                 if (loadTracks && numberOfRows > 0) {
-                    int lastRowCol = numberOfRows - 1;
-                    Table recTracks = rec.getTracksTable();
+                    int   lastRowCol = numberOfRows - 1;
+                    Table recTracks  = rec.getTracksTable();
 
                     for (Square square : rec.getSquaresOfRecording()) {
                         Table SquaresTracks = filterTracksInSquare(recTracks, square, lastRowCol);

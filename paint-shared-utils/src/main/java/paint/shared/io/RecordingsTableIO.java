@@ -11,8 +11,8 @@
  *    This class defines all I/O behavior related to {@code recordings.csv}.
  *    It leverages {@link BaseTableIO} for schema validation and ensures that
  *    every read or write operation adheres strictly to the schema specified
- *    in {@link paint.shared.constants.PaintConstants#RECORDINGS_COLS} and
- *    {@link paint.shared.constants.PaintConstants#RECORDINGS_TYPES}.
+ *    in {@link paint.shared.schema.RecordingSchema#COLUMNS} and
+ *    {@link paint.shared.schema.RecordingSchema#TYPES}.
  *
  *    It supports:
  *      • Creating empty tables with the correct schema.
@@ -42,6 +42,8 @@
 package paint.shared.io;
 
 import paint.shared.objects.Recording;
+import paint.shared.schema.RecordingSchema;
+
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
@@ -53,7 +55,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
-import static paint.shared.constants.PaintRecordingSchema.*;
 import static paint.shared.constants.PaintColumnNames.*;
 
 /**
@@ -61,7 +62,7 @@ import static paint.shared.constants.PaintColumnNames.*;
  *
  * <p>This class manages reading, writing, and schema enforcement for
  * {@code recordings.csv} files. Each method ensures full consistency
- * with the column definitions in PaintConstants.</p>
+ * with the column definitions in {@link paint.shared.schema.RecordingSchema}.</p>
  */
 public class RecordingsTableIO extends BaseTableIO {
 
@@ -75,7 +76,7 @@ public class RecordingsTableIO extends BaseTableIO {
      * @return a new empty {@code Table} with the “Recordings” schema
      */
     public Table emptyTable() {
-        return newEmptyTable("Recordings", RECORDINGS_COLS, RECORDINGS_TYPES);
+        return newEmptyTable("Recordings", RecordingSchema.COLUMNS, RecordingSchema.TYPES);
     }
 
     // ───────────────────────────────────────────────────────────────────────────────
@@ -93,34 +94,34 @@ public class RecordingsTableIO extends BaseTableIO {
         Table table = emptyTable();
         for (Recording recording : recordings) {
             Row row = table.appendRow();
-            row.setString(  EXPERIMENT_NAME,                   recording.getExperimentName());
-            row.setString(  RECORDING_NAME,                    recording.getRecordingName());
-            row.setInt(     CONDITION_NUMBER,                  recording.getConditionNumber());
-            row.setInt(     REPLICATE_NUMBER,                  recording.getReplicateNumber());
-            row.setString(  PROBE_NAME,                        recording.getProbeName());
-            row.setString(  PROBE_TYPE,                        recording.getProbeType());
-            row.setString(  CELL_TYPE,                         recording.getCellType());
-            row.setString(  ADJUVANT,                          recording.getAdjuvant());
-            row.setDouble(  CONCENTRATION,                     recording.getConcentration());
-            row.setBoolean( PROCESS_FLAG,                      recording.isProcessFlag());
-            row.setDouble(  THRESHOLD,                         recording.getThreshold());
-            row.setInt(     NUMBER_OF_SPOTS,                   recording.getNumberOfSpots());
-            row.setInt(     NUMBER_OF_TRACKS,                  recording.getNumberOfTracks());
-            row.setInt(     NUMBER_OF_SQUARES_IN_BACKGROUND,   recording.getNumberOfSquaresInBackground());
-            row.setInt(     NUMBER_OF_TRACKS_IN_BACKGROUND,    recording.getNumberOfTracksInBackground());
-            row.setDouble(  AVERAGE_TRACKS_IN_BACKGROUND,      recording.getAverageTracksInBackGround());
-            row.setInt(     NUMBER_OF_SPOTS_IN_ALL_TRACKS,     recording.getNumberOfSpotsInAllTracks());
-            row.setInt(     NUMBER_OF_FRAMES,                  recording.getNumberOfFrames());
-            row.setDouble(  RUN_TIME,                          recording.getRunTime());
-            row.setDateTime(TIME_STAMP,                        recording.getTimeStamp());
-            row.setBoolean( EXCLUDE,                           recording.isExclude());
-            row.setDouble(  TAU,                               recording.getTau());
-            row.setDouble(  R_SQUARED,                         recording.getRSquared());
-            row.setDouble(  DENSITY,                           recording.getDensity());
-            row.setDouble(  MIN_REQUIRED_DENSITY_RATIO,        recording.getMinRequiredDensityRatio());
-            row.setDouble(  MIN_REQUIRED_R_SQUARED,             recording.getMinRequiredRSquared());
-            row.setDouble(  MAX_ALLOWABLE_VARIABILITY,         recording.getMaxAllowableVariability());
-            row.setString(  NEIGHBOUR_MODE,                    recording.getNeighbourMode());
+            row.setString(  EXPERIMENT_NAME,                 recording.getExperimentName());
+            row.setString(  RECORDING_NAME,                  recording.getRecordingName());
+            row.setInt(     CONDITION_NUMBER,                recording.getConditionNumber());
+            row.setInt(     REPLICATE_NUMBER,                recording.getReplicateNumber());
+            row.setString(  PROBE_NAME,                      recording.getProbeName());
+            row.setString(  PROBE_TYPE,                      recording.getProbeType());
+            row.setString(  CELL_TYPE,                       recording.getCellType());
+            row.setString(  ADJUVANT,                        recording.getAdjuvant());
+            row.setDouble(  CONCENTRATION,                   recording.getConcentration());
+            row.setBoolean( PROCESS_FLAG,                    recording.isProcessFlag());
+            row.setDouble(  THRESHOLD,                       recording.getThreshold());
+            row.setInt(     NUMBER_OF_SPOTS,                 recording.getNumberOfSpots());
+            row.setInt(     NUMBER_OF_TRACKS,                recording.getNumberOfTracks());
+            row.setInt(     NUMBER_OF_SQUARES_IN_BACKGROUND, recording.getNumberOfSquaresInBackground());
+            row.setInt(     NUMBER_OF_TRACKS_IN_BACKGROUND,  recording.getNumberOfTracksInBackground());
+            row.setDouble(  AVERAGE_TRACKS_IN_BACKGROUND,    recording.getAverageTracksInBackGround());
+            row.setInt(     NUMBER_OF_SPOTS_IN_ALL_TRACKS,   recording.getNumberOfSpotsInAllTracks());
+            row.setInt(     NUMBER_OF_FRAMES,                recording.getNumberOfFrames());
+            row.setDouble(  RUN_TIME,                        recording.getRunTime());
+            row.setDateTime(TIME_STAMP,                      recording.getTimeStamp());
+            row.setBoolean( EXCLUDE,                         recording.isExclude());
+            row.setDouble(  TAU,                             recording.getTau());
+            row.setDouble(  R_SQUARED,                       recording.getRSquared());
+            row.setDouble(  DENSITY,                         recording.getDensity());
+            row.setDouble(  MIN_REQUIRED_DENSITY_RATIO,      recording.getMinRequiredDensityRatio());
+            row.setDouble(  MIN_REQUIRED_R_SQUARED,          recording.getMinRequiredRSquared());
+            row.setDouble(  MAX_ALLOWABLE_VARIABILITY,       recording.getMaxAllowableVariability());
+            row.setString(  NEIGHBOUR_MODE,                  recording.getNeighbourMode());
         }
         return table;
     }
@@ -129,7 +130,7 @@ public class RecordingsTableIO extends BaseTableIO {
      * Converts a {@link Table} into a list of {@link Recording} entities.
      *
      * <p>The table must conform to the schema defined by
-     * {@code RECORDINGS_COLS} and {@code RECORDINGS_TYPES}.
+     * {@code RecordingSchema.COLUMNS} and {@code RecordingSchema.TYPES}.
      * Each row is mapped one-to-one to a {@code Recording} object.</p>
      *
      * @param table the validated {@link Table} to convert
@@ -184,7 +185,7 @@ public class RecordingsTableIO extends BaseTableIO {
      * @throws IOException if the file cannot be read or parsed
      */
     public Table readCsv(Path csvPath) throws IOException {
-        return readCsvWithSchema(csvPath, RECORDINGS_CSV, RECORDINGS_COLS, RECORDINGS_TYPES, false);
+        return readCsvWithSchema(csvPath, RECORDINGS_CSV, RecordingSchema.COLUMNS, RecordingSchema.TYPES, false);
     }
 
     /**
@@ -205,8 +206,7 @@ public class RecordingsTableIO extends BaseTableIO {
     public void appendInPlace(Table target, Table source) {
         for (Row row : source) {
             Row newRow = target.appendRow();
-
-            for (String col : RECORDINGS_COLS) {
+            for (String col : RecordingSchema.COLUMNS) {
                 Column<?> targetCol = target.column(col);
 
                 if (targetCol.type() == ColumnType.STRING) {

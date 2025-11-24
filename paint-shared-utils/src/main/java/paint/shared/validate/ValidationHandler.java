@@ -30,7 +30,8 @@
  *    – paint.shared.validate.{ExperimentInfoValidator, RecordingsValidator,
  *      SquaresValidator, TracksValidator, ValidationResult}
  *    – paint.shared.utils.{PaintLogger, PaintRuntime}
- *    – paint.shared.constants.PaintConstants
+ *    – paint.shared.schema.{ExperimentInfoSchema, RecordingSchema,
+ *      SquareSchema, TrackSchema}
  *    – java.nio.file, java.util
  *
  *  AUTHOR:

@@ -32,7 +32,7 @@
  *    – javax.swing.JOptionPane
  *    – java.awt.FileDialog
  *    – java.nio.file.{Path, Files}
- *    – paint.shared.constants.PaintConstants
+ *    – paint.shared.constants.PaintFileNames
  *    – paint.shared.utils.PaintPrefs
  *
  *  AUTHOR:
