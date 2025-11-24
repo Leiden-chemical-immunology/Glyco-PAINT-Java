@@ -53,6 +53,9 @@ import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
+import loci.plugins.BF;
+import loci.plugins.in.ImporterOptions;
+
 /**
  * A lightweight GUI-based TIFF stack movie player built on ImageJ and Swing.
  * <p>
@@ -106,8 +109,23 @@ public class TiffMoviePlayer {
                 public void write(int b) { /* ignore console output */ }
             }));
 
-            final ImagePlus imp = IJ.openImage(tiffPath);
+            ImagePlus imp = IJ.openImage(tiffPath);
 
+            if (imp == null) {
+                try {
+                    ImporterOptions opts = new ImporterOptions();
+                    opts.setId(tiffPath);
+                    opts.setAutoscale(true);
+                    opts.setStackOrder(ImporterOptions.ORDER_XYCZT);
+
+                    ImagePlus[] imps = BF.openImagePlus(opts);
+                    if (imps != null && imps.length > 0) {
+                        imp = imps[0];
+                    }
+                } catch (Exception bfErr) {
+                    bfErr.printStackTrace();
+                }
+            }
             // Restore normal stdout
             System.setOut(originalOut);
 
@@ -138,7 +156,12 @@ public class TiffMoviePlayer {
             // ------------------------------------------------------------
             // UI CONSTRUCTION — must occur on the EDT
             // ------------------------------------------------------------
-            SwingUtilities.invokeLater(() -> buildAndRunMovieWindow(imp, fileName, baseDelayMs));
+
+            final ImagePlus impFinal       = imp;
+            final String    fileNameFinal  = fileName;
+            final int       baseDelayFinal = baseDelayMs;
+
+            SwingUtilities.invokeLater(() -> buildAndRunMovieWindow(impFinal, fileNameFinal, baseDelayFinal));
 
         }, "TiffLoaderThread").start();
     }
