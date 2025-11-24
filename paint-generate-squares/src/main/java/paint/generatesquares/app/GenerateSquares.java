@@ -61,7 +61,7 @@ import java.time.format.DateTimeFormatter;
 
 import static paint.shared.constants.PaintColumnNames.GENERATE_SQUARES;
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
-import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
+import static paint.shared.utils.ProjectPathResolver.getValidProjectPath;
 
 /**
  * The GenerateSquares class serves as the main entry point for launching the

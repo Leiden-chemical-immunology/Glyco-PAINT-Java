@@ -67,12 +67,12 @@ import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
  * The chosen path is stored persistently via {@link PaintPrefs}.
  * </p>
  */
-public final class ValidProjectPath {
+public final class ProjectPathResolver {
 
     /**
      * Private constructor to prevent instantiation.
      */
-    private ValidProjectPath() {
+    private ProjectPathResolver() {
     }
 
     // ───────────────────────────────────────────────────────────────────────────────

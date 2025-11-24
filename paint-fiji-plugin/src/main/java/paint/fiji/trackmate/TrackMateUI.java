@@ -61,7 +61,7 @@ import java.time.format.DateTimeFormatter;
 
 import static paint.shared.constants.PaintColumnNames.DEBUG_RUNTRACKMATEONPROJECT;
 import static paint.shared.constants.PaintFileNames.PAINT_SWEEP_CONFIGURATION_JSON;
-import static paint.shared.utils.ValidProjectPath.getValidProjectPath;
+import static paint.shared.utils.ProjectPathResolver.getValidProjectPath;
 
 /**
  * Main user interface class for running TrackMate interactively within the
