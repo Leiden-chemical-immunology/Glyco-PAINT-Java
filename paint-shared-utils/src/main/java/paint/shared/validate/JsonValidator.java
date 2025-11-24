@@ -87,11 +87,12 @@ public final class JsonValidator {
 
         String line = lines[errLine - 1];
 
-        String sb = String.format("%4d | %s%n", errLine, line) +
-                "     | " +
-                spaces(Math.max(0, errCol - 1)) +
-                "^";
-        return sb;
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%4d | %s%n", errLine, line));
+        sb.append("     | ")
+          .append(spaces(Math.max(0, errCol - 1)))
+          .append("^");
+        return sb.toString();
     }
 
     private static String spaces(int n) {
