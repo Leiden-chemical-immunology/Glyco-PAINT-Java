@@ -183,8 +183,8 @@ public final class SharedSquareUtils {
             return; // No neighbour constraints
         }
 
-        Set<Square> keep     = new HashSet<>();
-        int keptCount        = 0;
+        Set<Square> keep = new HashSet<>();
+        int keptCount    = 0;
 
         for (Square square : squares) {
             if (!square.isVisible()) {

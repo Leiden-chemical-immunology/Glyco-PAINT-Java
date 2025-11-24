@@ -63,10 +63,9 @@ public final class PaintLogger {
     public enum Level {
 
         DEBUG(0, Color.GRAY),
-        INFO(1, Color.BLACK),
-        WARN(2, Color.ORANGE.darker()),
+        INFO( 1, Color.BLACK),
+        WARN( 2, Color.ORANGE.darker()),
         ERROR(3, Color.RED);
-
 
         private final int   rank;
         private final Color color;
@@ -134,9 +133,6 @@ public final class PaintLogger {
             case "DEBUG":
                 setLevel(Level.DEBUG);
                 break;
-            case "INFO":
-                setLevel(Level.INFO);
-                break;
             case "WARNING":
             case "WARN":
                 setLevel(Level.WARN);
@@ -144,6 +140,7 @@ public final class PaintLogger {
             case "ERROR":
                 setLevel(Level.ERROR);
                 break;
+            case "INFO":
             default:
                 setLevel(Level.INFO);
                 break;

@@ -69,6 +69,13 @@ import java.io.File;
  */
 public final class PaintPrefs {
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private PaintPrefs() {
+        // Deliberately empty
+    }
+
     // ───────────────────────────────────────────────────────────────────────────────
     // CONSTANTS AND STATE
     // ───────────────────────────────────────────────────────────────────────────────
@@ -91,12 +98,6 @@ public final class PaintPrefs {
         }
     }
 
-    /**
-     * Private constructor to prevent instantiation.
-     */
-    private PaintPrefs() {
-        // Deliberately empty
-    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // GET METHODS

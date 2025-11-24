@@ -194,28 +194,32 @@ public abstract class AbstractFileValidator {
      * @param result   validation result for error reporting
      */
     protected void headersMatch(List<String> expected, List<String> actual, ValidationResult result) {
+
+        // Return when the actual header is equal to the expected one
         if (expected.equals(actual)) {
             return;
         }
 
+        // Find the headers that should be present (according to schema), but are not in the CSV.
         List<String> missing = expected.stream()
                 .filter(h -> !actual.contains(h))
                 .collect(Collectors.toList());
 
+        // Find the headers that appear in the CSV, but are not expected.
         List<String> unexpected = actual.stream()
                 .filter(h -> !expected.contains(h))
                 .collect(Collectors.toList());
 
+        // Create the error string
         StringBuilder error = new StringBuilder("Header mismatch:");
-
         if (!missing.isEmpty()) {
             error.append("\n- Missing headers: ").append(missing);
         }
-
         if (!unexpected.isEmpty()) {
             error.append("\n- Unexpected headers: ").append(unexpected);
         }
 
+        // Append the error string to what there already was
         result.addError(error.toString());
     }
 
