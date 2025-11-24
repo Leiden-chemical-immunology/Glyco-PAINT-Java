@@ -91,7 +91,6 @@ public final class HelperIO {
         try {
             Table recTable = recIO.readCsvWithSchema(
                     experimentPath.resolve(RECORDINGS_CSV),
-                    "Recordings",
                     RecordingSchema.COLUMNS,
                     RecordingSchema.TYPES,
                     false
@@ -153,7 +152,6 @@ public final class HelperIO {
         try {
             return squareIO.readCsvWithSchema(
                     experimentPath.resolve(SQUARES_CSV),
-                    "Squares",
                     SquareSchema.COLUMNS,
                     SquareSchema.TYPES,
                     false
@@ -213,7 +211,6 @@ public final class HelperIO {
         try {
             return trackIO.readCsvWithSchema(
                     experimentPath.resolve(TRACKS_CSV),
-                    "Tracks",
                     TrackSchema.COLUMNS,
                     TrackSchema.TYPES,
                     false

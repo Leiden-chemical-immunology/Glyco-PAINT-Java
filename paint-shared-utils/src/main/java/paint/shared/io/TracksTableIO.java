@@ -37,7 +37,6 @@
 package paint.shared.io;
 
 import static paint.shared.constants.PaintColumnNames.*;
-import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
 
 import paint.shared.schema.TrackSchema;
 import paint.shared.objects.Track;
@@ -157,7 +156,11 @@ public class TracksTableIO extends BaseTableIO {
      * @throws IOException if the file cannot be read or validated
      */
     public Table readCsv(Path csvPath) throws IOException {
-        return readCsvWithSchema(csvPath, TRACKS_CSV, TrackSchema.COLUMNS, TrackSchema.TYPES, false);
+        return readCsvWithSchema(
+                csvPath,
+                TrackSchema.COLUMNS,
+                TrackSchema.TYPES,
+                false);
     }
 
     /**

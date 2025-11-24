@@ -185,7 +185,11 @@ public class RecordingsTableIO extends BaseTableIO {
      * @throws IOException if the file cannot be read or parsed
      */
     public Table readCsv(Path csvPath) throws IOException {
-        return readCsvWithSchema(csvPath, RECORDINGS_CSV, RecordingSchema.COLUMNS, RecordingSchema.TYPES, false);
+        return readCsvWithSchema(
+                csvPath,
+                RecordingSchema.COLUMNS,
+                RecordingSchema.TYPES,
+                false);
     }
 
     /**

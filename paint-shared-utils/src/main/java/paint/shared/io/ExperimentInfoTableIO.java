@@ -140,8 +140,11 @@ public class ExperimentInfoTableIO extends BaseTableIO {
      * @throws IOException if the file cannot be read or parsed
      */
     public Table readCsv(Path csvPath) throws IOException {
-        return readCsvWithSchema(csvPath, "Experiment Info",
-                                 ExperimentInfoSchema.COLUMNS, ExperimentInfoSchema.TYPES, false);
+        return readCsvWithSchema(
+                csvPath,
+                ExperimentInfoSchema.COLUMNS,
+                ExperimentInfoSchema.TYPES,
+                false);
     }
 
     /**

@@ -122,35 +122,34 @@ public abstract class BaseTableIO {
      * Reads a CSV file into a {@link Table} with a known schema and validates its header and types.
      *
      * @param csvPath       path to the CSV file
-     * @param logicalName   logical name used for error reporting
      * @param expectedCols  expected column names in order
      * @param expectedTypes expected {@link ColumnType}s in order
      * @param allowSuperset whether extra columns are allowed
      * @return a validated {@link Table}
      * @throws IOException if the file cannot be read or validation fails
      */
-    public Table readCsvWithSchema(Path         csvPath,
-                                   String       logicalName,
-                                   String[]     expectedCols,
-                                   ColumnType[] expectedTypes,
-                                   boolean allowSuperset) throws IOException {
+    public Table readCsvWithSchema(
+            Path         csvPath,
+            String[]     expectedCols,
+            ColumnType[] expectedTypes,
+            boolean      allowSuperset) throws IOException {
 
         if (!Files.isRegularFile(csvPath)) {
             throw new IOException("CSV not found: " + csvPath);
         }
 
-        CsvReadOptions opts  = buildCsvReadOptions(csvPath, expectedTypes);
-        Table          table = Table.read().usingOptions(opts);
+        Table table = Table.read().usingOptions(
+                buildCsvReadOptions(csvPath, expectedTypes));
 
         List<String> headerErrors = validateHeader(table, expectedCols, allowSuperset);
         if (!headerErrors.isEmpty()) {
-            throw new IOException("Header validation failed for " + logicalName + ":\n  - "
+            throw new IOException("Header validation failed:\n  - "
                                           + String.join("\n  - ", headerErrors));
         }
 
         List<String> typeErrors = validateTypes(table, expectedCols, expectedTypes);
         if (!typeErrors.isEmpty()) {
-            throw new IOException("Type validation failed for " + logicalName + ":\n  - "
+            throw new IOException("Type validation failed:\n  - "
                                           + String.join("\n  - ", typeErrors));
         }
 
