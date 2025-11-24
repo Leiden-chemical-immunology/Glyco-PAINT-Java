@@ -3,22 +3,26 @@
  *  Package:      paint.shared.validate
  *
  *  PURPOSE:
- *    Validates the existence and integrity of experiment image directories and
- *    corresponding recording files referenced by Experiment Info CSV files.
+ *    Validates the existence of experiment image directories and checks that
+ *    all recordings flagged for processing in each experiment’s metadata have
+ *    matching `.nd2` files in the global image root.
  *
  *  DESCRIPTION:
- *    • Ensures each experiment listed in the project has a matching image
- *      directory under the global image root.
- *    • Checks that each experiment folder contains its required
- *      “Experiment Info.csv” metadata file.
- *    • Parses each CSV file and confirms that all recordings marked for
- *      processing (Process Flag = true) have corresponding `.nd2` image files
- *      present in the expected image directory.
+ *    • Confirms the existence of an image directory for each experiment under
+ *      the global image root.
+ *    • Confirms that each experiment folder contains its required
+ *      “Experiment Info.csv”.
+ *    • Loads Experiment Info rows via the standard helper method
+ *      {@code HelperIO.readExperimentInfo}, ensuring consistent schema parsing.
+ *    • For each metadata row where {@code ProcessFlag == true}, verifies that a
+ *      corresponding `.nd2` recording file exists in the experiment’s image
+ *      directory.
  *
  *  RESPONSIBILITIES:
- *    • Detect missing experiment directories or image files.
- *    • Cross-validate metadata and file system structure.
- *    • Provide detailed reporting via {@link ValidationResult}.
+ *    • Cross-validate Experiment Info metadata and image repository structure.
+ *    • Report missing experiment folders, missing metadata files, or missing
+ *      recording files.
+ *    • Provide a summarised or detailed validation report.
  *
  *  USAGE EXAMPLE:
  *    List<String> experiments = Arrays.asList("221108", "221122");
@@ -30,10 +34,11 @@
  *    System.out.println(result.getReport());
  *
  *  DEPENDENCIES:
- *    – org.apache.commons.csv.{CSVFormat, CSVParser, CSVRecord}
+ *    – paint.shared.io.HelperIO.readExperimentInfo
+ *    – paint.shared.objects.ExperimentInfo
  *    – paint.shared.validate.ValidationResult
- *    – java.nio.file.{Files, Path, Paths}
- *    – java.util.{List, Arrays}
+ *    – java.nio.file.{Files, Path}
+ *    – java.util.List
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -50,20 +55,14 @@
 
 package paint.shared.validate;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-
-import java.io.IOException;
-import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 
-import static paint.shared.constants.PaintColumnNames.PROCESS_FLAG;
-import static paint.shared.constants.PaintColumnNames.RECORDING_NAME;
+import paint.shared.objects.ExperimentInfo;
+
+import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
+import static paint.shared.io.HelperIO.readExperimentInfo;
 
 /**
  * Validates that all required experiment and image directories exist, and that
@@ -73,30 +72,12 @@ import static paint.shared.constants.PaintColumnNames.RECORDING_NAME;
 public final class ImageRootValidator {
 
     /**
-     * Standard file name for experiment metadata.
+     * Private constructor to prevent instantiation.
      */
-    private static final String EXPERIMENT_INFO_CSV = "Experiment Info.csv";
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // MAIN ENTRY POINT (TEST HARNESS)
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Standalone test harness for local validation of project/image directory pairs.
-     *
-     * @param args command-line arguments (unused)
-     */
-    public static void main(String[] args) {
-        List<String> experiments = Arrays.asList("221108", "221122");
-
-        ValidationResult result = ImageRootValidator.validateImageRoot(
-                Paths.get("/Users/hans/Paint Test Project"),
-                Paths.get("/Volumes/Extreme Pro/Omero"),
-                experiments
-        );
-
-        System.out.println(result.getReport());
+    private ImageRootValidator() {
+        // Deliberately empty
     }
+
 
     // ───────────────────────────────────────────────────────────────────────────────
     // CORE VALIDATION LOGIC
@@ -111,9 +92,8 @@ public final class ImageRootValidator {
      *   <li>Confirms the corresponding image directory exists under {@code imagesRoot}.</li>
      *   <li>Confirms the experiment folder under {@code projectRoot} contains
      *       the {@code Experiment Info.csv} file.</li>
-     *   <li>Parses the CSV to locate all recordings marked with
-     *       {@code Process Flag = true}, and verifies each has a matching
-     *       {@code .nd2} file in the image directory.</li>
+     *   <li>Loads the Experiment Info table and verifies that each recording
+     *       with {@code Process Flag = true} has a corresponding `.nd2` image.</li>
      * </ul>
      *
      * @param projectRoot     path to the local PAINT project root
@@ -122,8 +102,9 @@ public final class ImageRootValidator {
      * @return a {@link ValidationResult} containing all missing files/directories
      */
     public static ValidationResult validateImageRoot(Path projectRoot,
-                                                     Path imagesRoot,
-                                                     List<String> experimentNames) {
+            Path imagesRoot,
+            List<String> experimentNames) {
+
         ValidationResult result = new ValidationResult();
 
         for (String experiment : experimentNames) {
@@ -143,32 +124,25 @@ public final class ImageRootValidator {
                 continue;
             }
 
-            // ── 3. Parse and verify each recording entry - this is a try with resources construct
-            try (Reader reader = Files.newBufferedReader(expInfoFile);
-                 CSVParser parser = CSVFormat.Builder.create(CSVFormat.DEFAULT)
-                         .setHeader()
-                         .setSkipHeaderRecord(true)
-                         .build()
-                         .parse(reader)) {
+            // ── 3. Load Experiment Info using standard reader (handles schema validation + entity conversion)
+            List<ExperimentInfo> rows = readExperimentInfo(experimentDir);
+            if (rows == null) {
+                result.addError("[" + experiment + "] Cannot parse " + EXPERIMENT_INFO_CSV);
+                continue;
+            }
 
-                for (CSVRecord record : parser) {
-                    String recordingName = record.get(RECORDING_NAME);
-                    String processFlag = record.get(PROCESS_FLAG).trim().toLowerCase();
-
-                    if ("true".equals(processFlag)) {
-                        Path recordingFile = imageDir.resolve(recordingName + ".nd2");
-                        if (!Files.exists(recordingFile)) {
-                            result.addError("[" + experiment + "] Missing recording file: " + recordingFile);
-                        }
+            // ── 4. Validate all ProcessFlag=true recordings by checking that an .nd2 file exists in the corresponding image directory
+            for (ExperimentInfo info : rows) {
+                if (info.isProcessFlag()) {
+                    Path recordingFile = imageDir.resolve(info.getRecordingName() + ".nd2");
+                    if (!Files.exists(recordingFile)) {
+                        result.addError("[" + experiment + "] Missing recording file: " + recordingFile);
                     }
                 }
-
-            } catch (IOException e) {
-                result.addError("[" + experiment + "] Error reading " + expInfoFile + ": " + e.getMessage());
             }
         }
 
-        // ── 4. Generate the summary report
+        // ── 5. Generate the summary report
         if (!result.hasErrors()) {
             result.setReport("All required image directories and files exist.");
         } else {
@@ -176,12 +150,5 @@ public final class ImageRootValidator {
         }
 
         return result;
-    }
-
-    /**
-     * Private constructor to prevent instantiation.
-     */
-    private ImageRootValidator() {
-        // Deliberately empty
     }
 }

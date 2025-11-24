@@ -37,9 +37,11 @@
 
 package paint.shared.io;
 
+import paint.shared.objects.ExperimentInfo;
 import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
 import paint.shared.objects.Track;
+import paint.shared.schema.ExperimentInfoSchema;
 import paint.shared.schema.TrackSchema;
 import paint.shared.schema.SquareSchema;
 import paint.shared.schema.RecordingSchema;
@@ -50,11 +52,12 @@ import tech.tablesaw.api.Table;
 import java.nio.file.Path;
 import java.util.List;
 
-import static paint.shared.utils.Miscellaneous.friendlyMessage;
-
 import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
 import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
 import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
+import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
+
+import static paint.shared.utils.Miscellaneous.friendlyMessage;
 
 /**
  * Utility class providing static helper methods for reading and writing
@@ -75,6 +78,34 @@ public final class HelperIO {
      */
     private HelperIO() {
     }
+
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // EXPERIMENT INFO
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Reads all recordings from an experiment directory.
+     *
+     * @param experimentPath the experiment directory containing {@code recordings.csv}
+     * @return a list of {@link ExperimentInfo} entities, or {@code null} if reading fails
+     */
+    public static List<ExperimentInfo> readExperimentInfo(Path experimentPath) {
+        ExperimentInfoTableIO experimentInfoTableIO = new ExperimentInfoTableIO();
+        try {
+            Table experimentInfoTable = experimentInfoTableIO.readCsvWithSchema(
+                    experimentPath.resolve(EXPERIMENT_INFO_CSV),
+                    ExperimentInfoSchema.COLUMNS,
+                    ExperimentInfoSchema.TYPES,
+                    false
+            );
+            return experimentInfoTableIO.toEntities(experimentInfoTable);
+        } catch (Exception e) {
+            PaintLogger.errorf("Failed to read %s : %s", EXPERIMENT_INFO_CSV, friendlyMessage(e));
+            return null;
+        }
+    }
+
 
     // ───────────────────────────────────────────────────────────────────────────────
     // RECORDINGS

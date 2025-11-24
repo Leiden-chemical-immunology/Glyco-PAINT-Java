@@ -39,6 +39,7 @@ import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import paint.shared.schema.ExperimentInfoSchema;
@@ -122,6 +123,28 @@ public class ExperimentInfoTableIO extends BaseTableIO {
         return table;
     }
 
+    public List<ExperimentInfo> toEntities(Table table) {
+        List<ExperimentInfo> items = new ArrayList<>();
+
+        for (Row row : table) {
+            ExperimentInfo info = new ExperimentInfo();
+
+            info.setExperimentName(row.getString(0));
+            info.setRecordingName(row.getString(1));
+            info.setConditionNumber(row.getInt(2));
+            info.setReplicateNumber(row.getInt(3));
+            info.setProbeName(row.getString(4));
+            info.setProbeType(row.getString(5));
+            info.setCellType(row.getString(6));
+            info.setAdjuvant(row.getString(7));
+            info.setConcentration(row.getDouble(8));
+            info.setProcessFlag(row.getBoolean(9));
+
+            items.add(info);
+        }
+
+        return items;
+    }
 
     /**
      * Appends all rows from a source {@link Table} into a target {@link Table},
