@@ -84,7 +84,7 @@ public class ProjectPathsPanel {
 
         // wire
         browseProjectBtn.addActionListener(e -> {
-            File dir = FileDialogs.chooseDirectory(panel, "Project Root", valueOrHome(projectRootField.getText()));
+            File dir = DirectoryChooser.chooseDirectory(panel, "Project Root", valueOrHome(projectRootField.getText()));
             if (dir != null && dir.isDirectory()) {
                 projectRootField.setText(dir.getAbsolutePath());
                 onProjectChosen.accept(dir);
@@ -93,7 +93,7 @@ public class ProjectPathsPanel {
         });
 
         browseImagesBtn.addActionListener(e -> {
-            File dir = FileDialogs.chooseDirectory(panel, "Images Root", valueOrHome(imagesRootField.getText()));
+            File dir = DirectoryChooser.chooseDirectory(panel, "Images Root", valueOrHome(imagesRootField.getText()));
             if (dir != null && dir.isDirectory()) {
                 imagesRootField.setText(dir.getAbsolutePath());
                 onImagesChosen.accept(dir);
