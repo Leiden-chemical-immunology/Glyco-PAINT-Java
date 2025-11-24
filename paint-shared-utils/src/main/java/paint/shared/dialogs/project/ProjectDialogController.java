@@ -1,3 +1,46 @@
+// =================================================================================================
+//  File: src/main/java/paint/shared/dialogs/project/ProjectDialogController.java
+// =================================================================================================
+
+/* =================================================================================================
+ *  PURPOSE
+ *      Controller class coordinating UI behavior for the ProjectDialog. It responds to user input,
+ *      updates panels, validates run conditions, and delegates background execution and cancellation
+ *      to the ProjectDialog via functional interfaces.
+ *
+ *  DESCRIPTION
+ *      This controller is the glue between the dialog panels (paths, parameters, experiments, bottom
+ *      bar) and the dialog logic. It does not own any UI components; instead it receives references
+ *      to getters, setters, and worker functions from ProjectDialog. It handles:
+ *          - browse button actions
+ *          - enabling/disabling OK depending on validity
+ *          - sweep configuration creation
+ *          - executing the worker (via QuadRunnable)
+ *          - managing cancellation behavior
+ *          - EDT-safe updates
+ *
+ *  KEY FEATURES
+ *      - Clean method-reference based communication with ProjectDialog.
+ *      - Uses Supplier, Consumer, Runnable, and QuadRunnable to remain fully decoupled.
+ *      - Handles validation logic for when the OK button may be enabled.
+ *      - Performs sweep creation checks.
+ *      - Coordinates UI disable/enable states during background work.
+ *
+ *  AUTHOR
+ *      PAINT Toolkit
+ *
+ *  MODULE
+ *      paint.shared.dialogs.project
+ *
+ *  UPDATED
+ *      2025-11-21
+ *
+ *  COPYRIGHT
+ *      Copyright (c) 2020–2025.
+ *      All rights reserved.
+ * =================================================================================================
+ */
+
 package paint.shared.dialogs.project;
 
 import paint.shared.config.paintconfig.PaintConfig;
@@ -14,8 +57,17 @@ import java.util.function.Supplier;
 
 import static paint.shared.dialogs.ProjectDialog.DialogMode;
 
+/**
+ * Controller for ProjectDialog. It reacts to UI events coming from the panels,
+ * controls enabling/disabling of buttons, performs validations, and manages the
+ * interaction with the background worker (through QuadRunnable and Supplier/Consumer callbacks).
+ */
 public class ProjectDialogController {
 
+    /**
+     * Factory method for creating a WindowAdapter that triggers a run() call
+     * when the user attempts to close the window.
+     */
     public static WindowAdapter onWindowClosing(Runnable action) {
         return new WindowAdapter() {
             @Override
@@ -27,39 +79,46 @@ public class ProjectDialogController {
 
     private final DialogMode         mode;
     private final JDialog            dialog;
-    private final PaintConfig        cfg;
+    private final PaintConfig        paintConfig;
 
-    private final Supplier<Path>     getProjectPath;
-    private final Consumer<Path>     setProjectPath;
+    // Project root getter/setter supplied by the dialog
+    private final Supplier<Path>     getProjectPath;   // retrieves current project root
+    private final Consumer<Path>     setProjectPath;   // updates project root
 
+    // UI panels
     private final ProjectPathsPanel  paths;
-    private final SquaresParamsPanel params;       // null in VIEWER
+    private final SquaresParamsPanel params;           // null in VIEWER mode
     private final ExperimentsPanel   experiments;
     private final BottomBarPanel     bottom;
 
-    private final QuadRunnable       startWorker;  // (runUiDisable, runUiEnable, onSuccess, onFailure)
-    private final Supplier<Thread>   getWorker;
-    private final Runnable           setCancelled;
-    private final Runnable           clearCancelled;
+    // Worker logic references provided by ProjectDialog
+    private final QuadRunnable       startWorker;      // executes heavy work with 4 UI callbacks
+    private final Supplier<Thread>   getWorker;        // retrieves active worker thread
+    private final Runnable           setCancelled;     // marks cancellation
+    private final Runnable           clearCancelled;   // resets cancellation flag
 
+    /**
+     * Main controller constructor. Receives all functional interfaces and UI component references
+     * from ProjectDialog, ensuring the controller remains unaware of their concrete implementation.
+     */
     public ProjectDialogController(
             DialogMode         mode,
             JDialog            dialog,
             PaintConfig        paintConfig,
-            Supplier<Path>     getProjectPath,
-            Consumer<Path>     setProjectPath,
+            Supplier<Path>     getProjectPath,  // A supplier takes no arguments and returns a value.
+            Consumer<Path>     setProjectPath,  // A consumer takes one argument and returns nothing.
             ProjectPathsPanel  paths,
             SquaresParamsPanel params,
             ExperimentsPanel   experiments,
             BottomBarPanel     bottom,
-            QuadRunnable       startWorker,
-            Supplier<Thread>   getWorker,
-            Runnable           setCancelled,
+            QuadRunnable       startWorker,     // (runUiDisable, runUiEnable, onSuccess, onFailure) define UI behaviour
+            Supplier<Thread>   getWorker,       // A supplier takes no arguments and returns a value.
+            Runnable           setCancelled,    // A runnable takes no arguments and returns nothing.
             Runnable           clearCancelled
     ) {
         this.mode           = mode;
         this.dialog         = dialog;
-        this.cfg            = paintConfig;
+        this.paintConfig    = paintConfig;
         this.getProjectPath = getProjectPath;
         this.setProjectPath = setProjectPath;
         this.paths          = paths;
@@ -72,20 +131,24 @@ public class ProjectDialogController {
         this.clearCancelled = clearCancelled;
     }
 
+    /**
+     * Initializes all UI listeners: browse buttons, sweep toggle, OK/Cancel buttons,
+     * parameter validation, and worker invocation.
+     */
     public void init() {
         // browse handlers
-        paths.onBrowseProject(dir -> updateProjectRoot(dir.toPath()));
-        paths.onBrowseImages( dir -> bottom.updateOkEnabled(validToRun()));
+        paths.onBrowseProject(this::handleBrowseProject);
+        paths.onBrowseImages(this::handleBrowseImages);
 
         // text listeners
-        paths.onRootsChanged(() -> bottom.updateOkEnabled(validToRun()));
+        paths.onRootsChanged(this::updateOk);
 
         // experiments selection listeners
-        experiments.onSelectionChanged(() -> bottom.updateOkEnabled(validToRun()));
+        experiments.onSelectionChanged(this::updateOk);
 
         // TrackMate -> run squares toggle affects params enabled & OK state
         if (params != null) {
-            params.onParamsChanged(() -> bottom.updateOkEnabled(validToRun()));
+            params.onParamsChanged(this::updateOk);
         }
 
         // Sweep checkbox + verbose + OK/Cancel
@@ -106,7 +169,7 @@ public class ProjectDialogController {
                     );
                     if (res == JOptionPane.YES_OPTION) {
                         try {
-                            cfg.setSweepDefaults(root);
+                            paintConfig.setSweepDefaults(root);
                             JOptionPane.showMessageDialog(
                                     dialog,
                                     "Sweep configuration file has been created:\n" +
@@ -128,7 +191,7 @@ public class ProjectDialogController {
                     }
                 }
             }
-            bottom.updateOkEnabled(validToRun());
+            updateOk();
         });
 
         bottom.onOk(() -> {
@@ -212,14 +275,20 @@ public class ProjectDialogController {
         });
 
         // initial OK state
-        bottom.updateOkEnabled(validToRun());
+        updateOk();
     }
 
+    /**
+     * Handles when the user selects a new project root directory.
+     */
     private void updateProjectRoot(Path newRoot) {
         setProjectPath.accept(newRoot);
         bottom.updateOkEnabled(validToRun());
     }
 
+    /**
+     * Determines whether execution is allowed, depending on mode and user selections.
+     */
     private boolean validToRun() {
         if (mode == DialogMode.VIEWER) {
             return paths.isProjectRootValid();
@@ -227,6 +296,9 @@ public class ProjectDialogController {
         return paths.isProjectRootValid() && experiments.anySelected();
     }
 
+    /**
+     * Enables or disables all input panels.
+     */
     private void setInputsEnabled(boolean enabled) {
         paths.setEnabled(enabled, mode);
         experiments.setEnabled(enabled);
@@ -236,8 +308,25 @@ public class ProjectDialogController {
         }
     }
 
+    /**
+     * A functional interface representing a callback that receives four Runnables
+     * (typically: runUiDisable, runUiEnable, onSuccess, onFailure). Used to abstract
+     * background worker startup from the controller.
+     */
     @FunctionalInterface
     public interface QuadRunnable {
         void run(Runnable a, Runnable b, Runnable c, Runnable d);
+    }
+
+    private void updateOk() {
+        bottom.updateOkEnabled(validToRun());
+    }
+
+    private void handleBrowseProject(File dir) {
+        updateProjectRoot(dir.toPath());
+    }
+
+    private void handleBrowseImages(File ignored) {
+        updateOk();
     }
 }

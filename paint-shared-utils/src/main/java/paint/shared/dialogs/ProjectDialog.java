@@ -1,6 +1,41 @@
 // =================================================================================================
 //  File: src/main/java/paint/shared/dialogs/ProjectDialog.java
 // =================================================================================================
+
+/* =================================================================================================
+ *  PURPOSE
+ *      Main dialog for configuring and executing PAINT project operations (TrackMate, Generate
+ *      Squares, Viewer). Manages UI composition, background worker behavior, and persistence of
+ *      user selections.
+ *
+ *  DESCRIPTION
+ *      This dialog acts as the central UI entry point for project-level operations. It wires
+ *      together all project-related panels (paths, experiments, parameters), connects to a
+ *      ProjectDialogController via method references, manages the worker thread for expensive
+ *      computations, and ensures correct EDT behavior for UI updates.
+ *
+ *  KEY FEATURES
+ *      - Supports three modes: TRACKMATE, GENERATE_SQUARES, VIEWER.
+ *      - Assembles panels and components dynamically based on selected mode.
+ *      - Provides a consistent project-building pipeline (persist + construct).
+ *      - Includes cancel-safe worker thread execution with interrupt support.
+ *      - Uses clear method references for controller wiring.
+ *
+ *  AUTHOR
+ *      PAINT Toolkit
+ *
+ *  MODULE
+ *      paint.shared.dialogs
+ *
+ *  UPDATED
+ *      2025-11-21
+ *
+ *  COPYRIGHT
+ *      Copyright (c) 2020–2025.
+ *      All rights reserved.
+ * =================================================================================================
+ */
+
 package paint.shared.dialogs;
 
 import paint.shared.config.GenerateSquaresConfig;
@@ -21,34 +56,49 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+/**
+ * Main dialog responsible for configuring a PAINT Project and running associated operations
+ * (TrackMate, Generate Squares, Viewer). Builds the UI, wires controller callbacks,
+ * and coordinates worker thread execution and cancellation.
+ */
 public class ProjectDialog {
 
     // ----- public API kept stable -----
+
+    /**
+     * Operation mode for the dialog. Determines UI content and behavior.
+     */
     public enum DialogMode {
         TRACKMATE,
         GENERATE_SQUARES,
         VIEWER}
 
+    /**
+     * Functional callback for executing expensive computations on a fully constructed Project.
+     * Returning {@code true} indicates success; {@code false} indicates failure.
+     */
     @FunctionalInterface
     public interface CalculationCallback {
         boolean run(Project project);
     }
 
     // ----- state -----
-    private final JDialog     dialog;
-    private final DialogMode  mode;
-
-    private          Path                projectPath;
-    private          CalculationCallback callback;
-    private volatile boolean             cancelled = false;
-    private volatile Thread              workerThread;
+    private final    JDialog             dialog;              // owning dialog
+    private final    DialogMode          mode;                // current mode
+    private          Path                projectPath;         // project root path
+    private          CalculationCallback calculationCallback; // computation callback
+    private volatile boolean             cancelled = false;   // cancellation flag
+    private volatile Thread              workerThread;        // background worker thread
 
     // sub-components
-    private final ProjectPathsPanel  projectPathsPanel;
-    private final SquaresParamsPanel squaresParamsPanel;         // null in VIEWER
-    private final ExperimentsPanel   experimentsPanel;
-    private final BottomBarPanel     bottomBarPanel;
+    private final    ProjectPathsPanel   projectPathsPanel;
+    private final    SquaresParamsPanel  squaresParamsPanel; // null in VIEWER
+    private final    ExperimentsPanel    experimentsPanel;
+    private final    BottomBarPanel      bottomBarPanel;
 
+    /**
+     * Constructs the dialog, builds the UI, wires the controller, and applies sizing defaults.
+     */
     public ProjectDialog(Frame owner, Path initialProjectPath, DialogMode mode) {
         this.mode               = mode;
         this.projectPath        = initialProjectPath;
@@ -65,14 +115,9 @@ public class ProjectDialog {
 
         this.dialog = new JDialog(owner, title, false);
         this.dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        this.dialog.addWindowListener(ProjectDialogController.onWindowClosing(() -> {
-            cancelled = true;
-            if (workerThread != null && workerThread.isAlive()) {
-                workerThread.interrupt();
-                PaintLogger.infof("Cancellation requested — interrupting background thread...");
-            }
-            dialog.dispose();
-        }));
+
+        // Manual close behavior handled in controller; handles cancellation + thread stop.
+        this.dialog.addWindowListener(ProjectDialogController.onWindowClosing(this::onWindowClose));
 
         // ---- build UI ----
         final JPanel root = new JPanel(new BorderLayout());
@@ -80,12 +125,14 @@ public class ProjectDialog {
 
         projectPathsPanel  = new ProjectPathsPanel(mode, projectPath);
         squaresParamsPanel = (mode == DialogMode.VIEWER) ? null : new SquaresParamsPanel(mode);
+
         if (squaresParamsPanel != null) {
             form.add(projectPathsPanel.component(), BorderLayout.NORTH);
             form.add(squaresParamsPanel.component(), BorderLayout.CENTER);
         } else {
             form.add(projectPathsPanel.component(), BorderLayout.NORTH);
         }
+
         experimentsPanel = new ExperimentsPanel(projectPath);
 
         final JPanel center = new JPanel(new BorderLayout());
@@ -104,53 +151,67 @@ public class ProjectDialog {
                 mode,                                                   // mode
                 dialog,                                                 // dialog
                 paintConfig,                                            // paintConfig
-                () -> projectPath,                                      // Supplier getProjectPath
-                p -> {                                             // Consumer setProjectPAth
-                    projectPath = p;
-                    experimentsPanel.reload(projectPath);
-                    projectPathsPanel.onProjectRootChanged(projectPath);
-                },
+                this::getProjectPath,                                   // pass the getProjectPath method
+                this::setProjectPath,                                   // pass the setProjectPath method
                 projectPathsPanel,                                      // projectPathsPanel
                 squaresParamsPanel,                                     // squaresParamsPanel
                 experimentsPanel,                                       // experimentsPanel
                 bottomBarPanel,                                         // bottomBarPanel
-                this::startWorker,                                      // startWorker
-                () -> workerThread,                                     // getWorker
-                () -> cancelled = true,                                 // setCancelled
-                () -> cancelled = false                                 // clearCancelled
+                this::startWorker,                                      // pass the startWorker method
+                this::getWorkerThread,                                  // pass the getWorker method
+                this::setCancelled,                                     // pass the setCancelled method
+                this::clearCancelled                                    // pass the clearCancelled method
         );
         controller.init();
 
         // size and show defaults
-        final int width  = 820;
-        final int height = 600;
-        dialog.setMinimumSize(new Dimension(width, height));
-        dialog.setPreferredSize(new Dimension(width, height));
+        Dimension d = new Dimension(820, 600);
+        dialog.setMinimumSize(d);
+        dialog.setMaximumSize(d);
+
         dialog.pack();
         dialog.setLocationRelativeTo(owner);
     }
 
     // ---------- public API ----------
-    public void setCalculationCallback(CalculationCallback callback) {
-        this.callback = callback;
+
+    /**
+     * Registers the callback that performs the heavy computation.
+     */
+    public void setCalculationCallback(CalculationCallback calculationCallback) {
+        this.calculationCallback = calculationCallback;
     }
 
+    /**
+     * Makes the dialog visible.
+     */
     public void showDialog() {
         dialog.setVisible(true);
     }
 
+    /**
+     * @return {@code true} if the user cancelled the operation
+     */
     public boolean isCancelled() {
         return cancelled;
     }
 
+    /**
+     * @return the underlying Swing dialog
+     */
     public JDialog getDialog() {
         return dialog;
     }
 
     // ---------- internals ----------
+
+    /**
+     * Builds and returns a {@link Project} instance based on current UI state,
+     * including selected experiments, path values, and persisted parameters.
+     */
     private Project buildProject() {
         final List<String> experimentNames = experimentsPanel.selectedExperimentNames();
-        final Path imagesPath = projectPathsPanel.imagesRootText().isEmpty()
+        final Path         imagesPath      = projectPathsPanel.imagesRootText().isEmpty()
                 ? null : Paths.get(projectPathsPanel.imagesRootText());
 
         // persist roots
@@ -164,16 +225,29 @@ public class ProjectDialog {
 
         final GenerateSquaresConfig gs  = new GenerateSquaresConfig();
 
-        return new paint.shared.objects.Project(projectPath,
-                imagesPath,
-                experimentNames,
-                gs,
-                null
+        return new Project(projectPath,
+                           imagesPath,
+                           experimentNames,
+                           gs,
+                           null
         );
     }
 
-    private void startWorker(Runnable runUiDisable, Runnable runUiEnable, Runnable onSuccess, Runnable onFailure) {
-        if (callback == null) {
+    /**
+     * Starts a background worker thread, ensuring UI disable/enable and EDT-safe callbacks.
+     * This method is responsible for:
+     * <ul>
+     *     <li>Running heavy work off the EDT.</li>
+     *     <li>Handling cancellation and thread interruption.</li>
+     *     <li>Invoking success/failure runnables on the EDT.</li>
+     * </ul>
+     */
+    private void startWorker(Runnable runUiDisable,
+            Runnable runUiEnable,
+            Runnable onSuccess,
+            Runnable onFailure) {
+
+        if (calculationCallback == null) {
             onFailure.run();
             return;
         }
@@ -185,7 +259,7 @@ public class ProjectDialog {
             boolean ok = false;
             try {
                 if (!cancelled && !Thread.currentThread().isInterrupted()) {
-                    ok = callback.run(buildProject());
+                    ok = calculationCallback.run(buildProject());
                 }
             } catch (Exception ex) {
                 if (ex instanceof InterruptedException) {
@@ -210,7 +284,62 @@ public class ProjectDialog {
         workerThread.start();
     }
 
+    /**
+     * @return {@code true} if sweep mode is selected in the bottom bar
+     */
     public boolean isSweepSelected() {
         return bottomBarPanel.isSweepSelected();
+    }
+
+    /**
+     * Handles window close events: sets cancellation flag, interrupts worker if needed,
+     * and disposes the dialog.
+     */
+    private void onWindowClose() {
+        cancelled = true;
+
+        if (workerThread != null && workerThread.isAlive()) {
+            workerThread.interrupt();
+            PaintLogger.infof("Cancellation requested — interrupting background thread...");
+        }
+
+        dialog.dispose();
+    }
+
+    /**
+     * @return the current worker thread or {@code null} if none is running
+     */
+    private Thread getWorkerThread() {
+        return workerThread;
+    }
+
+    /**
+     * Marks computation as cancelled.
+     */
+    private void setCancelled() {
+        cancelled = true;
+    }
+
+    /**
+     * Clears the cancellation flag.
+     */
+    private void clearCancelled() {
+        cancelled = false;
+    }
+
+    /**
+     * @return current project root path
+     */
+    private Path getProjectPath() {
+        return projectPath;
+    }
+
+    /**
+     * Sets the project path and refreshes dependent panels.
+     */
+    private void setProjectPath(Path projectPath) {
+        this.projectPath = projectPath;
+        experimentsPanel.reload(this.projectPath);
+        projectPathsPanel.onProjectRootChanged(this.projectPath);
     }
 }
