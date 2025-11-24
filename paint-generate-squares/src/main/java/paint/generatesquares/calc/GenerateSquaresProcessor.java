@@ -168,7 +168,7 @@ public class GenerateSquaresProcessor {
         Table allSquaresTable = compileAllSquares(experiment);
         Path  experimentPath  = project.getProjectRootPath()
                                        .resolve(experiment.getExperimentName());
-        writeAllSquares(experimentPath, allSquaresTable);
+        writeSquares(experimentPath, allSquaresTable);
 
         // Update recordings with filter information
         for (Recording recording : experiment.getRecordings()) {
@@ -179,12 +179,12 @@ public class GenerateSquaresProcessor {
         }
 
         // Write recordings
-        writeAllRecordings(experimentPath, experiment.getRecordings());
+        writeRecordings(experimentPath, experiment.getRecordings());
 
         // All tracks
         Table allTracksTable = compileAllTracks(experiment);
         allTracksTable = allTracksTable.sortOn(RECORDING_NAME, TRACK_ID);
-        writeAllTracks(experimentPath, allTracksTable);
+        writeTracks(experimentPath, allTracksTable);
     }
 
     /**

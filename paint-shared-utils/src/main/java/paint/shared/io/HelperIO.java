@@ -109,7 +109,7 @@ public final class HelperIO {
      * @param experimentPath the experiment folder path
      * @param recordings     the list of recordings to write
      */
-    public static void writeAllRecordings(Path experimentPath, List<Recording> recordings) {
+    public static void writeRecordings(Path experimentPath, List<Recording> recordings) {
         RecordingsTableIO RecordingsTableIO = new RecordingsTableIO();
         try {
             Table table = RecordingsTableIO.toTable(recordings);
@@ -169,7 +169,7 @@ public final class HelperIO {
      * @param experimentPath the experiment folder path
      * @param squaresTable   the table containing all square data
      */
-    public static void writeAllSquares(Path experimentPath, Table squaresTable) {
+    public static void writeSquares(Path experimentPath, Table squaresTable) {
 
         SquaresTableIO SquaresTableIO = new SquaresTableIO();
         try {
@@ -230,7 +230,7 @@ public final class HelperIO {
      * @param experimentPath the experiment folder path
      * @param tracksTable    the table containing all track data
      */
-    public static void writeAllTracks(Path experimentPath, Table tracksTable) {
+    public static void writeTracks(Path experimentPath, Table tracksTable) {
         TracksTableIO TracksTableIO = new TracksTableIO();
         try {
             Path path = experimentPath.resolve(TRACKS_CSV);
