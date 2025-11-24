@@ -227,7 +227,6 @@ public class PlotUtils {
     /**
      * Saves a Tau-fit plot (successful or failed) for the given square.
      * Output is stored as:
-     *
      *     Output/Tau-Fitting Plots/Success/<...>.png
      *     Output/Tau-Fitting Plots/Failed/<...>.png
      * <p>

@@ -45,7 +45,6 @@
 ==============================================================================*/
 package paint.viewer.ui.panels;
 
-import paint.shared.objects.Recording;
 import paint.shared.objects.Square;
 import paint.shared.utils.SharedSquareUtils;
 

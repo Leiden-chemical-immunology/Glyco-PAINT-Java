@@ -51,7 +51,6 @@ import paint.shared.config.paintconfig.PaintConfig;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.DocumentEvent;
 import java.awt.*;
 
 import static paint.shared.dialogs.ProjectDialog.DialogMode;
