@@ -204,4 +204,17 @@ public final class Miscellaneous {
         Set<String> yesValues = new HashSet<>(Arrays.asList("y", "ye", "yes", "ok", "true", "t", "1"));
         return yesValues.contains(value);
     }
+
+    public static void initialiseDoublesToNaN(Object target) {
+        for (Field field : target.getClass().getDeclaredFields()) {
+            if (field.getType() == double.class) {
+                try {
+                    field.setAccessible(true);
+                    field.setDouble(target, Double.NaN);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
 }

@@ -1,6 +1,6 @@
 package paint.shared.objects;
 
-import java.lang.reflect.Field;
+import static paint.shared.utils.Miscellaneous.initialiseDoublesToNaN;
 
 /**
  * The {@code Track} class represents the properties and attributes of a trajectory or path
@@ -81,7 +81,7 @@ public class Track {
                  double confinementRatio,
                  int    squareNumber,
                  int    labelNumber) {
-        initialiseDoublesToNaN();
+        initialiseDoublesToNaN(this);
         this.uniqueKey               = uniqueKey;
         this.experimentName          = experimentName;
         this.recordingName           = recordingName;
@@ -255,18 +255,6 @@ public class Track {
 
     public void setLabelNumber(int labelNumber) {
         this.labelNumber = labelNumber;
-    }
-
-    private void initialiseDoublesToNaN() {
-        for (Field f : getClass().getDeclaredFields()) {
-            if (f.getType() == double.class) {
-                try {
-                    f.setDouble(this, Double.NaN);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
     }
 
     /**

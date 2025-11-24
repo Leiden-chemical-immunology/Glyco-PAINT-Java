@@ -39,7 +39,7 @@ package paint.shared.objects;
 
 import tech.tablesaw.api.Table;
 
-import java.lang.reflect.Field;
+import static paint.shared.utils.Miscellaneous.initialiseDoublesToNaN;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,40 +58,40 @@ public class Square {
     // ───────────────────────────────────────────────────────────────────────────────
 
 
-    private String  uniqueKey;                       // 0
-    private String  experimentName;                  // 1
-    private String  recordingName;                   // 2
-    private int     squareNumber;                    // 3
-    private int     rowNumber;                       // 4
-    private int     colNumber;                       // 5
-    private int     labelNumber;                     // 6
-    private int     cellId;                          // 7
-    private boolean visible;                         // 8
-    private boolean squareManuallyExcluded;          // 9
-    private boolean imageExcluded;                   // 10
-    private double  x0;                              // 11
-    private double  y0;                              // 12
-    private double  x1;                              // 13
-    private double  y1;                              // 14
-    private int     numberOfTracks;                  // 15
-    private double  variability;                     // 16
-    private double  density;                         // 17
-    private double  densityRatio;                    // 18
-    private double  densityRatioOri;                 // 19
-    private double  tau;                             // 20
-    private double  rSquared;                        // 21
-    private double  medianDiffusionCoefficient;      // 22
-    private double  medianDiffusionCoefficientExt;   // 23
-    private double  medianDisplacement;              // 24
-    private double  maxDisplacement;                 // 25
-    private double  totalDisplacement;               // 26
-    private double  medianMaxSpeed;                  // 27
-    private double  maxMaxSpeed;                     // 28
-    private double  medianMedianSpeed;               // 29
-    private double  maxMedianSpeed;                  // 30
-    private double  maxTrackDuration;                // 31
-    private double  totalTrackDuration;              // 32
-    private double  medianTrackDuration;             // 33
+    private String  uniqueKey;                       
+    private String  experimentName;                  
+    private String  recordingName;                   
+    private int     squareNumber;                    
+    private int     rowNumber;                       
+    private int     colNumber;                       
+    private int     labelNumber;                     
+    private int     cellId;                          
+    private boolean visible;                         
+    private boolean squareManuallyExcluded;          
+    private boolean imageExcluded;                   
+    private double  x0;                              
+    private double  y0;                              
+    private double  x1;                              
+    private double  y1;                              
+    private int     numberOfTracks;                  
+    private double  variability;                     
+    private double  density;                         
+    private double  densityRatio;                    
+    private double  densityRatioOri;                 
+    private double  tau;                             
+    private double  rSquared;                        
+    private double  medianDiffusionCoefficient;      
+    private double  medianDiffusionCoefficientExt;   
+    private double  medianDisplacement;              
+    private double  maxDisplacement;                 
+    private double  totalDisplacement;               
+    private double  medianMaxSpeed;                  
+    private double  maxMaxSpeed;                     
+    private double  medianMedianSpeed;               
+    private double  maxMedianSpeed;                  
+    private double  maxTrackDuration;                
+    private double  totalTrackDuration;              
+    private double  medianTrackDuration;             
 
     private List<Track> tracks      = new ArrayList<>();
     private Table       tracksTable = null;
@@ -131,7 +131,7 @@ public class Square {
                   double x1,
                   double y1) {
 
-        initialiseDoublesToNaN();
+        initialiseDoublesToNaN(this);
         this.uniqueKey       = uniqueKey;
         this.experimentName  = experimentName;
         this.recordingName   = recordingName;
@@ -152,11 +152,11 @@ public class Square {
      * @param numberOfSquaresInRecording total number of squares in the recording
      */
     public Square(int squareNumber, int numberOfSquaresInRecording) {
-        int numberSquaresInRow = (int) Math.sqrt(numberOfSquaresInRecording);
-        double width           = IMAGE_WIDTH / numberSquaresInRow;
-        double height          = IMAGE_HEIGHT / numberSquaresInRow;
+        int    numberSquaresInRow = (int) Math.sqrt(numberOfSquaresInRecording);
+        double width              = IMAGE_WIDTH / numberSquaresInRow;
+        double height             = IMAGE_HEIGHT / numberSquaresInRow;
 
-        initialiseDoublesToNaN();
+        initialiseDoublesToNaN(this);
 
         colNumber = squareNumber % numberSquaresInRow;
         rowNumber = squareNumber / numberSquaresInRow;
@@ -464,22 +464,6 @@ public class Square {
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Initializes all double fields in this object to {@code NaN}.
-     * Used to ensure undefined numeric values are recognizable.
-     */
-    private void initialiseDoublesToNaN() {
-        for (Field f : getClass().getDeclaredFields()) {
-            if (f.getType() == double.class) {
-                try {
-                    f.setDouble(this, Double.NaN);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-    }
-
-    /**
      * Calculates the theoretical square area for a given recording grid size.
      *
      * @param nrSquares total number of squares in the recording
@@ -548,20 +532,5 @@ public class Square {
         }
 
         return sb.toString();
-    }
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // DEBUG DRIVER
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Example driver for debugging square area calculations.
-     */
-    public static void main(String[] args) {
-        List<Square> squares = new ArrayList<>();
-        for (int i = 0; i < 21; i++) {
-            squares.add(new Square(i, 100));
-        }
-        System.out.println(squares);
     }
 }
