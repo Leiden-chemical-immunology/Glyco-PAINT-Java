@@ -61,7 +61,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static paint.shared.io.ExperimentDataLoader.loadExperiment;
-import static paint.shared.io.HelperIO.*;
+import static paint.shared.io.ExperimentDataIO.*;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
 

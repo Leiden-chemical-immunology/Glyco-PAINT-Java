@@ -62,7 +62,7 @@ import java.util.List;
 import paint.shared.objects.ExperimentInfo;
 
 import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
-import static paint.shared.io.HelperIO.readExperimentInfo;
+import static paint.shared.io.ExperimentDataIO.readExperimentInfo;
 
 /**
  * Validates that all required experiment and image directories exist, and that

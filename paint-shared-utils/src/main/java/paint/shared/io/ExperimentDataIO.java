@@ -1,3 +1,4 @@
+
 /*=============================================================================
  *  Class:        HelperIO.java
  *  Package:      paint.shared.io
@@ -71,12 +72,12 @@ import static paint.shared.utils.Miscellaneous.friendlyMessage;
  * <p>Each method performs schema validation and detailed logging, ensuring
  * reliable data integrity across all experiment operations.</p>
  */
-public final class HelperIO {
+public final class ExperimentDataIO {
 
     /**
      * Private constructor to prevent instantiation.
      */
-    private HelperIO() {
+    private ExperimentDataIO() {
     }
 
 

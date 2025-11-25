@@ -44,7 +44,7 @@ import tech.tablesaw.api.Table;
 import java.nio.file.Path;
 import java.util.List;
 
-import static paint.shared.io.HelperIO.*;
+import static paint.shared.io.ExperimentDataIO.*;
 import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
 
 import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
