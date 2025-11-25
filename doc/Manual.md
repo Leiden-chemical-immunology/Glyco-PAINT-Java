@@ -694,7 +694,7 @@ Uploading changes requires special authorization.
 ## RStudio
 
 Analysis of Glyco-PAINT results can be performed in many environments. 
-**RStudio** is particularly convenient for statistical analysis and visualization. 
+**RStudio** is particularly convenient for statistical analysis and visualisation. 
 Download from the [RStudio site](https://posit.co/download/rstudio-desktop/)
 
 
@@ -703,4 +703,30 @@ Download from the [RStudio site](https://posit.co/download/rstudio-desktop/)
 
 ## Visual Code Studio
 
-Visuakl Code Studio is a development environment in its own right, but also a very good text editor. You can download it from https://code.visualstudio.com. Visual Code is handy for editing csv files anf provides syntax checking for JSON files.
+Visual Code Studio is a development environment in its own right, but also a very good text editor. You can download it from https://code.visualstudio.com. Visual Code is handy for editing csv files and provides syntax checking for JSON files.
+
+
+
+
+
+# Known issues
+
+On macOS there is a known issue with Fiji crashing on wake up of a computer when a long Fiji job is running. This is caused by macOS' agressive power management affecting the GPU, OpenGL and UI threads, the use by Fiji  of Java 8.
+
+The workaround is to prevent macOS to engage in the power management. A simple native macOS, SleepKeeper will prevent this. The app can be downloaded from the Paint distribution, but is not signed and macOS will complain about it.
+
+How to open the app the first time:
+
+1. Right-click the app → **Open**
+2. macOS will show a warning
+3. Click **Open** again
+4. After that, the app launches normally
+
+If macOS blocks it outright:
+
+1. Open **System Settings → Privacy & Security**
+2. Scroll down to *“SleepKeeper was blocked”*
+3. Click **“Allow Anyway”**
+4. Try opening the app again
+
+ 
