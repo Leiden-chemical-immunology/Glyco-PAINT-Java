@@ -1,7 +1,8 @@
 package convert;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public final class RecordingsConverter implements CsvConverter {
@@ -16,9 +17,6 @@ public final class RecordingsConverter implements CsvConverter {
         this.outputFile = inputDir.resolve("Recordings.csv");
     }
 
-    // ---------------------------------------------------------------
-    // FINAL NEW HEADER ORDER
-    // ---------------------------------------------------------------
     private static final List<String> HEADER = Arrays.asList(
             "Experiment Name",
             "Recording Name",
@@ -50,14 +48,11 @@ public final class RecordingsConverter implements CsvConverter {
             "Neighbour Mode"
     );
 
-    // ---------------------------------------------------------------
-    // NAME → NAME mappings (name-based lookups)
-    // ---------------------------------------------------------------
     private static final Map<String,String> NAME_MAP = new HashMap<String,String>();
     static {
         NAME_MAP.put("Experiment Name",               "Experiment Name");
         NAME_MAP.put("Recording Name",                "Recording Name");
-        NAME_MAP.put("Condition Number",              "Condition Nr");     // FIXED
+        NAME_MAP.put("Condition Number",              "Condition Nr");
         NAME_MAP.put("Replicate Number",              "Replicate Nr");
         NAME_MAP.put("Probe Name",                    "Probe");
         NAME_MAP.put("Probe Type",                    "Probe Type");
@@ -69,7 +64,7 @@ public final class RecordingsConverter implements CsvConverter {
         NAME_MAP.put("Number of Spots",               "Nr Spots");
         NAME_MAP.put("Number of Tracks",              "Nr Tracks");
         NAME_MAP.put("Number of Frames",              "Recording Size");
-        NAME_MAP.put("Run Time",                      "Run Time");         // FIXED: from old column 16
+        NAME_MAP.put("Run Time",                      "Run Time");
         NAME_MAP.put("Time Stamp",                    "Time Stamp");
         NAME_MAP.put("Number of Spots in All Tracks", "Nr Spots in All Tracks");
         NAME_MAP.put("Min Required R Squared",        "Min Required R Squared");
@@ -82,15 +77,9 @@ public final class RecordingsConverter implements CsvConverter {
         NAME_MAP.put("R Squared",                     "R Squared");
     }
 
-    // ---------------------------------------------------------------
-    // INDEX-BASED MAPPINGS (1-based indexes from old Python export)
-    // ---------------------------------------------------------------
     private static final Map<String,Integer> INDEX_MAP = new HashMap<String,Integer>();
     static {
-        // These three exist in your table but do not have name-based equivalents:
         INDEX_MAP.put("Number of Tracks in Background", 15);
-        INDEX_MAP.put("Average Tracks in Background",   16);  // check if needed
-        INDEX_MAP.put("Number of Squares in Background",17);  // check if needed
     }
 
     @Override
@@ -105,22 +94,31 @@ public final class RecordingsConverter implements CsvConverter {
 
         for (Map<String,String> inRow : src) {
 
-            String[] raw = toArray(inRow); // old row as array
+            String[] raw = toArray(inRow);
 
             Map<String,String> row = new LinkedHashMap<String,String>();
 
             for (String newCol : HEADER) {
 
-                // 1. Try name-based mapping first
+                // 1. name-based
                 if (NAME_MAP.containsKey(newCol)) {
+
                     String oldName = NAME_MAP.get(newCol);
+
                     if (inRow.containsKey(oldName)) {
-                        row.put(newCol, safe(inRow.get(oldName)));
+                        String val = safe(inRow.get(oldName));
+
+                        // SPECIAL CASE: fix Time Stamp format
+                        if (newCol.equals("Time Stamp")) {
+                            val = fixTimestamp(val);
+                        }
+
+                        row.put(newCol, val);
                         continue;
                     }
                 }
 
-                // 2. Try index-based mapping
+                // 2. index-based
                 if (INDEX_MAP.containsKey(newCol)) {
                     int idx = INDEX_MAP.get(newCol) - 1;
                     if (idx >= 0 && idx < raw.length) {
@@ -129,7 +127,7 @@ public final class RecordingsConverter implements CsvConverter {
                     }
                 }
 
-                // 3. Nothing found → default "0"
+                // 3. default
                 row.put(newCol, "0");
             }
 
@@ -144,8 +142,30 @@ public final class RecordingsConverter implements CsvConverter {
     }
 
     private static String safe(String s) {
-        return s == null ? "" : s.trim();
+        return (s == null ? "" : s.trim());
     }
+
+    // ---------------------------------------------------------------------
+    // TIMESTAMP NORMALIZER: "Wed Sep 3 18:16:25 2025" → "2025-09-03T18:16:25"
+    // ---------------------------------------------------------------------
+    private static final SimpleDateFormat OLD_FMT =
+            new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy", Locale.ENGLISH);
+
+    private static final SimpleDateFormat ISO_FMT =
+            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+    private static String fixTimestamp(String v) {
+        if (v == null || v.trim().isEmpty()) return "";
+
+        try {
+            Date d = OLD_FMT.parse(v.trim());
+            return ISO_FMT.format(d);
+        } catch (ParseException e) {
+            return v;   // leave untouched if unparseable
+        }
+    }
+
+    // ---------------------------------------------------------------------
 
     public void run() throws Exception {
         System.out.println("Reading:  " + inputFile);
@@ -159,6 +179,4 @@ public final class RecordingsConverter implements CsvConverter {
 
         System.out.println("✔ Recordings conversion complete.");
     }
-
-
 }

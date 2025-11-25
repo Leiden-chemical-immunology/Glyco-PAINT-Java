@@ -15,7 +15,7 @@ public final class TracksConverter implements CsvConverter {
         this.outputFile = inputDir.resolve("Tracks.csv");
     }
 
-    // Old → New header mapping (Experiment Name is constructed)
+    // Old → New header mapping
     private static final Map<String,String> MAP = new LinkedHashMap<String,String>();
     static {
         MAP.put("Unique Key",                 "Unique Key");
@@ -38,18 +38,15 @@ public final class TracksConverter implements CsvConverter {
         MAP.put("Label Nr",                   "Label Number");
     }
 
-    // -----------------------------------------------------------
-    // Output header: Unique Key, Experiment Name, rest...
-    // -----------------------------------------------------------
+    // Output header: Unique Key, Experiment Name, then mapped fields
     public List<String> getOutputHeader() {
         List<String> header = new ArrayList<String>();
-
-        header.add("Unique Key");        // 1
-        header.add("Experiment Name");   // 2 (constructed)
-
+        header.add("Unique Key");
+        header.add("Experiment Name");
         for (Map.Entry<String,String> e : MAP.entrySet()) {
-            if ("Unique Key".equals(e.getKey())) continue;
-            header.add(e.getValue());
+            if (!"Unique Key".equals(e.getKey())) {
+                header.add(e.getValue());
+            }
         }
         return header;
     }
@@ -64,6 +61,7 @@ public final class TracksConverter implements CsvConverter {
 
             String unique = r.get("Unique Key");
             String experimentName = "";
+
             if (unique != null && unique.length() >= 6) {
                 experimentName = unique.substring(0, 6);
             }
@@ -71,17 +69,50 @@ public final class TracksConverter implements CsvConverter {
             Map<String,String> row = new LinkedHashMap<String,String>();
 
             // 1. Unique Key
-            row.put("Unique Key", unique);
+            row.put("Unique Key", safe(unique));
 
             // 2. Constructed Experiment Name
             row.put("Experiment Name", experimentName);
 
-            // 3. Remaining fields
+            // 3. Remaining mapped fields
             for (Map.Entry<String,String> e : MAP.entrySet()) {
+
                 String oldH = e.getKey();
                 String newH = e.getValue();
-                if ("Unique Key".equals(oldH)) continue;
-                row.put(newH, r.get(oldH));
+
+                if ("Unique Key".equals(oldH)) {
+                    continue; // already handled
+                }
+
+                String val = r.get(oldH);
+
+                // ============== INTEGER NORMALIZATION ==============
+                if (newH.equals("Number of Spots") ||
+                        newH.equals("Number of Gaps") ||
+                        newH.equals("Longest Gap")) {
+
+                    row.put(newH, toIntOrEmpty(val));
+                    continue;
+                }
+
+                // ============== DOUBLE NORMALIZATION ==============
+                if (newH.equals("Track Duration") ||
+                        newH.equals("Track X Location") ||
+                        newH.equals("Track Y Location") ||
+                        newH.equals("Track Displacement") ||
+                        newH.equals("Track Max Speed") ||
+                        newH.equals("Track Median Speed") ||
+                        newH.equals("Diffusion Coefficient") ||
+                        newH.equals("Diffusion Coefficient Ext") ||
+                        newH.equals("Total Distance") ||
+                        newH.equals("Confinement Ratio")) {
+
+                    row.put(newH, toDoubleOrEmpty(val));
+                    continue;
+                }
+
+                // ============== DEFAULT ==============
+                row.put(newH, safe(val));
             }
 
             out.add(row);
@@ -91,7 +122,41 @@ public final class TracksConverter implements CsvConverter {
     }
 
     // -----------------------------------------------------------
-    // High-level runner
+    // Helpers
+    // -----------------------------------------------------------
+
+    private static String safe(String v) {
+        return v == null ? "" : v.trim();
+    }
+
+    private static String toIntOrEmpty(String v) {
+        if (v == null) return "";
+        v = v.trim();
+        if (v.isEmpty()) return "";
+        try {
+            double d = Double.parseDouble(v);
+            int i = (int) d;
+            return Integer.toString(i);
+        } catch (Exception ex) {
+            return "";
+        }
+    }
+
+    private static String toDoubleOrEmpty(String v) {
+        if (v == null) return "";
+        v = v.trim();
+        if (v.isEmpty()) return "";
+        try {
+            double d = Double.parseDouble(v);
+            // Normalize to plain string without scientific notation
+            return Double.toString(d);
+        } catch (Exception ex) {
+            return "";
+        }
+    }
+
+    // -----------------------------------------------------------
+    // Runner
     // -----------------------------------------------------------
     public void run() throws Exception {
         System.out.println("Reading:  " + inputFile);
@@ -105,5 +170,4 @@ public final class TracksConverter implements CsvConverter {
 
         System.out.println("✔ Tracks conversion complete.");
     }
-
 }

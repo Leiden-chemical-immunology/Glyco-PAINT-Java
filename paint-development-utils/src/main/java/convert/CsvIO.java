@@ -38,28 +38,28 @@ public final class CsvIO {
     }
 
     public static void writeCsv(Path file, List<String> header, List<Map<String,String>> rows) throws Exception {
-        PrintWriter pw = new PrintWriter(Files.newBufferedWriter(file));
-        try {
-            // header
+        try (BufferedWriter bw = Files.newBufferedWriter(file);
+             PrintWriter pw = new PrintWriter(bw)) {
+
+            // Write header
             for (int i = 0; i < header.size(); i++) {
                 if (i > 0) pw.print(",");
                 pw.print(header.get(i));
             }
-            pw.println();
+            // No println() here → no stray newline yet
 
-            // rows
-            for (Map<String,String> r : rows) {
-                for (int i = 0; i < header.size(); i++) {
-                    if (i > 0) pw.print(",");
-                    String h = header.get(i);
-                    String v = r.get(h);
-                    pw.print(v == null ? "" : v);
+            // Write rows
+            for (int r = 0; r < rows.size(); r++) {
+                pw.println();  // newline before the row (not after)
+                Map<String,String> row = rows.get(r);
+
+                for (int c = 0; c < header.size(); c++) {
+                    if (c > 0) pw.print(",");
+                    String col = header.get(c);
+                    String val = row.get(col);
+                    pw.print(val == null ? "" : val);
                 }
-                pw.println();
             }
-        } finally {
-            pw.flush();
-            pw.close();
         }
     }
 }

@@ -1,7 +1,6 @@
 package convert;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 public final class SquaresConverter implements CsvConverter {
@@ -109,23 +108,57 @@ public final class SquaresConverter implements CsvConverter {
 
         for (Map<String,String> inRow : src) {
 
-            // convert row to array in original column order
-            String[] raw = inRow.values().toArray(new String[inRow.size()]);
+            // Skip completely empty rows
+            if (isEffectivelyEmptyRow(inRow)) {
+                continue;
+            }
 
+            String[] raw = inRow.values().toArray(new String[inRow.size()]);
             Map<String,String> row = new LinkedHashMap<String,String>();
 
             for (String newCol : HEADER) {
+
                 int oldPos = INDEX_MAP.get(newCol);
                 int idx = oldPos - 1;
 
                 String val = (idx < raw.length ? raw[idx] : "");
-                row.put(newCol, val == null ? "" : val.trim());
+                val = (val == null ? "" : val.trim());
+
+                // SPECIAL RULE: Label Number must be a valid integer, otherwise 0
+                if (newCol.equals("Label Number")) {
+                    row.put("Label Number", parseOrZero(val));
+                    continue;
+                }
+
+                // normal mapping
+                row.put(newCol, val);
             }
 
             out.add(row);
         }
 
+        System.out.println("ROWS OUT: " + out.size());
+        for (int i = 0; i < out.size(); i++) {
+            Map<String,String> r = out.get(i);
+            boolean empty = isEffectivelyEmptyRow(r);
+            if (empty) {
+                System.out.println("⚠ EMPTY OUTPUT ROW at index " + i);
+            }
+        }
+
         return out;
+    }
+
+    private static String parseOrZero(String s) {
+        if (s == null) return "0";
+        String t = s.trim();
+        if (t.isEmpty()) return "0";
+        try {
+            Integer.parseInt(t);
+            return t;  // valid integer
+        } catch (Exception e) {
+            return "0";  // invalid → force 0
+        }
     }
 
     public void run() throws Exception {
@@ -141,8 +174,26 @@ public final class SquaresConverter implements CsvConverter {
         System.out.println("✔ Squares conversion complete.");
     }
 
-    public static void main(String[] args) throws Exception {
-        Path dir = Paths.get("/Users/hans/Downloads/221012 Python Reference - v39");
-        new SquaresConverter(dir).run();
+    private static boolean isEffectivelyEmptyRow(Map<String,String> row) {
+        boolean hasRealValue = false;
+
+        for (String v : row.values()) {
+            if (v == null) continue;
+
+            String t = v.trim();
+
+            // Empty string → ignore
+            if (t.isEmpty()) continue;
+
+            // A "0" in Label Number or any numeric column is NOT meaningful → ignore
+            if (t.equals("0")) continue;
+
+            // Any other value means this row is a real data row
+            hasRealValue = true;
+            break;
+        }
+
+        return !hasRealValue;
     }
+
 }
