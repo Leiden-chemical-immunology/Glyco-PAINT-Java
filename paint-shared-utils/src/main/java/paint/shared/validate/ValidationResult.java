@@ -78,6 +78,23 @@ public final class ValidationResult {
         errors.add(message);
     }
 
+    /**
+     * Adds a new warning message to the validation result.
+     *
+     * @param message descriptive text of the validation warning
+     */
+    public void addWarning(String message) {
+        warnings.add(message);
+    }
+
+    /**
+     * Adds an informational message to the validation result.
+     *
+     * @param message descriptive text of the info
+     */
+    public void addInfo(String message) {
+        infos.add(message);
+    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // ACCESSORS
@@ -85,8 +102,6 @@ public final class ValidationResult {
 
     /**
      * Returns an immutable view of all recorded errors.
-     *
-     * @return unmodifiable list of error messages
      */
     public List<String> getErrors() {
         return Collections.unmodifiableList(errors);
@@ -94,8 +109,6 @@ public final class ValidationResult {
 
     /**
      * Returns an immutable view of all recorded warnings.
-     *
-     * @return unmodifiable list of warning messages
      */
     public List<String> getWarnings() {
         return Collections.unmodifiableList(warnings);
@@ -103,8 +116,6 @@ public final class ValidationResult {
 
     /**
      * Returns an immutable view of all informational messages.
-     *
-     * @return unmodifiable list of info messages
      */
     public List<String> getInfos() {
         return Collections.unmodifiableList(infos);
@@ -116,18 +127,27 @@ public final class ValidationResult {
 
     /**
      * Checks if the validation result contains one or more errors.
-     *
-     * @return {@code true} if errors exist; {@code false} otherwise
      */
     public boolean hasErrors() {
         return !errors.isEmpty();
     }
 
+    /**
+     * Checks if the validation result contains warnings.
+     */
+    public boolean hasWarnings() {
+        return !warnings.isEmpty();
+    }
+
+    /**
+     * Checks if the validation includes informational messages.
+     */
+    public boolean hasInfos() {
+        return !infos.isEmpty();
+    }
 
     /**
      * Determines whether the validation result is completely valid.
-     *
-     * @return {@code true} if no errors exist; {@code false} otherwise
      */
     public boolean isValid() {
         return errors.isEmpty();
@@ -138,15 +158,13 @@ public final class ValidationResult {
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Merges another {@link ValidationResult} into this one, combining
-     * errors, warnings, infos, and any existing report text.
-     *
-     * @param other the other result to merge (may be {@code null})
+     * Merges another {@link ValidationResult} into this one.
      */
     public void merge(ValidationResult other) {
         if (other == null) {
             return;
         }
+
         this.errors.addAll(other.getErrors());
         this.warnings.addAll(other.getWarnings());
         this.infos.addAll(other.getInfos());
@@ -162,8 +180,6 @@ public final class ValidationResult {
 
     /**
      * Sets the report string for this validation result.
-     *
-     * @param report the textual report summary
      */
     public void setReport(String report) {
         this.report = report;
@@ -171,8 +187,6 @@ public final class ValidationResult {
 
     /**
      * Returns the current report string, if set.
-     *
-     * @return report text or {@code null} if not defined
      */
     public String getReport() {
         return report;
@@ -182,21 +196,41 @@ public final class ValidationResult {
     // OUTPUT
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Returns a textual summary of this validation result.
-     * Prefers the {@link #report} field if set; otherwise, prints
-     * all error messages or a success message if valid.
-     *
-     * @return formatted summary string
-     */
     @Override
     public String toString() {
+
+        // Prefer explicit report if set
         if (report != null) {
             return report;
         }
-        if (isValid()) {
-            return "✔ No issues found";
+
+        StringBuilder sb = new StringBuilder();
+
+        if (hasErrors()) {
+            sb.append("❌ ERRORS:\n");
+            for (String e : errors) {
+                sb.append("  • ").append(e).append('\n');
+            }
         }
-        return String.join("\n", errors);
+
+        if (hasWarnings()) {
+            sb.append("⚠️  WARNINGS:\n");
+            for (String w : warnings) {
+                sb.append("  • ").append(w).append('\n');
+            }
+        }
+
+        if (hasInfos()) {
+            sb.append("ℹ️  INFO:\n");
+            for (String i : infos) {
+                sb.append("  • ").append(i).append('\n');
+            }
+        }
+
+        if (!hasErrors() && !hasWarnings()) {
+            sb.append("✔ No issues found");
+        }
+
+        return sb.toString();
     }
 }

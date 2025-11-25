@@ -144,7 +144,7 @@ public abstract class AbstractFileValidator {
                     }
                     continue;
                 }
-                rowMatchesTypes(row, types, header, result);
+                rowMatchesTypes(row, types, header, i + 2, result);  // +2 because header = 1, data starts at 2
             }
         } catch (IOException e) {
             result.addError("Error reading file: " + e.getMessage());
@@ -231,19 +231,36 @@ public abstract class AbstractFileValidator {
      * @param headers  header names
      * @param result   validation accumulator
       */
-    protected void rowMatchesTypes(String[]         row,
-            ColumnType[]     types,
-            List<String>     headers,
-            ValidationResult result) {
+    protected void rowMatchesTypes(
+            String[] row,
+            ColumnType[] types,
+            List<String> headers,
+            int rowNumber,
+            ValidationResult result
+    ) {
         for (int i = 0; i < types.length; i++) {
+
             String value = row[i];
             ColumnType type = types[i];
+
             if (!canParse(value, type)) {
-                String colName = headers.size() > i ? headers.get(i) : "Column " + (i + 1);
+
+                String colName = (headers.size() > i ? headers.get(i) : "Column " + (i + 1));
                 String key = colName + " type " + type.name();
+
+                // DIAGNOSTIC VALUE
+                result.addWarning(
+                        "Invalid value in column '" + colName +
+                                "' at row " + rowNumber +
+                                ": '" + value + "' (expected " + type.name() + ")"
+                );
+
+                // SINGLE SUMMARY ERROR per column/type
                 if (!reportedTypeErrors.contains(key)) {
-                    result.addError("Some values in column '" + colName +
-                                            "' are invalid for type " + type.name() + ".");
+                    result.addError(
+                            "Some values in column '" + colName +
+                                    "' are invalid for type " + type.name() + "."
+                    );
                     reportedTypeErrors.add(key);
                 }
             }

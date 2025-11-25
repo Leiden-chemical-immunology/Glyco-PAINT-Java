@@ -127,12 +127,18 @@ public final class ValidationHandler {
 
                 ValidationResult res = runValidator(fileName, filePath.toFile());
 
-                if (!res.isValid()) {
-                    for (String err : res.getErrors()) {
-                        String msg = formatMessage(expName, fileName, err);
-                        overall.addError(msg);
-                        report.add(msg);
-                    }
+                // Errors
+                for (String err : res.getErrors()) {
+                    String msg = formatMessage(expName, fileName, err);
+                    overall.addError(msg);
+                    report.add(msg);
+                }
+
+                // Warnings
+                for (String warn : res.getWarnings()) {
+                    String msg = formatMessage(expName, fileName, warn);
+                    overall.addWarning(msg);
+                    report.add(msg);
                 }
             }
         }
