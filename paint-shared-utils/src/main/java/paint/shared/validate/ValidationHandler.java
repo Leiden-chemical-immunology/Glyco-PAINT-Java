@@ -61,9 +61,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
-import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
-import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
+import static paint.shared.constants.PaintFileNames.*;
 
 /**
  * Central coordinator for validating multiple experiment CSV files within
@@ -104,7 +102,6 @@ public final class ValidationHandler {
 
         List<String>     report    = new ArrayList<>();
         ValidationResult overall   = new ValidationResult();
-        boolean          isVerbose = PaintRuntime.isVerbose();
 
         for (String expName : experimentNames) {
             Path expDir = projectPath.resolve(expName);
@@ -116,9 +113,7 @@ public final class ValidationHandler {
                 continue;
             }
 
-            if (isVerbose) {
-                PaintLogger.infof("   Validating experiment: %s", expName);
-            }
+            PaintLogger.infof("   Validating experiment: %s", expName);
 
             for (String fileName : fileNames) {
                 Path filePath = expDir.resolve(fileName);
@@ -142,9 +137,7 @@ public final class ValidationHandler {
             }
         }
 
-        if (isVerbose) {
-            PaintLogger.blankline();
-        }
+        PaintLogger.blankline();
 
         if (!report.isEmpty()) {
             overall.setReport(String.join("\n", report));
@@ -194,34 +187,6 @@ public final class ValidationHandler {
         return "[" + expName + "] - " + fileName + " - " + flattened;
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // CONSOLE WRAPPER
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Performs validation and logs results directly to the console.
-     *
-     * @param projectPath     project root directory
-     * @param experimentNames experiment directories to validate
-     * @param fileNames       CSV file names to validate
-     */
-    public static void validate(Path projectPath, List<String> experimentNames, List<String> fileNames) {
-
-        PaintLogger.infof("Validating experiments: %s", experimentNames);
-        PaintLogger.blankline();
-        PaintLogger.infof("Validating files: %s", fileNames);
-        PaintLogger.blankline();
-
-        ValidationResult validateResult = validateExperiments(projectPath, experimentNames, fileNames);
-
-        if (!validateResult.isValid()) {
-            for (String line : validateResult.getReport().split("\n")) {
-                PaintLogger.errorf(line);
-            }
-        } else {
-            PaintLogger.infof("All validations passed");
-        }
-    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // TEST CASES
@@ -237,16 +202,21 @@ public final class ValidationHandler {
         List<String> experimentNames = Arrays.asList(
                 "221012",
                 "221101",
-                "221108"
+               "221108"
         );
 
         List<String> fileNames = Arrays.asList(
-                "Experiment Info.csv",
+                EXPERIMENT_INFO_CSV,
                 RECORDINGS_CSV,
                 SQUARES_CSV,
                 TRACKS_CSV
         );
 
-        validate(projectPath, experimentNames, fileNames);
+        ValidationResult result =  validateExperiments(projectPath, experimentNames, fileNames);
+        if (result.isValid()) {
+            System.out.println("No Issues found");
+        } else {
+            System.out.println(result.getReport());
+        }
     }
 }
