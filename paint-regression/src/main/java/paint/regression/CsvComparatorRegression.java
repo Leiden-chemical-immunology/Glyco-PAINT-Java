@@ -18,7 +18,8 @@ public class CsvComparatorRegression {
     // ============================================================
     private static final class Logger {
         private final PrintStream console;
-        private       PrintStream file;
+        private PrintStream file;
+        private boolean fileLoggingEnabled = true;   // ★ NEW
 
         Logger(PrintStream console) {
             this.console = console;
@@ -26,30 +27,42 @@ public class CsvComparatorRegression {
 
         void enableFileLogging(Path logDir) throws IOException {
             String timestamp = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
-            Path   logFile   = logDir.resolve("paint-regression-" + timestamp + ".log");
+            Path logFile = logDir.resolve("paint-regression-" + timestamp + ".log");
             Files.createDirectories(logFile.getParent());
             this.file = new PrintStream(Files.newOutputStream(logFile));
             println("🧾 Logging to: " + logFile.toAbsolutePath());
             println("");
         }
 
+        // ★ NEW
+        void disableFileLogging() {
+            fileLoggingEnabled = false;
+        }
+
+        // ★ NEW
+        void enableFileLogging() {
+            fileLoggingEnabled = true;
+        }
+
         void println(String msg) {
             console.println(msg);
-            if (file != null) {
+            if (file != null && fileLoggingEnabled) {
                 file.println(msg);
             }
         }
 
         void printf(String fmt, Object... args) {
             console.printf(fmt, args);
-            if (file != null) {
+            if (file != null && fileLoggingEnabled) {
                 file.printf(fmt, args);
             }
         }
 
         void flush() {
             console.flush();
-            if (file != null) file.flush();
+            if (file != null && fileLoggingEnabled) {
+                file.flush();
+            }
         }
     }
 
@@ -63,7 +76,8 @@ public class CsvComparatorRegression {
     //  IGNORE COLUMNS
     // ============================================================
     private static final Set<String> IGNORE_COLUMNS = new HashSet<String>(Arrays.asList(
-            "Run Time", "Time Stamp"
+            "Run Time",
+            "Time Stamp"
     ));
 
     // ============================================================
@@ -83,7 +97,8 @@ public class CsvComparatorRegression {
             LOGGER.printf("✅ Same number of rows (%d). Ready for strict 1:1 comparison.%n",
                           oldRows.size());
         } else {
-            LOGGER.printf("⚠️  Different row counts: baseline=%d, test=%d%n", oldRows.size(), newRows.size());
+            LOGGER.printf("⚠️  Different row counts: baseline=%d, test=%d%n",
+                          oldRows.size(), newRows.size());
         }
 
         Map<String,List<Map<String,String>>> oldMulti = toMultiMap(oldRows);
@@ -108,12 +123,8 @@ public class CsvComparatorRegression {
         for (String key : allKeys) {
             List<Map<String,String>> ol = oldMulti.get(key);
             List<Map<String,String>> nl = newMulti.get(key);
-            if (ol == null) {
-                ol = Collections.emptyList();
-            }
-            if (nl == null) {
-                nl = Collections.emptyList();
-            }
+            if (ol == null) ol = Collections.emptyList();
+            if (nl == null) nl = Collections.emptyList();
 
             int max = Math.max(ol.size(), nl.size());
 
@@ -136,7 +147,6 @@ public class CsvComparatorRegression {
                     continue;
                 }
 
-                // Compare fields one-by-one
                 Set<String> fields = new LinkedHashSet<String>();
                 fields.addAll(o.keySet());
                 fields.addAll(n.keySet());
@@ -145,19 +155,13 @@ public class CsvComparatorRegression {
                 String sq  = o.containsKey(SQUARE_NUMBER) ? safe(o.get(SQUARE_NUMBER)) : "";
 
                 for (String f : fields) {
-                    if (f == null || f.trim().length() == 0) {
-                        continue;
-                    }
-                    if (IGNORE_COLUMNS.contains(f)) {
-                        continue;
-                    }
+                    if (f == null || f.trim().length() == 0) continue;
+                    if (IGNORE_COLUMNS.contains(f)) continue;
 
                     String ov = clean(o.get(f));
                     String nv = clean(n.get(f));
 
-                    if (valuesEqual(ov, nv)) {
-                        continue;
-                    }
+                    if (valuesEqual(ov, nv)) continue;
 
                     Double od = parseDouble(ov);
                     Double nd = parseDouble(nv);
@@ -218,14 +222,10 @@ public class CsvComparatorRegression {
                 LOGGER.println("Recording: " + recEntry.getKey());
                 for (Map.Entry<String,List<String[]>> sqEntry : recEntry.getValue().entrySet()) {
                     String sq = sqEntry.getKey();
-                    if (!sq.equals("—")) {
-                        squaresWithDiffs.add(sq);
-                    }
+                    if (!sq.equals("—")) squaresWithDiffs.add(sq);
 
                     LOGGER.println("  ▫ Square " + sq + ":");
-                    List<String[]> entries = sqEntry.getValue();
-
-                    for (String[] row : entries) {
+                    for (String[] row : sqEntry.getValue()) {
                         LOGGER.printf(
                                 "     - %-" + globalFieldWidth + "s: '%s' vs '%s' (%s)%n",
                                 row[3], row[4], row[5], row[6]
@@ -255,9 +255,7 @@ public class CsvComparatorRegression {
     private static String join(Set<String> s, String sep) {
         StringBuilder sb = new StringBuilder();
         for (String x : s) {
-            if (sb.length() > 0) {
-                sb.append(sep);
-            }
+            if (sb.length() > 0) sb.append(sep);
             sb.append(x);
         }
         return sb.toString();
@@ -269,17 +267,23 @@ public class CsvComparatorRegression {
         return sq.length() == 0 ? rec : rec + " - " + sq;
     }
 
-    private static Map<String,List<Map<String,String>>> toMultiMap(List<Map<String,String>> rows) {
-        Map<String,List<Map<String,String>>> mm = new TreeMap<String,List<Map<String,String>>>();
-        for (Map<String,String> r : rows) {
+    private static Map<String, List<Map<String, String>>> toMultiMap(List<Map<String, String>> rows) {
+        Map<String, List<Map<String, String>>> mm = new TreeMap<String, List<Map<String, String>>>();
+
+        for (Map<String, String> r : rows) {
             String key = buildKey(r);
-            List<Map<String,String>> bucket = mm.get(key);
+
+            // Ensure the bucket exists
+            List<Map<String, String>> bucket = mm.get(key);
             if (bucket == null) {
-                bucket = new ArrayList<Map<String,String>>();
+                bucket = new ArrayList<Map<String, String>>();
                 mm.put(key, bucket);
             }
+
+            // Add the actual row map
             bucket.add(r);
         }
+
         return mm;
     }
 
@@ -288,23 +292,20 @@ public class CsvComparatorRegression {
         BufferedReader br = Files.newBufferedReader(path);
         try {
             String headerLine = br.readLine();
-            if (headerLine == null) {
-                return rows;
-            }
+            if (headerLine == null) return rows;
 
-            String[] headers = headerLine.split(",", -1);
-            for (int i = 0; i < headers.length; i++) {
-                headers[i] = headers[i].trim();
-            }
+            String[] headers =
+                    Arrays.stream(headerLine.split(",", -1))
+                          .map(String::trim)
+                          .toArray(String[]::new);
 
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.length() == 0) {
-                    continue;
-                }
+                if (line.length() == 0) continue;
 
                 String[] vals = line.split(",", -1);
                 Map<String,String> row = new LinkedHashMap<String,String>();
+
                 for (int i = 0; i < headers.length; i++) {
                     String h = headers[i];
                     String v = (i < vals.length ? vals[i] : "");
@@ -319,23 +320,15 @@ public class CsvComparatorRegression {
     }
 
     private static String clean(String s) {
-        if (s == null) {
-            return "";
-        }
+        if (s == null) return "";
         String t = s.trim();
-        if (t.equalsIgnoreCase("nan")) {
-            return "";
-        }
-        if (t.equalsIgnoreCase("null")) {
-            return "";
-        }
+        if (t.equalsIgnoreCase("nan")) return "";
+        if (t.equalsIgnoreCase("null")) return "";
         return t;
     }
 
     private static boolean valuesEqual(String a, String b) {
-        if (Objects.equals(a, b)) {
-            return true;
-        }
+        if (Objects.equals(a, b)) return true;
         Double da = parseDouble(a);
         Double db = parseDouble(b);
         if (da != null && db != null) {
@@ -347,15 +340,10 @@ public class CsvComparatorRegression {
     }
 
     private static Double parseDouble(String s) {
-        if (s == null || s.length() == 0) {
-            return null;
-        }
+        if (s == null || s.length() == 0) return null;
         try {
             double v = Double.parseDouble(s);
-            if (Double.isNaN(v)) {
-                return null;
-            }
-            return new Double(v);
+            return Double.isNaN(v) ? null : v;
         } catch (Exception e) {
             return null;
         }
@@ -363,6 +351,66 @@ public class CsvComparatorRegression {
 
     private static String safe(String s) {
         return (s == null) ? "" : s;
+    }
+
+    // ============================================================
+    //  LOG FILE COMPARISON
+    // ============================================================
+    public static void compareLatestLogWithPrevious(Path logDir) throws IOException {
+
+        // ★ Turn OFF file logging — console only
+        LOGGER.disableFileLogging();
+
+        try {
+            DirectoryStream<Path> stream = Files.newDirectoryStream(logDir, "paint-regression-*.log");
+            List<Path> logs = new ArrayList<Path>();
+            for (Path p : stream) logs.add(p);
+            stream.close();
+
+            if (logs.size() < 2) {
+                LOGGER.println("ℹ️ Not enough log files to compare (" + logs.size() + " found).");
+                return;
+            }
+
+            Collections.sort(logs);
+
+            Path previous = logs.get(logs.size() - 2);
+            Path latest   = logs.get(logs.size() - 1);
+
+            LOGGER.println("");
+            LOGGER.println("🧪 Comparing log files:");
+            LOGGER.println("   Previous: " + previous.getFileName());
+            LOGGER.println("   Latest  : " + latest.getFileName());
+            LOGGER.println("");
+
+            List<String> oldLines = Files.readAllLines(previous);
+            List<String> newLines = Files.readAllLines(latest);
+
+            int max = Math.max(oldLines.size(), newLines.size());
+            int differences = 0;
+
+            for (int i = 0; i < max; i++) {
+                String oldL = (i < oldLines.size()) ? oldLines.get(i) : "";
+                String newL = (i < newLines.size()) ? newLines.get(i) : "";
+
+                if (!Objects.equals(oldL, newL)) {
+                    LOGGER.printf("🔸 Line %d:%n", (i+1));
+                    LOGGER.printf("     OLD: %s%n", oldL);
+                    LOGGER.printf("     NEW: %s%n", newL);
+                    differences++;
+                }
+            }
+
+            if (differences == 0) {
+                LOGGER.println("✅ No differences in log files.");
+            } else {
+                LOGGER.println("\n📊 Total log differences detected: " + differences);
+            }
+
+        } finally {
+            // ★ Restore writing to file
+            // LOGGER.enableFileLogging();
+        }
     }
 
     // ============================================================
@@ -382,62 +430,6 @@ public class CsvComparatorRegression {
         LOGGER.println("\n✅ Regression comparison complete.");
         LOGGER.println("🔢 Differences detected: " + diffs);
         return diffs;
-    }
-
-    // ============================================================
-    //  LOG FILE COMPARISON
-    // ============================================================
-    public static void compareLatestLogWithPrevious(Path logDir) throws IOException {
-
-        // Find all existing log files
-        DirectoryStream<Path> stream = Files.newDirectoryStream(logDir, "paint-regression-*.log");
-        List<Path> logs = new ArrayList<Path>();
-
-        for (Path p : stream) {
-            logs.add(p);
-        }
-        stream.close();
-
-        if (logs.size() < 2) {
-            LOGGER.println("ℹ️ Not enough log files to compare (" + logs.size() + " found).");
-            return;
-        }
-
-        // Sort by filename (timestamp is included, so lexicographic works)
-        Collections.sort(logs);
-
-        Path previous = logs.get(logs.size() - 2);
-        Path latest   = logs.get(logs.size() - 1);
-
-        LOGGER.println("");
-        LOGGER.println("🧪 Comparing log files:");
-        LOGGER.println("   Previous: " + previous.getFileName());
-        LOGGER.println("   Latest  : " + latest.getFileName());
-        LOGGER.println("");
-
-        List<String> oldLines = Files.readAllLines(previous);
-        List<String> newLines = Files.readAllLines(latest);
-
-        int max = Math.max(oldLines.size(), newLines.size());
-        int differences = 0;
-
-        for (int i = 0; i < max; i++) {
-            String oldL = (i < oldLines.size()) ? oldLines.get(i) : "";
-            String newL = (i < newLines.size()) ? newLines.get(i) : "";
-
-            if (!Objects.equals(oldL, newL)) {
-                LOGGER.printf("🔸 Line %d:%n", (i+1));
-                LOGGER.printf("     OLD: %s%n", oldL);
-                LOGGER.printf("     NEW: %s%n", newL);
-                differences++;
-            }
-        }
-
-        if (differences == 0) {
-            LOGGER.println("✅ No differences in log files.");
-        } else {
-            LOGGER.println("\n📊 Total log differences detected: " + differences);
-        }
     }
 
 
