@@ -39,7 +39,6 @@
 
 package paint.shared.objects;
 
-import paint.shared.utils.Miscellaneous;
 import paint.shared.utils.PaintLogger;
 
 import java.io.PrintWriter;
@@ -52,6 +51,7 @@ import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
 
 import static paint.shared.constants.PaintColumnNames.*;
+import static paint.shared.utils.BooleanUtils.isBooleanTrue;
 
 /**
  * Represents metadata and associated data objects for a single experiment.
@@ -130,7 +130,7 @@ public class ExperimentInfo {
             this.cellType        = row.get(CELL_TYPE);
             this.adjuvant        = row.get(ADJUVANT);
             this.concentration   = parseDouble(row.get(CONCENTRATION));
-            this.processFlag     = Miscellaneous.isBooleanTrue(row.get(PROCESS_FLAG));
+            this.processFlag     = isBooleanTrue(row.get(PROCESS_FLAG));
             this.threshold       = parseDouble(row.get(THRESHOLD));
         } catch (Exception e) {
             PaintLogger.errorf("Problem parsing Experiment Info");

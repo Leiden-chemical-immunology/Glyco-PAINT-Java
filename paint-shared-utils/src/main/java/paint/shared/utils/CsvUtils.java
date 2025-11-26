@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 
 import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
+import static paint.shared.utils.BooleanUtils.isBooleanTrue;
 
 /**
  * Utility class for common CSV file operations such as concatenation,
@@ -113,7 +114,7 @@ public final class CsvUtils {
 
                 for (CSVRecord record : parser) {
                     String val = record.get(processFlagKey);
-                    if (Miscellaneous.isBooleanTrue(val)) {
+                    if (isBooleanTrue(val)) {
                         count++;
                     }
                 }

@@ -180,31 +180,6 @@ public final class Miscellaneous {
         }
     }
 
-    /**
-     * Checks whether the provided string represents a valid boolean expression.
-     *
-     * @param value input string to check
-     * @return {@code true} if recognizable as boolean, {@code false} otherwise
-     */
-    public static Boolean checkBooleanValue(String value) {
-        value                 = value.trim().toLowerCase();
-        Set<String> yesValues = new HashSet<>(Arrays.asList("y", "ye", "yes", "ok", "true", "t", "1"));
-        Set<String> noValues  = new HashSet<>(Arrays.asList("n", "no", "false", "f", "0"));
-        return yesValues.contains(value) || noValues.contains(value);
-    }
-
-
-    /**
-     * Returns {@code true} if the input string is a recognized affirmative boolean value.
-     *
-     * @param value input string
-     * @return {@code true} if value is affirmative (e.g., "y", "yes", "true", "1")
-     */
-    public static Boolean isBooleanTrue(String value) {
-        value = value.trim().toLowerCase();
-        Set<String> yesValues = new HashSet<>(Arrays.asList("y", "ye", "yes", "ok", "true", "t", "1"));
-        return yesValues.contains(value);
-    }
 
     public static void initialiseDoublesToNaN(Object target) {
         for (Field field : target.getClass().getDeclaredFields()) {

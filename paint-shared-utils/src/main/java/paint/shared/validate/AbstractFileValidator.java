@@ -60,7 +60,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static paint.shared.utils.Miscellaneous.checkBooleanValue;
+import static paint.shared.utils.BooleanUtils.checkBooleanValue;
 
 /**
  * Abstract superclass for all CSV file validators in PAINT.
