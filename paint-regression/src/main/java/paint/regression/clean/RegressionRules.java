@@ -8,7 +8,7 @@ final class RegressionRules {
     //  Column groups
     // ===========================
     static final Set<String> IGNORE_COLUMNS_RELAXED = Collections.unmodifiableSet(
-            new HashSet<String>(Arrays.asList(
+            new HashSet<>(Arrays.asList(
                     "Run Time",
                     "Time Stamp",
                     "Row Number",
@@ -23,14 +23,14 @@ final class RegressionRules {
     );
 
     static final Set<String> IGNORE_COLUMNS_STRICT = Collections.unmodifiableSet(
-            new HashSet<String>(Arrays.asList(
+            new HashSet<>(Arrays.asList(
                     "Run Time",
                     "Time Stamp"
             ))
     );
 
     static final Set<String> IGNORE_CASE_FIELDS = Collections.unmodifiableSet(
-            new HashSet<String>(Arrays.asList(
+            new HashSet<>(Arrays.asList(
                     "Visible",
                     "Square Manually Excluded",
                     "Image Excluded"
@@ -149,7 +149,7 @@ final class RegressionRules {
     }
 
     private static Map<String, Integer> newIntMap(Object[][] data) {
-        Map<String, Integer> m = new HashMap<String, Integer>();
+        Map<String, Integer> m = new HashMap<>();
         for (Object[] e : data) {
             m.put((String) e[0], (Integer) e[1]);
         }

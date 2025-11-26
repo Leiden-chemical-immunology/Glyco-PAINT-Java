@@ -58,7 +58,7 @@ public final class SquaresConverter implements CsvConverter {
     // --------------------------------------------------------------------
     // NEW COLUMN → OLD POSITION (your column 4)
     // --------------------------------------------------------------------
-    private static final Map<String,Integer> INDEX_MAP = new LinkedHashMap<String,Integer>();
+    private static final Map<String,Integer> INDEX_MAP = new LinkedHashMap<>();
     static {
         INDEX_MAP.put("Unique Key",                           1);
         INDEX_MAP.put("Experiment Name",                      4);
@@ -104,7 +104,7 @@ public final class SquaresConverter implements CsvConverter {
     @Override
     public List<Map<String,String>> convert(List<Map<String,String>> src) {
 
-        List<Map<String,String>> out = new ArrayList<Map<String,String>>();
+        List<Map<String,String>> out = new ArrayList<>();
 
         for (Map<String,String> inRow : src) {
 
@@ -114,7 +114,7 @@ public final class SquaresConverter implements CsvConverter {
             }
 
             String[] raw = inRow.values().toArray(new String[inRow.size()]);
-            Map<String,String> row = new LinkedHashMap<String,String>();
+            Map<String,String> row = new LinkedHashMap<>();
 
             for (String newCol : HEADER) {
 

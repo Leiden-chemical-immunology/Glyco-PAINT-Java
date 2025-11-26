@@ -50,14 +50,14 @@ public class CsvComparatorRegression {
         Map<String, List<Map<String, String>>> oldMulti = toMultiMap(oldRows);
         Map<String, List<Map<String, String>>> newMulti = toMultiMap(newRows);
 
-        Set<String> allKeys = new TreeSet<String>(oldMulti.keySet());
+        Set<String> allKeys = new TreeSet<>(oldMulti.keySet());
         allKeys.addAll(newMulti.keySet());
 
         LOGGER.println("\n🔎 Starting detailed comparison...");
         LOGGER.println("   → Total unique (Recording Name [+ Square Nr]) keys: " + allKeys.size());
         LOGGER.println("");
 
-        List<String[]> diffs = new ArrayList<String[]>();
+        List<String[]> diffs = new ArrayList<>();
         int diffCount = 0;
 
         int processed = 0;
@@ -90,7 +90,7 @@ public class CsvComparatorRegression {
                     continue;
                 }
 
-                Set<String> fields = new LinkedHashSet<String>();
+                Set<String> fields = new LinkedHashSet<>();
                 fields.addAll(o.keySet());
                 fields.addAll(n.keySet());
 
@@ -265,7 +265,7 @@ public class CsvComparatorRegression {
     }
 
     private static List<Map<String, String>> readCsv(Path path) throws IOException {
-        List<Map<String, String>> rows = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> rows = new ArrayList<>();
         BufferedReader br = Files.newBufferedReader(path);
         try {
             String headerLine = br.readLine();
@@ -281,7 +281,7 @@ public class CsvComparatorRegression {
                 if (line.length() == 0) continue;
 
                 String[] vals = line.split(",", -1);
-                Map<String, String> row = new LinkedHashMap<String, String>();
+                Map<String, String> row = new LinkedHashMap<>();
 
                 for (int i = 0; i < headers.length; i++) {
                     String h = headers[i];
@@ -332,7 +332,8 @@ public class CsvComparatorRegression {
         try {
             // STRICT comparison for original reference
             setRelaxedComparison(false);
-            enableDualLogging(Paths.get("/Users/hans/Downloads/logs1"));
+            Path logPath = Paths.get("/Users/hans/Downloads/logs1");
+            enableDualLogging(logPath);
 
             Path projectRoot = Paths.get(System.getProperty("user.dir"));
 
@@ -346,7 +347,7 @@ public class CsvComparatorRegression {
 
             LOGGER.println("\n\n🔢 Total differences detected: " + diffs);
 
-            LOGGER.compareLatestLogWithPrevious(Paths.get("/Users/hans/Downloads/logs1"));
+            LOGGER.compareLatestLogWithPrevious(logPath);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -355,7 +356,8 @@ public class CsvComparatorRegression {
         try {
             // RELAXED comparison for v39 / new format
             setRelaxedComparison(true);
-            enableDualLogging(Paths.get("/Users/hans/Downloads/logs2"));
+            Path logPath = Paths.get("/Users/hans/Downloads/logs2");
+            enableDualLogging(logPath);
 
             testfile = Paths.get("/Users/hans/Paint Test Project/221012 - v39 - reprocessed/Squares.csv");
             baseline = Paths.get("/Users/hans/Paint Test Project/221012 - v39 - updated format/Squares.csv");
@@ -367,7 +369,7 @@ public class CsvComparatorRegression {
 
             LOGGER.println("\n\n🔢 Total differences detected: " + diffs);
 
-            LOGGER.compareLatestLogWithPrevious(Paths.get("/Users/hans/Downloads/logs2"));
+            LOGGER.compareLatestLogWithPrevious(logPath);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);

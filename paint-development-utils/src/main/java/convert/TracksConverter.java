@@ -16,7 +16,7 @@ public final class TracksConverter implements CsvConverter {
     }
 
     // Old → New header mapping
-    private static final Map<String,String> MAP = new LinkedHashMap<String,String>();
+    private static final Map<String,String> MAP = new LinkedHashMap<>();
     static {
         MAP.put("Unique Key",                 "Unique Key");
         MAP.put("Ext Recording Name",         "Recording Name");
@@ -40,7 +40,7 @@ public final class TracksConverter implements CsvConverter {
 
     // Output header: Unique Key, Experiment Name, then mapped fields
     public List<String> getOutputHeader() {
-        List<String> header = new ArrayList<String>();
+        List<String> header = new ArrayList<>();
         header.add("Unique Key");
         header.add("Experiment Name");
         for (Map.Entry<String,String> e : MAP.entrySet()) {
@@ -55,7 +55,7 @@ public final class TracksConverter implements CsvConverter {
     // Convert logic
     // -----------------------------------------------------------
     public List<Map<String,String>> convert(List<Map<String,String>> src) {
-        List<Map<String,String>> out = new ArrayList<Map<String,String>>();
+        List<Map<String,String>> out = new ArrayList<>();
 
         for (Map<String,String> r : src) {
 
@@ -66,7 +66,7 @@ public final class TracksConverter implements CsvConverter {
                 experimentName = unique.substring(0, 6);
             }
 
-            Map<String,String> row = new LinkedHashMap<String,String>();
+            Map<String,String> row = new LinkedHashMap<>();
 
             // 1. Unique Key — EXACT COPY (no trim)
             row.put("Unique Key", unique);

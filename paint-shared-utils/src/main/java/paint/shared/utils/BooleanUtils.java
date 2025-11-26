@@ -42,11 +42,11 @@ public final class BooleanUtils {
     // SINGLE SOURCE OF TRUTH
     // ───────────────────────────────────────────────────────────────────────────────
 
-    private static final Set<String> TRUE_VALUES = new HashSet<String>(Arrays.asList(
+    private static final Set<String> TRUE_VALUES = new HashSet<>(Arrays.asList(
             "y", "ye", "yes", "ok", "true", "t", "1"
     ));
 
-    private static final Set<String> FALSE_VALUES = new HashSet<String>(Arrays.asList(
+    private static final Set<String> FALSE_VALUES = new HashSet<>(Arrays.asList(
             "n", "no", "false", "f", "0"
     ));
 
@@ -151,7 +151,6 @@ public final class BooleanUtils {
     /**
      * Returns true if the given value is explicitly recognized as a TRUE token.
      * Returns false for FALSE tokens, null/empty, or invalid values.
-     *
      * TRUE tokens: y, ye, yes, ok, true, t, 1
      */
     public static boolean isBooleanTrue(String value) {
