@@ -96,13 +96,11 @@ public class CalculateSquareAttributes {
         List<Square> squaresOfRecording              = recording.getSquaresOfRecording();
 
 
-        BackgroundEstimationResult result  = calculateBackgroundDensity(squaresOfRecording);
-        double meanBackgroundTracks = result.getBackgroundMean();
-        double backgroundTracksOri  = calcAverageTrackCountInBackgroundSquares(
-                squaresOfRecording,
-                (int) (0.1 * numberOfSquaresInRecording));
-
-        PaintLogger.debugf("Estimated Background track count = %.2f, n = %d%n",
+        BackgroundEstimationResult result               = calculateBackgroundDensity(squaresOfRecording);
+        double                     meanBackgroundTracks = result.getBackgroundMean();
+        double                     backgroundTracksOri  = calcAverageTrackCountInBackgroundSquares(squaresOfRecording,
+                                                                                                   (int) (0.1 * numberOfSquaresInRecording));
+        PaintLogger.debugf("Estimated Background track count = %.2f, number of background squares = %d%n",
                            meanBackgroundTracks, result.getBackgroundSquares().size());
 
         for (Square square : squaresOfRecording) {
@@ -215,20 +213,13 @@ public class CalculateSquareAttributes {
 
         double minRequiredRSquared = generateSquaresConfig.getMinRequiredRSquared();
 
-        BackgroundEstimationResult result =
-                calculateBackgroundDensity(recording.getSquaresOfRecording());
+        BackgroundEstimationResult result = calculateBackgroundDensity(recording.getSquaresOfRecording());
 
         double meanBackgroundTracks = result.getBackgroundMean();
         int backgroundTracks = result.getBackgroundSquares()
                                      .stream()
                                      .mapToInt(Square::getNumberOfTracks)
                                      .sum();
-
-        PaintLogger.debugf(
-                "Estimated Background track count = %.2f, n = %d%n",
-                meanBackgroundTracks,
-                result.getBackgroundSquares().size()
-        );
 
         recording.setNumberOfSquaresInBackground(result.getBackgroundSquares().size());
         recording.setNumberOfTracksInBackground(backgroundTracks);

@@ -287,12 +287,13 @@ public class GenerateSquaresProcessor {
             square.setNumberOfTracks(tracks.size());
 
             // Log info
-            PaintLogger.debugf("Square %d: %d tracks assigned (label %d)",
+            PaintLogger.debugf("Square %3d: %3d tracks assigned (label %d)",
                                square.getSquareNumber(), tracks.size(), labelNumber);
 
             labelNumber++;
         }
 
+        PaintLogger.debugf("");
         PaintLogger.debugf(
                 "assignTracksToSquare - number of tracks assigned is %d; tracks in recording: %d",
                 incrementalTrackCount,
@@ -348,7 +349,7 @@ public class GenerateSquaresProcessor {
         Table         allTracksTable = trackTableIO.emptyTable();
 
         for (Recording recording : experiment.getRecordings()) {
-            PaintLogger.debugf("Processing tracks for experiment '%s' - recording '%s'",
+            PaintLogger.debugf("Compiling tracks for experiment '%s' - recording '%s'",
                                experiment.getExperimentName(),
                                recording.getRecordingName());
 
@@ -360,6 +361,7 @@ public class GenerateSquaresProcessor {
                                    recording.getRecordingName());
             }
         }
+        PaintLogger.debugf("");
         return allTracksTable;
     }
 }

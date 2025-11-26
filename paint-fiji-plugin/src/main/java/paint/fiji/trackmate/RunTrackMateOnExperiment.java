@@ -198,7 +198,6 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
         TrackMateConfig trackMateConfig = new TrackMateConfig();
         int maxSecondsPerRecording      = trackMateConfig.getMaxNumberOfSecondsPerImage();
 
-        PaintLogger.debugf(trackMateConfig.toString());
         if (verbose) {
             PaintLogger.infof(trackMateConfig.toString());
         }

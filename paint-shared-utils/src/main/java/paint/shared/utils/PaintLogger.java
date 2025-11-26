@@ -148,6 +148,15 @@ public final class PaintLogger {
     }
 
     /**
+     * Returns the current log level as an uppercase string.
+     *
+     * @return the name of the current log level (e.g., "DEBUG", "INFO").
+     */
+    public static String getLevelName() {
+        return currentLevel.name();
+    }
+
+    /**
      * Initializes the logger by creating a "Logs" directory and a new numbered log file.
      * Logs are written to both file and GUI console.
      *

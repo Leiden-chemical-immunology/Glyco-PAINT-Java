@@ -49,10 +49,7 @@ package paint.generatesquares.app;
 
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
-import paint.shared.utils.JarInfoLogger;
-import paint.shared.utils.PaintConsoleWindow;
-import paint.shared.utils.PaintLogger;
-import paint.shared.utils.PaintRuntime;
+import paint.shared.utils.*;
 
 import javax.swing.*;
 import java.nio.file.Path;
@@ -107,6 +104,7 @@ public class GenerateSquares {
                 // --- Step 2: Create console, initialize config and logger early ---
                 PaintConsoleWindow.createConsoleFor(GENERATE_SQUARES);
                 PaintLogger.initialise(projectPath, "Generate Squares.log");
+                PaintLogger.setLevel(PaintPrefs.getString("Runtime", "Log Level", "INFO"));
                 PaintConfig.initialise(projectPath);
 
                 JarInfoLogger.JarInfo info = getJarInfo(GenerateSquares.class);
@@ -120,6 +118,7 @@ public class GenerateSquares {
                 String formattedTime = LocalDateTime.now()
                                                     .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                 PaintLogger.infof("Current time is: %s", formattedTime);
+                PaintLogger.infof("Logging level is %s", PaintLogger.getLevelName());
                 PaintLogger.blankline();
 
                 // --- Step 3: Show the integrated configuration dialog ---
