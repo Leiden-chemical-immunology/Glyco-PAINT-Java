@@ -52,6 +52,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import java.time.LocalDateTime;
+import static paint.shared.utils.BooleanUtils.normalizeBoolean;
+
 /**
  * Abstract base class for consistent CSV and {@link Table} I/O across
  * the PAINT modules. Provides shared implementations for reading, validating,
@@ -61,12 +64,6 @@ public abstract class BaseTableIO {
 
     /**
      * Creates a new empty {@link Table} with the given schema.
-     *
-     * @param tableName name of the table to create
-     * @param colNames  array of column names
-     * @param colTypes  array of corresponding {@link ColumnType}s
-     * @return a new empty {@link Table} with the specified schema
-     * @throws IllegalArgumentException if the lengths of {@code colNames} and {@code colTypes} differ
      */
     protected Table newEmptyTable(String tableName, String[] colNames, ColumnType[] colTypes) {
         if (colNames.length != colTypes.length) {
@@ -83,18 +80,12 @@ public abstract class BaseTableIO {
 
     /**
      * Appends all rows from {@code source} into {@code target} in place.
-     * Both tables must have identical schemas.
-     *
-     * @param target the {@link Table} to append rows into
-     * @param source the {@link Table} providing rows to append
-     * @throws IllegalArgumentException if the tables have different schemas
      */
     public void appendInPlace(Table target, Table source) {
         if (target.columnCount() != source.columnCount()) {
             throw new IllegalArgumentException("Cannot append: column count mismatch ("
                                                        + target.columnCount() + " vs " + source.columnCount() + ")");
         }
-        // Enforce same column names in order
         for (int i = 0; i < target.columnCount(); i++) {
             if (!target.column(i).name().equals(source.column(i).name())) {
                 throw new IllegalArgumentException("Cannot append: schema mismatch at column " + i +
@@ -106,27 +97,27 @@ public abstract class BaseTableIO {
 
     /**
      * Builds a {@link CsvReadOptions} instance enforcing the provided column types.
-     *
-     * @param csvPath  path to the CSV file
-     * @param colTypes expected {@link ColumnType}s for the file
-     * @return configured {@link CsvReadOptions}
      */
     protected CsvReadOptions buildCsvReadOptions(Path csvPath, ColumnType[] colTypes) {
         return CsvReadOptions.builder(csvPath.toFile())
-                .header(true)
-                .columnTypes(colTypes)
-                .build();
+                             .header(true)
+                             .columnTypes(colTypes)
+                             .build();
     }
 
     /**
-     * Reads a CSV file into a {@link Table} with a known schema and validates its header and types.
+     * Reads a CSV file into a {@link Table} with a known schema and validates its
+     * header and types.
      *
-     * @param csvPath       path to the CSV file
-     * @param expectedCols  expected column names in order
-     * @param expectedTypes expected {@link ColumnType}s in order
-     * @param allowSuperset whether extra columns are allowed
-     * @return a validated {@link Table}
-     * @throws IOException if the file cannot be read or validation fails
+     * <p>This implementation uses a two-step import process:</p>
+     *
+     * <ol>
+     *   <li>Read the CSV with all columns forced to STRING.</li>
+     *   <li>Normalize boolean values and convert types according to the schema.</li>
+     * </ol>
+     *
+     * <p>This avoids Tablesaw’s strict Boolean parser rejecting values such as
+     * "true", "false", "yes", "no", "1", "0", etc.</p>
      */
     public Table readCsvWithSchema(
             Path         csvPath,
@@ -138,31 +129,122 @@ public abstract class BaseTableIO {
             throw new IOException("CSV not found: " + csvPath);
         }
 
-        Table table = Table.read().usingOptions(
-                buildCsvReadOptions(csvPath, expectedTypes));
+        // ───────────────────────────────────────────────────────────────────────────────
+        // STEP 1 — Read the CSV as STRINGS only (no type parsing!)
+        // ───────────────────────────────────────────────────────────────────────────────
 
-        List<String> headerErrors = validateHeader(table, expectedCols, allowSuperset);
+        // Build an array of STRING types, one for each expected column
+        ColumnType[] stringTypes = new ColumnType[expectedCols.length];
+        Arrays.fill(stringTypes, ColumnType.STRING);
+
+        CsvReadOptions rawOpts = CsvReadOptions.builder(csvPath.toFile())
+                                               .header(true)
+                                               .columnTypes(stringTypes)    // force everything to STRING
+                                               .build();
+
+        Table raw = Table.read().usingOptions(rawOpts);
+
+
+        // ───────────────────────────────────────────────────────────────────────────────
+        // STEP 2 — Validate header BEFORE type coercion
+        // ───────────────────────────────────────────────────────────────────────────────
+        List<String> headerErrors = validateHeader(raw, expectedCols, allowSuperset);
         if (!headerErrors.isEmpty()) {
             throw new IOException("Header validation failed:\n  - "
                                           + String.join("\n  - ", headerErrors));
         }
 
-        List<String> typeErrors = validateTypes(table, expectedCols, expectedTypes);
+
+        // ───────────────────────────────────────────────────────────────────────────────
+        // STEP 3 — Build a fresh typed table with the correct schema
+        // ───────────────────────────────────────────────────────────────────────────────
+        Table typed = newEmptyTable(raw.name(), expectedCols, expectedTypes);
+
+        for (int r = 0; r < raw.rowCount(); r++) {
+            Row newRow = typed.appendRow();
+
+            for (int c = 0; c < expectedCols.length; c++) {
+
+                String     colName = expectedCols[c];
+                ColumnType type    = expectedTypes[c];
+
+                String value = raw.stringColumn(colName).get(r);
+                if (value != null) value = value.trim();
+                if (value != null && value.isEmpty()) value = null;
+
+                switch (type.name()) {
+                    case "STRING":
+                        newRow.setString(colName, value);
+                        break;
+
+                    case "INTEGER":
+                        if (value == null) {
+                            newRow.setMissing(colName);
+                            break;
+                        }
+                        try {
+                            newRow.setInt(colName, Integer.parseInt(value));
+                        } catch (Exception ex) {
+                            throw new IOException("Invalid INTEGER in '" + colName + "': " + value);
+                        }
+                        break;
+
+                    case "DOUBLE":
+                        if (value == null) {
+                            newRow.setMissing(colName);
+                            break;
+                        }
+                        try {
+                            newRow.setDouble(colName, Double.parseDouble(value));
+                        } catch (Exception ex) {
+                            throw new IOException("Invalid DOUBLE in '" + colName + "': " + value);
+                        }
+                        break;
+
+                    case "BOOLEAN": {
+                        String norm = normalizeBoolean(value);
+                        if (norm == null) {
+                            newRow.setMissing(colName);
+                        } else {
+                            newRow.setBoolean(colName, Boolean.parseBoolean(norm));
+                        }
+                        break;
+                    }
+
+                    case "LOCAL_DATE_TIME":
+                        if (value == null) {
+                            newRow.setMissing(colName);
+                            break;
+                        }
+                        try {
+                            // assumes your converter now writes ISO-8601 values
+                            newRow.setDateTime(colName, LocalDateTime.parse(value));
+                        } catch (Exception ex) {
+                            throw new IOException("Invalid LOCAL_DATE_TIME in '" +
+                                                          colName + "': " + value);
+                        }
+                        break;
+
+                    default:
+                        throw new IOException("Unsupported type: " + type.name());
+                }
+            }
+        }
+
+        // ───────────────────────────────────────────────────────────────────────────────
+        // STEP 4 — Type checking
+        // ───────────────────────────────────────────────────────────────────────────────
+        List<String> typeErrors = validateTypes(typed, expectedCols, expectedTypes);
         if (!typeErrors.isEmpty()) {
             throw new IOException("Type validation failed:\n  - "
                                           + String.join("\n  - ", typeErrors));
         }
 
-        return table;
+        return typed;
     }
 
     /**
      * Validates that the table header matches the expected columns.
-     *
-     * @param t             the {@link Table} to validate
-     * @param expectedCols  expected column names
-     * @param allowSuperset whether extra columns are allowed
-     * @return a list of validation error messages (empty if valid)
      */
     protected List<String> validateHeader(Table t, String[] expectedCols, boolean allowSuperset) {
         List<String> errors = new ArrayList<>();
@@ -171,9 +253,10 @@ public abstract class BaseTableIO {
             actualCols.add(col.toLowerCase(Locale.ROOT));
         }
 
-        String[] expectedLower = Arrays.stream(expectedCols)
-                .map(s -> s.toLowerCase(Locale.ROOT))
-                .toArray(String[]::new);
+        String[] expectedLower = new String[expectedCols.length];
+        for (int i = 0; i < expectedCols.length; i++) {
+            expectedLower[i] = expectedCols[i].toLowerCase(Locale.ROOT);
+        }
 
         if (!allowSuperset && actualCols.size() != expectedCols.length) {
             errors.add("Column count mismatch: expected " + expectedCols.length + " but found " + actualCols.size());
@@ -185,7 +268,8 @@ public abstract class BaseTableIO {
         int upto = Math.min(expectedLower.length, actualCols.size());
         for (int i = 0; i < upto; i++) {
             if (!expectedLower[i].equals(actualCols.get(i))) {
-                errors.add("At index " + i + ": expected '" + expectedCols[i] + "' but found '" + t.columnNames().get(i) + "'");
+                errors.add("At index " + i + ": expected '" + expectedCols[i] + "' but found '"
+                                   + t.columnNames().get(i) + "'");
             }
         }
 
@@ -199,21 +283,18 @@ public abstract class BaseTableIO {
     }
 
     /**
-     * Validates that the column types in the table match the expected schema.
-     *
-     * @param t      the {@link Table} to validate
-     * @param names  expected column names
-     * @param types  expected {@link ColumnType}s
-     * @return a list of validation error messages (empty if valid)
+     * Validates that the column types match the expected schema.
      */
     protected List<String> validateTypes(Table t, String[] names, ColumnType[] types) {
         List<String> errors = new ArrayList<>();
         for (int i = 0; i < names.length; i++) {
             String colName = names[i];
             ColumnType expected = types[i];
+
             if (!t.columnNames().contains(colName)) {
-                continue; // header validator already flagged
+                continue;
             }
+
             Column<?> col = t.column(colName);
             ColumnType actual = col.type();
 
@@ -221,26 +302,19 @@ public abstract class BaseTableIO {
                     (expected == ColumnType.DOUBLE && actual == ColumnType.INTEGER);
 
             if (!actual.equals(expected) && !compatibleNumber) {
-                errors.add("Type mismatch for '" + colName + "': expected " + expected + " but got " + actual);
+                errors.add("Type mismatch for '" + colName + "': expected "
+                                   + expected + " but got " + actual);
             }
         }
         return errors;
     }
 
     /**
-     * Writes a {@link Table} to a CSV file using a stable US locale with fixed
-     * three-decimal formatting for floating-point values.
-     *
-     * @param table  the {@link Table} to write
-     * @param target target file path
-     * @throws IOException if writing fails
+     * Writes a {@link Table} to CSV with US-locale fixed 3-decimal precision.
      */
-
     public void writeCsv(Table table, Path target) throws IOException {
-        // Force locale-stable, fixed 3-decimal formatting
         NumberFormat nf = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.US));
 
-        // Build an export table with numeric columns materialized as formatted strings
         Table export = Table.create(table.name());
         for (Column<?> col : table.columns()) {
             if (col instanceof DoubleColumn) {
@@ -258,16 +332,15 @@ public abstract class BaseTableIO {
                 }
                 export.addColumns(sc);
             } else {
-                // Non-floating types: add as-is (you can copy or reuse the same instance)
                 export.addColumns(col);
             }
         }
 
         Files.createDirectories(target.getParent());
         CsvWriteOptions opts = CsvWriteOptions.builder(target.toFile())
-                .header(true)
-                .separator(',')
-                .build();
+                                              .header(true)
+                                              .separator(',')
+                                              .build();
 
         export.write().usingOptions(opts);
     }
