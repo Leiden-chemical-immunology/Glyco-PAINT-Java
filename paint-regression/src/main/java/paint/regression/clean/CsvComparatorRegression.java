@@ -119,6 +119,22 @@ public class CsvComparatorRegression {
                     Double od = RegressionRules.parseDouble(ov);
                     Double nd = RegressionRules.parseDouble(nv);
 
+                    // ★ NEW: in relaxed mode, suppress numeric differences when one side is missing
+                    if (relaxedComparison) {
+                        boolean odMissing = (od == null);
+                        boolean ndMissing = (nd == null);
+
+                        // both empty → equal
+                        if (odMissing && ndMissing) {
+                            continue;
+                        }
+
+                        // one empty → treat as equal (skip difference)
+                        if (odMissing || ndMissing) {
+                            continue;
+                        }
+                    }
+
                     if (od != null && nd != null) {
                         nd = RegressionRules.correctedValueIfTrackDependent(f, od, nd, o, n);
                         if (RegressionRules.numericEqualWithTolerance(f, od, nd, relaxedComparison)) {

@@ -4,10 +4,6 @@ import java.util.*;
 
 final class RegressionRules {
 
-    private RegressionRules() {
-        // no instances
-    }
-
     // ===========================
     //  Column groups
     // ===========================
@@ -50,22 +46,6 @@ final class RegressionRules {
     static final Map<String, Integer> ROUNDING_RELAXED;
     static final Map<String, Integer> ROUNDING_STRICT;
 
-    private static Map<String, Double> newDoubleMap(Object[][] data) {
-        Map<String, Double> m = new HashMap<String, Double>();
-        for (Object[] e : data) {
-            m.put((String) e[0], (Double) e[1]);
-        }
-        return m;
-    }
-
-    private static Map<String, Integer> newIntMap(Object[][] data) {
-        Map<String, Integer> m = new HashMap<String, Integer>();
-        for (Object[] e : data) {
-            m.put((String) e[0], (Integer) e[1]);
-        }
-        return m;
-    }
-
     static {
         RELATIVE_TOLERANCE_RELAXED = Collections.unmodifiableMap(
                 newDoubleMap(new Object[][]{
@@ -84,7 +64,7 @@ final class RegressionRules {
                         {"Max Track Duration",    0.02},
                         {"Total Track Duration",  0.02},
                         {"Median Track Duration", 0.02},
-                        {"Density Ratio Ori",     0.02}
+                        {"Density Ratio Ori", 0.02}
                 })
         );
 
@@ -156,6 +136,26 @@ final class RegressionRules {
         );
     }
 
+    private RegressionRules() {
+        // no instances
+    }
+
+    private static Map<String, Double> newDoubleMap(Object[][] data) {
+        Map<String, Double> m = new HashMap<String, Double>();
+        for (Object[] e : data) {
+            m.put((String) e[0], (Double) e[1]);
+        }
+        return m;
+    }
+
+    private static Map<String, Integer> newIntMap(Object[][] data) {
+        Map<String, Integer> m = new HashMap<String, Integer>();
+        for (Object[] e : data) {
+            m.put((String) e[0], (Integer) e[1]);
+        }
+        return m;
+    }
+
     // ===========================
     //  Helpers
     // ===========================
@@ -168,10 +168,16 @@ final class RegressionRules {
     }
 
     static String clean(String s) {
-        if (s == null) return "";
+        if (s == null) {
+            return "";
+        }
         String t = s.trim();
-        if (t.equalsIgnoreCase("nan")) return "";
-        if (t.equalsIgnoreCase("null")) return "";
+        if (t.equalsIgnoreCase("nan")) {
+            return "";
+        }
+        if (t.equalsIgnoreCase("null")) {
+            return "";
+        }
         return t;
     }
 
@@ -179,21 +185,27 @@ final class RegressionRules {
         String x = (a == null ? "" : a.trim());
         String y = (b == null ? "" : b.trim());
 
-        if (x.isEmpty() && isZeroOrSentinel(y)) return true;
-        if (y.isEmpty() && isZeroOrSentinel(x)) return true;
+        if (x.isEmpty() && isZeroOrSentinel(y)) {
+            return true;
+        }
+        if (y.isEmpty() && isZeroOrSentinel(x)) {
+            return true;
+        }
 
         return false;
     }
 
     private static boolean isZeroOrSentinel(String v) {
-        return "0".equals(v)   || "0.0".equals(v) ||
-                "-1".equals(v)  || "-1.0".equals(v) ||
-                "-2".equals(v)  || "-2.0".equals(v) ||
-                "-3".equals(v)  || "-3.0".equals(v);
+        return "0".equals(v) || "0.0".equals(v) ||
+                "-1".equals(v) || "-1.0".equals(v) ||
+                "-2".equals(v) || "-2.0".equals(v) ||
+                "-3".equals(v) || "-3.0".equals(v);
     }
 
     static boolean valuesEqual(String a, String b) {
-        if (Objects.equals(a, b)) return true;
+        if (Objects.equals(a, b)) {
+            return true;
+        }
         Double da = parseDouble(a);
         Double db = parseDouble(b);
         if (da != null && db != null) {
@@ -205,7 +217,9 @@ final class RegressionRules {
     }
 
     static Double parseDouble(String s) {
-        if (s == null || s.length() == 0) return null;
+        if (s == null || s.length() == 0) {
+            return null;
+        }
         try {
             double v = Double.parseDouble(s);
             return Double.isNaN(v) ? null : v;
@@ -216,6 +230,12 @@ final class RegressionRules {
 
     static boolean numericEqualWithTolerance(String field, double a, double b, boolean relaxed) {
 
+        if (relaxed) {
+            if (Double.isNaN(a) || Double.isNaN(b)) {
+                return true;
+            }
+        }
+
         Map<String, Integer> roundMap = relaxed ? ROUNDING_RELAXED : ROUNDING_STRICT;
         Map<String, Double> tolMap = relaxed ? RELATIVE_TOLERANCE_RELAXED : RELATIVE_TOLERANCE_STRICT;
 
@@ -223,14 +243,18 @@ final class RegressionRules {
         if (prec != null) {
             double ra = round(a, prec);
             double rb = round(b, prec);
-            if (Double.compare(ra, rb) == 0) return true;
+            if (Double.compare(ra, rb) == 0) {
+                return true;
+            }
         }
 
         Double relTol = tolMap.get(field);
         if (relTol != null) {
             double denom = Math.max(1e-9, Math.max(Math.abs(a), Math.abs(b)));
             double relErr = Math.abs(a - b) / denom;
-            if (relErr <= relTol) return true;
+            if (relErr <= relTol) {
+                return true;
+            }
         }
 
         return false;
@@ -248,7 +272,9 @@ final class RegressionRules {
             String field, Double oldVal, Double newVal,
             Map<String, String> oldRow, Map<String, String> newRow) {
 
-        if (oldVal == null || newVal == null) return newVal;
+        if (oldVal == null || newVal == null) {
+            return newVal;
+        }
 
         if (!"Density".equals(field) && !"Density Ratio Ori".equals(field)) {
             return newVal;
@@ -256,11 +282,40 @@ final class RegressionRules {
 
         Double oldTracks = parseDouble(oldRow.get("Number of Tracks"));
         Double newTracks = parseDouble(newRow.get("Number of Tracks"));
-        if (oldTracks == null || newTracks == null) return newVal;
-        if (oldTracks <= 0 || newTracks <= 0) return newVal;
-        if (Objects.equals(oldTracks, newTracks)) return newVal;
+        if (oldTracks == null || newTracks == null) {
+            return newVal;
+        }
+        if (oldTracks <= 0 || newTracks <= 0) {
+            return newVal;
+        }
+        if (Objects.equals(oldTracks, newTracks)) {
+            return newVal;
+        }
 
         double ratio = oldTracks / newTracks;
         return newVal * ratio;
     }
+
+    /**
+     * In relaxed mode: if a field is numeric and one side is empty/NaN,
+     * treat them as equal (skip difference).
+     */
+    static boolean relaxedNumericMissingOK(Double a, Double b, boolean relaxed) {
+        if (!relaxed) {
+            return false; // strict mode: no forgiveness
+        }
+
+        // If both non-null, nothing to do
+        if (a != null && b != null) {
+            return false;
+        }
+
+        // If one side is numeric and the other is missing → ignore difference
+        if ((a != null && b == null) || (a == null && b != null)) {
+            return true;
+        }
+
+        return false;
+    }
+
 }
