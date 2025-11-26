@@ -124,13 +124,25 @@ public final class SquaresConverter implements CsvConverter {
                 String val = (idx < raw.length ? raw[idx] : "");
                 val = (val == null ? "" : val.trim());
 
-                // SPECIAL RULE: Label Number must be a valid integer, otherwise 0
+                // SPECIAL: Unique Key cleanup
+                if (newCol.equals("Unique Key")) {
+                    row.put("Unique Key", stripThresholdForUniqueKey(val));
+                    continue;
+                }
+
+                // SPECIAL: Recording Name cleanup
+                if (newCol.equals("Recording Name")) {
+                    row.put("Recording Name", stripThresholdFromRecordingName(val));
+                    continue;
+                }
+
+                // SPECIAL: Label Number must be a valid integer
                 if (newCol.equals("Label Number")) {
                     row.put("Label Number", parseOrZero(val));
                     continue;
                 }
 
-                // normal mapping
+                // Normal mapping
                 row.put(newCol, val);
             }
 
@@ -196,4 +208,47 @@ public final class SquaresConverter implements CsvConverter {
         return !hasRealValue;
     }
 
+    /**
+     * For UNIQUE KEY:
+     *  "221012-Exp-1-A1-1-threshold-5 - 0"  → "221012-Exp-1-A1-1-0"
+     *  "111111-Exp-11-A1-Threshold - 5 -1"  → "111111-Exp-11-A1-1"
+     */
+    private static String stripThresholdForUniqueKey(String v) {
+        if (v == null) return "";
+        v = v.trim();
+        if (v.isEmpty()) return v;
+
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile(
+                "^(.*?)-threshold\\s*-\\s*\\d+\\s*-\\s*(\\d{1,3})\\s*$",
+                java.util.regex.Pattern.CASE_INSENSITIVE
+        ).matcher(v);
+
+        if (m.matches()) {
+            String base = m.group(1).trim();  // before "-threshold..."
+            String last = m.group(2);         // final number
+            return base + "-" + last;
+        }
+        return v;
+    }
+
+    /**
+     * For RECORDING NAME:
+     *  "221012-Exp-1-A1-1-threshold-5"      → "221012-Exp-1-A1-1"
+     *  "111111-Exp-11-A1-Threshold - 5"    → "111111-Exp-11-A1"
+     */
+    private static String stripThresholdFromRecordingName(String v) {
+        if (v == null) return "";
+        v = v.trim();
+        if (v.isEmpty()) return v;
+
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile(
+                "^(.*?)-threshold\\s*-\\s*\\d+\\s*$",
+                java.util.regex.Pattern.CASE_INSENSITIVE
+        ).matcher(v);
+
+        if (m.matches()) {
+            return m.group(1).trim();
+        }
+        return v;
+    }
 }

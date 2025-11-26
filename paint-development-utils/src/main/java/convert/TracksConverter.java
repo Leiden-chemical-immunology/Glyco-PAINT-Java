@@ -68,8 +68,8 @@ public final class TracksConverter implements CsvConverter {
 
             Map<String,String> row = new LinkedHashMap<String,String>();
 
-            // 1. Unique Key
-            row.put("Unique Key", safe(unique));
+            // 1. Unique Key — EXACT COPY (no trim)
+            row.put("Unique Key", unique);
 
             // 2. Constructed Experiment Name
             row.put("Experiment Name", experimentName);
@@ -86,7 +86,13 @@ public final class TracksConverter implements CsvConverter {
 
                 String val = r.get(oldH);
 
-                // ============== INTEGER NORMALIZATION ==============
+                // Strip "-Threshold..." from Recording Name
+                if (newH.equals("Recording Name")) {
+                    row.put(newH, stripThresholdSuffix(val));
+                    continue;
+                }
+
+                // INTEGER normalization
                 if (newH.equals("Number of Spots") ||
                         newH.equals("Number of Gaps") ||
                         newH.equals("Longest Gap")) {
@@ -95,7 +101,7 @@ public final class TracksConverter implements CsvConverter {
                     continue;
                 }
 
-                // ============== DOUBLE NORMALIZATION ==============
+                // DOUBLE normalization
                 if (newH.equals("Track Duration") ||
                         newH.equals("Track X Location") ||
                         newH.equals("Track Y Location") ||
@@ -111,7 +117,7 @@ public final class TracksConverter implements CsvConverter {
                     continue;
                 }
 
-                // ============== DEFAULT ==============
+                // Default
                 row.put(newH, safe(val));
             }
 
@@ -148,11 +154,21 @@ public final class TracksConverter implements CsvConverter {
         if (v.isEmpty()) return "";
         try {
             double d = Double.parseDouble(v);
-            // Normalize to plain string without scientific notation
             return Double.toString(d);
         } catch (Exception ex) {
             return "";
         }
+    }
+
+    private static String stripThresholdSuffix(String v) {
+        if (v == null) return "";
+        v = v.trim();
+        if (v.isEmpty()) return v;
+
+        int idx = v.toLowerCase().lastIndexOf("-threshold");
+        if (idx == -1) return v;
+
+        return v.substring(0, idx).trim();
     }
 
     // -----------------------------------------------------------
