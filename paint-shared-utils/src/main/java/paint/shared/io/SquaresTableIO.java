@@ -118,8 +118,8 @@ public class SquaresTableIO extends BaseTableIO {
             tablesawRow.setDouble(  TOTAL_DISPLACEMENT,                square.getTotalDisplacement());
             tablesawRow.setDouble(  MEDIAN_MAX_SPEED,                  square.getMedianMaxSpeed());
             tablesawRow.setDouble(  MAX_MAX_SPEED,                     square.getMaxMaxSpeed());
-            tablesawRow.setDouble(  MEDIAN_MEAN_SPEED,                 square.getMedianMedianSpeed());
-            tablesawRow.setDouble(  MAX_MEAN_SPEED,                    square.getMaxMedianSpeed());
+            tablesawRow.setDouble(  MEDIAN_MEDIAN_SPEED,               square.getMedianMedianSpeed());
+            tablesawRow.setDouble(  MAX_MEDIAN_SPEED,                  square.getMaxMedianSpeed());
             tablesawRow.setDouble(  MAX_TRACK_DURATION,                square.getMaxTrackDuration());
             tablesawRow.setDouble(  TOTAL_TRACK_DURATION,              square.getTotalTrackDuration());
             tablesawRow.setDouble(  MEDIAN_TRACK_DURATION,             square.getMedianTrackDuration());
@@ -167,8 +167,8 @@ public class SquaresTableIO extends BaseTableIO {
             square.setTotalDisplacement(             tablesawRow.getDouble(  TOTAL_DISPLACEMENT));
             square.setMedianMaxSpeed(                tablesawRow.getDouble(  MEDIAN_MAX_SPEED));
             square.setMaxMaxSpeed(                   tablesawRow.getDouble(  MAX_MAX_SPEED));
-            square.setMedianMedianSpeed(             tablesawRow.getDouble(  MEDIAN_MEAN_SPEED));
-            square.setMaxMedianSpeed(                tablesawRow.getDouble(  MAX_MEAN_SPEED));
+            square.setMedianMedianSpeed(             tablesawRow.getDouble(  MEDIAN_MEDIAN_SPEED));
+            square.setMaxMedianSpeed(                tablesawRow.getDouble(  MAX_MEDIAN_SPEED));
             square.setMaxTrackDuration(              tablesawRow.getDouble(  MAX_TRACK_DURATION));
             square.setTotalTrackDuration(            tablesawRow.getDouble(  TOTAL_TRACK_DURATION));
             square.setMedianTrackDuration(           tablesawRow.getDouble(  MEDIAN_TRACK_DURATION));

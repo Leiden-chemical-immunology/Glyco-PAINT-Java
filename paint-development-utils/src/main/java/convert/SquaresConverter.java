@@ -48,7 +48,7 @@ public final class SquaresConverter implements CsvConverter {
             "Total Displacement",
             "Median Max Speed",
             "Max Max Speed",
-            "Median Mean Speed",
+            "Median Median Speed",
             "Max Mean Speed",
             "Max Track Duration",
             "Total Track Duration",
@@ -89,7 +89,7 @@ public final class SquaresConverter implements CsvConverter {
         INDEX_MAP.put("Total Displacement",                  39);
         INDEX_MAP.put("Median Max Speed",                    40);
         INDEX_MAP.put("Max Max Speed",                       41);
-        INDEX_MAP.put("Median Mean Speed",                   42);
+        INDEX_MAP.put("Median Median Speed",                 42);
         INDEX_MAP.put("Max Mean Speed",                      43);
         INDEX_MAP.put("Max Track Duration",                  44);
         INDEX_MAP.put("Total Track Duration",                45);

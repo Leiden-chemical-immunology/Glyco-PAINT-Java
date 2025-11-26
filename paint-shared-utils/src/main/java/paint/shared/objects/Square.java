@@ -517,8 +517,8 @@ public class Square {
 
         sb.append(String.format("Median Max Speed               : %.4f%n", medianMaxSpeed));
         sb.append(String.format("Max Max Speed                  : %.4f%n", maxMaxSpeed));
-        sb.append(String.format("Median Mean Speed              : %.4f%n", medianMedianSpeed));
-        sb.append(String.format("Max Mean Speed                 : %.4f%n", maxMedianSpeed));
+        sb.append(String.format("Median Median Speed            : %.4f%n", medianMedianSpeed));
+        sb.append(String.format("Max Median Speed               : %.4f%n", maxMedianSpeed));
 
         sb.append(String.format("Max Track Duration             : %.4f%n", maxTrackDuration));
         sb.append(String.format("Total Track Duration           : %.4f%n", totalTrackDuration));

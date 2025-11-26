@@ -42,8 +42,8 @@ public enum SquareColumn {
     TOTAL_DISPLACEMENT               (PaintColumnNames.TOTAL_DISPLACEMENT,               ColumnType.DOUBLE),
     MEDIAN_MAX_SPEED                 (PaintColumnNames.MEDIAN_MAX_SPEED,                 ColumnType.DOUBLE),
     MAX_MAX_SPEED                    (PaintColumnNames.MAX_MAX_SPEED,                    ColumnType.DOUBLE),
-    MEDIAN_MEAN_SPEED                (PaintColumnNames.MEDIAN_MEAN_SPEED,                ColumnType.DOUBLE),
-    MAX_MEAN_SPEED                   (PaintColumnNames.MAX_MEAN_SPEED,                   ColumnType.DOUBLE),
+    MEDIAN_MEDIAN_SPEED              (PaintColumnNames.MEDIAN_MEDIAN_SPEED,              ColumnType.DOUBLE),
+    MAX_MEDIAN_SPEED                 (PaintColumnNames.MAX_MEDIAN_SPEED,                 ColumnType.DOUBLE),
     MAX_TRACK_DURATION               (PaintColumnNames.MAX_TRACK_DURATION,               ColumnType.DOUBLE),
     TOTAL_TRACK_DURATION             (PaintColumnNames.TOTAL_TRACK_DURATION,             ColumnType.DOUBLE),
     MEDIAN_TRACK_DURATION            (PaintColumnNames.MEDIAN_TRACK_DURATION,            ColumnType.DOUBLE);

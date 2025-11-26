@@ -64,7 +64,7 @@ public final class PaintColumnNames {
     public static final String MAX_DISPLACEMENT                            = "Max Displacement";
     public static final String MAX_FRAME_GAP                               = "MAX_FRAME_GAP";
     public static final String MAX_MAX_SPEED                               = "Max Max Speed";
-    public static final String MAX_MEAN_SPEED                              = "Max Mean Speed";
+    public static final String MAX_MEDIAN_SPEED                            = "Max Median Speed";
     public static final String MAX_NR_SECONDS_PER_IMAGE                    = "MAX_NR_SECONDS_PER_IMAGE";
     public static final String MAX_NR_SPOTS_IN_IMAGE                       = "MAX_NR_SPOTS_IN_IMAGE";
     public static final String MAX_TRACK_DURATION                          = "Max Track Duration";
@@ -73,7 +73,7 @@ public final class PaintColumnNames {
     public static final String MEDIAN_DIFFUSION_COEFFICIENT_EXT            = "Median Diffusion Coefficient Ext";
     public static final String MEDIAN_DISPLACEMENT                         = "Median Displacement";
     public static final String MEDIAN_MAX_SPEED                            = "Median Max Speed";
-    public static final String MEDIAN_MEAN_SPEED                           = "Median Mean Speed";
+    public static final String MEDIAN_MEDIAN_SPEED                         = "Median Median Speed";
     public static final String MEDIAN_TRACK_DURATION                       = "Median Track Duration";
     public static final String MERGING_MAX_DISTANCE                        = "MERGING_MAX_DISTANCE";
     public static final String MIN_DENSITY_RATIO                           = "Min Density Ratio";
