@@ -285,9 +285,11 @@ public class ExperimentInfo {
                     numberOfSquaresWithTracks++;
                 }
             }
+            if (numberOfSquaresWithTracks > 0) {
+                sb.append(String.format("\t              Number of squares with tracks : %d%n", numberOfSquaresWithTracks));
+            }
         }
 
-        sb.append(String.format("\tNumber of squares with tracks : %d%n", numberOfSquaresWithTracks));
         return sb.toString();
     }
 }

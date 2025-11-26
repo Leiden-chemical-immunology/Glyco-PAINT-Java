@@ -461,8 +461,10 @@ public class Recording {
                     numberOfSquaresWithTracks++;
                 }
             }
+            if (numberOfSquaresWithTracks > 0) {
+                sb.append(String.format("\t                Number of squares with tracks  : %d%n", numberOfSquaresWithTracks));
+            }
         }
-        sb.append(String.format("\tNumber of squares with tracks : %d%n", numberOfSquaresWithTracks));
 
         sb.append(String.format("\t                Min Required Density Ratio     : %.4f%n", minRequiredDensityRatio));
         sb.append(String.format("\t                Min Required R Squared         : %.4f%n", minRequiredRSquared));
