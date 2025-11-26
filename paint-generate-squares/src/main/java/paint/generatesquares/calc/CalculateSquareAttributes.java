@@ -84,15 +84,17 @@ public class CalculateSquareAttributes {
     public static void calculateSquareAttributes(Path experimentPath,
             Recording recording,
             GenerateSquaresConfig generateSquaresConfig) {
-        double       minRequiredRSquared        = generateSquaresConfig.getMinRequiredRSquared();
-        int          minTracksForTau            = generateSquaresConfig.getMinTracksToCalculateTau();
-        double       maxAllowableVariability    = generateSquaresConfig.getMaxAllowableVariability();
-        double       minRequiredDensityRatio    = generateSquaresConfig.getMinRequiredDensityRatio();
-        String       neighbourMode              = generateSquaresConfig.getNeighbourMode();
-        int          numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
-        double       squareArea                 = calculateSquareArea(numberOfSquaresInRecording);    // Here we look at the single square
-        double       concentration              = recording.getConcentration();
-        List<Square> squaresOfRecording         = recording.getSquaresOfRecording();
+        double       minRequiredRSquared             = generateSquaresConfig.getMinRequiredRSquared();
+        int          minNumberOfTracksToCalculate    = generateSquaresConfig.getMinTracksToCalculate();
+        int          minNumberOfTracksToCalculateTau = generateSquaresConfig.getMinTracksToCalculateTau();
+        double       maxAllowableVariability         = generateSquaresConfig.getMaxAllowableVariability();
+        double       minRequiredDensityRatio         = generateSquaresConfig.getMinRequiredDensityRatio();
+        String       neighbourMode                   = generateSquaresConfig.getNeighbourMode();
+        int          numberOfSquaresInRecording      = generateSquaresConfig.getNumberOfSquaresInRecording();
+        double       squareArea                      = calculateSquareArea(numberOfSquaresInRecording);    // Here we look at the single square
+        double       concentration                   = recording.getConcentration();
+        List<Square> squaresOfRecording              = recording.getSquaresOfRecording();
+
 
         BackgroundEstimationResult result  = calculateBackgroundDensity(squaresOfRecording);
         double meanBackgroundTracks = result.getBackgroundMean();
@@ -115,10 +117,32 @@ public class CalculateSquareAttributes {
                 continue;
             }
 
+            if (tracksInSquare.size() < minNumberOfTracksToCalculate) {
+                square.setTau(Double.NaN);
+                square.setRSquared(Double.NaN);
+                square.setVariability(Double.NaN);
+                square.setDensity(Double.NaN);
+                square.setDensityRatio(Double.NaN);
+                square.setDensityRatioOri(Double.NaN);
+                square.setMedianDiffusionCoefficient(Double.NaN);
+                square.setMedianDiffusionCoefficientExt(Double.NaN);
+                square.setMedianDisplacement(Double.NaN);
+                square.setMaxDisplacement(Double.NaN);
+                square.setTotalDisplacement(Double.NaN);
+                square.setMedianMaxSpeed(Double.NaN);
+                square.setMaxMaxSpeed(Double.NaN);
+                square.setMedianMedianSpeed(Double.NaN);
+                square.setMaxMedianSpeed(Double.NaN);
+                square.setMaxTrackDuration(Double.NaN);
+                square.setTotalTrackDuration(Double.NaN);
+                square.setMedianTrackDuration(Double.NaN);
+                continue;
+            }
+
             int squareNumber = square.getSquareNumber();
 
             // --- Tau fitting ---
-            if (tracksInSquare.size() >= minTracksForTau) {
+            if (tracksInSquare.size() >= minNumberOfTracksToCalculateTau) {
                 CalculateTau.CalculateTauResult results =
                         calculateTau(tracksInSquare, minRequiredRSquared);
 

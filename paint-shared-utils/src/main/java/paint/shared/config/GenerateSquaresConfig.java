@@ -56,6 +56,7 @@ public class GenerateSquaresConfig {
 
 
     private final int    numberOfSquaresInRecording;
+    private final int    minTracksToCalculate;
     private final int    minTracksToCalculateTau;
     private final double minRequiredRSquared;
     private final double minRequiredDensityRatio;
@@ -79,6 +80,7 @@ public class GenerateSquaresConfig {
     public GenerateSquaresConfig() {
         
         this.numberOfSquaresInRecording  = PaintConfig.getInt(    SECTION_GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING,  400);
+        this.minTracksToCalculate        = PaintConfig.getInt(    SECTION_GENERATE_SQUARES, MIN_TRACKS_TO_CALCULATE,         5);
         this.minTracksToCalculateTau     = PaintConfig.getInt(    SECTION_GENERATE_SQUARES, MIN_TRACKS_TO_CALCULATE_TAU,     20);
         this.minRequiredRSquared         = PaintConfig.getDouble( SECTION_GENERATE_SQUARES, MIN_REQUIRED_R_SQUARED,          0.1);
         this.minRequiredDensityRatio     = PaintConfig.getDouble( SECTION_GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,      0.1);
@@ -89,6 +91,10 @@ public class GenerateSquaresConfig {
 
     public int getNumberOfSquaresInRecording() {
         return numberOfSquaresInRecording;
+    }
+
+    public int getMinTracksToCalculate() {
+        return minTracksToCalculate;
     }
 
     public int getMinTracksToCalculateTau() {
@@ -116,12 +122,12 @@ public class GenerateSquaresConfig {
 
         return "GenerateSquaresConfig{" +
                 "Number of Squares in Row      = " + numberOfSquaresInRecording +
+                ", Min Tracks To Calculate     = " + minTracksToCalculate +
                 ", Min Tracks To Calculate Tau = " + minTracksToCalculateTau +
                 ", Min Required R Squared      = " + minRequiredRSquared +
                 ", Min Required Density Ratio  = " + minRequiredDensityRatio +
                 ", Max Allowable Variability   = " + maxAllowableVariability +
                 ", Neighbour Mode              = '"+ neighbourMode + '\'' +
                 '}';
-
     }
 }

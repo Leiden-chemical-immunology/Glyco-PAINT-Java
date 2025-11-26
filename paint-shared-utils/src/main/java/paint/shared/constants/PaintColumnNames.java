@@ -81,6 +81,7 @@ public final class PaintColumnNames {
     public static final String MIN_REQUIRED_DENSITY_RATIO                  = "Min Required Density Ratio";
     public static final String MIN_REQUIRED_R_SQUARED                      = "Min Required R Squared";
     public static final String MIN_TRACK_DURATION                          = "Min Track Duration";
+    public static final String MIN_TRACKS_TO_CALCULATE                     = "Min Tracks to Calculate";
     public static final String MIN_TRACKS_TO_CALCULATE_TAU                 = "Min Tracks to Calculate Tau";
     public static final String NEIGHBOUR_MODE                              = "Neighbour Mode";
     public static final String NUMBER_OF_FRAMES                            = "Number of Frames";
