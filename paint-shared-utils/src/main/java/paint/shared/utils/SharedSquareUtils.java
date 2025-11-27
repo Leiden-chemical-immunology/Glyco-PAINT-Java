@@ -96,21 +96,28 @@ public final class SharedSquareUtils {
         double x1 = square.getX1();
         double y1 = square.getY1();
 
+        // See if the square sits at the right or bottom border of the grid.
         boolean isLastCol = square.getColNumber() == lastRowCol;
         boolean isLastRow = square.getRowNumber() == lastRowCol;
 
+        // Ensures that left < right and top < bottom even if coordinates were swapped.
         double left   = Math.min(x0, x1);
         double right  = Math.max(x0, x1);
         double top    = Math.min(y0, y1);
         double bottom = Math.max(y0, y1);
 
+        // Get the x,y coordinates of the tracks
         DoubleColumn x = tracks.doubleColumn(TRACK_X_LOCATION);
         DoubleColumn y = tracks.doubleColumn(TRACK_Y_LOCATION);
 
+        // For normal squares → take left ≤ x < right
+	    // For rightmost column → take left ≤ x ≤ right (inclusive on both sides)
         Selection selX = isLastCol
                 ? x.isBetweenInclusive(left, right)
                 : x.isGreaterThanOrEqualTo(left).and(x.isLessThan(right));
 
+        // For normal squares → top ≤ y < bottom
+		// For bottom squares → top ≤ y ≤ bottom
         Selection selY = isLastRow
                 ? y.isBetweenInclusive(top, bottom)
                 : y.isGreaterThanOrEqualTo(top).and(y.isLessThan(bottom));
@@ -123,28 +130,43 @@ public final class SharedSquareUtils {
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Applies a visibility filter to all squares in a recording based on numeric
-     * thresholds and optional neighbour-based retention logic.
+     * Applies the full visibility filter to squares belonging to a specific recording.
      * <p>
-     * <b>Pass 1:</b> Marks each square selected if it meets:
-     * <ul>
-     *   <li>Density ratio ≥ minDensityRatio</li>
-     *   <li>Variability ≤ maxAllowableVariability</li>
-     *   <li>R² ≥ minRSquared and not NaN</li>
-     * </ul>
-     * <b>Pass 2:</b> If {@code neighbourMode != "Free"}, keeps only squares having
-     * at least one selected neighbour:
-     * <ul>
-     *   <li>“Relaxed” → corner or edge adjacency allowed (dr ≤ 1 & dc ≤ 1)</li>
-     *   <li>“Strict” → edge adjacency only (dr = 1 & dc = 0 or vice versa)</li>
-     * </ul>
+     * The method performs a two-stage filtering process:
      *
-     * @param squares                  the list of squares
-     * @param recordingName            the name of the recording, if null applt to all
-     * @param minRequiredDensityRatio  minimum density ratio for selection
-     * @param maxAllowableVariability  maximum allowed variability
-     * @param minRequiredRSquared      minimum R² value for selection
-     * @param neighbourMode            neighbour logic: "Free", "Relaxed", or "Strict"
+     * <h3>1. Numeric filter</h3>
+     * A square becomes visible if all of the following are true:
+     * <ul>
+     *     <li>its R² value is not NaN and ≥ {@code minRequiredRSquared}</li>
+     *     <li>its density ratio ≥ {@code minRequiredDensityRatio}</li>
+     *     <li>its variability ≤ {@code maxAllowableVariability}</li>
+     * </ul>
+     * If {@code recordingName} is non-null, only squares whose
+     * {@code getRecordingName()} matches the given name are evaluated;
+     * others are skipped.
+     *
+     * <h3>2. Neighbour filter</h3>
+     * Applied only when {@code neighbourMode} is not {@code "Free"}.
+     * A square that passed the numeric filter will remain visible only if
+     * it has at least one other <em>visible</em> neighbouring square.
+     * Neighbourhood rules:
+     * <ul>
+     *   <li><b>"Relaxed"</b>: any of the 8 surrounding squares (edge or corner) counts as neighbouring</li>
+     *   <li><b>"Strict"</b>: only 4-connected neighbours (up, down, left, right) count</li>
+     * </ul>
+     * If {@code neighbourMode} is neither {@code "Free"}, {@code "Relaxed"},
+     * nor {@code "Strict"}, an {@link IllegalArgumentException} is thrown.
+     *
+     * <h3>Final step</h3>
+     * Any square not selected during the neighbour filter is set to invisible.
+     *
+     * @param squares                    the squares to filter
+     * @param recordingName              if non-null, only squares from this recording are evaluated;
+     *                                   if null, all squares are processed
+     * @param minRequiredDensityRatio    minimum density ratio required to be visible
+     * @param maxAllowableVariability    maximum variability allowed to be visible
+     * @param minRequiredRSquared        minimum R² required to be visible
+     * @param neighbourMode              neighbour rule: {@code "Free"}, {@code "Relaxed"}, or {@code "Strict"}
      */
     public static void applyVisibilityFilterOnRecording(
             List<Square> squares,
@@ -154,6 +176,7 @@ public final class SharedSquareUtils {
             double       minRequiredRSquared,
             String       neighbourMode) {
 
+        // When there are no squares, nothing to do.
         if (squares == null || squares.isEmpty()) {
             return;
         }
@@ -163,10 +186,12 @@ public final class SharedSquareUtils {
         // Pass 1 — Numeric filter
         for (Square square : squares) {
 
+            // Look for a specific recording unless null is specified
             if (recordingName != null && !recordingName.equals(square.getRecordingName())) {
                 continue;
             }
 
+            // We test against RSquared. so we need to be certain there is actually a value
             boolean passes =
                     !Double.isNaN(square.getRSquared()) &&
                             square.getDensityRatio() >= minRequiredDensityRatio &&
@@ -181,14 +206,14 @@ public final class SharedSquareUtils {
 
         // Pass 2 — Neighbour-based refinement
         if ("Free".equalsIgnoreCase(neighbourMode)) {
-            return; // No neighbour constraints
+            return;     // Free mode imposes no neighbour constraints
         }
 
         Set<Square> keep = new HashSet<>();
         int keptCount    = 0;
 
         for (Square square : squares) {
-            if (!square.isVisible()) {
+            if (!square.isVisible()) { // Squares that are not visible now will not become visible
                 continue;
             }
 
@@ -236,6 +261,41 @@ public final class SharedSquareUtils {
     }
 
 
+    /**
+     * Applies the visibility filter to all squares in a recording using the given
+     * numeric thresholds and neighbour-mode rules.
+     * <p>
+     * This is a convenience method that delegates to
+     * {@link #applyVisibilityFilterOnRecording(List, String, double, double, double, String)}
+     * without restricting to a specific recording name (i.e., it applies the filter
+     * to all squares in the list).
+     *
+     * <h3>Filtering steps</h3>
+     * <ol>
+     *   <li><b>Numeric filter:</b>
+     *       A square becomes visible if:
+     *       <ul>
+     *         <li>its R² is not NaN and ≥ {@code minRSquared}</li>
+     *         <li>its density ratio ≥ {@code minDensityRatio}</li>
+     *         <li>its variability ≤ {@code maxVariability}</li>
+     *       </ul>
+     *   </li>
+     *   <li><b>Neighbour filter:</b>
+     *       Only applied when {@code neighbourMode} is not {@code "Free"}.
+     *       <ul>
+     *         <li>{@code "Relaxed"} → any touching neighbour (8-connected)</li>
+     *         <li>{@code "Strict"} → edge-adjacent neighbour only (4-connected)</li>
+     *       </ul>
+     *   </li>
+     * </ol>
+     *
+     * @param squares        the list of squares to filter
+     * @param minDensityRatio minimum required density ratio
+     * @param maxVariability   maximum allowable variability
+     * @param minRSquared      minimum required R²
+     * @param neighbourMode    neighbour filtering mode:
+     *                         {@code "Free"}, {@code "Relaxed"}, or {@code "Strict"}
+     */
     public static void applyVisibilityFilter(
             List<Square> squares,
             double       minDensityRatio,

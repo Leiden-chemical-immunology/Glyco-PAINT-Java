@@ -307,17 +307,17 @@ public class PlotUtils {
      */
     private static void drawHistogram(
             Graphics2D g2,
-            int w,
-            int h,
-            int[] allBins,
-            int[] bgBins,
-            int binSize,
-            String title,
-            int totalSquares,
-            int totalTracks,
-            int nBackground,
-            int backgroundTracksTotal,
-            double avgTracksInBackground
+            int        w,
+            int        h,
+            int[]      allBins,
+            int[]      bgBins,
+            int        binSize,
+            String     title,
+            int        totalSquares,
+            int        totalTracks,
+            int        nBackground,
+            int        backgroundTracksTotal,
+            double     avgTracksInBackground
     ) {
         g2.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING,

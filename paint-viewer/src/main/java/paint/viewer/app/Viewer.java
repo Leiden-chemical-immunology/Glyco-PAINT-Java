@@ -74,9 +74,8 @@ public class Viewer {
         SwingUtilities.invokeLater(() -> {
 
             // --- Step 1: Load last-used project from preferences ---
-            String lastProject =
-                    PaintPrefs.getString("Path", "Project Root", System.getProperty("user.home"));
-            Path projectPath = Paths.get(lastProject);
+            String lastProject = PaintPrefs.getString("Path", "Project Root", System.getProperty("user.home"));
+            Path   projectPath = Paths.get(lastProject);
 
             // --- Step 2: Initialise logging and configuration ---
             PaintConfig.initialise(projectPath);

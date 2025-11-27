@@ -84,21 +84,21 @@ public class CalculateSquareAttributes {
     public static void calculateSquareAttributes(Path experimentPath,
             Recording recording,
             GenerateSquaresConfig generateSquaresConfig) {
-        double       minRequiredRSquared             = generateSquaresConfig.getMinRequiredRSquared();
-        int          minNumberOfTracksToCalculate    = generateSquaresConfig.getMinTracksToCalculate();
-        int          minNumberOfTracksToCalculateTau = generateSquaresConfig.getMinTracksToCalculateTau();
-        double       maxAllowableVariability         = generateSquaresConfig.getMaxAllowableVariability();
-        double       minRequiredDensityRatio         = generateSquaresConfig.getMinRequiredDensityRatio();
-        String       neighbourMode                   = generateSquaresConfig.getNeighbourMode();
-        int          numberOfSquaresInRecording      = generateSquaresConfig.getNumberOfSquaresInRecording();
-        double       squareArea                      = calculateSquareArea(numberOfSquaresInRecording);    // Here we look at the single square
-        double       concentration                   = recording.getConcentration();
-        List<Square> squaresOfRecording              = recording.getSquaresOfRecording();
-
-
-        BackgroundEstimationResult result               = calculateBackgroundDensity(squaresOfRecording);
-        double                     meanBackgroundTracks = result.getBackgroundMean();
-        double                     backgroundTracksOri  = calcAverageTrackCountInBackgroundSquares(squaresOfRecording,
+        double                     minRequiredRSquared              = generateSquaresConfig.getMinRequiredRSquared();
+        int                        minNumberOfTracksToCalculate     = generateSquaresConfig.getMinTracksToCalculate();
+        int                        minNumberOfTracksToCalculateTau  = generateSquaresConfig.getMinTracksToCalculateTau();
+        double                     maxAllowableVariability          = generateSquaresConfig.getMaxAllowableVariability();
+        double                     minRequiredDensityRatio          = generateSquaresConfig.getMinRequiredDensityRatio();
+        String                     neighbourMode                    = generateSquaresConfig.getNeighbourMode();
+        int                        numberOfSquaresInRecording       = generateSquaresConfig.getNumberOfSquaresInRecording();
+        double                     squareArea                       = calculateSquareArea(numberOfSquaresInRecording);    // Here we look at the single square
+        double                     concentration                    = recording.getConcentration();
+        List<Square>               squaresOfRecording               = recording.getSquaresOfRecording();
+        boolean                    showTauFittingPlots              = PaintConfig.getBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS, false);
+        BackgroundEstimationResult result                           = calculateBackgroundDensity(squaresOfRecording);
+        double                     numberOfTracksInBackgroundSquare = result.getNumberOfTracksInBackgroundSquare();
+        int                        numberOfBackgroundSquares        = result.getNumberOfBackgroundSquares();
+        double                     backgroundTracksOri              = calcAverageTrackCountInBackgroundSquares(squaresOfRecording,
                                                                                                    (int) (0.1 * numberOfSquaresInRecording));
         PaintLogger.debugf("Estimated Background track count = %.2f, number of background squares = %d%n",
                            meanBackgroundTracks, result.getBackgroundSquares().size());
@@ -115,6 +115,7 @@ public class CalculateSquareAttributes {
                 continue;
             }
 
+            // Do not calculate attributes if not enough tracks
             if (tracksInSquare.size() < minNumberOfTracksToCalculate) {
                 square.setTau(Double.NaN);
                 square.setRSquared(Double.NaN);
@@ -141,8 +142,7 @@ public class CalculateSquareAttributes {
 
             // --- Tau fitting ---
             if (tracksInSquare.size() >= minNumberOfTracksToCalculateTau) {
-                CalculateTau.CalculateTauResult results =
-                        calculateTau(tracksInSquare, minRequiredRSquared);
+                CalculateTau.CalculateTauResult results = calculateTau(tracksInSquare, minRequiredRSquared);
 
                 if (PaintConfig.getBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS, false)) {
                     saveTauFitPlot(tracksInSquare, results, experimentPath,
@@ -267,11 +267,10 @@ public class CalculateSquareAttributes {
             int numberOfSquaresInRecording,
             int granularity) {
 
-        int[][] matrix = new int[granularity][granularity];
-
-        int dimension = (int) Math.sqrt(numberOfSquaresInRecording);
-        double width  = IMAGE_WIDTH / dimension;
-        double height = IMAGE_WIDTH / dimension;
+        int[][] matrix    = new int[granularity][granularity];
+        int     dimension = (int) Math.sqrt(numberOfSquaresInRecording);
+        double  width     = IMAGE_WIDTH / dimension;
+        double  height    = IMAGE_WIDTH / dimension;
 
         // Access the columns once
         DoubleColumn xCol = tracks.doubleColumn(TRACK_X_LOCATION);
@@ -282,8 +281,8 @@ public class CalculateSquareAttributes {
             double y = yCol.get(i);  // The y-coordinate of the track
 
             int[] indices = getIndices(x, y, width, height, squareNumber, dimension, granularity);
-            int xi = indices[0];
-            int yi = indices[1];
+            int   xi      = indices[0];
+            int   yi      = indices[1];
 
             if (xi >= 0 && xi < granularity && yi >= 0 && yi < granularity) {
                 matrix[yi][xi]++;
@@ -315,8 +314,8 @@ public class CalculateSquareAttributes {
      */
     private static double mean(double[] values) {
         double sum = 0.0;
-        for (double v : values) {
-            sum += v;
+        for (double value : values) {
+            sum += value;
         }
         return sum / values.length;
     }
@@ -326,8 +325,8 @@ public class CalculateSquareAttributes {
      */
     private static double std(double[] values, double mean) {
         double sumSq = 0.0;
-        for (double v : values) {
-            double diff = v - mean;
+        for (double value : values) {
+            double diff = value - mean;
             sumSq += diff * diff;
         }
         return Math.sqrt(sumSq / values.length);
@@ -338,13 +337,13 @@ public class CalculateSquareAttributes {
      * The method determines the location of the point in a finer grid inside the square,
      * based on the specified granularity.
      *
-     * @param x1               the x-coordinate of the point in the global coordinate system
-     * @param y1               the y-coordinate of the point in the global coordinate system
-     * @param width            the width of each square in the grid
-     * @param height           the height of each square in the grid
-     * @param squareSeqNr      the sequence number of the square in the grid
-     * @param nrOfSquaresInRow the total number of squares in a single row of the grid
-     * @param granularity      the number of subdivisions along one axis within a square
+     * @param x1                   the x-coordinate of the point in the global coordinate system
+     * @param y1                   the y-coordinate of the point in the global coordinate system
+     * @param width                the width of each square in the grid
+     * @param height               the height of each square in the grid
+     * @param squareSequenceNumber the sequence number of the square in the grid
+     * @param numberOfSquaresInRow the total number of squares in a single row of the grid
+     * @param granularity          the number of subdivisions along one axis within a square
      * @return an array of two integers, where the first value is the x-index (column index)
      * and the second value is the y-index (row index) of the point in the finer grid
      */
@@ -352,14 +351,14 @@ public class CalculateSquareAttributes {
             double y1,
             double width,
             double height,
-            int squareSeqNr,
-            int nrOfSquaresInRow,
-            int granularity) {
+            int    squareSequenceNumber,
+            int    numberOfSquaresInRow,
+            int    granularity) {
 
-        double x0 = (squareSeqNr % nrOfSquaresInRow) * width;
-        double y0 = (squareSeqNr / nrOfSquaresInRow) * height;     // Integer division is intended
+        double x0 = (squareSequenceNumber % numberOfSquaresInRow) * width;
+        double y0 = (squareSequenceNumber / numberOfSquaresInRow) * height;     // Integer division is intended
 
-        int xi = (int) (((x1 - x0) / width) * granularity);
+        int xi = (int) (((x1 - x0) / width)  * granularity);
         int yi = (int) (((y1 - y0) / height) * granularity);
 
         return new int[]{xi, yi};
