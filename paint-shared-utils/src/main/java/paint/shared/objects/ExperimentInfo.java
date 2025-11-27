@@ -217,7 +217,7 @@ public class ExperimentInfo {
         this.concentration = concentration;
     }
 
-    public boolean isProcessFlag() {
+    public boolean isProcessFlagSet() {
         return processFlag;
     }
 

@@ -100,7 +100,7 @@ public class RecordingsTableIO extends BaseTableIO {
             row.setString(  CELL_TYPE,                       recording.getCellType());
             row.setString(  ADJUVANT,                        recording.getAdjuvant());
             row.setDouble(  CONCENTRATION,                   recording.getConcentration());
-            row.setBoolean( PROCESS_FLAG,                    recording.isProcessFlag());
+            row.setBoolean( PROCESS_FLAG,                    recording.isProcessFlagSet());
             row.setDouble(  THRESHOLD,                       recording.getThreshold());
             row.setInt(     NUMBER_OF_SPOTS,                 recording.getNumberOfSpots());
             row.setInt(     NUMBER_OF_TRACKS,                recording.getNumberOfTracks());

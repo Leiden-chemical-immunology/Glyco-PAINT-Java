@@ -106,7 +106,7 @@ public final class ExperimentDataLoader {
             PaintLogger.debugf("Found %d tracks", tracksTable.rowCount());
 
             for (Recording recording : recordings) {
-                if (!recording.isProcessFlag()) {
+                if (!recording.isProcessFlagSet()) {
                     continue;
                 }
 

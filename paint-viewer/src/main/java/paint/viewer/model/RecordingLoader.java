@@ -109,7 +109,7 @@ public class RecordingLoader {
                 String recordingName = recording.getRecordingName();
 
                 // Skip recordings not flagged for processing
-                if (!recording.isProcessFlag()) {
+                if (!recording.isProcessFlagSet()) {
                     continue;
                 }
 

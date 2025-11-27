@@ -224,7 +224,7 @@ public class Recording {
         this.concentration = concentration;
     }
 
-    public boolean isProcessFlag() {
+    public boolean isProcessFlagSet() {
         return processFlag;
     }
 

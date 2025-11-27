@@ -111,7 +111,7 @@ public class GenerateSquaresProcessor {
         recordings = experiment.getRecordings();
         for (Recording recording : recordings) {
 
-            if (!recording.isProcessFlag()) {
+            if (!recording.isProcessFlagSet()) {
                 continue;
             }
 
