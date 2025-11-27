@@ -101,7 +101,7 @@ public class CalculateSquareAttributes {
         double                     backgroundTracksOri              = calcAverageTrackCountInBackgroundSquares(squaresOfRecording,
                                                                                                    (int) (0.1 * numberOfSquaresInRecording));
         PaintLogger.debugf("Estimated Background track count = %.2f, number of background squares = %d%n",
-                           meanBackgroundTracks, result.getBackgroundSquares().size());
+                           numberOfTracksInBackgroundSquare, numberOfBackgroundSquares);
 
         for (Square square : squaresOfRecording) {
 
@@ -144,7 +144,7 @@ public class CalculateSquareAttributes {
             if (tracksInSquare.size() >= minNumberOfTracksToCalculateTau) {
                 CalculateTau.CalculateTauResult results = calculateTau(tracksInSquare, minRequiredRSquared);
 
-                if (PaintConfig.getBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS, false)) {
+                if (showTauFittingPlots) {
                     saveTauFitPlot(tracksInSquare, results, experimentPath,
                                    recording.getRecordingName(), squareNumber);
                 }
@@ -164,7 +164,7 @@ public class CalculateSquareAttributes {
             // --- Variability, density, kinematic metrics ---
             square.setVariability(round(calculateVariability(table, squareNumber, numberOfSquaresInRecording, 10), 2));
             square.setDensity(round(calculateDensity(tracksInSquare.size(), squareArea, RECORDING_DURATION, concentration), 3));
-            square.setDensityRatio(round(calculateDensityRatio(tracksInSquare.size(), meanBackgroundTracks), 2));
+            square.setDensityRatio(round(calculateDensityRatio(tracksInSquare.size(), numberOfTracksInBackgroundSquare), 2));
             square.setDensityRatioOri(round(calculateDensityRatio(tracksInSquare.size(), backgroundTracksOri), 2));
 
             square.setMedianDiffusionCoefficient(round(table.doubleColumn(DIFFUSION_COEFFICIENT).median(), 2));
@@ -215,7 +215,7 @@ public class CalculateSquareAttributes {
 
         BackgroundEstimationResult result = calculateBackgroundDensity(recording.getSquaresOfRecording());
 
-        double meanBackgroundTracks = result.getBackgroundMean();
+        double meanBackgroundTracks = result.getNumberOfTracksInBackgroundSquare();
         int backgroundTracks = result.getBackgroundSquares()
                                      .stream()
                                      .mapToInt(Square::getNumberOfTracks)

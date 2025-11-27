@@ -140,28 +140,35 @@ public class SquareUtils {
      */
     public static class BackgroundEstimationResult {
 
-        private final double backgroundMean;
+        private final double       numberOfTracksInBackgroundSquare;
         private final List<Square> backgroundSquares;
+        private final int          numberOfBackgroundSquares;
 
         /**
          * Constructs an immutable result object.
          *
-         * @param backgroundMean    estimated background track mean
+         * @param numberOfTracksInBackgroundSquare    estimated background track mean
          * @param backgroundSquares squares identified as belonging to the background
          */
-        public BackgroundEstimationResult(double backgroundMean, List<Square> backgroundSquares) {
-            this.backgroundMean    = backgroundMean;
-            this.backgroundSquares = backgroundSquares;
+        public BackgroundEstimationResult(double numberOfTracksInBackgroundSquare, List<Square> backgroundSquares) {
+            this.numberOfTracksInBackgroundSquare = numberOfTracksInBackgroundSquare;
+            this.backgroundSquares                = backgroundSquares;
+            this.numberOfBackgroundSquares        = backgroundSquares.size();
         }
 
         /** @return mean background track count */
-        public double getBackgroundMean() {
-            return backgroundMean;
+        public double getNumberOfTracksInBackgroundSquare() {
+            return numberOfTracksInBackgroundSquare;
         }
 
         /** @return list of background squares */
         public List<Square> getBackgroundSquares() {
             return backgroundSquares;
+        }
+
+        /** @return the number of background squares */
+        public int getNumberOfBackgroundSquares() {
+            return numberOfBackgroundSquares;
         }
     }
 
@@ -175,7 +182,7 @@ public class SquareUtils {
      */
     public static double calcAverageTrackCountInBackgroundSquares(
             List<Square> squaresOfRecording,
-            int nrOfAverageCountSquares
+            int          nrOfAverageCountSquares
     ) {
 
         List<Integer> trackCounts =
@@ -185,7 +192,7 @@ public class SquareUtils {
                                   .collect(Collectors.toList());
 
         double total = 0.0;
-        int n = 0;
+        int    n     = 0;
 
         // Walk backwards (smallest values first)
         for (int i = trackCounts.size() - 1; i >= 0; i--) {

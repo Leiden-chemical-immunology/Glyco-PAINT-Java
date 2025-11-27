@@ -169,7 +169,7 @@ public class PlotUtils {
 
             SquareUtils.BackgroundEstimationResult backgroundResult          = calculateBackgroundDensity(squares);
             Set<Square>                            backgroundSet             = new HashSet<>(backgroundResult.getBackgroundSquares());
-            double                                 backgroundTracksPerSquare = backgroundResult.getBackgroundMean();
+            double                                 backgroundTracksPerSquare = backgroundResult.getNumberOfTracksInBackgroundSquare();
 
             int totalSquares          = squares.size();
             int nBackground           = backgroundSet.size();
