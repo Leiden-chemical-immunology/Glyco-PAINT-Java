@@ -67,7 +67,7 @@ import static paint.shared.utils.SharedSquareUtils.*;
 
 import static paint.shared.constants.PaintGeometry.IMAGE_WIDTH;
 import static paint.shared.constants.PaintTiming.RECORDING_DURATION;
-import static paint.shared.constants.PaintColumnNames.*;
+import static paint.shared.constants.PaintStringConstants.*;
 
 public class CalculateSquareAttributes {
 

@@ -65,7 +65,7 @@ import static paint.shared.utils.SharedSquareUtils.applyVisibilityFilterOnRecord
 import static paint.viewer.override.RecordingOverrideApplier.loadRecordingOverride;
 import static paint.viewer.override.SquareOverrideApplier.loadSquareOverride;
 
-import static paint.shared.constants.PaintColumnNames.*;
+import static paint.shared.constants.PaintStringConstants.*;
 import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
 import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
 

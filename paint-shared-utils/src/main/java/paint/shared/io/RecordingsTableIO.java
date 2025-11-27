@@ -52,7 +52,7 @@ import tech.tablesaw.columns.Column;
 import java.util.ArrayList;
 import java.util.List;
 
-import static paint.shared.constants.PaintColumnNames.*;
+import static paint.shared.constants.PaintStringConstants.*;
 
 /**
  * Provides table I/O utilities for {@link Recording} entities.

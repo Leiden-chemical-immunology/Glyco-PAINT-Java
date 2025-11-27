@@ -60,7 +60,7 @@ import java.util.List;
 import java.util.Map;
 
 import static paint.fiji.utils.SweepFlattener.flattenSweep;
-import static paint.shared.constants.PaintColumnNames.THRESHOLD;
+import static paint.shared.constants.PaintStringConstants.THRESHOLD;
 import static paint.shared.constants.PaintFileNames.PAINT_CONFIGURATION_JSON;
 import static paint.shared.constants.PaintFileNames.PAINT_SWEEP_CONFIGURATION_JSON;
 import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;

@@ -59,7 +59,7 @@ import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static paint.shared.constants.PaintColumnNames.*;
+import static paint.shared.constants.PaintStringConstants.*;
 
 /**
  * Handles persistence of per-recording filter overrides in the PAINT Viewer.

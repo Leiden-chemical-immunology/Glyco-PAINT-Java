@@ -70,7 +70,7 @@ import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
 import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
 import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
 
-import static paint.shared.constants.PaintColumnNames.*;
+import static paint.shared.constants.PaintStringConstants.*;
 
 /**
  * Executes the Generate Squares pipeline in headless mode. This includes

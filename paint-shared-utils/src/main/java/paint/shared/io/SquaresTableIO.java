@@ -38,7 +38,7 @@
 
 package paint.shared.io;
 
-import static paint.shared.constants.PaintColumnNames.*;
+import static paint.shared.constants.PaintStringConstants.*;
 import paint.shared.objects.Square;
 import paint.shared.schema.SquareSchema;
 

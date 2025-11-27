@@ -22,9 +22,9 @@
 
 package paint.shared.constants;
 
-public final class PaintColumnNames {
+public final class PaintStringConstants {
 
-    private PaintColumnNames() {
+    private PaintStringConstants() {
         // Prevent instantiation
     }
 
@@ -41,8 +41,9 @@ public final class PaintColumnNames {
     public static final String CONCENTRATION                               = "Concentration";
     public static final String CONDITION_NUMBER                            = "Condition Number";
     public static final String CONFINEMENT_RATIO                           = "Confinement Ratio";
-    public static final String DEBUG_RUNTRACKMATEONPROJECT                 = "Debug RunTrackMateOnProject";
-    public static final String DEBUG_RUNTRACKMATEONRECORDING               = "Debug RunTrackMateOnRecording";
+    public static final String DEBUG_RUN_TRACK_MATE_ON_PROJECT             = "runTrackMateOnProject";
+    public static final String DEBUG_RUN_TRACK_MATE_ON_RECORDING           = "runTrackMateOnRecording";
+    public static final String DEBUG_GENERATE_SQUARES_FOR_EXPERIMENT       = "generateSquaresForExperiment";
     public static final String DENSITY                                     = "Density";
     public static final String DENSITY_RATIO                               = "Density Ratio";
     public static final String DENSITY_RATIO_ORI                           = "Density Ratio Ori";

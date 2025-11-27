@@ -17,8 +17,8 @@ import java.util.*;
 import java.util.List;
 
 import static paint.generatesquares.calc.SquareUtils.calculateBackgroundDensity;
-import static paint.shared.constants.PaintColumnNames.BACKGROUND_PLOTS;
-import static paint.shared.constants.PaintColumnNames.TAU_FITTING_PLOTS;
+import static paint.shared.constants.PaintStringConstants.BACKGROUND_PLOTS;
+import static paint.shared.constants.PaintStringConstants.TAU_FITTING_PLOTS;
 
 public class PlotUtils {
 

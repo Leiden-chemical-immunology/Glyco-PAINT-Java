@@ -56,7 +56,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static paint.shared.constants.PaintColumnNames.GENERATE_SQUARES;
+import static paint.shared.constants.PaintStringConstants.GENERATE_SQUARES;
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
 import static paint.shared.utils.ProjectPathResolver.getValidProjectPath;
 

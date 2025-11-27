@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
 
-import static paint.shared.constants.PaintColumnNames.RECORDING_NAME;
-import static paint.shared.constants.PaintColumnNames.SQUARE_NUMBER;
+import static paint.shared.constants.PaintStringConstants.RECORDING_NAME;
+import static paint.shared.constants.PaintStringConstants.SQUARE_NUMBER;
 
 /**
  * CSV regression comparator with clean dual logging.

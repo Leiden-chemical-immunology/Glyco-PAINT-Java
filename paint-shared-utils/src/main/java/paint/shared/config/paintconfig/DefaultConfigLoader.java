@@ -2,7 +2,7 @@ package paint.shared.config.paintconfig;
 
 import com.google.gson.JsonObject;
 
-import static paint.shared.constants.PaintColumnNames.*;
+import static paint.shared.constants.PaintStringConstants.*;
 
 /** Populates initial defaults into the store when no file exists. */
 class DefaultConfigLoader {
@@ -47,8 +47,8 @@ class DefaultConfigLoader {
 
         // Debug
         JsonObject debug = new JsonObject();
-        debug.addProperty(DEBUG_RUNTRACKMATEONPROJECT,   false);
-        debug.addProperty(DEBUG_RUNTRACKMATEONRECORDING, false);
+        debug.addProperty(DEBUG_RUN_TRACK_MATE_ON_PROJECT, false);
+        debug.addProperty(DEBUG_RUN_TRACK_MATE_ON_RECORDING, false);
         root.add("Debug", debug);
 
         // Immediately saved by ConfigStore during first creation

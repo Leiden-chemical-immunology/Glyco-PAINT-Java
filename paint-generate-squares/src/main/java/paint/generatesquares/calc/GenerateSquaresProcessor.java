@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static paint.shared.constants.PaintStringConstants.*;
 import static paint.shared.io.ExperimentDataLoader.loadExperiment;
 import static paint.shared.io.ExperimentDataIO.*;
 import static paint.shared.utils.Miscellaneous.formatDuration;

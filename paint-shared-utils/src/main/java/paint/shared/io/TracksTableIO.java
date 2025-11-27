@@ -36,7 +36,7 @@
 
 package paint.shared.io;
 
-import static paint.shared.constants.PaintColumnNames.*;
+import static paint.shared.constants.PaintStringConstants.*;
 
 import paint.shared.schema.TrackSchema;
 import paint.shared.objects.Track;

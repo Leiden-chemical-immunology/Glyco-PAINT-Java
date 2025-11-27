@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import paint.shared.schema.ExperimentInfoSchema;
-import static paint.shared.constants.PaintColumnNames.*;
+import static paint.shared.constants.PaintStringConstants.*;
 
 /**
  * Provides table input/output utilities for {@code ExperimentInfo}

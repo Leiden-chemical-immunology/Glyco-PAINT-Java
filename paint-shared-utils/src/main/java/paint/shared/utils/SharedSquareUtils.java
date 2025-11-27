@@ -57,8 +57,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static paint.shared.constants.PaintColumnNames.TRACK_X_LOCATION;
-import static paint.shared.constants.PaintColumnNames.TRACK_Y_LOCATION;
+import static paint.shared.constants.PaintStringConstants.TRACK_X_LOCATION;
+import static paint.shared.constants.PaintStringConstants.TRACK_Y_LOCATION;
 
 /**
  * Utility class providing methods for filtering and evaluating square regions

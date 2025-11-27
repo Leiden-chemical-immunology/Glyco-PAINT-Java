@@ -51,7 +51,7 @@ import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
 import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
 import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
 
-import static paint.shared.constants.PaintColumnNames.*;
+import static paint.shared.constants.PaintStringConstants.*;
 
 /**
  * Provides centralized functionality for loading experiment-related data:

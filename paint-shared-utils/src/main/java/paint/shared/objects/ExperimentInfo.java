@@ -50,7 +50,7 @@ import java.util.Map;
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
 
-import static paint.shared.constants.PaintColumnNames.*;
+import static paint.shared.constants.PaintStringConstants.*;
 import static paint.shared.utils.BooleanUtils.isBooleanTrue;
 
 /**

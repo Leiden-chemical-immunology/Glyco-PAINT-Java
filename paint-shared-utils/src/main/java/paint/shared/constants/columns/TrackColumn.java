@@ -25,29 +25,29 @@
 package paint.shared.constants.columns;
 
 import tech.tablesaw.api.ColumnType;
-import paint.shared.constants.PaintColumnNames;
+import paint.shared.constants.PaintStringConstants;
 
 public enum TrackColumn {
 
-    UNIQUE_KEY                (PaintColumnNames.UNIQUE_KEY,                ColumnType.STRING),
-    EXPERIMENT_NAME           (PaintColumnNames.EXPERIMENT_NAME,           ColumnType.STRING),
-    RECORDING_NAME            (PaintColumnNames.RECORDING_NAME,            ColumnType.STRING),
-    TRACK_ID                  (PaintColumnNames.TRACK_ID,                  ColumnType.INTEGER),
-    NUMBER_OF_SPOTS           (PaintColumnNames.NUMBER_OF_SPOTS,           ColumnType.INTEGER),
-    NUMBER_OF_GAPS            (PaintColumnNames.NUMBER_OF_GAPS,            ColumnType.INTEGER),
-    LONGEST_GAP               (PaintColumnNames.LONGEST_GAP,               ColumnType.INTEGER),
-    TRACK_DURATION            (PaintColumnNames.TRACK_DURATION,            ColumnType.DOUBLE),
-    TRACK_X_LOCATION          (PaintColumnNames.TRACK_X_LOCATION,          ColumnType.DOUBLE),
-    TRACK_Y_LOCATION          (PaintColumnNames.TRACK_Y_LOCATION,          ColumnType.DOUBLE),
-    TRACK_DISPLACEMENT        (PaintColumnNames.TRACK_DISPLACEMENT,        ColumnType.DOUBLE),
-    TRACK_MAX_SPEED           (PaintColumnNames.TRACK_MAX_SPEED,           ColumnType.DOUBLE),
-    TRACK_MEDIAN_SPEED        (PaintColumnNames.TRACK_MEDIAN_SPEED,        ColumnType.DOUBLE),
-    DIFFUSION_COEFFICIENT     (PaintColumnNames.DIFFUSION_COEFFICIENT,     ColumnType.DOUBLE),
-    DIFFUSION_COEFFICIENT_EXT (PaintColumnNames.DIFFUSION_COEFFICIENT_EXT, ColumnType.DOUBLE),
-    TOTAL_DISTANCE            (PaintColumnNames.TOTAL_DISTANCE,            ColumnType.DOUBLE),
-    CONFINEMENT_RATIO         (PaintColumnNames.CONFINEMENT_RATIO,         ColumnType.DOUBLE),
-    SQUARE_NUMBER             (PaintColumnNames.SQUARE_NUMBER,             ColumnType.INTEGER),
-    LABEL_NUMBER              (PaintColumnNames.LABEL_NUMBER,              ColumnType.INTEGER);
+    UNIQUE_KEY                (PaintStringConstants.UNIQUE_KEY, ColumnType.STRING),
+    EXPERIMENT_NAME           (PaintStringConstants.EXPERIMENT_NAME, ColumnType.STRING),
+    RECORDING_NAME            (PaintStringConstants.RECORDING_NAME, ColumnType.STRING),
+    TRACK_ID                  (PaintStringConstants.TRACK_ID, ColumnType.INTEGER),
+    NUMBER_OF_SPOTS           (PaintStringConstants.NUMBER_OF_SPOTS, ColumnType.INTEGER),
+    NUMBER_OF_GAPS            (PaintStringConstants.NUMBER_OF_GAPS, ColumnType.INTEGER),
+    LONGEST_GAP               (PaintStringConstants.LONGEST_GAP, ColumnType.INTEGER),
+    TRACK_DURATION            (PaintStringConstants.TRACK_DURATION, ColumnType.DOUBLE),
+    TRACK_X_LOCATION          (PaintStringConstants.TRACK_X_LOCATION, ColumnType.DOUBLE),
+    TRACK_Y_LOCATION          (PaintStringConstants.TRACK_Y_LOCATION, ColumnType.DOUBLE),
+    TRACK_DISPLACEMENT        (PaintStringConstants.TRACK_DISPLACEMENT, ColumnType.DOUBLE),
+    TRACK_MAX_SPEED           (PaintStringConstants.TRACK_MAX_SPEED, ColumnType.DOUBLE),
+    TRACK_MEDIAN_SPEED        (PaintStringConstants.TRACK_MEDIAN_SPEED, ColumnType.DOUBLE),
+    DIFFUSION_COEFFICIENT     (PaintStringConstants.DIFFUSION_COEFFICIENT, ColumnType.DOUBLE),
+    DIFFUSION_COEFFICIENT_EXT (PaintStringConstants.DIFFUSION_COEFFICIENT_EXT, ColumnType.DOUBLE),
+    TOTAL_DISTANCE            (PaintStringConstants.TOTAL_DISTANCE, ColumnType.DOUBLE),
+    CONFINEMENT_RATIO         (PaintStringConstants.CONFINEMENT_RATIO, ColumnType.DOUBLE),
+    SQUARE_NUMBER             (PaintStringConstants.SQUARE_NUMBER, ColumnType.INTEGER),
+    LABEL_NUMBER              (PaintStringConstants.LABEL_NUMBER, ColumnType.INTEGER);
 
     public final String header;
     public final ColumnType type;

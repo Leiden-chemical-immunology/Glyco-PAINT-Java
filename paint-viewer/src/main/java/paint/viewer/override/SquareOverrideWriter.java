@@ -54,11 +54,11 @@ import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static paint.shared.constants.PaintColumnNames.SQUARE_NUMBER;
-import static paint.shared.constants.PaintColumnNames.CELL_ID;
-import static paint.shared.constants.PaintColumnNames.TIME_STAMP;
-import static paint.shared.constants.PaintColumnNames.EXPERIMENT_NAME;
-import static paint.shared.constants.PaintColumnNames.RECORDING_NAME;
+import static paint.shared.constants.PaintStringConstants.SQUARE_NUMBER;
+import static paint.shared.constants.PaintStringConstants.CELL_ID;
+import static paint.shared.constants.PaintStringConstants.TIME_STAMP;
+import static paint.shared.constants.PaintStringConstants.EXPERIMENT_NAME;
+import static paint.shared.constants.PaintStringConstants.RECORDING_NAME;
 
 //import static paint.shared.constants.PaintColumnNames.*;
 

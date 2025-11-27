@@ -78,7 +78,7 @@ import static paint.shared.constants.PaintFileNames.PAINT_CONFIGURATION_JSON;
 import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
 import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
 
-import static paint.shared.constants.PaintColumnNames.*;
+import static paint.shared.constants.PaintStringConstants.*;
 
 import static paint.shared.utils.CsvUtils.concatenateCsvFiles;
 import static paint.shared.utils.CsvUtils.countProcessed;

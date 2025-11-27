@@ -50,8 +50,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static paint.shared.constants.PaintColumnNames.RECORDING_NAME;
-import static paint.shared.constants.PaintColumnNames.SQUARE_NUMBER;
+import static paint.shared.constants.PaintStringConstants.RECORDING_NAME;
+import static paint.shared.constants.PaintStringConstants.SQUARE_NUMBER;
 
 public class TracksCsvComparatorPythonJava {
 
