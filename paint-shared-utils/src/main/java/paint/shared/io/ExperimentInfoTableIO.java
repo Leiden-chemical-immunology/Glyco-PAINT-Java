@@ -117,7 +117,7 @@ public class ExperimentInfoTableIO extends BaseTableIO {
             row.setString(  CELL_TYPE,        experimentInfo.getCellType());
             row.setString(  ADJUVANT,         experimentInfo.getAdjuvant());
             row.setDouble(  CONCENTRATION,    experimentInfo.getConcentration());
-            row.setBoolean( PROCESS_FLAG,     experimentInfo.isProcessFlag());
+            row.setBoolean( PROCESS_FLAG,     experimentInfo.isProcessFlagSet());
             row.setDouble(  THRESHOLD,        experimentInfo.getThreshold());
         }
         return table;

@@ -292,7 +292,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                     int            runTime                  = 0;
                     String         timeStamp                = "";
 
-                    if (experimentInfo.isProcessFlag()) {
+                    if (experimentInfo.isProcessFlagSet()) {
                         double threshold = experimentInfo.getThreshold();
 
                         Files.createDirectories(experimentPath.resolve(DIR_BRIGHTFIELD_IMAGES));
