@@ -106,19 +106,19 @@ public class ExperimentInfoTableIO extends BaseTableIO {
      */
     public Table toTable(List<ExperimentInfo> infos) {
         Table table = emptyTable();
-        for (ExperimentInfo info : infos) {
+        for (ExperimentInfo experimentInfo : infos) {
             Row row = table.appendRow();
-            row.setString(  EXPERIMENT_NAME,  info.getExperimentName());
-            row.setString(  RECORDING_NAME,   info.getRecordingName());
-            row.setInt(     CONDITION_NUMBER, info.getConditionNumber());
-            row.setInt(     REPLICATE_NUMBER, info.getReplicateNumber());
-            row.setString(  PROBE_NAME,       info.getProbeName());
-            row.setString(  PROBE_TYPE,       info.getProbeType());
-            row.setString(  CELL_TYPE,        info.getCellType());
-            row.setString(  ADJUVANT,         info.getAdjuvant());
-            row.setDouble(  CONCENTRATION,    info.getConcentration());
-            row.setBoolean( PROCESS_FLAG,     info.isProcessFlag());
-            row.setDouble(  THRESHOLD,        info.getThreshold());
+            row.setString(  EXPERIMENT_NAME,  experimentInfo.getExperimentName());
+            row.setString(  RECORDING_NAME,   experimentInfo.getRecordingName());
+            row.setInt(     CONDITION_NUMBER, experimentInfo.getConditionNumber());
+            row.setInt(     REPLICATE_NUMBER, experimentInfo.getReplicateNumber());
+            row.setString(  PROBE_NAME,       experimentInfo.getProbeName());
+            row.setString(  PROBE_TYPE,       experimentInfo.getProbeType());
+            row.setString(  CELL_TYPE,        experimentInfo.getCellType());
+            row.setString(  ADJUVANT,         experimentInfo.getAdjuvant());
+            row.setDouble(  CONCENTRATION,    experimentInfo.getConcentration());
+            row.setBoolean( PROCESS_FLAG,     experimentInfo.isProcessFlag());
+            row.setDouble(  THRESHOLD,        experimentInfo.getThreshold());
         }
         return table;
     }
@@ -129,16 +129,16 @@ public class ExperimentInfoTableIO extends BaseTableIO {
         for (Row row : table) {
             ExperimentInfo info = new ExperimentInfo();
 
-            info.setExperimentName(row.getString(0));
-            info.setRecordingName(row.getString(1));
-            info.setConditionNumber(row.getInt(2));
-            info.setReplicateNumber(row.getInt(3));
-            info.setProbeName(row.getString(4));
-            info.setProbeType(row.getString(5));
-            info.setCellType(row.getString(6));
-            info.setAdjuvant(row.getString(7));
-            info.setConcentration(row.getDouble(8));
-            info.setProcessFlag(row.getBoolean(9));
+            info.setExperimentName(  row.getString(0));
+            info.setRecordingName(   row.getString(1));
+            info.setConditionNumber( row.getInt(2));
+            info.setReplicateNumber( row.getInt(3));
+            info.setProbeName(       row.getString(4));
+            info.setProbeType(       row.getString(5));
+            info.setCellType(        row.getString(6));
+            info.setAdjuvant(        row.getString(7));
+            info.setConcentration(   row.getDouble(8));
+            info.setProcessFlag(     row.getBoolean(9));
 
             items.add(info);
         }

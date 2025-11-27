@@ -129,7 +129,7 @@ public final class SharedSquareUtils {
      * <b>Pass 1:</b> Marks each square selected if it meets:
      * <ul>
      *   <li>Density ratio ≥ minDensityRatio</li>
-     *   <li>Variability ≤ maxVariability</li>
+     *   <li>Variability ≤ maxAllowableVariability</li>
      *   <li>R² ≥ minRSquared and not NaN</li>
      * </ul>
      * <b>Pass 2:</b> If {@code neighbourMode != "Free"}, keeps only squares having
@@ -139,19 +139,19 @@ public final class SharedSquareUtils {
      *   <li>“Strict” → edge adjacency only (dr = 1 & dc = 0 or vice versa)</li>
      * </ul>
      *
-     * @param squares         the list of squares
-     * @param recordingName   the name of the recording, if null applt to all
-     * @param minDensityRatio minimum density ratio for selection
-     * @param maxVariability  maximum allowed variability
-     * @param minRSquared     minimum R² value for selection
-     * @param neighbourMode   neighbour logic: "Free", "Relaxed", or "Strict"
+     * @param squares                  the list of squares
+     * @param recordingName            the name of the recording, if null applt to all
+     * @param minRequiredDensityRatio  minimum density ratio for selection
+     * @param maxAllowableVariability  maximum allowed variability
+     * @param minRequiredRSquared      minimum R² value for selection
+     * @param neighbourMode            neighbour logic: "Free", "Relaxed", or "Strict"
      */
     public static void applyVisibilityFilterOnRecording(
             List<Square> squares,
             String       recordingName,
-            double       minDensityRatio,
-            double       maxVariability,
-            double       minRSquared,
+            double       minRequiredDensityRatio,
+            double       maxAllowableVariability,
+            double       minRequiredRSquared,
             String       neighbourMode) {
 
         if (squares == null || squares.isEmpty()) {
@@ -167,10 +167,11 @@ public final class SharedSquareUtils {
                 continue;
             }
 
-            boolean passes = square.getDensityRatio() >= minDensityRatio
-                    && square.getVariability() <= maxVariability
-                    && square.getRSquared() >= minRSquared
-                    && !Double.isNaN(square.getRSquared());
+            boolean passes =
+                    !Double.isNaN(square.getRSquared()) &&
+                            square.getDensityRatio() >= minRequiredDensityRatio &&
+                            square.getVariability()  <= maxAllowableVariability &&
+                            square.getRSquared()     >= minRequiredRSquared;
 
             square.setVisible(passes);
             if (passes) {

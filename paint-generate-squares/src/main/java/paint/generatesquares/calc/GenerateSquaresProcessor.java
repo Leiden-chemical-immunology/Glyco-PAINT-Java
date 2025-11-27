@@ -97,8 +97,8 @@ public class GenerateSquaresProcessor {
         experiment = loadExperiment(
                 project.getProjectRootPath(),
                 experimentName,
-                false,   // No Squares
-                true     // With Tracks
+                false,   // Don't load Squares
+                true                // But do load Tracks
         );
 
         if (experiment == null) {

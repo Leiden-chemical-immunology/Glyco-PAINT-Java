@@ -132,9 +132,9 @@ public final class ImageRootValidator {
             }
 
             // ── 4. Validate all ProcessFlag=true recordings by checking that an .nd2 file exists in the corresponding image directory
-            for (ExperimentInfo info : rows) {
-                if (info.isProcessFlag()) {
-                    Path recordingFile = imageDir.resolve(info.getRecordingName() + ".nd2");
+            for (ExperimentInfo experimentInfo : rows) {
+                if (experimentInfo.isProcessFlag()) {
+                    Path recordingFile = imageDir.resolve(experimentInfo.getRecordingName() + ".nd2");
                     if (!Files.exists(recordingFile)) {
                         result.addError("[" + experiment + "] Missing recording file: " + recordingFile);
                     }

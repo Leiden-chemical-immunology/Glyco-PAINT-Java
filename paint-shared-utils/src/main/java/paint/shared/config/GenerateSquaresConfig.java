@@ -54,7 +54,6 @@ import static paint.shared.constants.PaintColumnNames.*;
  */
 public class GenerateSquaresConfig {
 
-
     private final int    numberOfSquaresInRecording;
     private final int    minTracksToCalculate;
     private final int    minTracksToCalculateTau;
