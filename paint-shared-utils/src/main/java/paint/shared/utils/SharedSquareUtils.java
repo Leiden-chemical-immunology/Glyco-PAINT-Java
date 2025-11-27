@@ -113,13 +113,13 @@ public final class SharedSquareUtils {
         // For normal squares → take left ≤ x < right
 	    // For rightmost column → take left ≤ x ≤ right (inclusive on both sides)
         Selection selX = isLastCol
-                ? x.isBetweenInclusive(left, right)
+                ? x.isGreaterThanOrEqualTo(left).and(x.isLessThanOrEqualTo(right))
                 : x.isGreaterThanOrEqualTo(left).and(x.isLessThan(right));
 
         // For normal squares → top ≤ y < bottom
 		// For bottom squares → top ≤ y ≤ bottom
         Selection selY = isLastRow
-                ? y.isBetweenInclusive(top, bottom)
+                ? y.isGreaterThanOrEqualTo(top).and(y.isLessThanOrEqualTo(bottom))
                 : y.isGreaterThanOrEqualTo(top).and(y.isLessThan(bottom));
 
         return tracks.where(selX.and(selY));
@@ -225,21 +225,22 @@ public final class SharedSquareUtils {
                 if (otherSquare == square || !otherSquare.isVisible()) {
                     continue;
                 }
-                int dr = Math.abs(otherSquare.getRowNumber() - rowNumber);
-                int dc = Math.abs(otherSquare.getColNumber() - colNumber);
+                int differenceInRow    = Math.abs(otherSquare.getRowNumber() - rowNumber);
+                int differenceInColumn = Math.abs(otherSquare.getColNumber() - colNumber);
 
                 if ("Relaxed".equalsIgnoreCase(neighbourMode)) {
-                    // Corner or edge adjacency allowed
-                    if (dr <= 1 && dc <= 1 && (dr + dc) > 0) {
+                    if (differenceInRow <= 1 && differenceInColumn <= 1) {
                         hasNeighbour = true;
                         break;
                     }
                 } else if ("Strict".equalsIgnoreCase(neighbourMode)) {
-                    // Only direct-edge adjacency allowed
-                    if ((dr == 1 && dc == 0) || (dr == 0 && dc == 1)) {
+                    if ((differenceInRow == 1 && differenceInColumn == 0) ||
+                            (differenceInRow == 0 && differenceInColumn == 1)) {
                         hasNeighbour = true;
                         break;
                     }
+                } else {
+                    throw new IllegalArgumentException("Invalid neighbourMode: " + neighbourMode);
                 }
             }
 
