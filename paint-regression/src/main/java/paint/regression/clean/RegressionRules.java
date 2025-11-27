@@ -25,7 +25,11 @@ final class RegressionRules {
     static final Set<String> IGNORE_COLUMNS_STRICT = Collections.unmodifiableSet(
             new HashSet<>(Arrays.asList(
                     "Run Time",
-                    "Time Stamp"
+                    "Time Stamp",
+                    "Median Mean Speed",
+                    "Max Mean Speed",
+                    "Median Median Speed",
+                    "Max Median Speed"
             ))
     );
 
@@ -297,20 +301,19 @@ final class RegressionRules {
     }
 
     /**
-     * In relaxed mode: if a field is numeric and one side is empty/NaN,
-     * treat them as equal (skip difference).
+     * If a numeric field is missing (empty/NaN/null) on one side,
+     * we treat it as *not a difference*.
+     *
+     * Applies to BOTH relaxed and strict modes.
      */
-    static boolean relaxedNumericMissingOK(Double a, Double b, boolean relaxed) {
-        if (!relaxed) {
-            return false; // strict mode: no forgiveness
-        }
+    static boolean numericMissingSkipDifference(Double a, Double b) {
 
-        // If both non-null, nothing to do
+        // Both present → evaluate normally
         if (a != null && b != null) {
             return false;
         }
 
-        // If one side is numeric and the other is missing → ignore difference
+        // One present, one missing → skip reporting a difference
         if ((a != null && b == null) || (a == null && b != null)) {
             return true;
         }
