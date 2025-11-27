@@ -97,13 +97,11 @@ public class GenerateSquaresHeadless {
 
         // --- Validate input data ---
         PaintLogger.infof("Validating input data...");
-
         ValidationResult validateResult = validateExperiments(
                 projectPath,
                 experimentNames,
                 Arrays.asList(EXPERIMENT_INFO_CSV, RECORDINGS_CSV, TRACKS_CSV)
         );
-
         if (!validateResult.isValid()) {
             for (String line : validateResult.getReport().split("\n")) {
                 PaintLogger.errorf(line);
@@ -111,15 +109,18 @@ public class GenerateSquaresHeadless {
             throw new IllegalStateException("Experiment validation failed.");
         }
 
+        // --- Log context and configuration. show what we are going to do ---
         logContextAndConfiguration(projectPath, experimentNames);
         LocalDateTime start = LocalDateTime.now();
 
         // --- Prepare project container ---
-        GenerateSquaresConfig generateSquaresConfig = new GenerateSquaresConfig();
         Project project = new Project();
         project.setProjectRootPath(projectPath);
         project.setExperimentNames(experimentNames);
-        project.setGenerateSquaresConfig(generateSquaresConfig);
+        project.setGenerateSquaresConfig(new GenerateSquaresConfig());    // This reads the config data using PaintConfig
+
+        // -- See if we should generate background plots ---
+        boolean showPlots = PaintConfig.getBoolean(GENERATE_SQUARES, BACKGROUND_PLOTS, false);
 
         // --- Run each experiment ---
         for (String experimentName : experimentNames) {
@@ -139,8 +140,7 @@ public class GenerateSquaresHeadless {
             }
 
             // --- Generate background histogram plots, if enabled ---
-            if (PaintConfig.getBoolean(GENERATE_SQUARES, BACKGROUND_PLOTS, false)) {
-
+            if (showPlots) {
                 try {
                     Experiment experiment = loadExperiment(
                             projectPath,
@@ -149,13 +149,13 @@ public class GenerateSquaresHeadless {
                             false   // Skip Tracks
                     );
 
-                    Path outPath = projectPath.resolve(experimentName).resolve("Output");
+                    Path experimentPath = projectPath.resolve(experimentName);
+                    Path outPath        = experimentPath.resolve("Output");
                     Files.createDirectories(outPath);
 
                     exportBackgroundHistogramsToPngs(
                             experiment,
-                            projectPath.resolve(experimentName)
-                    );
+                            experimentPath);
 
                 } catch (Exception e) {
                     PaintLogger.errorf("Failed to export histograms for %s: %s",
@@ -164,45 +164,35 @@ public class GenerateSquaresHeadless {
             }
         }
 
-        // --- Concatenate project-level CSVs ---
         if (Thread.currentThread().isInterrupted()) {
             PaintLogger.infof("Cancelled before concatenating project-level CSVs.");
             return;
         }
 
+        // --- Concatenate project-level CSVs ---
         try {
             PaintLogger.infof("Creating project-level summary files...");
 
             PaintLogger.infof("   Creating %s", projectPath.resolve(SQUARES_CSV));
             concatenateNamedCsvFiles(projectPath, SQUARES_CSV, experimentNames);
-            if (Thread.currentThread().isInterrupted()) {
-                return;
-            }
 
             PaintLogger.infof("   Creating %s", projectPath.resolve(RECORDINGS_CSV));
             concatenateNamedCsvFiles(projectPath, RECORDINGS_CSV, experimentNames);
-            if (Thread.currentThread().isInterrupted()) {
-                return;
-            }
 
             PaintLogger.infof("   Creating %s", projectPath.resolve(EXPERIMENT_INFO_CSV));
             concatenateNamedCsvFiles(projectPath, EXPERIMENT_INFO_CSV, experimentNames);
-            if (Thread.currentThread().isInterrupted()) {
-                return;
-            }
 
             PaintLogger.infof("   Creating %s", projectPath.resolve(TRACKS_CSV));
             concatenateNamedCsvFiles(projectPath, TRACKS_CSV, experimentNames);
-
-            PaintLogger.blankline();
-
-            Duration duration = Duration.between(start, LocalDateTime.now());
-            PaintLogger.infof("Finished Generate Squares for all experiments in %s",
-                              formatDuration(duration));
-
         } catch (Exception e) {
             PaintLogger.errorf("Failed to concatenate CSVs: %s", e.getMessage());
         }
+
+        PaintLogger.blankline();
+
+        Duration duration = Duration.between(start, LocalDateTime.now());
+        PaintLogger.infof("Finished Generate Squares for all experiments in %s",
+                          formatDuration(duration));
     }
 
     /**
@@ -212,13 +202,12 @@ public class GenerateSquaresHeadless {
     private static void logContextAndConfiguration(Path projectPath, List<String> experimentNames) {
 
         int nSquares      = PaintConfig.getInt(   GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING, 400);
-        int side          = (int) Math.round(Math.sqrt(nSquares));
         int minTracks     = PaintConfig.getInt(   GENERATE_SQUARES, MIN_TRACKS_TO_CALCULATE_TAU,    20);
         double minRSq     = PaintConfig.getDouble(GENERATE_SQUARES, MIN_REQUIRED_R_SQUARED,         0.1);
         double minDensity = PaintConfig.getDouble(GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,     2.0);
         double maxVar     = PaintConfig.getDouble(GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY,      10.0);
+        int side          = (int) Math.round(Math.sqrt(nSquares));
 
-        // Pretty-print experiment list (with wrapping)
         String formattedExperiments;
         if (experimentNames.isEmpty()) {
             formattedExperiments = "                   (none selected — please verify selection)";
@@ -262,10 +251,10 @@ public class GenerateSquaresHeadless {
                 "",
                 "Using parameters:",
                 String.format(Locale.getDefault(), "  • Grid size:                 %dx%d (%d squares)", side, side, nSquares),
-                String.format(Locale.getDefault(), "  • Minimum tracks per square: %d", minTracks),
-                String.format(Locale.getDefault(), "  • Minimum R²:                %.2f", minRSq),
-                String.format(Locale.getDefault(), "  • Minimum density ratio:     %.1f", minDensity),
-                String.format(Locale.getDefault(), "  • Maximum variability:       %.1f", maxVar),
+                String.format(Locale.getDefault(), "  • Minimum tracks per square: %d",                 minTracks),
+                String.format(Locale.getDefault(), "  • Minimum R²:                %.2f",               minRSq),
+                String.format(Locale.getDefault(), "  • Minimum density ratio:     %.1f",               minDensity),
+                String.format(Locale.getDefault(), "  • Maximum variability:       %.1f",               maxVar),
                 "",
                 "Each recording will be divided into spatial squares, and per-square track statistics will be calculated.",
                 "Results will be prepared per experiment, and squares and tracks files updated.",
