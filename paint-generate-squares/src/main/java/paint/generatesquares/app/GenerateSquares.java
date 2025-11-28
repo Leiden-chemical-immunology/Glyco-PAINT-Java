@@ -49,6 +49,7 @@ package paint.generatesquares.app;
 
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
+import paint.shared.objects.Project;
 import paint.shared.utils.*;
 
 import javax.swing.*;
@@ -130,22 +131,26 @@ public class GenerateSquares {
                 PaintConsoleWindow.closeOnDialogDispose(dialog.getDialog());
 
                 // --- Step 4: Run calculations when the user presses OK ---
-                dialog.setCalculationCallback(project -> {
-                    try {
-                        GenerateSquaresHeadless.run(
-                                project.getProjectRootPath(),
-                                project.getExperimentNames()
-                        );
-                        return true;
-                    } catch (Exception e) {
-                        PaintLogger.errorf("Generate Squares failed: %s", e.getMessage());
-                        return false;
-                    }
-                });
+                dialog.setCalculationCallback(this::runGenerateSquares);
 
                 // --- Step 5: Show dialog ---
                 dialog.showDialog();
             }
+
+            private boolean runGenerateSquares(Project project) {
+                try {
+                    GenerateSquaresHeadless.run(
+                            project.getProjectRootPath(),
+                            project.getExperimentNames()
+                    );
+                    return true;
+
+                } catch (Exception e) {
+                    PaintLogger.errorf("Generate Squares failed: %s", e.getMessage());
+                    return false;
+                }
+            }
         });
     }
+
 }
