@@ -138,7 +138,6 @@ public class OverrideTool {
             System.exit(2);
         }
 
-        SquaresTableIO squaresTableIO = new SquaresTableIO();
         try {
             squaresTable = readSquaresTable(projectPath);
         } catch (Exception e) {
@@ -154,7 +153,6 @@ public class OverrideTool {
             System.exit(2);
         }
 
-        RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
         try {
             recordingsTable = readRecordingsTable(projectPath);
         } catch (Exception e) {
@@ -179,11 +177,7 @@ public class OverrideTool {
             String name                    = RECORDINGS_CSV.replaceFirst("(?i)\\.csv$", "");   // remove .csv (any case)
             name                           = name + extension + ".csv";
             Path overrideRecordingsCsvPath = projectPath.resolve(name);
-            try {
-                recordingsTableIO.writeCsv(recordingsTable, overrideRecordingsCsvPath);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            writeSpecificRecordingsFile(overrideRecordingsCsvPath, recordingsTable);
         }
 
         ////////////////////////////////////////
@@ -204,11 +198,7 @@ public class OverrideTool {
             String name                 = SQUARES_CSV.replaceFirst("(?i)\\.csv$", "");   // remove .csv (any case)
             name                        = name + extension + ".csv";
             Path overrideSquaresCsvPath = projectPath.resolve(name);
-            try {
-                squaresTableIO.writeCsv(squaresTable, overrideSquaresCsvPath);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            writeSpecificSquaresFile(overrideSquaresCsvPath, squaresTable);
         }
     }
 

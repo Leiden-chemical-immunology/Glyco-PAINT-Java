@@ -107,6 +107,50 @@ public final class MainDataInterface {
         }
     }
 
+    /**
+     * Writes a list of {@link ExperimentInfo} objects to {@code recordings.csv}
+     * in the given experiment directory.
+     *
+     * @param experimentPath   the experiment folder path
+     * @param experimentInfos  the list of experimentInfo to write
+     */
+    public static void writeExperimentInfo(Path experimentPath, List<ExperimentInfo> experimentInfos) {
+        ExperimentInfoTableIO experimentInfoTableIO = new ExperimentInfoTableIO();
+        try {
+            Table table = experimentInfoTableIO.toTable(experimentInfos);
+            Path  path  = experimentPath.resolve(EXPERIMENT_INFO_CSV);
+            experimentInfoTableIO.writeCsv(table, path);
+        } catch (Exception e) {
+            PaintLogger.errorf("Failed to write %s : %s", EXPERIMENT_INFO_CSV, friendlyMessage(e));
+        }
+    }
+
+
+    /**
+     * Writes a full {@link Table} of experiment info data to.
+     *
+     * @param filePath                the fully formed csv file path
+     * @param experimentInfoTable     the table containing all experimentinfo data
+     */
+    public static void writeSpecificExperimentInfoFile(Path filePath, Table experimentInfoTable) {
+        ExperimentInfoTableIO experimentInfoTableIO = new ExperimentInfoTableIO();
+        try {
+            experimentInfoTableIO.writeCsv(experimentInfoTable, filePath);
+        } catch (Exception e) {
+            PaintLogger.errorf("Failed to write %s : %s", filePath, friendlyMessage(e));
+        }
+    }
+
+
+    public static void writeSpecificExperimentInfoFile(Path filePath, List<ExperimentInfo> experimentInfo ) {
+        ExperimentInfoTableIO  experimentInfoTableIO = new ExperimentInfoTableIO();
+        Table experimentInfoTable = experimentInfoTableIO.toTable(experimentInfo);
+        try {
+            experimentInfoTableIO.writeCsv(experimentInfoTable, filePath);
+        } catch (Exception e) {
+            PaintLogger.errorf("Failed to write %s : %s", filePath, friendlyMessage(e));
+        }
+    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // RECORDINGS
@@ -175,6 +219,21 @@ public final class MainDataInterface {
     }
 
 
+    /**
+     * Writes a full {@link Table} of track data.
+     *
+     * @param filePath         the fully formed csv file path
+     * @param recordingsTable  the table containing all recordings data
+     */
+    public static void writeSpecificRecordingsFile(Path filePath, Table recordingsTable) {
+        RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
+        try {
+            recordingsTableIO.writeCsv(recordingsTable, filePath);
+        } catch (Exception e) {
+            PaintLogger.errorf("Failed to write %s : %s", filePath, friendlyMessage(e));
+        }
+    }
+
     // ───────────────────────────────────────────────────────────────────────────────
     // SQUARES
     // ───────────────────────────────────────────────────────────────────────────────
@@ -234,6 +293,21 @@ public final class MainDataInterface {
         }
     }
 
+    /**
+     * Writes a full {@link Table} of squares data.
+     *
+     * @param filePath         the fully formed csv file path
+     * @param squaresTable     the table containing all squares data
+     */
+    public static void writeSpecificSquaresFile(Path filePath, Table squaresTable) {
+        SquaresTableIO squaresTableIO = new SquaresTableIO();
+        try {
+            squaresTableIO.writeCsv(squaresTable, filePath);
+        } catch (Exception e) {
+            PaintLogger.errorf("Failed to write %s : %s", filePath, friendlyMessage(e));
+        }
+    }
+
     // ───────────────────────────────────────────────────────────────────────────────
     // TRACKS
     // ───────────────────────────────────────────────────────────────────────────────
@@ -290,6 +364,21 @@ public final class MainDataInterface {
             tracksTableIO.writeCsv(tracksTable, path);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to write %s : %s", TRACKS_CSV, friendlyMessage(e));
+        }
+    }
+
+    /**
+     * Writes a full {@link Table} of track data to {@code tracks.csv}.
+     *
+     * @param filePath the fully formed csv file path
+     * @param tracksTable    the table containing all track data
+     */
+    public static void writeSpecificTracksFile(Path filePath, Table tracksTable) {
+        TracksTableIO tracksTableIO = new TracksTableIO();
+        try {
+            tracksTableIO.writeCsv(tracksTable, filePath);
+        } catch (Exception e) {
+            PaintLogger.errorf("Failed to write %s : %s", filePath, friendlyMessage(e));
         }
     }
 }

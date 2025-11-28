@@ -183,7 +183,8 @@ public final class TrackDataExporter {
             tracksTable.replaceColumn(TRACK_ID, newIds);
             tracksTable.replaceColumn(UNIQUE_KEY, newUniqueKey);
 
-            tracksTableIO.writeCsv(tracksTable, csvFile.toPath());
+            writeSpecificTracksFile(csvTracksFilePath, tracksTable);
+
         } catch (Exception e) {
             PaintLogger.errorf("Failed writing track CSV: %s", e.getMessage());
             e.printStackTrace();

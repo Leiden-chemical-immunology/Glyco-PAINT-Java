@@ -312,7 +312,7 @@ public abstract class BaseTableIO {
     /**
      * Writes a {@link Table} to CSV with US-locale fixed 3-decimal precision.
      */
-    public void writeCsv(Table table, Path target) throws IOException {
+    void writeCsv(Table table, Path target) throws IOException {
         NumberFormat nf = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.US));
 
         Table export = Table.create(table.name());
