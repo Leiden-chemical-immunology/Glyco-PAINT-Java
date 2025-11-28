@@ -364,13 +364,12 @@ public class GenerateSquaresProcessor {
      *         or an empty table if no square data exists
      */
     private static Table compileAllSquares(Experiment experiment) {
-        SquaresTableIO squaresTableIO   = new SquaresTableIO();
-        Table          allSquaresTable  = squaresTableIO.emptyTable();
+        Table          allSquaresTable  = newEmptySquareTable();
 
         for (Recording recording : experiment.getRecordings()) {
-            Table table = squaresTableIO.toTable(recording.getSquaresOfRecording());
+            Table table = squareListToTable(recording.getSquaresOfRecording());
             if (table != null) {
-                squaresTableIO.appendInPlace(allSquaresTable, table);
+                appendSquareTableInPlace(allSquaresTable, table);
             } else {
                 PaintLogger.errorf("compileAllSquares - squares table does not exist for '%s'",
                                    recording.getRecordingName());
@@ -390,8 +389,7 @@ public class GenerateSquaresProcessor {
      *         or an empty table if no track data exists
      */
     private static Table compileAllTracks(Experiment experiment) {
-        TracksTableIO trackTableIO   = new TracksTableIO();
-        Table         allTracksTable = trackTableIO.emptyTable();
+        Table allTracksTable = newEmptyTrackTable();
 
         for (Recording recording : experiment.getRecordings()) {
             PaintLogger.debugf("Compiling tracks for experiment '%s' - recording '%s'",
@@ -400,7 +398,7 @@ public class GenerateSquaresProcessor {
 
             Table table = recording.getTracksTable();
             if (table != null) {
-                trackTableIO.appendInPlace(allTracksTable, table);
+                appendTrackTableInPlace(allTracksTable, table);
             } else {
                 PaintLogger.errorf("compileAllTracks - tracks table does not exist for '%s'",
                                    recording.getRecordingName());
