@@ -72,9 +72,9 @@ import static paint.fiji.tracks.TrackAttributeCalculations.calculateTrackAttribu
  * producing a structured dataset suitable for downstream statistical analysis.
  * </p>
  */
-public final class TrackCsvWriter {
+public final class TrackDataExporter {
 
-    private TrackCsvWriter() {
+    private TrackDataExporter() {
         // Utility class; prevent instantiation
     }
 

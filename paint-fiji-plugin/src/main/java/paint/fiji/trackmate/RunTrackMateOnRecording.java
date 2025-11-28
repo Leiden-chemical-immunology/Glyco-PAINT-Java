@@ -61,7 +61,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.io.FileSaver;
 import loci.common.DebugTools;
-import paint.fiji.tracks.TrackCsvWriter;
+import paint.fiji.tracks.TrackDataExporter;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.dialogs.ProjectDialog;
 import paint.shared.objects.ExperimentInfo;
@@ -322,7 +322,7 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
             int totalSpotsInAllTracks = 0;
 
             try {
-                totalSpotsInAllTracks = TrackCsvWriter.writeTracksCsv(
+                totalSpotsInAllTracks = TrackDataExporter.writeTracksCsv(
                         trackmate,
                         experimentInfoRecord.getExperimentName(),
                         experimentInfoRecord.getRecordingName(),
