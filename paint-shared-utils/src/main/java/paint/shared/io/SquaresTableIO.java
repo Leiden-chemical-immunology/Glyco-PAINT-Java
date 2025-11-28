@@ -208,4 +208,28 @@ public class SquaresTableIO extends BaseTableIO {
             }
         }
     }
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // STATIC CONVENIENCE HELPERS
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /** Converts a Tablesaw table into a list of Square entities. */
+    public static List<Square> squareTableToList(Table table) {
+        return new SquaresTableIO().toEntities(table);
+    }
+
+    /** Converts a list of Square entities into a schema-compliant Table. */
+    public static Table squareListToTable(List<Square> squares) {
+        return new SquaresTableIO().toTable(squares);
+    }
+
+    /** Returns a new empty Square table with the correct schema. */
+    public static Table newEmptySquareTable() {
+        return new SquaresTableIO().emptyTable();
+    }
+
+    /** Appends all rows from source to target using the standard schema. */
+    public static void appendSquareTableInPlace(Table target, Table source) {
+        new SquaresTableIO().appendInPlace(target, source);
+    }
 }

@@ -43,7 +43,6 @@ package paint.shared.io;
 
 import paint.shared.objects.Recording;
 import paint.shared.schema.RecordingSchema;
-
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
@@ -202,5 +201,24 @@ public class RecordingsTableIO extends BaseTableIO {
                 }
             }
         }
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // STATIC CONVENIENCE HELPERS
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /** Converts a Tablesaw table into a list of Recoring entities. */
+    public static List<Recording> recordingTableToList(Table table) {
+        return new RecordingsTableIO().toEntities(table);
+    }
+
+    /** Converts a list of Recording entities into a schema-compliant Table. */
+    public static Table recordingListToTable(List<Recording> recordings) {
+        return new RecordingsTableIO().toTable(recordings);
+    }
+
+    /** Returns a new empty Recordings table with the correct schema. */
+    public static Table newEmptyRecordingTable() {
+        return new RecordingsTableIO().emptyTable();
     }
 }

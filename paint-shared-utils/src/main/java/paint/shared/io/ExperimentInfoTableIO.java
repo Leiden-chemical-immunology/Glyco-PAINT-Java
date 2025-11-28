@@ -34,6 +34,8 @@
 package paint.shared.io;
 
 import paint.shared.objects.ExperimentInfo;
+import paint.shared.objects.Track;
+import paint.shared.schema.TrackSchema;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
@@ -204,5 +206,24 @@ public class ExperimentInfoTableIO extends BaseTableIO {
                 }
             }
         }
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // STATIC CONVENIENCE HELPERS
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /** Converts a Tablesaw table into a list of ExperimentInfo entities. */
+    public static List<ExperimentInfo> experimentInfoTableToList(Table table) {
+        return new ExperimentInfoTableIO().toEntities(table);
+    }
+
+    /** Converts a list of ExperimentInfo entities into a schema-compliant Table. */
+    public static Table experimentInfoListToTable(List<ExperimentInfo> experimentInfos) {
+        return new ExperimentInfoTableIO().toTable(experimentInfos);
+    }
+
+    /** Returns a new empty ExperimentInfo table with the correct schema. */
+    public static Table newEmptyExperimentInfoTable() {
+        return new ExperimentInfoTableIO().emptyTable();
     }
 }

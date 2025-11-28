@@ -169,4 +169,29 @@ public class TracksTableIO extends BaseTableIO {
             }
         }
     }
+
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // STATIC CONVENIENCE HELPERS
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /** Converts a Tablesaw table into a list of Track entities. */
+    public static List<Track> trackTableToList(Table table) {
+        return new TracksTableIO().toEntities(table);
+    }
+
+    /** Converts a list of Track entities into a schema-compliant Table. */
+    public static Table trackListToTable(List<Track> tracks) {
+        return new TracksTableIO().toTable(tracks);
+    }
+
+    /** Returns a new empty Track table with the correct schema. */
+    public static Table newEmptyTrackTable() {
+        return new TracksTableIO().emptyTable();
+    }
+
+    /** Appends all rows from source to target using the standard schema. */
+    public static void appendTrackTableInPlace(Table target, Table source) {
+        new TracksTableIO().appendInPlace(target, source);
+    }
 }
