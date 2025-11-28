@@ -86,7 +86,7 @@ public class RecordingsTableIO extends BaseTableIO {
      * @param recordings the list of {@code Recording} objects to convert
      * @return a {@code Table} populated with recording data
      */
-    public Table toTable(List<Recording> recordings) {
+    Table toTable(List<Recording> recordings) {
         Table table = emptyTable();
         for (Recording recording : recordings) {
             Row row = table.appendRow();
@@ -132,7 +132,7 @@ public class RecordingsTableIO extends BaseTableIO {
      * @param table the validated {@link Table} to convert
      * @return a list of {@code Recording} entities populated from the table
      */
-    public List<Recording> toEntities(Table table) {
+    List<Recording> toEntities(Table table) {
         List<Recording> recordings = new ArrayList<>();
         for (Row tablesawRow : table) {
             Recording recording = new Recording();

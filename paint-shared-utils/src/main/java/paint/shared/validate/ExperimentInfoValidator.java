@@ -107,7 +107,7 @@ public final class ExperimentInfoValidator extends AbstractFileValidator {
      * @param file the {@code experiment_info.csv} file to validate
      * @return a {@link ValidationResult} summarizing all detected issues
      */
-    public ValidationResult validateWithConsistency(File file) {
+     ValidationResult validateWithConsistency(File file) {
         ValidationResult result = validate(file);
         if (result.isValid()) {
             result.merge(ConditionConsistencyChecker.check(file));

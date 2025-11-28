@@ -4,15 +4,17 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
-public final class CsvIO {
+final class CsvIO {
 
-    public static List<Map<String,String>> readCsv(Path file) throws Exception {
+    static List<Map<String,String>> readSimpleCsv(Path file) throws Exception {
         List<Map<String,String>> list = new ArrayList<Map<String,String>>();
-        BufferedReader br = Files.newBufferedReader(file);
+        BufferedReader           br   = Files.newBufferedReader(file);
 
         try {
             String head = br.readLine();
-            if (head == null) return list;
+            if (head == null) {
+                return list;
+            }
 
             String[] headers = head.split(",", -1);
             for (int i = 0; i < headers.length; i++)
@@ -20,7 +22,9 @@ public final class CsvIO {
 
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.length() == 0) continue;
+                if (line.length() == 0) {
+                    continue;
+                }
 
                 String[] vals = line.split(",", -1);
                 Map<String,String> m = new LinkedHashMap<String,String>();
@@ -37,13 +41,15 @@ public final class CsvIO {
         return list;
     }
 
-    public static void writeCsv(Path file, List<String> header, List<Map<String,String>> rows) throws Exception {
+    static void writeSimpleCsv(Path file, List<String> header, List<Map<String,String>> rows) throws Exception {
         try (BufferedWriter bw = Files.newBufferedWriter(file);
              PrintWriter pw = new PrintWriter(bw)) {
 
             // Write header
             for (int i = 0; i < header.size(); i++) {
-                if (i > 0) pw.print(",");
+                if (i > 0) {
+                    pw.print(",");
+                }
                 pw.print(header.get(i));
             }
             // No println() here → no stray newline yet
@@ -54,7 +60,9 @@ public final class CsvIO {
                 Map<String,String> row = rows.get(r);
 
                 for (int c = 0; c < header.size(); c++) {
-                    if (c > 0) pw.print(",");
+                    if (c > 0) {
+                        pw.print(",");
+                    }
                     String col = header.get(c);
                     String val = row.get(col);
                     pw.print(val == null ? "" : val);

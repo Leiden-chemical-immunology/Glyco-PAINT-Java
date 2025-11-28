@@ -81,7 +81,7 @@ public class TracksTableIO extends BaseTableIO {
      * @param tracks list of {@link Track} entities to convert
      * @return a {@link Table} containing one row per track, schema validated
      */
-    public Table toTable(List<Track> tracks) {
+    Table toTable(List<Track> tracks) {
         Table table = emptyTable();
         for (Track track : tracks) {
             Row tablesawRow = table.appendRow();
@@ -114,7 +114,7 @@ public class TracksTableIO extends BaseTableIO {
      * @param table the validated {@link Table} to convert
      * @return a list of {@link Track} entities populated from the table
      */
-    public List<Track> toEntities(Table table) {
+    List<Track> toEntities(Table table) {
         List<Track> tracks = new ArrayList<>();
         for (Row row : table) {
             Track track = new Track();

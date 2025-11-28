@@ -104,7 +104,8 @@ public class ExperimentInfoTableIO extends BaseTableIO {
      * @param infos the list of {@code ExperimentInfo} objects to convert
      * @return a {@code Table} containing one row per experiment
      */
-    public Table toTable(List<ExperimentInfo> infos) {
+
+    Table toTable(List<ExperimentInfo> infos) {
         Table table = emptyTable();
         for (ExperimentInfo experimentInfo : infos) {
             Row row = table.appendRow();
@@ -123,7 +124,7 @@ public class ExperimentInfoTableIO extends BaseTableIO {
         return table;
     }
 
-    public List<ExperimentInfo> toEntities(Table table) {
+    List<ExperimentInfo> toEntities(Table table) {
         List<ExperimentInfo> items = new ArrayList<>();
 
         for (Row row : table) {

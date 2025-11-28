@@ -53,7 +53,7 @@ import java.util.List;
  * and column data types according to {@link SquareSchema#COLUMNS} and
  * {@link SquareSchema#TYPES}.
  */
-public final class SquaresValidator extends AbstractFileValidator {
+final class SquaresValidator extends AbstractFileValidator {
 
     // ───────────────────────────────────────────────────────────────────────────────
     // HEADER VALIDATION

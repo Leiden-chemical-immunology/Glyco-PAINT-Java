@@ -60,7 +60,7 @@ import java.util.List;
  * condition-based consistency check to ensure uniformity of experimental metadata.
  * </p>
  */
-public final class RecordingsValidator extends AbstractFileValidator {
+final class RecordingsValidator extends AbstractFileValidator {
 
     // ───────────────────────────────────────────────────────────────────────────────
     // HEADER VALIDATION

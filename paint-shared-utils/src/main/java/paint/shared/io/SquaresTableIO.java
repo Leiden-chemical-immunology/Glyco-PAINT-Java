@@ -83,7 +83,7 @@ public class SquaresTableIO extends BaseTableIO {
      * @param squares list of {@link Square} objects to convert
      * @return a schema-compliant {@link Table} populated with square data
      */
-    public static Table toTable(List<Square> squares) {
+    static Table toTable(List<Square> squares) {
         Table table = emptyTable();
 
         for (Square square : squares) {
@@ -132,7 +132,7 @@ public class SquaresTableIO extends BaseTableIO {
     // TABLE → ENTITY CONVERSION
     // ───────────────────────────────────────────────────────────────────────────────
 
-    public List<Square> toEntities(Table table) {
+    List<Square> toEntities(Table table) {
         List<Square> squares = new ArrayList<>();
 
         for (Row tablesawRow : table) {

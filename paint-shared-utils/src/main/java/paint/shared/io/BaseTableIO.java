@@ -119,7 +119,7 @@ public abstract class BaseTableIO {
      * <p>This avoids Tablesaw’s strict Boolean parser rejecting values such as
      * "true", "false", "yes", "no", "1", "0", etc.</p>
      */
-    public Table readCsvWithSchema(
+    Table readCsvWithSchema(
             Path         csvPath,
             String[]     expectedCols,
             ColumnType[] expectedTypes,
