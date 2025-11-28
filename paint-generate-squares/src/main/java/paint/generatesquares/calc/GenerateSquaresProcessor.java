@@ -43,8 +43,7 @@
 package paint.generatesquares.calc;
 
 import paint.shared.config.GenerateSquaresConfig;
-import paint.shared.io.SquaresTableIO;
-import paint.shared.io.TracksTableIO;
+import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Project;
 import paint.shared.objects.Recording;
@@ -53,7 +52,11 @@ import paint.shared.objects.Track;
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.Table;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -71,14 +74,11 @@ import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
 import static paint.shared.constants.PaintGeometry.IMAGE_HEIGHT;
 import static paint.shared.constants.PaintGeometry.IMAGE_WIDTH;
 
-import static paint.shared.constants.PaintColumnNames.RECORDING_NAME;
-import static paint.shared.constants.PaintColumnNames.TRACK_ID;
-
 public class GenerateSquaresProcessor {
 
     // Total number of squares in one dimension (e.g., 20 for a 20×20 grid).
-    private static int numberOfSquaresInOneDimension;
     private static       int     numberOfSquaresInOneDimension;
+    private static final boolean debugGenerateSquaresForExperiment = PaintConfig.getBoolean("Debug", DEBUG_GENERATE_SQUARES_FOR_EXPERIMENT, false);
 
     /**
      * Processes an experiment to generate square regions for each recording, compute attributes,
@@ -89,7 +89,7 @@ public class GenerateSquaresProcessor {
      * @param project        the project containing configurations and experiment data
      * @param experimentName the name of the experiment to process
      */
-    public static void generateSquaresForExperiment(Project project, String experimentName) {
+    public static void generateSquaresForExperiment(Project project, String experimentName) throws IOException {
         GenerateSquaresConfig generateSquaresConfig = project.getGenerateSquaresConfig();
         Experiment            experiment;
         List<Recording>       recordings;
@@ -246,7 +246,8 @@ public class GenerateSquaresProcessor {
      *                  The method modifies this object by assigning tracks to the corresponding squares
      *                  and updating their track-related attributes.
      */
-    public static void assignTracksToSquares(Recording recording) {
+    public static void assignTracksToSquares(Recording recording) throws IOException {
+
         Table         tracksOfRecording   = recording.getTracksTable();
         Table         recordingTrackTable = newEmptyTrackTable();
 
@@ -256,6 +257,27 @@ public class GenerateSquaresProcessor {
 
         PaintLogger.debugf("Assigning tracks to squares (%d total tracks)",
                            tracksOfRecording.rowCount());
+
+        // ------------------------------------------------------------------
+        // 🔥 DEBUG CSV SETUP (only if flag enabled)
+        // ------------------------------------------------------------------
+        Path debugCsvPath = null;
+
+        if (debugGenerateSquaresForExperiment) {
+
+            Path debugDirPath = Paths.get(System.getProperty("user.home")).resolve("Downloads").resolve("Debug");
+            Files.createDirectories(debugDirPath);
+
+            debugCsvPath = debugDirPath.resolve("all_square_tracks.csv");
+
+            // Write header once
+            Files.write(
+                    debugCsvPath,
+                    "RecordingName,Square,TrackId,X,Y,Duration,MaxSpeed,MedianSpeed,Displacement,Row,Col\n".getBytes(),
+                    StandardOpenOption.CREATE
+            );
+        }
+        // ------------------------------------------------------------------
 
         for (Square square : recording.getSquaresOfRecording()) {
 
@@ -285,27 +307,51 @@ public class GenerateSquaresProcessor {
             square.setTracksTable(updatedSquareTracks);
             square.setNumberOfTracks(tracks.size());
 
-            // Log info
+            // ------------------------------------------------------------------
+            // 🔥 DEBUG CSV APPEND (only when flag enabled)
+            // ------------------------------------------------------------------
+            if (debugGenerateSquaresForExperiment && debugCsvPath != null) {
+
+                StringBuilder sb = new StringBuilder();
+
+                for (Track track : tracks) {
+                    sb.append(String.format(
+                            "%s,%d,%s,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%d,%d%n",
+                            square.getRecordingName(),
+                            square.getSquareNumber(),
+                            track.getTrackId(),
+                            track.getTrackXLocation(),
+                            track.getTrackYLocation(),
+                            track.getTrackDuration(),
+                            track.getTrackMaxSpeed(),
+                            track.getTrackMedianSpeed(),
+                            track.getTrackDisplacement(),
+                            square.getRowNumber(),
+                            square.getColNumber()
+                    ));
+                }
+
+                Files.write(debugCsvPath, sb.toString().getBytes(), StandardOpenOption.APPEND);
+            }
+            // ------------------------------------------------------------------
+
             PaintLogger.debugf("Square %3d: %3d tracks assigned (label %d)",
                                square.getSquareNumber(), tracks.size(), labelNumber);
 
             labelNumber++;
         }
 
-        PaintLogger.debugf("");
-        PaintLogger.debugf(
-                "assignTracksToSquare - number of tracks assigned is %d; tracks in recording: %d",
-                incrementalTrackCount,
-                tracksOfRecording.rowCount()
-        );
-
-        // Update the recording table
         recording.setTracksTable(recordingTrackTable);
+
+        PaintLogger.debugf("assignTracksToSquare - number of tracks assigned: %d; in recording: %d",
+                           incrementalTrackCount,
+                           tracksOfRecording.rowCount());
 
         PaintLogger.debugf("✅ Total %d tracks assigned to %d squares.",
                            recordingTrackTable.rowCount(),
                            recording.getSquaresOfRecording().size());
     }
+
 
     /**
      * Compiles all square data from the recordings in the specified experiment into a single table.
