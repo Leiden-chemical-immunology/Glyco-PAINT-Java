@@ -352,7 +352,7 @@ public class Recording {
         this.squares = squares;
     }
 
-    public void setTracks(List<Track> tracks) {
+    public void setTracksList(List<Track> tracks) {
         this.tracks = tracks;
     }
 

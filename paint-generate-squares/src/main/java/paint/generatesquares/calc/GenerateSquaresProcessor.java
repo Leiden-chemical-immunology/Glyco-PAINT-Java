@@ -264,7 +264,7 @@ public class GenerateSquaresProcessor {
             incrementalTrackCount += squareTracksTable.rowCount();
 
             if (squareTracksTable.rowCount() == 0) {
-                square.setTracks(Collections.emptyList());
+                square.setTracksList(Collections.emptyList());
                 square.setTracksTable(squareTracksTable);
                 square.setNumberOfTracks(0);
                 continue;
@@ -286,7 +286,7 @@ public class GenerateSquaresProcessor {
             recordingTrackTable.append(updatedSquareTracks);
 
             // Update the square
-            square.setTracks(tracks);
+            square.setTracksList(tracks);
             square.setTracksTable(updatedSquareTracks);
             square.setNumberOfTracks(tracks.size());
 

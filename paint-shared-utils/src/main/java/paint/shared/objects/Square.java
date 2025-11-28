@@ -447,7 +447,7 @@ public class Square {
         return tracks;
     }
 
-    public void setTracks(List<Track> tracks) {
+    public void setTracksList(List<Track> tracks) {
         this.tracks = tracks;
     }
 
