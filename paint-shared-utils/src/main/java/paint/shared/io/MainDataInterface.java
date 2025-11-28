@@ -72,12 +72,12 @@ import static paint.shared.utils.Miscellaneous.friendlyMessage;
  * <p>Each method performs schema validation and detailed logging, ensuring
  * reliable data integrity across all experiment operations.</p>
  */
-public final class ExperimentDataIO {
+public final class MainDataInterface {
 
     /**
      * Private constructor to prevent instantiation.
      */
-    private ExperimentDataIO() {
+    private MainDataInterface() {
     }
 
 
