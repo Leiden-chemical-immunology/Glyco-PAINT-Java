@@ -65,7 +65,7 @@ public abstract class BaseTableIO {
     /**
      * Creates a new empty {@link Table} with the given schema.
      */
-    protected Table newEmptyTable(String tableName, String[] colNames, ColumnType[] colTypes) {
+    protected static Table newEmptyTable(String tableName, String[] colNames, ColumnType[] colTypes) {
         if (colNames.length != colTypes.length) {
             throw new IllegalArgumentException("Names and types length mismatch: "
                                                        + colNames.length + " vs " + colTypes.length);

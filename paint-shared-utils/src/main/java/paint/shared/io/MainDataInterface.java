@@ -1,27 +1,21 @@
-
 /*=============================================================================
- *  Class:        HelperIO.java
+ *  Class:        MainDataInterface.java
  *  Package:      paint.shared.io
  *
  *  PURPOSE:
- *    Provides high-level, convenience methods for reading and writing all
- *    primary experiment data files — Recordings, Tracks, and Squares — used
- *    throughout the PAINT system.
+ *    High-level facade providing unified read/write operations for all core
+ *    PAINT experiment data types: ExperimentInfo, Recordings, Squares, Tracks.
  *
  *  DESCRIPTION:
- *    This utility class acts as a facade over the specific TableIO classes
- *    (RecordingsTableIO, TracksTableIO, SquaresTableIO). It offers a simplified
- *    interface for bulk input/output operations involving Tablesaw tables
- *    and entity lists, including schema validation, CSV read/write, and
- *    logging with user-friendly error messages.
+ *    Wraps the lower-level TableIO classes (ExperimentInfoTableIO,
+ *    RecordingsTableIO, SquaresTableIO, TracksTableIO) and exposes simple
+ *    static helpers for:
  *
- *  KEY FEATURES:
- *    • Unified access to schema-validated CSV I/O for all major PAINT entities.
- *    • Converts seamlessly between Table and entity List representations.
- *    • Provides graceful error handling via PaintLogger with human-readable
- *      exception messages.
- *    • Supports both per-entity and full-table operations.
- *    • Fully compatible with Java 8 and Tablesaw-based schema validation.
+ *      - Reading validated CSV files
+ *      - Converting tables to entity lists
+ *      - Writing full tables or entity lists
+ *
+ *    Ensures consistent error handling and logging across all operations.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -38,153 +32,87 @@
 
 package paint.shared.io;
 
-import paint.shared.objects.ExperimentInfo;
-import paint.shared.objects.Recording;
-import paint.shared.objects.Square;
-import paint.shared.objects.Track;
-import paint.shared.schema.ExperimentInfoSchema;
-import paint.shared.schema.TrackSchema;
-import paint.shared.schema.SquareSchema;
-import paint.shared.schema.RecordingSchema;
+import paint.shared.objects.*;
+import paint.shared.schema.*;
+
+import tech.tablesaw.api.Table;
 
 import paint.shared.utils.PaintLogger;
-import tech.tablesaw.api.Table;
 
 import java.nio.file.Path;
 import java.util.List;
 
-import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
-import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
-import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
-import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
-
+import static paint.shared.constants.PaintFileNames.*;
 import static paint.shared.utils.Miscellaneous.friendlyMessage;
 
-/**
- * Utility class providing static helper methods for reading and writing
- * {@link Recording}, {@link Square}, and {@link Track} data in a PAINT
- * experiment directory.
- *
- * <p>This class wraps the specialized I/O classes
- * ({@link RecordingsTableIO}, {@link SquaresTableIO}, and {@link TracksTableIO})
- * to simplify loading and saving of experiment data.</p>
- *
- * <p>Each method performs schema validation and detailed logging, ensuring
- * reliable data integrity across all experiment operations.</p>
- */
 public final class MainDataInterface {
 
-    /**
-     * Private constructor to prevent instantiation.
-     */
-    private MainDataInterface() {
-    }
+    private MainDataInterface() { }
 
+    // =====================================================================
+    //  EXPERIMENT INFO
+    // =====================================================================
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // EXPERIMENT INFO
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Reads all recordings from an experiment directory.
-     *
-     * @param experimentPath the experiment directory containing {@code recordings.csv}
-     * @return a list of {@link ExperimentInfo} entities, or {@code null} if reading fails
-     */
     public static List<ExperimentInfo> readExperimentInfo(Path experimentPath) {
         ExperimentInfoTableIO experimentInfoTableIO = new ExperimentInfoTableIO();
         try {
-            Table experimentInfoTable = experimentInfoTableIO.readCsvWithSchema(
+            Table table = experimentInfoTableIO.readCsvWithSchema(
                     experimentPath.resolve(EXPERIMENT_INFO_CSV),
                     ExperimentInfoSchema.COLUMNS,
                     ExperimentInfoSchema.TYPES,
                     false
             );
-            return experimentInfoTableIO.toEntities(experimentInfoTable);
+            return experimentInfoTableIO.toEntities(table);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to read %s : %s", EXPERIMENT_INFO_CSV, friendlyMessage(e));
             return null;
         }
     }
 
-    /**
-     * Writes a list of {@link ExperimentInfo} objects to {@code recordings.csv}
-     * in the given experiment directory.
-     *
-     * @param experimentPath   the experiment folder path
-     * @param experimentInfos  the list of experimentInfo to write
-     */
-    public static void writeExperimentInfo(Path experimentPath, List<ExperimentInfo> experimentInfos) {
-        ExperimentInfoTableIO experimentInfoTableIO = new ExperimentInfoTableIO();
+    public static void writeExperimentInfo(Path experimentPath, List<ExperimentInfo> list) {
         try {
-            Table table = experimentInfoTableIO.toTable(experimentInfos);
-            Path  path  = experimentPath.resolve(EXPERIMENT_INFO_CSV);
-            experimentInfoTableIO.writeCsv(table, path);
+            Path file = experimentPath.resolve(EXPERIMENT_INFO_CSV);
+            writeSpecificExperimentInfoFile(file, list);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to write %s : %s", EXPERIMENT_INFO_CSV, friendlyMessage(e));
         }
     }
 
-
-    /**
-     * Writes a full {@link Table} of experiment info data to.
-     *
-     * @param filePath                the fully formed csv file path
-     * @param experimentInfoTable     the table containing all experimentinfo data
-     */
-    public static void writeSpecificExperimentInfoFile(Path filePath, Table experimentInfoTable) {
+    public static void writeSpecificExperimentInfoFile(Path file, Table table) {
         ExperimentInfoTableIO experimentInfoTableIO = new ExperimentInfoTableIO();
         try {
-            experimentInfoTableIO.writeCsv(experimentInfoTable, filePath);
+            experimentInfoTableIO.writeCsv(table, file);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to write %s : %s", filePath, friendlyMessage(e));
+            PaintLogger.errorf("Failed to write %s : %s", file, friendlyMessage(e));
         }
     }
 
-
-    public static void writeSpecificExperimentInfoFile(Path filePath, List<ExperimentInfo> experimentInfo ) {
-        ExperimentInfoTableIO  experimentInfoTableIO = new ExperimentInfoTableIO();
-        Table experimentInfoTable = experimentInfoTableIO.toTable(experimentInfo);
-        try {
-            experimentInfoTableIO.writeCsv(experimentInfoTable, filePath);
-        } catch (Exception e) {
-            PaintLogger.errorf("Failed to write %s : %s", filePath, friendlyMessage(e));
-        }
+    public static void writeSpecificExperimentInfoFile(Path file, List<ExperimentInfo> list) {
+        ExperimentInfoTableIO experimentInfoTableIO = new ExperimentInfoTableIO();
+        Table table = experimentInfoTableIO.toTable(list);
+        writeSpecificExperimentInfoFile(file, table);
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // RECORDINGS
-    // ───────────────────────────────────────────────────────────────────────────────
+    // =====================================================================
+    //  RECORDINGS
+    // =====================================================================
 
-    /**
-     * Reads all recordings from an experiment directory.
-     *
-     * @param experimentPath the experiment directory containing {@code recordings.csv}
-     * @return a list of {@link Recording} entities, or {@code null} if reading fails
-     */
     public static List<Recording> readRecordings(Path experimentPath) {
         RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
         try {
-            Table recTable = recordingsTableIO.readCsvWithSchema(
+            Table table = recordingsTableIO.readCsvWithSchema(
                     experimentPath.resolve(RECORDINGS_CSV),
                     RecordingSchema.COLUMNS,
                     RecordingSchema.TYPES,
                     false
             );
-            return recordingsTableIO.toEntities(recTable);
+            return recordingsTableIO.toEntities(table);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to read %s : %s", RECORDINGS_CSV, friendlyMessage(e));
             return null;
         }
     }
 
-
-    /**
-     * Reads all square data into a {@link Table}.
-     *
-     * @param experimentPath the experiment directory containing {@code squares.csv}
-     * @return the loaded table, or {@code null} if reading fails
-     */
     public static Table readRecordingsTable(Path experimentPath) {
         RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
         try {
@@ -195,72 +123,47 @@ public final class MainDataInterface {
                     false
             );
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s: %s", RECORDINGS_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s : %s", RECORDINGS_CSV, friendlyMessage(e));
             return null;
         }
     }
 
-    /**
-     * Writes a list of {@link Recording} objects to {@code recordings.csv}
-     * in the given experiment directory.
-     *
-     * @param experimentPath the experiment folder path
-     * @param recordings     the list of recordings to write
-     */
-    public static void writeRecordings(Path experimentPath, List<Recording> recordings) {
-        RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
+    public static void writeRecordings(Path experimentPath, List<Recording> list) {
         try {
-            Table table = recordingsTableIO.toTable(recordings);
-            Path  path  = experimentPath.resolve(RECORDINGS_CSV);
-            recordingsTableIO.writeCsv(table, path);
+            Path file = experimentPath.resolve(RECORDINGS_CSV);
+            writeSpecificRecordingsFile(file, list);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to write %s : %s", RECORDINGS_CSV, friendlyMessage(e));
         }
     }
 
-
-    /**
-     * Writes a full {@link Table} of track data.
-     *
-     * @param filePath         the fully formed csv file path
-     * @param recordingsTable  the table containing all recordings data
-     */
-    public static void writeSpecificRecordingsFile(Path filePath, Table recordingsTable) {
+    public static void writeSpecificRecordingsFile(Path file, Table table) {
         RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
         try {
-            recordingsTableIO.writeCsv(recordingsTable, filePath);
+            recordingsTableIO.writeCsv(table, file);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to write %s : %s", filePath, friendlyMessage(e));
+            PaintLogger.errorf("Failed to write %s : %s", file, friendlyMessage(e));
         }
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // SQUARES
-    // ───────────────────────────────────────────────────────────────────────────────
+    public static void writeSpecificRecordingsFile(Path file, List<Recording> list) {
+        RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
+        writeSpecificRecordingsFile(file, recordingsTableIO.toTable(list));
+    }
 
-    /**
-     * Reads all {@link Square} entities from the experiment directory.
-     *
-     * @param experimentPath the experiment folder path
-     * @return a list of squares, or {@code null} if reading fails
-     */
+    // =====================================================================
+    //  SQUARES
+    // =====================================================================
+
     public static List<Square> readSquares(Path experimentPath) {
-        SquaresTableIO squaresTableIO = new SquaresTableIO();
         try {
-            Table squaresTable = readSquaresTable(experimentPath);
-            return squaresTableIO.toEntities(squaresTable);
+            return new SquaresTableIO().toEntities(readSquaresTable(experimentPath));
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s: %s", SQUARES_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s : %s", SQUARES_CSV, friendlyMessage(e));
             return null;
         }
     }
 
-    /**
-     * Reads all square data into a {@link Table}.
-     *
-     * @param experimentPath the experiment directory containing {@code squares.csv}
-     * @return the loaded table, or {@code null} if reading fails
-     */
     public static Table readSquaresTable(Path experimentPath) {
         SquaresTableIO squaresTableIO = new SquaresTableIO();
         try {
@@ -271,70 +174,53 @@ public final class MainDataInterface {
                     false
             );
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s: %s", SQUARES_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s : %s", SQUARES_CSV, friendlyMessage(e));
             return null;
         }
     }
 
-    /**
-     * Writes a full {@link Table} of square data to {@code squares.csv}.
-     *
-     * @param experimentPath the experiment folder path
-     * @param squaresTable   the table containing all square data
-     */
-    public static void writeSquares(Path experimentPath, Table squaresTable) {
-
-        SquaresTableIO squaresTableIO = new SquaresTableIO();
+    public static void writeSquares(Path experimentPath, List<Square> list) {
         try {
-            Path path = experimentPath.resolve(SQUARES_CSV);
-            squaresTableIO.writeCsv(squaresTable, path);
+            Path file = experimentPath.resolve(SQUARES_CSV);
+            writeSpecificSquaresFile(file, SquaresTableIO.toTable(list));
         } catch (Exception e) {
             PaintLogger.errorf("Failed to write %s : %s", SQUARES_CSV, friendlyMessage(e));
         }
     }
 
-    /**
-     * Writes a full {@link Table} of squares data.
-     *
-     * @param filePath         the fully formed csv file path
-     * @param squaresTable     the table containing all squares data
-     */
-    public static void writeSpecificSquaresFile(Path filePath, Table squaresTable) {
-        SquaresTableIO squaresTableIO = new SquaresTableIO();
+    public static void writeSquares(Path experimentPath, Table table) {
         try {
-            squaresTableIO.writeCsv(squaresTable, filePath);
+            Path file = experimentPath.resolve(SQUARES_CSV);
+            writeSpecificSquaresFile(file, table);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to write %s : %s", filePath, friendlyMessage(e));
+            PaintLogger.errorf("Failed to write %s : %s", SQUARES_CSV, friendlyMessage(e));
         }
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // TRACKS
-    // ───────────────────────────────────────────────────────────────────────────────
+    public static void writeSpecificSquaresFile(Path file, Table table) {
+        SquaresTableIO squaresTableIO = new SquaresTableIO();
+        try {
+            squaresTableIO.writeCsv(table, file);
+        } catch (Exception e) {
+            PaintLogger.errorf("Failed to write %s : %s", file, friendlyMessage(e));
+        }
+    }
 
-    /**
-     * Reads all {@link Track} entities from the experiment directory.
-     *
-     * @param experimentPath the experiment folder path
-     * @return a list of tracks, or {@code null} if reading fails
-     */
+    // =====================================================================
+    //  TRACKS
+    // =====================================================================
+
     public static List<Track> readTracks(Path experimentPath) {
         TracksTableIO tracksTableIO = new TracksTableIO();
         try {
-            Table tracksTable = readTracksTable(experimentPath);
-            return tracksTableIO.toEntities(tracksTable);
+            Table table = readTracksTable(experimentPath);
+            return tracksTableIO.toEntities(table);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s: %s", TRACKS_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s : %s", TRACKS_CSV, friendlyMessage(e));
             return null;
         }
     }
 
-    /**
-     * Reads all track data into a {@link Table}.
-     *
-     * @param experimentPath the experiment directory containing {@code tracks.csv}
-     * @return the loaded table, or {@code null} if reading fails
-     */
     public static Table readTracksTable(Path experimentPath) {
         TracksTableIO tracksTableIO = new TracksTableIO();
         try {
@@ -345,40 +231,26 @@ public final class MainDataInterface {
                     false
             );
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s: %s", TRACKS_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s : %s", TRACKS_CSV, friendlyMessage(e));
             return null;
         }
     }
 
-
-    /**
-     * Writes a full {@link Table} of track data to {@code tracks.csv}.
-     *
-     * @param experimentPath the experiment folder path
-     * @param tracksTable    the table containing all track data
-     */
-    public static void writeTracks(Path experimentPath, Table tracksTable) {
-        TracksTableIO tracksTableIO = new TracksTableIO();
+    public static void writeTracks(Path experimentPath, Table table) {
         try {
-            Path path = experimentPath.resolve(TRACKS_CSV);
-            tracksTableIO.writeCsv(tracksTable, path);
+            Path file = experimentPath.resolve(TRACKS_CSV);
+            writeSpecificTracksFile(file, table);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to write %s : %s", TRACKS_CSV, friendlyMessage(e));
         }
     }
 
-    /**
-     * Writes a full {@link Table} of track data to {@code tracks.csv}.
-     *
-     * @param filePath the fully formed csv file path
-     * @param tracksTable    the table containing all track data
-     */
-    public static void writeSpecificTracksFile(Path filePath, Table tracksTable) {
+    public static void writeSpecificTracksFile(Path file, Table table) {
         TracksTableIO tracksTableIO = new TracksTableIO();
         try {
-            tracksTableIO.writeCsv(tracksTable, filePath);
+            tracksTableIO.writeCsv(table, file);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to write %s : %s", filePath, friendlyMessage(e));
+            PaintLogger.errorf("Failed to write %s : %s", file, friendlyMessage(e));
         }
     }
 }
