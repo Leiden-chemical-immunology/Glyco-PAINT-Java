@@ -34,8 +34,6 @@
 package paint.shared.io;
 
 import paint.shared.objects.ExperimentInfo;
-import paint.shared.objects.Track;
-import paint.shared.schema.TrackSchema;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
