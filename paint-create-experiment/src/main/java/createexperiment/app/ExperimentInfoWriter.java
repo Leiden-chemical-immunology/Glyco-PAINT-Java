@@ -37,12 +37,12 @@
 
 package createexperiment.app;
 
-import paint.shared.io.ExperimentInfoTableIO;
 import paint.shared.objects.ExperimentInfo;
-import tech.tablesaw.api.Table;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -86,10 +86,8 @@ public class ExperimentInfoWriter {
      * @return the created {@code File} object pointing to the resulting CSV file
      * @throws IOException if directory creation or file writing fails
      */
-    public static File writeExperimentInfo(File experimentDir, List<File> recordings) throws IOException {
-        if (!experimentDir.exists() && !experimentDir.mkdirs()) {
-            throw new IOException("Failed to create experiment directory: " + experimentDir);
-        }
+    public static Path exportExperimentInfo(Path experimentDirPath, List<File> recordings) throws IOException {
+        Files.createDirectories(experimentDirPath);
 
         // Build ExperimentInfo objects from filenames
         List<ExperimentInfo> infos = new ArrayList<>();
@@ -122,13 +120,11 @@ public class ExperimentInfoWriter {
         }
 
         // --- Write table via ExperimentInfoTableIO ---
-        ExperimentInfoTableIO io = new ExperimentInfoTableIO();
-        Table table = io.toTable(infos);
+        Path csvFilePath = uniqueFile(experimentDirPath, EXPERIMENT_INFO_CSV);
+        writeSpecificExperimentInfoFile(csvFilePath, infos);
 
-        File csvFile = uniqueFile(experimentDir, EXPERIMENT_INFO_CSV);
-        io.writeCsv(table, csvFile.toPath());
+        return csvFilePath;
 
-        return csvFile;
     }
 
     /**
@@ -138,17 +134,19 @@ public class ExperimentInfoWriter {
      * @param fileName desired file name
      * @return a unique path reference that does not overwrite existing files
      */
-    private static File uniqueFile(File dir, String fileName) {
-        int dot = fileName.lastIndexOf('.');
+    private static Path uniqueFile(Path dirPath, String fileName) {
+        int    dot  = fileName.lastIndexOf('.');
         String stem = (dot >= 0) ? fileName.substring(0, dot) : fileName;
         String ext  = (dot >= 0) ? fileName.substring(dot) : "";
 
-        File candidate = new File(dir, fileName);
+        Path candidate = dirPath.resolve(fileName);
         int n = 1;
-        while (candidate.exists()) {
-            candidate = new File(dir, stem + "-" + n + ext);
+
+        while (Files.exists(candidate)) {
+            candidate = dirPath.resolve(stem + "-" + n + ext);
             n++;
         }
+
         return candidate;
     }
 }

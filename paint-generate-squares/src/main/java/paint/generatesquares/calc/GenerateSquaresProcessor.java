@@ -277,9 +277,7 @@ public class GenerateSquaresProcessor {
                 track.setLabelNumber(labelNumber);
             }
 
-            // Rebuild the table from the modified tracks (ensures the table reflects the updates)
-
-            // Append updated tracks into the global recording table
+            Table updatedSquareTracks = trackListToTable(tracks);
             recordingTrackTable.append(updatedSquareTracks);
 
             // Update the square

@@ -41,11 +41,14 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Function;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import static createexperiment.app.ExperimentInfoWriter.exportExperimentInfo;
 
 /**
  * Fixed and visually balanced CreateExperimentUI.
@@ -276,13 +279,12 @@ public class CreateExperimentUI {
                 return;
             }
             try {
-                String expName = imagesDir[0].getName();
-                File expDir = new File(projectDir[0], expName);
-                if (!expDir.exists() && !expDir.mkdirs())
-                    throw new IOException("Cannot create: " + expDir);
-                File created = ExperimentInfoWriter.writeExperimentInfo(expDir, selected);
+                String experimentName    = imagesDir[0].getName();
+                Path   experimentDirPath = projectDir[0].toPath().resolve(experimentName);
+
+                Path created = exportExperimentInfo(experimentDirPath, selected);
                 JOptionPane.showMessageDialog(frame,
-                                              "Experiment info written to:\n" + created.getAbsolutePath(),
+                                              "Experiment info written to:\n" + created.toAbsolutePath(),
                                               "Success", JOptionPane.INFORMATION_MESSAGE);
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage());
