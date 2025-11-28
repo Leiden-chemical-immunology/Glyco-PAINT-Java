@@ -169,13 +169,13 @@ public final class RecordingsConverter implements CsvConverter {
 
     public void run() throws Exception {
         System.out.println("Reading:  " + inputFile);
-        List<Map<String,String>> src = CsvIO.readCsv(inputFile);
+        List<Map<String,String>> src = CsvIO.readSimpleCsv(inputFile);
 
         System.out.println("Converting Recordings...");
         List<Map<String,String>> out = convert(src);
 
         System.out.println("Writing:  " + outputFile);
-        CsvIO.writeCsv(outputFile, HEADER, out);
+        CsvIO.writeSimpleCsv(outputFile, HEADER, out);
 
         System.out.println("✔ Recordings conversion complete.");
     }
