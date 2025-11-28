@@ -318,7 +318,7 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
             // Step 6 – Write tracks CSV
             // -----------------------------------------------------------------
             String tracksName = experimentInfoRecord.getRecordingName() + "-tracks.csv";
-            Path tracksPath = experimentPath.resolve(tracksName);
+            Path   tracksPath = experimentPath.resolve(tracksName);
             int totalSpotsInAllTracks = 0;
 
             try {
@@ -326,7 +326,7 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
                         trackmate,
                         experimentInfoRecord.getExperimentName(),
                         experimentInfoRecord.getRecordingName(),
-                        tracksPath.toFile(),
+                        tracksPath,
                         true);
             } catch (Exception e) {
                 PaintLogger.errorf("Failed to write tracks to '%s'", tracksPath);
