@@ -95,7 +95,6 @@ public final class ExperimentDataLoader {
 
         // ─── Tracks (optional) ────────────────────────────────────────────────
         Table         tracksTable = null;
-        TracksTableIO trackIO     = new TracksTableIO();
 
         if (loadTracks) {
             try {
@@ -112,12 +111,12 @@ public final class ExperimentDataLoader {
                     continue;
                 }
 
-                Table recTracks = tracksTable.where(
+                Table recTracksTable = tracksTable.where(
                         tracksTable.stringColumn(RECORDING_NAME)
                                    .isEqualTo(recording.getRecordingName()));
 
                 PaintLogger.debugf("Found %d tracks for recording '%s'",
-                                   recTracks.rowCount(), recording.getRecordingName());
+                                   recTracksTable.rowCount(), recording.getRecordingName());
 
                 recording.setTracksList(trackTableToList(recTracksTable));
                 recording.setTracksTable(recTracksTable);
