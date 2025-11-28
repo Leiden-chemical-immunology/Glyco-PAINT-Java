@@ -119,14 +119,13 @@ public final class ExperimentDataLoader {
                 PaintLogger.debugf("Found %d tracks for recording '%s'",
                                    recTracks.rowCount(), recording.getRecordingName());
 
-                recording.setTracks(trackIO.toEntities(recTracks));
-                recording.setTracksTable(recTracks);
+                recording.setTracksList(trackTableToList(recTracksTable));
+                recording.setTracksTable(recTracksTable);
             }
         }
 
         // ─── Squares (optional) ───────────────────────────────────────────────
         if (loadSquares) {
-            SquaresTableIO squaresTableIO = new SquaresTableIO();
             Table squaresTable;
             try {
                 squaresTable = readSquaresTable(experimentPath);
@@ -153,7 +152,7 @@ public final class ExperimentDataLoader {
                         squaresTable.stringColumn(RECORDING_NAME)
                                     .matchesRegex("^" + rec.getRecordingName() + "(?:-threshold-\\d{1,3})?$"));
 
-                rec.addSquares(squaresTableIO.toEntities(recSquares));
+                rec.addSquares(squareTableToList(recSquares));
 
                 // Only map tracks into squares if tracks were loaded
                 if (loadTracks && numberOfRows > 0) {
@@ -162,7 +161,7 @@ public final class ExperimentDataLoader {
 
                     for (Square square : rec.getSquaresOfRecording()) {
                         Table SquaresTracks = filterTracksInSquare(recTracks, square, lastRowCol);
-                        square.setTracks(trackIO.toEntities(SquaresTracks));
+                        square.setTracksList(trackTableToList(SquaresTracks));
                     }
                 }
             }

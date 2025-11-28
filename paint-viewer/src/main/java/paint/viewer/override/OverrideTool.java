@@ -47,13 +47,10 @@
 
 package paint.viewer.override;
 
-import paint.shared.io.RecordingsTableIO;
-import paint.shared.io.SquaresTableIO;
 import paint.shared.objects.Square;
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.Table;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -241,9 +238,7 @@ public class OverrideTool {
 
                 // Now apply the filter criteria to the Squares of the Recordings
 
-                SquaresTableIO squaresTableIO = new SquaresTableIO();
-                List<Square>   squares        = squaresTableIO.toEntities(squaresTable);
-
+                List<Square> squares = squareTableToList(squaresTable);
                 applyVisibilityFilterOnRecording(
                         squares,
                         recordingName,
@@ -252,9 +247,9 @@ public class OverrideTool {
                         override.getMaxAllowableVariability(),
                         override.getNeighbourMode());
 
-                Table updatedSquares = squaresTableIO.toTable(squares);
+                Table updatedSquaresTable = squareListToTable(squares);
                 squaresTable.clear();                   // This is a trick to ensure that old references are not invalidated
-                squaresTable.append(updatedSquares);
+                squaresTable.append(updatedSquaresTable);
             }
         }
 

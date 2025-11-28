@@ -50,14 +50,13 @@ import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.TrackMate;
 import fiji.plugin.trackmate.TrackModel;
 import paint.shared.constants.PaintTiming;
-import paint.shared.io.TracksTableIO;
 import paint.shared.objects.Track;
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -152,8 +151,7 @@ public final class TrackDataExporter {
         // Step 3 – Build and export table
         // ---------------------------------------------------------------------
         try {
-            TracksTableIO tracksTableIO = new TracksTableIO();
-            Table         tracksTable   = tracksTableIO.toTable(tracks);
+            Table tracksTable = trackListToTable(tracks);
 
             tracksTable = tracksTable.sortOn(
                     RECORDING_NAME,

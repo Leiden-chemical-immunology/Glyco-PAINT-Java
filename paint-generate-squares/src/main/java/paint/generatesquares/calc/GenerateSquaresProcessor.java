@@ -248,8 +248,7 @@ public class GenerateSquaresProcessor {
      */
     public static void assignTracksToSquares(Recording recording) {
         Table         tracksOfRecording   = recording.getTracksTable();
-        TracksTableIO tracksTableIO       = new TracksTableIO();
-        Table         recordingTrackTable = tracksTableIO.emptyTable();
+        Table         recordingTrackTable = newEmptyTrackTable();
 
         int lastRowCol            = numberOfSquaresInOneDimension - 1;
         int labelNumber           = 0;
@@ -270,8 +269,7 @@ public class GenerateSquaresProcessor {
                 continue;
             }
 
-            // Convert rows to Track entities
-            List<Track> tracks = tracksTableIO.toEntities(squareTracksTable);
+            List<Track> tracks = trackTableToList(squareTracksTable);
 
             // Update the fields on each Track
             for (Track track : tracks) {
@@ -280,7 +278,6 @@ public class GenerateSquaresProcessor {
             }
 
             // Rebuild the table from the modified tracks (ensures the table reflects the updates)
-            Table updatedSquareTracks = tracksTableIO.toTable(tracks);
 
             // Append updated tracks into the global recording table
             recordingTrackTable.append(updatedSquareTracks);
