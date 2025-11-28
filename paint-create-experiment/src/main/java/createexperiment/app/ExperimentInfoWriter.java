@@ -1,28 +1,30 @@
 /*=============================================================================
  *  Class:        ExperimentInfoWriter.java
- *  Package:      createexperiment
+ *  Package:      createexperiment.app
  *
  *  PURPOSE:
- *    Generates and writes the "Experiment Info.csv" file based on selected ND2
- *    recording files. Parses metadata such as condition and replicate numbers
- *    directly from filenames and ensures unique output file naming.
+ *    Generates and writes the experiment-info CSV file based on a list of
+ *    selected ND2 recording files. Metadata such as condition and replicate
+ *    numbers is extracted directly from filenames, and the resulting structured
+ *    experiment metadata is persisted safely using unique file naming.
  *
  *  DESCRIPTION:
- *    This class automates the creation of experiment metadata tables by
- *    transforming ND2 file selections into structured CSV records suitable for
- *    downstream processing in the Paint workflow. Filenames are parsed using
- *    regex patterns to extract condition and replicate identifiers, and
- *    ExperimentInfo objects are serialized via Tablesaw utilities.
+ *    • Parses ND2 filenames using regex to extract condition and replicate IDs.
+ *    • Builds a list of {@link paint.shared.objects.ExperimentInfo} objects.
+ *    • Creates the experiment directory if missing.
+ *    • Ensures non-overwriting output via a unique-file naming strategy.
+ *    • Converts and writes the resulting table to CSV using
+ *      {@link paint.shared.io.MainDataInterface#writeSpecificExperimentInfoFile}.
  *
  *  KEY FEATURES:
- *    • Regex-based filename parsing for condition and replicate extraction.
- *    • Automatic creation of experiment directories if missing.
- *    • Guarantees non-overwriting output via unique filename generation.
- *    • Integration with ExperimentInfoTableIO for CSV conversion.
- *    • Lightweight, file-based I/O without GUI dependencies.
+ *    • Robust filename-based metadata extraction.
+ *    • Automatic directory creation.
+ *    • Safe CSV output with unique filenames.
+ *    • Clean separation between metadata extraction and CSV serialization.
+ *    • No GUI dependencies; purely file-based workflow.
  *
  *  AUTHOR:
- *    Hans Bakker (jjabakker)
+ *    Hans Bakker
  *
  *  MODULE:
  *    paint-create-experiment
@@ -32,7 +34,6 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
- *    Licensed under the MIT License.
 =============================================================================*/
 
 package createexperiment.app;
@@ -119,7 +120,7 @@ public class ExperimentInfoWriter {
             infos.add(info);
         }
 
-        // --- Write table via ExperimentInfoTableIO ---
+        // --- Write table
         Path csvFilePath = uniqueFile(experimentDirPath, EXPERIMENT_INFO_CSV);
         writeSpecificExperimentInfoFile(csvFilePath, infos);
 

@@ -1,38 +1,49 @@
 /*=============================================================================
- *  Class:        TrackCsvWriter.java
+ *  Class:        TrackDataExporter.java
  *  Package:      paint.fiji.tracks
  *
  *  PURPOSE:
- *    Writes per-track motion and diffusion statistics derived from a TrackMate
- *    analysis into a structured CSV file. Integrates both native TrackMate
- *    features and custom PAINT-calculated attributes.
+ *    Exports per-track motion and diffusion statistics derived from a TrackMate
+ *    analysis into a structured CSV file. Integrates native TrackMate features
+ *    with extended PAINT-calculated track attributes.
  *
  *  DESCRIPTION:
- *    • Extracts core TrackMate features and custom diffusion metrics.
- *    • Constructs a tabular dataset of per-track attributes.
- *    • Assigns deterministic Track IDs and unique recording-based keys.
- *    • Exports all track data to CSV via {@link paint.shared.io.TrackTableIO}.
+ *    • Extracts core TrackMate track-level features.
+ *    • Computes extended PAINT attributes via
+ *      {@link paint.fiji.tracks.TrackAttributeCalculations}.
+ *    • Builds a schema-compliant {@link tech.tablesaw.api.Table} of
+ *      {@link paint.shared.objects.Track} entities.
+ *    • Assigns deterministic track IDs and unique recording-based keys.
+ *    • Persists all track data to CSV through
+ *      {@link paint.shared.io.MainDataInterface#writeSpecificTracksFile(Path, Table)}.
  *
  *  RESPONSIBILITIES:
- *    • Transform TrackMate results into table form.
- *    • Compute extended track attributes using
- *      {@link paint.fiji.tracks.TrackAttributeCalculations}.
- *    • Serialize and persist results to disk as CSV.
+ *    • Transform TrackMate model output into PAINT Track entities.
+ *    • Compute custom diffusion and motion statistics (distance, diffusion
+ *      coefficient, confinement ratio, etc.).
+ *    • Populate and sort the Tracks table in a deterministic order.
+ *    • Export the resulting table to a CSV file.
  *
  *  USAGE EXAMPLE:
- *    int totalSpots = TrackCsvWriter.writeTracksCsv(
- *        trackmate, "ExperimentA", "Recording1",
- *        new File("tracks.csv"), true);
+ *    int totalSpots = TrackDataExporter.writeTracksCsv(
+ *        trackmate,
+ *        "ExperimentA",
+ *        "Recording1",
+ *        Paths.get("tracks.csv"),
+ *        true
+ *    );
  *
  *  DEPENDENCIES:
- *    – fiji.plugin.trackmate.*
- *    – paint.shared.io.TrackTableIO
+ *    – Fiji TrackMate (fiji.plugin.trackmate.*)
  *    – paint.shared.objects.Track
- *    – tech.tablesaw.api.*
+ *    – paint.fiji.tracks.TrackAttributeCalculations
+ *    – paint.shared.io.TracksTableIO
+ *    – paint.shared.io.MainDataInterface
+ *    – tech.tablesaw.api.Table
  *    – paint.shared.utils.PaintLogger
  *
  *  AUTHOR:
- *    Hans Bakker (jjabakker)
+ *    Hans Bakker
  *
  *  UPDATED:
  *    2025-10-28

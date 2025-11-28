@@ -1,40 +1,49 @@
 /*=============================================================================
  *  Class:        GenerateSquaresProcessor.java
- *  Package:      generatesquares.calc
+ *  Package:      paint.generatesquares.calc
  *
  *  PURPOSE:
- *    Orchestrates the full square-generation and analysis pipeline for an experiment.
- *    Handles square grid creation, track assignment, attribute calculation, and
- *    persistence of results.
+ *    Orchestrates the full square-generation and per-recording analysis pipeline
+ *    for a PAINT experiment. Handles creation of geometric square grids, track
+ *    assignment, attribute calculation, and persistence of results.
  *
  *  DESCRIPTION:
- *    This class drives the GENERATE_SQUARES workflow for the Paint project.
- *    It segments recordings into grid squares, assigns tracks to each square,
- *    calculates both per-square and per-recording attributes (via
- *    CalculateSquareAttributes), and compiles the final results into
- *    experiment-level tables written to disk.
+ *    Executes the GENERATE_SQUARES workflow:
+ *      • Loads experiment and recording data.
+ *      • Divides each recording into a regular grid of square regions based on
+ *        {@link paint.shared.config.GenerateSquaresConfig}.
+ *      • Assigns each track to the correct square using spatial filtering.
+ *      • Computes per-square and per-recording metrics using
+ *        {@link paint.generatesquares.calc.CalculateSquareAttributes}.
+ *      • Compiles complete experiment-level squares and tracks tables and writes
+ *        them to disk via {@link paint.shared.io.MainDataInterface}.
  *
  *  RESPONSIBILITIES:
- *    • Generate geometric square grids for each recording
- *    • Assign tracks to their corresponding square regions
- *    • Trigger square and recording-level attribute calculations
- *    • Compile and persist all squares, tracks, and recording results
+ *    • Generate geometric square grids for each recording.
+ *    • Assign tracks to the appropriate square regions.
+ *    • Compute square-level and recording-level attributes.
+ *    • Aggregate and persist all square, track, and recording tables.
  *
  *  USAGE EXAMPLE:
- *    GenerateSquaresProcessor.generateSquaresForExperiment(project, "MyExperiment");
+ *    GenerateSquaresProcessor.generateSquaresForExperiment(
+ *        project,
+ *        "MyExperiment"
+ *    );
  *
  *  DEPENDENCIES:
- *    - paint.shared.config.GenerateSquaresConfig
- *    - paint.shared.objects.{Project, Experiment, Recording, Square, Track}
- *    - paint.shared.io.{SquareTableIO, TrackTableIO}
- *    - generatesquares.calc.CalculateSquareAttributes
- *    - tech.tablesaw.api.Table
+ *    – paint.shared.config.GenerateSquaresConfig
+ *    – paint.shared.config.paintconfig.PaintConfig
+ *    – paint.shared.objects.{Project, Experiment, Recording, Square, Track}
+ *    – paint.generatesquares.calc.CalculateSquareAttributes
+ *    – paint.shared.io.{MainDataInterface, SquaresTableIO, TracksTableIO}
+ *    – paint.shared.utils.{PaintLogger, SharedSquareUtils}
+ *    – tech.tablesaw.api.Table
  *
  *  AUTHOR:
- *    Hans Bakker (jjabakker)
+ *    Hans Bakker
  *
  *  UPDATED:
- *    2025-10-23
+ *    2025-10-28
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -65,9 +74,20 @@ import java.util.List;
 
 import static paint.shared.constants.PaintStringConstants.*;
 import static paint.shared.io.ExperimentDataLoader.loadExperiment;
-import static paint.shared.io.MainDataInterface.*;
-import static paint.shared.io.SquaresTableIO.*;
-import static paint.shared.io.TracksTableIO.*;
+
+import static paint.shared.io.MainDataInterface.writeTracks;
+import static paint.shared.io.MainDataInterface.writeSquares;
+import static paint.shared.io.MainDataInterface.writeRecordings;
+
+import static paint.shared.io.SquaresTableIO.newEmptySquareTable;
+import static paint.shared.io.SquaresTableIO.squareListToTable;
+import static paint.shared.io.SquaresTableIO.appendSquareTableInPlace;
+
+import static paint.shared.io.TracksTableIO.newEmptyTrackTable;
+import static paint.shared.io.TracksTableIO.trackListToTable;
+import static paint.shared.io.TracksTableIO.trackTableToList;
+import static paint.shared.io.TracksTableIO.appendTrackTableInPlace;
+
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
 
