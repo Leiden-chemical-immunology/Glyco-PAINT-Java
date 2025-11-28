@@ -87,18 +87,18 @@ public final class TrackDataExporter {
      * total distance, diffusion coefficients, and confinement ratio.
      * </p>
      *
-     * @param trackmate      TrackMate instance containing the model and features
-     * @param experimentName experiment name for metadata tagging
-     * @param recordingName  recording name associated with the tracks
-     * @param csvFile        destination CSV file
-     * @param visibleOnly    if true, exports only visible tracks
+     * @param trackmate          TrackMate instance containing the model and features
+     * @param experimentName     experiment name for metadata tagging
+     * @param recordingName      recording name associated with the tracks
+     * @param csvTracksFilePath  destination CSV file
+     * @param visibleOnly        if true, exports only visible tracks
      * @return total number of spots across all exported tracks
      */
     public static int writeTracksCsv(final TrackMate trackmate,
-                                     final String experimentName,
-                                     final String recordingName,
-                                     final File csvFile,
-                                     final boolean visibleOnly) {
+                                     final String    experimentName,
+                                     final String    recordingName,
+                                     final Path      csvTracksFilePath,
+                                     final boolean   visibleOnly) {
 
         // ---------------------------------------------------------------------
         // Step 1 – Extract TrackMate components

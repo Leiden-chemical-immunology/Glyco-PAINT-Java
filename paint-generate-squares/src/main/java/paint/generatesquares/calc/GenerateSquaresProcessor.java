@@ -78,6 +78,7 @@ public class GenerateSquaresProcessor {
 
     // Total number of squares in one dimension (e.g., 20 for a 20×20 grid).
     private static int numberOfSquaresInOneDimension;
+    private static       int     numberOfSquaresInOneDimension;
 
     /**
      * Processes an experiment to generate square regions for each recording, compute attributes,

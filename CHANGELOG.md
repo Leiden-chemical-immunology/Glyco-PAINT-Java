@@ -1,3 +1,9 @@
+# v0.0.131
+- More permissive handling of boolean values in CSV files.
+- Introduced minTracksToCalculate. This allows skipping the calculation of squares with less than a certain number of tracks.
+
+
+
 # v0.0.130
 - (Development) Reorganisation of PaintConstants
 - (Development) Harmonisation of coding style (elimination of unnecessary ChatGPT vartiability).

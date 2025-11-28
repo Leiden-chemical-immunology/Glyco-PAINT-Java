@@ -81,8 +81,8 @@ public class ExperimentInfoWriter {
      * metadata such as condition and replicate numbers. The resulting table is serialized as
      * {@code Experiment Info.csv}, with numeric suffixing to avoid overwriting existing files.
      *
-     * @param experimentDir the directory where the experiment CSV will be created
-     * @param recordings    list of ND2 recording files to process
+     * @param experimentDirPath the directory where the experiment CSV will be created
+     * @param recordings        list of ND2 recording files to process
      * @return the created {@code File} object pointing to the resulting CSV file
      * @throws IOException if directory creation or file writing fails
      */
@@ -134,9 +134,9 @@ public class ExperimentInfoWriter {
     /**
      * Ensures the output filename is unique by appending an incremented suffix if needed.
      *
-     * @param dir      directory for the file
+     * @param dirPath      directory for the file
      * @param fileName desired file name
-     * @return a unique file reference that does not overwrite existing files
+     * @return a unique path reference that does not overwrite existing files
      */
     private static File uniqueFile(File dir, String fileName) {
         int dot = fileName.lastIndexOf('.');
