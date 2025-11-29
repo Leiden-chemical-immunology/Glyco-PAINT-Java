@@ -1,29 +1,30 @@
 /*=============================================================================
  *  Class:        RecordingsTableIO.java
- *  Package:      paint.shared.io
+ *  Package:      paint.shared.io.internal
  *
  *  PURPOSE:
- *    Internal implementation for CSV I/O of {@link paint.shared.objects.Recording}
- *    entities. Responsible for schema-validated table creation, entity/table
- *    conversion, and controlled append operations for the recordings data layer.
+ *    Public-but-internal implementation of CSV I/O for
+ *    {@link paint.shared.objects.Recording} entities. Although declared public
+ *    for cross-package access by {@link paint.shared.io.MainDataInterface},
+ *    this class is not part of PAINT’s public API and must not be used directly
+ *    by external modules.
  *
  *  DESCRIPTION:
- *    This class is an internal component used exclusively by
- *    {@link paint.shared.io.MainDataInterface}. It is not part of PAINT’s
- *    public API and must not be accessed directly by external modules.
+ *    Provides low-level CSV/table operations for the recordings data layer:
+ *      • Creating schema-compliant Tablesaw tables
+ *      • Converting between {@link Recording} objects and table rows
+ *      • Reading CSV files with strict schema validation (via BaseTableIO)
+ *      • Performing schema-aware append operations with type coercion
  *
- *    Responsibilities include:
- *      • Creating schema-compliant Tablesaw tables for recordings.
- *      • Converting between {@link Recording} entities and {@link tech.tablesaw.api.Table}.
- *      • Reading validated CSV files via {@link BaseTableIO}.
- *      • Performing schema-aware append operations.
+ *    All external callers must use {@link MainDataInterface} instead.
+ *    This class remains an implementation detail even though it is public.
  *
  *  DESIGN NOTES:
- *    • Class visibility is intentionally package-private to maintain strict
- *      encapsulation of data-layer internals.
- *    • All operations enforce column order and data types defined in
+ *    • Visibility is public only because package-private classes inside
+ *      'paint.shared.io.internal' cannot be referenced from
+ *      'paint.shared.io.MainDataInterface'.
+ *    • All column order and data types follow
  *      {@link paint.shared.schema.RecordingSchema}.
- *    • External callers must use {@link MainDataInterface} for all I/O.
  *    • Fully compatible with Java 8 and Tablesaw 0.43+.
  *
  *  AUTHOR:
@@ -37,7 +38,7 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ *=============================================================================*/
 
 package paint.shared.io.internal;
 

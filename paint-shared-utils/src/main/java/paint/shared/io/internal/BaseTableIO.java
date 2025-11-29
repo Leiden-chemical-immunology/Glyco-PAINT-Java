@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        BaseTableIO.java
- *  Package:      paint.shared.io
+ *  Package:      paint.shared.io.internal
  *
  *  PURPOSE:
  *    Internal abstract base class providing shared CSV and Tablesaw I/O

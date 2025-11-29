@@ -1,26 +1,29 @@
 /*=============================================================================
  *  Class:        SquaresTableIO.java
- *  Package:      paint.shared.io
+ *  Package:      paint.shared.io.internal
  *
  *  PURPOSE:
- *    Internal, package-private implementation of CSV I/O for
- *    {@link paint.shared.objects.Square} entities. This class defines all low-level
- *    read/write and conversion logic for the “squares.csv” data layer.
+ *    Public-but-internal implementation of CSV I/O for
+ *    {@link paint.shared.objects.Square} entities. Although declared public
+ *    so it can be used by {@link paint.shared.io.MainDataInterface} across
+ *    package boundaries, this class is NOT part of PAINT’s public API and
+ *    must not be referenced directly by external modules.
  *
  *  DESCRIPTION:
- *    SquaresTableIO is *not* part of the public API. It is used exclusively
- *    by {@link paint.shared.io.MainDataInterface}, which exposes the official
- *    high-level methods for reading and writing Square data.
- *
- *    Responsibilities include:
+ *    Provides all low-level table and CSV operations for the squares data layer:
  *      • Creating schema-compliant Tablesaw tables
- *      • Converting between {@link Square} entities and {@link tech.tablesaw.api.Table}
- *      • Schema-validated CSV reading via {@link BaseTableIO}
- *      • Safe row-level append with type preservation
+ *      • Converting between {@link Square} objects and {@link tech.tablesaw.api.Table}
+ *      • Schema-validated CSV reading through {@link BaseTableIO}
+ *      • Safe, schema-aware append operations with type preservation
+ *
+ *    All callers outside this module must use {@link MainDataInterface}, which
+ *    exposes the stable, high-level read/write API.
  *
  *  DESIGN NOTES:
- *    • Visibility is intentionally package-private to prevent external access.
- *    • All callers must use MainDataInterface instead of referencing this class directly.
+ *    • Visibility is public only because package-private classes cannot be
+ *      accessed from MainDataInterface (in a different package).
+ *    • Despite being public, this class is an internal implementation detail.
+ *    • Column order and types are defined strictly by {@link SquareSchema}.
  *    • Fully compatible with Java 8 and Tablesaw 0.43+.
  *
  *  AUTHOR:
@@ -34,7 +37,7 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ *=============================================================================*/
 
 package paint.shared.io.internal;
 
@@ -208,5 +211,4 @@ public class SquaresTableIO extends BaseTableIO {
             }
         }
     }
-
 }

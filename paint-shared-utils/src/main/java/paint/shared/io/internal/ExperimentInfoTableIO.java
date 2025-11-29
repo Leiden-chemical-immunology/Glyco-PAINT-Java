@@ -1,43 +1,37 @@
 /*=============================================================================
  *  Class:        ExperimentInfoTableIO.java
- *  Package:      paint.shared.io
+ *  Package:      paint.shared.io.internal
  *
  *  PURPOSE:
- *    Internal implementation of CSV I/O for {@link paint.shared.objects.ExperimentInfo}
- *    records. Handles schema-validated table creation, entity/table conversion,
- *    and controlled append operations for the Experiment Info data layer.
+ *    Public-but-internal implementation of CSV I/O for
+ *    {@link paint.shared.objects.ExperimentInfo}. Although this class is
+ *    declared public for cross-package access by {@link paint.shared.io.MainDataInterface},
+ *    it is not part of PAINT’s public API and should not be accessed directly
+ *    by external modules.
  *
  *  DESCRIPTION:
- *    This class is an internal helper used exclusively by
- *    {@link paint.shared.io.MainDataInterface}.  It is not part of PAINT’s
- *    public API and must not be accessed directly by external modules.
+ *    This class provides the low-level CSV/table logic for Experiment Info:
+ *      • Creating schema-compliant Tablesaw tables
+ *      • Converting between {@link ExperimentInfo} entities and Tablesaw rows
+ *      • Reading CSV files with strict schema enforcement (via BaseTableIO)
+ *      • Performing schema-aware append operations with safe type coercion
  *
- *    Responsibilities include:
- *      • Creating schema-compliant Tablesaw tables for Experiment Info rows.
- *      • Converting between {@link ExperimentInfo} entities and
- *        {@link tech.tablesaw.api.Table} instances.
- *      • Reading CSV files with strict schema enforcement via {@link BaseTableIO}.
- *      • Performing schema-aware append operations with safe type coercion.
+ *    External callers must always use {@link MainDataInterface}.
+ *    This class remains an implementation detail even though it is public.
  *
  *  DESIGN NOTES:
- *    • Class visibility is intentionally package-private to preserve encapsulation.
- *    • All column order, names, and data types are enforced using
- *      {@link paint.shared.schema.ExperimentInfoSchema}.
- *    • All external callers must use {@link MainDataInterface} for reading/writing.
+ *    • Visibility is public only because package-private classes in
+ *      'paint.shared.io.internal' cannot be referenced by
+ *      'paint.shared.io.MainDataInterface'.
+ *    • Despite being public, this class is considered internal API.
+ *    • All schema definitions come from {@link paint.shared.schema.ExperimentInfoSchema}.
  *    • Fully compatible with Java 8 and Tablesaw 0.43+.
  *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-10-28
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ *  AUTHOR:       Hans Bakker
+ *  MODULE:       paint-shared-utils
+ *  UPDATED:      2025-10-28
+ *  COPYRIGHT:    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
 
 package paint.shared.io.internal;
 
@@ -214,6 +208,4 @@ public class ExperimentInfoTableIO extends BaseTableIO {
             }
         }
     }
-
-
 }

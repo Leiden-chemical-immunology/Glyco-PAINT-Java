@@ -1,28 +1,28 @@
 /*=============================================================================
  *  Class:        TracksTableIO.java
- *  Package:      paint.shared.io
+ *  Package:      paint.shared.io.internal
  *
  *  PURPOSE:
- *    Internal implementation of CSV input/output logic for
- *    {@link paint.shared.objects.Track} entities. This class performs low-level
- *    table creation, schema validation, row conversion, and append operations
- *    for the “tracks.csv” data layer.
+ *    Public-but-internal implementation of CSV I/O for
+ *    {@link paint.shared.objects.Track} entities. Although declared public
+ *    so it can be used by {@link paint.shared.io.MainDataInterface} across
+ *    package boundaries, this class is NOT part of PAINT’s public API and
+ *    must not be accessed directly by external modules.
  *
  *  DESCRIPTION:
- *    TracksTableIO is an internal component used exclusively by
- *    {@link paint.shared.io.MainDataInterface}. It is not part of the public API.
- *    External callers must use MainDataInterface for all Track I/O.
- *
- *    Responsibilities include:
- *      • Creating schema-compliant Tablesaw tables for track data
+ *    Handles all low-level operations for the “tracks.csv” data layer:
+ *      • Creating schema-compliant Tablesaw tables
  *      • Converting between {@link Track} objects and {@link tech.tablesaw.api.Table}
- *      • Schema-validated CSV reading and writing (via {@link BaseTableIO})
- *      • Safe, schema-aware append operations
+ *      • Reading CSV files with schema validation via {@link BaseTableIO}
+ *      • Performing safe, schema-aware append operations
+ *
+ *    External callers must use {@link MainDataInterface}, which exposes the
+ *    official high-level API for Track reading and writing.
  *
  *  DESIGN NOTES:
- *    • Class visibility is package-private by design to avoid external misuse.
- *    • All operations enforce strict column ordering and data typing as
- *      defined in {@link paint.shared.schema.TrackSchema}.
+ *    • Visibility is public only because Java prevents cross-package access to
+ *      package-private classes. API-wise, this class is still internal.
+ *    • All column names, order, and types follow {@link TrackSchema}.
  *    • Fully compatible with Java 8 and Tablesaw 0.43+.
  *
  *  AUTHOR:
@@ -36,7 +36,7 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ *=============================================================================*/
 
 package paint.shared.io.internal;
 
@@ -173,5 +173,4 @@ public class TracksTableIO extends BaseTableIO {
             }
         }
     }
-
 }
