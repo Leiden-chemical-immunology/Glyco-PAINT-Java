@@ -210,6 +210,12 @@ public abstract class AbstractFileValidator {
                 .filter(h -> !expected.contains(h))
                 .collect(Collectors.toList());
 
+        if (missing.isEmpty() && unexpected.isEmpty()) {
+            // Elements match but order is wrong
+            result.addError("Header order mismatch: expected " + expected + " but found " + actual);
+            return;
+        }
+
         // Create the error string
         StringBuilder error = new StringBuilder("Header mismatch:");
         if (!missing.isEmpty()) {
