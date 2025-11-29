@@ -36,7 +36,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
 =============================================================================*/
 
-package paint.shared.io;
+package paint.shared.io.internal;
 
 import static paint.shared.constants.PaintStringConstants.*;
 import paint.shared.objects.Square;
@@ -83,7 +83,7 @@ public class SquaresTableIO extends BaseTableIO {
      * @param squares list of {@link Square} objects to convert
      * @return a schema-compliant {@link Table} populated with square data
      */
-    static Table toTable(List<Square> squares) {
+    public static Table toTable(List<Square> squares) {
         Table table = emptyTable();
 
         for (Square square : squares) {
@@ -132,7 +132,7 @@ public class SquaresTableIO extends BaseTableIO {
     // TABLE → ENTITY CONVERSION
     // ───────────────────────────────────────────────────────────────────────────────
 
-    List<Square> toEntities(Table table) {
+    public List<Square> toEntities(Table table) {
         List<Square> squares = new ArrayList<>();
 
         for (Row tablesawRow : table) {

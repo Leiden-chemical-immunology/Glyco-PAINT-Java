@@ -39,7 +39,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
 =============================================================================*/
 
-package paint.shared.io;
+package paint.shared.io.internal;
 
 import paint.shared.objects.Recording;
 import paint.shared.schema.RecordingSchema;
@@ -60,7 +60,7 @@ import static paint.shared.constants.PaintStringConstants.*;
  * {@code recordings.csv} files. Each method ensures full consistency
  * with the column definitions in {@link paint.shared.schema.RecordingSchema}.</p>
  */
-class RecordingsTableIO extends BaseTableIO {
+public class RecordingsTableIO extends BaseTableIO {
 
     // ───────────────────────────────────────────────────────────────────────────────
     // TABLE CREATION
@@ -71,7 +71,7 @@ class RecordingsTableIO extends BaseTableIO {
      *
      * @return a new empty {@code Table} with the “Recordings” schema
      */
-    Table emptyTable() {
+    public Table emptyTable() {
         return newEmptyTable("Recordings", RecordingSchema.COLUMNS, RecordingSchema.TYPES);
     }
 
@@ -86,7 +86,7 @@ class RecordingsTableIO extends BaseTableIO {
      * @param recordings the list of {@code Recording} objects to convert
      * @return a {@code Table} populated with recording data
      */
-    Table toTable(List<Recording> recordings) {
+    public Table toTable(List<Recording> recordings) {
         Table table = emptyTable();
         for (Recording recording : recordings) {
             Row row = table.appendRow();
@@ -132,7 +132,7 @@ class RecordingsTableIO extends BaseTableIO {
      * @param table the validated {@link Table} to convert
      * @return a list of {@code Recording} entities populated from the table
      */
-    List<Recording> toEntities(Table table) {
+    public List<Recording> toEntities(Table table) {
         List<Recording> recordings = new ArrayList<>();
         for (Row tablesawRow : table) {
             Recording recording = new Recording();

@@ -32,6 +32,10 @@
 
 package paint.shared.io;
 
+import paint.shared.io.internal.ExperimentInfoTableIO;
+import paint.shared.io.internal.RecordingsTableIO;
+import paint.shared.io.internal.SquaresTableIO;
+import paint.shared.io.internal.TracksTableIO;
 import paint.shared.objects.*;
 import paint.shared.schema.*;
 

@@ -49,7 +49,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
 =============================================================================*/
 
-package paint.shared.io;
+package paint.shared.io.internal;
 
 import tech.tablesaw.api.*;
 import tech.tablesaw.columns.Column;
@@ -134,7 +134,7 @@ abstract class BaseTableIO {
      * <p>This avoids Tablesaw’s strict Boolean parser rejecting values such as
      * "true", "false", "yes", "no", "1", "0", etc.</p>
      */
-    Table readCsvWithSchema(
+    public Table readCsvWithSchema(
             Path         csvPath,
             String[]     expectedCols,
             ColumnType[] expectedTypes,
@@ -327,7 +327,7 @@ abstract class BaseTableIO {
     /**
      * Writes a {@link Table} to CSV with US-locale fixed 3-decimal precision.
      */
-    void writeCsv(Table table, Path target) throws IOException {
+    public void writeCsv(Table table, Path target) throws IOException {
         NumberFormat nf = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.US));
 
         Table export = Table.create(table.name());

@@ -39,7 +39,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
 =============================================================================*/
 
-package paint.shared.io;
+package paint.shared.io.internal;
 
 import paint.shared.objects.ExperimentInfo;
 import tech.tablesaw.api.ColumnType;
@@ -71,7 +71,7 @@ import static paint.shared.constants.PaintStringConstants.*;
  * <p>Validation ensures that column order, names, and types match the expected
  * schema, while allowing some flexibility (e.g. {@code INTEGER -> DOUBLE} upcasts).</p>
  */
-class ExperimentInfoTableIO extends BaseTableIO {
+public class ExperimentInfoTableIO extends BaseTableIO {
 
     /**
      * Creates an empty {@link Table} with the {@code Experiment Info} schema.
@@ -83,7 +83,7 @@ class ExperimentInfoTableIO extends BaseTableIO {
      * @return a new empty {@code Table} ready to receive rows with the
      * Experiment Info schema
      */
-    Table emptyTable() {
+    public Table emptyTable() {
         return newEmptyTable("Experiment Info", ExperimentInfoSchema.COLUMNS, ExperimentInfoSchema.TYPES);
     }
 
@@ -113,7 +113,7 @@ class ExperimentInfoTableIO extends BaseTableIO {
      * @return a {@code Table} containing one row per experiment
      */
 
-    Table toTable(List<ExperimentInfo> infos) {
+    public Table toTable(List<ExperimentInfo> infos) {
         Table table = emptyTable();
         for (ExperimentInfo experimentInfo : infos) {
             Row row = table.appendRow();
@@ -132,7 +132,7 @@ class ExperimentInfoTableIO extends BaseTableIO {
         return table;
     }
 
-    List<ExperimentInfo> toEntities(Table table) {
+    public List<ExperimentInfo> toEntities(Table table) {
         List<ExperimentInfo> items = new ArrayList<>();
 
         for (Row row : table) {
@@ -174,7 +174,7 @@ class ExperimentInfoTableIO extends BaseTableIO {
      * @param source the source table providing rows and column values
      * @throws IllegalArgumentException if the source contains an unsupported column type
      */
-    void appendInPlace(Table target, Table source) {
+    public void appendInPlace(Table target, Table source) {
         if (source.isEmpty()) {
             return; // nothing to do
         }

@@ -38,7 +38,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
 =============================================================================*/
 
-package paint.shared.io;
+package paint.shared.io.internal;
 
 import static paint.shared.constants.PaintStringConstants.*;
 
@@ -60,7 +60,7 @@ import java.util.List;
  * {@code tracks.csv} and guarantees alignment with the schema definitions
  * provided in {@link TrackSchema}.</p>
  */
-class TracksTableIO extends BaseTableIO {
+public class TracksTableIO extends BaseTableIO {
 
     // ───────────────────────────────────────────────────────────────────────────────
     // TABLE CREATION
@@ -71,7 +71,7 @@ class TracksTableIO extends BaseTableIO {
      *
      * @return a new empty {@link Table} with all track columns defined
      */
-   Table emptyTable() {
+   public Table emptyTable() {
         return newEmptyTable("Tracks", TrackSchema.COLUMNS, TrackSchema.TYPES);
     }
 
@@ -85,7 +85,7 @@ class TracksTableIO extends BaseTableIO {
      * @param tracks list of {@link Track} entities to convert
      * @return a {@link Table} containing one row per track, schema validated
      */
-    Table toTable(List<Track> tracks) {
+    public Table toTable(List<Track> tracks) {
         Table table = emptyTable();
         for (Track track : tracks) {
             Row tablesawRow = table.appendRow();
@@ -118,7 +118,7 @@ class TracksTableIO extends BaseTableIO {
      * @param table the validated {@link Table} to convert
      * @return a list of {@link Track} entities populated from the table
      */
-    List<Track> toEntities(Table table) {
+    public List<Track> toEntities(Table table) {
         List<Track> tracks = new ArrayList<>();
         for (Row row : table) {
             Track track = new Track();
@@ -155,7 +155,7 @@ class TracksTableIO extends BaseTableIO {
      * @param target the destination {@link Table}
      * @param source the source {@link Table}
      */
-    void appendInPlace(Table target, Table source) {
+    public void appendInPlace(Table target, Table source) {
         for (Row row : source) {
             Row newRow = target.appendRow();
             for (String col : TrackSchema.COLUMNS) {
