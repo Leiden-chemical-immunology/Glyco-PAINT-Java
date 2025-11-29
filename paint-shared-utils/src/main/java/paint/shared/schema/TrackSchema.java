@@ -3,59 +3,118 @@
  *  Package:      paint.shared.schema
  *
  *  PURPOSE:
- *    Provides schema metadata for Tracks.csv, including the ordered
- *    column names, column types, and helpers for validation.
+ *    Defines the full schema (column names + column types) for Tracks.csv.
+ *    This schema is the authoritative specification for all track-level
+ *    tabular data used in PAINT.
  *
  *  DESCRIPTION:
- *    The schema is generated directly from the TrackColumn enum to ensure
- *    consistency between column names, types, and order.
+ *    • Uses an inner enum {@code Col} to bind each column header directly
+ *      to its {@link tech.tablesaw.api.ColumnType}.
+ *    • Automatically generates {@link #COLUMNS} and {@link #TYPES} arrays
+ *      in strict CSV order.
+ *    • Ensures perfect alignment between CSV structure, table generation,
+ *      and Track entity mapping.
  *
- *  KEY FEATURES:
- *    - COLUMN_COUNT
- *    - COLUMNS[] and TYPES[]
- *    - matches() for header validation
+ *    This class replaces the old TrackColumn enum by integrating schema
+ *    metadata directly within the schema container class.
+ *
+ *  DESIGN NOTES:
+ *    • Column order is defined exclusively by the enum constant order.
+ *    • Changing column order or names requires CSV migration.
+ *    • Fully compatible with Java 8 and Tablesaw 0.43+.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
  *
  *  MODULE:
  *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-11-24
+ *    2025-11-28
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
  *============================================================================*/
 
 package paint.shared.schema;
 
 import java.util.Arrays;
 import tech.tablesaw.api.ColumnType;
-import paint.shared.constants.columns.TrackColumn;
 
+/**
+ * Schema definition for {@code Tracks.csv} tables.
+ *
+ * <p>Provides:</p>
+ * <ul>
+ *   <li>{@link #COLUMNS} – canonical CSV header names</li>
+ *   <li>{@link #TYPES} – aligned {@link ColumnType} definitions</li>
+ *   <li>{@link #COLUMN_COUNT} – number of columns in the schema</li>
+ * </ul>
+ *
+ * <p>The schema arrays are generated directly from the {@link Col} enum,
+ * guaranteeing consistency throughout PAINT.</p>
+ */
 public final class TrackSchema {
 
-    private TrackSchema() {
-        // Prevent instantiation
+    /** Prevent instantiation. */
+    private TrackSchema() {}
+
+    /**
+     * Enumeration of all columns in the Tracks schema.
+     *
+     * <p>Each enum value defines:</p>
+     * <ul>
+     *   <li>a CSV header string</li>
+     *   <li>a {@link ColumnType}</li>
+     * </ul>
+     *
+     * <p>The order of enum values is the CSV column order.</p>
+     */
+    public enum Col {
+        UNIQUE_KEY(                "Unique Key",                 ColumnType.STRING),
+        EXPERIMENT_NAME(           "Experiment Name",            ColumnType.STRING),
+        RECORDING_NAME(            "Recording Name",             ColumnType.STRING),
+        TRACK_ID(                  "Track Id",                   ColumnType.INTEGER),
+        NUMBER_OF_SPOTS(           "Number of Spots",            ColumnType.INTEGER),
+        NUMBER_OF_GAPS(            "Number of Gaps",             ColumnType.INTEGER),
+        LONGEST_GAP(               "Longest Gap",                ColumnType.INTEGER),
+        TRACK_DURATION(            "Track Duration",             ColumnType.DOUBLE),
+        TRACK_X_LOCATION(          "Track X Location",           ColumnType.DOUBLE),
+        TRACK_Y_LOCATION(          "Track Y Location",           ColumnType.DOUBLE),
+        TRACK_DISPLACEMENT(        "Track Displacement",         ColumnType.DOUBLE),
+        TRACK_MAX_SPEED(           "Track Max Speed",            ColumnType.DOUBLE),
+        TRACK_MEDIAN_SPEED(        "Track Median Speed",         ColumnType.DOUBLE),
+        DIFFUSION_COEFFICIENT(     "Diffusion Coefficient",      ColumnType.DOUBLE),
+        DIFFUSION_COEFFICIENT_EXT( "Diffusion Coefficient Ext",  ColumnType.DOUBLE),
+        TOTAL_DISTANCE(            "Total Distance",             ColumnType.DOUBLE),
+        CONFINEMENT_RATIO(         "Confinement Ratio",          ColumnType.DOUBLE),
+        SQUARE_NUMBER(             "Square Number",              ColumnType.INTEGER),
+        LABEL_NUMBER(              "Label Number",               ColumnType.INTEGER);
+
+        /** CSV column header. */
+        public final String header;
+
+        /** Tablesaw column type. */
+        public final ColumnType type;
+
+        Col(String header, ColumnType type) {
+            this.header = header;
+            this.type = type;
+        }
     }
 
-    /** Ordered list of column names for Tracks.csv */
+    /** Ordered columnnames for Tracks.csv derived from the enum. */
     public static final String[] COLUMNS =
-            Arrays.stream(TrackColumn.values())
+            Arrays.stream(Col.values())
                   .map(col -> col.header)
                   .toArray(String[]::new);
 
-    /** Ordered list of Tablesaw column types matching COLUMNS */
+    /** Ordered column types for Tracks.csv derived from the enum. */
     public static final ColumnType[] TYPES =
-            Arrays.stream(TrackColumn.values())
+            Arrays.stream(Col.values())
                   .map(col -> col.type)
                   .toArray(ColumnType[]::new);
 
-    /** Number of expected columns in Tracks.csv */
-    public static final int COLUMN_COUNT = COLUMNS.length;
-
-    /**
-     * Checks if a CSV header exactly matches the Tracks schema.
-     *
-     * @param header the header row from a CSV file
-     * @return true if header matches expected schema
-     */
-    public static boolean matches(String[] header) {
-        return Arrays.equals(header, COLUMNS);
-    }
+    /** Total number of schema columns. */
+    public static final int COLUMN_COUNT = Col.values().length;
 }
