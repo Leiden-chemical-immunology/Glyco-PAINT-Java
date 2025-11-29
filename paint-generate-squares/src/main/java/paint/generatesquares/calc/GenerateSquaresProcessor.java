@@ -34,9 +34,9 @@
  *    – paint.shared.config.GenerateSquaresConfig
  *    – paint.shared.config.paintconfig.PaintConfig
  *    – paint.shared.objects.{Project, Experiment, Recording, Square, Track}
- *    – paint.generatesquares.calc.CalculateSquareAttributes
- *    – paint.shared.io.{MainDataInterface, SquaresTableIO, TracksTableIO}
  *    – paint.shared.utils.{PaintLogger, SharedSquareUtils}
+ *    – paint.generatesquares.calc.CalculateSquareAttributes
+ *    – paint.shared.io.{MainDataInterface, SquaresTableIO (static), TracksTableIO (static)}
  *    – tech.tablesaw.api.Table
  *
  *  AUTHOR:
@@ -75,19 +75,7 @@ import java.util.List;
 import static paint.shared.constants.PaintStringConstants.*;
 import static paint.shared.io.ExperimentDataLoader.loadExperiment;
 
-import static paint.shared.io.MainDataInterface.writeTracks;
-import static paint.shared.io.MainDataInterface.writeSquares;
-import static paint.shared.io.MainDataInterface.writeRecordings;
-
-import static paint.shared.io.SquaresTableIO.newEmptySquareTable;
-import static paint.shared.io.SquaresTableIO.squareListToTable;
-import static paint.shared.io.SquaresTableIO.appendSquareTableInPlace;
-
-import static paint.shared.io.TracksTableIO.newEmptyTrackTable;
-import static paint.shared.io.TracksTableIO.trackListToTable;
-import static paint.shared.io.TracksTableIO.trackTableToList;
-import static paint.shared.io.TracksTableIO.appendTrackTableInPlace;
-
+import static paint.shared.io.MainDataInterface.*;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
 

@@ -3,24 +3,24 @@
  *  Package:      paint.shared.io
  *
  *  PURPOSE:
- *    Provides table input/output utilities for {@link paint.shared.objects.Square}
- *    entities, handling CSV schema validation, entity conversion, and append
- *    operations for the “Squares” data layer.
+ *    Internal, package-private implementation of CSV I/O for
+ *    {@link paint.shared.objects.Square} entities. This class defines all low-level
+ *    read/write and conversion logic for the “squares.csv” data layer.
  *
  *  DESCRIPTION:
- *    This class defines I/O behavior for {@code squares.csv}, enforcing the
- *    schema defined in {@link paint.shared.schema.SquareSchema}.
+ *    SquaresTableIO is *not* part of the public API. It is used exclusively
+ *    by {@link paint.shared.io.MainDataInterface}, which exposes the official
+ *    high-level methods for reading and writing Square data.
  *
- *    It supports:
- *      • Creating schema-compliant Tablesaw tables.
- *      • Converting between {@link Square} objects and {@link tech.tablesaw.api.Table}.
- *      • Reading validated CSV files into tables.
- *      • Appending one table into another with safe type handling.
+ *    Responsibilities include:
+ *      • Creating schema-compliant Tablesaw tables
+ *      • Converting between {@link Square} entities and {@link tech.tablesaw.api.Table}
+ *      • Schema-validated CSV reading via {@link BaseTableIO}
+ *      • Safe row-level append with type preservation
  *
- *  KEY FEATURES:
- *    • Enforces consistent schema across all square operations.
- *    • Converts bi-directionally between tables and Java entities.
- *    • Handles INTEGER→DOUBLE coercion where applicable.
+ *  DESIGN NOTES:
+ *    • Visibility is intentionally package-private to prevent external access.
+ *    • All callers must use MainDataInterface instead of referencing this class directly.
  *    • Fully compatible with Java 8 and Tablesaw 0.43+.
  *
  *  AUTHOR:
@@ -209,27 +209,4 @@ public class SquaresTableIO extends BaseTableIO {
         }
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // STATIC CONVENIENCE HELPERS
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /** Converts a Tablesaw table into a list of Square entities. */
-    public static List<Square> squareTableToList(Table table) {
-        return new SquaresTableIO().toEntities(table);
-    }
-
-    /** Converts a list of Square entities into a schema-compliant Table. */
-    public static Table squareListToTable(List<Square> squares) {
-        return new SquaresTableIO().toTable(squares);
-    }
-
-    /** Returns a new empty Square table with the correct schema. */
-    public static Table newEmptySquareTable() {
-        return new SquaresTableIO().emptyTable();
-    }
-
-    /** Appends all rows from source to target using the standard schema. */
-    public static void appendSquareTableInPlace(Table target, Table source) {
-        new SquaresTableIO().appendInPlace(target, source);
-    }
 }

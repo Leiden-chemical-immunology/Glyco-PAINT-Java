@@ -3,22 +3,26 @@
  *  Package:      paint.shared.io
  *
  *  PURPOSE:
- *    Provides table input/output utilities for {@link paint.shared.objects.Track}
- *    entities, handling CSV schema validation, conversion between entities
- *    and Tablesaw tables, and append operations.
+ *    Internal implementation of CSV input/output logic for
+ *    {@link paint.shared.objects.Track} entities. This class performs low-level
+ *    table creation, schema validation, row conversion, and append operations
+ *    for the “tracks.csv” data layer.
  *
  *  DESCRIPTION:
- *    Defines all I/O logic for {@code tracks.csv}, using schema definitions
- *    from {@link paint.shared.schema.TrackSchema}. Each operation ensures
- *    strict type and column consistency. Supports creation of schema-compliant
- *    tables, conversion of lists of {@link Track} objects to tables, and
- *    reading or appending data with type enforcement.
+ *    TracksTableIO is an internal component used exclusively by
+ *    {@link paint.shared.io.MainDataInterface}. It is not part of the public API.
+ *    External callers must use MainDataInterface for all Track I/O.
  *
- *  KEY FEATURES:
- *    • Enforces consistent schema and column typing for tracks.
- *    • Converts bidirectionally between {@link Track} entities and tables.
- *    • Handles append operations with explicit type validation.
- *    • Integrates seamlessly with {@link BaseTableIO} for schema control.
+ *    Responsibilities include:
+ *      • Creating schema-compliant Tablesaw tables for track data
+ *      • Converting between {@link Track} objects and {@link tech.tablesaw.api.Table}
+ *      • Schema-validated CSV reading and writing (via {@link BaseTableIO})
+ *      • Safe, schema-aware append operations
+ *
+ *  DESIGN NOTES:
+ *    • Class visibility is package-private by design to avoid external misuse.
+ *    • All operations enforce strict column ordering and data typing as
+ *      defined in {@link paint.shared.schema.TrackSchema}.
  *    • Fully compatible with Java 8 and Tablesaw 0.43+.
  *
  *  AUTHOR:
@@ -56,7 +60,7 @@ import java.util.List;
  * {@code tracks.csv} and guarantees alignment with the schema definitions
  * provided in {@link TrackSchema}.</p>
  */
-public class TracksTableIO extends BaseTableIO {
+class TracksTableIO extends BaseTableIO {
 
     // ───────────────────────────────────────────────────────────────────────────────
     // TABLE CREATION
@@ -67,7 +71,7 @@ public class TracksTableIO extends BaseTableIO {
      *
      * @return a new empty {@link Table} with all track columns defined
      */
-    public Table emptyTable() {
+   Table emptyTable() {
         return newEmptyTable("Tracks", TrackSchema.COLUMNS, TrackSchema.TYPES);
     }
 
@@ -151,7 +155,7 @@ public class TracksTableIO extends BaseTableIO {
      * @param target the destination {@link Table}
      * @param source the source {@link Table}
      */
-    public void appendInPlace(Table target, Table source) {
+    void appendInPlace(Table target, Table source) {
         for (Row row : source) {
             Row newRow = target.appendRow();
             for (String col : TrackSchema.COLUMNS) {
@@ -170,28 +174,4 @@ public class TracksTableIO extends BaseTableIO {
         }
     }
 
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // STATIC CONVENIENCE HELPERS
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /** Converts a Tablesaw table into a list of Track entities. */
-    public static List<Track> trackTableToList(Table table) {
-        return new TracksTableIO().toEntities(table);
-    }
-
-    /** Converts a list of Track entities into a schema-compliant Table. */
-    public static Table trackListToTable(List<Track> tracks) {
-        return new TracksTableIO().toTable(tracks);
-    }
-
-    /** Returns a new empty Track table with the correct schema. */
-    public static Table newEmptyTrackTable() {
-        return new TracksTableIO().emptyTable();
-    }
-
-    /** Appends all rows from source to target using the standard schema. */
-    public static void appendTrackTableInPlace(Table target, Table source) {
-        new TracksTableIO().appendInPlace(target, source);
-    }
 }

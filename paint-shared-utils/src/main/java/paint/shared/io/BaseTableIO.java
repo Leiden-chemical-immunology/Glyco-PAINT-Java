@@ -3,23 +3,38 @@
  *  Package:      paint.shared.io
  *
  *  PURPOSE:
- *    Provides shared utilities for creating, validating, reading, and writing
- *    Tablesaw {@link tech.tablesaw.api.Table} objects used throughout the PAINT
- *    software ecosystem.
+ *    Internal abstract base class providing shared CSV and Tablesaw I/O
+ *    utilities for the package-private TableIO implementations.
  *
  *  DESCRIPTION:
- *    This abstract base class centralizes common logic for:
- *      - Creating new tables with defined schemas
- *      - Validating CSV headers and column types
- *      - Reading and writing CSV files with enforced schemas
- *      - Appending tables safely with schema checks
- *      - Ensuring consistent numeric formatting and locale handling
+ *    This class centralizes common logic required by the internal
+ *    TableIO classes:
  *
- *  KEY FEATURES:
- *    - Schema-based CSV reading and validation
- *    - Locale-stable CSV export (US locale, fixed 3-decimal precision)
- *    - Header and type consistency checking
- *    - Robust append operation for schema-aligned tables
+ *        ExperimentInfoTableIO
+ *        RecordingsTableIO
+ *        SquaresTableIO
+ *        TracksTableIO
+ *
+ *    It is **not part of the public API**. All external callers must use
+ *    {@link paint.shared.io.MainDataInterface}, which acts as the public,
+ *    stable façade.  BaseTableIO and all subclasses remain internal
+ *    implementation details and are deliberately package-private.
+ *
+ *    Responsibilities:
+ *      • Creating new schema-defined Tablesaw tables
+ *      • Reading CSV files with custom schema enforcement
+ *      • Normalizing booleans safely ("1", "0", "yes", "no", etc.)
+ *      • Coercing types according to schema rules (e.g. INTEGER → DOUBLE)
+ *      • Validating header and type consistency
+ *      • Locale-stable numerical export (US locale, fixed 3 decimal places)
+ *      • Providing safe append operations with schema checks
+ *
+ *  DESIGN NOTES:
+ *    - Only MainDataInterface should be referenced by other modules.
+ *    - All TableIO classes use package-private visibility to prevent
+ *      cross-module coupling.
+ *    - BaseTableIO maintains uniform CSV behavior for all data layers.
+ *    - Compatible with Java 8 and Tablesaw 0.43+.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -60,7 +75,7 @@ import static paint.shared.utils.BooleanUtils.normalizeBoolean;
  * the PAINT modules. Provides shared implementations for reading, validating,
  * appending, and writing tabular data using Tablesaw.
  */
-public abstract class BaseTableIO {
+abstract class BaseTableIO {
 
     /**
      * Creates a new empty {@link Table} with the given schema.
@@ -81,7 +96,7 @@ public abstract class BaseTableIO {
     /**
      * Appends all rows from {@code source} into {@code target} in place.
      */
-    public void appendInPlace(Table target, Table source) {
+    void appendInPlace(Table target, Table source) {
         if (target.columnCount() != source.columnCount()) {
             throw new IllegalArgumentException("Cannot append: column count mismatch ("
                                                        + target.columnCount() + " vs " + source.columnCount() + ")");

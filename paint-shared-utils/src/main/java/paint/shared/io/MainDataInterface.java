@@ -253,4 +253,90 @@ public final class MainDataInterface {
             PaintLogger.errorf("Failed to write %s : %s", file, friendlyMessage(e));
         }
     }
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // STATIC CONVENIENCE HELPERS
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /** Converts a Tablesaw table into a list of Square entities. */
+    public static List<Square> squareTableToList(Table table) {
+        return new SquaresTableIO().toEntities(table);
+    }
+
+    /** Converts a list of Square entities into a schema-compliant Table. */
+    public static Table squareListToTable(List<Square> squares) {
+        return new SquaresTableIO().toTable(squares);
+    }
+
+    /** Returns a new empty Square table with the correct schema. */
+    public static Table newEmptySquareTable() {
+        return new SquaresTableIO().emptyTable();
+    }
+
+    /** Appends all rows from source to target using the standard schema. */
+    public static void appendSquareTableInPlace(Table target, Table source) {
+        new SquaresTableIO().appendInPlace(target, source);
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // STATIC CONVENIENCE HELPERS
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /** Converts a Tablesaw table into a list of Track entities. */
+    public static List<Track> trackTableToList(Table table) {
+        return new TracksTableIO().toEntities(table);
+    }
+
+    /** Converts a list of Track entities into a schema-compliant Table. */
+    public static Table trackListToTable(List<Track> tracks) {
+        return new TracksTableIO().toTable(tracks);
+    }
+
+    /** Returns a new empty Track table with the correct schema. */
+    public static Table newEmptyTrackTable() {
+        return new TracksTableIO().emptyTable();
+    }
+
+    /** Appends all rows from source to target using the standard schema. */
+    public static void appendTrackTableInPlace(Table target, Table source) {
+        new TracksTableIO().appendInPlace(target, source);
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // STATIC CONVENIENCE HELPERS
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /** Converts a Tablesaw table into a list of ExperimentInfo entities. */
+    public static List<ExperimentInfo> experimentInfoTableToList(Table table) {
+        return new ExperimentInfoTableIO().toEntities(table);
+    }
+
+    /** Converts a list of ExperimentInfo entities into a schema-compliant Table. */
+    public static Table experimentInfoListToTable(List<ExperimentInfo> experimentInfos) {
+        return new ExperimentInfoTableIO().toTable(experimentInfos);
+    }
+
+    /** Returns a new empty ExperimentInfo table with the correct schema. */
+    public static Table newEmptyExperimentInfoTable() {
+        return new ExperimentInfoTableIO().emptyTable();
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // STATIC CONVENIENCE HELPERS
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /** Converts a Tablesaw table into a list of Recoring entities. */
+    public static List<Recording> recordingTableToList(Table table) {
+        return new RecordingsTableIO().toEntities(table);
+    }
+
+    /** Converts a list of Recording entities into a schema-compliant Table. */
+    public static Table recordingListToTable(List<Recording> recordings) {
+        return new RecordingsTableIO().toTable(recordings);
+    }
+
+    /** Returns a new empty Recordings table with the correct schema. */
+    public static Table newEmptyRecordingTable() {
+        return new RecordingsTableIO().emptyTable();
+    }
 }

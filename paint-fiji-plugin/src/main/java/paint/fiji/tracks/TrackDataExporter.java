@@ -74,8 +74,8 @@ import java.util.List;
 import java.util.Set;
 
 import static paint.fiji.tracks.TrackAttributeCalculations.calculateTrackAttributes;
+import static paint.shared.io.MainDataInterface.trackListToTable;
 import static paint.shared.io.MainDataInterface.writeSpecificTracksFile;
-import static paint.shared.io.TracksTableIO.trackListToTable;
 
 /**
  * Provides functionality to export TrackMate tracks to a CSV file.

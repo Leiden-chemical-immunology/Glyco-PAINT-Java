@@ -45,8 +45,6 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static paint.shared.io.MainDataInterface.*;
-import static paint.shared.io.SquaresTableIO.squareTableToList;
-import static paint.shared.io.TracksTableIO.trackTableToList;
 import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
 
 import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;

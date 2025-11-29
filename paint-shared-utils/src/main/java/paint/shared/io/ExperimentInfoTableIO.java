@@ -3,20 +3,28 @@
  *  Package:      paint.shared.io
  *
  *  PURPOSE:
- *    Provides table input/output utilities for {@link paint.shared.objects.ExperimentInfo}
- *    records, enforcing the schema used for per-recording experiment metadata.
+ *    Internal implementation of CSV I/O for {@link paint.shared.objects.ExperimentInfo}
+ *    records. Handles schema-validated table creation, entity/table conversion,
+ *    and controlled append operations for the Experiment Info data layer.
  *
  *  DESCRIPTION:
- *    This class defines conversion logic between Tablesaw {@link tech.tablesaw.api.Table}
- *    objects and {@link paint.shared.objects.ExperimentInfo} instances. It validates
- *    and enforces the schema defined in {@link paint.shared.schema.ExperimentInfoSchema}.
+ *    This class is an internal helper used exclusively by
+ *    {@link paint.shared.io.MainDataInterface}.  It is not part of PAINT’s
+ *    public API and must not be accessed directly by external modules.
  *
- *  KEY FEATURES:
- *    • Reads and validates Experiment Info CSV files against the expected schema.
- *    • Converts between lists of {@link paint.shared.objects.ExperimentInfo} and Tablesaw tables.
- *    • Creates empty Experiment Info tables with predefined columns.
- *    • Supports type-safe row appending with automatic INTEGER→DOUBLE upcasting.
- *    • Extends {@link BaseTableIO} for consistent schema validation and CSV handling.
+ *    Responsibilities include:
+ *      • Creating schema-compliant Tablesaw tables for Experiment Info rows.
+ *      • Converting between {@link ExperimentInfo} entities and
+ *        {@link tech.tablesaw.api.Table} instances.
+ *      • Reading CSV files with strict schema enforcement via {@link BaseTableIO}.
+ *      • Performing schema-aware append operations with safe type coercion.
+ *
+ *  DESIGN NOTES:
+ *    • Class visibility is intentionally package-private to preserve encapsulation.
+ *    • All column order, names, and data types are enforced using
+ *      {@link paint.shared.schema.ExperimentInfoSchema}.
+ *    • All external callers must use {@link MainDataInterface} for reading/writing.
+ *    • Fully compatible with Java 8 and Tablesaw 0.43+.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -63,7 +71,7 @@ import static paint.shared.constants.PaintStringConstants.*;
  * <p>Validation ensures that column order, names, and types match the expected
  * schema, while allowing some flexibility (e.g. {@code INTEGER -> DOUBLE} upcasts).</p>
  */
-public class ExperimentInfoTableIO extends BaseTableIO {
+class ExperimentInfoTableIO extends BaseTableIO {
 
     /**
      * Creates an empty {@link Table} with the {@code Experiment Info} schema.
@@ -75,7 +83,7 @@ public class ExperimentInfoTableIO extends BaseTableIO {
      * @return a new empty {@code Table} ready to receive rows with the
      * Experiment Info schema
      */
-    public Table emptyTable() {
+    Table emptyTable() {
         return newEmptyTable("Experiment Info", ExperimentInfoSchema.COLUMNS, ExperimentInfoSchema.TYPES);
     }
 
@@ -166,7 +174,7 @@ public class ExperimentInfoTableIO extends BaseTableIO {
      * @param source the source table providing rows and column values
      * @throws IllegalArgumentException if the source contains an unsupported column type
      */
-    public void appendInPlace(Table target, Table source) {
+    void appendInPlace(Table target, Table source) {
         if (source.isEmpty()) {
             return; // nothing to do
         }
@@ -207,22 +215,5 @@ public class ExperimentInfoTableIO extends BaseTableIO {
         }
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // STATIC CONVENIENCE HELPERS
-    // ───────────────────────────────────────────────────────────────────────────────
 
-    /** Converts a Tablesaw table into a list of ExperimentInfo entities. */
-    public static List<ExperimentInfo> experimentInfoTableToList(Table table) {
-        return new ExperimentInfoTableIO().toEntities(table);
-    }
-
-    /** Converts a list of ExperimentInfo entities into a schema-compliant Table. */
-    public static Table experimentInfoListToTable(List<ExperimentInfo> experimentInfos) {
-        return new ExperimentInfoTableIO().toTable(experimentInfos);
-    }
-
-    /** Returns a new empty ExperimentInfo table with the correct schema. */
-    public static Table newEmptyExperimentInfoTable() {
-        return new ExperimentInfoTableIO().emptyTable();
-    }
 }

@@ -3,28 +3,28 @@
  *  Package:      paint.shared.io
  *
  *  PURPOSE:
- *    Provides table input/output utilities for {@link paint.shared.objects.Recording}
- *    entities, handling CSV schema validation, conversion between entity lists
- *    and Tablesaw tables, and controlled append operations.
+ *    Internal implementation for CSV I/O of {@link paint.shared.objects.Recording}
+ *    entities. Responsible for schema-validated table creation, entity/table
+ *    conversion, and controlled append operations for the recordings data layer.
  *
  *  DESCRIPTION:
- *    This class defines all I/O behavior related to {@code recordings.csv}.
- *    It leverages {@link BaseTableIO} for schema validation and ensures that
- *    every read or write operation adheres strictly to the schema specified
- *    in {@link paint.shared.schema.RecordingSchema#COLUMNS} and
- *    {@link paint.shared.schema.RecordingSchema#TYPES}.
+ *    This class is an internal component used exclusively by
+ *    {@link paint.shared.io.MainDataInterface}. It is not part of PAINT’s
+ *    public API and must not be accessed directly by external modules.
  *
- *    It supports:
- *      • Creating empty tables with the correct schema.
- *      • Converting between Recording objects and Tablesaw tables.
- *      • Reading schema-validated CSV files into tables.
- *      • Appending tables with schema-validated coercion.
+ *    Responsibilities include:
+ *      • Creating schema-compliant Tablesaw tables for recordings.
+ *      • Converting between {@link Recording} entities and {@link tech.tablesaw.api.Table}.
+ *      • Reading validated CSV files via {@link BaseTableIO}.
+ *      • Performing schema-aware append operations.
  *
- *  KEY FEATURES:
- *    • Enforces consistent column names, order, and data types.
- *    • Handles missing values gracefully during append operations.
- *    • Provides strong typing for table-to-entity conversion.
- *    • Compatible with Java 8 and Tablesaw 0.43+.
+ *  DESIGN NOTES:
+ *    • Class visibility is intentionally package-private to maintain strict
+ *      encapsulation of data-layer internals.
+ *    • All operations enforce column order and data types defined in
+ *      {@link paint.shared.schema.RecordingSchema}.
+ *    • External callers must use {@link MainDataInterface} for all I/O.
+ *    • Fully compatible with Java 8 and Tablesaw 0.43+.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -60,7 +60,7 @@ import static paint.shared.constants.PaintStringConstants.*;
  * {@code recordings.csv} files. Each method ensures full consistency
  * with the column definitions in {@link paint.shared.schema.RecordingSchema}.</p>
  */
-public class RecordingsTableIO extends BaseTableIO {
+class RecordingsTableIO extends BaseTableIO {
 
     // ───────────────────────────────────────────────────────────────────────────────
     // TABLE CREATION
@@ -71,7 +71,7 @@ public class RecordingsTableIO extends BaseTableIO {
      *
      * @return a new empty {@code Table} with the “Recordings” schema
      */
-    public Table emptyTable() {
+    Table emptyTable() {
         return newEmptyTable("Recordings", RecordingSchema.COLUMNS, RecordingSchema.TYPES);
     }
 
@@ -184,7 +184,7 @@ public class RecordingsTableIO extends BaseTableIO {
      * @param target the destination table
      * @param source the source table to append from
      */
-    public void appendInPlace(Table target, Table source) {
+     void appendInPlace(Table target, Table source) {
         for (Row row : source) {
             Row newRow = target.appendRow();
             for (String col : RecordingSchema.COLUMNS) {
@@ -201,24 +201,5 @@ public class RecordingsTableIO extends BaseTableIO {
                 }
             }
         }
-    }
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // STATIC CONVENIENCE HELPERS
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /** Converts a Tablesaw table into a list of Recoring entities. */
-    public static List<Recording> recordingTableToList(Table table) {
-        return new RecordingsTableIO().toEntities(table);
-    }
-
-    /** Converts a list of Recording entities into a schema-compliant Table. */
-    public static Table recordingListToTable(List<Recording> recordings) {
-        return new RecordingsTableIO().toTable(recordings);
-    }
-
-    /** Returns a new empty Recordings table with the correct schema. */
-    public static Table newEmptyRecordingTable() {
-        return new RecordingsTableIO().emptyTable();
     }
 }
