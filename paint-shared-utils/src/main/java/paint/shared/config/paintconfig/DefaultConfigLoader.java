@@ -1,7 +1,6 @@
 package paint.shared.config.paintconfig;
 
 import com.google.gson.JsonObject;
-
 import static paint.shared.constants.PaintStringConstants.*;
 
 /** Populates initial defaults into the store when no file exists. */
@@ -43,13 +42,13 @@ class DefaultConfigLoader {
         trackMate.addProperty(ALLOW_TRACK_SPLITTING,    false);
         trackMate.addProperty(ALLOW_TRACK_MERGING,      false);
         trackMate.addProperty(MERGING_MAX_DISTANCE,     15.0);
-        root.add("TrackMate", trackMate);
+        root.add(TRACKMATE, trackMate);
 
         // Debug
         JsonObject debug = new JsonObject();
         debug.addProperty(DEBUG_RUN_TRACK_MATE_ON_PROJECT, false);
         debug.addProperty(DEBUG_RUN_TRACK_MATE_ON_RECORDING, false);
-        root.add("Debug", debug);
+        root.add(DEBUG, debug);
 
         // Immediately saved by ConfigStore during first creation
     }

@@ -500,10 +500,18 @@ public class GlycoPaintInstallerWindows {
                 }
 
                 /* Respect user selections for EXEs */
-                if (name.equals("Viewer.exe") && !cbViewer.isSelected()) continue;
-                if (name.equals("Generate Squares.exe") && !cbGenerate.isSelected()) continue;
-                if (name.equals("Get Omero.exe") && !cbOmero.isSelected()) continue;
-                if (name.equals("Create Experiment.exe") && !cbExperiment.isSelected()) continue;
+                if (name.equals("Viewer.exe") && !cbViewer.isSelected()) {
+                    continue;
+                }
+                if (name.equals("Generate Squares.exe") && !cbGenerate.isSelected()) {
+                    continue;
+                }
+                if (name.equals("Get Omero.exe") && !cbOmero.isSelected()) {
+                    continue;
+                }
+                if (name.equals("Create Experiment.exe") && !cbExperiment.isSelected()) {
+                    continue;
+                }
 
                 if (name.toLowerCase().endsWith(".exe")) {
                     log("Installing: " + name);

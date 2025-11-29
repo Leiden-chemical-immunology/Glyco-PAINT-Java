@@ -78,7 +78,7 @@ class ConfigStore {
 
     private static Path backupPath(Path original) {
         String base    = original.getFileName().toString();
-        base = base.substring(0, base.length() - 5);
+        base           = base.substring(0, base.length() - 5);
         String bakName = base + ".invalid.json";
         return (original.getParent() == null) ? Paths.get(bakName) : original.getParent().resolve(bakName);
     }
@@ -86,7 +86,9 @@ class ConfigStore {
     void save() {
         ensureLoaded(null);
         try {
-            if (path.getParent() != null) Files.createDirectories(path.getParent());
+            if (path.getParent() != null) {
+                Files.createDirectories(path.getParent());
+            }
             try (Writer w = Files.newBufferedWriter(path)) {
                 gson.toJson(root, w);
             }
@@ -108,7 +110,9 @@ class ConfigStore {
     JsonObject getOrCreateSection(String section) {
         ensureLoaded(null);
         JsonObject sec = getSection(section);
-        if (sec != null) return sec;
+        if (sec != null) {
+            return sec;
+        }
         JsonObject created = new JsonObject();
         root.add(section, created);
         return created;
@@ -123,7 +127,9 @@ class ConfigStore {
                 break;
             }
         }
-        if (toRemove != null) root.remove(toRemove);
+        if (toRemove != null) {
+            root.remove(toRemove);
+        }
     }
 
     Set<String> sections() {

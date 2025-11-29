@@ -41,9 +41,10 @@ public final class PaintStringConstants {
     public static final String CONCENTRATION                               = "Concentration";
     public static final String CONDITION_NUMBER                            = "Condition Number";
     public static final String CONFINEMENT_RATIO                           = "Confinement Ratio";
+    public static final String DEBUG                                       = "Debug";
+    public static final String DEBUG_GENERATE_SQUARES_FOR_EXPERIMENT       = "generateSquaresForExperiment";
     public static final String DEBUG_RUN_TRACK_MATE_ON_PROJECT             = "runTrackMateOnProject";
     public static final String DEBUG_RUN_TRACK_MATE_ON_RECORDING           = "runTrackMateOnRecording";
-    public static final String DEBUG_GENERATE_SQUARES_FOR_EXPERIMENT       = "generateSquaresForExperiment";
     public static final String DENSITY                                     = "Density";
     public static final String DENSITY_RATIO                               = "Density Ratio";
     public static final String DENSITY_RATIO_ORI                           = "Density Ratio Ori";
@@ -104,7 +105,6 @@ public final class PaintStringConstants {
     public static final String REPLICATE_NUMBER                            = "Replicate Number";
     public static final String ROW_NUMBER                                  = "Row Number";
     public static final String RUN_TIME                                    = "Run Time";
-    public static final String VISIBLE                                     = "Visible";
     public static final String SPLITTING_MAX_DISTANCE                      = "SPLITTING_MAX_DISTANCE";
     public static final String SQUARE_MANUALLY_EXCLUDED                    = "Square Manually Excluded";
     public static final String SQUARE_NUMBER                               = "Square Number";
@@ -116,6 +116,7 @@ public final class PaintStringConstants {
     public static final String TOTAL_DISPLACEMENT                          = "Total Displacement";
     public static final String TOTAL_DISTANCE                              = "Total Distance";
     public static final String TOTAL_TRACK_DURATION                        = "Total Track Duration";
+    public static final String TRACKMATE                                   = "TrackMate";
     public static final String TRACK_COLOURING                             = "TRACK_COLOURING";
     public static final String TRACK_DISPLACEMENT                          = "Track Displacement";
     public static final String TRACK_DURATION                              = "Track Duration";
@@ -126,6 +127,7 @@ public final class PaintStringConstants {
     public static final String TRACK_Y_LOCATION                            = "Track Y Location";
     public static final String UNIQUE_KEY                                  = "Unique Key";
     public static final String VARIABILITY                                 = "Variability";
+    public static final String VISIBLE                                     = "Visible";
     public static final String X0                                          = "X0";
     public static final String X1                                          = "X1";
     public static final String Y0                                          = "Y0";

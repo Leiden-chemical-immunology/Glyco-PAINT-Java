@@ -20,20 +20,13 @@ import static paint.shared.constants.PaintFileNames.PAINT_CONFIGURATION_JSON;
 public class PaintConfig {
 
     // ============================================================================
-    // Section Name Constants
-    // ============================================================================
-
-    public static final String SECTION_GENERATE_SQUARES = "Generate Squares"; // Section name for Generate Squares configuration
-    public static final String SECTION_TRACKMATE        = "TrackMate";        // Section name for TrackMate configuration.
-
-    // ============================================================================
     // Singleton + Shared Resources
     // ============================================================================
 
     private static volatile PaintConfig INSTANCE;
     /* package */ static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    private final Path      path;
+    private final Path        path;
     private final ConfigStore store;
     private final JsonCase    jsonCase;
 
@@ -121,8 +114,9 @@ public class PaintConfig {
         if (sec != null) {
             String real = jsonCase.findKeyIgnoreCase(sec, key);
             if (real != null && sec.get(real).isJsonPrimitive()) {
-                try { return sec.getAsJsonPrimitive(real).getAsInt(); }
-                catch (Exception ignored) {
+                try {
+                    return sec.getAsJsonPrimitive(real).getAsInt();
+                } catch (Exception ignored) {
                     PaintLogger.warnf("Invalid '%s', default %d applied", real, def);
                     setIntValue(section, key, def, true);
                 }
@@ -138,8 +132,9 @@ public class PaintConfig {
         if (sec != null) {
             String real = jsonCase.findKeyIgnoreCase(sec, key);
             if (real != null && sec.get(real).isJsonPrimitive()) {
-                try { return sec.getAsJsonPrimitive(real).getAsDouble(); }
-                catch (Exception ignored) {
+                try {
+                    return sec.getAsJsonPrimitive(real).getAsDouble();
+                } catch (Exception ignored) {
                     PaintLogger.warnf("Invalid '%s', default %.2f applied", real, def);
                     setDoubleValue(section, key, def, true);
                 }
@@ -155,8 +150,9 @@ public class PaintConfig {
         if (sec != null) {
             String real = jsonCase.findKeyIgnoreCase(sec, key);
             if (real != null && sec.get(real).isJsonPrimitive()) {
-                try { return sec.getAsJsonPrimitive(real).getAsBoolean(); }
-                catch (Exception ignored) { /* fallthrough */ }
+                try {
+                    return sec.getAsJsonPrimitive(real).getAsBoolean();
+                } catch (Exception ignored) { /* fallthrough */ }
             }
         }
         PaintLogger.warnf("No value for '%s', default %b applied", key, def);
@@ -167,51 +163,41 @@ public class PaintConfig {
     public void setStringValue(String section, String key, String value, boolean autoSave) {
         JsonObject sec = store.getOrCreateSection(section);
         sec.addProperty(key, value);
-        if (autoSave) save();
+        if (autoSave) {
+            save();
+        }
     }
 
     public void setIntValue(String section, String key, int value, boolean autoSave) {
         JsonObject sec = store.getOrCreateSection(section);
         sec.addProperty(key, value);
-        if (autoSave) save();
+        if (autoSave) {
+            save();
+        }
     }
 
     public void setDoubleValue(String section, String key, double value, boolean autoSave) {
         JsonObject sec = store.getOrCreateSection(section);
         sec.addProperty(key, value);
-        if (autoSave) save();
+        if (autoSave) {
+            save();
+        }
     }
 
     public void setBooleanValue(String section, String key, boolean value, boolean autoSave) {
         JsonObject sec = store.getOrCreateSection(section);
         sec.addProperty(key, value);
-        if (autoSave) save();
+        if (autoSave) {
+            save();
+        }
     }
 
-//    public void removeValue(String section, String key, boolean autoSave) {
-//        JsonObject sec = getSection(section);
-//        if (sec != null) {
-//            String real = jsonCase.findKeyIgnoreCase(sec, key);
-//            if (real != null) {
-//                sec.remove(real);
-//                if (autoSave) save();
-//            }
-//        }
-//    }
-
-//    public void removeSectionValue(String section, boolean autoSave) {
-//        store.removeSection(section);
-//        if (autoSave) save();
-//    }
 
     public Set<String> keys(String section) {
         JsonObject sec = getSection(section);
         return (sec != null) ? sec.keySet() : Collections.emptySet();
     }
 
-//    public Set<String> sections() {
-//        return store.sections();
-//    }
 
     public JsonObject getJson() {
         return store.root();
@@ -225,15 +211,37 @@ public class PaintConfig {
     // Static API (shortcuts) — unchanged
     // ---------------------------------------------------------------------
 
-    public static String  getString (String s, String k, String d) { return instance().getStringValue (s, k, d); }
-    public static int     getInt    (String s, String k, int d)    { return instance().getIntValue    (s, k, d); }
-    public static double  getDouble (String s, String k, double d) { return instance().getDoubleValue (s, k, d); }
-    public static boolean getBoolean(String s, String k, boolean d){ return instance().getBooleanValue(s, k, d); }
+    public static String getString(String s, String k, String d) {
+        return instance().getStringValue(s, k, d);
+    }
 
-    public static void setString (String s, String k, String v)  { instance().setStringValue (s, k, v, true); }
-    public static void setInt    (String s, String k, int v)     { instance().setIntValue    (s, k, v, true); }
-    public static void setDouble (String s, String k, double v)  { instance().setDoubleValue (s, k, v, true); }
-    public static void setBoolean(String s, String k, boolean v) { instance().setBooleanValue(s, k, v, true); }
+    public static int getInt(String s, String k, int d) {
+        return instance().getIntValue(s, k, d);
+    }
+
+    public static double getDouble(String s, String k, double d) {
+        return instance().getDoubleValue(s, k, d);
+    }
+
+    public static boolean getBoolean(String s, String k, boolean d) {
+        return instance().getBooleanValue(s, k, d);
+    }
+
+    public static void setString(String s, String k, String v) {
+        instance().setStringValue(s, k, v, true);
+    }
+
+    public static void setInt(String s, String k, int v) {
+        instance().setIntValue(s, k, v, true);
+    }
+
+    public static void setDouble(String s, String k, double v) {
+        instance().setDoubleValue(s, k, v, true);
+    }
+
+    public static void setBoolean(String s, String k, boolean v) {
+        instance().setBooleanValue(s, k, v, true);
+    }
 
     // ---------------------------------------------------------------------
     // Internals

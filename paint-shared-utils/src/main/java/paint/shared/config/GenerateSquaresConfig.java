@@ -17,7 +17,7 @@
  *
  *  RESPONSIBILITIES:
  *    • Read configuration values from the section identified by
- *      {@link PaintConfig#SECTION_GENERATE_SQUARES}
+ *      {@link PaintConfig#GENERATE_SQUARES}
  *    • Provide getters for each configuration parameter
  *    • Enforce default values if configuration keys are missing
  *
@@ -44,7 +44,6 @@ package paint.shared.config;
 
 import paint.shared.config.paintconfig.PaintConfig;
 
-import static paint.shared.config.paintconfig.PaintConfig.SECTION_GENERATE_SQUARES;
 import static paint.shared.constants.PaintStringConstants.*;
 
 /**
@@ -65,7 +64,7 @@ public class GenerateSquaresConfig {
 
     /**
      * Constructs a GenerateSquaresConfig by reading appropriate keys from the
-     * {@link PaintConfig} under section SECTION_GENERATE_SQUARES. If a
+     * {@link PaintConfig} under section GENERATE_SQUARES. If a
      * value is missing, a default is applied:
      * <ul>
      *   <li>numberOfSquaresInRecording: 400</li>
@@ -78,13 +77,13 @@ public class GenerateSquaresConfig {
      */
     public GenerateSquaresConfig() {
         
-        this.numberOfSquaresInRecording  = PaintConfig.getInt(    SECTION_GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING,  400);
-        this.minTracksToCalculate        = PaintConfig.getInt(    SECTION_GENERATE_SQUARES, MIN_TRACKS_TO_CALCULATE,         5);
-        this.minTracksToCalculateTau     = PaintConfig.getInt(    SECTION_GENERATE_SQUARES, MIN_TRACKS_TO_CALCULATE_TAU,     20);
-        this.minRequiredRSquared         = PaintConfig.getDouble( SECTION_GENERATE_SQUARES, MIN_REQUIRED_R_SQUARED,          0.1);
-        this.minRequiredDensityRatio     = PaintConfig.getDouble( SECTION_GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,      0.1);
-        this.maxAllowableVariability     = PaintConfig.getDouble( SECTION_GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY,       10.0);
-        this.neighbourMode               = PaintConfig.getString( SECTION_GENERATE_SQUARES, NEIGHBOUR_MODE,                  "Free");
+        this.numberOfSquaresInRecording  = PaintConfig.getInt(    GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING,  400);
+        this.minTracksToCalculate        = PaintConfig.getInt(    GENERATE_SQUARES, MIN_TRACKS_TO_CALCULATE,         5);
+        this.minTracksToCalculateTau     = PaintConfig.getInt(    GENERATE_SQUARES, MIN_TRACKS_TO_CALCULATE_TAU,     20);
+        this.minRequiredRSquared         = PaintConfig.getDouble( GENERATE_SQUARES, MIN_REQUIRED_R_SQUARED,          0.1);
+        this.minRequiredDensityRatio     = PaintConfig.getDouble( GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,      0.1);
+        this.maxAllowableVariability     = PaintConfig.getDouble( GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY,       10.0);
+        this.neighbourMode               = PaintConfig.getString( GENERATE_SQUARES, NEIGHBOUR_MODE,                  "Free");
         
     }
 
