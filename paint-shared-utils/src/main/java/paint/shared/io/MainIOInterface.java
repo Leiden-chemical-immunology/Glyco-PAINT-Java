@@ -51,8 +51,15 @@ import paint.shared.io.internal.RecordingsTableIO;
 import paint.shared.io.internal.SquaresTableIO;
 import paint.shared.io.internal.TracksTableIO;
 
-import paint.shared.objects.*;
-import paint.shared.schema.*;
+import paint.shared.objects.ExperimentInfo;
+import paint.shared.objects.Recording;
+import paint.shared.objects.Square;
+import paint.shared.objects.Track;
+
+import paint.shared.schema.ExperimentInfoSchema;
+import paint.shared.schema.RecordingSchema;
+import paint.shared.schema.SquareSchema;
+import paint.shared.schema.TrackSchema;
 
 import tech.tablesaw.api.Table;
 
@@ -61,7 +68,11 @@ import paint.shared.utils.PaintLogger;
 import java.nio.file.Path;
 import java.util.List;
 
-import static paint.shared.constants.PaintFileNames.*;
+import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
+import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
+import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
+import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
+
 import static paint.shared.utils.Miscellaneous.friendlyMessage;
 
 public final class MainIOInterface {

@@ -44,7 +44,12 @@ import tech.tablesaw.api.Table;
 import java.nio.file.Path;
 import java.util.List;
 
-import static paint.shared.io.MainIOInterface.*;
+import static paint.shared.io.MainIOInterface.readTracksTable;
+import static paint.shared.io.MainIOInterface.readRecordings;
+import static paint.shared.io.MainIOInterface.readSquaresTable;
+import static paint.shared.io.MainIOInterface.trackTableToList;
+import static paint.shared.io.MainIOInterface.squareTableToList;
+
 import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
 
 import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
