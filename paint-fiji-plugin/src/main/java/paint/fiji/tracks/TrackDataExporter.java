@@ -3,54 +3,60 @@
  *  Package:      paint.fiji.tracks
  *
  *  PURPOSE:
- *    Exports per-track motion and diffusion statistics derived from a TrackMate
- *    analysis into a structured CSV file. Integrates native TrackMate features
- *    with extended PAINT-calculated track attributes.
+ *    Extracts TrackMate per-track motion statistics, augments them with
+ *    PAINT-calculated features, and exports the resulting dataset as a
+ *    schema-compliant Tracks table (CSV).
  *
  *  DESCRIPTION:
- *    • Extracts core TrackMate track-level features.
- *    • Computes extended PAINT attributes via
- *      {@link paint.fiji.tracks.TrackAttributeCalculations}.
- *    • Builds a schema-compliant {@link tech.tablesaw.api.Table} of
- *      {@link paint.shared.objects.Track} entities.
- *    • Assigns deterministic track IDs and unique recording-based keys.
- *    • Persists all track data to CSV through
- *      {@link paint.shared.io.MainDataInterface#writeSpecificTracksFile(Path, Table)}.
+ *    This class bridges Fiji TrackMate with the PAINT shared data layer:
+ *
+ *      • Reads TrackMate model + features for each track
+ *      • Computes extended PAINT attributes via
+ *        {@link paint.fiji.tracks.TrackAttributeCalculations}
+ *      • Builds fully typed {@link paint.shared.objects.Track} entities
+ *      • Produces a schema-validated {@link tech.tablesaw.api.Table}
+ *        (using PAINT’s shared I/O layer)
+ *      • Assigns deterministic track IDs and recording-scoped unique keys
+ *      • Persists the final table via
+ *        {@link paint.shared.io.MainDataInterface#writeSpecificTracksFile}
  *
  *  RESPONSIBILITIES:
- *    • Transform TrackMate model output into PAINT Track entities.
- *    • Compute custom diffusion and motion statistics (distance, diffusion
- *      coefficient, confinement ratio, etc.).
- *    • Populate and sort the Tracks table in a deterministic order.
- *    • Export the resulting table to a CSV file.
+ *      • Convert TrackMate track data → PAINT Track objects
+ *      • Compute diffusion, displacement, confinement ratio, and related metrics
+ *      • Ensure deterministic row order for reproducibility
+ *      • Export the Tracks CSV in strict alignment with PAINT’s
+ *        {@code TrackSchema} definition
  *
  *  USAGE EXAMPLE:
- *    int totalSpots = TrackDataExporter.writeTracksCsv(
- *        trackmate,
- *        "ExperimentA",
- *        "Recording1",
- *        Paths.get("tracks.csv"),
- *        true
- *    );
+ *
+ *      int totalSpots = TrackDataExporter.writeTracksCsv(
+ *          trackmate,
+ *          "ExperimentA",
+ *          "Recording1",
+ *          Paths.get("tracks.csv"),
+ *          true
+ *      );
  *
  *  DEPENDENCIES:
- *    – Fiji TrackMate (fiji.plugin.trackmate.*)
- *    – paint.shared.objects.Track
- *    – paint.fiji.tracks.TrackAttributeCalculations
- *    – paint.shared.io.TracksTableIO
- *    – paint.shared.io.MainDataInterface
- *    – tech.tablesaw.api.Table
- *    – paint.shared.utils.PaintLogger
+ *      – Fiji TrackMate (fiji.plugin.trackmate.*)
+ *      – paint.shared.objects.Track
+ *      – paint.fiji.tracks.TrackAttributeCalculations
+ *      – paint.shared.io.MainDataInterface
+ *      – tech.tablesaw.api.Table
+ *      – paint.shared.utils.PaintLogger
  *
  *  AUTHOR:
- *    Hans Bakker
+ *      Hans Bakker
+ *
+ *  MODULE:
+ *      paint-fiji-plugin
  *
  *  UPDATED:
- *    2025-10-28
+ *      2025-10-28
  *
  *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ *      © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
 
 package paint.fiji.tracks;
 

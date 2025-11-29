@@ -191,7 +191,6 @@ public class SquaresTableIO extends BaseTableIO {
         for (Row row : source) {
             Row newRow = target.appendRow();
             for (String col : SquareSchema.COLUMNS) {
-                Column<?> tc = target.column(col);
 
                 Column<?> targetCol = target.column(col);
                 if (targetCol.type() == ColumnType.STRING) {
