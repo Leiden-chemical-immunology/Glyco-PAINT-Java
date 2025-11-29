@@ -3,39 +3,43 @@
  *  Package:      paint.shared.io.internal
  *
  *  PURPOSE:
- *    Public-but-internal implementation of CSV I/O for
- *    {@link paint.shared.objects.ExperimentInfo}. Although this class is
- *    declared public for cross-package access by {@link paint.shared.io.MainDataInterface},
- *    it is not part of PAINT’s public API and should not be accessed directly
- *    by external modules.
+ *    Internal implementation of CSV and table I/O for
+ *    {@link paint.shared.objects.ExperimentInfo}.  Although this class is
+ *    declared public so it can be accessed by
+ *    {@link paint.shared.io.MainDataInterface}, it is NOT part of PAINT’s
+ *    public API. External modules must never call this class directly.
  *
  *  DESCRIPTION:
- *    This class provides the low-level CSV/table logic for Experiment Info:
- *      • Creating schema-compliant Tablesaw tables
- *      • Converting between {@link ExperimentInfo} entities and Tablesaw rows
- *      • Reading CSV files with strict schema enforcement (via BaseTableIO)
- *      • Performing schema-aware append operations with safe type coercion
+ *    Provides the low-level, schema-validated I/O logic for Experiment Info:
  *
- *    External callers must always use {@link MainDataInterface}.
- *    This class remains an implementation detail even though it is public.
+ *      • Creating schema-compliant Tablesaw tables
+ *      • Converting between {@link ExperimentInfo} entities and table rows
+ *      • Reading CSV files with strict header and type enforcement (via BaseTableIO)
+ *      • Performing safe append operations with controlled type coercion
+ *
+ *    {@link MainDataInterface} is the only supported entry point for external
+ *    read/write operations. This class remains an internal implementation detail.
  *
  *  DESIGN NOTES:
- *    • Visibility is public only because package-private classes in
- *      'paint.shared.io.internal' cannot be referenced by
- *      'paint.shared.io.MainDataInterface'.
- *    • Despite being public, this class is considered internal API.
- *    • All schema definitions come from {@link paint.shared.schema.ExperimentInfoSchema}.
+ *    • Visibility is public ONLY because package-private classes inside
+ *      'paint.shared.io.internal' cannot be accessed by MainDataInterface
+ *      (in a different package).
+ *    • Despite being public, this class is considered INTERNAL API.
+ *    • All schema structure is defined in {@link paint.shared.schema.ExperimentInfoSchema}.
  *    • Fully compatible with Java 8 and Tablesaw 0.43+.
  *
  *  AUTHOR:       Hans Bakker
  *  MODULE:       paint-shared-utils
  *  UPDATED:      2025-10-28
  *  COPYRIGHT:    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ *============================================================================*/
 
 package paint.shared.io.internal;
 
+import paint.shared.io.MainIOInterface;
 import paint.shared.objects.ExperimentInfo;
+import paint.shared.schema.ExperimentInfoSchema;
+
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
@@ -44,73 +48,52 @@ import tech.tablesaw.columns.Column;
 import java.util.ArrayList;
 import java.util.List;
 
-import paint.shared.schema.ExperimentInfoSchema;
 import static paint.shared.constants.PaintStringConstants.*;
 
 /**
- * Provides table input/output utilities for {@code ExperimentInfo}
- * records (per-recording metadata).
+ * Internal table I/O implementation for {@link ExperimentInfo}.
  *
- * <p>This class enforces a fixed schema defined by
+ * <p>This class enforces the schema defined by
  * {@link ExperimentInfoSchema#COLUMNS} and {@link ExperimentInfoSchema#TYPES}
- * It supports:</p>
+ * and provides:</p>
+ *
  * <ul>
- *   <li>Creating an empty table with the correct schema
- *       via {@link #emptyTable()}.</li>
- *   <li>Reading CSV files into validated tables </li>
- *   <li>Appending rows from one table to another with type-safe coercion
- *       via {@link #appendInPlace(tech.tablesaw.api.Table, tech.tablesaw.api.Table)}.</li>
+ *   <li>Creation of empty schema-correct Tablesaw tables</li>
+ *   <li>Conversion between entities and Tablesaw rows</li>
+ *   <li>Schema-validated CSV read operations (via BaseTableIO)</li>
+ *   <li>Safe append operations with type checking</li>
  * </ul>
  *
- * <p>Validation ensures that column order, names, and types match the expected
- * schema, while allowing some flexibility (e.g. {@code INTEGER -> DOUBLE} upcasts).</p>
+ * <p>External callers must use {@link MainIOInterface}.</p>
  */
 public class ExperimentInfoTableIO extends BaseTableIO {
 
+    // =====================================================================
+    //  TABLE CREATION
+    // =====================================================================
+
     /**
-     * Creates an empty {@link Table} with the {@code Experiment Info} schema.
-     *
-     * <p>The table has all expected columns defined by
-     * {@link ExperimentInfoSchema#COLUMNS} and {@link ExperimentInfoSchema#TYPES}, but
-     * contains zero rows.</p>
-     *
-     * @return a new empty {@code Table} ready to receive rows with the
-     * Experiment Info schema
+     * Creates a new empty Experiment Info table with the correct schema.
      */
     public Table emptyTable() {
-        return newEmptyTable("Experiment Info", ExperimentInfoSchema.COLUMNS, ExperimentInfoSchema.TYPES);
+        return newEmptyTable("Experiment Info",
+                             ExperimentInfoSchema.COLUMNS,
+                             ExperimentInfoSchema.TYPES);
     }
 
-    /**
-     * Converts a list of {@link ExperimentInfo} objects into a {@link Table}
-     * with a fixed schema.
-     *
-     * <p>Each {@code ExperimentInfo} is mapped to a single row in the table with
-     * the following columns:</p>
-     * <ul>
-     *   <li>{@code Recording Name} (String)</li>
-     *   <li>{@code Condition Number} (int)</li>
-     *   <li>{@code Replicate Number} (int)</li>
-     *   <li>{@code Probe Name} (String)</li>
-     *   <li>{@code Probe Type} (String)</li>
-     *   <li>{@code Cell Type} (String)</li>
-     *   <li>{@code Adjuvant} (String)</li>
-     *   <li>{@code Concentration} (double)</li>
-     *   <li>{@code Process Flag} (boolean)</li>
-     *   <li>{@code Threshold} (double)</li>
-     * </ul>
-     *
-     * <p>The schema is enforced by starting from an {@link #emptyTable()} with all
-     * expected columns pre-defined.</p>
-     *
-     * @param infos the list of {@code ExperimentInfo} objects to convert
-     * @return a {@code Table} containing one row per experiment
-     */
+    // =====================================================================
+    //  ENTITY → TABLE CONVERSION
+    // =====================================================================
 
+    /**
+     * Converts a list of {@link ExperimentInfo} into a schema-validated table.
+     */
     public Table toTable(List<ExperimentInfo> infos) {
         Table table = emptyTable();
+
         for (ExperimentInfo experimentInfo : infos) {
             Row row = table.appendRow();
+
             row.setString(  EXPERIMENT_NAME,  experimentInfo.getExperimentName());
             row.setString(  RECORDING_NAME,   experimentInfo.getRecordingName());
             row.setInt(     CONDITION_NUMBER, experimentInfo.getConditionNumber());
@@ -123,9 +106,17 @@ public class ExperimentInfoTableIO extends BaseTableIO {
             row.setBoolean( PROCESS_FLAG,     experimentInfo.isProcessFlagSet());
             row.setDouble(  THRESHOLD,        experimentInfo.getThreshold());
         }
+
         return table;
     }
 
+    // =====================================================================
+    //  TABLE → ENTITY CONVERSION
+    // =====================================================================
+
+    /**
+     * Converts a schema-validated Experiment Info table into a list of entities.
+     */
     public List<ExperimentInfo> toEntities(Table table) {
         List<ExperimentInfo> items = new ArrayList<>();
 
@@ -149,29 +140,20 @@ public class ExperimentInfoTableIO extends BaseTableIO {
         return items;
     }
 
+    // =====================================================================
+    //  APPEND / MERGE OPERATIONS
+    // =====================================================================
+
     /**
-     * Appends all rows from a source {@link Table} into a target {@link Table},
-     * enforcing the {@code Experiment Info} schema.
+     * Appends all rows from {@code source} into {@code target}, enforcing
+     * the Experiment Info schema and performing safe type conversions.
      *
-     * <p>Behavior:</p>
-     * <ul>
-     *   <li>Rows are appended one by one to the {@code target}.</li>
-     *   <li>Columns are matched against {@link ExperimentInfoSchema#COLUMNS} with types from
-     *       {@link ExperimentInfoSchema#TYPES}.</li>
-     *   <li>If the source table is missing a column, that column is skipped.</li>
-     *   <li>Missing cell values in the source remain missing in the destination.</li>
-     *   <li>{@code INTEGER -> DOUBLE} upcasts are allowed when the schema expects a double.</li>
-     *   <li>Other type mismatches throw an {@link IllegalArgumentException}.</li>
-     * </ul>
-     *
-     * @param target the destination table to which rows will be appended
-     * @param source the source table providing rows and column values
-     * @throws IllegalArgumentException if the source contains an unsupported column type
+     * <p>INTEGER → DOUBLE upcasting is supported where required.</p>
      */
     public void appendInPlace(Table target, Table source) {
-        if (source.isEmpty()) {
-            return; // nothing to do
-        }
+
+        if (source.isEmpty())
+            return;
 
         for (Row srcRow : source) {
             Row dst = target.appendRow();
@@ -192,16 +174,20 @@ public class ExperimentInfoTableIO extends BaseTableIO {
 
                 if (expected.equals(ColumnType.STRING)) {
                     dst.setString(col, source.stringColumn(col).get(r));
+
                 } else if (expected.equals(ColumnType.INTEGER)) {
                     dst.setInt(col, source.intColumn(col).getInt(r));
+
                 } else if (expected.equals(ColumnType.DOUBLE)) {
                     if (sCol.type().equals(ColumnType.INTEGER)) {
                         dst.setDouble(col, source.intColumn(col).getInt(r));
                     } else {
                         dst.setDouble(col, source.doubleColumn(col).getDouble(r));
                     }
+
                 } else if (expected.equals(ColumnType.BOOLEAN)) {
                     dst.setBoolean(col, source.booleanColumn(col).get(r));
+
                 } else {
                     throw new IllegalArgumentException("Unsupported type: " + expected);
                 }

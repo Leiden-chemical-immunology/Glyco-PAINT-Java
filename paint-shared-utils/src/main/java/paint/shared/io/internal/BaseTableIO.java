@@ -4,7 +4,8 @@
  *
  *  PURPOSE:
  *    Internal abstract base class providing shared CSV and Tablesaw I/O
- *    utilities for the package-private TableIO implementations.
+ *    utilities for the internal TableIO implementations in
+ *    {@code paint.shared.io.internal}.
  *
  *  DESCRIPTION:
  *    This class centralizes common logic required by the internal
@@ -17,17 +18,17 @@
  *
  *    It is **not part of the public API**. All external callers must use
  *    {@link paint.shared.io.MainDataInterface}, which acts as the public,
- *    stable façade.  BaseTableIO and all subclasses remain internal
+ *    stable façade. BaseTableIO and all subclasses remain internal
  *    implementation details and are deliberately package-private.
  *
- *    Responsibilities:
- *      • Creating new schema-defined Tablesaw tables
- *      • Reading CSV files with custom schema enforcement
- *      • Normalizing booleans safely ("1", "0", "yes", "no", etc.)
- *      • Coercing types according to schema rules (e.g. INTEGER → DOUBLE)
- *      • Validating header and type consistency
- *      • Locale-stable numerical export (US locale, fixed 3 decimal places)
- *      • Providing safe append operations with schema checks
+ *    Responsibilities include:
+ *      • Creating new schema-defined Tablesaw tables.
+ *      • Reading CSV files with custom schema enforcement.
+ *      • Normalizing booleans safely ("1", "0", "yes", "no", etc.).
+ *      • Coercing types according to schema rules (e.g. INTEGER → DOUBLE).
+ *      • Validating header and type consistency.
+ *      • Locale-stable numerical export (US locale, fixed 3-decimal precision).
+ *      • Providing safe append operations with schema checks.
  *
  *  DESIGN NOTES:
  *    - Only MainDataInterface should be referenced by other modules.
@@ -47,11 +48,17 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ *============================================================================*/
 
 package paint.shared.io.internal;
 
-import tech.tablesaw.api.*;
+import paint.shared.io.MainIOInterface;
+import tech.tablesaw.api.ColumnType;
+import tech.tablesaw.api.DoubleColumn;
+import tech.tablesaw.api.FloatColumn;
+import tech.tablesaw.api.Row;
+import tech.tablesaw.api.StringColumn;
+import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
 import tech.tablesaw.io.csv.CsvReadOptions;
 import tech.tablesaw.io.csv.CsvWriteOptions;
@@ -62,29 +69,43 @@ import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import java.time.LocalDateTime;
 import static paint.shared.utils.BooleanUtils.normalizeBoolean;
 
 /**
- * Abstract base class for consistent CSV and {@link Table} I/O across
- * the PAINT modules. Provides shared implementations for reading, validating,
- * appending, and writing tabular data using Tablesaw.
+ * Internal abstract base class for consistent CSV and {@link Table} I/O across
+ * the PAINT data-layer implementations. Provides shared implementations for
+ * reading, validating, appending, and writing tabular data using Tablesaw.
+ *
+ * <p>This class is package-private and intended to be used only by the
+ * TableIO implementations in {@code paint.shared.io.internal}. External code
+ * must access CSV I/O via {@link MainIOInterface}.</p>
  */
 abstract class BaseTableIO {
 
+    // ───────────────────────────────────────────────────────────────────────────────
+    // TABLE CREATION HELPERS
+    // ───────────────────────────────────────────────────────────────────────────────
+
     /**
      * Creates a new empty {@link Table} with the given schema.
+     *
+     * @param tableName name of the resulting table
+     * @param colNames  column names in schema order
+     * @param colTypes  column types in schema order
+     * @return a new empty {@link Table} instance with all columns defined
      */
     protected static Table newEmptyTable(String tableName, String[] colNames, ColumnType[] colTypes) {
         if (colNames.length != colTypes.length) {
             throw new IllegalArgumentException("Names and types length mismatch: "
                                                        + colNames.length + " vs " + colTypes.length);
         }
+
         Table table = Table.create(tableName);
         for (int i = 0; i < colNames.length; i++) {
             Column<?> c = colTypes[i].create(colNames[i]);
@@ -93,25 +114,21 @@ abstract class BaseTableIO {
         return table;
     }
 
-    /**
-     * Appends all rows from {@code source} into {@code target} in place.
-     */
-    void appendInPlace(Table target, Table source) {
-        if (target.columnCount() != source.columnCount()) {
-            throw new IllegalArgumentException("Cannot append: column count mismatch ("
-                                                       + target.columnCount() + " vs " + source.columnCount() + ")");
-        }
-        for (int i = 0; i < target.columnCount(); i++) {
-            if (!target.column(i).name().equals(source.column(i).name())) {
-                throw new IllegalArgumentException("Cannot append: schema mismatch at column " + i +
-                                                           " (" + target.column(i).name() + " vs " + source.column(i).name() + ")");
-            }
-        }
-        target.append(source);
-    }
+    // ───────────────────────────────────────────────────────────────────────────────
+    // CSV READING WITH SCHEMA ENFORCEMENT
+    // ───────────────────────────────────────────────────────────────────────────────
 
     /**
      * Builds a {@link CsvReadOptions} instance enforcing the provided column types.
+     *
+     * <p>Note: this is primarily used by subclasses that choose to let
+     * Tablesaw perform direct type parsing. {@link #readCsvWithSchema(Path, String[], ColumnType[], boolean)}
+     * provides a more robust two-phase import that first reads as strings and
+     * then performs controlled conversion.</p>
+     *
+     * @param csvPath  path to the CSV file
+     * @param colTypes expected column types
+     * @return a configured {@link CsvReadOptions} instance
      */
     protected CsvReadOptions buildCsvReadOptions(Path csvPath, ColumnType[] colTypes) {
         return CsvReadOptions.builder(csvPath.toFile())
@@ -125,7 +142,6 @@ abstract class BaseTableIO {
      * header and types.
      *
      * <p>This implementation uses a two-step import process:</p>
-     *
      * <ol>
      *   <li>Read the CSV with all columns forced to STRING.</li>
      *   <li>Normalize boolean values and convert types according to the schema.</li>
@@ -133,6 +149,13 @@ abstract class BaseTableIO {
      *
      * <p>This avoids Tablesaw’s strict Boolean parser rejecting values such as
      * "true", "false", "yes", "no", "1", "0", etc.</p>
+     *
+     * @param csvPath       path to the CSV file
+     * @param expectedCols  expected column names in order
+     * @param expectedTypes expected column types in order
+     * @param allowSuperset if true, allows the CSV to contain extra columns
+     * @return a typed, schema-validated {@link Table}
+     * @throws IOException if the CSV is missing, invalid, or fails validation
      */
     public Table readCsvWithSchema(
             Path         csvPath,
@@ -144,11 +167,7 @@ abstract class BaseTableIO {
             throw new IOException("CSV not found: " + csvPath);
         }
 
-        // ───────────────────────────────────────────────────────────────────────────────
         // STEP 1 — Read the CSV as STRINGS only (no type parsing!)
-        // ───────────────────────────────────────────────────────────────────────────────
-
-        // Build an array of STRING types, one for each expected column
         ColumnType[] stringTypes = new ColumnType[expectedCols.length];
         Arrays.fill(stringTypes, ColumnType.STRING);
 
@@ -159,20 +178,14 @@ abstract class BaseTableIO {
 
         Table raw = Table.read().usingOptions(rawOpts);
 
-
-        // ───────────────────────────────────────────────────────────────────────────────
         // STEP 2 — Validate header BEFORE type coercion
-        // ───────────────────────────────────────────────────────────────────────────────
         List<String> headerErrors = validateHeader(raw, expectedCols, allowSuperset);
         if (!headerErrors.isEmpty()) {
             throw new IOException("Header validation failed:\n  - "
                                           + String.join("\n  - ", headerErrors));
         }
 
-
-        // ───────────────────────────────────────────────────────────────────────────────
         // STEP 3 — Build a fresh typed table with the correct schema
-        // ───────────────────────────────────────────────────────────────────────────────
         Table typed = newEmptyTable(raw.name(), expectedCols, expectedTypes);
 
         for (int r = 0; r < raw.rowCount(); r++) {
@@ -246,9 +259,7 @@ abstract class BaseTableIO {
             }
         }
 
-        // ───────────────────────────────────────────────────────────────────────────────
         // STEP 4 — Type checking
-        // ───────────────────────────────────────────────────────────────────────────────
         List<String> typeErrors = validateTypes(typed, expectedCols, expectedTypes);
         if (!typeErrors.isEmpty()) {
             throw new IOException("Type validation failed:\n  - "
@@ -258,8 +269,17 @@ abstract class BaseTableIO {
         return typed;
     }
 
+    // ───────────────────────────────────────────────────────────────────────────────
+    // HEADER & TYPE VALIDATION HELPERS
+    // ───────────────────────────────────────────────────────────────────────────────
+
     /**
      * Validates that the table header matches the expected columns.
+     *
+     * @param t             the table to validate
+     * @param expectedCols  expected column names
+     * @param allowSuperset whether extra columns are allowed
+     * @return a list of human-readable error messages (empty if valid)
      */
     protected List<String> validateHeader(Table t, String[] expectedCols, boolean allowSuperset) {
         List<String> errors = new ArrayList<>();
@@ -299,6 +319,11 @@ abstract class BaseTableIO {
 
     /**
      * Validates that the column types match the expected schema.
+     *
+     * @param t      table to validate
+     * @param names  expected column names
+     * @param types  expected column types
+     * @return a list of human-readable error messages (empty if valid)
      */
     protected List<String> validateTypes(Table t, String[] names, ColumnType[] types) {
         List<String> errors = new ArrayList<>();
@@ -324,8 +349,47 @@ abstract class BaseTableIO {
         return errors;
     }
 
+    // ───────────────────────────────────────────────────────────────────────────────
+    // APPEND / MERGE OPERATIONS
+    // ───────────────────────────────────────────────────────────────────────────────
+
     /**
-     * Writes a {@link Table} to CSV with US-locale fixed 3-decimal precision.
+     * Appends all rows from {@code source} into {@code target} in place, enforcing
+     * a strict schema match (same column count and identical column names/order).
+     *
+     * <p>Subclasses may provide schema-aware versions that iterate over known
+     * schema columns, but this generic implementation is useful for simple
+     * cases where both tables are known to share a schema.</p>
+     *
+     * @param target destination table
+     * @param source source table
+     */
+    void appendInPlace(Table target, Table source) {
+        if (target.columnCount() != source.columnCount()) {
+            throw new IllegalArgumentException("Cannot append: column count mismatch ("
+                                                       + target.columnCount() + " vs " + source.columnCount() + ")");
+        }
+        for (int i = 0; i < target.columnCount(); i++) {
+            if (!target.column(i).name().equals(source.column(i).name())) {
+                throw new IllegalArgumentException("Cannot append: schema mismatch at column " + i
+                                                           + " (" + target.column(i).name() + " vs "
+                                                           + source.column(i).name() + ")");
+            }
+        }
+        target.append(source);
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // CSV WRITING
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Writes a {@link Table} to CSV with US-locale fixed 3-decimal precision for
+     * floating point values.
+     *
+     * @param table  table to export
+     * @param target CSV file path
+     * @throws IOException if writing fails
      */
     public void writeCsv(Table table, Path target) throws IOException {
         NumberFormat nf = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.US));

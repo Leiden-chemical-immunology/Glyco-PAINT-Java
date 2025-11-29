@@ -3,47 +3,43 @@
  *  Package:      paint.shared.io.internal
  *
  *  PURPOSE:
- *    Public-but-internal implementation of CSV I/O for
+ *    Public-but-internal implementation of CSV and table I/O for
  *    {@link paint.shared.objects.Recording} entities. Although declared public
- *    for cross-package access by {@link paint.shared.io.MainDataInterface},
- *    this class is not part of PAINT’s public API and must not be used directly
- *    by external modules.
+ *    so it can be used by {@link paint.shared.io.MainDataInterface}, this class
+ *    is NOT part of the public API and must never be referenced directly by
+ *    external modules.
  *
  *  DESCRIPTION:
- *    Provides low-level CSV/table operations for the recordings data layer:
- *      • Creating schema-compliant Tablesaw tables
- *      • Converting between {@link Recording} objects and table rows
- *      • Reading CSV files with strict schema validation (via BaseTableIO)
- *      • Performing schema-aware append operations with type coercion
+ *    Provides all low-level logic for the recordings data layer:
  *
- *    All external callers must use {@link MainDataInterface} instead.
- *    This class remains an implementation detail even though it is public.
+ *      • Creating schema-compliant Tablesaw tables
+ *      • Converting {@link Recording} entities ↔ Tablesaw rows
+ *      • Reading CSV files with strict header and type enforcement (via BaseTableIO)
+ *      • Performing schema-aware append operations with safe type handling
+ *
+ *    The ONLY supported entry point for recordings I/O is
+ *    {@link MainDataInterface}. This class is an internal implementation detail.
  *
  *  DESIGN NOTES:
- *    • Visibility is public only because package-private classes inside
- *      'paint.shared.io.internal' cannot be referenced from
+ *    • Visibility is public ONLY because package-private classes inside
+ *      'paint.shared.io.internal' cannot be accessed from
  *      'paint.shared.io.MainDataInterface'.
- *    • All column order and data types follow
- *      {@link paint.shared.schema.RecordingSchema}.
+ *    • Despite being public, this class is treated as internal API.
+ *    • All schema definitions come from {@link paint.shared.schema.RecordingSchema}.
  *    • Fully compatible with Java 8 and Tablesaw 0.43+.
  *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-10-28
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ *  AUTHOR:       Hans Bakker
+ *  MODULE:       paint-shared-utils
+ *  UPDATED:      2025-10-28
+ *  COPYRIGHT:    © 2025 Hans Bakker. All rights reserved.
+ *============================================================================*/
 
 package paint.shared.io.internal;
 
+import paint.shared.io.MainIOInterface;
 import paint.shared.objects.Recording;
 import paint.shared.schema.RecordingSchema;
+
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
@@ -55,42 +51,44 @@ import java.util.List;
 import static paint.shared.constants.PaintStringConstants.*;
 
 /**
- * Provides table I/O utilities for {@link Recording} entities.
+ * Internal schema-validated table I/O implementation for {@link Recording}.
  *
- * <p>This class manages reading, writing, and schema enforcement for
- * {@code recordings.csv} files. Each method ensures full consistency
- * with the column definitions in {@link paint.shared.schema.RecordingSchema}.</p>
+ * <p>This class handles CSV reading, conversion, table creation, and safe
+ * append operations for {@code recordings.csv}. All schema definitions are
+ * taken from {@link RecordingSchema}.</p>
+ *
+ * <p>External callers must use {@link MainIOInterface}.</p>
  */
 public class RecordingsTableIO extends BaseTableIO {
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // TABLE CREATION
-    // ───────────────────────────────────────────────────────────────────────────────
+    // =====================================================================
+    //  TABLE CREATION
+    // =====================================================================
 
     /**
-     * Creates an empty {@link Table} for recordings with the full schema applied.
+     * Creates a new empty table with the complete Recordings schema.
      *
-     * @return a new empty {@code Table} with the “Recordings” schema
+     * @return a schema-compliant empty {@link Table}
      */
     public Table emptyTable() {
-        return newEmptyTable("Recordings", RecordingSchema.COLUMNS, RecordingSchema.TYPES);
+        return newEmptyTable("Recordings",
+                             RecordingSchema.COLUMNS,
+                             RecordingSchema.TYPES);
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // ENTITY ⇄ TABLE CONVERSION
-    // ───────────────────────────────────────────────────────────────────────────────
+    // =====================================================================
+    //  ENTITY → TABLE CONVERSION
+    // =====================================================================
 
     /**
-     * Converts a list of {@link Recording} entities into a fully typed
-     * {@link Table} matching the {@code recordings.csv} schema.
-     *
-     * @param recordings the list of {@code Recording} objects to convert
-     * @return a {@code Table} populated with recording data
+     * Converts a list of {@link Recording} entities into a schema-validated table.
      */
     public Table toTable(List<Recording> recordings) {
         Table table = emptyTable();
+
         for (Recording recording : recordings) {
             Row row = table.appendRow();
+
             row.setString(  EXPERIMENT_NAME,                 recording.getExperimentName());
             row.setString(  RECORDING_NAME,                  recording.getRecordingName());
             row.setInt(     CONDITION_NUMBER,                recording.getConditionNumber());
@@ -120,18 +118,16 @@ public class RecordingsTableIO extends BaseTableIO {
             row.setDouble(  MAX_ALLOWABLE_VARIABILITY,       recording.getMaxAllowableVariability());
             row.setString(  NEIGHBOUR_MODE,                  recording.getNeighbourMode());
         }
+
         return table;
     }
 
+    // =====================================================================
+    //  TABLE → ENTITY CONVERSION
+    // =====================================================================
+
     /**
-     * Converts a {@link Table} into a list of {@link Recording} entities.
-     *
-     * <p>The table must conform to the schema defined by
-     * {@code RecordingSchema.COLUMNS} and {@code RecordingSchema.TYPES}.
-     * Each row is mapped one-to-one to a {@code Recording} object.</p>
-     *
-     * @param table the validated {@link Table} to convert
-     * @return a list of {@code Recording} entities populated from the table
+     * Converts a validated recording table into a list of {@link Recording} entities.
      */
     public List<Recording> toEntities(Table table) {
         List<Recording> recordings = new ArrayList<>();
@@ -167,27 +163,24 @@ public class RecordingsTableIO extends BaseTableIO {
             recording.setNeighbourMode(               tablesawRow.getString(   NEIGHBOUR_MODE));
             recordings.add(recording);
         }
+
         return recordings;
     }
 
+    // =====================================================================
+    //  APPEND / MERGE
+    // =====================================================================
+
     /**
-     * Appends all rows from a source {@link Table} into a target {@link Table},
-     * enforcing the recordings schema.
+     * Appends all rows from {@code source} into {@code target} while enforcing
+     * the Recordings schema and preserving missing values.
      *
-     * <p>Behavior:</p>
-     * <ul>
-     *   <li>All columns are appended in schema order.</li>
-     *   <li>Supports basic type coercion (INTEGER → DOUBLE).</li>
-     *   <li>Missing values are preserved as missing.</li>
-     *   <li>Both tables must share the same schema.</li>
-     * </ul>
-     *
-     * @param target the destination table
-     * @param source the source table to append from
+     * <p>Supports INTEGER → DOUBLE upcasting where needed.</p>
      */
-     void appendInPlace(Table target, Table source) {
+    public void appendInPlace(Table target, Table source) {
         for (Row row : source) {
             Row newRow = target.appendRow();
+
             for (String col : RecordingSchema.COLUMNS) {
                 Column<?> targetCol = target.column(col);
 

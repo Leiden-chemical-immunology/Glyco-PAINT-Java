@@ -3,19 +3,33 @@
  *  Package:      paint.shared.io
  *
  *  PURPOSE:
- *    High-level facade providing unified read/write operations for all core
- *    PAINT experiment data types: ExperimentInfo, Recordings, Squares, Tracks.
+ *    Public façade that provides unified, stable read/write operations for all
+ *    major PAINT experiment data types:
+ *
+ *        • ExperimentInfo
+ *        • Recording
+ *        • Square
+ *        • Track
+ *
+ *    This is the ONLY public I/O entry point other modules should access.
+ *    The internal TableIO classes (ExperimentInfoTableIO, RecordingsTableIO,
+ *    SquaresTableIO, TracksTableIO) remain package-private implementation
+ *    details hidden inside paint.shared.io.internal.
  *
  *  DESCRIPTION:
- *    Wraps the lower-level TableIO classes (ExperimentInfoTableIO,
- *    RecordingsTableIO, SquaresTableIO, TracksTableIO) and exposes simple
- *    static helpers for:
+ *    For each data category, this class exposes:
  *
- *      - Reading validated CSV files
- *      - Converting tables to entity lists
- *      - Writing full tables or entity lists
+ *        • Reading validated CSV files into Tablesaw tables or entity lists
+ *        • Writing entity lists or tables back to CSV
+ *        • Static convenience helpers for conversion and empty-table creation
  *
- *    Ensures consistent error handling and logging across all operations.
+ *    All error handling is normalized through PaintLogger and friendlyMessage().
+ *
+ *  DESIGN NOTES:
+ *    • Internal TableIO objects are instantiated on demand — they hold no state.
+ *    • Schema definitions live in paint.shared.schema.*.
+ *    • All operations follow strict header/type validation in BaseTableIO.
+ *    • Compatible with Java 8 and Tablesaw 0.43+.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -28,7 +42,7 @@
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ *============================================================================*/
 
 package paint.shared.io;
 
@@ -36,6 +50,7 @@ import paint.shared.io.internal.ExperimentInfoTableIO;
 import paint.shared.io.internal.RecordingsTableIO;
 import paint.shared.io.internal.SquaresTableIO;
 import paint.shared.io.internal.TracksTableIO;
+
 import paint.shared.objects.*;
 import paint.shared.schema.*;
 
@@ -49,14 +64,15 @@ import java.util.List;
 import static paint.shared.constants.PaintFileNames.*;
 import static paint.shared.utils.Miscellaneous.friendlyMessage;
 
-public final class MainDataInterface {
+public final class MainIOInterface {
 
-    private MainDataInterface() { }
+    private MainIOInterface() { }
 
     // =====================================================================
     //  EXPERIMENT INFO
     // =====================================================================
 
+    /** Reads experiment-info.csv into a List<ExperimentInfo>. */
     public static List<ExperimentInfo> readExperimentInfo(Path experimentPath) {
         ExperimentInfoTableIO experimentInfoTableIO = new ExperimentInfoTableIO();
         try {
@@ -73,15 +89,16 @@ public final class MainDataInterface {
         }
     }
 
+    /** Writes List<ExperimentInfo> to experiment-info.csv. */
     public static void writeExperimentInfo(Path experimentPath, List<ExperimentInfo> list) {
         try {
-            Path file = experimentPath.resolve(EXPERIMENT_INFO_CSV);
-            writeSpecificExperimentInfoFile(file, list);
+            writeSpecificExperimentInfoFile(experimentPath.resolve(EXPERIMENT_INFO_CSV), list);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to write %s : %s", EXPERIMENT_INFO_CSV, friendlyMessage(e));
         }
     }
 
+    /** Writes a Table to experiment-info.csv. */
     public static void writeSpecificExperimentInfoFile(Path file, Table table) {
         ExperimentInfoTableIO experimentInfoTableIO = new ExperimentInfoTableIO();
         try {
@@ -91,10 +108,23 @@ public final class MainDataInterface {
         }
     }
 
+    /** Converts list → table → writes to CSV. */
     public static void writeSpecificExperimentInfoFile(Path file, List<ExperimentInfo> list) {
         ExperimentInfoTableIO experimentInfoTableIO = new ExperimentInfoTableIO();
-        Table table = experimentInfoTableIO.toTable(list);
-        writeSpecificExperimentInfoFile(file, table);
+        writeSpecificExperimentInfoFile(file, experimentInfoTableIO.toTable(list));
+    }
+
+    // Convenience Helpers (Experiment Info)
+    public static List<ExperimentInfo> experimentInfoTableToList(Table table) {
+        return new ExperimentInfoTableIO().toEntities(table);
+    }
+
+    public static Table experimentInfoListToTable(List<ExperimentInfo> list) {
+        return new ExperimentInfoTableIO().toTable(list);
+    }
+
+    public static Table newEmptyExperimentInfoTable() {
+        return new ExperimentInfoTableIO().emptyTable();
     }
 
     // =====================================================================
@@ -134,8 +164,7 @@ public final class MainDataInterface {
 
     public static void writeRecordings(Path experimentPath, List<Recording> list) {
         try {
-            Path file = experimentPath.resolve(RECORDINGS_CSV);
-            writeSpecificRecordingsFile(file, list);
+            writeSpecificRecordingsFile(experimentPath.resolve(RECORDINGS_CSV), list);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to write %s : %s", RECORDINGS_CSV, friendlyMessage(e));
         }
@@ -151,8 +180,20 @@ public final class MainDataInterface {
     }
 
     public static void writeSpecificRecordingsFile(Path file, List<Recording> list) {
-        RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
-        writeSpecificRecordingsFile(file, recordingsTableIO.toTable(list));
+        writeSpecificRecordingsFile(file, new RecordingsTableIO().toTable(list));
+    }
+
+    // Convenience Helpers (Recordings)
+    public static List<Recording> recordingTableToList(Table table) {
+        return new RecordingsTableIO().toEntities(table);
+    }
+
+    public static Table recordingListToTable(List<Recording> recordings) {
+        return new RecordingsTableIO().toTable(recordings);
+    }
+
+    public static Table newEmptyRecordingTable() {
+        return new RecordingsTableIO().emptyTable();
     }
 
     // =====================================================================
@@ -185,8 +226,8 @@ public final class MainDataInterface {
 
     public static void writeSquares(Path experimentPath, List<Square> list) {
         try {
-            Path file = experimentPath.resolve(SQUARES_CSV);
-            writeSpecificSquaresFile(file, SquaresTableIO.toTable(list));
+            writeSpecificSquaresFile(experimentPath.resolve(SQUARES_CSV),
+                                     new SquaresTableIO().toTable(list));
         } catch (Exception e) {
             PaintLogger.errorf("Failed to write %s : %s", SQUARES_CSV, friendlyMessage(e));
         }
@@ -194,8 +235,7 @@ public final class MainDataInterface {
 
     public static void writeSquares(Path experimentPath, Table table) {
         try {
-            Path file = experimentPath.resolve(SQUARES_CSV);
-            writeSpecificSquaresFile(file, table);
+            writeSpecificSquaresFile(experimentPath.resolve(SQUARES_CSV), table);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to write %s : %s", SQUARES_CSV, friendlyMessage(e));
         }
@@ -210,15 +250,31 @@ public final class MainDataInterface {
         }
     }
 
+    // Convenience Helpers (Squares)
+    public static List<Square> squareTableToList(Table table) {
+        return new SquaresTableIO().toEntities(table);
+    }
+
+    public static Table squareListToTable(List<Square> squares) {
+        return new SquaresTableIO().toTable(squares);
+    }
+
+    public static Table newEmptySquareTable() {
+        return new SquaresTableIO().emptyTable();
+    }
+
+    public static void appendSquareTableInPlace(Table target, Table source) {
+        new SquaresTableIO().appendInPlace(target, source);
+    }
+
     // =====================================================================
     //  TRACKS
     // =====================================================================
 
     public static List<Track> readTracks(Path experimentPath) {
-        TracksTableIO tracksTableIO = new TracksTableIO();
         try {
-            Table table = readTracksTable(experimentPath);
-            return tracksTableIO.toEntities(table);
+            Table readTracksTable = readTracksTable(experimentPath);
+            return new TracksTableIO().toEntities(readTracksTable);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to read %s : %s", TRACKS_CSV, friendlyMessage(e));
             return null;
@@ -242,8 +298,7 @@ public final class MainDataInterface {
 
     public static void writeTracks(Path experimentPath, Table table) {
         try {
-            Path file = experimentPath.resolve(TRACKS_CSV);
-            writeSpecificTracksFile(file, table);
+            writeSpecificTracksFile(experimentPath.resolve(TRACKS_CSV), table);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to write %s : %s", TRACKS_CSV, friendlyMessage(e));
         }
@@ -258,89 +313,20 @@ public final class MainDataInterface {
         }
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // STATIC CONVENIENCE HELPERS
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /** Converts a Tablesaw table into a list of Square entities. */
-    public static List<Square> squareTableToList(Table table) {
-        return new SquaresTableIO().toEntities(table);
-    }
-
-    /** Converts a list of Square entities into a schema-compliant Table. */
-    public static Table squareListToTable(List<Square> squares) {
-        return new SquaresTableIO().toTable(squares);
-    }
-
-    /** Returns a new empty Square table with the correct schema. */
-    public static Table newEmptySquareTable() {
-        return new SquaresTableIO().emptyTable();
-    }
-
-    /** Appends all rows from source to target using the standard schema. */
-    public static void appendSquareTableInPlace(Table target, Table source) {
-        new SquaresTableIO().appendInPlace(target, source);
-    }
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // STATIC CONVENIENCE HELPERS
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /** Converts a Tablesaw table into a list of Track entities. */
+    // Convenience Helpers (Tracks)
     public static List<Track> trackTableToList(Table table) {
         return new TracksTableIO().toEntities(table);
     }
 
-    /** Converts a list of Track entities into a schema-compliant Table. */
     public static Table trackListToTable(List<Track> tracks) {
         return new TracksTableIO().toTable(tracks);
     }
 
-    /** Returns a new empty Track table with the correct schema. */
     public static Table newEmptyTrackTable() {
         return new TracksTableIO().emptyTable();
     }
 
-    /** Appends all rows from source to target using the standard schema. */
     public static void appendTrackTableInPlace(Table target, Table source) {
         new TracksTableIO().appendInPlace(target, source);
-    }
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // STATIC CONVENIENCE HELPERS
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /** Converts a Tablesaw table into a list of ExperimentInfo entities. */
-    public static List<ExperimentInfo> experimentInfoTableToList(Table table) {
-        return new ExperimentInfoTableIO().toEntities(table);
-    }
-
-    /** Converts a list of ExperimentInfo entities into a schema-compliant Table. */
-    public static Table experimentInfoListToTable(List<ExperimentInfo> experimentInfos) {
-        return new ExperimentInfoTableIO().toTable(experimentInfos);
-    }
-
-    /** Returns a new empty ExperimentInfo table with the correct schema. */
-    public static Table newEmptyExperimentInfoTable() {
-        return new ExperimentInfoTableIO().emptyTable();
-    }
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // STATIC CONVENIENCE HELPERS
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /** Converts a Tablesaw table into a list of Recoring entities. */
-    public static List<Recording> recordingTableToList(Table table) {
-        return new RecordingsTableIO().toEntities(table);
-    }
-
-    /** Converts a list of Recording entities into a schema-compliant Table. */
-    public static Table recordingListToTable(List<Recording> recordings) {
-        return new RecordingsTableIO().toTable(recordings);
-    }
-
-    /** Returns a new empty Recordings table with the correct schema. */
-    public static Table newEmptyRecordingTable() {
-        return new RecordingsTableIO().emptyTable();
     }
 }

@@ -3,45 +3,41 @@
  *  Package:      paint.shared.io.internal
  *
  *  PURPOSE:
- *    Public-but-internal implementation of CSV I/O for
- *    {@link paint.shared.objects.Square} entities. Although declared public
- *    so it can be used by {@link paint.shared.io.MainDataInterface} across
- *    package boundaries, this class is NOT part of PAINT’s public API and
- *    must not be referenced directly by external modules.
+ *    Public-but-internal implementation of CSV and table I/O for
+ *    {@link paint.shared.objects.Square} entities. Although declared public so
+ *    that {@link paint.shared.io.MainDataInterface} may access it across
+ *    package boundaries, this class is NOT part of PAINT’s public API and must
+ *    not be referenced directly by external modules.
  *
  *  DESCRIPTION:
- *    Provides all low-level table and CSV operations for the squares data layer:
- *      • Creating schema-compliant Tablesaw tables
- *      • Converting between {@link Square} objects and {@link tech.tablesaw.api.Table}
- *      • Schema-validated CSV reading through {@link BaseTableIO}
- *      • Safe, schema-aware append operations with type preservation
+ *    Provides all low-level functionality for the squares data layer:
  *
- *    All callers outside this module must use {@link MainDataInterface}, which
- *    exposes the stable, high-level read/write API.
+ *       • Creating schema-compliant Tablesaw tables
+ *       • Converting {@link Square} ↔ Tablesaw rows
+ *       • Reading CSV files with strict schema validation (via BaseTableIO)
+ *       • Performing schema-aware append operations with safe type handling
+ *
+ *    The only supported public entry point for square I/O is
+ *    {@link paint.shared.io.MainDataInterface}.  This class is an internal
+ *    implementation detail despite being declared public.
  *
  *  DESIGN NOTES:
- *    • Visibility is public only because package-private classes cannot be
- *      accessed from MainDataInterface (in a different package).
- *    • Despite being public, this class is an internal implementation detail.
- *    • Column order and types are defined strictly by {@link SquareSchema}.
+ *    • Visibility is public only because package-private classes in
+ *      paint.shared.io.internal cannot be accessed by MainDataInterface.
+ *    • All column names, order, and data types come from {@link SquareSchema}.
  *    • Fully compatible with Java 8 and Tablesaw 0.43+.
  *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-10-28
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ *  AUTHOR:       Hans Bakker
+ *  MODULE:       paint-shared-utils
+ *  UPDATED:      2025-10-28
+ *  COPYRIGHT:    © 2025 Hans Bakker. All rights reserved.
+ *============================================================================*/
 
 package paint.shared.io.internal;
 
 import static paint.shared.constants.PaintStringConstants.*;
+
+import paint.shared.io.MainIOInterface;
 import paint.shared.objects.Square;
 import paint.shared.schema.SquareSchema;
 
@@ -53,40 +49,38 @@ import tech.tablesaw.columns.Column;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
- * Provides all CSV input/output operations for {@link Square} entities.
+ * Internal schema-validated table I/O implementation for {@link Square}.
  *
- * <p>Handles CSV reading, schema validation, entity conversion, and table
- * appending in a consistent manner across PAINT’s square-level datasets.</p>
+ * <p>This class supports CSV reading, schema enforcement, entity-row conversion,
+ * and schema-aware append operations.  All external callers must go through
+ * {@link MainIOInterface}.</p>
  */
 public class SquaresTableIO extends BaseTableIO {
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // TABLE CREATION
-    // ───────────────────────────────────────────────────────────────────────────────
+    // =====================================================================
+    //  TABLE CREATION
+    // =====================================================================
 
     /**
-     * Creates an empty {@link Table} for square data with the defined schema.
+     * Creates a new empty table with the full Squares schema.
      *
-     * @return a new empty table named “Squares”
+     * @return a schema-compliant empty {@link Table}
      */
-    public static Table emptyTable() {
-        return newEmptyTable("Squares", SquareSchema.COLUMNS, SquareSchema.TYPES);
+    public Table emptyTable() {
+        return newEmptyTable("Squares",
+                             SquareSchema.COLUMNS,
+                             SquareSchema.TYPES);
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // ENTITY → TABLE CONVERSION
-    // ───────────────────────────────────────────────────────────────────────────────
+    // =====================================================================
+    //  ENTITY → TABLE CONVERSION
+    // =====================================================================
 
     /**
-     * Converts a list of {@link Square} entities into a {@link Table}
-     * matching the {@code squares.csv} schema.
-     *
-     * @param squares list of {@link Square} objects to convert
-     * @return a schema-compliant {@link Table} populated with square data
+     * Converts a list of {@link Square} entities into a schema-validated table.
      */
-    public static Table toTable(List<Square> squares) {
+    public Table toTable(List<Square> squares) {
         Table table = emptyTable();
 
         for (Square square : squares) {
@@ -131,10 +125,13 @@ public class SquaresTableIO extends BaseTableIO {
         return table;
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // TABLE → ENTITY CONVERSION
-    // ───────────────────────────────────────────────────────────────────────────────
+    // =====================================================================
+    //  TABLE → ENTITY CONVERSION
+    // =====================================================================
 
+    /**
+     * Converts a validated Squares table into a list of {@link Square} entities.
+     */
     public List<Square> toEntities(Table table) {
         List<Square> squares = new ArrayList<>();
 
@@ -182,21 +179,19 @@ public class SquaresTableIO extends BaseTableIO {
         return squares;
     }
 
+    // =====================================================================
+    //  APPEND / MERGE
+    // =====================================================================
 
     /**
-     * Appends all rows from a source {@link Table} into a target {@link Table},
-     * enforcing the {@code squares.csv} schema.
-     *
-     * <p>Performs basic type handling (STRING, INTEGER, DOUBLE, BOOLEAN) and
-     * preserves missing values.</p>
-     *
-     * @param target the destination table
-     * @param source the source table to append
+     * Appends all rows from {@code source} into {@code target} while enforcing
+     * the Squares schema and preserving missing values.
      */
     public void appendInPlace(Table target, Table source) {
         for (Row row : source) {
             Row newRow = target.appendRow();
             for (String col : SquareSchema.COLUMNS) {
+                Column<?> tc = target.column(col);
 
                 Column<?> targetCol = target.column(col);
                 if (targetCol.type() == ColumnType.STRING) {

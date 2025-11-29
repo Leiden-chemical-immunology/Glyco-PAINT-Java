@@ -3,45 +3,41 @@
  *  Package:      paint.shared.io.internal
  *
  *  PURPOSE:
- *    Public-but-internal implementation of CSV I/O for
- *    {@link paint.shared.objects.Track} entities. Although declared public
- *    so it can be used by {@link paint.shared.io.MainDataInterface} across
- *    package boundaries, this class is NOT part of PAINT’s public API and
- *    must not be accessed directly by external modules.
+ *    Public-but-internal implementation of CSV and table I/O for
+ *    {@link paint.shared.objects.Track} entities. Although declared public so
+ *    that {@link paint.shared.io.MainDataInterface} can access it across
+ *    package boundaries, this class is NOT part of PAINT’s public API and must
+ *    not be used directly by external modules.
  *
  *  DESCRIPTION:
  *    Handles all low-level operations for the “tracks.csv” data layer:
- *      • Creating schema-compliant Tablesaw tables
- *      • Converting between {@link Track} objects and {@link tech.tablesaw.api.Table}
- *      • Reading CSV files with schema validation via {@link BaseTableIO}
- *      • Performing safe, schema-aware append operations
  *
- *    External callers must use {@link MainDataInterface}, which exposes the
+ *       • Creating schema-compliant Tablesaw tables
+ *       • Converting {@link Track} ↔ Tablesaw rows
+ *       • Reading CSV files with strict schema validation (via BaseTableIO)
+ *       • Performing safe, schema-aware append operations
+ *
+ *    All external callers must use {@link MainDataInterface}, which exposes the
  *    official high-level API for Track reading and writing.
  *
  *  DESIGN NOTES:
- *    • Visibility is public only because Java prevents cross-package access to
- *      package-private classes. API-wise, this class is still internal.
- *    • All column names, order, and types follow {@link TrackSchema}.
+ *    • Visibility is public only because package-private classes in
+ *      paint.shared.io.internal cannot be accessed from MainDataInterface.
+ *    • Despite being public, this class is considered internal API.
+ *    • All column names, order, and types are defined by {@link TrackSchema}.
  *    • Fully compatible with Java 8 and Tablesaw 0.43+.
  *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-10-28
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
+ *  AUTHOR:       Hans Bakker
+ *  MODULE:       paint-shared-utils
+ *  UPDATED:      2025-10-28
+ *  COPYRIGHT:    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
 package paint.shared.io.internal;
 
 import static paint.shared.constants.PaintStringConstants.*;
 
+import paint.shared.io.MainIOInterface;
 import paint.shared.schema.TrackSchema;
 import paint.shared.objects.Track;
 
@@ -54,41 +50,45 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Provides CSV I/O and schema enforcement for {@link Track} entities.
+ * Internal schema-validated table I/O implementation for {@link Track}.
  *
- * <p>This class encapsulates reading, writing, and conversion logic for
- * {@code tracks.csv} and guarantees alignment with the schema definitions
- * provided in {@link TrackSchema}.</p>
+ * <p>This class supports CSV reading, strict schema enforcement, entity-row
+ * conversion, and table append operations. External callers must use
+ * {@link MainIOInterface}.</p>
  */
 public class TracksTableIO extends BaseTableIO {
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // TABLE CREATION
-    // ───────────────────────────────────────────────────────────────────────────────
+    // =====================================================================
+    //  TABLE CREATION
+    // =====================================================================
 
     /**
-     * Creates an empty {@link Table} for tracks with the correct schema.
+     * Creates an empty {@link Table} with the full Tracks schema applied.
      *
-     * @return a new empty {@link Table} with all track columns defined
+     * @return a new empty schema-compliant {@link Table}
      */
-   public Table emptyTable() {
-        return newEmptyTable("Tracks", TrackSchema.COLUMNS, TrackSchema.TYPES);
+    public Table emptyTable() {
+        return newEmptyTable("Tracks",
+                             TrackSchema.COLUMNS,
+                             TrackSchema.TYPES);
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // ENTITY ⇄ TABLE CONVERSION
-    // ───────────────────────────────────────────────────────────────────────────────
+    // =====================================================================
+    //  ENTITY → TABLE CONVERSION
+    // =====================================================================
 
     /**
-     * Converts a list of {@link Track} objects into a {@link Table}.
+     * Converts a list of {@link Track} entities into a schema-validated table.
      *
-     * @param tracks list of {@link Track} entities to convert
-     * @return a {@link Table} containing one row per track, schema validated
+     * @param tracks list of {@code Track} objects to convert
+     * @return a {@link Table} containing one row per track
      */
     public Table toTable(List<Track> tracks) {
         Table table = emptyTable();
+
         for (Track track : tracks) {
             Row tablesawRow = table.appendRow();
+
             tablesawRow.setString( UNIQUE_KEY,                track.getUniqueKey());
             tablesawRow.setString( EXPERIMENT_NAME,           track.getExperimentName());
             tablesawRow.setString( RECORDING_NAME,            track.getRecordingName());
@@ -109,19 +109,26 @@ public class TracksTableIO extends BaseTableIO {
             tablesawRow.setInt(    SQUARE_NUMBER,             track.getSquareNumber());
             tablesawRow.setInt(    LABEL_NUMBER,              track.getLabelNumber());
         }
+
         return table;
     }
 
+    // =====================================================================
+    //  TABLE → ENTITY CONVERSION
+    // =====================================================================
+
     /**
-     * Converts a {@link Table} into a list of {@link Track} entities.
+     * Converts a validated Tracks {@link Table} into a list of {@link Track} entities.
      *
-     * @param table the validated {@link Table} to convert
-     * @return a list of {@link Track} entities populated from the table
+     * @param table a schema-validated table
+     * @return list of Track objects
      */
     public List<Track> toEntities(Table table) {
         List<Track> tracks = new ArrayList<>();
+
         for (Row row : table) {
             Track track = new Track();
+
             track.setUniqueKey(              row.getString( UNIQUE_KEY));
             track.setExperimentName(         row.getString( EXPERIMENT_NAME));
             track.setRecordingName(          row.getString( RECORDING_NAME));
@@ -141,23 +148,28 @@ public class TracksTableIO extends BaseTableIO {
             track.setConfinementRatio(       row.getDouble( CONFINEMENT_RATIO));
             track.setSquareNumber(           row.getInt(    SQUARE_NUMBER));
             track.setLabelNumber(            row.getInt(    LABEL_NUMBER));
+
             tracks.add(track);
         }
+
         return tracks;
     }
 
+    // =====================================================================
+    //  APPEND / MERGE
+    // =====================================================================
+
     /**
-     * Appends all rows from the source {@link Table} into the target {@link Table}.
+     * Appends all rows from {@code source} into {@code target} while enforcing
+     * the Tracks schema and preserving missing values.
      *
-     * <p>This method performs manual type matching and enforces the schema
-     * for all columns defined in {@link TrackSchema#COLUMNS}.</p>
-     *
-     * @param target the destination {@link Table}
-     * @param source the source {@link Table}
+     * @param target the destination table
+     * @param source the source table
      */
     public void appendInPlace(Table target, Table source) {
         for (Row row : source) {
             Row newRow = target.appendRow();
+
             for (String col : TrackSchema.COLUMNS) {
                 Column<?> targetCol = target.column(col);
 
