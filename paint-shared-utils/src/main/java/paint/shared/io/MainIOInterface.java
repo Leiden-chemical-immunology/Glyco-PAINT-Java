@@ -16,7 +16,6 @@ import tech.tablesaw.api.Table;
 import paint.shared.utils.PaintLogger;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
@@ -36,57 +35,73 @@ public final class MainIOInterface {
 
     private static String[] extractHeadersExperimentInfo() {
         ExperimentInfo.Column[] cols = ExperimentInfo.Column.values();
-        String[] arr = new String[cols.length];
-        for (int i = 0; i < cols.length; i++) arr[i] = cols[i].header;
+        String[]                arr  = new String[cols.length];
+        for (int i = 0; i < cols.length; i++) {
+            arr[i] = cols[i].header;
+        }
         return arr;
     }
 
     private static ColumnType[] extractTypesExperimentInfo() {
         ExperimentInfo.Column[] cols = ExperimentInfo.Column.values();
-        ColumnType[] arr = new ColumnType[cols.length];
-        for (int i = 0; i < cols.length; i++) arr[i] = cols[i].type;
+        ColumnType[]            arr  = new ColumnType[cols.length];
+        for (int i = 0; i < cols.length; i++) {
+            arr[i] = cols[i].type;
+        }
         return arr;
     }
 
     private static String[] extractHeadersRecording() {
         Recording.Column[] cols = Recording.Column.values();
-        String[] arr = new String[cols.length];
-        for (int i = 0; i < cols.length; i++) arr[i] = cols[i].header;
+        String[]           arr  = new String[cols.length];
+        for (int i = 0; i < cols.length; i++) {
+            arr[i] = cols[i].header;
+        }
         return arr;
     }
 
     private static ColumnType[] extractTypesRecording() {
         Recording.Column[] cols = Recording.Column.values();
-        ColumnType[] arr = new ColumnType[cols.length];
-        for (int i = 0; i < cols.length; i++) arr[i] = cols[i].type;
+        ColumnType[]       arr  = new ColumnType[cols.length];
+        for (int i = 0; i < cols.length; i++) {
+            arr[i] = cols[i].type;
+        }
         return arr;
     }
 
     private static String[] extractHeadersSquare() {
         Square.Column[] cols = Square.Column.values();
-        String[] arr = new String[cols.length];
-        for (int i = 0; i < cols.length; i++) arr[i] = cols[i].header;
+        String[]        arr  = new String[cols.length];
+        for (int i = 0; i < cols.length; i++) {
+            arr[i] = cols[i].header;
+        }
         return arr;
     }
 
     private static ColumnType[] extractTypesSquare() {
         Square.Column[] cols = Square.Column.values();
-        ColumnType[] arr = new ColumnType[cols.length];
-        for (int i = 0; i < cols.length; i++) arr[i] = cols[i].type;
+        ColumnType[]    arr  = new ColumnType[cols.length];
+        for (int i = 0; i < cols.length; i++) {
+            arr[i] = cols[i].type;
+        }
         return arr;
     }
 
     private static String[] extractHeadersTrack() {
         Track.Column[] cols = Track.Column.values();
-        String[] arr = new String[cols.length];
-        for (int i = 0; i < cols.length; i++) arr[i] = cols[i].header;
+        String[]       arr  = new String[cols.length];
+        for (int i = 0; i < cols.length; i++) {
+            arr[i] = cols[i].header;
+        }
         return arr;
     }
 
     private static ColumnType[] extractTypesTrack() {
         Track.Column[] cols = Track.Column.values();
-        ColumnType[] arr = new ColumnType[cols.length];
-        for (int i = 0; i < cols.length; i++) arr[i] = cols[i].type;
+        ColumnType[]   arr  = new ColumnType[cols.length];
+        for (int i = 0; i < cols.length; i++) {
+            arr[i] = cols[i].type;
+        }
         return arr;
     }
 
@@ -96,18 +111,17 @@ public final class MainIOInterface {
     // =====================================================================
 
     public static List<ExperimentInfo> readExperimentInfo(Path experimentPath) {
-        ExperimentInfoTableIO io = new ExperimentInfoTableIO();
+        ExperimentInfoTableIO experimentInfoTableIO = new ExperimentInfoTableIO();
         try {
-            Table table = io.readCsvWithSchema(
+            Table table = experimentInfoTableIO.readCsvWithSchema(
                     experimentPath.resolve(EXPERIMENT_INFO_CSV),
                     extractHeadersExperimentInfo(),
                     extractTypesExperimentInfo(),
                     false
             );
-            return io.toEntities(table);
+            return experimentInfoTableIO.toEntities(table);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s : %s",
-                               EXPERIMENT_INFO_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s : %s",  EXPERIMENT_INFO_CSV, friendlyMessage(e));
             return null;
         }
     }
@@ -116,23 +130,22 @@ public final class MainIOInterface {
         try {
             writeSpecificExperimentInfoFile(experimentPath.resolve(EXPERIMENT_INFO_CSV), list);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to write %s : %s",
-                               EXPERIMENT_INFO_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to write %s : %s", EXPERIMENT_INFO_CSV, friendlyMessage(e));
         }
     }
 
     public static void writeSpecificExperimentInfoFile(Path file, Table table) {
-        ExperimentInfoTableIO io = new ExperimentInfoTableIO();
+        ExperimentInfoTableIO experimentInfoTableIO = new ExperimentInfoTableIO();
         try {
-            io.writeCsv(table, file);
+            experimentInfoTableIO.writeCsv(table, file);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to write %s : %s", file, friendlyMessage(e));
         }
     }
 
     public static void writeSpecificExperimentInfoFile(Path file, List<ExperimentInfo> list) {
-        ExperimentInfoTableIO io = new ExperimentInfoTableIO();
-        writeSpecificExperimentInfoFile(file, io.toTable(list));
+        ExperimentInfoTableIO experimentInfoTableIO = new ExperimentInfoTableIO();
+        writeSpecificExperimentInfoFile(file, experimentInfoTableIO.toTable(list));
     }
 
     public static List<ExperimentInfo> experimentInfoTableToList(Table t) {
@@ -153,34 +166,32 @@ public final class MainIOInterface {
     // =====================================================================
 
     public static List<Recording> readRecordings(Path experimentPath) {
-        RecordingsTableIO io = new RecordingsTableIO();
+        RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
         try {
-            Table table = io.readCsvWithSchema(
+            Table table = recordingsTableIO.readCsvWithSchema(
                     experimentPath.resolve(RECORDINGS_CSV),
                     extractHeadersRecording(),
                     extractTypesRecording(),
                     false
             );
-            return io.toEntities(table);
+            return recordingsTableIO.toEntities(table);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s : %s",
-                               RECORDINGS_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s : %s", RECORDINGS_CSV, friendlyMessage(e));
             return null;
         }
     }
 
     public static Table readRecordingsTable(Path experimentPath) {
-        RecordingsTableIO io = new RecordingsTableIO();
+        RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
         try {
-            return io.readCsvWithSchema(
+            return recordingsTableIO.readCsvWithSchema(
                     experimentPath.resolve(RECORDINGS_CSV),
                     extractHeadersRecording(),
                     extractTypesRecording(),
                     false
             );
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s : %s",
-                               RECORDINGS_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s : %s", RECORDINGS_CSV, friendlyMessage(e));
             return null;
         }
     }
@@ -189,15 +200,14 @@ public final class MainIOInterface {
         try {
             writeSpecificRecordingsFile(experimentPath.resolve(RECORDINGS_CSV), list);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to write %s : %s",
-                               RECORDINGS_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to write %s : %s", RECORDINGS_CSV, friendlyMessage(e));
         }
     }
 
     public static void writeSpecificRecordingsFile(Path file, Table table) {
-        RecordingsTableIO io = new RecordingsTableIO();
+        RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
         try {
-            io.writeCsv(table, file);
+            recordingsTableIO.writeCsv(table, file);
         } catch (Exception e) {
             PaintLogger.errorf("Failed to write %s : %s", file, friendlyMessage(e));
         }
@@ -228,24 +238,22 @@ public final class MainIOInterface {
         try {
             return new SquaresTableIO().toEntities(readSquaresTable(experimentPath));
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s : %s",
-                               SQUARES_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s : %s", SQUARES_CSV, friendlyMessage(e));
             return null;
         }
     }
 
     public static Table readSquaresTable(Path experimentPath) {
-        SquaresTableIO io = new SquaresTableIO();
+        SquaresTableIO squaresTableIO = new SquaresTableIO();
         try {
-            return io.readCsvWithSchema(
+            return squaresTableIO.readCsvWithSchema(
                     experimentPath.resolve(SQUARES_CSV),
                     extractHeadersSquare(),
                     extractTypesSquare(),
                     false
             );
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s : %s",
-                               SQUARES_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s : %s", SQUARES_CSV, friendlyMessage(e));
             return null;
         }
     }
@@ -257,8 +265,7 @@ public final class MainIOInterface {
                     new SquaresTableIO().toTable(list)
             );
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to write %s : %s",
-                               SQUARES_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to write %s : %s", SQUARES_CSV, friendlyMessage(e));
         }
     }
 
@@ -266,18 +273,16 @@ public final class MainIOInterface {
         try {
             writeSpecificSquaresFile(experimentPath.resolve(SQUARES_CSV), table);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to write %s : %s",
-                               SQUARES_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to write %s : %s", SQUARES_CSV, friendlyMessage(e));
         }
     }
 
     public static void writeSpecificSquaresFile(Path file, Table table) {
-        SquaresTableIO io = new SquaresTableIO();
+        SquaresTableIO squaresTableIO = new SquaresTableIO();
         try {
-            io.writeCsv(table, file);
+            squaresTableIO.writeCsv(table, file);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to write %s : %s",
-                               file, friendlyMessage(e));
+            PaintLogger.errorf("Failed to write %s : %s", file, friendlyMessage(e));
         }
     }
 
@@ -307,24 +312,22 @@ public final class MainIOInterface {
             Table table = readTracksTable(experimentPath);
             return new TracksTableIO().toEntities(table);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s : %s",
-                               TRACKS_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s : %s", TRACKS_CSV, friendlyMessage(e));
             return null;
         }
     }
 
     public static Table readTracksTable(Path experimentPath) {
-        TracksTableIO io = new TracksTableIO();
+        TracksTableIO tracksTableIO = new TracksTableIO();
         try {
-            return io.readCsvWithSchema(
+            return tracksTableIO.readCsvWithSchema(
                     experimentPath.resolve(TRACKS_CSV),
                     extractHeadersTrack(),
                     extractTypesTrack(),
                     false
             );
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to read %s : %s",
-                               TRACKS_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to read %s : %s", TRACKS_CSV, friendlyMessage(e));
             return null;
         }
     }
@@ -333,18 +336,16 @@ public final class MainIOInterface {
         try {
             writeSpecificTracksFile(experimentPath.resolve(TRACKS_CSV), table);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to write %s : %s",
-                               TRACKS_CSV, friendlyMessage(e));
+            PaintLogger.errorf("Failed to write %s : %s", TRACKS_CSV, friendlyMessage(e));
         }
     }
 
     public static void writeSpecificTracksFile(Path file, Table table) {
-        TracksTableIO io = new TracksTableIO();
+        TracksTableIO tracksTableIO = new TracksTableIO();
         try {
-            io.writeCsv(table, file);
+            tracksTableIO.writeCsv(table, file);
         } catch (Exception e) {
-            PaintLogger.errorf("Failed to write %s : %s",
-                               file, friendlyMessage(e));
+            PaintLogger.errorf("Failed to write %s : %s",  file, friendlyMessage(e));
         }
     }
 

@@ -1,6 +1,5 @@
 package paint.shared.io.internal;
 
-import paint.shared.io.MainIOInterface;
 import paint.shared.objects.Recording;
 
 import tech.tablesaw.api.ColumnType;

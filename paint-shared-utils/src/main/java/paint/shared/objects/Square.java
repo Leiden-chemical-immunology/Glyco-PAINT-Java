@@ -46,16 +46,15 @@
 
 package paint.shared.objects;
 
-import tech.tablesaw.api.Table;
 import tech.tablesaw.api.ColumnType;
-
-import static paint.shared.utils.Miscellaneous.initialiseDoublesToNaN;
+import tech.tablesaw.api.Table;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static paint.shared.constants.PaintGeometry.IMAGE_HEIGHT;
 import static paint.shared.constants.PaintGeometry.IMAGE_WIDTH;
+import static paint.shared.utils.Miscellaneous.initialiseDoublesToNaN;
 import static paint.shared.utils.Miscellaneous.round;
 
 /**
@@ -66,72 +65,12 @@ import static paint.shared.utils.Miscellaneous.round;
  */
 public class Square {
 
-    /*=========================================================================
-     *  EMBEDDED SCHEMA ENUM (Replaces SquareSchema)
-     *=========================================================================
-     *
-     *  Each enum constant corresponds to a CSV column, with:
-     *
-     *      header — readable column name
-     *      type   — Tablesaw ColumnType
-     *
-     *  Column order is strictly controlled by declaration order.
-     */
-    public enum Column {
-
-        UNIQUE_KEY(                       "Unique Key",                       ColumnType.STRING),
-        EXPERIMENT_NAME(                  "Experiment Name",                  ColumnType.STRING),
-        RECORDING_NAME(                   "Recording Name",                   ColumnType.STRING),
-        SQUARE_NUMBER(                    "Square Number",                    ColumnType.INTEGER),
-        ROW_NUMBER(                       "Row Number",                       ColumnType.INTEGER),
-        COLUMN_NUMBER(                    "Column Number",                    ColumnType.INTEGER),
-        LABEL_NUMBER(                     "Label Number",                     ColumnType.INTEGER),
-        CELL_ID(                          "Cell Id",                          ColumnType.INTEGER),
-        VISIBLE(                          "Visible",                          ColumnType.BOOLEAN),
-        SQUARE_MANUALLY_EXCLUDED(         "Square Manually Excluded",         ColumnType.BOOLEAN),
-        IMAGE_EXCLUDED(                   "Image Excluded",                   ColumnType.BOOLEAN),
-        X0(                               "X0",                               ColumnType.DOUBLE),
-        Y0(                               "Y0",                               ColumnType.DOUBLE),
-        X1(                               "X1",                               ColumnType.DOUBLE),
-        Y1(                               "Y1",                               ColumnType.DOUBLE),
-        NUMBER_OF_TRACKS(                 "Number of Tracks",                 ColumnType.INTEGER),
-        VARIABILITY(                      "Variability",                      ColumnType.DOUBLE),
-        DENSITY(                          "Density",                          ColumnType.DOUBLE),
-        DENSITY_RATIO(                    "Density Ratio",                    ColumnType.DOUBLE),
-        DENSITY_RATIO_ORI(                "Density Ratio Ori",                ColumnType.DOUBLE),
-        TAU(                              "Tau",                              ColumnType.DOUBLE),
-        R_SQUARED(                        "R Squared",                        ColumnType.DOUBLE),
-        MEDIAN_DIFFUSION_COEFFICIENT(     "Median Diffusion Coefficient",     ColumnType.DOUBLE),
-        MEDIAN_DIFFUSION_COEFFICIENT_EXT( "Median Diffusion Coefficient Ext", ColumnType.DOUBLE),
-        MEDIAN_DISPLACEMENT(              "Median Displacement",              ColumnType.DOUBLE),
-        MAX_DISPLACEMENT(                 "Max Displacement",                 ColumnType.DOUBLE),
-        TOTAL_DISPLACEMENT(               "Total Displacement",               ColumnType.DOUBLE),
-        MEDIAN_MAX_SPEED(                 "Median Max Speed",                 ColumnType.DOUBLE),
-        MAX_MAX_SPEED(                    "Max Max Speed",                    ColumnType.DOUBLE),
-        MEDIAN_MEDIAN_SPEED(              "Median Median Speed",              ColumnType.DOUBLE),
-        MAX_MEDIAN_SPEED(                 "Max Median Speed",                 ColumnType.DOUBLE),
-        MAX_TRACK_DURATION(               "Max Track Duration",               ColumnType.DOUBLE),
-        TOTAL_TRACK_DURATION(             "Total Track Duration",             ColumnType.DOUBLE),
-        MEDIAN_TRACK_DURATION(            "Median Track Duration",            ColumnType.DOUBLE);
-
-        public final String header;
-        public final ColumnType type;
-
-        Column(String header, ColumnType type) {
-            this.header = header;
-            this.type   = type;
-        }
-
-        /** Returns the zero-based index of the column. */
-        public int index() { return ordinal(); }
-    }
+    private String  uniqueKey;
 
     /*=========================================================================
      *  CORE ATTRIBUTES
      *=========================================================================
      */
-
-    private String  uniqueKey;
     private String  experimentName;
     private String  recordingName;
     private int     squareNumber;
@@ -174,13 +113,15 @@ public class Square {
     private List<Track> tracks      = new ArrayList<>();
     private Table       tracksTable = null;
 
-    /*=========================================================================
-     *  CONSTRUCTORS
-     *=========================================================================
+    /**
+     * Creates an empty {@code Square}.
      */
+    public Square() {
+    }
 
-    /** Creates an empty {@code Square}. */
-    public Square() { }
+    //=========================================================================
+    // CONSTRUCTORS
+    // =========================================================================
 
     /**
      * Creates a fully-specified {@code Square} with geometric coordinates.
@@ -226,133 +167,309 @@ public class Square {
         y1 = round((rowNumber + 1) * height, 2);
     }
 
-    /*=========================================================================
-     *  ACCESSORS & MUTATORS
-     *=========================================================================
+    /**
+     * Computes the theoretical square area for a given grid size.
      */
-
-    public String getUniqueKey() { return uniqueKey; }
-    public void   setUniqueKey(String key) { this.uniqueKey = key; }
-
-    public String getExperimentName() { return experimentName; }
-    public void   setExperimentName(String name) { this.experimentName = name; }
-
-    public String getRecordingName() { return recordingName; }
-    public void   setRecordingName(String name) { this.recordingName = name; }
-
-    public int    getSquareNumber() { return squareNumber; }
-    public void   setSquareNumber(int n) { this.squareNumber = n; }
-
-    public int    getRowNumber() { return rowNumber; }
-    public void   setRowNumber(int r) { this.rowNumber = r; }
-
-    public int    getColNumber() { return colNumber; }
-    public void   setColNumber(int c) { this.colNumber = c; }
-
-    public int    getLabelNumber() { return labelNumber; }
-    public void   setLabelNumber(int n) { this.labelNumber = n; }
-
-    public int    getCellId() { return cellId; }
-    public void   setCellId(int id) { this.cellId = id; }
-
-    public boolean isVisible() { return visible; }
-    public void    setVisible(boolean v) { this.visible = v; }
-
-    public boolean isSquareManuallyExcluded() { return squareManuallyExcluded; }
-    public void    setSquareManuallyExcluded(boolean b) { this.squareManuallyExcluded = b; }
-
-    public boolean isImageExcluded() { return imageExcluded; }
-    public void    setImageExcluded(boolean b) { this.imageExcluded = b; }
-
-    public double  getX0() { return x0; }
-    public void    setX0(double v) { this.x0 = round(v, 2); }
-
-    public double  getY0() { return y0; }
-    public void    setY0(double v) { this.y0 = round(v, 2); }
-
-    public double  getX1() { return x1; }
-    public void    setX1(double v) { this.x1 = round(v, 2); }
-
-    public double  getY1() { return y1; }
-    public void    setY1(double v) { this.y1 = round(v, 2); }
-
-    public int     getNumberOfTracks() { return numberOfTracks; }
-    public void    setNumberOfTracks(int n) { this.numberOfTracks = n; }
-
-    public double  getVariability() { return variability; }
-    public void    setVariability(double v) { this.variability = v; }
-
-    public double  getDensity() { return density; }
-    public void    setDensity(double d) { this.density = d; }
-
-    public double  getDensityRatio() { return densityRatio; }
-    public void    setDensityRatio(double v) { this.densityRatio = v; }
-
-    public double  getDensityRatioOri() { return densityRatioOri; }
-    public void    setDensityRatioOri(double v) { this.densityRatioOri = v; }
-
-    public double  getTau() { return tau; }
-    public void    setTau(double t) { this.tau = t; }
-
-    public double  getRSquared() { return rSquared; }
-    public void    setRSquared(double r) { this.rSquared = r; }
-
-    public double  getMedianDiffusionCoefficient() { return medianDiffusionCoefficient; }
-    public void    setMedianDiffusionCoefficient(double v) { this.medianDiffusionCoefficient = v; }
-
-    public double  getMedianDiffusionCoefficientExt() { return medianDiffusionCoefficientExt; }
-    public void    setMedianDiffusionCoefficientExt(double v) { this.medianDiffusionCoefficientExt = v; }
-
-    public double  getMedianDisplacement() { return medianDisplacement; }
-    public void    setMedianDisplacement(double v) { this.medianDisplacement = v; }
-
-    public double  getMaxDisplacement() { return maxDisplacement; }
-    public void    setMaxDisplacement(double v) { this.maxDisplacement = v; }
-
-    public double  getTotalDisplacement() { return totalDisplacement; }
-    public void    setTotalDisplacement(double v) { this.totalDisplacement = v; }
-
-    public double  getMedianMaxSpeed() { return medianMaxSpeed; }
-    public void    setMedianMaxSpeed(double v) { this.medianMaxSpeed = v; }
-
-    public double  getMaxMaxSpeed() { return maxMaxSpeed; }
-    public void    setMaxMaxSpeed(double v) { this.maxMaxSpeed = v; }
-
-    public double  getMedianMedianSpeed() { return medianMedianSpeed; }
-    public void    setMedianMedianSpeed(double v) { this.medianMedianSpeed = v; }
-
-    public double  getMaxMedianSpeed() { return maxMedianSpeed; }
-    public void    setMaxMedianSpeed(double v) { this.maxMedianSpeed = v; }
-
-    public double  getMaxTrackDuration() { return maxTrackDuration; }
-    public void    setMaxTrackDuration(double v) { this.maxTrackDuration = v; }
-
-    public double  getTotalTrackDuration() { return totalTrackDuration; }
-    public void    setTotalTrackDuration(double v) { this.totalTrackDuration = v; }
-
-    public double  getMedianTrackDuration() { return medianTrackDuration; }
-    public void    setMedianTrackDuration(double v) { this.medianTrackDuration = v; }
-
-    public List<Track> getTracks() { return tracks; }
-    public void        setTracksList(List<Track> t) { this.tracks = t; }
-
-    public Table  getTracksTable() { return tracksTable; }
-    public void   setTracksTable(Table t) { this.tracksTable = t; }
-
-    /*=========================================================================
-     *  UTILITIES
-     *=========================================================================
-     */
-
-    /** Computes the theoretical square area for a given grid size. */
     public static double calculateSquareArea(int n) {
         return IMAGE_WIDTH * IMAGE_HEIGHT / n;
     }
 
-    /*=========================================================================
-     *  STRING REPRESENTATION
-     *=========================================================================
-     */
+    //=========================================================================
+    // ACCESSORS & MUTATORS
+    //=========================================================================
+
+
+    public String getUniqueKey() {
+        return uniqueKey;
+    }
+
+    public void setUniqueKey(String key) {
+        this.uniqueKey = key;
+    }
+
+    public String getExperimentName() {
+        return experimentName;
+    }
+
+    public void setExperimentName(String name) {
+        this.experimentName = name;
+    }
+
+    public String getRecordingName() {
+        return recordingName;
+    }
+
+    public void setRecordingName(String name) {
+        this.recordingName = name;
+    }
+
+    public int getSquareNumber() {
+        return squareNumber;
+    }
+
+    public void setSquareNumber(int n) {
+        this.squareNumber = n;
+    }
+
+    public int getRowNumber() {
+        return rowNumber;
+    }
+
+    public void setRowNumber(int r) {
+        this.rowNumber = r;
+    }
+
+    public int getColNumber() {
+        return colNumber;
+    }
+
+    public void setColNumber(int c) {
+        this.colNumber = c;
+    }
+
+    public int getLabelNumber() {
+        return labelNumber;
+    }
+
+    public void setLabelNumber(int n) {
+        this.labelNumber = n;
+    }
+
+    public int getCellId() {
+        return cellId;
+    }
+
+    public void setCellId(int id) {
+        this.cellId = id;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean v) {
+        this.visible = v;
+    }
+
+    public boolean isSquareManuallyExcluded() {
+        return squareManuallyExcluded;
+    }
+
+    public void setSquareManuallyExcluded(boolean b) {
+        this.squareManuallyExcluded = b;
+    }
+
+    public boolean isImageExcluded() {
+        return imageExcluded;
+    }
+
+    public void setImageExcluded(boolean b) {
+        this.imageExcluded = b;
+    }
+
+    public double getX0() {
+        return x0;
+    }
+
+    public void setX0(double v) {
+        this.x0 = round(v, 2);
+    }
+
+    public double getY0() {
+        return y0;
+    }
+
+    public void setY0(double v) {
+        this.y0 = round(v, 2);
+    }
+
+    public double getX1() {
+        return x1;
+    }
+
+    public void setX1(double v) {
+        this.x1 = round(v, 2);
+    }
+
+    public double getY1() {
+        return y1;
+    }
+
+    public void setY1(double v) {
+        this.y1 = round(v, 2);
+    }
+
+    public int getNumberOfTracks() {
+        return numberOfTracks;
+    }
+
+    public void setNumberOfTracks(int n) {
+        this.numberOfTracks = n;
+    }
+
+    public double getVariability() {
+        return variability;
+    }
+
+    public void setVariability(double v) {
+        this.variability = v;
+    }
+
+    public double getDensity() {
+        return density;
+    }
+
+    public void setDensity(double d) {
+        this.density = d;
+    }
+
+    public double getDensityRatio() {
+        return densityRatio;
+    }
+
+    public void setDensityRatio(double v) {
+        this.densityRatio = v;
+    }
+
+    public double getDensityRatioOri() {
+        return densityRatioOri;
+    }
+
+    public void setDensityRatioOri(double v) {
+        this.densityRatioOri = v;
+    }
+
+    public double getTau() {
+        return tau;
+    }
+
+    public void setTau(double t) {
+        this.tau = t;
+    }
+
+    public double getRSquared() {
+        return rSquared;
+    }
+
+    public void setRSquared(double r) {
+        this.rSquared = r;
+    }
+
+    public double getMedianDiffusionCoefficient() {
+        return medianDiffusionCoefficient;
+    }
+
+    public void setMedianDiffusionCoefficient(double v) {
+        this.medianDiffusionCoefficient = v;
+    }
+
+    public double getMedianDiffusionCoefficientExt() {
+        return medianDiffusionCoefficientExt;
+    }
+
+    public void setMedianDiffusionCoefficientExt(double v) {
+        this.medianDiffusionCoefficientExt = v;
+    }
+
+    public double getMedianDisplacement() {
+        return medianDisplacement;
+    }
+
+    public void setMedianDisplacement(double v) {
+        this.medianDisplacement = v;
+    }
+
+    public double getMaxDisplacement() {
+        return maxDisplacement;
+    }
+
+    public void setMaxDisplacement(double v) {
+        this.maxDisplacement = v;
+    }
+
+    public double getTotalDisplacement() {
+        return totalDisplacement;
+    }
+
+    public void setTotalDisplacement(double v) {
+        this.totalDisplacement = v;
+    }
+
+    public double getMedianMaxSpeed() {
+        return medianMaxSpeed;
+    }
+
+    public void setMedianMaxSpeed(double v) {
+        this.medianMaxSpeed = v;
+    }
+
+    public double getMaxMaxSpeed() {
+        return maxMaxSpeed;
+    }
+
+    public void setMaxMaxSpeed(double v) {
+        this.maxMaxSpeed = v;
+    }
+
+    public double getMedianMedianSpeed() {
+        return medianMedianSpeed;
+    }
+
+    public void setMedianMedianSpeed(double v) {
+        this.medianMedianSpeed = v;
+    }
+
+    public double getMaxMedianSpeed() {
+        return maxMedianSpeed;
+    }
+
+    public void setMaxMedianSpeed(double v) {
+        this.maxMedianSpeed = v;
+    }
+
+    public double getMaxTrackDuration() {
+        return maxTrackDuration;
+    }
+
+    public void setMaxTrackDuration(double v) {
+        this.maxTrackDuration = v;
+    }
+
+    public double getTotalTrackDuration() {
+        return totalTrackDuration;
+    }
+
+    public void setTotalTrackDuration(double v) {
+        this.totalTrackDuration = v;
+    }
+
+    public double getMedianTrackDuration() {
+        return medianTrackDuration;
+    }
+
+    public void setMedianTrackDuration(double v) {
+        this.medianTrackDuration = v;
+    }
+
+    public List<Track> getTracks() {
+        return tracks;
+    }
+
+    public void setTracksList(List<Track> t) {
+        this.tracks = t;
+    }
+
+    public Table getTracksTable() {
+        return tracksTable;
+    }
+
+    public void setTracksTable(Table t) {
+        this.tracksTable = t;
+    }
+
+    //=========================================================================
+    // UTILITIES
+    //=========================================================================
 
     @Override
     public String toString() {
@@ -404,5 +521,62 @@ public class Square {
         }
 
         return sb.toString();
+    }
+
+    //=========================================================================
+    // EMBEDDED SCHEMA ENUM
+    //=========================================================================
+
+    public enum Column {
+
+        UNIQUE_KEY(                       "Unique Key",                       ColumnType.STRING),
+        EXPERIMENT_NAME(                  "Experiment Name",                  ColumnType.STRING),
+        RECORDING_NAME(                   "Recording Name",                   ColumnType.STRING),
+        SQUARE_NUMBER(                    "Square Number",                    ColumnType.INTEGER),
+        ROW_NUMBER(                       "Row Number",                       ColumnType.INTEGER),
+        COLUMN_NUMBER(                    "Column Number",                    ColumnType.INTEGER),
+        LABEL_NUMBER(                     "Label Number",                     ColumnType.INTEGER),
+        CELL_ID(                          "Cell Id",                          ColumnType.INTEGER),
+        VISIBLE(                          "Visible",                          ColumnType.BOOLEAN),
+        SQUARE_MANUALLY_EXCLUDED(         "Square Manually Excluded",         ColumnType.BOOLEAN),
+        IMAGE_EXCLUDED(                   "Image Excluded",                   ColumnType.BOOLEAN),
+        X0(                               "X0",                               ColumnType.DOUBLE),
+        Y0(                               "Y0",                               ColumnType.DOUBLE),
+        X1(                               "X1",                               ColumnType.DOUBLE),
+        Y1(                               "Y1",                               ColumnType.DOUBLE),
+        NUMBER_OF_TRACKS(                 "Number of Tracks",                 ColumnType.INTEGER),
+        VARIABILITY(                      "Variability",                      ColumnType.DOUBLE),
+        DENSITY(                          "Density",                          ColumnType.DOUBLE),
+        DENSITY_RATIO(                    "Density Ratio",                    ColumnType.DOUBLE),
+        DENSITY_RATIO_ORI(                "Density Ratio Ori",                ColumnType.DOUBLE),
+        TAU(                              "Tau",                              ColumnType.DOUBLE),
+        R_SQUARED(                        "R Squared",                        ColumnType.DOUBLE),
+        MEDIAN_DIFFUSION_COEFFICIENT(     "Median Diffusion Coefficient",     ColumnType.DOUBLE),
+        MEDIAN_DIFFUSION_COEFFICIENT_EXT( "Median Diffusion Coefficient Ext", ColumnType.DOUBLE),
+        MEDIAN_DISPLACEMENT(              "Median Displacement",              ColumnType.DOUBLE),
+        MAX_DISPLACEMENT(                 "Max Displacement",                 ColumnType.DOUBLE),
+        TOTAL_DISPLACEMENT(               "Total Displacement",               ColumnType.DOUBLE),
+        MEDIAN_MAX_SPEED(                 "Median Max Speed",                 ColumnType.DOUBLE),
+        MAX_MAX_SPEED(                    "Max Max Speed",                    ColumnType.DOUBLE),
+        MEDIAN_MEDIAN_SPEED(              "Median Median Speed",              ColumnType.DOUBLE),
+        MAX_MEDIAN_SPEED(                 "Max Median Speed",                 ColumnType.DOUBLE),
+        MAX_TRACK_DURATION(               "Max Track Duration",               ColumnType.DOUBLE),
+        TOTAL_TRACK_DURATION(              "Total Track Duration",            ColumnType.DOUBLE),
+        MEDIAN_TRACK_DURATION(             "Median Track Duration",           ColumnType.DOUBLE);
+
+        public final String     header;
+        public final ColumnType type;
+
+        Column(String header, ColumnType type) {
+            this.header = header;
+            this.type = type;
+        }
+
+        /**
+         * Returns the zero-based index of the column.
+         */
+        public int index() {
+            return ordinal();
+        }
     }
 }

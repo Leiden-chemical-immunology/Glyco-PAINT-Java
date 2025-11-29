@@ -54,55 +54,9 @@ import static paint.shared.utils.Miscellaneous.initialiseDoublesToNaN;
  */
 public class Track {
 
-    /*=========================================================================
-     *  EMBEDDED SCHEMA ENUM (formerly TrackSchema)
-     *=========================================================================
-     *
-     *  Each enum constant defines:
-     *
-     *      header — CSV column name
-     *      type   — Tablesaw ColumnType for strict schema validation
-     *
-     *  The declaration order defines the CSV order.
-     */
-    public enum Column {
-
-        UNIQUE_KEY(                "Unique Key",                 ColumnType.STRING),
-        EXPERIMENT_NAME(           "Experiment Name",            ColumnType.STRING),
-        RECORDING_NAME(            "Recording Name",             ColumnType.STRING),
-        TRACK_ID(                  "Track Id",                   ColumnType.INTEGER),
-        NUMBER_OF_SPOTS(           "Number of Spots",            ColumnType.INTEGER),
-        NUMBER_OF_GAPS(            "Number of Gaps",             ColumnType.INTEGER),
-        LONGEST_GAP(               "Longest Gap",                ColumnType.INTEGER),
-        TRACK_DURATION(            "Track Duration",             ColumnType.DOUBLE),
-        TRACK_X_LOCATION(          "Track X Location",           ColumnType.DOUBLE),
-        TRACK_Y_LOCATION(          "Track Y Location",           ColumnType.DOUBLE),
-        TRACK_DISPLACEMENT(        "Track Displacement",         ColumnType.DOUBLE),
-        TRACK_MAX_SPEED(           "Track Max Speed",            ColumnType.DOUBLE),
-        TRACK_MEDIAN_SPEED(        "Track Median Speed",         ColumnType.DOUBLE),
-        DIFFUSION_COEFFICIENT(     "Diffusion Coefficient",      ColumnType.DOUBLE),
-        DIFFUSION_COEFFICIENT_EXT( "Diffusion Coefficient Ext",  ColumnType.DOUBLE),
-        TOTAL_DISTANCE(            "Total Distance",             ColumnType.DOUBLE),
-        CONFINEMENT_RATIO(         "Confinement Ratio",          ColumnType.DOUBLE),
-        SQUARE_NUMBER(             "Square Number",              ColumnType.INTEGER),
-        LABEL_NUMBER(              "Label Number",               ColumnType.INTEGER);
-
-        public final String header;
-        public final ColumnType type;
-
-        Column(String header, ColumnType type) {
-            this.header = header;
-            this.type   = type;
-        }
-
-        /** Returns the zero-based column index. */
-        public int index() { return ordinal(); }
-    }
-
-    /*=========================================================================
-     *  CORE TRACK ATTRIBUTES
-     *=========================================================================
-     */
+    //=========================================================================
+    // CORE TRACK ATTRIBUTES
+    //=========================================================================
 
     private String uniqueKey;
     private String experimentName;
@@ -128,10 +82,9 @@ public class Track {
     private int    squareNumber;
     private int    labelNumber;
 
-    /*=========================================================================
-     *  CONSTRUCTORS
-     *=========================================================================
-     */
+    //=========================================================================
+    //  CONSTRUCTORS
+    //=========================================================================
 
     /** Creates an empty, uninitialized track. */
     public Track() { }
@@ -142,10 +95,10 @@ public class Track {
     public Track(String uniqueKey,
             String experimentName,
             String recordingName,
-            int    trackId,
-            int    numberOfSpots,
-            int    numberOfGaps,
-            int    longestGap,
+            int trackId,
+            int numberOfSpots,
+            int numberOfGaps,
+            int longestGap,
             double trackDuration,
             double trackXLocation,
             double trackYLocation,
@@ -156,98 +109,187 @@ public class Track {
             double diffusionCoefficientExt,
             double totalDistance,
             double confinementRatio,
-            int    squareNumber,
-            int    labelNumber) {
+            int squareNumber,
+            int labelNumber) {
 
         initialiseDoublesToNaN(this);
 
-        this.uniqueKey               = uniqueKey;
-        this.experimentName          = experimentName;
-        this.recordingName           = recordingName;
-        this.trackId                 = trackId;
-        this.numberOfSpots           = numberOfSpots;
-        this.numberOfGaps            = numberOfGaps;
-        this.longestGap              = longestGap;
-        this.trackDuration           = trackDuration;
-        this.trackXLocation          = trackXLocation;
-        this.trackYLocation          = trackYLocation;
-        this.trackDisplacement       = trackDisplacement;
-        this.trackMaxSpeed           = trackMaxSpeed;
-        this.trackMedianSpeed        = trackMedianSpeed;
-        this.diffusionCoefficient    = diffusionCoefficient;
+        this.uniqueKey = uniqueKey;
+        this.experimentName = experimentName;
+        this.recordingName = recordingName;
+        this.trackId = trackId;
+        this.numberOfSpots = numberOfSpots;
+        this.numberOfGaps = numberOfGaps;
+        this.longestGap = longestGap;
+        this.trackDuration = trackDuration;
+        this.trackXLocation = trackXLocation;
+        this.trackYLocation = trackYLocation;
+        this.trackDisplacement = trackDisplacement;
+        this.trackMaxSpeed = trackMaxSpeed;
+        this.trackMedianSpeed = trackMedianSpeed;
+        this.diffusionCoefficient = diffusionCoefficient;
         this.diffusionCoefficientExt = diffusionCoefficientExt;
-        this.totalDistance           = totalDistance;
-        this.confinementRatio        = confinementRatio;
-        this.squareNumber            = squareNumber;
-        this.labelNumber             = labelNumber;
+        this.totalDistance = totalDistance;
+        this.confinementRatio = confinementRatio;
+        this.squareNumber = squareNumber;
+        this.labelNumber = labelNumber;
     }
 
-    /*=========================================================================
-     *  ACCESSORS & MUTATORS
-     *=========================================================================
-     */
+    public String getUniqueKey() {
+        return uniqueKey;
+    }
 
-    public String getUniqueKey() { return uniqueKey; }
-    public void   setUniqueKey(String key) { this.uniqueKey = key; }
+    //=========================================================================
+    // ACCESSORS & MUTATORS
+    //=========================================================================
 
-    public String getExperimentName() { return experimentName; }
-    public void   setExperimentName(String name) { this.experimentName = name; }
+    public void setUniqueKey(String key) {
+        this.uniqueKey = key;
+    }
 
-    public String getRecordingName() { return recordingName; }
-    public void   setRecordingName(String name) { this.recordingName = name; }
+    public String getExperimentName() {
+        return experimentName;
+    }
 
-    public int    getTrackId() { return trackId; }
-    public void   setTrackId(int id) { this.trackId = id; }
+    public void setExperimentName(String name) {
+        this.experimentName = name;
+    }
 
-    public int    getNumberOfSpots() { return numberOfSpots; }
-    public void   setNumberOfSpots(int n) { this.numberOfSpots = n; }
+    public String getRecordingName() {
+        return recordingName;
+    }
 
-    public int    getNumberOfGaps() { return numberOfGaps; }
-    public void   setNumberOfGaps(int n) { this.numberOfGaps = n; }
+    public void setRecordingName(String name) {
+        this.recordingName = name;
+    }
 
-    public int    getLongestGap() { return longestGap; }
-    public void   setLongestGap(int n) { this.longestGap = n; }
+    public int getTrackId() {
+        return trackId;
+    }
 
-    public double getTrackDuration() { return trackDuration; }
-    public void   setTrackDuration(double d) { this.trackDuration = d; }
+    public void setTrackId(int id) {
+        this.trackId = id;
+    }
 
-    public double getTrackXLocation() { return trackXLocation; }
-    public void   setTrackXLocation(double x) { this.trackXLocation = x; }
+    public int getNumberOfSpots() {
+        return numberOfSpots;
+    }
 
-    public double getTrackYLocation() { return trackYLocation; }
-    public void   setTrackYLocation(double y) { this.trackYLocation = y; }
+    public void setNumberOfSpots(int n) {
+        this.numberOfSpots = n;
+    }
 
-    public double getTrackDisplacement() { return trackDisplacement; }
-    public void   setTrackDisplacement(double v) { this.trackDisplacement = v; }
+    public int getNumberOfGaps() {
+        return numberOfGaps;
+    }
 
-    public double getTrackMaxSpeed() { return trackMaxSpeed; }
-    public void   setTrackMaxSpeed(double v) { this.trackMaxSpeed = v; }
+    public void setNumberOfGaps(int n) {
+        this.numberOfGaps = n;
+    }
 
-    public double getTrackMedianSpeed() { return trackMedianSpeed; }
-    public void   setTrackMedianSpeed(double v) { this.trackMedianSpeed = v; }
+    public int getLongestGap() {
+        return longestGap;
+    }
 
-    public double getDiffusionCoefficient() { return diffusionCoefficient; }
-    public void   setDiffusionCoefficient(double v) { this.diffusionCoefficient = v; }
+    public void setLongestGap(int n) {
+        this.longestGap = n;
+    }
 
-    public double getDiffusionCoefficientExt() { return diffusionCoefficientExt; }
-    public void   setDiffusionCoefficientExt(double v) { this.diffusionCoefficientExt = v; }
+    public double getTrackDuration() {
+        return trackDuration;
+    }
 
-    public double getTotalDistance() { return totalDistance; }
-    public void   setTotalDistance(double v) { this.totalDistance = v; }
+    public void setTrackDuration(double d) {
+        this.trackDuration = d;
+    }
 
-    public double getConfinementRatio() { return confinementRatio; }
-    public void   setConfinementRatio(double v) { this.confinementRatio = v; }
+    public double getTrackXLocation() {
+        return trackXLocation;
+    }
 
-    public int    getSquareNumber() { return squareNumber; }
-    public void   setSquareNumber(int n) { this.squareNumber = n; }
+    public void setTrackXLocation(double x) {
+        this.trackXLocation = x;
+    }
 
-    public int    getLabelNumber() { return labelNumber; }
-    public void   setLabelNumber(int n) { this.labelNumber = n; }
+    public double getTrackYLocation() {
+        return trackYLocation;
+    }
 
-    /*=========================================================================
-     *  STRING REPRESENTATION
-     *=========================================================================
-     */
+    public void setTrackYLocation(double y) {
+        this.trackYLocation = y;
+    }
+
+    public double getTrackDisplacement() {
+        return trackDisplacement;
+    }
+
+    public void setTrackDisplacement(double v) {
+        this.trackDisplacement = v;
+    }
+
+    public double getTrackMaxSpeed() {
+        return trackMaxSpeed;
+    }
+
+    public void setTrackMaxSpeed(double v) {
+        this.trackMaxSpeed = v;
+    }
+
+    public double getTrackMedianSpeed() {
+        return trackMedianSpeed;
+    }
+
+    public void setTrackMedianSpeed(double v) {
+        this.trackMedianSpeed = v;
+    }
+
+    public double getDiffusionCoefficient() {
+        return diffusionCoefficient;
+    }
+
+    public void setDiffusionCoefficient(double v) {
+        this.diffusionCoefficient = v;
+    }
+
+    public double getDiffusionCoefficientExt() {
+        return diffusionCoefficientExt;
+    }
+
+    public void setDiffusionCoefficientExt(double v) {
+        this.diffusionCoefficientExt = v;
+    }
+
+    public double getTotalDistance() {
+        return totalDistance;
+    }
+
+    public void setTotalDistance(double v) {
+        this.totalDistance = v;
+    }
+
+    public double getConfinementRatio() {
+        return confinementRatio;
+    }
+
+    public void setConfinementRatio(double v) {
+        this.confinementRatio = v;
+    }
+
+    public int getSquareNumber() {
+        return squareNumber;
+    }
+
+    public void setSquareNumber(int n) {
+        this.squareNumber = n;
+    }
+
+    public int getLabelNumber() {
+        return labelNumber;
+    }
+
+    public void setLabelNumber(int n) {
+        this.labelNumber = n;
+    }
 
     /**
      * Returns a concise, human-readable summary of the track.
@@ -265,5 +307,47 @@ public class Track {
                 trackMaxSpeed,
                 trackMedianSpeed
         );
+    }
+
+    //=========================================================================
+    // EMBEDDED SCHEMA ENUM
+    //=========================================================================
+
+    public enum Column {
+
+        UNIQUE_KEY(                "Unique Key",                ColumnType.STRING),
+        EXPERIMENT_NAME(           "Experiment Name",           ColumnType.STRING),
+        RECORDING_NAME(            "Recording Name",            ColumnType.STRING),
+        TRACK_ID(                  "Track Id",                  ColumnType.INTEGER),
+        NUMBER_OF_SPOTS(           "Number of Spots",           ColumnType.INTEGER),
+        NUMBER_OF_GAPS(            "Number of Gaps",            ColumnType.INTEGER),
+        LONGEST_GAP(               "Longest Gap",               ColumnType.INTEGER),
+        TRACK_DURATION(            "Track Duration",            ColumnType.DOUBLE),
+        TRACK_X_LOCATION(          "Track X Location",          ColumnType.DOUBLE),
+        TRACK_Y_LOCATION(          "Track Y Location",          ColumnType.DOUBLE),
+        TRACK_DISPLACEMENT(        "Track Displacement",        ColumnType.DOUBLE),
+        TRACK_MAX_SPEED(           "Track Max Speed",           ColumnType.DOUBLE),
+        TRACK_MEDIAN_SPEED(        "Track Median Speed",        ColumnType.DOUBLE),
+        DIFFUSION_COEFFICIENT(     "Diffusion Coefficient",     ColumnType.DOUBLE),
+        DIFFUSION_COEFFICIENT_EXT( "Diffusion Coefficient Ext", ColumnType.DOUBLE),
+        TOTAL_DISTANCE(            "Total Distance",            ColumnType.DOUBLE),
+        CONFINEMENT_RATIO(         "Confinement Ratio",         ColumnType.DOUBLE),
+        SQUARE_NUMBER(             "Square Number",             ColumnType.INTEGER),
+        LABEL_NUMBER(              "Label Number",              ColumnType.INTEGER);
+
+        public final String     header;
+        public final ColumnType type;
+
+        Column(String header, ColumnType type) {
+            this.header = header;
+            this.type = type;
+        }
+
+        /**
+         * Returns the zero-based column index.
+         */
+        public int index() {
+            return ordinal();
+        }
     }
 }

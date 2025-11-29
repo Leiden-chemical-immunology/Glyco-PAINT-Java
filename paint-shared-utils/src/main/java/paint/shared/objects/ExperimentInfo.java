@@ -40,7 +40,6 @@
 package paint.shared.objects;
 
 import paint.shared.utils.PaintLogger;
-
 import tech.tablesaw.api.ColumnType;
 
 import java.io.PrintWriter;
@@ -51,7 +50,6 @@ import java.util.Map;
 
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
-
 import static paint.shared.constants.PaintStringConstants.*;
 import static paint.shared.utils.BooleanUtils.isBooleanTrue;
 
@@ -72,53 +70,9 @@ import static paint.shared.utils.BooleanUtils.isBooleanTrue;
  */
 public class ExperimentInfo {
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    //  EMBEDDED SCHEMA ENUM  (REPLACES ExperimentInfoSchema)
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Enumeration defining the complete schema of ExperimentInfo.
-     *
-     * <p>
-     * Each enum value binds a CSV column header to its Tablesaw
-     * {@link ColumnType}, and the order of the enum defines the canonical
-     * column order used in experiment_info.csv.
-     * </p>
-     */
-    public enum Column {
-
-        EXPERIMENT_NAME(  "Experiment Name",  ColumnType.STRING),
-        RECORDING_NAME(   "Recording Name",   ColumnType.STRING),
-        CONDITION_NUMBER( "Condition Number", ColumnType.INTEGER),
-        REPLICATE_NUMBER( "Replicate Number", ColumnType.INTEGER),
-        PROBE_NAME(       "Probe Name",       ColumnType.STRING),
-        PROBE_TYPE(       "Probe Type",       ColumnType.STRING),
-        CELL_TYPE(        "Cell Type",        ColumnType.STRING),
-        ADJUVANT(         "Adjuvant",         ColumnType.STRING),
-        CONCENTRATION(    "Concentration",    ColumnType.DOUBLE),
-        PROCESS_FLAG(     "Process Flag",     ColumnType.BOOLEAN),
-        THRESHOLD(        "Threshold",        ColumnType.DOUBLE);
-
-        /** The CSV header for this column. */
-        public final String header;
-
-        /** The Tablesaw type associated with this column. */
-        public final ColumnType type;
-
-        Column(String header, ColumnType type) {
-            this.header = header;
-            this.type   = type;
-        }
-
-        /** Returns the column’s position in the schema. */
-        public int index() {
-            return ordinal();
-        }
-    }
-
-    // ───────────────────────────────────────────────────────────────────────────────
+    //=========================================================================
     //  CORE FIELDS
-    // ───────────────────────────────────────────────────────────────────────────────
+    //=========================================================================
 
     private String  experimentName;
     private String  recordingName;
@@ -136,12 +90,15 @@ public class ExperimentInfo {
     private List<Square> squares = new ArrayList<>();
     private List<Track>  tracks  = new ArrayList<>();
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    //  CONSTRUCTORS
-    // ───────────────────────────────────────────────────────────────────────────────
+    /**
+     * Default empty constructor.
+     */
+    public ExperimentInfo() {
+    }
 
-    /** Default empty constructor. */
-    public ExperimentInfo() {}
+    //=========================================================================
+    //  CONSTRUCTORS
+    //=========================================================================
 
     /**
      * Constructs an ExperimentInfo instance from a row of key-value pairs
@@ -173,52 +130,113 @@ public class ExperimentInfo {
         }
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
+    public String getExperimentName() {
+        return experimentName;
+    }
+
+    //=========================================================================
     //  ACCESSORS & MUTATORS
-    // ───────────────────────────────────────────────────────────────────────────────
+    //=========================================================================
 
-    public String  getExperimentName() { return experimentName; }
-    public void    setExperimentName(String experimentName) { this.experimentName = experimentName; }
+    public void setExperimentName(String experimentName) {
+        this.experimentName = experimentName;
+    }
 
-    public String  getRecordingName() { return recordingName; }
-    public void    setRecordingName(String recordingName) { this.recordingName = recordingName; }
+    public String getRecordingName() {
+        return recordingName;
+    }
 
-    public int     getConditionNumber() { return conditionNumber; }
-    public void    setConditionNumber(int conditionNumber) { this.conditionNumber = conditionNumber; }
+    public void setRecordingName(String recordingName) {
+        this.recordingName = recordingName;
+    }
 
-    public int     getReplicateNumber() { return replicateNumber; }
-    public void    setReplicateNumber(int replicateNumber) { this.replicateNumber = replicateNumber; }
+    public int getConditionNumber() {
+        return conditionNumber;
+    }
 
-    public String  getProbeName() { return probeName; }
-    public void    setProbeName(String probeName) { this.probeName = probeName; }
+    public void setConditionNumber(int conditionNumber) {
+        this.conditionNumber = conditionNumber;
+    }
 
-    public String  getProbeType() { return probeType; }
-    public void    setProbeType(String probeType) { this.probeType = probeType; }
+    public int getReplicateNumber() {
+        return replicateNumber;
+    }
 
-    public String  getCellType() { return cellType; }
-    public void    setCellType(String cellType) { this.cellType = cellType; }
+    public void setReplicateNumber(int replicateNumber) {
+        this.replicateNumber = replicateNumber;
+    }
 
-    public String  getAdjuvant() { return adjuvant; }
-    public void    setAdjuvant(String adjuvant) { this.adjuvant = adjuvant; }
+    public String getProbeName() {
+        return probeName;
+    }
 
-    public double  getConcentration() { return concentration; }
-    public void    setConcentration(double concentration) { this.concentration = concentration; }
+    public void setProbeName(String probeName) {
+        this.probeName = probeName;
+    }
 
-    public boolean isProcessFlagSet() { return processFlag; }
-    public void    setProcessFlag(boolean processFlag) { this.processFlag = processFlag; }
+    public String getProbeType() {
+        return probeType;
+    }
 
-    public double  getThreshold() { return threshold; }
-    public void    setThreshold(double threshold) { this.threshold = threshold; }
+    public void setProbeType(String probeType) {
+        this.probeType = probeType;
+    }
 
-    public List<Square> getSquares() { return squares; }
-    public void         setSquares(List<Square> squares) { this.squares = squares; }
+    public String getCellType() {
+        return cellType;
+    }
 
-    public List<Track> getTracks() { return tracks; }
-    public void        setTracks(List<Track> tracks) { this.tracks = tracks; }
+    public void setCellType(String cellType) {
+        this.cellType = cellType;
+    }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    //  STRING REPRESENTATION
-    // ───────────────────────────────────────────────────────────────────────────────
+    public String getAdjuvant() {
+        return adjuvant;
+    }
+
+    public void setAdjuvant(String adjuvant) {
+        this.adjuvant = adjuvant;
+    }
+
+    public double getConcentration() {
+        return concentration;
+    }
+
+    public void setConcentration(double concentration) {
+        this.concentration = concentration;
+    }
+
+    public boolean isProcessFlagSet() {
+        return processFlag;
+    }
+
+    public void setProcessFlag(boolean processFlag) {
+        this.processFlag = processFlag;
+    }
+
+    public double getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(double threshold) {
+        this.threshold = threshold;
+    }
+
+    public List<Square> getSquares() {
+        return squares;
+    }
+
+    public void setSquares(List<Square> squares) {
+        this.squares = squares;
+    }
+
+    public List<Track> getTracks() {
+        return tracks;
+    }
+
+    public void setTracks(List<Track> tracks) {
+        this.tracks = tracks;
+    }
 
     /**
      * Returns a human-readable summary of this ExperimentInfo, useful
@@ -243,5 +261,46 @@ public class ExperimentInfo {
         sb.append(String.format("\t  Square Count       : %d%n", squares.size()));
 
         return sb.toString();
+    }
+
+    //=========================================================================
+    // ENUM
+    //=========================================================================
+
+    public enum Column {
+
+        EXPERIMENT_NAME(  "Experiment Name",  ColumnType.STRING),
+        RECORDING_NAME(   "Recording Name",   ColumnType.STRING),
+        CONDITION_NUMBER( "Condition Number", ColumnType.INTEGER),
+        REPLICATE_NUMBER( "Replicate Number", ColumnType.INTEGER),
+        PROBE_NAME(       "Probe Name",       ColumnType.STRING),
+        PROBE_TYPE(       "Probe Type",       ColumnType.STRING),
+        CELL_TYPE(        "Cell Type",        ColumnType.STRING),
+        ADJUVANT(         "Adjuvant",         ColumnType.STRING),
+        CONCENTRATION(    "Concentration",    ColumnType.DOUBLE),
+        PROCESS_FLAG(     "Process Flag",     ColumnType.BOOLEAN),
+        THRESHOLD(        "Threshold",        ColumnType.DOUBLE);
+
+        /**
+         * The CSV header for this column.
+         */
+        public final String header;
+
+        /**
+         * The Tablesaw type associated with this column.
+         */
+        public final ColumnType type;
+
+        Column(String header, ColumnType type) {
+            this.header = header;
+            this.type = type;
+        }
+
+        /**
+         * Returns the column’s position in the schema.
+         */
+        public int index() {
+            return ordinal();
+        }
     }
 }
