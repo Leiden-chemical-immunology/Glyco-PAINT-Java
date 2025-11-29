@@ -1,44 +1,7 @@
-/*=============================================================================
- *  Class:        RecordingsTableIO.java
- *  Package:      paint.shared.io.internal
- *
- *  PURPOSE:
- *    Public-but-internal implementation of CSV and table I/O for
- *    {@link paint.shared.objects.Recording} entities. Although declared public
- *    so it can be used by {@link paint.shared.io.MainDataInterface}, this class
- *    is NOT part of the public API and must never be referenced directly by
- *    external modules.
- *
- *  DESCRIPTION:
- *    Provides all low-level logic for the recordings data layer:
- *
- *      • Creating schema-compliant Tablesaw tables
- *      • Converting {@link Recording} entities ↔ Tablesaw rows
- *      • Reading CSV files with strict header and type enforcement (via BaseTableIO)
- *      • Performing schema-aware append operations with safe type handling
- *
- *    The ONLY supported entry point for recordings I/O is
- *    {@link MainDataInterface}. This class is an internal implementation detail.
- *
- *  DESIGN NOTES:
- *    • Visibility is public ONLY because package-private classes inside
- *      'paint.shared.io.internal' cannot be accessed from
- *      'paint.shared.io.MainDataInterface'.
- *    • Despite being public, this class is treated as internal API.
- *    • All schema definitions come from {@link paint.shared.schema.RecordingSchema}.
- *    • Fully compatible with Java 8 and Tablesaw 0.43+.
- *
- *  AUTHOR:       Hans Bakker
- *  MODULE:       paint-shared-utils
- *  UPDATED:      2025-10-28
- *  COPYRIGHT:    © 2025 Hans Bakker. All rights reserved.
- *============================================================================*/
-
 package paint.shared.io.internal;
 
 import paint.shared.io.MainIOInterface;
 import paint.shared.objects.Recording;
-import paint.shared.schema.RecordingSchema;
 
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
@@ -50,39 +13,46 @@ import java.util.List;
 
 import static paint.shared.constants.PaintStringConstants.*;
 
-/**
- * Internal schema-validated table I/O implementation for {@link Recording}.
- *
- * <p>This class handles CSV reading, conversion, table creation, and safe
- * append operations for {@code recordings.csv}. All schema definitions are
- * taken from {@link RecordingSchema}.</p>
- *
- * <p>External callers must use {@link MainIOInterface}.</p>
- */
 public class RecordingsTableIO extends BaseTableIO {
+
+    // =====================================================================
+    //  INTERNAL HELPERS (extract schema from Recording.Column)
+    // =====================================================================
+
+    private String[] getColumnHeaders() {
+        Recording.Column[] cols = Recording.Column.values();
+        String[] headers = new String[cols.length];
+        for (int i = 0; i < cols.length; i++) {
+            headers[i] = cols[i].header;
+        }
+        return headers;
+    }
+
+    private ColumnType[] getColumnTypes() {
+        Recording.Column[] cols = Recording.Column.values();
+        ColumnType[] types = new ColumnType[cols.length];
+        for (int i = 0; i < cols.length; i++) {
+            types[i] = cols[i].type;
+        }
+        return types;
+    }
 
     // =====================================================================
     //  TABLE CREATION
     // =====================================================================
 
-    /**
-     * Creates a new empty table with the complete Recordings schema.
-     *
-     * @return a schema-compliant empty {@link Table}
-     */
     public Table emptyTable() {
-        return newEmptyTable("Recordings",
-                             RecordingSchema.COLUMNS,
-                             RecordingSchema.TYPES);
+        return newEmptyTable(
+                "Recordings",
+                getColumnHeaders(),
+                getColumnTypes()
+        );
     }
 
     // =====================================================================
     //  ENTITY → TABLE CONVERSION
     // =====================================================================
 
-    /**
-     * Converts a list of {@link Recording} entities into a schema-validated table.
-     */
     public Table toTable(List<Recording> recordings) {
         Table table = emptyTable();
 
@@ -126,13 +96,12 @@ public class RecordingsTableIO extends BaseTableIO {
     //  TABLE → ENTITY CONVERSION
     // =====================================================================
 
-    /**
-     * Converts a validated recording table into a list of {@link Recording} entities.
-     */
     public List<Recording> toEntities(Table table) {
         List<Recording> recordings = new ArrayList<>();
+
         for (Row tablesawRow : table) {
             Recording recording = new Recording();
+
             recording.setExperimentName(              tablesawRow.getString(   EXPERIMENT_NAME));
             recording.setRecordingName(               tablesawRow.getString(   RECORDING_NAME));
             recording.setConditionNumber(             tablesawRow.getInt(      CONDITION_NUMBER));
@@ -161,6 +130,7 @@ public class RecordingsTableIO extends BaseTableIO {
             recording.setMinRequiredRSquared(         tablesawRow.getDouble(   MIN_REQUIRED_R_SQUARED));
             recording.setMaxAllowableVariability(     tablesawRow.getDouble(   MAX_ALLOWABLE_VARIABILITY));
             recording.setNeighbourMode(               tablesawRow.getString(   NEIGHBOUR_MODE));
+
             recordings.add(recording);
         }
 
@@ -171,17 +141,12 @@ public class RecordingsTableIO extends BaseTableIO {
     //  APPEND / MERGE
     // =====================================================================
 
-    /**
-     * Appends all rows from {@code source} into {@code target} while enforcing
-     * the Recordings schema and preserving missing values.
-     *
-     * <p>Supports INTEGER → DOUBLE upcasting where needed.</p>
-     */
     public void appendInPlace(Table target, Table source) {
         for (Row row : source) {
             Row newRow = target.appendRow();
 
-            for (String col : RecordingSchema.COLUMNS) {
+            for (Recording.Column colEnum : Recording.Column.values()) {
+                String col = colEnum.header;
                 Column<?> targetCol = target.column(col);
 
                 if (targetCol.type() == ColumnType.STRING) {

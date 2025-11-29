@@ -1,23 +1,45 @@
-/*================================================================================
+/*=============================================================================
  *  Class:        Recording.java
  *  Package:      paint.shared.objects
  *
  *  PURPOSE:
- *    Represents metadata, measurements, and analysis results for a single
- *    recording within an experiment in the PAINT framework.
+ *    Represents all metadata, analysis results, filter thresholds, and
+ *    associated objects for a single PAINT recording. Each Recording
+ *    encapsulates experiment-level metadata (probe, adjuvant, replicate, etc.)
+ *    as well as all analysis metrics computed during the Generate Squares
+ *    workflow.
  *
  *  DESCRIPTION:
- *    The {@code Recording} class encapsulates all relevant information about
- *    a single experimental recording. This includes identifiers (experiment,
- *    condition, probe), numeric metrics (spot/track counts, thresholds, runtime),
- *    and references to associated {@link Square} and {@link Track} objects.
- *    It also optionally holds a {@link tech.tablesaw.api.Table} containing track data.
+ *    • Defines the unified CSV schema through the embedded Column enum
+ *      (replacing RecordingSchema.* entirely).
+ *    • Stores both experiment metadata and analysis-derived metrics.
+ *    • Holds child objects (Squares, Tracks) and their Tablesaw tables.
+ *    • Used throughout Generate Squares, TrackMate post-processing, filtering,
+ *      and validation.
  *
- *  KEY FEATURES:
- *    • Holds metadata, numerical results, and object collections for a recording.
- *    • Supports experiment structure hierarchy via {@link Square} and {@link Track}.
- *    • Provides detailed and formatted summary output through {@link #toString()}.
- *    • Java 8–compliant design for compatibility with PAINT utilities.
+ *    This class is serialised/deserialised by:
+ *        – RecordingsTableIO
+ *        – MainIOInterface  (public I/O façade)
+ *
+ *  RESPONSIBILITIES:
+ *    • Provide a schema definition for recording-level CSV files.
+ *    • Store experiment metadata and derived analytical metrics.
+ *    • Store filter parameters used for determining visible squares.
+ *    • Provide getters/setters used by the Generate Squares pipeline.
+ *    • Serve as the container for associated Square and Track objects.
+ *
+ *  USAGE EXAMPLE:
+ *      Recording rec = new Recording("ExpA", "R01", 1, 1,
+ *                                    "AF647", "Dye", "T-cell", "None",
+ *                                    1.0, true, 25.0);
+ *      rec.setDensity(0.34);
+ *      rec.getSquaresOfRecording().add(square);
+ *
+ *  DEPENDENCIES:
+ *    – tech.tablesaw.api.Table
+ *    – paint.shared.objects.{Square, Track}
+ *    – paint.shared.io.internal.RecordingsTableIO
+ *    – paint.shared.io.MainIOInterface
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -26,29 +48,93 @@
  *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-10-28
+ *    2025-11-29
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
-================================================================================*/
+ *============================================================================*/
 
 package paint.shared.objects;
 
 import tech.tablesaw.api.Table;
+import tech.tablesaw.api.ColumnType;
 
+import java.util.List;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
- * Represents metadata and associated analysis data for a specific recording
- * within an experiment. This class includes measurement metrics, analysis
- * parameters, and relationships to {@link Square} and {@link Track} objects.
+ * Represents all metadata and analytical metrics associated with a single
+ * recording in a PAINT experiment.
+ *
+ * <p>This class embeds its own schema via {@link Recording.Column}, removing
+ * the dependency on the old RecordingSchema class. The schema is used by the
+ * I/O layer to read/write CSV tables in a strict and stable manner.</p>
  */
 public class Recording {
 
-    // --- Core fields (columns in Recordings/Experiment Info) ---
-    
+    // ============================================================================
+    //  SCHEMA ENUM  (REPLACES RecordingSchema)
+    // ============================================================================
+
+    /**
+     * Defines the unified CSV schema for a Recording.
+     * Each enum constant corresponds to one column header and its type.
+     */
+    public enum Column {
+
+        // --- Experiment metadata ---
+        EXPERIMENT_NAME(                 "Experiment Name",                 ColumnType.STRING),
+        RECORDING_NAME(                  "Recording Name",                  ColumnType.STRING),
+        CONDITION_NUMBER(                "Condition Number",                ColumnType.INTEGER),
+        REPLICATE_NUMBER(                "Replicate Number",                ColumnType.INTEGER),
+        PROBE_NAME(                      "Probe Name",                      ColumnType.STRING),
+        PROBE_TYPE(                      "Probe Type",                      ColumnType.STRING),
+        CELL_TYPE(                       "Cell Type",                       ColumnType.STRING),
+        ADJUVANT(                        "Adjuvant",                        ColumnType.STRING),
+        CONCENTRATION(                   "Concentration",                   ColumnType.DOUBLE),
+        PROCESS_FLAG(                    "Process Flag",                    ColumnType.BOOLEAN),
+        THRESHOLD(                       "Threshold",                       ColumnType.DOUBLE),
+
+        // --- Derived analysis metrics ---
+        NUMBER_OF_SPOTS(                 "Number of Spots",                 ColumnType.INTEGER),
+        NUMBER_OF_TRACKS(                "Number of Tracks",                ColumnType.INTEGER),
+        NUMBER_OF_TRACKS_IN_BACKGROUND(  "Number of Tracks in Background",  ColumnType.INTEGER),
+        NUMBER_OF_SQUARES_IN_BACKGROUND( "Number of Squares in Background", ColumnType.INTEGER),
+        AVERAGE_TRACKS_IN_BACKGROUND(    "Average Tracks in Background",    ColumnType.DOUBLE),
+        NUMBER_OF_SPOTS_IN_ALL_TRACKS(   "Number of Spots in All Tracks",   ColumnType.INTEGER),
+        NUMBER_OF_FRAMES(                "Number of Frames",                ColumnType.INTEGER),
+        RUN_TIME(                        "Run Time",                        ColumnType.DOUBLE),
+        TIME_STAMP(                      "Time Stamp",                      ColumnType.LOCAL_DATE_TIME),
+        EXCLUDE(                         "Exclude",                         ColumnType.BOOLEAN),
+        TAU(                             "Tau",                             ColumnType.DOUBLE),
+        R_SQUARED(                       "R Squared",                       ColumnType.DOUBLE),
+        DENSITY(                         "Density",                         ColumnType.DOUBLE),
+
+        // --- Filter / configuration values ---
+        MIN_REQUIRED_DENSITY_RATIO(      "Min Required Density Ratio",      ColumnType.DOUBLE),
+        MIN_REQUIRED_R_SQUARED(          "Min Required R Squared",          ColumnType.DOUBLE),
+        MAX_ALLOWABLE_VARIABILITY(       "Max Allowable Variability",       ColumnType.DOUBLE),
+        NEIGHBOUR_MODE(                  "Neighbour Mode",                  ColumnType.STRING);
+
+        public final String header;
+        public final ColumnType type;
+
+        Column(String header, ColumnType type) {
+            this.header = header;
+            this.type   = type;
+        }
+
+        /** Returns the ordinal index, matching CSV column order. */
+        public int index() {
+            return ordinal();
+        }
+    }
+
+    // ============================================================================
+    //  CORE METADATA FIELDS
+    // ============================================================================
+
     private String        experimentName;
     private String        recordingName;
     private int           conditionNumber;
@@ -61,9 +147,9 @@ public class Recording {
     private boolean       processFlag;
     private double        threshold;
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // ANALYSIS METRICS
-    // ───────────────────────────────────────────────────────────────────────────────
+    // ============================================================================
+    //  ANALYSIS METRICS
+    // ============================================================================
 
     private int           numberOfSpots;
     private int           numberOfTracks;
@@ -79,62 +165,45 @@ public class Recording {
     private double        rSquared;
     private double        density;
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // FILTER OBJECTS
-    // ───────────────────────────────────────────────────────────────────────────────
+    // ============================================================================
+    //  FILTER PARAMETERS
+    // ============================================================================
 
     private double        minRequiredDensityRatio;
     private double        minRequiredRSquared;
     private double        maxAllowableVariability;
     private String        neighbourMode;
 
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // ASSOCIATED OBJECTS
-    // ───────────────────────────────────────────────────────────────────────────────
+    // ============================================================================
+    //  ASSOCIATED OBJECTS
+    // ============================================================================
 
     private List<Square> squares = new ArrayList<>();
     private List<Track>  tracks  = new ArrayList<>();
     private Table        tracksTable;
 
+    // ============================================================================
+    //  CONSTRUCTORS
+    // ============================================================================
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // CONSTRUCTORS
-    //
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Creates an empty {@code Recording} with default values.
-     */
-    public Recording() {
-    }
+    /** Creates an empty Recording. */
+    public Recording() {}
 
     /**
-     * Creates a {@code Recording} initialized with its basic metadata.
-     *
-     * @param experimentName  the experiment name
-     * @param recordingName   the recording identifier
-     * @param conditionNumber the condition number
-     * @param replicateNumber the replicate number
-     * @param probeName       the probe name
-     * @param probeType       the probe type (e.g., dye, antibody)
-     * @param cellType        the cell type
-     * @param adjuvant        the adjuvant, if any
-     * @param concentration   the probe/treatment concentration
-     * @param processFlag     whether this recording should be processed
-     * @param threshold       threshold value for analysis
+     * Creates a Recording with primary metadata fields.
      */
     public Recording(String  experimentName,
-                     String  recordingName,
-                     int     conditionNumber,
-                     int     replicateNumber,
-                     String  probeName,
-                     String  probeType,
-                     String  cellType,
-                     String  adjuvant,
-                     double  concentration,
-                     boolean processFlag,
-                     double  threshold) {
+            String  recordingName,
+            int     conditionNumber,
+            int     replicateNumber,
+            String  probeName,
+            String  probeType,
+            String  cellType,
+            String  adjuvant,
+            double  concentration,
+            boolean processFlag,
+            double  threshold) {
+
         this.experimentName  = experimentName;
         this.recordingName   = recordingName;
         this.conditionNumber = conditionNumber;
@@ -148,279 +217,115 @@ public class Recording {
         this.threshold       = threshold;
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // ACCESSORS AND MUTATORS
-    // ───────────────────────────────────────────────────────────────────────────────
+    // ============================================================================
+    //  GETTERS / SETTERS  (GENERATED, UNCHANGED)
+    // ============================================================================
 
-    public String getExperimentName() {
-        return experimentName;
-    }
+    public String getExperimentName() { return experimentName; }
+    public void setExperimentName(String experimentName) { this.experimentName = experimentName; }
 
-    public void setExperimentName(String experimentName) {
-        this.experimentName = experimentName;
-    }
+    public String getRecordingName() { return recordingName; }
+    public void setRecordingName(String recordingName) { this.recordingName = recordingName; }
 
-    public String getRecordingName() {
-        return recordingName;
-    }
+    public int getConditionNumber() { return conditionNumber; }
+    public void setConditionNumber(int conditionNumber) { this.conditionNumber = conditionNumber; }
 
-    public void setRecordingName(String recordingName) {
-        this.recordingName = recordingName;
-    }
+    public int getReplicateNumber() { return replicateNumber; }
+    public void setReplicateNumber(int replicateNumber) { this.replicateNumber = replicateNumber; }
 
-    public int getConditionNumber() {
-        return conditionNumber;
-    }
+    public String getProbeName() { return probeName; }
+    public void setProbeName(String probeName) { this.probeName = probeName; }
 
-    public void setConditionNumber(int conditionNumber) {
-        this.conditionNumber = conditionNumber;
-    }
+    public String getProbeType() { return probeType; }
+    public void setProbeType(String probeType) { this.probeType = probeType; }
 
-    public int getReplicateNumber() {
-        return replicateNumber;
-    }
+    public String getCellType() { return cellType; }
+    public void setCellType(String cellType) { this.cellType = cellType; }
 
-    public void setReplicateNumber(int replicateNumber) {
-        this.replicateNumber = replicateNumber;
-    }
+    public String getAdjuvant() { return adjuvant; }
+    public void setAdjuvant(String adjuvant) { this.adjuvant = adjuvant; }
 
-    public String getProbeName() {
-        return probeName;
-    }
+    public double getConcentration() { return concentration; }
+    public void setConcentration(double concentration) { this.concentration = concentration; }
 
-    public void setProbeName(String probeName) {
-        this.probeName = probeName;
-    }
+    public boolean isProcessFlagSet() { return processFlag; }
+    public void setProcessFlag(boolean processFlag) { this.processFlag = processFlag; }
 
-    public String getProbeType() {
-        return probeType;
-    }
+    public double getThreshold() { return threshold; }
+    public void setThreshold(double threshold) { this.threshold = threshold; }
 
-    public void setProbeType(String probeType) {
-        this.probeType = probeType;
-    }
+    public int getNumberOfSpots() { return numberOfSpots; }
+    public void setNumberOfSpots(int numberOfSpots) { this.numberOfSpots = numberOfSpots; }
 
-    public String getCellType() {
-        return cellType;
-    }
+    public int getNumberOfTracks() { return numberOfTracks; }
+    public void setNumberOfTracks(int numberOfTracks) { this.numberOfTracks = numberOfTracks; }
 
-    public void setCellType(String cellType) {
-        this.cellType = cellType;
-    }
+    public int getNumberOfTracksInBackground() { return numberOfTracksInBackground; }
+    public void setNumberOfTracksInBackground(int numberOfTracksInBackground) { this.numberOfTracksInBackground = numberOfTracksInBackground; }
 
-    public String getAdjuvant() {
-        return adjuvant;
-    }
+    public int getNumberOfSquaresInBackground() { return numberOfSquaresInBackground; }
+    public void setNumberOfSquaresInBackground(int numberOfSquaresInBackground) { this.numberOfSquaresInBackground = numberOfSquaresInBackground; }
 
-    public void setAdjuvant(String adjuvant) {
-        this.adjuvant = adjuvant;
-    }
+    public double getAverageTracksInBackGround() { return averageTracksInBackGround; }
+    public void setAverageTracksInBackGround(double averageTracksInBackGround) { this.averageTracksInBackGround = averageTracksInBackGround; }
 
-    public double getConcentration() {
-        return concentration;
-    }
+    public int getNumberOfSpotsInAllTracks() { return numberOfSpotsInAllTracks; }
+    public void setNumberOfSpotsInAllTracks(int numberOfSpotsInAllTracks) { this.numberOfSpotsInAllTracks = numberOfSpotsInAllTracks; }
 
-    public void setConcentration(double concentration) {
-        this.concentration = concentration;
-    }
+    public int getNumberOfFrames() { return numberOfFrames; }
+    public void setNumberOfFrames(int numberOfFrames) { this.numberOfFrames = numberOfFrames; }
 
-    public boolean isProcessFlagSet() {
-        return processFlag;
-    }
+    public double getRunTime() { return runTime; }
+    public void setRunTime(double runTime) { this.runTime = runTime; }
 
-    public void setProcessFlag(boolean processFlag) {
-        this.processFlag = processFlag;
-    }
+    public LocalDateTime getTimeStamp() { return timeStamp; }
+    public void setTimeStamp(LocalDateTime timeStamp) { this.timeStamp = timeStamp; }
 
-    public double getThreshold() {
-        return threshold;
-    }
+    public boolean isExclude() { return exclude; }
+    public void setExclude(boolean exclude) { this.exclude = exclude; }
 
-    public void setThreshold(double threshold) {
-        this.threshold = threshold;
-    }
+    public double getTau() { return tau; }
+    public void setTau(double tau) { this.tau = tau; }
 
-    public int getNumberOfSpots() {
-        return numberOfSpots;
-    }
+    public double getRSquared() { return rSquared; }
+    public void setRSquared(double rSquared) { this.rSquared = rSquared; }
 
-    public void setNumberOfSpots(int numberOfSpots) {
-        this.numberOfSpots = numberOfSpots;
-    }
+    public double getDensity() { return density; }
+    public void setDensity(double density) { this.density = density; }
 
-    public int getNumberOfTracks() {
-        return numberOfTracks;
-    }
+    public List<Square> getSquaresOfRecording() { return squares; }
+    public void setSquaresOfRecording(List<Square> squares) { this.squares = squares; }
 
-    public void setNumberOfTracks(int numberOfTracks) {
-        this.numberOfTracks = numberOfTracks;
-    }
+    public void setTracksList(List<Track> tracks) { this.tracks = tracks; }
 
-    public int getNumberOfTracksInBackground() {
-        return numberOfTracksInBackground;
-    }
+    public Table getTracksTable() { return tracksTable; }
+    public void setTracksTable(Table tracksTable) { this.tracksTable = tracksTable; }
 
-    public void setNumberOfTracksInBackground(int numberOfTracksInBackground) {
-        this.numberOfTracksInBackground = numberOfTracksInBackground;
-    }
+    public double getMinRequiredDensityRatio() { return minRequiredDensityRatio; }
+    public void setMinRequiredDensityRatio(double minRequiredDensityRatio) { this.minRequiredDensityRatio = minRequiredDensityRatio; }
 
-    public int getNumberOfSquaresInBackground() {
-        return numberOfSquaresInBackground;
-    }
+    public double getMinRequiredRSquared() { return minRequiredRSquared; }
+    public void setMinRequiredRSquared(double minRequiredRSquared) { this.minRequiredRSquared = minRequiredRSquared; }
 
-    public void setNumberOfSquaresInBackground(int numberOfSquaresInBackground) {
-        this.numberOfSquaresInBackground = numberOfSquaresInBackground;
-    }
+    public double getMaxAllowableVariability() { return maxAllowableVariability; }
+    public void setMaxAllowableVariability(double maxAllowableVariability) { this.maxAllowableVariability = maxAllowableVariability; }
 
-    public double getAverageTracksInBackGround() {
-        return averageTracksInBackGround;
-    }
+    public String getNeighbourMode() { return neighbourMode; }
+    public void setNeighbourMode(String neighbourMode) { this.neighbourMode = neighbourMode; }
 
-    public void setAverageTracksInBackGround(double averageTracksInBackGround) {
-        this.averageTracksInBackGround = averageTracksInBackGround;
-    }
+    // ============================================================================
+    //  CONVENIENCE
+    // ============================================================================
 
-    public int getNumberOfSpotsInAllTracks() {
-        return numberOfSpotsInAllTracks;
-    }
-
-    public void setNumberOfSpotsInAllTracks(int numberOfSpotsInAllTracks) {
-        this.numberOfSpotsInAllTracks = numberOfSpotsInAllTracks;
-    }
-
-    public int getNumberOfFrames() {
-        return numberOfFrames;
-    }
-
-    public void setNumberOfFrames(int numberOfFrames) {
-        this.numberOfFrames = numberOfFrames;
-    }
-
-    public double getRunTime() {
-        return runTime;
-    }
-
-    public void setRunTime(double runTime) {
-        this.runTime = runTime;
-    }
-
-    public LocalDateTime getTimeStamp() {
-        return timeStamp;
-    }
-
-    public void setTimeStamp(LocalDateTime timeStamp) {
-        this.timeStamp = timeStamp;
-    }
-
-    public boolean isExclude() {
-        return exclude;
-    }
-
-    public void setExclude(boolean exclude) {
-        this.exclude = exclude;
-    }
-
-    public double getTau() {
-        return tau;
-    }
-
-    public void setTau(double tau) {
-        this.tau = tau;
-    }
-
-    public double getRSquared() {
-        return rSquared;
-    }
-
-    public void setRSquared(double rSquared) {
-        this.rSquared = rSquared;
-    }
-
-    public double getDensity() {
-        return density;
-    }
-
-    public void setDensity(double density) {
-        this.density = density;
-    }
-
-    public List<Square> getSquaresOfRecording() {
-        return squares;
-    }
-
-    public void setSquaresOfRecording(List<Square> squares) {
-        this.squares = squares;
-    }
-
-    public void setTracksList(List<Track> tracks) {
-        this.tracks = tracks;
-    }
-
-    public Table getTracksTable() {
-        return tracksTable;
-    }
-
-    public void setTracksTable(Table tracksTable) {
-        this.tracksTable = tracksTable;
-    }
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // FILTER OBJECTS
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    // Getters and Setters
-    public double getMinRequiredDensityRatio() {
-        return minRequiredDensityRatio;
-    }
-
-    public void setMinRequiredDensityRatio(double minRequiredDensityRatio) {
-        this.minRequiredDensityRatio = minRequiredDensityRatio;
-    }
-
-    public double getMinRequiredRSquared() {
-        return minRequiredRSquared;
-    }
-
-    public void setMinRequiredRSquared(double minRequiredRSquared) {
-        this.minRequiredRSquared = minRequiredRSquared;
-    }
-
-    public double getMaxAllowableVariability() {
-        return maxAllowableVariability;
-    }
-
-    public void setMaxAllowableVariability(double maxAllowableVariability) {
-        this.maxAllowableVariability = maxAllowableVariability;
-    }
-
-    public String getNeighbourMode() {
-        return neighbourMode;
-    }
-
-    public void setNeighbourMode(String neighbourMode) {
-        this.neighbourMode = neighbourMode;
-    }
-    // ───────────────────────────────────────────────────────────────────────────────
-    // CONVENIENCE METHODS
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Adds a list of {@link Square} objects to this recording.
-     */
+    /** Append multiple squares into this recording. */
     public void addSquares(List<Square> squares) {
         this.squares.addAll(squares);
     }
 
+    // ============================================================================
+    //  STRING REPRESENTATION
+    // ============================================================================
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // STRING REPRESENTATION
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Returns a formatted string representation of this recording and its key data.
-     *
-     * @return formatted string containing recording details
-     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

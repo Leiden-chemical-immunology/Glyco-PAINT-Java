@@ -3,26 +3,26 @@
  *  Package:      paint.shared.objects
  *
  *  PURPOSE:
- *    Represents metadata and associated data structures describing a single
- *    experiment recording within the PAINT analysis framework.
+ *    Represents all metadata associated with a single experiment recording.
+ *    This includes probe information, condition parameters, process flags,
+ *    and thresholding values, as well as links to Square and Track entities.
  *
  *  DESCRIPTION:
- *    The {@code ExperimentInfo} class encapsulates all metadata fields that
- *    describe an experiment, such as condition number, probe information,
- *    concentration, and threshold values. In addition, it maintains references
- *    to related entities, including {@link Square} and {@link Track} objects,
- *    and optionally a {@link tech.tablesaw.api.Table} containing track data.
+ *    This class now embeds its own schema definition through the
+ *    {@link Column} enum, replacing ExperimentInfoSchema. Table I/O classes
+ *    extract headers and Tablesaw types directly from this enum, ensuring
+ *    consistency and eliminating redundant schema classes.
  *
- *    This class provides constructors to create instances from explicit
- *    parameters or from key-value maps (as when reading experiment info
- *    from CSV or JSON sources). All fields are mutable through standard
- *    accessor and mutator methods.
+ *    ExperimentInfo may be constructed manually, or from a key-value map
+ *    (such as parsed CSV rows). All fields are mutable through getters and
+ *    setters, and the class provides a formatted toString() summary.
  *
  *  KEY FEATURES:
- *    • Encapsulates all experimental metadata.
- *    • Links to associated {@link Square} and {@link Track} entities.
- *    • Provides map-based initialization for tabular imports.
- *    • Supports formatted string export for diagnostics and logging.
+ *    • Fully embedded schema via Column enum (headers + column types)
+ *    • Provides core metadata for each experiment recording
+ *    • Holds associated Square and Track objects
+ *    • Supports initialization from CSV/JSON-like key/value maps
+ *    • Java 8 compatible; used by ExperimentInfoTableIO and validators
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -31,15 +31,17 @@
  *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-10-28
+ *    2025-11-29
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ *============================================================================*/
 
 package paint.shared.objects;
 
 import paint.shared.utils.PaintLogger;
+
+import tech.tablesaw.api.ColumnType;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -54,16 +56,68 @@ import static paint.shared.constants.PaintStringConstants.*;
 import static paint.shared.utils.BooleanUtils.isBooleanTrue;
 
 /**
- * Represents metadata and associated data objects for a single experiment.
+ * Represents all metadata and associated data objects for a single experiment
+ * recording in the PAINT analysis framework.
+ *
  * <p>
- * This class encapsulates both the descriptive metadata and the related
- * data structures (squares, tracks, and tables) that define one recording
- * in the PAINT workflow.
+ * This class contains experiment-level descriptive metadata as well as
+ * references to the square and track objects produced during analysis.
+ * </p>
+ *
+ * <p>
+ * The schema for ExperimentInfo is embedded directly in {@link Column}, which
+ * binds human-readable CSV headers to their corresponding Tablesaw types.
+ * Table I/O classes use this enum for all schema operations.
+ * </p>
  */
 public class ExperimentInfo {
 
     // ───────────────────────────────────────────────────────────────────────────────
-    // CORE FIELDS
+    //  EMBEDDED SCHEMA ENUM  (REPLACES ExperimentInfoSchema)
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Enumeration defining the complete schema of ExperimentInfo.
+     *
+     * <p>
+     * Each enum value binds a CSV column header to its Tablesaw
+     * {@link ColumnType}, and the order of the enum defines the canonical
+     * column order used in experiment_info.csv.
+     * </p>
+     */
+    public enum Column {
+
+        EXPERIMENT_NAME(  "Experiment Name",  ColumnType.STRING),
+        RECORDING_NAME(   "Recording Name",   ColumnType.STRING),
+        CONDITION_NUMBER( "Condition Number", ColumnType.INTEGER),
+        REPLICATE_NUMBER( "Replicate Number", ColumnType.INTEGER),
+        PROBE_NAME(       "Probe Name",       ColumnType.STRING),
+        PROBE_TYPE(       "Probe Type",       ColumnType.STRING),
+        CELL_TYPE(        "Cell Type",        ColumnType.STRING),
+        ADJUVANT(         "Adjuvant",         ColumnType.STRING),
+        CONCENTRATION(    "Concentration",    ColumnType.DOUBLE),
+        PROCESS_FLAG(     "Process Flag",     ColumnType.BOOLEAN),
+        THRESHOLD(        "Threshold",        ColumnType.DOUBLE);
+
+        /** The CSV header for this column. */
+        public final String header;
+
+        /** The Tablesaw type associated with this column. */
+        public final ColumnType type;
+
+        Column(String header, ColumnType type) {
+            this.header = header;
+            this.type   = type;
+        }
+
+        /** Returns the column’s position in the schema. */
+        public int index() {
+            return ordinal();
+        }
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    //  CORE FIELDS
     // ───────────────────────────────────────────────────────────────────────────────
 
     private String  experimentName;
@@ -75,49 +129,25 @@ public class ExperimentInfo {
     private String  cellType;
     private String  adjuvant;
     private double  concentration;
-    private boolean processFlag;               // renamed from doProcess
+    private boolean processFlag;
     private double  threshold;
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // ASSOCIATED OBJECTS
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * The collection of squares associated with this experiment.
-     */
+    /** Associated objects for downstream analysis. */
     private List<Square> squares = new ArrayList<>();
     private List<Track>  tracks  = new ArrayList<>();
 
     // ───────────────────────────────────────────────────────────────────────────────
-    // CONSTRUCTORS
+    //  CONSTRUCTORS
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Default constructor that creates an empty {@code ExperimentInfo} instance.
-     */
-    public ExperimentInfo() {
-    }
-
+    /** Default empty constructor. */
+    public ExperimentInfo() {}
 
     /**
-     * Constructs an {@code ExperimentInfo} instance from a map of string key-value pairs.
-     * <p>
-     * Expected keys include:
-     * <ul>
-     *   <li>Experiment Name</li>
-     *   <li>Recording Name</li>
-     *   <li>Condition Number</li>
-     *   <li>Replicate Number</li>
-     *   <li>Probe Name</li>
-     *   <li>Probe Type</li>
-     *   <li>Cell Type</li>
-     *   <li>Adjuvant</li>
-     *   <li>Concentration</li>
-     *   <li>Process Flag</li>
-     *   <li>Threshold</li>
-     * </ul>
+     * Constructs an ExperimentInfo instance from a row of key-value pairs
+     * (typically parsed from experiment_info.csv).
      *
-     * @param row the map of column names to values
+     * @param row the map of header → text value
      */
     public ExperimentInfo(Map<String, String> row) {
         try {
@@ -132,163 +162,85 @@ public class ExperimentInfo {
             this.concentration   = parseDouble(row.get(CONCENTRATION));
             this.processFlag     = isBooleanTrue(row.get(PROCESS_FLAG));
             this.threshold       = parseDouble(row.get(THRESHOLD));
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             PaintLogger.errorf("Problem parsing Experiment Info");
             PaintLogger.errorf(row.toString());
+
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
-            PaintLogger.errorf("An exception occurred:\n" + sw);
+            PaintLogger.errorf("Exception details:\n" + sw);
         }
     }
 
     // ───────────────────────────────────────────────────────────────────────────────
-    // ACCESSORS AND MUTATORS
+    //  ACCESSORS & MUTATORS
     // ───────────────────────────────────────────────────────────────────────────────
 
-    public String getExperimentName() {
-        return experimentName;
-    }
+    public String  getExperimentName() { return experimentName; }
+    public void    setExperimentName(String experimentName) { this.experimentName = experimentName; }
 
-    public void setExperimentName(String experimentName) {
-        this.experimentName = experimentName;
-    }
+    public String  getRecordingName() { return recordingName; }
+    public void    setRecordingName(String recordingName) { this.recordingName = recordingName; }
 
-    public String getRecordingName() {
-        return recordingName;
-    }
+    public int     getConditionNumber() { return conditionNumber; }
+    public void    setConditionNumber(int conditionNumber) { this.conditionNumber = conditionNumber; }
 
-    public void setRecordingName(String recordingName) {
-        this.recordingName = recordingName;
-    }
+    public int     getReplicateNumber() { return replicateNumber; }
+    public void    setReplicateNumber(int replicateNumber) { this.replicateNumber = replicateNumber; }
 
-    public int getConditionNumber() {
-        return conditionNumber;
-    }
+    public String  getProbeName() { return probeName; }
+    public void    setProbeName(String probeName) { this.probeName = probeName; }
 
-    public void setConditionNumber(int conditionNumber) {
-        this.conditionNumber = conditionNumber;
-    }
+    public String  getProbeType() { return probeType; }
+    public void    setProbeType(String probeType) { this.probeType = probeType; }
 
-    public int getReplicateNumber() {
-        return replicateNumber;
-    }
+    public String  getCellType() { return cellType; }
+    public void    setCellType(String cellType) { this.cellType = cellType; }
 
-    public void setReplicateNumber(int replicateNumber) {
-        this.replicateNumber = replicateNumber;
-    }
+    public String  getAdjuvant() { return adjuvant; }
+    public void    setAdjuvant(String adjuvant) { this.adjuvant = adjuvant; }
 
-    public String getProbeName() {
-        return probeName;
-    }
+    public double  getConcentration() { return concentration; }
+    public void    setConcentration(double concentration) { this.concentration = concentration; }
 
-    public void setProbeName(String probeName) {
-        this.probeName = probeName;
-    }
+    public boolean isProcessFlagSet() { return processFlag; }
+    public void    setProcessFlag(boolean processFlag) { this.processFlag = processFlag; }
 
-    public String getProbeType() {
-        return probeType;
-    }
+    public double  getThreshold() { return threshold; }
+    public void    setThreshold(double threshold) { this.threshold = threshold; }
 
-    public void setProbeType(String probeType) {
-        this.probeType = probeType;
-    }
+    public List<Square> getSquares() { return squares; }
+    public void         setSquares(List<Square> squares) { this.squares = squares; }
 
-    public String getCellType() {
-        return cellType;
-    }
-
-    public void setCellType(String cellType) {
-        this.cellType = cellType;
-    }
-
-    public String getAdjuvant() {
-        return adjuvant;
-    }
-
-    public void setAdjuvant(String adjuvant) {
-        this.adjuvant = adjuvant;
-    }
-
-    public double getConcentration() {
-        return concentration;
-    }
-
-    public void setConcentration(double concentration) {
-        this.concentration = concentration;
-    }
-
-    public boolean isProcessFlagSet() {
-        return processFlag;
-    }
-
-    public void setProcessFlag(boolean processFlag) {
-        this.processFlag = processFlag;
-    }
-
-    public double getThreshold() {
-        return threshold;
-    }
-
-    public void setThreshold(double threshold) {
-        this.threshold = threshold;
-    }
-
-    public List<Square> getSquares() {
-        return squares;
-    }
-
-    public void setSquares(List<Square> squares) {
-        this.squares = squares;
-    }
-
-    public List<Track> getTracks() {
-        return tracks;
-    }
-
-    public void setTracks(List<Track> tracks) {
-        this.tracks = tracks;
-    }
+    public List<Track> getTracks() { return tracks; }
+    public void        setTracks(List<Track> tracks) { this.tracks = tracks; }
 
     // ───────────────────────────────────────────────────────────────────────────────
-    // STRING REPRESENTATION
+    //  STRING REPRESENTATION
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Returns a formatted string representation of this {@code ExperimentInfo}.
-     *
-     * @return formatted experiment information as string
+     * Returns a human-readable summary of this ExperimentInfo, useful
+     * for diagnostic logs and console output.
      */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("\tExperiment Info");
-        sb.append(String.format("\t              Experiment Name               : %s\n", experimentName));
-        sb.append(String.format("\t              Recording Name                : %s%n", recordingName));
-        sb.append(String.format("\t              Condition Nr                  : %d%n", conditionNumber));
-        sb.append(String.format("\t              Replicate Nr                  : %d%n", replicateNumber));
-        sb.append(String.format("\t              Probe Name                    : %s%n", probeName));
-        sb.append(String.format("\t              Probe Type                    : %s%n", probeType));
-        sb.append(String.format("\t              Cell Type                     : %s%n", cellType));
-        sb.append(String.format("\t              Adjuvant                      : %s%n", adjuvant));
-        sb.append(String.format("\t              Concentration                 : %.2f%n", concentration));
-        sb.append(String.format("\t              Threshold                     : %.2f%n", threshold));
-        if (tracks != null) {
-            sb.append(String.format("\t              Number of tracks              : %d%n", tracks.size()));
-        }
+        sb.append("\tExperiment Info\n");
+        sb.append(String.format("\t  Experiment Name    : %s%n", experimentName));
+        sb.append(String.format("\t  Recording Name     : %s%n", recordingName));
+        sb.append(String.format("\t  Condition Nr       : %d%n", conditionNumber));
+        sb.append(String.format("\t  Replicate Nr       : %d%n", replicateNumber));
+        sb.append(String.format("\t  Probe Name         : %s%n", probeName));
+        sb.append(String.format("\t  Probe Type         : %s%n", probeType));
+        sb.append(String.format("\t  Cell Type          : %s%n", cellType));
+        sb.append(String.format("\t  Adjuvant           : %s%n", adjuvant));
+        sb.append(String.format("\t  Concentration      : %.2f%n", concentration));
+        sb.append(String.format("\t  Threshold          : %.2f%n", threshold));
 
-        int numberOfSquaresWithTracks = 0;
-        if (squares != null) {
-            sb.append(String.format("\t              Number of squares             : %d%n", squares.size()));
-
-            for (Square square : squares) {
-                if (square.getTracks() != null && !square.getTracks().isEmpty()) {
-                    numberOfSquaresWithTracks++;
-                }
-            }
-            if (numberOfSquaresWithTracks > 0) {
-                sb.append(String.format("\t              Number of squares with tracks : %d%n", numberOfSquaresWithTracks));
-            }
-        }
+        sb.append(String.format("\t  Track Count        : %d%n", tracks.size()));
+        sb.append(String.format("\t  Square Count       : %d%n", squares.size()));
 
         return sb.toString();
     }

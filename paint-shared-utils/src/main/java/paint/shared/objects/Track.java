@@ -1,87 +1,166 @@
+/*=============================================================================
+ *  Class:        Track.java
+ *  Package:      paint.shared.objects
+ *
+ *  PURPOSE:
+ *    Represents a single molecular trajectory ("track") detected in a PAINT
+ *    recording. A track consists of a series of spatial positions over time,
+ *    from which a wide range of analytical metrics are derived:
+ *
+ *       • Displacement and total distance
+ *       • Max/median speed
+ *       • Diffusion coefficients
+ *       • Gaps, duration, confinement ratios
+ *
+ *    The class also stores key metadata tying the track to its parent
+ *    experiment, recording, and spatial region (square).
+ *
+ *  DESCRIPTION:
+ *    This version embeds its own schema via the {@link Column} enum, replacing
+ *    the external TrackSchema. Tablesaw-based IO now uses Track.Column.values()
+ *    for both CSV header names and column types.
+ *
+ *  KEY FEATURES:
+ *    • Embedded, fully self-describing schema enum
+ *    • Complete set of motion and diffusion metrics
+ *    • Grid/region association via square and label numbers
+ *    • Clean, consistent toString() summary for diagnostics
+ *    • Fully compatible with Tablesaw 0.43+ and Java 8
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-11-30
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *============================================================================*/
+
 package paint.shared.objects;
+
+import tech.tablesaw.api.ColumnType;
 
 import static paint.shared.utils.Miscellaneous.initialiseDoublesToNaN;
 
 /**
- * The {@code Track} class represents the properties and attributes of a trajectory or path
- * recorded during an experiment. It contains various analytical properties such as displacement,
- * speed, and diffusion coefficients as well as associated metadata like experiment and recording
- * details.
+ * Represents a single molecular trajectory extracted from a PAINT recording.
  * <p>
- * This class provides the necessary getters and setters for accessing and modifying its fields.
+ * Tracks contain both raw geometric motion information and higher-level
+ * analytics computed from those motions.
  */
 public class Track {
+
+    /*=========================================================================
+     *  EMBEDDED SCHEMA ENUM (formerly TrackSchema)
+     *=========================================================================
+     *
+     *  Each enum constant defines:
+     *
+     *      header — CSV column name
+     *      type   — Tablesaw ColumnType for strict schema validation
+     *
+     *  The declaration order defines the CSV order.
+     */
+    public enum Column {
+
+        UNIQUE_KEY(                "Unique Key",                 ColumnType.STRING),
+        EXPERIMENT_NAME(           "Experiment Name",            ColumnType.STRING),
+        RECORDING_NAME(            "Recording Name",             ColumnType.STRING),
+        TRACK_ID(                  "Track Id",                   ColumnType.INTEGER),
+        NUMBER_OF_SPOTS(           "Number of Spots",            ColumnType.INTEGER),
+        NUMBER_OF_GAPS(            "Number of Gaps",             ColumnType.INTEGER),
+        LONGEST_GAP(               "Longest Gap",                ColumnType.INTEGER),
+        TRACK_DURATION(            "Track Duration",             ColumnType.DOUBLE),
+        TRACK_X_LOCATION(          "Track X Location",           ColumnType.DOUBLE),
+        TRACK_Y_LOCATION(          "Track Y Location",           ColumnType.DOUBLE),
+        TRACK_DISPLACEMENT(        "Track Displacement",         ColumnType.DOUBLE),
+        TRACK_MAX_SPEED(           "Track Max Speed",            ColumnType.DOUBLE),
+        TRACK_MEDIAN_SPEED(        "Track Median Speed",         ColumnType.DOUBLE),
+        DIFFUSION_COEFFICIENT(     "Diffusion Coefficient",      ColumnType.DOUBLE),
+        DIFFUSION_COEFFICIENT_EXT( "Diffusion Coefficient Ext",  ColumnType.DOUBLE),
+        TOTAL_DISTANCE(            "Total Distance",             ColumnType.DOUBLE),
+        CONFINEMENT_RATIO(         "Confinement Ratio",          ColumnType.DOUBLE),
+        SQUARE_NUMBER(             "Square Number",              ColumnType.INTEGER),
+        LABEL_NUMBER(              "Label Number",               ColumnType.INTEGER);
+
+        public final String header;
+        public final ColumnType type;
+
+        Column(String header, ColumnType type) {
+            this.header = header;
+            this.type   = type;
+        }
+
+        /** Returns the zero-based column index. */
+        public int index() { return ordinal(); }
+    }
+
+    /*=========================================================================
+     *  CORE TRACK ATTRIBUTES
+     *=========================================================================
+     */
+
     private String uniqueKey;
     private String experimentName;
     private String recordingName;
+
     private int    trackId;
     private int    numberOfSpots;
     private int    numberOfGaps;
     private int    longestGap;
+
     private double trackDuration;
     private double trackXLocation;
     private double trackYLocation;
     private double trackDisplacement;
     private double trackMaxSpeed;
     private double trackMedianSpeed;
+
     private double diffusionCoefficient;
     private double diffusionCoefficientExt;
     private double totalDistance;
     private double confinementRatio;
+
     private int    squareNumber;
     private int    labelNumber;
 
-    /**
-     * Default no-argument constructor. Initializes unset values.
-     *
-     */
-    public Track() {
-    }
-
-    /**
-     * Full constructor to initialize all fields of a {@code Track}.
-     *
-     * @param uniqueKey               unique identifier for the track
-     * @param experimentName          name of the experiment the track belongs to
-     * @param recordingName           name of the recording the track belongs to
-     * @param trackId                 numerical track identifier
-     * @param numberOfSpots           number of spots in the track
-     * @param numberOfGaps            number of gaps in the track
-     * @param longestGap              longest gap between spots
-     * @param trackDuration           total duration of the track
-     * @param trackXLocation          average X location
-     * @param trackYLocation          average Y location
-     * @param trackDisplacement       net displacement from start to end
-     * @param trackMaxSpeed           maximum speed recorded
-     * @param trackMedianSpeed        median speed recorded
-     * @param diffusionCoefficient    diffusion coefficient
-     * @param diffusionCoefficientExt extended diffusion coefficient
-     * @param totalDistance           total distance traveled
-     * @param confinementRatio        ratio of displacement to total distance
-     * @param squareNumber            square index containing this track
-     * @param labelNumber             label index used for annotation
+    /*=========================================================================
+     *  CONSTRUCTORS
+     *=========================================================================
      */
 
+    /** Creates an empty, uninitialized track. */
+    public Track() { }
+
+    /**
+     * Fully initializes a {@code Track} with all metadata and motion parameters.
+     */
     public Track(String uniqueKey,
-                 String experimentName,
-                 String recordingName,
-                 int    trackId,
-                 int    numberOfSpots,
-                 int    numberOfGaps,
-                 int    longestGap,
-                 double trackDuration,
-                 double trackXLocation,
-                 double trackYLocation,
-                 double trackDisplacement,
-                 double trackMaxSpeed,
-                 double trackMedianSpeed,
-                 double diffusionCoefficient,
-                 double diffusionCoefficientExt,
-                 double totalDistance,
-                 double confinementRatio,
-                 int    squareNumber,
-                 int    labelNumber) {
+            String experimentName,
+            String recordingName,
+            int    trackId,
+            int    numberOfSpots,
+            int    numberOfGaps,
+            int    longestGap,
+            double trackDuration,
+            double trackXLocation,
+            double trackYLocation,
+            double trackDisplacement,
+            double trackMaxSpeed,
+            double trackMedianSpeed,
+            double diffusionCoefficient,
+            double diffusionCoefficientExt,
+            double totalDistance,
+            double confinementRatio,
+            int    squareNumber,
+            int    labelNumber) {
+
         initialiseDoublesToNaN(this);
+
         this.uniqueKey               = uniqueKey;
         this.experimentName          = experimentName;
         this.recordingName           = recordingName;
@@ -103,164 +182,75 @@ public class Track {
         this.labelNumber             = labelNumber;
     }
 
-    // --- Getters and Setters ---
+    /*=========================================================================
+     *  ACCESSORS & MUTATORS
+     *=========================================================================
+     */
 
-    public String getUniqueKey() {
-        return uniqueKey;
-    }
+    public String getUniqueKey() { return uniqueKey; }
+    public void   setUniqueKey(String key) { this.uniqueKey = key; }
 
-    public void setUniqueKey(String uniqueKey) {
-        this.uniqueKey = uniqueKey;
-    }
+    public String getExperimentName() { return experimentName; }
+    public void   setExperimentName(String name) { this.experimentName = name; }
 
-    public String getExperimentName() {
-        return this.experimentName;
-    }
+    public String getRecordingName() { return recordingName; }
+    public void   setRecordingName(String name) { this.recordingName = name; }
 
-    public void setExperimentName(String ExperimentName) {
-        this.experimentName = ExperimentName;
-    }
+    public int    getTrackId() { return trackId; }
+    public void   setTrackId(int id) { this.trackId = id; }
 
-    public String getRecordingName() {
-        return recordingName;
-    }
+    public int    getNumberOfSpots() { return numberOfSpots; }
+    public void   setNumberOfSpots(int n) { this.numberOfSpots = n; }
 
-    public void setRecordingName(String recordingName) {
-        this.recordingName = recordingName;
-    }
+    public int    getNumberOfGaps() { return numberOfGaps; }
+    public void   setNumberOfGaps(int n) { this.numberOfGaps = n; }
 
-    public int getTrackId() {
-        return trackId;
-    }
+    public int    getLongestGap() { return longestGap; }
+    public void   setLongestGap(int n) { this.longestGap = n; }
 
-    public void setTrackId(int trackId) {
-        this.trackId = trackId;
-    }
+    public double getTrackDuration() { return trackDuration; }
+    public void   setTrackDuration(double d) { this.trackDuration = d; }
 
-    public int getNumberOfSpots() {
-        return numberOfSpots;
-    }
+    public double getTrackXLocation() { return trackXLocation; }
+    public void   setTrackXLocation(double x) { this.trackXLocation = x; }
 
-    public void setNumberOfSpots(int numberOfSpots) {
-        this.numberOfSpots = numberOfSpots;
-    }
+    public double getTrackYLocation() { return trackYLocation; }
+    public void   setTrackYLocation(double y) { this.trackYLocation = y; }
 
-    public int getNumberOfGaps() {
-        return numberOfGaps;
-    }
+    public double getTrackDisplacement() { return trackDisplacement; }
+    public void   setTrackDisplacement(double v) { this.trackDisplacement = v; }
 
-    public void setNumberOfGaps(int numberOfGaps) {
-        this.numberOfGaps = numberOfGaps;
-    }
+    public double getTrackMaxSpeed() { return trackMaxSpeed; }
+    public void   setTrackMaxSpeed(double v) { this.trackMaxSpeed = v; }
 
-    public int getLongestGap() {
-        return longestGap;
-    }
+    public double getTrackMedianSpeed() { return trackMedianSpeed; }
+    public void   setTrackMedianSpeed(double v) { this.trackMedianSpeed = v; }
 
-    public void setLongestGap(int longestGap) {
-        this.longestGap = longestGap;
-    }
+    public double getDiffusionCoefficient() { return diffusionCoefficient; }
+    public void   setDiffusionCoefficient(double v) { this.diffusionCoefficient = v; }
 
-    public double getTrackDuration() {
-        return trackDuration;
-    }
+    public double getDiffusionCoefficientExt() { return diffusionCoefficientExt; }
+    public void   setDiffusionCoefficientExt(double v) { this.diffusionCoefficientExt = v; }
 
-    public void setTrackDuration(double trackDuration) {
-        this.trackDuration = trackDuration;
-    }
+    public double getTotalDistance() { return totalDistance; }
+    public void   setTotalDistance(double v) { this.totalDistance = v; }
 
-    public double getTrackXLocation() {
-        return trackXLocation;
-    }
+    public double getConfinementRatio() { return confinementRatio; }
+    public void   setConfinementRatio(double v) { this.confinementRatio = v; }
 
-    public void setTrackXLocation(double trackXLocation) {
-        this.trackXLocation = trackXLocation;
-    }
+    public int    getSquareNumber() { return squareNumber; }
+    public void   setSquareNumber(int n) { this.squareNumber = n; }
 
-    public double getTrackYLocation() {
-        return trackYLocation;
-    }
+    public int    getLabelNumber() { return labelNumber; }
+    public void   setLabelNumber(int n) { this.labelNumber = n; }
 
-    public void setTrackYLocation(double trackYLocation) {
-        this.trackYLocation = trackYLocation;
-    }
-
-    public double getTrackDisplacement() {
-        return trackDisplacement;
-    }
-
-    public void setTrackDisplacement(double trackDisplacement) {
-        this.trackDisplacement = trackDisplacement;
-    }
-
-    public double getTrackMaxSpeed() {
-        return trackMaxSpeed;
-    }
-
-    public void setTrackMaxSpeed(double trackMaxSpeed) {
-        this.trackMaxSpeed = trackMaxSpeed;
-    }
-
-    public double getTrackMedianSpeed() {
-        return trackMedianSpeed;
-    }
-
-    public void setTrackMedianSpeed(double trackMedianSpeed) {
-        this.trackMedianSpeed = trackMedianSpeed;
-    }
-
-    public double getDiffusionCoefficient() {
-        return diffusionCoefficient;
-    }
-
-    public void setDiffusionCoefficient(double diffusionCoefficient) {
-        this.diffusionCoefficient = diffusionCoefficient;
-    }
-
-    public double getDiffusionCoefficientExt() {
-        return diffusionCoefficientExt;
-    }
-
-    public void setDiffusionCoefficientExt(double diffusionCoefficientExt) {
-        this.diffusionCoefficientExt = diffusionCoefficientExt;
-    }
-
-    public double getTotalDistance() {
-        return totalDistance;
-    }
-
-    public void setTotalDistance(double totalDistance) {
-        this.totalDistance = totalDistance;
-    }
-
-    public double getConfinementRatio() {
-        return confinementRatio;
-    }
-
-    public void setConfinementRatio(double confinementRatio) {
-        this.confinementRatio = confinementRatio;
-    }
-
-    public int getSquareNumber() {
-        return squareNumber;
-    }
-
-    public void setSquareNumber(int squareNumber) {
-        this.squareNumber = squareNumber;
-    }
-
-    public int getLabelNumber() {
-        return labelNumber;
-    }
-
-    public void setLabelNumber(int labelNumber) {
-        this.labelNumber = labelNumber;
-    }
+    /*=========================================================================
+     *  STRING REPRESENTATION
+     *=========================================================================
+     */
 
     /**
-     * Returns a concise string representation of this track.
-     *
-     * @return a formatted string containing key track metrics
+     * Returns a concise, human-readable summary of the track.
      */
     @Override
     public String toString() {

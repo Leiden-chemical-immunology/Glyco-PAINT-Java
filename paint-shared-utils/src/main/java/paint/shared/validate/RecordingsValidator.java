@@ -1,64 +1,24 @@
-/*=============================================================================
- *  Class:        RecordingsValidator.java
- *  Package:      paint.shared.validate
- *
- *  PURPOSE:
- *    Validates the `recordings.csv` file within a PAINT experiment project.
- *    Ensures correct header order, data types, and logical consistency across
- *    condition groups shared with `experiment_info.csv`.
- *
- *  DESCRIPTION:
- *    • Verifies that the header matches {@link paint.shared.schema.RecordingSchema#COLUMNS}.
- *    • Checks that each column’s data type conforms to
- *      {@link paint.shared.schema.RecordingSchema#TYPES}.
- *    • Performs a consistency check ensuring that all rows with the same
- *      “Condition Number” share identical Probe, Cell Type, Adjuvant, and
- *      Concentration values, consistent with `experiment_info.csv`.
- *
- *  RESPONSIBILITIES:
- *    • Detect header mismatches or missing columns.
- *    • Validate cell-level data types against the schema definition.
- *    • Detect logical inconsistencies across repeated condition groups.
- *
- *  USAGE EXAMPLE:
- *    File csv = new File("recordings.csv");
- *    RecordingsValidator validator = new RecordingsValidator();
- *    ValidationResult result = validator.validateWithConsistency(csv, "Experiment A");
- *    if (!result.isValid()) { result.printSummary(); }
- *
- *  DEPENDENCIES:
- *    – paint.shared.schema.RecordingSchema
- *    – paint.shared.validate.{AbstractFileValidator, ConditionConsistencyChecker, ValidationResult}
- *    – tech.tablesaw.api.ColumnType
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-10-28
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
-
 package paint.shared.validate;
 
-import paint.shared.schema.RecordingSchema;
+import paint.shared.objects.Recording;
 import tech.tablesaw.api.ColumnType;
 
 import java.io.File;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Validates the structural and logical integrity of {@code recordings.csv}.
- * <p>
- * Performs schema validation (header + types) and an additional
- * condition-based consistency check to ensure uniformity of experimental metadata.
- * </p>
+ *
+ * <p>This version has been updated to use the embedded schema defined in
+ * {@link Recording.Column} instead of RecordingSchema.</p>
+ *
+ * <p>Performs:</p>
+ * <ul>
+ *   <li>Header validation using Recording.Column.header</li>
+ *   <li>Type validation using Recording.Column.type</li>
+ *   <li>Condition-based metadata consistency checks</li>
+ * </ul>
  */
 final class RecordingsValidator extends AbstractFileValidator {
 
@@ -66,31 +26,32 @@ final class RecordingsValidator extends AbstractFileValidator {
     // HEADER VALIDATION
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Validates that the header matches {@link RecordingSchema#COLUMNS}.
-     *
-     * @param actualHeader the CSV header read from the file
-     * @param result       validation result collector
-     */
     @Override
     protected void validateHeader(List<String> actualHeader, ValidationResult result) {
-        List<String> expectedHeader = Arrays.asList(RecordingSchema.COLUMNS);
-        headersMatch(expectedHeader, actualHeader, result);
+
+        List<String> expected = new ArrayList<>();
+        for (Recording.Column col : Recording.Column.values()) {
+            expected.add(col.header);
+        }
+
+        headersMatch(expected, actualHeader, result);
     }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // TYPE VALIDATION
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Returns the expected column data types as defined in
-     * {@link RecordingSchema#TYPES}.
-     *
-     * @return array of expected {@link ColumnType}s
-     */
     @Override
     protected ColumnType[] getExpectedTypes() {
-        return RecordingSchema.TYPES;
+
+        Recording.Column[] cols = Recording.Column.values();
+        ColumnType[] types = new ColumnType[cols.length];
+
+        for (int i = 0; i < cols.length; i++) {
+            types[i] = cols[i].type;
+        }
+
+        return types;
     }
 
     // ───────────────────────────────────────────────────────────────────────────────
@@ -98,16 +59,16 @@ final class RecordingsValidator extends AbstractFileValidator {
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Performs full validation — including header, type, and condition-based consistency checks.
-     *
-     * @param file           the {@code recordings.csv} file to validate
-     * @return {@link ValidationResult} summarizing detected issues or confirming validity
+     * Performs full validation — including header, type, and condition-level consistency checks.
      */
     public ValidationResult validateWithConsistency(File file) {
+
         ValidationResult result = validate(file);
+
         if (result.isValid()) {
             result.merge(ConditionConsistencyChecker.check(file));
         }
+
         return result;
     }
 }

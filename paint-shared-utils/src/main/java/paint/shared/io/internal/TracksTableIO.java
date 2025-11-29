@@ -38,7 +38,6 @@ package paint.shared.io.internal;
 import static paint.shared.constants.PaintStringConstants.*;
 
 import paint.shared.io.MainIOInterface;
-import paint.shared.schema.TrackSchema;
 import paint.shared.objects.Track;
 
 import tech.tablesaw.api.ColumnType;
@@ -58,19 +57,38 @@ import java.util.List;
  */
 public class TracksTableIO extends BaseTableIO {
 
+    // =========================================================================
+    //  INTERNAL HELPERS (schema extracted from Track.Column)
+    // =========================================================================
+
+    private String[] getColumnHeaders() {
+        Track.Column[] cols = Track.Column.values();
+        String[] headers = new String[cols.length];
+        for (int i = 0; i < cols.length; i++) {
+            headers[i] = cols[i].header;
+        }
+        return headers;
+    }
+
+    private ColumnType[] getColumnTypes() {
+        Track.Column[] cols = Track.Column.values();
+        ColumnType[] types = new ColumnType[cols.length];
+        for (int i = 0; i < cols.length; i++) {
+            types[i] = cols[i].type;
+        }
+        return types;
+    }
+
     // =====================================================================
     //  TABLE CREATION
     // =====================================================================
 
-    /**
-     * Creates an empty {@link Table} with the full Tracks schema applied.
-     *
-     * @return a new empty schema-compliant {@link Table}
-     */
     public Table emptyTable() {
-        return newEmptyTable("Tracks",
-                             TrackSchema.COLUMNS,
-                             TrackSchema.TYPES);
+        return newEmptyTable(
+                "Tracks",
+                getColumnHeaders(),
+                getColumnTypes()
+        );
     }
 
     // =====================================================================
@@ -170,7 +188,8 @@ public class TracksTableIO extends BaseTableIO {
         for (Row row : source) {
             Row newRow = target.appendRow();
 
-            for (String col : TrackSchema.COLUMNS) {
+            for (Track.Column colEnum : Track.Column.values()) {
+                String col = colEnum.header;
                 Column<?> targetCol = target.column(col);
 
                 if (targetCol.type() == ColumnType.STRING) {
