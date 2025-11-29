@@ -102,7 +102,7 @@ public final class ImageRootValidator {
      * @return a {@link ValidationResult} containing all missing files/directories
      */
     public static ValidationResult validateImageRoot(Path projectRoot,
-            Path imagesRoot,
+            Path         imagesRoot,
             List<String> experimentNames) {
 
         ValidationResult result = new ValidationResult();

@@ -39,7 +39,7 @@ public final class TracksValidator extends AbstractFileValidator {
     protected ColumnType[] getExpectedTypes() {
 
         Track.Column[] cols = Track.Column.values();
-        ColumnType[] types = new ColumnType[cols.length];
+        ColumnType[]  types = new ColumnType[cols.length];
 
         for (int i = 0; i < cols.length; i++) {
             types[i] = cols[i].type;

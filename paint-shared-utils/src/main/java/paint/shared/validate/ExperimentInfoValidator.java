@@ -45,8 +45,8 @@ public final class ExperimentInfoValidator extends AbstractFileValidator {
     @Override
     protected ColumnType[] getExpectedTypes() {
 
-        ExperimentInfo.Column[] cols = ExperimentInfo.Column.values();
-        ColumnType[] types = new ColumnType[cols.length];
+        ExperimentInfo.Column[] cols  = ExperimentInfo.Column.values();
+        ColumnType[]            types = new ColumnType[cols.length];
 
         for (int i = 0; i < cols.length; i++) {
             types[i] = cols[i].type;

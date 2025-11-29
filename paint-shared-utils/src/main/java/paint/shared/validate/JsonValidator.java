@@ -67,12 +67,18 @@ public final class JsonValidator {
     }
 
     private static int extractInt(String msg, String key, String delim) {
-        if (msg == null) return 1;
+        if (msg == null) {
+            return 1;
+        }
         int idx = msg.indexOf(key);
-        if (idx < 0) return 1;
+        if (idx < 0) {
+            return 1;
+        }
         idx += key.length();
         int end = msg.indexOf(delim, idx);
-        if (end < 0) end = msg.length();
+        if (end < 0) {
+            end = msg.length();
+        }
         try {
             return Integer.parseInt(msg.substring(idx, end).trim());
         } catch (Exception e) {
@@ -81,9 +87,13 @@ public final class JsonValidator {
     }
 
     private static String extractContext(String content, int errLine, int errCol) {
-        if (content == null) return "";
+        if (content == null) {
+            return "";
+        }
         String[] lines = content.split("\\R", -1);
-        if (errLine < 1 || errLine > lines.length) return "";
+        if (errLine < 1 || errLine > lines.length) {
+            return "";
+        }
 
         String line = lines[errLine - 1];
 
@@ -97,7 +107,9 @@ public final class JsonValidator {
 
     private static String spaces(int n) {
         char[] arr = new char[Math.max(0, n)];
-        for (int i = 0; i < arr.length; i++) arr[i] = ' ';
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = ' ';
+        }
         return new String(arr);
     }
 

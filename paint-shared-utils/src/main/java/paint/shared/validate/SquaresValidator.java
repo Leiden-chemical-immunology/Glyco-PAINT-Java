@@ -37,8 +37,8 @@ final class SquaresValidator extends AbstractFileValidator {
 
     @Override
     protected ColumnType[] getExpectedTypes() {
-        Square.Column[] cols = Square.Column.values();
-        ColumnType[] types = new ColumnType[cols.length];
+        Square.Column[] cols  = Square.Column.values();
+        ColumnType[]    types = new ColumnType[cols.length];
 
         for (int i = 0; i < cols.length; i++) {
             types[i] = cols[i].type;

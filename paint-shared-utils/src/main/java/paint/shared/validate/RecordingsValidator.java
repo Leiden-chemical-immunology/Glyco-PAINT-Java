@@ -44,8 +44,8 @@ final class RecordingsValidator extends AbstractFileValidator {
     @Override
     protected ColumnType[] getExpectedTypes() {
 
-        Recording.Column[] cols = Recording.Column.values();
-        ColumnType[] types = new ColumnType[cols.length];
+        Recording.Column[] cols  = Recording.Column.values();
+        ColumnType[]       types = new ColumnType[cols.length];
 
         for (int i = 0; i < cols.length; i++) {
             types[i] = cols[i].type;
