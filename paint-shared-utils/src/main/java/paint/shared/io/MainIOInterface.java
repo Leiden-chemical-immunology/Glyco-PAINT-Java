@@ -1,9 +1,9 @@
 /*=============================================================================
- *  Class:        MainDataInterface.java
+ *  Class:        MainIOInterface.java
  *  Package:      paint.shared.io
  *
  *  PURPOSE:
- *    Public façade that provides unified, stable read/write operations for all
+ *    Public façade providing unified, stable read/write operations for all
  *    major PAINT experiment data types:
  *
  *        • ExperimentInfo
@@ -11,25 +11,37 @@
  *        • Square
  *        • Track
  *
- *    This is the ONLY public I/O entry point other modules should access.
- *    The internal TableIO classes (ExperimentInfoTableIO, RecordingsTableIO,
- *    SquaresTableIO, TracksTableIO) remain package-private implementation
- *    details hidden inside paint.shared.io.internal.
+ *    This is the ONLY public I/O entry point external modules should depend on.
+ *    All low-level CSV parsing, schema validation, and entity conversion is
+ *    delegated to package-private TableIO classes:
+ *
+ *        ExperimentInfoTableIO
+ *        RecordingsTableIO
+ *        SquaresTableIO
+ *        TracksTableIO
+ *
+ *    These classes reside inside paint.shared.io.internal and remain hidden
+ *    from external consumers.
  *
  *  DESCRIPTION:
- *    For each data category, this class exposes:
+ *    For each data type, this interface exposes:
  *
- *        • Reading validated CSV files into Tablesaw tables or entity lists
- *        • Writing entity lists or tables back to CSV
- *        • Static convenience helpers for conversion and empty-table creation
+ *        • Reading validated CSV → Tablesaw Table
+ *        • Reading validated CSV → List<E>
+ *        • Writing Table or List<E> → CSV
+ *        • Convenience helpers:
+ *              – Entity list ↔ Table conversion
+ *              – Schema-compliant empty table creation
+ *              – Append operations
  *
- *    All error handling is normalized through PaintLogger and friendlyMessage().
+ *    All error reporting is routed through PaintLogger using friendlyMessage().
+ *    All schema enforcement relies on paint.shared.schema.* definitions.
  *
  *  DESIGN NOTES:
- *    • Internal TableIO objects are instantiated on demand — they hold no state.
- *    • Schema definitions live in paint.shared.schema.*.
- *    • All operations follow strict header/type validation in BaseTableIO.
- *    • Compatible with Java 8 and Tablesaw 0.43+.
+ *    • Class is stateless; all methods are static.
+ *    • TableIO instances are created on demand and contain no state.
+ *    • Strict header + type validation is performed by BaseTableIO.
+ *    • Fully compatible with Java 8 and Tablesaw 0.43+.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -38,7 +50,7 @@
  *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-10-28
+ *    2025-11-29
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -142,6 +154,7 @@ public final class MainIOInterface {
     //  RECORDINGS
     // =====================================================================
 
+    /** Reads recordings.csv into a List<Recording>. */
     public static List<Recording> readRecordings(Path experimentPath) {
         RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
         try {
@@ -158,6 +171,7 @@ public final class MainIOInterface {
         }
     }
 
+    /** Reads recordings.csv → Table. */
     public static Table readRecordingsTable(Path experimentPath) {
         RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
         try {
@@ -173,6 +187,7 @@ public final class MainIOInterface {
         }
     }
 
+    /** Writes List<Recording> → recordings.csv. */
     public static void writeRecordings(Path experimentPath, List<Recording> list) {
         try {
             writeSpecificRecordingsFile(experimentPath.resolve(RECORDINGS_CSV), list);
@@ -181,6 +196,7 @@ public final class MainIOInterface {
         }
     }
 
+    /** Writes Table → recordings.csv. */
     public static void writeSpecificRecordingsFile(Path file, Table table) {
         RecordingsTableIO recordingsTableIO = new RecordingsTableIO();
         try {
@@ -190,6 +206,7 @@ public final class MainIOInterface {
         }
     }
 
+    /** Converts list → table → writes to CSV. */
     public static void writeSpecificRecordingsFile(Path file, List<Recording> list) {
         writeSpecificRecordingsFile(file, new RecordingsTableIO().toTable(list));
     }
@@ -211,6 +228,7 @@ public final class MainIOInterface {
     //  SQUARES
     // =====================================================================
 
+    /** Reads squares.csv into a List<Square>. */
     public static List<Square> readSquares(Path experimentPath) {
         try {
             return new SquaresTableIO().toEntities(readSquaresTable(experimentPath));
@@ -220,6 +238,7 @@ public final class MainIOInterface {
         }
     }
 
+    /** Reads squares.csv → Table. */
     public static Table readSquaresTable(Path experimentPath) {
         SquaresTableIO squaresTableIO = new SquaresTableIO();
         try {
@@ -235,6 +254,7 @@ public final class MainIOInterface {
         }
     }
 
+    /** Writes List<Square> → squares.csv. */
     public static void writeSquares(Path experimentPath, List<Square> list) {
         try {
             writeSpecificSquaresFile(experimentPath.resolve(SQUARES_CSV),
@@ -244,6 +264,7 @@ public final class MainIOInterface {
         }
     }
 
+    /** Writes Table → squares.csv. */
     public static void writeSquares(Path experimentPath, Table table) {
         try {
             writeSpecificSquaresFile(experimentPath.resolve(SQUARES_CSV), table);
@@ -252,6 +273,7 @@ public final class MainIOInterface {
         }
     }
 
+    /** Writes a Table to squares.csv. */
     public static void writeSpecificSquaresFile(Path file, Table table) {
         SquaresTableIO squaresTableIO = new SquaresTableIO();
         try {
@@ -274,6 +296,7 @@ public final class MainIOInterface {
         return new SquaresTableIO().emptyTable();
     }
 
+    /** Appends rows from one Square table to another in place. */
     public static void appendSquareTableInPlace(Table target, Table source) {
         new SquaresTableIO().appendInPlace(target, source);
     }
@@ -282,6 +305,7 @@ public final class MainIOInterface {
     //  TRACKS
     // =====================================================================
 
+    /** Reads tracks.csv into a List<Track>. */
     public static List<Track> readTracks(Path experimentPath) {
         try {
             Table readTracksTable = readTracksTable(experimentPath);
@@ -292,6 +316,7 @@ public final class MainIOInterface {
         }
     }
 
+    /** Reads tracks.csv → Table. */
     public static Table readTracksTable(Path experimentPath) {
         TracksTableIO tracksTableIO = new TracksTableIO();
         try {
@@ -307,6 +332,7 @@ public final class MainIOInterface {
         }
     }
 
+    /** Writes Table → tracks.csv. */
     public static void writeTracks(Path experimentPath, Table table) {
         try {
             writeSpecificTracksFile(experimentPath.resolve(TRACKS_CSV), table);
@@ -315,6 +341,7 @@ public final class MainIOInterface {
         }
     }
 
+    /** Writes a Table to tracks.csv. */
     public static void writeSpecificTracksFile(Path file, Table table) {
         TracksTableIO tracksTableIO = new TracksTableIO();
         try {
@@ -337,6 +364,7 @@ public final class MainIOInterface {
         return new TracksTableIO().emptyTable();
     }
 
+    /** Appends rows from one Track table to another in place. */
     public static void appendTrackTableInPlace(Table target, Table source) {
         new TracksTableIO().appendInPlace(target, source);
     }
