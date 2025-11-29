@@ -56,7 +56,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static paint.shared.io.MainDataInterface.*;
+import static paint.shared.io.MainIOInterface.*;
 import static paint.shared.utils.SharedSquareUtils.applyVisibilityFilterOnRecording;
 import static paint.viewer.override.RecordingOverrideApplier.loadRecordingOverride;
 import static paint.viewer.override.SquareOverrideApplier.loadSquareOverride;

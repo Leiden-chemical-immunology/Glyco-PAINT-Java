@@ -50,7 +50,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
-import static paint.shared.io.MainDataInterface.writeSpecificExperimentInfoFile;
+import static paint.shared.io.MainIOInterface.writeSpecificExperimentInfoFile;
 
 /**
  * Provides functionality to generate and write an experiment information CSV file
