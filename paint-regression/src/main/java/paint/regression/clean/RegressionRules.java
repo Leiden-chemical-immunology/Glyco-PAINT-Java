@@ -303,7 +303,7 @@ final class RegressionRules {
     /**
      * If a numeric field is missing (empty/NaN/null) on one side,
      * we treat it as *not a difference*.
-     *
+     * <p>
      * Applies to BOTH relaxed and strict modes.
      */
     static boolean numericMissingSkipDifference(Double a, Double b) {
