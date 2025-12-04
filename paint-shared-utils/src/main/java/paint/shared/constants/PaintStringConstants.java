@@ -104,6 +104,7 @@ public final class PaintStringConstants {
     public static final String RECORDING_NAME                              = "Recording Name";
     public static final String REPLICATE_NUMBER                            = "Replicate Number";
     public static final String ROW_NUMBER                                  = "Row Number";
+    public static final String RUN_GENERATE_SQUARES_AFTER                  = "Run Generate Squares After";
     public static final String RUN_TIME                                    = "Run Time";
     public static final String SPLITTING_MAX_DISTANCE                      = "SPLITTING_MAX_DISTANCE";
     public static final String SQUARE_MANUALLY_EXCLUDED                    = "Square Manually Excluded";

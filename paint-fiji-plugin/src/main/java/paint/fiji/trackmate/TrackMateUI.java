@@ -155,9 +155,9 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
             running = true;
 
             try {
-                boolean debug = PaintConfig.getBoolean("Debug", DEBUG_RUN_TRACK_MATE_ON_PROJECT, false);
-                Path imagesPath = project.getImagesRootPath();
-                Path currentProjectRoot = project.getProjectRootPath();
+                boolean debug              = PaintConfig.getBoolean("Debug", DEBUG_RUN_TRACK_MATE_ON_PROJECT, false);
+                Path    imagesPath         = project.getImagesRootPath();
+                Path    currentProjectRoot = project.getProjectRootPath();
 
                 if (debug) {
                     PaintLogger.debugf("TrackMate processing started.");

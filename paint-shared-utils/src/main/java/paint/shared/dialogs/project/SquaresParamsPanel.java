@@ -53,6 +53,14 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 
+import static paint.shared.constants.PaintStringConstants.NUMBER_OF_SQUARES_IN_RECORDING;
+import static paint.shared.constants.PaintStringConstants.MIN_REQUIRED_R_SQUARED;
+import static paint.shared.constants.PaintStringConstants.MIN_REQUIRED_DENSITY_RATIO;
+import static paint.shared.constants.PaintStringConstants.MAX_ALLOWABLE_VARIABILITY;
+import static paint.shared.constants.PaintStringConstants.GENERATE_SQUARES;
+import static paint.shared.constants.PaintStringConstants.TRACKMATE;
+import static paint.shared.constants.PaintStringConstants.RUN_GENERATE_SQUARES_AFTER;
+
 import static paint.shared.dialogs.ProjectDialog.DialogMode;
 
 /**
@@ -86,10 +94,10 @@ public class SquaresParamsPanel {
         pg.fill    = GridBagConstraints.NONE;
 
         // Load defaults from configuration
-        int nrSquares   = PaintConfig.getInt(   "Generate Squares", "Number of Squares in Recording", 400);
-        double minRSq   = PaintConfig.getDouble("Generate Squares", "Min Required R Squared",         0.1);
-        double minDens  = PaintConfig.getDouble("Generate Squares", "Min Required Density Ratio",     2.0);
-        double maxVar   = PaintConfig.getDouble("Generate Squares", "Max Allowable Variability",      10.0);
+        int nrSquares   = PaintConfig.getInt(   GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING, 400);
+        double minRSq   = PaintConfig.getDouble(GENERATE_SQUARES, MIN_REQUIRED_R_SQUARED,         0.1);
+        double minDens  = PaintConfig.getDouble(GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,     2.0);
+        double maxVar   = PaintConfig.getDouble(GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY,      10.0);
 
         int row = 0;
 
@@ -97,7 +105,7 @@ public class SquaresParamsPanel {
         if (mode == DialogMode.TRACKMATE) {
             runAfterTrackMate = new JCheckBox(
                     "Run Generate Squares after TrackMate",
-                    PaintConfig.getBoolean("TrackMate", "Run Generate Squares After", true)
+                    PaintConfig.getBoolean(TRACKMATE, RUN_GENERATE_SQUARES_AFTER, true)
             );
             pg.gridx = 0; pg.gridy = row; pg.gridwidth = 2;
             panel.add(runAfterTrackMate, pg);
@@ -115,7 +123,7 @@ public class SquaresParamsPanel {
 
         pg.gridx = 0;
         pg.gridy = row;
-        label(panel, "Number of Squares in Recording", labelSize, pg);
+        label(panel, NUMBER_OF_SQUARES_IN_RECORDING, labelSize, pg);
         pg.gridx = 1;
         gridSizeCombo = new JComboBox<>(new String[]{"5x5", "10x10", "15x15", "20x20", "25x25", "30x30", "35x35", "40x40"});
         int n = (int) Math.sqrt(nrSquares);
@@ -135,7 +143,7 @@ public class SquaresParamsPanel {
         // Min Density Ratio
         pg.gridx = 0;
         pg.gridy = row;
-        label(panel, "Min Required Density Ratio", labelSize, pg);
+        label(panel, MIN_REQUIRED_DENSITY_RATIO, labelSize, pg);
         pg.gridx = 1;
         minDensityField = text(String.valueOf(minDens), fieldSize);
         panel.add(minDensityField, pg);
@@ -144,7 +152,7 @@ public class SquaresParamsPanel {
         // Max Variability
         pg.gridx = 0;
         pg.gridy = row;
-        label(panel, "Max Allowable Variability", labelSize, pg);
+        label(panel, MAX_ALLOWABLE_VARIABILITY, labelSize, pg);
         pg.gridx = 1;
         maxVariabilityField = text(String.valueOf(maxVar), fieldSize);
         panel.add(maxVariabilityField, pg);
@@ -200,23 +208,23 @@ public class SquaresParamsPanel {
             String sel = (String) gridSizeCombo.getSelectedItem();
             if (sel != null && sel.contains("x")) {
                 int side = Integer.parseInt(sel.split("x")[0].trim());
-                PaintConfig.setInt("Generate Squares", "Number of Squares in Recording", side * side);
+                PaintConfig.setInt(GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING, side * side);
             }
         }
         if (minRSqField != null) {
-            PaintConfig.setDouble("Generate Squares", "Min Required R Squared",
+            PaintConfig.setDouble(GENERATE_SQUARES, MIN_REQUIRED_R_SQUARED,
                                   parseDouble(minRSqField.getText(), 0.1));
         }
         if (minDensityField != null) {
-            PaintConfig.setDouble("Generate Squares", "Min Required Density Ratio",
+            PaintConfig.setDouble(GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,
                                   parseDouble(minDensityField.getText(), 2.0));
         }
         if (maxVariabilityField != null) {
-            PaintConfig.setDouble("Generate Squares", "Max Allowable Variability",
+            PaintConfig.setDouble(GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY ,
                                   parseDouble(maxVariabilityField.getText(), 10.0));
         }
         if (mode == DialogMode.TRACKMATE && runAfterTrackMate != null) {
-            PaintConfig.setBoolean("TrackMate", "Run Generate Squares After", runAfterTrackMate.isSelected());
+            PaintConfig.setBoolean(TRACKMATE, RUN_GENERATE_SQUARES_AFTER, runAfterTrackMate.isSelected());
         }
         PaintConfig.instance().save();
     }

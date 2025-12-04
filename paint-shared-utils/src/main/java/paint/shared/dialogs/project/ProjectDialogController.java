@@ -65,8 +65,7 @@ import static paint.shared.dialogs.ProjectDialog.DialogMode;
 public class ProjectDialogController {
 
     /**
-     * Factory method for creating a WindowAdapter that triggers a run() call
-     * when the user attempts to close the window.
+     * Factory for WindowAdapter that triggers a run() call on window close.
      */
     public static WindowAdapter onWindowClosing(Runnable action) {
         return new WindowAdapter() {
@@ -132,163 +131,214 @@ public class ProjectDialogController {
     }
 
     /**
-     * Initializes all UI listeners: browse buttons, sweep toggle, OK/Cancel buttons,
-     * parameter validation, and worker invocation.
+     * Initializes UI listeners with method references where possible.
      */
     public void init() {
-        // browse handlers
+
+        // Browsing
         paths.onBrowseProject(this::handleBrowseProject);
         paths.onBrowseImages(this::handleBrowseImages);
 
-        // text listeners
+        // Text change → reevaluate OK
         paths.onRootsChanged(this::updateOk);
 
-        // experiments selection listeners
+        // Experiments change → reevaluate OK
         experiments.onSelectionChanged(this::updateOk);
 
-        // TrackMate -> run squares toggle affects params enabled & OK state
+        // Params change → reevaluate OK (TRACKMATE only)
         if (params != null) {
             params.onParamsChanged(this::updateOk);
         }
 
-        // Sweep checkbox + verbose + OK/Cancel
+        // Sweep toggle (clean method reference)
         bottom.onVerboseToggle();
-        bottom.onSweepToggle(selected -> {
+        bottom.onSweepToggle(this::onSweepToggle);
 
-            if (selected) {
-                final Path root = getProjectPath.get();
-                final Path sweepFile = root.resolve("Paint Sweep Configuration.json");
-                if (!java.nio.file.Files.exists(sweepFile)) {
-                    int res = JOptionPane.showConfirmDialog(
-                            dialog,
-                            "The file \"Paint Sweep Configuration.json\" does not exist in the project root.\n\n" +
-                                    "Do you want to create it now with default sweep settings?",
-                            "Sweep Configuration Missing",
-                            JOptionPane.YES_NO_OPTION,
-                            JOptionPane.WARNING_MESSAGE
-                    );
-                    if (res == JOptionPane.YES_OPTION) {
-                        try {
-                            paintConfig.setSweepDefaults(root);
-                            JOptionPane.showMessageDialog(
-                                    dialog,
-                                    "Sweep configuration file has been created:\n" +
-                                            sweepFile.toAbsolutePath() +
-                                            "\nYou should edit that file to enable the desired sweep options.",
-                                    "Sweep File Created",
-                                    JOptionPane.INFORMATION_MESSAGE
-                            );
-                        } catch (Exception ex) {
-                            JOptionPane.showMessageDialog(
-                                    dialog,
-                                    "Failed to create sweep configuration:\n" + ex.getMessage(),
-                                    "Error",
-                                    JOptionPane.ERROR_MESSAGE
-                            );
-                        }
-                    } else {
-                        bottom.setSweepSelected(false);
-                    }
-                }
-            }
-            updateOk();
-        });
+        // OK button
+        bottom.onOk(this::handleOk);
 
-        bottom.onOk(() -> {
-            clearCancelled.run();
+        // Cancel button
+        bottom.onCancel(this::handleCancel);
 
-            // validate images root
-            if (mode == DialogMode.TRACKMATE) {
-                final String img = paths.imagesRootText().trim();
-                if (!new File(img).isDirectory()) {
-                    JOptionPane.showMessageDialog(
-                            dialog,
-                            "The Images Root directory does not exist. Please select a valid directory.",
-                            "Invalid Images Root",
-                            JOptionPane.WARNING_MESSAGE
-                    );
-                    return;
-                }
-            }
-
-            Runnable uiDisable = () -> {
-                setInputsEnabled(false);
-                bottom.showRunning();
-            };
-            Runnable uiEnable = () -> {
-                setInputsEnabled(true);
-                bottom.resetOk(mode == DialogMode.VIEWER);
-            };
-            Runnable onSuccess = () -> {
-                PaintLogger.blankline();
-                PaintLogger.infof("Operation completed successfully.");
-                bottom.showCompleted(mode == DialogMode.VIEWER);
-            };
-            Runnable onFailure = () -> {
-                String msg = "Operation finished with errors. Check the log.";
-                JOptionPane.showMessageDialog(dialog, msg, "Warning", JOptionPane.WARNING_MESSAGE);
-            };
-
-            startWorker.run(uiDisable, uiEnable, onSuccess, onFailure);
-        });
-
-        bottom.onCancel(() -> {
-            setCancelled.run();
-            Thread t = getWorker.get();
-            if (t != null && t.isAlive()) {
-                PaintLogger.infof("Cancellation requested — attempting graceful shutdown...");
-                t.interrupt();
-
-                new Thread(() -> {
-                    try {
-                        t.join(2000);
-                    } catch (InterruptedException ignored) {
-                    }
-                    SwingUtilities.invokeLater(() -> {
-                        if (t.isAlive()) {
-                            PaintLogger.errorf("Worker thread did not stop — forcing JVM halt.");
-                            Runtime.getRuntime().halt(0);
-                        } else {
-                            PaintLogger.infof("Worker thread terminated cleanly.");
-                            clearCancelled.run();
-                            bottom.resetOk(true);
-                            try {
-                                PaintConsoleWindow.closeIfVisible();
-                            } catch (Throwable ignored) {
-                            }
-                            dialog.dispose();
-                        }
-                    });
-                }, "ForceShutdownWatcher").start();
-            } else {
-                PaintLogger.infof("No active worker thread — closing dialog and console.");
-                SwingUtilities.invokeLater(() -> {
-                    clearCancelled.run();
-                    bottom.resetOk(true);
-                    try {
-                        PaintConsoleWindow.closeIfVisible();
-                    } catch (Throwable ignored) {
-                    }
-                    dialog.dispose();
-                });
-            }
-        });
-
-        // initial OK state
+        // Initial OK state
         updateOk();
     }
 
-    /**
-     * Handles when the user selects a new project root directory.
-     */
+    // ----------------------------------------------------------------------------------------------------
+    //  OK / CANCEL logic (cleaned)
+    // ----------------------------------------------------------------------------------------------------
+
+    private void handleOk() {
+        clearCancelled.run();
+
+        // Validate images root if TrackMate
+        if (mode == DialogMode.TRACKMATE) {
+            final String img = paths.imagesRootText().trim();
+            if (!new File(img).isDirectory()) {
+                JOptionPane.showMessageDialog(
+                        dialog,
+                        "The Images Root directory does not exist. Please select a valid directory.",
+                        "Invalid Images Root",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+        }
+
+        Runnable uiDisable = () -> {
+            setInputsEnabled(false);
+            bottom.showRunning();
+        };
+
+        Runnable uiEnable = () -> {
+            setInputsEnabled(true);
+            bottom.resetOk(mode == DialogMode.VIEWER);
+        };
+
+        Runnable onSuccess = () -> {
+            PaintLogger.blankline();
+            PaintLogger.infof("Operation completed successfully.");
+            bottom.showCompleted(mode == DialogMode.VIEWER);
+        };
+
+        Runnable onFailure = () -> {
+            JOptionPane.showMessageDialog(
+                    dialog,
+                    "Operation finished with errors. Check the log.",
+                    "Warning",
+                    JOptionPane.WARNING_MESSAGE
+            );
+        };
+
+        startWorker.run(uiDisable, uiEnable, onSuccess, onFailure);
+    }
+
+    private void handleCancel() {
+        setCancelled.run();
+        Thread t = getWorker.get();
+
+        if (t != null && t.isAlive()) {
+            PaintLogger.infof("Cancellation requested — attempting graceful shutdown...");
+            t.interrupt();
+
+            new Thread(() -> handleWorkerShutdown(t), "ForceShutdownWatcher").start();
+        } else {
+            PaintLogger.infof("No active worker thread — closing dialog and console.");
+            SwingUtilities.invokeLater(this::finishDialogImmediately);
+        }
+    }
+
+    private void handleWorkerShutdown(Thread t) {
+        try {
+            t.join(2000);
+        } catch (InterruptedException ignored) {
+        }
+        SwingUtilities.invokeLater(() -> finishWorkerShutdown(t));
+    }
+
+    private void finishWorkerShutdown(Thread t) {
+
+        if (t.isAlive()) {
+            PaintLogger.errorf("Worker thread did not stop — forcing JVM halt.");
+            Runtime.getRuntime().halt(0);
+            return;
+        }
+
+        PaintLogger.infof("Worker thread terminated cleanly.");
+        clearCancelled.run();
+        bottom.resetOk(true);
+
+        try {
+            PaintConsoleWindow.closeIfVisible();
+        } catch (Throwable ignored) { }
+
+        dialog.dispose();
+    }
+
+    private void finishDialogImmediately() {
+        clearCancelled.run();
+        bottom.resetOk(true);
+
+        try {
+            PaintConsoleWindow.closeIfVisible();
+        } catch (Throwable ignored) {}
+
+        dialog.dispose();
+    }
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Sweep handling
+    // ----------------------------------------------------------------------------------------------------
+
+    private void onSweepToggle(boolean selected) {
+
+        if (selected) {
+            final Path root = getProjectPath.get();
+            final Path sweepFile = root.resolve("Paint Sweep Configuration.json");
+
+            if (!java.nio.file.Files.exists(sweepFile)) {
+                int res = JOptionPane.showConfirmDialog(
+                        dialog,
+                        "The file \"Paint Sweep Configuration.json\" does not exist in the project root.\n\n" +
+                                "Do you want to create it now with default sweep settings?",
+                        "Sweep Configuration Missing",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+                if (res == JOptionPane.YES_OPTION) {
+                    try {
+                        paintConfig.setSweepDefaults(root);
+                        JOptionPane.showMessageDialog(
+                                dialog,
+                                "Sweep configuration file has been created:\n" +
+                                        sweepFile.toAbsolutePath() +
+                                        "\nYou should edit that file to enable the desired sweep options.",
+                                "Sweep File Created",
+                                JOptionPane.INFORMATION_MESSAGE
+                        );
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(
+                                dialog,
+                                "Failed to create sweep configuration:\n" + ex.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                    }
+                } else {
+                    bottom.setSweepSelected(false);
+                }
+            }
+        }
+
+        updateOk();
+    }
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Browse handlers
+    // ----------------------------------------------------------------------------------------------------
+
+    private void handleBrowseProject(File dir) {
+        updateProjectRoot(dir.toPath());
+    }
+
+    private void handleBrowseImages(File ignored) {
+        updateOk();
+    }
+
     private void updateProjectRoot(Path newRoot) {
         setProjectPath.accept(newRoot);
         bottom.updateOkEnabled(validToRun());
     }
 
-    /**
-     * Determines whether execution is allowed, depending on mode and user selections.
-     */
+    // ----------------------------------------------------------------------------------------------------
+    //  Utility
+    // ----------------------------------------------------------------------------------------------------
+
+    private void updateOk() {
+        bottom.updateOkEnabled(validToRun());
+    }
+
     private boolean validToRun() {
         if (mode == DialogMode.VIEWER) {
             return paths.isProjectRootValid();
@@ -296,9 +346,6 @@ public class ProjectDialogController {
         return paths.isProjectRootValid() && experiments.anySelected();
     }
 
-    /**
-     * Enables or disables all input panels.
-     */
     private void setInputsEnabled(boolean enabled) {
         paths.setEnabled(enabled, mode);
         experiments.setEnabled(enabled);
@@ -309,24 +356,10 @@ public class ProjectDialogController {
     }
 
     /**
-     * A functional interface representing a callback that receives four Runnables
-     * (typically: runUiDisable, runUiEnable, onSuccess, onFailure). Used to abstract
-     * background worker startup from the controller.
+     * Functional interface used to launch worker logic with four callbacks.
      */
     @FunctionalInterface
     public interface QuadRunnable {
         void run(Runnable a, Runnable b, Runnable c, Runnable d);
-    }
-
-    private void updateOk() {
-        bottom.updateOkEnabled(validToRun());
-    }
-
-    private void handleBrowseProject(File dir) {
-        updateProjectRoot(dir.toPath());
-    }
-
-    private void handleBrowseImages(File ignored) {
-        updateOk();
     }
 }

@@ -89,8 +89,8 @@ class ConfigStore {
             if (path.getParent() != null) {
                 Files.createDirectories(path.getParent());
             }
-            try (Writer w = Files.newBufferedWriter(path)) {
-                gson.toJson(root, w);
+            try (Writer writer = Files.newBufferedWriter(path)) {
+                gson.toJson(root, writer);
             }
         } catch (IOException e) {
             PaintLogger.errorf("Failed to save config file: %s", e.getMessage());

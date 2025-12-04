@@ -37,6 +37,7 @@ import paint.shared.config.paintconfig.PaintConfig;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -89,8 +90,8 @@ public class ExperimentsPanel {
         controls.add(clearAll);
 
         // Select and clear all experiments
-        selectAll.addActionListener(e -> selectAllExperiments());
-        clearAll.addActionListener(e -> clearAllExperiments());
+        selectAll.addActionListener(this::selectAllExperiments);
+        clearAll.addActionListener(this::clearAllExperiments);
 
         panel.add(controls, BorderLayout.NORTH);
         panel.add(scroll, BorderLayout.CENTER);
@@ -122,7 +123,6 @@ public class ExperimentsPanel {
 
     /**
      * Checks whether at least one experiment is selected.
-     ~~~~~~~8
      * @return true if any checkbox is selected, false otherwise
      */
     public boolean anySelected() {
@@ -206,14 +206,14 @@ public class ExperimentsPanel {
         onChanged.run();  // Notify listeners of new state
     }
 
-    private void selectAllExperiments() {
+    private void selectAllExperiments(ActionEvent e) {
         for (JCheckBox cb : boxes) {
             cb.setSelected(true);
         }
         onChanged.run();
     }
 
-    private void clearAllExperiments() {
+    private void clearAllExperiments(ActionEvent e) {
         for (JCheckBox cb : boxes) {
             cb.setSelected(false);
         }
