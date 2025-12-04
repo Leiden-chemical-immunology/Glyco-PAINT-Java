@@ -258,4 +258,8 @@ public class BottomBarPanel {
         okBtn.setEnabled(false);
         cancelBtn.setEnabled(false);
     }
+
+    public void keepCancelEnabled() {
+        cancelBtn.setEnabled(true);
+    }
 }

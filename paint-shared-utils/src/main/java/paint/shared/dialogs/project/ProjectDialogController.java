@@ -368,10 +368,25 @@ public class ProjectDialogController {
         return paths.isProjectRootValid() && experiments.anySelected();
     }
 
+    /**
+     * Enables/disables all interactive UI elements EXCEPT the Cancel button.
+     */
     private void setInputsEnabled(boolean enabled) {
+
+        // Disable Project + Images root fields
         paths.setEnabled(enabled, mode);
+
+        // Disable TrackMate / Squares parameters
         if (params != null) {
             params.setEnabled(enabled);
+        }
+
+        experiments.setEnabled(enabled);
+
+        bottom.setEnabled(enabled);
+
+        if (!enabled) {
+            bottom.keepCancelEnabled();
         }
     }
 
