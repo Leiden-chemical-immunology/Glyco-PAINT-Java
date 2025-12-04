@@ -75,102 +75,110 @@ public class ProjectDialogController {
         };
     }
 
-    private final DialogMode         mode;
-    private final JDialog            dialog;
-    private final PaintConfig        paintConfig;
+    private final DialogMode mode;
+    private final JDialog dialog;
+    private final PaintConfig paintConfig;
+
+    private boolean workerStarted = false;
 
     // Project root getter/setter supplied by the dialog
-    private final Supplier<Path>     getProjectPath;   // retrieves current project root
-    private final Consumer<Path>     setProjectPath;   // updates project root
+    private final Supplier<Path> getProjectPath;
+    private final Consumer<Path> setProjectPath;
 
     // UI panels
-    private final ProjectPathsPanel  paths;
-    private final SquaresParamsPanel params;           // null in VIEWER mode
-    private final ExperimentsPanel   experiments;
-    private final BottomBarPanel     bottom;
+    private final ProjectPathsPanel paths;
+    private final SquaresParamsPanel params; // null in VIEWER mode
+    private final ExperimentsPanel experiments;
+    private final BottomBarPanel bottom;
 
     // Worker logic references provided by ProjectDialog
-    private final QuadRunnable       startWorker;      // executes heavy work with 4 UI callbacks
-    private final Supplier<Thread>   getWorker;        // retrieves active worker thread
-    private final Runnable           setCancelled;     // marks cancellation
-    private final Runnable           clearCancelled;   // resets cancellation flag
+    private final QuadRunnable startWorker;
+    private final Supplier<Thread> getWorker;
+    private final Runnable setCancelled;
+    private final Runnable clearCancelled;
 
-    /**
-     * Main controller constructor. Receives all functional interfaces and UI component references
-     * from ProjectDialog, ensuring the controller remains unaware of their concrete implementation.
-     */
+    // A callback provided by ProjectDialog to re-enable ALL UI elements
+    private final Runnable enableAllUiFromDialog;
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Constructor
+    // ----------------------------------------------------------------------------------------------------
+
     public ProjectDialogController(
-            DialogMode         mode,
-            JDialog            dialog,
-            PaintConfig        paintConfig,
-            Supplier<Path>     getProjectPath,  // A supplier takes no arguments and returns a value.
-            Consumer<Path>     setProjectPath,  // A consumer takes one argument and returns nothing.
-            ProjectPathsPanel  paths,
+            DialogMode mode,
+            JDialog dialog,
+            PaintConfig paintConfig,
+            Supplier<Path> getProjectPath,
+            Consumer<Path> setProjectPath,
+            ProjectPathsPanel paths,
             SquaresParamsPanel params,
-            ExperimentsPanel   experiments,
-            BottomBarPanel     bottom,
-            QuadRunnable       startWorker,     // (runUiDisable, runUiEnable, onSuccess, onFailure) define UI behaviour
-            Supplier<Thread>   getWorker,       // A supplier takes no arguments and returns a value.
-            Runnable           setCancelled,    // A runnable takes no arguments and returns nothing.
-            Runnable           clearCancelled
+            ExperimentsPanel experiments,
+            BottomBarPanel bottom,
+            QuadRunnable startWorker,
+            Supplier<Thread> getWorker,
+            Runnable setCancelled,
+            Runnable clearCancelled,
+            Runnable enableAllUiFromDialog   // <----- NEW CALLBACK
     ) {
-        this.mode           = mode;
-        this.dialog         = dialog;
-        this.paintConfig    = paintConfig;
+        this.mode = mode;
+        this.dialog = dialog;
+        this.paintConfig = paintConfig;
         this.getProjectPath = getProjectPath;
         this.setProjectPath = setProjectPath;
-        this.paths          = paths;
-        this.params         = params;
-        this.experiments    = experiments;
-        this.bottom         = bottom;
-        this.startWorker    = startWorker;
-        this.getWorker      = getWorker;
-        this.setCancelled   = setCancelled;
+
+        this.paths = paths;
+        this.params = params;
+        this.experiments = experiments;
+        this.bottom = bottom;
+
+        this.startWorker = startWorker;
+        this.getWorker = getWorker;
+        this.setCancelled = setCancelled;
         this.clearCancelled = clearCancelled;
+
+        this.enableAllUiFromDialog = enableAllUiFromDialog;
     }
 
-    /**
-     * Initializes UI listeners with method references where possible.
-     */
+    // ----------------------------------------------------------------------------------------------------
+    //  Initialization
+    // ----------------------------------------------------------------------------------------------------
+
     public void init() {
 
         // Browsing
         paths.onBrowseProject(this::handleBrowseProject);
         paths.onBrowseImages(this::handleBrowseImages);
 
-        // Text change → reevaluate OK
+        // Text changes → OK may update
         paths.onRootsChanged(this::updateOk);
-
-        // Experiments change → reevaluate OK
         experiments.onSelectionChanged(this::updateOk);
 
-        // Params change → reevaluate OK (TRACKMATE only)
+        // Parameter changes (TrackMate only)
         if (params != null) {
             params.onParamsChanged(this::updateOk);
         }
 
-        // Sweep toggle (clean method reference)
+        // Sweep toggle
         bottom.onVerboseToggle();
         bottom.onSweepToggle(this::onSweepToggle);
 
-        // OK button
+        // OK/Cancel
         bottom.onOk(this::handleOk);
-
-        // Cancel button
         bottom.onCancel(this::handleCancel);
 
-        // Initial OK state
+        // Initial state
         updateOk();
     }
 
     // ----------------------------------------------------------------------------------------------------
-    //  OK / CANCEL logic
+    //  OK
     // ----------------------------------------------------------------------------------------------------
 
     private void handleOk() {
-        clearCancelled.run();
 
-        // Validate images root if TrackMate
+        clearCancelled.run();
+        workerStarted = true;
+
         if (mode == DialogMode.TRACKMATE) {
             final String img = paths.imagesRootText().trim();
             if (!new File(img).isDirectory()) {
@@ -212,34 +220,54 @@ public class ProjectDialogController {
         startWorker.run(uiDisable, uiEnable, onSuccess, onFailure);
     }
 
+    // ----------------------------------------------------------------------------------------------------
+    //  CANCEL
+    // ----------------------------------------------------------------------------------------------------
+
     private void handleCancel() {
-        // Signal cancellation to the worker logic; worker code checks this flag
+
         setCancelled.run();
         Thread t = getWorker.get();
 
         bottom.showStopping();
 
+        // -----------------------------------------------------------------------------------------------
+        // CASE 1 — Worker still running → perform real cancellation
+        // -----------------------------------------------------------------------------------------------
         if (t != null && t.isAlive()) {
             PaintLogger.infof("Cancellation requested — waiting for worker to finish...");
-            // Do NOT interrupt the worker thread here; let it poll the cancelled flag
-            // and unwind cleanly, so watchdog joins are not interrupted.
             new Thread(() -> handleWorkerShutdown(t), "ForceShutdownWatcher").start();
-        } else {
-            // No active worker: nothing to cancel, just restore normal UI state.
-            PaintLogger.infof("No active worker thread registered — nothing to cancel.");
-            clearCancelled.run();
-            bottom.resetOk(validToRun());
+            return;
         }
+
+        // -----------------------------------------------------------------------------------------------
+        // CASE 2 — Cancel BEFORE worker started (invalid dialog state)
+        // Re-enable full UI so user can fix input
+        // -----------------------------------------------------------------------------------------------
+        if (!workerStarted) {
+            PaintLogger.infof("Cancellation before start — closing dialog.");
+            clearCancelled.run();
+            SwingUtilities.invokeLater(dialog::dispose);
+            return;
+        }
+
+        // -----------------------------------------------------------------------------------------------
+        // CASE 3 — Worker started and is DONE → treat select Cancel as dialog close
+        // -----------------------------------------------------------------------------------------------
+        PaintLogger.infof("Cancel after completion — closing dialog.");
+        paint.shared.utils.PaintConsoleWindow.closeIfVisible();
+        SwingUtilities.invokeLater(dialog::dispose);
+        clearCancelled.run();
     }
+
+    // ----------------------------------------------------------------------------------------------------
+    //  Worker Shutdown
+    // ----------------------------------------------------------------------------------------------------
 
     private void handleWorkerShutdown(Thread t) {
         try {
-            // Wait until the worker thread *really* stops.
             t.join();
-        } catch (InterruptedException ignored) {
-            // If this watcher is ever interrupted, we just stop waiting and let
-            // the EDT-side code decide what to do next.
-        }
+        } catch (InterruptedException ignored) {}
         SwingUtilities.invokeLater(() -> finishWorkerShutdown(t));
     }
 
@@ -252,12 +280,14 @@ public class ProjectDialogController {
         }
 
         PaintLogger.infof("Worker thread terminated cleanly.");
-        clearCancelled.run();
+
+        workerStarted = false;    // <—— REQUIRED
         bottom.resetOk(true);
+        clearCancelled.run();
     }
 
     // ----------------------------------------------------------------------------------------------------
-    //  Sweep handling
+    //  Sweep Toggle
     // ----------------------------------------------------------------------------------------------------
 
     private void onSweepToggle(boolean selected) {
@@ -267,6 +297,7 @@ public class ProjectDialogController {
             final Path sweepFile = root.resolve("Paint Sweep Configuration.json");
 
             if (!java.nio.file.Files.exists(sweepFile)) {
+
                 int res = JOptionPane.showConfirmDialog(
                         dialog,
                         "The file \"Paint Sweep Configuration.json\" does not exist in the project root.\n\n" +
@@ -279,6 +310,7 @@ public class ProjectDialogController {
                 if (res == JOptionPane.YES_OPTION) {
                     try {
                         paintConfig.setSweepDefaults(root);
+
                         JOptionPane.showMessageDialog(
                                 dialog,
                                 "Sweep configuration file has been created:\n" +
@@ -341,6 +373,14 @@ public class ProjectDialogController {
         if (params != null) {
             params.setEnabled(enabled);
         }
+    }
+
+    /**
+     * Restores full dialog UI after cancellation-before-start.
+     */
+    private void enableFullUI() {
+        enableAllUiFromDialog.run();          // Re-enable all fields/buttons
+        bottom.resetOk(validToRun());         // Restore OK button state
     }
 
     /**

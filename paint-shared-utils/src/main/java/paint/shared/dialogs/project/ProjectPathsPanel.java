@@ -201,15 +201,19 @@ public class ProjectPathsPanel {
      * Enables or disables UI fields depending on dialog mode.
      */
     public void setEnabled(boolean enabled, DialogMode mode) {
+        // Project root always follows enabled state
         projectRootField.setEnabled(enabled);
         browseProjectBtn.setEnabled(enabled);
+
         if (mode == DialogMode.GENERATE_SQUARES) {
-            imagesRootField.setEditable(false);
-            imagesRootField.setEnabled(true);
+            // Only this mode disables images root
+            imagesRootField.setEnabled(false);
+            browseImagesBtn.setEnabled(false);
         } else {
+            // TRACKMATE and VIEWER
             imagesRootField.setEnabled(enabled);
+            browseImagesBtn.setEnabled(enabled);
         }
-        browseImagesBtn.setEnabled(enabled && mode != DialogMode.GENERATE_SQUARES);
     }
 
     /**
@@ -280,4 +284,6 @@ public class ProjectPathsPanel {
             onImagesChosen.accept(dir);
         }
     }
+
+
 }

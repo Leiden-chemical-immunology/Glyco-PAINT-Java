@@ -98,10 +98,9 @@ public class BottomBarPanel {
         right.add(okBtn);
         right.add(cancelBtn);
 
-        panel.add(left, BorderLayout.WEST);
+        panel.add(left,  BorderLayout.WEST);
         panel.add(right, BorderLayout.EAST);
 
-        // wire
         verbose.addActionListener(this::handleVerbose);
         if (sweep != null) {
             sweep.addActionListener(this::handleSweep);
@@ -138,7 +137,7 @@ public class BottomBarPanel {
      * NOTE: Current implementation resets onVerbose to a no-op. This is called once by the controller.
      */
     public void onVerboseToggle() {
-        this.onVerbose = v -> { };
+        this.onVerbose = v -> {};
     }
 
     /**
@@ -146,7 +145,7 @@ public class BottomBarPanel {
      * If null is passed, it resets to a no-op Boolean consumer.
      */
     public void onSweepToggle(Consumer<Boolean> c) {
-        this.onSweep = (c != null ? c : s -> { });
+        this.onSweep = (c != null ? c : s -> {});
     }
 
     /**
@@ -155,6 +154,8 @@ public class BottomBarPanel {
      * so that Cancel can remain enabled.
      */
     public void setEnabled(boolean enabled) {
+        panel.setEnabled(enabled);
+
         saveExperiments.setEnabled(enabled);
         verbose.setEnabled(enabled);
         if (sweep != null) {
@@ -164,9 +165,12 @@ public class BottomBarPanel {
         cancelBtn.setEnabled(enabled);
     }
 
-    /**
-     * Updates whether the OK button is enabled based on conditions evaluated elsewhere.
-     */
+    /** Explicit UI recovery used after Cancel-before-start cases */
+    public void enableAll() {
+        setEnabled(true);
+        okBtn.setText("OK");
+    }
+
     public void updateOkEnabled(boolean enabled) {
         okBtn.setEnabled(enabled);
     }
@@ -177,7 +181,7 @@ public class BottomBarPanel {
     public void showRunning() {
         okBtn.setText("Running...");
         okBtn.setEnabled(false);
-        cancelBtn.setEnabled(true);  // keep Cancel active while running
+        cancelBtn.setEnabled(true);
     }
 
     /**
