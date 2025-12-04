@@ -68,8 +68,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static paint.shared.config.TrackMateConfig.trackMateConfigToFile;
-
 import static paint.shared.constants.PaintDirectories.DIR_BRIGHTFIELD_IMAGES;
 import static paint.shared.constants.PaintDirectories.DIR_TRACKMATE_IMAGES;
 
@@ -113,11 +111,11 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
      * @param maxSecondsPerRecording time limit for execution in seconds
      * @param dialog                 optional {@link ProjectDialog} that can signal cancellation
      * @return {@code true} if the task completed successfully;
-     * {@code false} if cancelled or timed out
+     *         {@code false} if cancelled or timed out
      */
     private static boolean runWithWatchdog(Runnable task,
-                                           int maxSecondsPerRecording,
-                                           ProjectDialog dialog) {
+            int maxSecondsPerRecording,
+            ProjectDialog dialog) {
 
         Thread thread = new Thread(task, "TrackMateThread");
         thread.start();
@@ -127,25 +125,28 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
 
         for (int i = 0; i < maxSecondsPerRecording; i++) {
             try {
-                thread.join(1000); // check every second
+                // Wait up to 1 second for TrackMate thread to finish
+                thread.join(1000);
             } catch (InterruptedException e) {
+                // Should not happen anymore — no interrupts sent
                 Thread.currentThread().interrupt();
                 PaintLogger.errorf("Watchdog thread was interrupted.");
                 return false;
             }
 
-            // ✅ Finished normally
+            // Finished normally
             if (!thread.isAlive()) {
                 return true;
             }
 
-            // ✅ User requested cancellation
+            // User pressed Cancel → do NOT interrupt TrackMate
             if (dialog != null && dialog.isCancelled()) {
-                PaintLogger.warnf("User requested cancellation — stopping TrackMate gracefully...");
+                PaintLogger.warnf("User requested cancellation — allowing TrackMate to exit cleanly…");
+                // DO NOT CALL thread.interrupt() — this causes FutureTask.get() to throw InterruptedException
                 return false;
             }
 
-            // Print progress dots
+            // Progress dots
             numberOfInterrupts++;
             if (numberOfInterrupts >= 1) {
                 PaintLogger.raw(".");
@@ -158,7 +159,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
             }
         }
 
-        // ⏱ Timeout reached
+        // Timeout — again, do NOT interrupt TrackMate
         PaintLogger.errorf("   TrackMate - exceeded time limit of %d seconds.", maxSecondsPerRecording);
         return false;
     }
@@ -175,15 +176,15 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
      *         {@code false} if errors or cancellations occurred
      */
     public static boolean runTrackMateOnExperiment(Path experimentPath,
-                                                   Path imagesPath,
-                                                   ProjectDialog dialog) {
+            Path imagesPath,
+            ProjectDialog dialog) {
 
         // ---------------------------------------------------------------------
         // Initial setup
         // ---------------------------------------------------------------------
         Duration totalDuration           = Duration.ZERO;
-        int numberRecordings             = 0;
-        boolean status                   = true;
+        int      numberRecordings        = 0;
+        boolean  status                  = true;
         List<Path> processedTrackFiles   = new ArrayList<>();
 
         // Initialize configuration
@@ -213,9 +214,9 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
             return false;
         }
 
-        int numberRecordingsToProcess = countProcessed(experimentFilePath);
-        String experimentName         = experimentPath.getFileName().toString();
-        String projectName            = experimentPath.getParent().getFileName().toString();
+        int    numberRecordingsToProcess = countProcessed(experimentFilePath);
+        String experimentName            = experimentPath.getFileName().toString();
+        String projectName               = experimentPath.getParent().getFileName().toString();
 
         PaintLogger.blankline();
         PaintLogger.infof("Processing %d %s in experiment '%s' (project '%s').",
@@ -231,9 +232,9 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
         try (Reader experimentInfoReader = Files.newBufferedReader(experimentFilePath);
              CSVParser experimentInfoParser = new CSVParser(experimentInfoReader,
                                                             CSVFormat.DEFAULT.builder()
-                                                                    .setHeader()
-                                                                    .setSkipHeaderRecord(true)
-                                                                    .build());
+                                                                             .setHeader()
+                                                                             .setSkipHeaderRecord(true)
+                                                                             .build());
              BufferedWriter allRecordingsWriter = Files.newBufferedWriter(allRecordingFilePath);
              CSVPrinter allRecordingsPrinter = new CSVPrinter(allRecordingsWriter, CSVFormat.DEFAULT.builder().build())) {
 
@@ -302,6 +303,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                                 trackMateResults[0] = RunTrackMateOnRecording.runTrackMateOnRecording(
                                         experimentPath, imagesPath, trackMateConfig, threshold, experimentInfo, dialog);
                             } catch (Exception e) {
+                                // Swallow exceptions here; outer code will detect failure via trackMateResults[0]
                             }
                         }, maxSecondsPerRecording, dialog);
 

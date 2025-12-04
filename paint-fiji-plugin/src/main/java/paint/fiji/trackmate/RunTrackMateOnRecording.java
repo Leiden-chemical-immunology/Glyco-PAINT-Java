@@ -35,13 +35,13 @@
  *    – paint.shared.objects.ExperimentInfo
  *    – paint.shared.dialogs.ProjectDialog
  *    – paint.shared.utils.PaintLogger
- *    – paint.fiji.tracks.TrackCsvWriter
+ *    – paint.fiji.tracks.TrackDataExporter
  *
  *  AUTHOR:
  *    Hans Bakker (jjabakker)
  *
  *  UPDATED:
- *    2025-10-28
+ *    2025-12-04
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -49,7 +49,11 @@
 
 package paint.fiji.trackmate;
 
-import fiji.plugin.trackmate.*;
+import fiji.plugin.trackmate.Logger;
+import fiji.plugin.trackmate.Model;
+import fiji.plugin.trackmate.SelectionModel;
+import fiji.plugin.trackmate.Settings;
+import fiji.plugin.trackmate.TrackMate;
 import fiji.plugin.trackmate.action.CaptureOverlayAction;
 import fiji.plugin.trackmate.detection.LogDetectorFactory;
 import fiji.plugin.trackmate.features.FeatureFilter;
@@ -100,11 +104,11 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
      *         or a cancellation result if aborted
      */
     public static TrackMateResults runTrackMateOnRecording(Path experimentPath,
-                                                           Path imagesPath,
-                                                           TrackMateConfig trackMateConfig,
-                                                           double threshold,
-                                                           ExperimentInfo experimentInfoRecord,
-                                                           ProjectDialog dialog) {
+            Path imagesPath,
+            TrackMateConfig trackMateConfig,
+            double threshold,
+            ExperimentInfo experimentInfoRecord,
+            ProjectDialog dialog) {
 
         LocalDateTime start = LocalDateTime.now();
         DebugTools.setRootLevel("OFF");
@@ -160,7 +164,7 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
             // Step 2 – Save Brightfield snapshot
             // -----------------------------------------------------------------
             Path jpgPath = experimentPath.resolve("Brightfield Images")
-                    .resolve(experimentInfoRecord.getRecordingName() + ".jpg");
+                                         .resolve(experimentInfoRecord.getRecordingName() + ".jpg");
             if (Files.notExists(jpgPath.getParent())) {
                 Files.createDirectories(jpgPath.getParent());
             }
@@ -168,8 +172,8 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
                 return cancelEarly(imp, impBrightfield);
             }
 
-            Path brightFieldPath = null;
-            String baseName = experimentInfoRecord.getRecordingName();
+            Path   brightFieldPath = null;
+            String baseName        = experimentInfoRecord.getRecordingName();
 
             List<String> candidates = Arrays.asList(
                     baseName + "-BF.nd2",
@@ -177,10 +181,10 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
                     baseName + "-BF2.nd2");
             try {
                 brightFieldPath = candidates.stream()
-                        .map(imagesPath::resolve)
-                        .filter(Files::exists)
-                        .findFirst()
-                        .orElse(null);
+                                            .map(imagesPath::resolve)
+                                            .filter(Files::exists)
+                                            .findFirst()
+                                            .orElse(null);
             } catch (Exception e) {
                 PaintLogger.errorf("Could not locate brightfield file: %s", candidates);
             }
@@ -206,8 +210,8 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
 
             Settings settings = new Settings(imp);
             // Detector configuration
-            settings.detectorFactory   = new LogDetectorFactory();
-            settings.detectorSettings  = settings.detectorFactory.getDefaultSettings();
+            settings.detectorFactory  = new LogDetectorFactory();
+            settings.detectorSettings = settings.detectorFactory.getDefaultSettings();
             settings.detectorSettings.put("TARGET_CHANNEL",           trackMateConfig.getTargetChannel());
             settings.detectorSettings.put("RADIUS",                   trackMateConfig.getRadius());
             settings.detectorSettings.put("DO_SUBPIXEL_LOCALIZATION", trackMateConfig.isDoSubpixelLocalization());
@@ -215,8 +219,8 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
             settings.detectorSettings.put("DO_MEDIAN_FILTERING",      trackMateConfig.isMedianFiltering());
 
             // Tracker configuration
-            settings.trackerFactory    = new SparseLAPTrackerFactory();
-            settings.trackerSettings   = settings.trackerFactory.getDefaultSettings();
+            settings.trackerFactory  = new SparseLAPTrackerFactory();
+            settings.trackerSettings = settings.trackerFactory.getDefaultSettings();
             settings.trackerSettings.put("LINKING_MAX_DISTANCE",            trackMateConfig.getLinkingMaxDistance());
             settings.trackerSettings.put("ALTERNATIVE_LINKING_COST_FACTOR", trackMateConfig.getAlternativeLinkingCostFactor());
             settings.trackerSettings.put("ALLOW_GAP_CLOSING",               trackMateConfig.isAllowGapClosing());
@@ -231,12 +235,14 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
             Locale.setDefault(Locale.US);
             System.setProperty("user.language", "en");
             System.setProperty("user.country", "US");
-            System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "1");  // Disable JVM-level parallelism (limits common pool threads to 1)
-            System.setProperty("trackmate.deterministic", "true");                            // Request deterministic behavior from TrackMate if supportedSo where I
+            System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "1");
+            System.setProperty("trackmate.deterministic", "true");
 
             settings.addSpotFilter(new FeatureFilter("QUALITY", 0, true));
             settings.addAllAnalyzers();
-            settings.addTrackFilter(new FeatureFilter("NUMBER_SPOTS", trackMateConfig.getMinNumberOfSpotsInTrack(), true));
+            settings.addTrackFilter(new FeatureFilter("NUMBER_SPOTS",
+                                                      trackMateConfig.getMinNumberOfSpotsInTrack(),
+                                                      true));
 
             // -----------------------------------------------------------------
             // Step 4 – Execute TrackMate
@@ -248,17 +254,39 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
 
             TrackMate trackmate = new TrackMate(model, settings);
             if (!trackmate.checkInput()) {
-                PaintLogger.errorf("TrackMate input check failed: %s", trackmate.getErrorMessage());
+                if (!isCancelled(Thread.currentThread(), dialog)) {
+                    PaintLogger.errorf("TrackMate input check failed: %s", trackmate.getErrorMessage());
+                }
                 return cancelEarly(imp, impBrightfield);
             }
 
+            // ---- Spot detection ----
             PaintLogger.raw("\n                       TrackMate - spot detection:  ");
             try {
                 if (!trackmate.execDetection()) {
-                    PaintLogger.errorf("TrackMate - execDetection failed: %s", trackmate.getErrorMessage());
+                    // If we reach here with an interrupted thread or external cancel,
+                    // treat it as cancellation, not as a hard error.
+                    if (Thread.currentThread().isInterrupted() || isCancelled(Thread.currentThread(), dialog)) {
+                        Thread.currentThread().interrupt();
+                        PaintLogger.warnf("TrackMate spot detection interrupted (cancellation).");
+                        return cancelEarly(imp, impBrightfield);
+                    }
+
+                    PaintLogger.errorf("TrackMate - execDetection failed: %s",
+                                       trackmate.getErrorMessage());
                     return cancelEarly(imp, impBrightfield);
                 }
             } catch (Exception e) {
+                // Special handling: InterruptedException often bubbles out of TrackMate
+                // when the watchdog/worker interrupts the thread.
+                if (e instanceof InterruptedException
+                        || Thread.currentThread().isInterrupted()
+                        || isCancelled(Thread.currentThread(), dialog)) {
+                    Thread.currentThread().interrupt();
+                    PaintLogger.warnf("TrackMate spot detection interrupted (likely cancellation).");
+                    return cancelEarly(imp, impBrightfield);
+                }
+
                 PaintLogger.errorf("Unexpected error during detection: %s", e.getMessage());
                 return cancelEarly(imp, impBrightfield);
             }
@@ -277,13 +305,29 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
                 return cancelEarly(imp, impBrightfield);
             }
 
+            // ---- Track detection ----
             PaintLogger.raw("\n                       TrackMate - track detection: ");
             try {
                 if (!trackmate.process()) {
+
+                    if (Thread.currentThread().isInterrupted() || isCancelled(Thread.currentThread(), dialog)) {
+                        Thread.currentThread().interrupt();
+                        PaintLogger.warnf("TrackMate track detection interrupted (cancellation).");
+                        return cancelEarly(imp, impBrightfield);
+                    }
+
                     PaintLogger.errorf("TrackMate process failed: %s", trackmate.getErrorMessage());
                     return cancelEarly(imp, impBrightfield);
                 }
             } catch (Exception e) {
+                if (e instanceof InterruptedException
+                        || Thread.currentThread().isInterrupted()
+                        || isCancelled(Thread.currentThread(), dialog)) {
+                    Thread.currentThread().interrupt();
+                    PaintLogger.warnf("TrackMate track detection interrupted (likely cancellation).");
+                    return cancelEarly(imp, impBrightfield);
+                }
+
                 PaintLogger.errorf("Unexpected error during TrackMate process: %s", e.getMessage());
                 return cancelEarly(imp, impBrightfield);
             }
@@ -300,13 +344,17 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
             ds.setSpotVisible(false);
             ds.setTrackColorBy(DisplaySettings.TrackMateObject.TRACKS,
                                trackMateConfig.getTrackColoring());
-            final HyperStackDisplayer displayer = new HyperStackDisplayer(model, selectionModel, imp, ds);
+            final HyperStackDisplayer displayer = new HyperStackDisplayer(model,
+                                                                          selectionModel,
+                                                                          imp,
+                                                                          ds);
             displayer.render();
             displayer.refresh();
 
             capture = CaptureOverlayAction.capture(imp, -1, 1, null);
+
             Path imagePath = experimentPath.resolve("TrackMate Images")
-                    .resolve(experimentInfoRecord.getRecordingName() + ".jpg");
+                                           .resolve(experimentInfoRecord.getRecordingName() + ".jpg");
             if (capture != null) {
                 if (!new FileSaver(capture).saveAsTiff(String.valueOf(imagePath))) {
                     PaintLogger.errorf("Failed to save TIFF to: %s", imagePath);
@@ -319,7 +367,7 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
             // -----------------------------------------------------------------
             String tracksName = experimentInfoRecord.getRecordingName() + "-tracks.csv";
             Path   tracksPath = experimentPath.resolve(tracksName);
-            int totalSpotsInAllTracks = 0;
+            int    totalSpotsInAllTracks = 0;
 
             try {
                 totalSpotsInAllTracks = TrackDataExporter.writeTracksCsv(
@@ -354,6 +402,15 @@ public class RunTrackMateOnRecording extends TrackMateHeadless {
                                         totalSpotsInAllTracks);
 
         } catch (Exception e) {
+            // Any unexpected top-level exception: honor cancellation if present
+            if (e instanceof InterruptedException
+                    || Thread.currentThread().isInterrupted()
+                    || isCancelled(Thread.currentThread(), dialog)) {
+                Thread.currentThread().interrupt();
+                PaintLogger.warnf("TrackMate recording interrupted (top-level cancellation).");
+                return cancelEarly(imp, impBrightfield);
+            }
+
             PaintLogger.errorf("Exception during TrackMate processing: %s", e.getMessage());
             return cancelEarly(imp, impBrightfield);
         } finally {

@@ -76,8 +76,8 @@ public class BottomBarPanel {
      * In TRACKMATE mode, the Sweep checkbox is shown; otherwise omitted.
      */
     public BottomBarPanel(DialogMode mode, boolean verboseDefault) {
-        JPanel left     = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JPanel right    = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel left  = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
         saveExperiments = new JCheckBox("Save Experiments", false);
         verbose         = new JCheckBox("Verbose", verboseDefault);
@@ -93,7 +93,7 @@ public class BottomBarPanel {
             sweep = null;
         }
 
-        okBtn = new JButton("OK");
+        okBtn     = new JButton("OK");
         cancelBtn = new JButton("Cancel");
         right.add(okBtn);
         right.add(cancelBtn);
@@ -122,8 +122,7 @@ public class BottomBarPanel {
      * If null is passed, it resets to a no-op callback.
      */
     public void onOk(Runnable r) {
-        this.onOk = (r != null ? r : () -> {
-        });
+        this.onOk = (r != null ? r : NO_OP);
     }
 
     /**
@@ -131,8 +130,7 @@ public class BottomBarPanel {
      * If null is passed, it resets to a no-op callback.
      */
     public void onCancel(Runnable r) {
-        this.onCancel = (r != null ? r : () -> {
-        });
+        this.onCancel = (r != null ? r : NO_OP);
     }
 
     /**
@@ -140,8 +138,7 @@ public class BottomBarPanel {
      * NOTE: Current implementation resets onVerbose to a no-op. This is called once by the controller.
      */
     public void onVerboseToggle() {
-        this.onVerbose = v -> {
-        };
+        this.onVerbose = v -> { };
     }
 
     /**
@@ -149,16 +146,20 @@ public class BottomBarPanel {
      * If null is passed, it resets to a no-op Boolean consumer.
      */
     public void onSweepToggle(Consumer<Boolean> c) {
-        this.onSweep = (c != null ? c : s -> {
-        });
+        this.onSweep = (c != null ? c : s -> { });
     }
 
     /**
-     * Enables or disables all interactive widgets except Sweep (which may be null).
+     * Enables or disables all interactive widgets.
+     * Note: the controller should generally NOT use this during a run,
+     * so that Cancel can remain enabled.
      */
     public void setEnabled(boolean enabled) {
         saveExperiments.setEnabled(enabled);
         verbose.setEnabled(enabled);
+        if (sweep != null) {
+            sweep.setEnabled(enabled);
+        }
         okBtn.setEnabled(enabled);
         cancelBtn.setEnabled(enabled);
     }
@@ -176,6 +177,7 @@ public class BottomBarPanel {
     public void showRunning() {
         okBtn.setText("Running...");
         okBtn.setEnabled(false);
+        cancelBtn.setEnabled(true);  // keep Cancel active while running
     }
 
     /**
@@ -193,6 +195,7 @@ public class BottomBarPanel {
     public void resetOk(boolean enabled) {
         okBtn.setText("OK");
         okBtn.setEnabled(enabled);
+        cancelBtn.setEnabled(true);
     }
 
     /**
@@ -242,4 +245,13 @@ public class BottomBarPanel {
         onCancel.run();
     }
 
+    /**
+     * Show UI state while cancellation is in progress.
+     * Cancel is disabled to avoid double clicks.
+     */
+    public void showStopping() {
+        okBtn.setText("Stopping...");
+        okBtn.setEnabled(false);
+        cancelBtn.setEnabled(false);
+    }
 }

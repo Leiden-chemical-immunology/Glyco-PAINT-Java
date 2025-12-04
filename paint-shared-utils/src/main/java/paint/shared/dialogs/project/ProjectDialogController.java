@@ -44,7 +44,6 @@
 package paint.shared.dialogs.project;
 
 import paint.shared.config.paintconfig.PaintConfig;
-import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
 
 import javax.swing.*;
@@ -165,7 +164,7 @@ public class ProjectDialogController {
     }
 
     // ----------------------------------------------------------------------------------------------------
-    //  OK / CANCEL logic (cleaned)
+    //  OK / CANCEL logic
     // ----------------------------------------------------------------------------------------------------
 
     private void handleOk() {
@@ -214,24 +213,32 @@ public class ProjectDialogController {
     }
 
     private void handleCancel() {
+        // Signal cancellation to the worker logic; worker code checks this flag
         setCancelled.run();
         Thread t = getWorker.get();
 
-        if (t != null && t.isAlive()) {
-            PaintLogger.infof("Cancellation requested — attempting graceful shutdown...");
-            t.interrupt();
+        bottom.showStopping();
 
+        if (t != null && t.isAlive()) {
+            PaintLogger.infof("Cancellation requested — waiting for worker to finish...");
+            // Do NOT interrupt the worker thread here; let it poll the cancelled flag
+            // and unwind cleanly, so watchdog joins are not interrupted.
             new Thread(() -> handleWorkerShutdown(t), "ForceShutdownWatcher").start();
         } else {
-            PaintLogger.infof("No active worker thread — closing dialog and console.");
-            SwingUtilities.invokeLater(this::finishDialogImmediately);
+            // No active worker: nothing to cancel, just restore normal UI state.
+            PaintLogger.infof("No active worker thread registered — nothing to cancel.");
+            clearCancelled.run();
+            bottom.resetOk(validToRun());
         }
     }
 
     private void handleWorkerShutdown(Thread t) {
         try {
-            t.join(2000);
+            // Wait until the worker thread *really* stops.
+            t.join();
         } catch (InterruptedException ignored) {
+            // If this watcher is ever interrupted, we just stop waiting and let
+            // the EDT-side code decide what to do next.
         }
         SwingUtilities.invokeLater(() -> finishWorkerShutdown(t));
     }
@@ -247,23 +254,6 @@ public class ProjectDialogController {
         PaintLogger.infof("Worker thread terminated cleanly.");
         clearCancelled.run();
         bottom.resetOk(true);
-
-        try {
-            PaintConsoleWindow.closeIfVisible();
-        } catch (Throwable ignored) { }
-
-        dialog.dispose();
-    }
-
-    private void finishDialogImmediately() {
-        clearCancelled.run();
-        bottom.resetOk(true);
-
-        try {
-            PaintConsoleWindow.closeIfVisible();
-        } catch (Throwable ignored) {}
-
-        dialog.dispose();
     }
 
     // ----------------------------------------------------------------------------------------------------
@@ -348,8 +338,6 @@ public class ProjectDialogController {
 
     private void setInputsEnabled(boolean enabled) {
         paths.setEnabled(enabled, mode);
-        experiments.setEnabled(enabled);
-        bottom.setEnabled(enabled);
         if (params != null) {
             params.setEnabled(enabled);
         }

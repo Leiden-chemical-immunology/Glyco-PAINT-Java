@@ -52,13 +52,15 @@ import paint.shared.utils.PaintRuntime;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
 /**
  * Main dialog responsible for configuring a PAINT Project and running associated operations
- * (TrackMate, Generate Squares, Viewer). Builds the UI, wires controller callbacks,
+ * (TrackMate, Generate Squares, Viewer). Builds the UI, wires the controller callbacks,
  * and coordinates worker thread execution and cancellation.
  */
 public class ProjectDialog {
@@ -71,7 +73,8 @@ public class ProjectDialog {
     public enum DialogMode {
         TRACKMATE,
         GENERATE_SQUARES,
-        VIEWER}
+        VIEWER
+    }
 
     /**
      * Functional callback for executing expensive computations on a fully constructed Project.
@@ -116,8 +119,13 @@ public class ProjectDialog {
         this.dialog = new JDialog(owner, title, false);
         this.dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-        // Manual close behavior handled in controller; handles cancellation + thread stop.
-        this.dialog.addWindowListener(ProjectDialogController.onWindowClosing(this::onWindowClose));
+        // Manual close behavior; coordinates with cancellation and worker thread state.
+        dialog.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                onWindowClose();
+            }
+        });
 
         // ---- build UI ----
         final JPanel root = new JPanel(new BorderLayout());
@@ -225,11 +233,12 @@ public class ProjectDialog {
 
         final GenerateSquaresConfig gs  = new GenerateSquaresConfig();
 
-        return new Project(projectPath,
-                           imagesPath,
-                           experimentNames,
-                           gs,
-                           null
+        return new Project(
+                projectPath,
+                imagesPath,
+                experimentNames,
+                gs,
+                null
         );
     }
 
@@ -272,13 +281,22 @@ public class ProjectDialog {
             }
 
             final boolean success = ok && !cancelled && !Thread.currentThread().isInterrupted();
+
             SwingUtilities.invokeLater(() -> {
+                // If we are in a cancelled state, we skip completion UI.
+                // The controller's cancel path is responsible for shutdown & dispose.
+                if (cancelled) {
+                    return;
+                }
+
                 runUiEnable.run();
-                if (success)
+                if (success) {
                     onSuccess.run();
-                else
+                } else {
                     onFailure.run();
-                workerThread = null;
+                }
+                // Intentionally do NOT clear workerThread here; controller uses getWorkerThread()
+                // to decide when and how to shut down after cancellation.
             });
         }, "ProjectDialog-Worker");
         workerThread.start();
@@ -292,17 +310,30 @@ public class ProjectDialog {
     }
 
     /**
-     * Handles window close events: sets cancellation flag, interrupts worker if needed,
-     * and disposes the dialog.
+     * Handles window close events:
+     * - If already cancelling, ignores extra close requests.
+     * - If a worker is running, treats window close as a Cancel request (sets cancelled + interrupts worker).
+     * - If no worker is running, disposes the dialog normally.
      */
     private void onWindowClose() {
-        cancelled = true;
 
-        if (workerThread != null && workerThread.isAlive()) {
-            workerThread.interrupt();
-            PaintLogger.infof("Cancellation requested — interrupting background thread...");
+        // If cancel is already active, ignore extra close requests.
+        if (cancelled) {
+            PaintLogger.debugf("windowClose ignored (already cancelling)");
+            return;
         }
 
+        // If a worker is running, treat window-close as a Cancel request.
+        if (workerThread != null && workerThread.isAlive()) {
+            PaintLogger.infof("Window close → treating as Cancel request");
+            cancelled = true;
+            workerThread.interrupt();
+            // Dialog stays open; it can be closed once the worker has actually stopped.
+            return;
+        }
+
+        // No worker → safe to close immediately
+        PaintLogger.infof("Window closed normally");
         dialog.dispose();
     }
 
