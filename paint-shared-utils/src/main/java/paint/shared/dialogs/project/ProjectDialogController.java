@@ -52,7 +52,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -287,9 +286,11 @@ public class ProjectDialogController {
 
         PaintLogger.infof("Worker thread terminated cleanly.");
 
-        workerStarted = false;    // <—— REQUIRED
+        workerStarted = false;
         bottom.resetOk(true);
         clearCancelled.run();
+
+        enableFullUI();
     }
 
     // ----------------------------------------------------------------------------------------------------

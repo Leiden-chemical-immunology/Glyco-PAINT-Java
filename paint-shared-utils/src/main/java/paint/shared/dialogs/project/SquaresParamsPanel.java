@@ -78,6 +78,14 @@ public class SquaresParamsPanel {
     private final JTextField        minDensityField;
     private final JTextField        maxVariabilityField;
 
+    private       JLabel            gridSizeLabel;
+    private       JLabel            minRSqLabel;
+    private       JLabel            minDensityLabel;
+    private       JLabel            maxVariabilityLabel;
+
+    private       Color             normalLabelColor;
+    private final Color             disabledLabelColor = Color.GRAY;
+
     // Callback triggered whenever any user-editable parameter changes.
     private Runnable onChange = () -> {
     };
@@ -123,7 +131,7 @@ public class SquaresParamsPanel {
 
         pg.gridx = 0;
         pg.gridy = row;
-        label(panel, NUMBER_OF_SQUARES_IN_RECORDING, labelSize, pg);
+        gridSizeLabel = label(panel, NUMBER_OF_SQUARES_IN_RECORDING, labelSize, pg);
         pg.gridx = 1;
         gridSizeCombo = new JComboBox<>(new String[]{"5x5", "10x10", "15x15", "20x20", "25x25", "30x30", "35x35", "40x40"});
         int n = (int) Math.sqrt(nrSquares);
@@ -134,7 +142,7 @@ public class SquaresParamsPanel {
         // Min R²
         pg.gridx = 0;
         pg.gridy = row;
-        label(panel, "Min Required R²", labelSize, pg);
+        minRSqLabel = label(panel, "Min Required R²", labelSize, pg);
         pg.gridx = 1;
         minRSqField = text(String.valueOf(minRSq), fieldSize);
         panel.add(minRSqField, pg);
@@ -143,7 +151,7 @@ public class SquaresParamsPanel {
         // Min Density Ratio
         pg.gridx = 0;
         pg.gridy = row;
-        label(panel, MIN_REQUIRED_DENSITY_RATIO, labelSize, pg);
+        minDensityLabel = label(panel, MIN_REQUIRED_DENSITY_RATIO, labelSize, pg);
         pg.gridx = 1;
         minDensityField = text(String.valueOf(minDens), fieldSize);
         panel.add(minDensityField, pg);
@@ -152,10 +160,12 @@ public class SquaresParamsPanel {
         // Max Variability
         pg.gridx = 0;
         pg.gridy = row;
-        label(panel, MAX_ALLOWABLE_VARIABILITY, labelSize, pg);
+        maxVariabilityLabel = label(panel, MAX_ALLOWABLE_VARIABILITY, labelSize, pg);
         pg.gridx = 1;
         maxVariabilityField = text(String.valueOf(maxVar), fieldSize);
         panel.add(maxVariabilityField, pg);
+
+        normalLabelColor = gridSizeLabel.getForeground();
 
         // Change listeners for all controls (REPLACED WITH METHOD REFERENCES)
         gridSizeCombo.addActionListener(this::handleChange);
@@ -180,8 +190,8 @@ public class SquaresParamsPanel {
      * Registers a callback that fires whenever any parameter changes.
      * If null is passed, it resets to a no-op callback.
      */
-    public void onParamsChanged(Runnable r) {
-        this.onChange = (r != null ? r : () -> {
+    public void onParamsChanged(Runnable runnable) {
+        this.onChange = (runnable != null ? runnable : () -> {
         });
     }
 
@@ -190,14 +200,19 @@ public class SquaresParamsPanel {
      * respect both the main enabled flag and the state of the "Run after TrackMate" checkbox.
      */
     public void setEnabled(boolean enabled) {
+
         if (runAfterTrackMate != null) {
             runAfterTrackMate.setEnabled(enabled);
         }
+
         boolean squaresEnabled = enabled && (runAfterTrackMate == null || runAfterTrackMate.isSelected());
-        gridSizeCombo.setEnabled(squaresEnabled);
-        minRSqField.setEnabled(squaresEnabled);
-        minDensityField.setEnabled(squaresEnabled);
-        maxVariabilityField.setEnabled(squaresEnabled);
+
+        setSquaresEnabled(squaresEnabled);
+
+        gridSizeLabel.setForeground(squaresEnabled ? normalLabelColor : disabledLabelColor);
+        minRSqLabel.setForeground(squaresEnabled ? normalLabelColor : disabledLabelColor);
+        minDensityLabel.setForeground(squaresEnabled ? normalLabelColor : disabledLabelColor);
+        maxVariabilityLabel.setForeground(squaresEnabled ? normalLabelColor : disabledLabelColor);
     }
 
     /**
@@ -205,9 +220,9 @@ public class SquaresParamsPanel {
      */
     public void persistTo(DialogMode mode) {
         if (gridSizeCombo != null) {
-            String sel = (String) gridSizeCombo.getSelectedItem();
-            if (sel != null && sel.contains("x")) {
-                int side = Integer.parseInt(sel.split("x")[0].trim());
+            String selectedItem = (String) gridSizeCombo.getSelectedItem();
+            if (selectedItem != null && selectedItem.contains("x")) {
+                int side = Integer.parseInt(selectedItem.split("x")[0].trim());
                 PaintConfig.setInt(GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING, side * side);
             }
         }
@@ -232,38 +247,44 @@ public class SquaresParamsPanel {
     /**
      * Adds a fixed-size label into the GridBag container.
      */
-    private static void label(JPanel p, String text, Dimension size, GridBagConstraints pg) {
-        JLabel l = new JLabel(text);
-        l.setPreferredSize(size);
-        p.add(l, pg);
+    private static JLabel label(JPanel jPanel, String text, Dimension size, GridBagConstraints pg) {
+        JLabel jLabel = new JLabel(text);
+        jLabel.setPreferredSize(size);
+        jPanel.add(jLabel, pg);
+        return jLabel;
     }
 
     /**
      * Builds a fixed-size text field initialized to a given value.
      */
     private static JTextField text(String v, Dimension size) {
-        JTextField t = new JTextField(v);
-        t.setColumns(8);
-        t.setPreferredSize(size);
-        return t;
+        JTextField jTextField = new JTextField(v);
+        jTextField.setColumns(8);
+        jTextField.setPreferredSize(size);
+        return jTextField;
     }
 
     /**
      * Enables or disables all the Generate Squares fields (grid size, R², density, variability).
      */
-    private void setSquaresEnabled(boolean enabled) {
+    public void setSquaresEnabled(boolean enabled) {
         gridSizeCombo.setEnabled(enabled);
         minRSqField.setEnabled(enabled);
         minDensityField.setEnabled(enabled);
         maxVariabilityField.setEnabled(enabled);
+
+        gridSizeLabel.setForeground(enabled ? normalLabelColor : disabledLabelColor);
+        minRSqLabel.setForeground(enabled ? normalLabelColor : disabledLabelColor);
+        minDensityLabel.setForeground(enabled ? normalLabelColor : disabledLabelColor);
+        maxVariabilityLabel.setForeground(enabled ? normalLabelColor : disabledLabelColor);
     }
 
     /**
      * Parses a double from string with fallback to a default on error.
      */
-    private static double parseDouble(String s, double def) {
+    private static double parseDouble(String doubleString, double def) {
         try {
-            return Double.parseDouble(s.trim());
+            return Double.parseDouble(doubleString.trim());
         } catch (Exception e) {
             return def;
         }
@@ -279,5 +300,9 @@ public class SquaresParamsPanel {
 
     private void handleChange(javax.swing.event.DocumentEvent e) {
         onChange.run();
+    }
+
+    public boolean isRunAfterTrackMateSelected() {
+        return runAfterTrackMate != null && runAfterTrackMate.isSelected();
     }
 }

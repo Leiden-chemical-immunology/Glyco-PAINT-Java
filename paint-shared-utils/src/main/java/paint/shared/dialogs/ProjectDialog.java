@@ -323,6 +323,7 @@ public class ProjectDialog {
         projectPathsPanel.setEnabled(true, mode);
         if (squaresParamsPanel != null) {
             squaresParamsPanel.setEnabled(true);
+            squaresParamsPanel.setSquaresEnabled(squaresParamsPanel.isRunAfterTrackMateSelected());
         }
         experimentsPanel.setEnabled(true);
         bottomBarPanel.setEnabled(true);

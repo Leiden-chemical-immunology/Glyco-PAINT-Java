@@ -167,7 +167,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
     }
 
     private boolean runTrackMatePipeline(Project project, boolean sweepSelected, ProjectDialog projDialog) {
-        PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - experiments: %s", project.getExperimentNames());
+        PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - experiments (1): %s", project.getExperimentNames());
         if (running) {
             showWarning("TrackMate processing is already running.\nPlease wait until it finishes.");
             return false;
@@ -194,7 +194,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
                     return false;
                 }
             } else {
-                PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - Experiments: %s", project.getExperimentNames());
+                PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - experiments (2): %s", project.getExperimentNames());
                 success = RunTrackMateOnProject.runProject(
                         currentProjectRoot,
                         imagesPath,
