@@ -88,7 +88,7 @@ import java.util.Locale;
  * of batch processing within a Paint project.
  * </p>
  */
-public class RunTrackMateOnRecording extends TrackMateHeadless {
+public class RunTrackMateOnRecording {
 
     /**
      * Executes the TrackMate pipeline on a given recording.
