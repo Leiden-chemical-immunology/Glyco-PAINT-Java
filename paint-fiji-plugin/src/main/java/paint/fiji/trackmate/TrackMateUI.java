@@ -141,13 +141,13 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
         // ---------------------------------------------------------------------
         // Step 4 – Show experiment dialog
         // ---------------------------------------------------------------------
-        ProjectDialog dialog = new ProjectDialog(null, projectPath, ProjectDialog.DialogMode.TRACKMATE);
-        PaintConsoleWindow.closeOnDialogDispose(dialog.getDialog());
+        ProjectDialog projDialog = new ProjectDialog(null, projectPath, ProjectDialog.DialogMode.TRACKMATE);
+        PaintConsoleWindow.closeOnDialogDispose(projDialog.getDialog());
 
         // ---------------------------------------------------------------------
         // Step 5 – Handle OK action callback
-        dialog.setCalculationCallback(project -> runTrackMatePipeline(project, dialog.isSweepSelected()));
-        dialog.showDialog();
+        projDialog.setCalculationCallback(project -> runTrackMatePipeline(project, projDialog.isSweepSelected(), projDialog));
+        projDialog.showDialog();
     }
 
     // -------------------------------------------------------------------------
@@ -166,8 +166,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
         warnDialog.setVisible(true);
     }
 
-    private boolean runTrackMatePipeline(Project project, boolean sweepSelected) {
-
+    private boolean runTrackMatePipeline(Project project, boolean sweepSelected, ProjectDialog projDialog) {
         PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - experiments: %s", project.getExperimentNames());
         if (running) {
             showWarning("TrackMate processing is already running.\nPlease wait until it finishes.");
@@ -200,7 +199,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
                         currentProjectRoot,
                         imagesPath,
                         project.getExperimentNames(),
-                        null,
+                        projDialog,
                         null
                 );
 
