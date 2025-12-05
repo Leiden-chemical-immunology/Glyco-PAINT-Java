@@ -1,7 +1,8 @@
 # v0.0.131
 - More permissive handling of boolean values in CSV files.
+- Correct handling of switching between projects 
+- Correct handling of Trackmate processing interruption
 - Introduced minTracksToCalculate. This allows skipping the calculation of squares with less than a certain number of tracks.
-
 
 
 # v0.0.130

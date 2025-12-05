@@ -2,12 +2,14 @@
   <img src="./Pictures/leiden.png" alt="Glyco-PAINT logo" style="max-width:180px; height:auto; margin-bottom:20px;" />
 </p>
 
+
+
 <h1 align="center" style="margin:0; font-size:2.2em;">Glyco‑PAINT Application Processing Pipeline</h1>
 <h3 align="center" style="margin:6px 0 18px; font-weight:400;">Java implementation with FiJi/TrackMate integration</h3>
 
 <hr style="width:120px; border:0; border-top:2px solid #555; margin:18px auto 24px;" />
 
-<p align="center" style="margin:0; font-size:1.1em;">Version 0.0.122 · Updated: 11 November 2025</p>
+<p align="center" style="margin:0; font-size:1.1em;">Version 0.0.132 · Updated: 5 December 2025</p>
 
 <p align="center" style="margin:0;"><strong>Authors:</strong> J. Bakker</p>
 <p align="center" style="margin:4px 0 18px; color:#555;">Leiden Chemical Immunology | LIC, Leiden University</p>
@@ -166,7 +168,9 @@ The easiest way to install Glyco-PAINT is via the official installer. It lets yo
 
 
 
-# Project and Image Root
+# System Features
+
+## Project and Image Root
 
 At the core of the Glyco-PAINT pipeline are two directories:
 
@@ -186,11 +190,6 @@ Each **Experiment directory** in the Images Root should include for every Record
 Images are usually downloaded from **Omero** (using the *Get Omero* app).   Alternatively, they can be copied manually. 
 
 
-
-
-
-
-# Pipeline settings
 
 
 
@@ -228,7 +227,7 @@ You generally won’t edit these directly, but they control global pipeline beha
 
 
 
-# Paint Console
+## Paint Console
 
 Each Glyco-PAINT application opens its own **Paint Console** window. The console provides real-time feedback on the status and progress of operations.
 
@@ -245,13 +244,47 @@ Each Glyco-PAINT application opens its own **Paint Console** window. The console
 
 
 
-# Paint Log Files
+## Paint Log Files
 
 Every time a Glyco-PAINT component runs, a log file is created in the **Logs** directory under the Project Root.
 
 - **Naming**: files are named after the component (e.g., `TrackMateOnProject.log`).  
 - **Numbering**: sequentially numbered to avoid overwriting older logs.  
 - **Accumulation**: heavy analysis may generate many logs; occasional cleanup is recommended.
+
+
+
+
+
+# Main process flow
+
+To run a complete analysis, follow these steps in order:
+
+1. Prepare the image data  
+
+   Make sure that all recording images—both the film and the brightfield—are placed inside an Experiment directory located under the Images Root.
+
+2. Create the Experiment Info file  
+
+   In the Project Root, create a corresponding Experiment directory (with the same name as in the Images Root).  
+
+   Inside it, add the Experiment Info file.  
+
+   You can generate this file using the Create Experiment app (see [Create Experiment](#Create-Experiment)), or you can build it manually.
+
+3. Run TrackMate  
+
+   Execute the TrackMate plugin to perform the tracking step.
+
+4. Generate Squares  
+
+   Produce the square regions—either directly from the TrackMate plugin or via the stand‑alone Squares Generator app.
+
+5. Inspect the results  
+
+   Open the viewer to explore and validate the processed data.
+
+
 
 
 
@@ -280,9 +313,7 @@ At the bottom of the dialog:
 
 
 
-
-
-# Running TrackMate
+## Running TrackMate
 
 1. **Validation** 
    Experiment Info files are checked for:
@@ -339,16 +370,16 @@ These values can be adjusted in the Paint Configuration file (in the TrackMate s
 
 
 
-# TrackMate Sweep Mode
+## TrackMate Sweep Mode
 
 **Sweep Mode** allows systematic variation of TrackMate parameters to assess their impact on results.
 
-## How to use
+### How to use
 1. Enable the **Sweep** checkbox in the plugin dialog.  
 2. Define variations in `Paint Sweep Configuration.json` located in the **Project Root**.  
 3. Specify which parameters to sweep.
 
-## Sweep Settings
+### Sweep Settings
 - The **Sweep** value in *Sweep Settings* must be set to `true`.  
 - In the *TrackMate Sweep* section, parameters to be swept are marked with a boolean value.  
 - For each selected parameter, a corresponding section must exist where values are defined.  
@@ -357,7 +388,7 @@ These values can be adjusted in the Paint Configuration file (in the TrackMate s
 > [!NOTE]  
 > Label names are arbitrary, as long as they are distinct. For example, values called *Value 3* and *Value 4* could just as well be named *A* and *B*.
 
-## Sweep Directory
+### Sweep Directory
 - A **Sweep** directory is created in the **Process Root**.  
 - Within it, subdirectories represent scenarios (e.g. `[Threshold-30]`, `[Threshold-20]`).  
 - Each scenario is structured like a Project Root, containing:
@@ -365,7 +396,7 @@ These values can be adjusted in the Paint Configuration file (in the TrackMate s
   - A Paint Configuration file  
 - TrackMate runs for each scenario, generating **Tracks**, **Recordings**, and **Squares** files.
 
-## Results Compilation
+### Results Compilation
 - After all scenarios are processed, results are compiled in the **Sweep** directory.  
 - Each data file includes a **Case** field, allowing results to be distinguished during downstream analysis (e.g. in R).
 
@@ -383,7 +414,7 @@ The **Generate Squares** functionality can be run either:
 
 
 
-## Process Steps
+## Calculation Steps
 
 Squares are generated for all recordings in the selected experiments. The workflow is:
 
@@ -614,6 +645,24 @@ This file contains the metadata and instructions required to run the pipeline.
 
 <img src="./Pictures/create-experiment.png" alt="create-experiment" style="zoom:33%;" />
 
+Apply a Regex to select the files of interest. The Recordings will be derived from the name of the 'films'. The Brightfield files are expected to be present, but do not need to be additionally selected. 
+
+A skeleton Experiment Info file is created in the specified Project Root in an Experiment that has the name of the directory in which the imnages are contained.
+
+Additional informatioin needs to be provided in the skeleton file. An example of a file is shown below.
+
+- **Experiment Name** is a text string.
+- **Recording Name** is a text string. It is convenient to have Recording Names that contain the experiment name, but it is not required.
+- **Condition Number** is  an integer ranging from 1 to the number of unique conditions in the experiment. All Recordings with a given Condition Number, need to have identical Probe Name, Probe Type, Cell Type, Adjuvant and Concentration.  
+- **Replicate number** is an integer ranging from 1 to the number of replicates for a given condition. 
+- **Probe Name**, **Probe Type**, **Cell Type**, and **Adjuvant** are text strings.
+- **Process Flag** needs to contain a value that can be interpreted as a boolean. Uppercase or lower case is supported.
+- **Concentration** is expected to be a Double.
+- **Threshold** is expected to be a Double.
+
+<img src="./Pictures/experiment-info.png" alt="experiment-info" style="zoom:33%;" />
+
+
 
 # Analysis in R
 
@@ -632,7 +681,7 @@ The values you selected for Min Required Density Ratio, Min Required R Squared, 
 
 
 
-# Development
+# Development Tools
 
 ## JavaDoc
 
@@ -711,6 +760,10 @@ Visual Code Studio is a development environment in its own right, but also a ver
 
 # Known issues
 
+
+
+## Fiji crashes on wakeup on Mac 
+
 On macOS there is a known issue with Fiji crashing on wake up of a computer when a long Fiji job is running. This is caused by macOS' agressive power management affecting the GPU, OpenGL and UI threads, the use by Fiji  of Java 8.
 
 The workaround is to prevent macOS to engage in the power management. A simple native macOS, SleepKeeper will prevent this. The app can be downloaded from the Paint distribution, but is not signed and macOS will complain about it.
@@ -729,4 +782,18 @@ If macOS blocks it outright:
 3. Click **“Allow Anyway”**
 4. Try opening the app again
 
- 
+
+
+## CSV format on Windows noy compatible 
+
+The default CSV format on Windows is not compatible with the Glyco-PAINT pipeline.
+
+The following steps are necessary to address this:
+
+- Open the Windows Start menu and select the Control Panel
+- Open thye Regional and Language Options
+- Select the Regional options
+- Search for List Separator and type a comma
+- Confirm the chances 
+
+  

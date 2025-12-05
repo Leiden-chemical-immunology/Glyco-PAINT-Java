@@ -78,12 +78,12 @@ public class SquaresParamsPanel {
     private final JTextField        minDensityField;
     private final JTextField        maxVariabilityField;
 
-    private       JLabel            gridSizeLabel;
-    private       JLabel            minRSqLabel;
-    private       JLabel            minDensityLabel;
-    private       JLabel            maxVariabilityLabel;
+    private final JLabel            gridSizeLabel;
+    private final JLabel            minRSqLabel;
+    private final JLabel            minDensityLabel;
+    private final JLabel            maxVariabilityLabel;
 
-    private       Color             normalLabelColor;
+    private final Color             normalLabelColor;
     private final Color             disabledLabelColor = Color.GRAY;
 
     // Callback triggered whenever any user-editable parameter changes.
