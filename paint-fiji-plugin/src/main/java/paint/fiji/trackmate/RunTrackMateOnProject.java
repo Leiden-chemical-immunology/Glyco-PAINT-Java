@@ -123,10 +123,9 @@ public class RunTrackMateOnProject extends RunTrackMateOnExperiment {
             return false;                                   // Abort on configuration validation failure
         }
 
-        PaintLogger.infof("All required files found.");
-        PaintLogger.infof("Project path: %s", projectPath);
-        PaintLogger.infof("Images root:  %s", imagesPath);
-        PaintLogger.infof("Experiments:  %s", experimentNames);
+        PaintLogger.debugf("RunTrackMateOnProject.runProject - Project path: %s", projectPath);
+        PaintLogger.debugf("RunTrackMateOnProject.runProject - Images root:  %s", imagesPath);
+        PaintLogger.debugf("RunTrackMateOnProject.runProject - Experiments:  %s", experimentNames);
 
         // ---------------------------------------------------------------------
         // Phase 3 – Execute TrackMate per experiment

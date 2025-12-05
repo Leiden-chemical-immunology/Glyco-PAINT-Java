@@ -229,11 +229,14 @@ public class ProjectDialog {
                         ? null
                         : Paths.get(projectPathsPanel.imagesRootText());
 
+        PaintLogger.debugf("ProjectDialog.buildProject - project root: %s", projectPathsPanel.projectRootText());
+        PaintLogger.debugf("ProjectDialog.buildProject - images root : %s", projectPathsPanel.imagesRootText());
+        PaintLogger.debugf("ProjectDialog.buildProject - experiments : %s", experimentNames);
+
         // persist roots
         PaintPrefs.putString("Path", "Project Root", projectPathsPanel.projectRootText());
         PaintPrefs.putString("Path", "Images Root",  projectPathsPanel.imagesRootText());
 
-        // persist params
         if (squaresParamsPanel != null) {
             squaresParamsPanel.persistTo(mode);
         }
@@ -271,13 +274,15 @@ public class ProjectDialog {
         cancelled     = false;
         workerStarted = true;
 
+        final Project project = buildProject();
+
         workerThread = new Thread(() -> {
             boolean ok = false;
 
             try {
                 if (!cancelled && !Thread.currentThread().isInterrupted()) {
                     PaintLogger.debugf("ProjectDialog.startWorker - Starting calculationCallback.run");
-                    ok = calculationCallback.run(buildProject());
+                    ok = calculationCallback.run(project);
                 }
             } catch (Exception ex) {
                 if (ex instanceof InterruptedException) {

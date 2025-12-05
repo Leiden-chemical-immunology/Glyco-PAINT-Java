@@ -55,6 +55,7 @@ import paint.shared.utils.PaintRuntime;
 import paint.shared.objects.Project;
 
 import javax.swing.*;
+import java.awt.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -167,7 +168,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
 
     private boolean runTrackMatePipeline(Project project, boolean sweepSelected) {
 
-        PaintLogger.debugf("TrackMateUI.runTrackMatePipeline starting");
+        PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - experiments: %s", project.getExperimentNames());
         if (running) {
             showWarning("TrackMate processing is already running.\nPlease wait until it finishes.");
             return false;
@@ -179,11 +180,6 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
             boolean debug              = PaintConfig.getBoolean("Debug", DEBUG_RUN_TRACK_MATE_ON_PROJECT, false);
             Path    imagesPath         = project.getImagesRootPath();
             Path    currentProjectRoot = project.getProjectRootPath();
-
-            PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - TrackMate processing started.");
-            PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - Experiments: %s", project.getExperimentNames());
-            // PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - Experiments: %s", nExperimentNames());
-
             boolean success;
 
             if (sweepSelected) {
@@ -199,6 +195,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
                     return false;
                 }
             } else {
+                PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - Experiments: %s", project.getExperimentNames());
                 success = RunTrackMateOnProject.runProject(
                         currentProjectRoot,
                         imagesPath,
@@ -212,6 +209,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
                     GenerateSquaresHeadless.run(currentProjectRoot, project.getExperimentNames());
                     PaintLogger.infof("Generate Squares completed successfully.");
                 }
+                PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - Success: %b", success);
             }
 
             return success;

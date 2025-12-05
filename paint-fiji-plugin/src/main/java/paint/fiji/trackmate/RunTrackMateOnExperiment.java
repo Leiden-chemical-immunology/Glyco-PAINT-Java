@@ -179,6 +179,8 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
             Path imagesPath,
             ProjectDialog dialog) {
 
+        PaintLogger.debugf("RunTrackMateOnExperiment.runTrackMateOnExperiment - Starting");
+
         // ---------------------------------------------------------------------
         // Initial setup
         // ---------------------------------------------------------------------
@@ -219,9 +221,9 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
         String projectName               = experimentPath.getParent().getFileName().toString();
 
         PaintLogger.blankline();
-        PaintLogger.infof("Processing %d %s in experiment '%s' (project '%s').",
+        PaintLogger.infof("Processing %d recording%s in experiment '%s' (project '%s').",
                           numberRecordingsToProcess,
-                          numberRecordingsToProcess == 1 ? "recording" : "recordings",
+                          numberRecordingsToProcess == 1 ? "" : "s",
                           experimentName,
                           projectName);
         PaintLogger.blankline();

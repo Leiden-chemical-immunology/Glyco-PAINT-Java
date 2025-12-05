@@ -77,26 +77,26 @@ public class ProjectDialogController {
         };
     }
 
-    private final   DialogMode  mode;
-    private final   JDialog     dialog;
-    private final   PaintConfig paintConfig;
-    private         boolean     workerStarted = false;
+    private final DialogMode          mode;
+    private final JDialog             dialog;
+    private final PaintConfig         paintConfig;
+    private       boolean             workerStarted = false;
 
     // Project root getter/setter supplied by the dialog
-    private final Supplier<Path> getProjectPath;
-    private final Consumer<Path> setProjectPath;
+    private final Supplier<Path>      getProjectPath;
+    private final Consumer<Path>      setProjectPath;
 
     // UI panels
-    private final ProjectPathsPanel  paths;
-    private final SquaresParamsPanel params; // null in VIEWER mode
-    private final ExperimentsPanel   experiments;
-    private final BottomBarPanel     bottom;
+    private final ProjectPathsPanel   paths;
+    private final SquaresParamsPanel  params; // null in VIEWER mode
+    private final ExperimentsPanel    experiments;
+    private final BottomBarPanel      bottom;
 
     // Worker logic references provided by ProjectDialog
-    private final QuadRunnable     startWorker;
-    private final Supplier<Thread> getWorker;
-    private final Runnable         setCancelled;
-    private final Runnable         clearCancelled;
+    private final QuadRunnable        startWorker;
+    private final Supplier<Thread>    getWorker;
+    private final Runnable            setCancelled;
+    private final Runnable            clearCancelled;
 
     // A callback provided by ProjectDialog to re-enable ALL UI elements
     private final Runnable enableAllUiFromDialog;
@@ -106,20 +106,20 @@ public class ProjectDialogController {
     // ----------------------------------------------------------------------------------------------------
 
     public ProjectDialogController(
-            DialogMode mode,
-            JDialog dialog,
-            PaintConfig paintConfig,
-            Supplier<Path> getProjectPath,
-            Consumer<Path> setProjectPath,
-            ProjectPathsPanel paths,
+            DialogMode         mode,
+            JDialog            dialog,
+            PaintConfig        paintConfig,
+            Supplier<Path>     getProjectPath,
+            Consumer<Path>     setProjectPath,
+            ProjectPathsPanel  paths,
             SquaresParamsPanel params,
-            ExperimentsPanel experiments,
-            BottomBarPanel bottom,
-            QuadRunnable startWorker,
-            Supplier<Thread> getWorker,
-            Runnable setCancelled,
-            Runnable clearCancelled,
-            Runnable enableAllUiFromDialog
+            ExperimentsPanel   experiments,
+            BottomBarPanel     bottom,
+            QuadRunnable       startWorker,
+            Supplier<Thread>   getWorker,
+            Runnable           setCancelled,
+            Runnable           clearCancelled,
+            Runnable           enableAllUiFromDialog
     ) {
         this.mode           = mode;
         this.dialog         = dialog;
@@ -194,8 +194,6 @@ public class ProjectDialogController {
 
         PaintPrefs.putString("Path", "Project Root", paths.projectRootText());
         PaintPrefs.putString("Path", "Images Root", paths.imagesRootText());
-
-        setProjectPath.accept(Paths.get(paths.projectRootText()));
 
         clearCancelled.run();
         workerStarted = true;

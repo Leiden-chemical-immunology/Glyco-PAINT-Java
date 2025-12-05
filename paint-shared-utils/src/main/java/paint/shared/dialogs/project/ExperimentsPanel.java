@@ -33,6 +33,7 @@
 package paint.shared.dialogs.project;
 
 import paint.shared.config.paintconfig.PaintConfig;
+import paint.shared.utils.PaintLogger;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -140,12 +141,14 @@ public class ExperimentsPanel {
      * @return list of experiment names
      */
     public List<String> selectedExperimentNames() {
+
         List<String> experimentNames = new ArrayList<>();
         for (JCheckBox cb : boxes) {
             if (cb.isSelected()) {
                 experimentNames.add(cb.getText());
             }
         }
+        PaintLogger.debugf( "ExperimentsPanel.selectedExperimentNames: %s", experimentNames);
         return experimentNames;
     }
 
