@@ -86,19 +86,19 @@ public class ProjectDialog {
         boolean run(Project project);
     }
 
-    private final JDialog dialog;
-    private final DialogMode mode;
+    private final JDialog       dialog;
+    private final DialogMode    mode;
 
-    private Path projectPath;
+    private Path                projectPath;
     private CalculationCallback calculationCallback;
-    private volatile boolean cancelled = false;
-    private volatile Thread workerThread;
-    private boolean workerStarted = false;
+    private volatile boolean    cancelled     = false;
+    private volatile Thread     workerThread;
+    private boolean             workerStarted = false;
 
-    private final ProjectPathsPanel projectPathsPanel;
+    private final ProjectPathsPanel  projectPathsPanel;
     private final SquaresParamsPanel squaresParamsPanel;
-    private final ExperimentsPanel experimentsPanel;
-    private final BottomBarPanel bottomBarPanel;
+    private final ExperimentsPanel   experimentsPanel;
+    private final BottomBarPanel     bottomBarPanel;
 
     public ProjectDialog(Frame owner, Path initialProjectPath, DialogMode mode) {
         this.mode = mode;
@@ -173,7 +173,7 @@ public class ProjectDialog {
                         this::getWorkerThread,
                         this::setCancelled,
                         this::clearCancelled,
-                        this::enableAllUi           // <—— IMPORTANT!
+                        this::enableAllUi
                 );
 
         controller.init();
@@ -231,7 +231,7 @@ public class ProjectDialog {
 
         // persist roots
         PaintPrefs.putString("Path", "Project Root", projectPathsPanel.projectRootText());
-        PaintPrefs.putString("Path", "Images Root", projectPathsPanel.imagesRootText());
+        PaintPrefs.putString("Path", "Images Root",  projectPathsPanel.imagesRootText());
 
         // persist params
         if (squaresParamsPanel != null) {
@@ -261,7 +261,7 @@ public class ProjectDialog {
             Runnable onSuccess,
             Runnable onFailure
     ) {
-
+        PaintLogger.debugf("ProjectDialog.startWorker - Starting worker thread.");
         if (calculationCallback == null) {
             onFailure.run();
             return;
@@ -276,6 +276,7 @@ public class ProjectDialog {
 
             try {
                 if (!cancelled && !Thread.currentThread().isInterrupted()) {
+                    PaintLogger.debugf("ProjectDialog.startWorker - Starting calculationCallback.run");
                     ok = calculationCallback.run(buildProject());
                 }
             } catch (Exception ex) {
@@ -291,11 +292,17 @@ public class ProjectDialog {
                     ok && !cancelled && !Thread.currentThread().isInterrupted();
 
             SwingUtilities.invokeLater(() -> {
-                if (cancelled) return;
+                if (cancelled) {
+                    return;
+                }
 
                 runUiEnable.run();
-                if (success) onSuccess.run();
-                else onFailure.run();
+                if (success) {
+                    onSuccess.run();
+                }
+                else {
+                    onFailure.run();
+                }
             });
 
         }, "ProjectDialog-Worker");
@@ -309,7 +316,9 @@ public class ProjectDialog {
 
     public void enableAllUi() {
         projectPathsPanel.setEnabled(true, mode);
-        if (squaresParamsPanel != null) squaresParamsPanel.setEnabled(true);
+        if (squaresParamsPanel != null) {
+            squaresParamsPanel.setEnabled(true);
+        }
         experimentsPanel.setEnabled(true);
         bottomBarPanel.setEnabled(true);
     }
@@ -322,7 +331,9 @@ public class ProjectDialog {
      */
     private void onWindowClose() {
 
-        if (cancelled) return;
+        if (cancelled) {
+            return;
+        }
 
         if (workerThread != null && workerThread.isAlive()) {
             PaintLogger.infof("Window close → treating as Cancel request.");

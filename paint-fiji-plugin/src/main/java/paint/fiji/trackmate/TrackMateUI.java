@@ -52,6 +52,7 @@ import paint.shared.utils.JarInfoLogger;
 import paint.shared.utils.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintRuntime;
+import paint.shared.objects.Project;
 
 import javax.swing.*;
 import java.nio.file.Files;
@@ -120,7 +121,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
         String debugLevel = PaintPrefs.getString("Runtime", "Log Level", "INFO");
         PaintLogger.setLevel(debugLevel);
         PaintLogger.initialise(projectPath, "TrackMateOnProject.log");
-        PaintLogger.debugf("TrackMate plugin started (Interactive).");
+        PaintLogger.debugf("TrackMateUI.run - TrackMate plugin started (Interactive).");
 
         PaintRuntime.initialiseFromPrefs();
 
@@ -131,8 +132,8 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
             PaintLogger.infof("Version: %s", info.implementationVersion);
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        String formattedTime = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        LocalDateTime  now           = LocalDateTime.now();
+        String         formattedTime = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         PaintLogger.infof("Current time: %s", formattedTime);
         PaintLogger.blankline();
 
@@ -144,59 +145,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
 
         // ---------------------------------------------------------------------
         // Step 5 – Handle OK action callback
-        // ---------------------------------------------------------------------
-        dialog.setCalculationCallback(project -> {
-
-            if (running) {
-                showWarning("TrackMate processing is already running.\nPlease wait until it finishes.");
-                return false;
-            }
-
-            running = true;
-
-            try {
-                boolean debug              = PaintConfig.getBoolean("Debug", DEBUG_RUN_TRACK_MATE_ON_PROJECT, false);
-                Path    imagesPath         = project.getImagesRootPath();
-                Path    currentProjectRoot = project.getProjectRootPath();
-
-                if (debug) {
-                    PaintLogger.debugf("TrackMate processing started.");
-                    PaintLogger.debugf("Experiments: %s", project.getExperimentNames());
-                }
-
-                boolean success;
-
-                if (dialog.isSweepSelected()) {
-                    Path sweepFile = currentProjectRoot.resolve(PAINT_SWEEP_CONFIGURATION_JSON);
-                    if (Files.exists(sweepFile)) {
-                        success = RunTrackMateOnProjectSweep.runWithSweep(
-                                currentProjectRoot, imagesPath, project.getExperimentNames());
-                    } else {
-                        PaintLogger.infof("No Sweep configuration detected at %s", sweepFile);
-                        return false;
-                    }
-                } else {
-                    success = RunTrackMateOnProject.runProject(
-                            projectPath, imagesPath, project.getExperimentNames(), dialog, null);
-
-                    if (success && PaintConfig.getBoolean("TrackMate", "Run Generate Squares After", true)) {
-                        PaintLogger.infof("TrackMate finished successfully. Starting Generate Squares...");
-                        PaintLogger.blankline();
-                        GenerateSquaresHeadless.run(currentProjectRoot, project.getExperimentNames());
-                        PaintLogger.infof("Generate Squares completed successfully.");
-                    }
-                }
-
-                return success;
-
-            } catch (Exception e) {
-                PaintLogger.errorf("Error during TrackMate execution: %s", e.getMessage());
-                return false;
-            } finally {
-                running = false;
-            }
-        });
-
+        dialog.setCalculationCallback(project -> runTrackMatePipeline(project, dialog.isSweepSelected()));
         dialog.showDialog();
     }
 
@@ -214,5 +163,64 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
         JDialog warnDialog = optionPane.createDialog(null, "Warning");
         warnDialog.setAlwaysOnTop(true);
         warnDialog.setVisible(true);
+    }
+
+    private boolean runTrackMatePipeline(Project project, boolean sweepSelected) {
+
+        PaintLogger.debugf("TrackMateUI.runTrackMatePipeline starting");
+        if (running) {
+            showWarning("TrackMate processing is already running.\nPlease wait until it finishes.");
+            return false;
+        }
+
+        running = true;
+
+        try {
+            boolean debug              = PaintConfig.getBoolean("Debug", DEBUG_RUN_TRACK_MATE_ON_PROJECT, false);
+            Path    imagesPath         = project.getImagesRootPath();
+            Path    currentProjectRoot = project.getProjectRootPath();
+
+            PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - TrackMate processing started.");
+            PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - Experiments: %s", project.getExperimentNames());
+            // PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - Experiments: %s", nExperimentNames());
+
+            boolean success;
+
+            if (sweepSelected) {
+                Path sweepFile = currentProjectRoot.resolve(PAINT_SWEEP_CONFIGURATION_JSON);
+                if (Files.exists(sweepFile)) {
+                    success = RunTrackMateOnProjectSweep.runWithSweep(
+                            currentProjectRoot,
+                            imagesPath,
+                            project.getExperimentNames()
+                    );
+                } else {
+                    PaintLogger.infof("No Sweep configuration found at %s", sweepFile);
+                    return false;
+                }
+            } else {
+                success = RunTrackMateOnProject.runProject(
+                        currentProjectRoot,
+                        imagesPath,
+                        project.getExperimentNames(),
+                        null,
+                        null
+                );
+
+                if (success && PaintConfig.getBoolean("TrackMate", "Run Generate Squares After", true)) {
+                    PaintLogger.infof("TrackMate finished successfully. Starting Generate Squares...");
+                    GenerateSquaresHeadless.run(currentProjectRoot, project.getExperimentNames());
+                    PaintLogger.infof("Generate Squares completed successfully.");
+                }
+            }
+
+            return success;
+
+        } catch (Exception e) {
+            PaintLogger.errorf("Error during TrackMate execution: %s", e.getMessage());
+            return false;
+        } finally {
+            running = false;
+        }
     }
 }

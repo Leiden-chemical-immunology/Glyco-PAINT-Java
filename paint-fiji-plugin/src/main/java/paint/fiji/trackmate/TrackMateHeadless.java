@@ -90,6 +90,7 @@ public class TrackMateHeadless implements Command {
      */
     @Override
     public void run() {
+        PaintLogger.debugf("TrackMateHeadless.run - Running TrackMate headless execution...");
         try {
             // -----------------------------------------------------------------
             // Step 1 — Validate project path
@@ -113,11 +114,13 @@ public class TrackMateHeadless implements Command {
 
             Path imagesPath = Paths.get(PaintPrefs.getString("Path", "Images Root", ""));
 
-            // -----------------------------------------------------------------
+                        // -----------------------------------------------------------------
             // Step 3 — Initialize console and logging
             // -----------------------------------------------------------------
             PaintConsoleWindow.createConsoleFor("TrackMate Headless");
             PaintLogger.initialise(projectPath, "TrackMateHeadless");
+
+            PaintLogger.debugf("1: Starting TrackMate headless execution...");
 
             // -----------------------------------------------------------------
             // Step 4 — Identify active experiments
@@ -129,9 +132,12 @@ public class TrackMateHeadless implements Command {
             }
 
             PaintLogger.infof("Running TrackMate in headless mode...");
+            PaintLogger.infof("Running TrackMate in headless mode...");
             PaintLogger.infof("Project path: %s", projectPath);
             PaintLogger.infof("Images root:  %s", imagesPath);
             PaintLogger.infof("Experiments:  %s", experiments);
+
+            System.out.println("Do we ever get here?");     //@
 
             // -----------------------------------------------------------------
             // Step 5 — Execute TrackMate on project

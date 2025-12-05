@@ -57,7 +57,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
+import static paint.shared.constants.PaintFileNames.PAINT_CONFIGURATION_JSON;
 
 /**
  * Validates and retrieves a usable project root folder path for the PAINT application.
@@ -153,18 +153,17 @@ public final class ProjectPathResolver {
         }
 
         // Build expected Experiment Info path
-        Path confPath = projectPath.resolve(EXPERIMENT_INFO_CSV);
+        Path confPath = projectPath.resolve(PAINT_CONFIGURATION_JSON);
 
         // Debugging output for Windows issues
         String debugLevel = PaintPrefs.getString("Runtime", "Log Level", "INFO");
-        if (debugLevel.equals("DEBUG")) {
-            PaintLogger.infof("=== Project Folder Validation ===");
-            PaintLogger.infof("projectPath = [" + projectPath + "]");
-            PaintLogger.infof("confPath    = [" + confPath + "]");
-            PaintLogger.infof("Exists      = " + Files.exists(confPath));
-            PaintLogger.infof("IsRegular   = " + Files.isRegularFile(confPath));
-            PaintLogger.infof("=================================");
-        }
+
+        PaintLogger.debugf("=== Project Folder Validation ===");
+        PaintLogger.debugf("projectPath = [" + projectPath + "]");
+        PaintLogger.debugf("confPath    = [" + confPath + "]");
+        PaintLogger.debugf("Exists      = " + Files.exists(confPath));
+        PaintLogger.debugf("IsRegular   = " + Files.isRegularFile(confPath));
+        PaintLogger.debugf("=================================");
 
         // Final decision
         if (!Files.exists(confPath) || !Files.isRegularFile(confPath)) {

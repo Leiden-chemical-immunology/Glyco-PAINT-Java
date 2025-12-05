@@ -109,7 +109,7 @@ public class RunTrackMateOnProject extends RunTrackMateOnExperiment {
             for (String err : validateResult.getErrors()) {
                 PaintLogger.errorf(err);
             }
-            return false;                                     // Abort on image validation failure
+            return false;   // Abort on image validation failure
         }
 
         // ---------------------------------------------------------------------
@@ -122,6 +122,11 @@ public class RunTrackMateOnProject extends RunTrackMateOnExperiment {
             }
             return false;                                   // Abort on configuration validation failure
         }
+
+        PaintLogger.infof("All required files found.");
+        PaintLogger.infof("Project path: %s", projectPath);
+        PaintLogger.infof("Images root:  %s", imagesPath);
+        PaintLogger.infof("Experiments:  %s", experimentNames);
 
         // ---------------------------------------------------------------------
         // Phase 3 – Execute TrackMate per experiment

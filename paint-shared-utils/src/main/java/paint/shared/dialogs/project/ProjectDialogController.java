@@ -45,12 +45,14 @@ package paint.shared.dialogs.project;
 
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.utils.PaintLogger;
+import paint.shared.utils.PaintPrefs;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -75,27 +77,26 @@ public class ProjectDialogController {
         };
     }
 
-    private final DialogMode mode;
-    private final JDialog dialog;
-    private final PaintConfig paintConfig;
-
-    private boolean workerStarted = false;
+    private final   DialogMode  mode;
+    private final   JDialog     dialog;
+    private final   PaintConfig paintConfig;
+    private         boolean     workerStarted = false;
 
     // Project root getter/setter supplied by the dialog
     private final Supplier<Path> getProjectPath;
     private final Consumer<Path> setProjectPath;
 
     // UI panels
-    private final ProjectPathsPanel paths;
+    private final ProjectPathsPanel  paths;
     private final SquaresParamsPanel params; // null in VIEWER mode
-    private final ExperimentsPanel experiments;
-    private final BottomBarPanel bottom;
+    private final ExperimentsPanel   experiments;
+    private final BottomBarPanel     bottom;
 
     // Worker logic references provided by ProjectDialog
-    private final QuadRunnable startWorker;
+    private final QuadRunnable     startWorker;
     private final Supplier<Thread> getWorker;
-    private final Runnable setCancelled;
-    private final Runnable clearCancelled;
+    private final Runnable         setCancelled;
+    private final Runnable         clearCancelled;
 
     // A callback provided by ProjectDialog to re-enable ALL UI elements
     private final Runnable enableAllUiFromDialog;
@@ -118,22 +119,20 @@ public class ProjectDialogController {
             Supplier<Thread> getWorker,
             Runnable setCancelled,
             Runnable clearCancelled,
-            Runnable enableAllUiFromDialog   // <----- NEW CALLBACK
+            Runnable enableAllUiFromDialog
     ) {
-        this.mode = mode;
-        this.dialog = dialog;
-        this.paintConfig = paintConfig;
+        this.mode           = mode;
+        this.dialog         = dialog;
+        this.paintConfig    = paintConfig;
         this.getProjectPath = getProjectPath;
         this.setProjectPath = setProjectPath;
-
-        this.paths = paths;
-        this.params = params;
-        this.experiments = experiments;
-        this.bottom = bottom;
-
-        this.startWorker = startWorker;
-        this.getWorker = getWorker;
-        this.setCancelled = setCancelled;
+        this.paths          = paths;
+        this.params         = params;
+        this.experiments    = experiments;
+        this.bottom         = bottom;
+        this.startWorker    = startWorker;
+        this.getWorker      = getWorker;
+        this.setCancelled   = setCancelled;
         this.clearCancelled = clearCancelled;
 
         this.enableAllUiFromDialog = enableAllUiFromDialog;
@@ -176,9 +175,6 @@ public class ProjectDialogController {
 
     private void handleOk() {
 
-        clearCancelled.run();
-        workerStarted = true;
-
         if (mode == DialogMode.TRACKMATE) {
             final String img = paths.imagesRootText().trim();
             if (!new File(img).isDirectory()) {
@@ -191,6 +187,18 @@ public class ProjectDialogController {
                 return;
             }
         }
+
+        PaintLogger.debugf("ProjectDialogController.handleOK - project path: %s", paths.imagesRootText());
+        PaintLogger.debugf("ProjectDialogController.handleOK - images  path: %s", paths.projectRootText());
+        PaintLogger.debugf("ProjectDialogController.handleOK - experiments : %s", experiments.selectedExperimentNames());
+
+        PaintPrefs.putString("Path", "Project Root", paths.projectRootText());
+        PaintPrefs.putString("Path", "Images Root", paths.imagesRootText());
+
+        setProjectPath.accept(Paths.get(paths.projectRootText()));
+
+        clearCancelled.run();
+        workerStarted = true;
 
         Runnable uiDisable = () -> {
             setInputsEnabled(false);
@@ -264,16 +272,16 @@ public class ProjectDialogController {
     //  Worker Shutdown
     // ----------------------------------------------------------------------------------------------------
 
-    private void handleWorkerShutdown(Thread t) {
+    private void handleWorkerShutdown(Thread thread) {
         try {
-            t.join();
+            thread.join();
         } catch (InterruptedException ignored) {}
-        SwingUtilities.invokeLater(() -> finishWorkerShutdown(t));
+        SwingUtilities.invokeLater(() -> finishWorkerShutdown(thread));
     }
 
-    private void finishWorkerShutdown(Thread t) {
+    private void finishWorkerShutdown(Thread thread) {
 
-        if (t.isAlive()) {
+        if (thread.isAlive()) {
             PaintLogger.errorf("Worker thread did not stop — forcing JVM halt.");
             Runtime.getRuntime().halt(0);
             return;
