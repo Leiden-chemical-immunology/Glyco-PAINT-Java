@@ -60,7 +60,7 @@ import loci.plugins.in.ImporterOptions;
  * A lightweight GUI-based TIFF stack movie player built on ImageJ and Swing.
  * <p>
  * Loads a TIFF file, extracts frame timing, and provides a movie player with:
- * play/pause, playback speed control, and frame navigation. All rendering is
+ * play/pause, playback speed control, and frame navigation. Rendering is
  * performed on Swing components, while TIFF handling is delegated to ImageJ.
  * </p>
  */
@@ -158,10 +158,8 @@ public class TiffMoviePlayer {
             // ------------------------------------------------------------
 
             final ImagePlus impFinal       = imp;
-            final String    fileNameFinal  = fileName;
-            final int       baseDelayFinal = baseDelayMs;
 
-            SwingUtilities.invokeLater(() -> buildAndRunMovieWindow(impFinal, fileNameFinal, baseDelayFinal));
+            SwingUtilities.invokeLater(() -> buildAndRunMovieWindow(impFinal, fileName, baseDelayMs));
 
         }, "TiffLoaderThread").start();
     }

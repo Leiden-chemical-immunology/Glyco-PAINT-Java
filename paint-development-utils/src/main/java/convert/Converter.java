@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static paint.shared.constants.PaintFileNames.*;
-import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
 import static paint.shared.validate.ValidationHandler.validateExperiments;
 
 public class Converter {
@@ -37,7 +36,7 @@ public class Converter {
 
         ValidationResult result =  validateExperiments(projectPath, experimentNames, fileNames);
         if (result.hasErrors() || result.hasWarnings()) {
-            System.out.println(result.toString());
+            System.out.println(result);
         }
         else {
             System.out.println("No Issues found");

@@ -131,33 +131,33 @@ public class Recording {
     //  CONSTRUCTORS
     // ============================================================================
 
-    /**
-     * Creates a Recording with primary metadata fields.
-     */
-    public Recording(String  experimentName,
-            String  recordingName,
-            int     conditionNumber,
-            int     replicateNumber,
-            String  probeName,
-            String  probeType,
-            String  cellType,
-            String  adjuvant,
-            double  concentration,
-            boolean processFlag,
-            double  threshold) {
-
-        this.experimentName  = experimentName;
-        this.recordingName   = recordingName;
-        this.conditionNumber = conditionNumber;
-        this.replicateNumber = replicateNumber;
-        this.probeName       = probeName;
-        this.probeType       = probeType;
-        this.cellType        = cellType;
-        this.adjuvant        = adjuvant;
-        this.concentration   = concentration;
-        this.processFlag     = processFlag;
-        this.threshold       = threshold;
-    }
+//    /**
+//     * Creates a Recording with primary metadata fields.
+//     */
+//    public Recording(String  experimentName,
+//            String  recordingName,
+//            int     conditionNumber,
+//            int     replicateNumber,
+//            String  probeName,
+//            String  probeType,
+//            String  cellType,
+//            String  adjuvant,
+//            double  concentration,
+//            boolean processFlag,
+//            double  threshold) {
+//
+//        this.experimentName  = experimentName;
+//        this.recordingName   = recordingName;
+//        this.conditionNumber = conditionNumber;
+//        this.replicateNumber = replicateNumber;
+//        this.probeName       = probeName;
+//        this.probeType       = probeType;
+//        this.cellType        = cellType;
+//        this.adjuvant        = adjuvant;
+//        this.concentration   = concentration;
+//        this.processFlag     = processFlag;
+//        this.threshold       = threshold;
+//    }
 
     public String getExperimentName() {
         return experimentName;
@@ -519,11 +519,11 @@ public class Recording {
             this.type = type;
         }
 
-        /**
-         * Returns the ordinal index, matching CSV column order.
-         */
-        public int index() {
-            return ordinal();
-        }
+//        /**
+//         * Returns the ordinal index, matching CSV column order.
+//         */
+//        public int index() {
+//            return ordinal();
+//        }
     }
 }

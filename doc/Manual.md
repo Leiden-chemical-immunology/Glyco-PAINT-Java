@@ -1,24 +1,24 @@
-<p align="center">
+<p style="text-align:center">
   <img src="./Pictures/leiden.png" alt="Glyco-PAINT logo" style="max-width:180px; height:auto; margin-bottom:20px;" />
 </p>
 
 
 
-<h1 align="center" style="margin:0; font-size:2.2em;">Glyco‑PAINT Application Processing Pipeline</h1>
-<h3 align="center" style="margin:6px 0 18px; font-weight:400;">Java implementation with FiJi/TrackMate integration</h3>
+<h1 style="text-align:center" style="margin:0; font-size:2.2em;">Glyco‑PAINT Application Processing Pipeline</h1>
+<h3 style="text-align:center" style="margin:6px 0 18px; font-weight:400;">Java implementation with FiJi/TrackMate integration</h3>
 
 <hr style="width:120px; border:0; border-top:2px solid #555; margin:18px auto 24px;" />
 
-<p align="center" style="margin:0; font-size:1.1em;">Version 0.0.132 · Updated: 5 December 2025</p>
+<p style="text-align:center" style="margin:0; font-size:1.1em;">Version 0.0.132 · Updated: 5 December 2025</p>
 
-<p align="center" style="margin:0;"><strong>Authors:</strong> J. Bakker</p>
-<p align="center" style="margin:4px 0 18px; color:#555;">Leiden Chemical Immunology | LIC, Leiden University</p>
+<p style="text-align:center" style="margin:0;"><strong>Authors:</strong> J. Bakker</p>
+<p style="text-align:center" style="margin:4px 0 18px; color:#555;">Leiden Chemical Immunology | LIC, Leiden University</p>
 
-<p align="center" style="margin:0;">
+<p style="text-align:center" style="margin:0;">
   <strong>Code:</strong>
   <a href="https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java">Glyco‑PAINT Java</a> ·
 </p>
-<p align="center" style="margin:6px 0 18px;">
+<p style="text-align:center" style="margin:6px 0 18px;">
   <strong>Docs:</strong>
   <a href="https://leiden-chemical-immunology.github.io/Glyco-PAINT-Java/">JavaDoc site</a> ·
   <strong>Reference images:</strong> <a href="https://doi.org/10.5281/zenodo.17487086">Zenodo</a>
@@ -27,7 +27,7 @@
 
 <hr style="width:120px; border:0; border-top:1px solid #aaa; margin:18px auto 26px;" />
 
-<p align="center" style="max-width:700px; margin:0 auto; color:#333;">
+<p style="text-align:center" style="max-width:700px; margin:0 auto; color:#333;">
   This manual documents the Glyco‑PAINT pipeline: installation, configuration, TrackMate processing, square generation, viewing, and analysis. It is maintained in Markdown and exported to PDF for distribution.
 </p>
 
@@ -128,10 +128,10 @@ Fiji and Java 8 JRE needs to be installed:
 The pipeline consists of a FiJi plugin (for TrackMate calculations) and several apps:
 
 | Component             | Purpose                                           | Essential? |
-| --------------------- | ------------------------------------------------- | ---------- |
+|-----------------------|---------------------------------------------------| ---------- |
 | **Viewer**            | Inspect TrackMate results with brightfield images | Yes        |
 | **Generate Squares**  | Calculate square attributes (Tau, Density, etc.)  | Yes        |
-| **Plugin**  | Performs the TrackMate calculations  | Yes        |
+| **Plugin**            | Performs the TrackMate calculations               | Yes        |
 | **Get Omero**         | Organize downloaded Omero files                   | Optional   |
 | **Create Experiment** | Build Experiment Info file (convenience utility)  | Optional   |
 
@@ -329,7 +329,6 @@ At the bottom of the dialog:
 3. **Generate Squares Setup**
 
    If the Run Generate Squares after TrackMate box is checked, parameters can be set via the user interface.
-
 
 4. **Experiments and Recordings selection** 
    

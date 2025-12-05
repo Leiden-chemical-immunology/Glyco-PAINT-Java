@@ -19,7 +19,7 @@
 
 # v0.0.127
 
-- TrackMate plugin supports a parameter sweep on Threshold (handy for the initial determination for optimal threshold values for new a experiment).
+- TrackMate plugin supports a parameter sweep on Threshold (handy for the initial determination for optimal threshold values for a newexperiment).
 - Misformed JSON files are recognised and handled gracefully. 
 - (Development) Several large classes have been refactored into small ones for improved maintainability.
 

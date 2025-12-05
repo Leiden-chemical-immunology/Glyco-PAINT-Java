@@ -172,8 +172,7 @@ public final class TrackAttributeCalculations {
                 totalDistance,
                 diffusionCoeff,
                 diffusionCoeffExt,
-                confinementRatio,
-                displacement
+                confinementRatio
         );
     }
 

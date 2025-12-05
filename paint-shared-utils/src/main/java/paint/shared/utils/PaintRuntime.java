@@ -56,7 +56,7 @@ public final class PaintRuntime {
     // ───────────────────────────────────────────────────────────────────────────────
 
     private static boolean verbose;
-    private static String  logLevel;
+//    private static String  logLevel;
 
     /**
      * Private constructor to prevent instantiation.
@@ -83,7 +83,7 @@ public final class PaintRuntime {
      */
     public static void initialiseFromPrefs() {
         verbose  = PaintPrefs.getBoolean("Runtime", "Verbose",   false);
-        logLevel = PaintPrefs.getString ("Runtime", "Log Level", "INFO");
+        //logLevel = PaintPrefs.getString ("Runtime", "Log Level", "INFO");
     }
 
     // ───────────────────────────────────────────────────────────────────────────────

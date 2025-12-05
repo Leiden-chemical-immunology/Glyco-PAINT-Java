@@ -165,11 +165,11 @@ public class BottomBarPanel {
         cancelBtn.setEnabled(enabled);
     }
 
-    /** Explicit UI recovery used after Cancel-before-start cases */
-    public void enableAll() {
-        setEnabled(true);
-        okBtn.setText("OK");
-    }
+//    /** Explicit UI recovery used after Cancel-before-start cases */
+//    public void enableAll() {
+//        setEnabled(true);
+//        okBtn.setText("OK");
+//    }
 
     public void updateOkEnabled(boolean enabled) {
         okBtn.setEnabled(enabled);
@@ -211,7 +211,7 @@ public class BottomBarPanel {
     }
 
     /**
-     * Sets the Sweep checkbox selection state, if it exists.
+     * Sets the Sweep checkbox selection state if it exists.
      */
     public void setSweepSelected(boolean selected) {
         if (sweep != null) {

@@ -93,7 +93,7 @@ public class ProjectDialog {
     private CalculationCallback calculationCallback;
     private volatile boolean    cancelled     = false;
     private volatile Thread     workerThread;
-    private boolean             workerStarted = false;
+//    private boolean             workerStarted = false;
 
     private final ProjectPathsPanel  projectPathsPanel;
     private final SquaresParamsPanel squaresParamsPanel;
@@ -106,17 +106,7 @@ public class ProjectDialog {
 
         PaintConfig paintConfig = PaintConfig.instance();
 
-        final String projectName =
-                (projectPath != null && projectPath.getFileName() != null)
-                        ? projectPath.getFileName().toString()
-                        : "(none)";
-
-        final String title =
-                (mode == DialogMode.TRACKMATE)
-                        ? "Run TrackMate on Project - '" + projectName + "'"
-                        : (mode == DialogMode.VIEWER)
-                        ? "View Recordings for Project - '" + projectName + "'"
-                        : "Generate Squares for Project - '" + projectName + "'";
+        final String title = getDialogTitle(mode);
 
         this.dialog = new JDialog(owner, title, false);
         this.dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -183,6 +173,19 @@ public class ProjectDialog {
 
         dialog.pack();
         dialog.setLocationRelativeTo(owner);
+    }
+
+    private String getDialogTitle(DialogMode mode) {
+        final String projectName =
+                (projectPath != null && projectPath.getFileName() != null)
+                        ? projectPath.getFileName().toString()
+                        : "(none)";
+
+        return (mode == DialogMode.TRACKMATE)
+                ? "Run TrackMate on Project - '" + projectName + "'"
+                : (mode == DialogMode.VIEWER)
+                ? "View Recordings for Project - '" + projectName + "'"
+                : "Generate Squares for Project - '" + projectName + "'";
     }
 
     // -------------------------------------------------------------------------
@@ -272,7 +275,7 @@ public class ProjectDialog {
 
         runUiDisable.run();
         cancelled     = false;
-        workerStarted = true;
+//        workerStarted = true;
 
         final Project project = buildProject();
 
@@ -285,16 +288,16 @@ public class ProjectDialog {
                     ok = calculationCallback.run(project);
                 }
             } catch (Exception ex) {
-                if (ex instanceof InterruptedException) {
-                    Thread.currentThread().interrupt();
+                // Treat any exception as cancellation if the thread was interrupted
+                if (Thread.currentThread().isInterrupted()) {
+                    Thread.currentThread().interrupt();  // preserve interrupt status
                     cancelled = true;
                 } else {
                     PaintLogger.errorf("Error in callback: %s", ex.getMessage());
                 }
             }
-
-            final boolean success =
-                    ok && !cancelled && !Thread.currentThread().isInterrupted();
+            
+            final boolean success = ok && !cancelled && !Thread.currentThread().isInterrupted();
 
             SwingUtilities.invokeLater(() -> {
                 if (cancelled) {

@@ -5,7 +5,6 @@ import paint.shared.objects.Recording;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
-import tech.tablesaw.columns.Column;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -140,24 +139,24 @@ public class RecordingsTableIO extends BaseTableIO {
     //  APPEND / MERGE
     // =====================================================================
 
-    public void appendInPlace(Table target, Table source) {
-        for (Row row : source) {
-            Row newRow = target.appendRow();
-
-            for (Recording.Column colEnum : Recording.Column.values()) {
-                String col = colEnum.header;
-                Column<?> targetCol = target.column(col);
-
-                if (targetCol.type() == ColumnType.STRING) {
-                    newRow.setString(col, row.getString(col));
-                } else if (targetCol.type() == ColumnType.INTEGER) {
-                    newRow.setInt(col, row.getInt(col));
-                } else if (targetCol.type() == ColumnType.DOUBLE) {
-                    newRow.setDouble(col, row.getDouble(col));
-                } else if (targetCol.type() == ColumnType.BOOLEAN) {
-                    newRow.setBoolean(col, row.getBoolean(col));
-                }
-            }
-        }
-    }
+//    public void appendInPlace(Table target, Table source) {
+//        for (Row row : source) {
+//            Row newRow = target.appendRow();
+//
+//            for (Recording.Column colEnum : Recording.Column.values()) {
+//                String col = colEnum.header;
+//                Column<?> targetCol = target.column(col);
+//
+//                if (targetCol.type() == ColumnType.STRING) {
+//                    newRow.setString(col, row.getString(col));
+//                } else if (targetCol.type() == ColumnType.INTEGER) {
+//                    newRow.setInt(col, row.getInt(col));
+//                } else if (targetCol.type() == ColumnType.DOUBLE) {
+//                    newRow.setDouble(col, row.getDouble(col));
+//                } else if (targetCol.type() == ColumnType.BOOLEAN) {
+//                    newRow.setBoolean(col, row.getBoolean(col));
+//                }
+//            }
+//        }
+//    }
 }

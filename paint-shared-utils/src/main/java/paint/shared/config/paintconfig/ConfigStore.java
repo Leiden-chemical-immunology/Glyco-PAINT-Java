@@ -14,7 +14,6 @@ import java.io.Writer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Set;
 
 /** Owns the root JsonObject and handles load/save. */
 class ConfigStore {
@@ -118,22 +117,22 @@ class ConfigStore {
         return created;
     }
 
-    void removeSection(String section) {
-        ensureLoaded(null);
-        String toRemove = null;
-        for (String s : root.keySet()) {
-            if (s.equalsIgnoreCase(section)) {
-                toRemove = s;
-                break;
-            }
-        }
-        if (toRemove != null) {
-            root.remove(toRemove);
-        }
-    }
+//    void removeSection(String section) {
+//        ensureLoaded(null);
+//        String toRemove = null;
+//        for (String s : root.keySet()) {
+//            if (s.equalsIgnoreCase(section)) {
+//                toRemove = s;
+//                break;
+//            }
+//        }
+//        if (toRemove != null) {
+//            root.remove(toRemove);
+//        }
+//    }
 
-    Set<String> sections() {
-        ensureLoaded(null);
-        return root.keySet();
-    }
+//    Set<String> sections() {
+//        ensureLoaded(null);
+//        return root.keySet();
+//    }
 }

@@ -185,19 +185,19 @@ public final class PaintLogger {
         }
     }
 
-    /**
-     * Closes the current log writer if open.
-     */
-    public static void close() {
-        if (writer != null) {
-            try {
-                writer.close();
-            } catch (IOException ignored) {
-                // Deliberately empty
-            }
-        }
-        initialised = false;
-    }
+//    /**
+//     * Closes the current log writer if open.
+//     */
+//    public static void close() {
+//        if (writer != null) {
+//            try {
+//                writer.close();
+//            } catch (IOException ignored) {
+//                // Deliberately empty
+//            }
+//        }
+//        initialised = false;
+//    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // CORE LOGGING
@@ -342,10 +342,10 @@ public final class PaintLogger {
     /**
      * Java 8-compatible implementation of String.repeat(int).
      */
-    private static String repeat(String s, int count) {
-        StringBuilder sb = new StringBuilder(s.length() * count);
+    private static String repeat(String string, int count) {
+        StringBuilder sb = new StringBuilder(string.length() * count);
         for (int i = 0; i < count; i++) {
-            sb.append(s);
+            sb.append(string);
         }
         return sb.toString();
     }

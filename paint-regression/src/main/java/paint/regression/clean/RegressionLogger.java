@@ -25,13 +25,13 @@ final class RegressionLogger {
         println("");
     }
 
-    void disableFileLogging() {
-        fileLoggingEnabled = false;
-    }
+//    void disableFileLogging() {
+//        fileLoggingEnabled = false;
+//    }
 
-    void enableFileLoggingToCurrentFile() {
-        fileLoggingEnabled = true;
-    }
+//    void enableFileLoggingToCurrentFile() {
+//        fileLoggingEnabled = true;
+//    }
 
     void println(String msg) {
         console.println(msg);
@@ -47,12 +47,12 @@ final class RegressionLogger {
         }
     }
 
-    void flush() {
-        console.flush();
-        if (file != null && fileLoggingEnabled) {
-            file.flush();
-        }
-    }
+//    void flush() {
+//        console.flush();
+//        if (file != null && fileLoggingEnabled) {
+//            file.flush();
+//        }
+//    }
 
     /**
      * Compare the two latest log files in the given directory.
@@ -65,7 +65,7 @@ final class RegressionLogger {
         fileLoggingEnabled = false;
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(logDir, "paint-regression-*.log")) {
-            List<Path> logs = new ArrayList<Path>();
+            List<Path> logs = new ArrayList<>();
             for (Path p : stream) {
                 logs.add(p);
             }

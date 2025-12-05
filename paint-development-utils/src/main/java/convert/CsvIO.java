@@ -7,10 +7,10 @@ import java.util.*;
 final class CsvIO {
 
     static List<Map<String,String>> readSimpleCsv(Path file) throws Exception {
-        List<Map<String,String>> list = new ArrayList<Map<String,String>>();
-        BufferedReader           br   = Files.newBufferedReader(file);
+        List<Map<String,String>> list = new ArrayList<>();
 
-        try {
+        try (BufferedReader br = Files.newBufferedReader(file)) {
+
             String head = br.readLine();
             if (head == null) {
                 return list;
@@ -22,12 +22,12 @@ final class CsvIO {
 
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.length() == 0) {
+                if (line.isEmpty()) {
                     continue;
                 }
 
                 String[] vals = line.split(",", -1);
-                Map<String,String> m = new LinkedHashMap<String,String>();
+                Map<String,String> m = new LinkedHashMap<>();
                 for (int i = 0; i < headers.length; i++) {
                     String h = headers[i];
                     String v = (i < vals.length ? vals[i] : "");
@@ -35,9 +35,8 @@ final class CsvIO {
                 }
                 list.add(m);
             }
-        } finally {
-            br.close();
         }
+
         return list;
     }
 
@@ -46,26 +45,27 @@ final class CsvIO {
              PrintWriter pw = new PrintWriter(bw)) {
 
             // Write header
-            for (int i = 0; i < header.size(); i++) {
-                if (i > 0) {
+            boolean first = true;
+            for (String h : header) {
+                if (!first) {
                     pw.print(",");
                 }
-                pw.print(header.get(i));
+                pw.print(h);
+                first = false;
             }
-            // No println() here → no stray newline yet
 
             // Write rows
-            for (int r = 0; r < rows.size(); r++) {
-                pw.println();  // newline before the row (not after)
-                Map<String,String> row = rows.get(r);
+            for (Map<String,String> row : rows) {
+                pw.println();
 
-                for (int c = 0; c < header.size(); c++) {
-                    if (c > 0) {
+                boolean firstCol = true;
+                for (String col : header) {
+                    if (!firstCol) {
                         pw.print(",");
                     }
-                    String col = header.get(c);
                     String val = row.get(col);
                     pw.print(val == null ? "" : val);
+                    firstCol = false;
                 }
             }
         }

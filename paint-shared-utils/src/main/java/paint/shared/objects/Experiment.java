@@ -52,7 +52,7 @@ public class Experiment {
     /**
      * The name identifying this experiment.
      */
-    private String experimentName;
+    private final String experimentName;
 
     /**
      * The collection of recordings associated with this experiment.
@@ -63,13 +63,13 @@ public class Experiment {
     // CONSTRUCTORS
     // ───────────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Constructs an empty {@code Experiment} instance
-     * with an initialized but empty recording list.
-     */
-    public Experiment() {
-        this.recordings = new ArrayList<>();
-    }
+//    /**
+//     * Constructs an empty {@code Experiment} instance
+//     * with an initialized but empty recording list.
+//     */
+//    public Experiment() {
+//        this.recordings = new ArrayList<>();
+//    }
 
     /**
      * Constructs an {@code Experiment} with a specified name.
@@ -81,24 +81,24 @@ public class Experiment {
         this.recordings     = new ArrayList<>();
     }
 
-    /**
-     * Constructs an {@code Experiment} with a name and pre-populated recordings.
-     *
-     * @param experimentName the name of the experiment
-     * @param recordings     the list of recordings to associate
-     */
-    public Experiment(String experimentName, ArrayList<Recording> recordings) {
-        this.experimentName = experimentName;
-        this.recordings     = recordings;
-    }
+//    /**
+//     * Constructs an {@code Experiment} with a name and pre-populated recordings.
+//     *
+//     * @param experimentName the name of the experiment
+//     * @param recordings     the list of recordings to associate
+//     */
+//    public Experiment(String experimentName, ArrayList<Recording> recordings) {
+//        this.experimentName = experimentName;
+//        this.recordings     = recordings;
+//    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // ACCESSORS & MUTATORS
     // ───────────────────────────────────────────────────────────────────────────────
 
-    public void   setExperimentName(String experimentName) {
-        this.experimentName = experimentName;
-    }
+//    public void   setExperimentName(String experimentName) {
+//        this.experimentName = experimentName;
+//    }
 
     public String getExperimentName() {
         return experimentName;

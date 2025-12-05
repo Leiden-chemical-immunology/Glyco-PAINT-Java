@@ -4,14 +4,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-public final class ExperimentInfoConverter implements CsvConverter {
+public final class ExperimentInfoConverter {
 
-    private final Path inputDir;
+//    private final Path inputDir;
     private final Path inputFile;
     private final Path outputFile;
 
     public ExperimentInfoConverter(Path inputDir) {
-        this.inputDir = inputDir;
+//        this.inputDir = inputDir;
         this.inputFile = inputDir.resolve("Experiment Info - Python.csv");
         this.outputFile = inputDir.resolve("Experiment Info.csv");
     }
@@ -37,7 +37,7 @@ public final class ExperimentInfoConverter implements CsvConverter {
     // NEW COLUMN → OLD POSITION (column 4)
     // (1-based indexes, because Python export is 1-based)
     // ---------------------------------------------------------------
-    private static final Map<String,Integer> INDEX_MAP = new LinkedHashMap<String,Integer>();
+    private static final Map<String,Integer> INDEX_MAP = new LinkedHashMap<>();
     static {
         INDEX_MAP.put("Experiment Name",     4);
         INDEX_MAP.put("Recording Name",      2);
@@ -52,22 +52,21 @@ public final class ExperimentInfoConverter implements CsvConverter {
         INDEX_MAP.put("Threshold",          12);
     }
 
-    @Override
-    public List<String> getOutputHeader() {
-        return HEADER;
-    }
+//    @Override
+//    public List<String> getOutputHeader() {
+//        return HEADER;
+//    }
 
-    @Override
     public List<Map<String,String>> convert(List<Map<String,String>> src) {
 
-        List<Map<String,String>> out = new ArrayList<Map<String,String>>();
+        List<Map<String,String>> out = new ArrayList<>();
 
         for (Map<String,String> inRow : src) {
 
             // convert old row to array by index
             String[] raw = inRow.values().toArray(new String[inRow.size()]);
 
-            Map<String,String> row = new LinkedHashMap<String,String>();
+            Map<String,String> row = new LinkedHashMap<>();
 
             for (String newCol : HEADER) {
                 int oldPos = INDEX_MAP.get(newCol);

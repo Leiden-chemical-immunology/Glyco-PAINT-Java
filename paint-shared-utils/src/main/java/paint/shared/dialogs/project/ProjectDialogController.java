@@ -20,7 +20,7 @@
  *          - EDT-safe updates
  *
  *  KEY FEATURES
- *      - Clean method-reference based communication with ProjectDialog.
+ *      - Clean method-reference-based communication with ProjectDialog.
  *      - Uses Supplier, Consumer, Runnable, and QuadRunnable to remain fully decoupled.
  *      - Handles validation logic for when the OK button may be enabled.
  *      - Performs sweep creation checks.
@@ -48,8 +48,7 @@ import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintPrefs;
 
 import javax.swing.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.util.function.Consumer;
@@ -64,17 +63,17 @@ import static paint.shared.dialogs.ProjectDialog.DialogMode;
  */
 public class ProjectDialogController {
 
-    /**
-     * Factory for WindowAdapter that triggers a run() call on window close.
-     */
-    public static WindowAdapter onWindowClosing(Runnable action) {
-        return new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                action.run();
-            }
-        };
-    }
+//    /**
+//     * Factory for WindowAdapter that triggers a run() call on window close.
+//     */
+//    public static WindowAdapter onWindowClosing(Runnable action) {
+//        return new WindowAdapter() {
+//            @Override
+//            public void windowClosing(WindowEvent e) {
+//                action.run();
+//            }
+//        };
+//    }
 
     private final DialogMode          mode;
     private final JDialog             dialog;

@@ -5,14 +5,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public final class RecordingsConverter implements CsvConverter {
+public final class RecordingsConverter {
 
-    private final Path inputDir;
+//    private final Path inputDir;
     private final Path inputFile;
     private final Path outputFile;
 
     public RecordingsConverter(Path inputDir) {
-        this.inputDir = inputDir;
+//        this.inputDir = inputDir;
         this.inputFile = inputDir.resolve("All Recordings.csv");
         this.outputFile = inputDir.resolve("Recordings.csv");
     }
@@ -48,7 +48,7 @@ public final class RecordingsConverter implements CsvConverter {
             "Neighbour Mode"
     );
 
-    private static final Map<String,String> NAME_MAP = new HashMap<String,String>();
+    private static final Map<String,String> NAME_MAP = new HashMap<>();
     static {
         NAME_MAP.put("Experiment Name",               "Experiment Name");
         NAME_MAP.put("Recording Name",                "Recording Name");
@@ -77,26 +77,25 @@ public final class RecordingsConverter implements CsvConverter {
         NAME_MAP.put("R Squared",                     "R Squared");
     }
 
-    private static final Map<String,Integer> INDEX_MAP = new HashMap<String,Integer>();
+    private static final Map<String,Integer> INDEX_MAP = new HashMap<>();
     static {
         INDEX_MAP.put("Number of Tracks in Background", 15);
     }
 
-    @Override
-    public List<String> getOutputHeader() {
-        return HEADER;
-    }
+//    @Override
+//    public List<String> getOutputHeader() {
+//        return HEADER;
+//    }
 
-    @Override
     public List<Map<String,String>> convert(List<Map<String,String>> src) {
 
-        List<Map<String,String>> out = new ArrayList<Map<String,String>>();
+        List<Map<String,String>> out = new ArrayList<>();
 
         for (Map<String,String> inRow : src) {
 
             String[] raw = toArray(inRow);
 
-            Map<String,String> row = new LinkedHashMap<String,String>();
+            Map<String,String> row = new LinkedHashMap<>();
 
             for (String newCol : HEADER) {
 

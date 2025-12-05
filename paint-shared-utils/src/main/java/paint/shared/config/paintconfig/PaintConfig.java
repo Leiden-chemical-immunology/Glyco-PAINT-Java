@@ -7,8 +7,6 @@ import paint.shared.utils.PaintLogger;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Set;
 
 import static paint.shared.constants.PaintFileNames.PAINT_CONFIGURATION_JSON;
 
@@ -193,15 +191,15 @@ public class PaintConfig {
     }
 
 
-    public Set<String> keys(String section) {
-        JsonObject sec = getSection(section);
-        return (sec != null) ? sec.keySet() : Collections.emptySet();
-    }
+//    public Set<String> keys(String section) {
+//        JsonObject sec = getSection(section);
+//        return (sec != null) ? sec.keySet() : Collections.emptySet();
+//    }
 
 
-    public JsonObject getJson() {
-        return store.root();
-    }
+//    public JsonObject getJson() {
+//        return store.root();
+//    }
 
     @Override public String toString() {
         return GSON.toJson(store.root());

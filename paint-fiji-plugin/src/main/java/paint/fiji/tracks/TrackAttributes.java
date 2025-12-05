@@ -52,7 +52,6 @@ public final class TrackAttributes {
     public final double diffusionCoeff;        // Diffusion coefficient (based on mean squared displacement relative to first spot).
     public final double diffusionCoeffExt;     // Extended diffusion coefficient (based on step-wise mean squared displacement).
     public final double confinementRatio;      // Confinement ratio = net displacement / total distance traveled.
-    public final double displacement;          // Net displacement between the first and last spot in the track.
 
     /**
      * Constructs a {@code TrackAttributes} instance with all motion-related metrics.
@@ -62,20 +61,17 @@ public final class TrackAttributes {
      * @param diffusionCoeff the diffusion coefficient calculated from the mean squared displacement relative to the first spot
      * @param diffusionCoeffExt the extended diffusion coefficient based on step-wise mean squared displacement
      * @param confinementRatio the ratio of net displacement to total distance traveled
-     * @param displacement the net displacement between the first and last spot in the track
      */
     public TrackAttributes(int numberOfSpotsInTracks,
                            double totalDistance,
                            double diffusionCoeff,
                            double diffusionCoeffExt,
-                           double confinementRatio,
-                           double displacement) {
+                           double confinementRatio) {
         this.numberOfSpotsInTracks = numberOfSpotsInTracks;
         this.totalDistance         = totalDistance;
         this.diffusionCoeff        = diffusionCoeff;
         this.diffusionCoeffExt     = diffusionCoeffExt;
         this.confinementRatio      = confinementRatio;
-        this.displacement          = displacement;
     }
 
     /**
@@ -91,7 +87,6 @@ public final class TrackAttributes {
      */
     public TrackAttributes() {
         this(0,
-             Double.NaN,
              Double.NaN,
              Double.NaN,
              Double.NaN,

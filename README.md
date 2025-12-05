@@ -45,7 +45,7 @@ The software is provided as is under the [MIT license](LICENSE).
 
 ## Functionality
 
-An overview of the functionality of the pipeline, how to use it and a detailed demo case with sample data it is provided in the [Functional Specifications](doc/Functional Specifations.md).
+An overview of the functionality of the pipeline, how to use it and a detailed demo case with sample data it is provided in the [Manual](doc/Manual.md).
 
 
 

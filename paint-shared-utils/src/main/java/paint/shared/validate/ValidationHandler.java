@@ -50,7 +50,6 @@
 package paint.shared.validate;
 
 import paint.shared.utils.PaintLogger;
-import paint.shared.utils.PaintRuntime;
 
 import java.io.File;
 import java.nio.file.Files;

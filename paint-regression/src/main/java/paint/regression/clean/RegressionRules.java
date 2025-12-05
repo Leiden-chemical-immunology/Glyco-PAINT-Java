@@ -145,7 +145,7 @@ final class RegressionRules {
     }
 
     private static Map<String, Double> newDoubleMap(Object[][] data) {
-        Map<String, Double> m = new HashMap<String, Double>();
+        Map<String, Double> m = new HashMap<>();
         for (Object[] e : data) {
             m.put((String) e[0], (Double) e[1]);
         }
@@ -192,11 +192,7 @@ final class RegressionRules {
         if (x.isEmpty() && isZeroOrSentinel(y)) {
             return true;
         }
-        if (y.isEmpty() && isZeroOrSentinel(x)) {
-            return true;
-        }
-
-        return false;
+        return y.isEmpty() && isZeroOrSentinel(x);
     }
 
     private static boolean isZeroOrSentinel(String v) {
@@ -221,7 +217,7 @@ final class RegressionRules {
     }
 
     static Double parseDouble(String s) {
-        if (s == null || s.length() == 0) {
+        if (s == null || s.isEmpty()) {
             return null;
         }
         try {
@@ -256,9 +252,7 @@ final class RegressionRules {
         if (relTol != null) {
             double denom = Math.max(1e-9, Math.max(Math.abs(a), Math.abs(b)));
             double relErr = Math.abs(a - b) / denom;
-            if (relErr <= relTol) {
-                return true;
-            }
+            return relErr <= relTol;
         }
 
         return false;
@@ -270,7 +264,7 @@ final class RegressionRules {
     }
 
     /**
-     * Track-count based correction for density-like quantities.
+     * Track-count-based correction for density-like quantities.
      */
     static Double correctedValueIfTrackDependent(
             String field, Double oldVal, Double newVal,
@@ -314,11 +308,7 @@ final class RegressionRules {
         }
 
         // One present, one missing → skip reporting a difference
-        if ((a != null && b == null) || (a == null && b != null)) {
-            return true;
-        }
-
-        return false;
+        return a != null || b != null;
     }
 
 }

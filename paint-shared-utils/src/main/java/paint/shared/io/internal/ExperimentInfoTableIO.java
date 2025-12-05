@@ -5,7 +5,6 @@ import paint.shared.objects.ExperimentInfo;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
-import tech.tablesaw.columns.Column;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -111,52 +110,51 @@ public class ExperimentInfoTableIO extends BaseTableIO {
     //  APPEND / MERGE
     // =====================================================================
 
-    @Override
-    public void appendInPlace(Table target, Table source) {
-        if (source == null || source.isEmpty())
-            return;
-
-        for (Row src : source) {
-            Row dst = target.appendRow();
-
-            for (ExperimentInfo.Column col : ExperimentInfo.Column.values()) {
-                String header = col.header;
-
-                // Skip missing columns
-                if (!source.columnNames().contains(header))
-                    continue;
-
-                Column<?> srcCol = source.column(header);
-
-                // Skip missing value
-                if (srcCol.isMissing(src.getRowNumber()))
-                    continue;
-
-                switch (col.type.name()) {
-                    case "STRING":
-                        dst.setString(header, src.getString(header));
-                        break;
-
-                    case "INTEGER":
-                        dst.setInt(header, src.getInt(header));
-                        break;
-
-                    case "DOUBLE":
-                        if (srcCol.type() == ColumnType.INTEGER) {
-                            dst.setDouble(header, src.getInt(header));
-                        } else {
-                            dst.setDouble(header, src.getDouble(header));
-                        }
-                        break;
-
-                    case "BOOLEAN":
-                        dst.setBoolean(header, src.getBoolean(header));
-                        break;
-
-                    default:
-                        throw new IllegalArgumentException("Unsupported type: " + col.type);
-                }
-            }
-        }
-    }
+//    public void appendInPlace(Table target, Table source) {
+//        if (source == null || source.isEmpty())
+//            return;
+//
+//        for (Row src : source) {
+//            Row dst = target.appendRow();
+//
+//            for (ExperimentInfo.Column col : ExperimentInfo.Column.values()) {
+//                String header = col.header;
+//
+//                // Skip missing columns
+//                if (!source.columnNames().contains(header))
+//                    continue;
+//
+//                Column<?> srcCol = source.column(header);
+//
+//                // Skip missing value
+//                if (srcCol.isMissing(src.getRowNumber()))
+//                    continue;
+//
+//                switch (col.type.name()) {
+//                    case "STRING":
+//                        dst.setString(header, src.getString(header));
+//                        break;
+//
+//                    case "INTEGER":
+//                        dst.setInt(header, src.getInt(header));
+//                        break;
+//
+//                    case "DOUBLE":
+//                        if (srcCol.type() == ColumnType.INTEGER) {
+//                            dst.setDouble(header, src.getInt(header));
+//                        } else {
+//                            dst.setDouble(header, src.getDouble(header));
+//                        }
+//                        break;
+//
+//                    case "BOOLEAN":
+//                        dst.setBoolean(header, src.getBoolean(header));
+//                        break;
+//
+//                    default:
+//                        throw new IllegalArgumentException("Unsupported type: " + col.type);
+//                }
+//            }
+//        }
+//    }
 }

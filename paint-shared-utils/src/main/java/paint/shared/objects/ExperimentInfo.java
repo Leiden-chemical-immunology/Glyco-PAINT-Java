@@ -87,8 +87,8 @@ public class ExperimentInfo {
     private double  threshold;
 
     /** Associated objects for downstream analysis. */
-    private List<Square> squares = new ArrayList<>();
-    private List<Track>  tracks  = new ArrayList<>();
+    private final List<Square> squares = new ArrayList<>();
+    private final List<Track>  tracks  = new ArrayList<>();
 
     /**
      * Default empty constructor.
@@ -222,21 +222,21 @@ public class ExperimentInfo {
         this.threshold = threshold;
     }
 
-    public List<Square> getSquares() {
-        return squares;
-    }
+//    public List<Square> getSquares() {
+//        return squares;
+//    }
 
-    public void setSquares(List<Square> squares) {
-        this.squares = squares;
-    }
+//    public void setSquares(List<Square> squares) {
+//        this.squares = squares;
+//    }
 
-    public List<Track> getTracks() {
-        return tracks;
-    }
+//    public List<Track> getTracks() {
+//        return tracks;
+//    }
 
-    public void setTracks(List<Track> tracks) {
-        this.tracks = tracks;
-    }
+//    public void setTracks(List<Track> tracks) {
+//        this.tracks = tracks;
+//    }
 
     /**
      * Returns a human-readable summary of this ExperimentInfo, useful
@@ -244,23 +244,20 @@ public class ExperimentInfo {
      */
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("\tExperiment Info\n");
-        sb.append(String.format("\t  Experiment Name    : %s%n", experimentName));
-        sb.append(String.format("\t  Recording Name     : %s%n", recordingName));
-        sb.append(String.format("\t  Condition Nr       : %d%n", conditionNumber));
-        sb.append(String.format("\t  Replicate Nr       : %d%n", replicateNumber));
-        sb.append(String.format("\t  Probe Name         : %s%n", probeName));
-        sb.append(String.format("\t  Probe Type         : %s%n", probeType));
-        sb.append(String.format("\t  Cell Type          : %s%n", cellType));
-        sb.append(String.format("\t  Adjuvant           : %s%n", adjuvant));
-        sb.append(String.format("\t  Concentration      : %.2f%n", concentration));
-        sb.append(String.format("\t  Threshold          : %.2f%n", threshold));
 
-        sb.append(String.format("\t  Track Count        : %d%n", tracks.size()));
-        sb.append(String.format("\t  Square Count       : %d%n", squares.size()));
-
-        return sb.toString();
+        return "\tExperiment Info\n" +
+                String.format("\t  Experiment Name    : %s%n", experimentName) +
+                String.format("\t  Recording Name     : %s%n", recordingName) +
+                String.format("\t  Condition Nr       : %d%n", conditionNumber) +
+                String.format("\t  Replicate Nr       : %d%n", replicateNumber) +
+                String.format("\t  Probe Name         : %s%n", probeName) +
+                String.format("\t  Probe Type         : %s%n", probeType) +
+                String.format("\t  Cell Type          : %s%n", cellType) +
+                String.format("\t  Adjuvant           : %s%n", adjuvant) +
+                String.format("\t  Concentration      : %.2f%n", concentration) +
+                String.format("\t  Threshold          : %.2f%n", threshold) +
+                String.format("\t  Track Count        : %d%n", tracks.size()) +
+                String.format("\t  Square Count       : %d%n", squares.size());
     }
 
     //=========================================================================
@@ -296,11 +293,11 @@ public class ExperimentInfo {
             this.type = type;
         }
 
-        /**
-         * Returns the column’s position in the schema.
-         */
-        public int index() {
-            return ordinal();
-        }
+//        /**
+//         * Returns the column’s position in the schema.
+//         */
+//        public int index() {
+//            return ordinal();
+//        }
     }
 }

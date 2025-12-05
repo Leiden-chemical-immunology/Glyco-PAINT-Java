@@ -52,7 +52,7 @@ import java.util.List;
 /**
  * Represents the aggregated result of one or more validation processes.
  * Stores categorized message lists (errors, warnings, and infos) and
- * provide convenience methods for merging and reporting.
+ * provides convenience methods for merging and reporting.
  */
 public final class ValidationResult {
 
@@ -87,14 +87,14 @@ public final class ValidationResult {
         warnings.add(message);
     }
 
-    /**
-     * Adds an informational message to the validation result.
-     *
-     * @param message descriptive text of the info
-     */
-    public void addInfo(String message) {
-        infos.add(message);
-    }
+//    /**
+//     * Adds an informational message to the validation result.
+//     *
+//     * @param message descriptive text of the info
+//     */
+//    public void addInfo(String message) {
+//        infos.add(message);
+//    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // ACCESSORS

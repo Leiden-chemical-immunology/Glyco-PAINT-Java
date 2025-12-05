@@ -185,13 +185,13 @@ public class RecordingEntry {
         return recording.getThreshold();
     }
 
-    public double getTau() {
-        return recording.getTau();
-    }
+//    public double getTau() {
+//        return recording.getTau();
+//    }
 
-    public double getDensity() {
-        return recording.getDensity();
-    }
+//    public double getDensity() {
+//        return recording.getDensity();
+//    }
 
     // =========================================================================================
     // IMAGE AND RECORDING ACCESS

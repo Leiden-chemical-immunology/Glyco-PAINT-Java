@@ -98,7 +98,7 @@ public class CsvComparatorRegression {
                 String sq = o.containsKey(SQUARE_NUMBER) ? safe(o.get(SQUARE_NUMBER)) : "";
 
                 for (String f : fields) {
-                    if (f == null || f.trim().length() == 0) continue;
+                    if (f == null || f.trim().isEmpty()) continue;
                     if (RegressionRules.isIgnoredColumn(f, relaxedComparison)) continue;
 
                     String ov = RegressionRules.clean(o.get(f));
@@ -162,19 +162,19 @@ public class CsvComparatorRegression {
     // ============================================================
     private static void printGroupedDifferences(List<String[]> diffs) {
         Map<String, Map<String, List<String[]>>> grouped =
-                new LinkedHashMap<String, Map<String, List<String[]>>>();
+                new LinkedHashMap<>();
 
         for (String[] row : diffs) {
             String rec = row[0];
-            String sq = row[1].length() == 0 ? "—" : row[1];
+            String sq = row[1].isEmpty() ? "—" : row[1];
             Map<String, List<String[]>> perRec = grouped.get(rec);
             if (perRec == null) {
-                perRec = new LinkedHashMap<String, List<String[]>>();
+                perRec = new LinkedHashMap<>();
                 grouped.put(rec, perRec);
             }
             List<String[]> perSq = perRec.get(sq);
             if (perSq == null) {
-                perSq = new ArrayList<String[]>();
+                perSq = new ArrayList<>();
                 perRec.put(sq, perSq);
             }
             perSq.add(row);
@@ -191,7 +191,7 @@ public class CsvComparatorRegression {
         LOGGER.println("───────────────────────────────");
 
         int total = 0;
-        Set<String> squaresWithDiffs = new TreeSet<String>();
+        Set<String> squaresWithDiffs = new TreeSet<>();
 
         for (Map.Entry<String, Map<String, List<String[]>>> recEntry : grouped.entrySet()) {
             LOGGER.println("Recording: " + recEntry.getKey());
@@ -234,17 +234,17 @@ public class CsvComparatorRegression {
     private static String buildKey(Map<String, String> r) {
         String rec = safe(r.get(RECORDING_NAME));
         String sq = r.containsKey(SQUARE_NUMBER) ? safe(r.get(SQUARE_NUMBER)) : "";
-        return sq.length() == 0 ? rec : rec + " - " + sq;
+        return sq.isEmpty() ? rec : rec + " - " + sq;
     }
 
     private static Map<String, List<Map<String, String>>> toMultiMap(List<Map<String, String>> rows) {
-        Map<String, List<Map<String, String>>> mm = new TreeMap<String, List<Map<String, String>>>();
+        Map<String, List<Map<String, String>>> mm = new TreeMap<>();
 
         for (Map<String, String> r : rows) {
             String key = buildKey(r);
             List<Map<String, String>> bucket = mm.get(key);
             if (bucket == null) {
-                bucket = new ArrayList<Map<String, String>>();
+                bucket = new ArrayList<>();
                 mm.put(key, bucket);
             }
             bucket.add(r);
@@ -267,7 +267,7 @@ public class CsvComparatorRegression {
 
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.length() == 0) continue;
+                if (line.isEmpty()) continue;
 
                 String[] vals = line.split(",", -1);
                 Map<String, String> row = new LinkedHashMap<>();
@@ -308,10 +308,10 @@ public class CsvComparatorRegression {
         return diffs;
     }
 
-    private static boolean emptyAndZeroEquiv(String a, String b) {
-        // kept here only if you still want a direct call; otherwise use RegressionRules
-        return RegressionRules.emptyAndZeroEquiv(a, b);
-    }
+//    private static boolean emptyAndZeroEquiv(String a, String b) {
+//        // kept here only if you still want a direct call; otherwise use RegressionRules
+//        return RegressionRules.emptyAndZeroEquiv(a, b);
+//    }
 
     public static void main(String[] args) {
         Path baseline;

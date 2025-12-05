@@ -94,7 +94,7 @@ public final class ProjectPathResolver {
      * Returns {@code null} if the user cancels folder selection.
      * </p>
      *
-     * @return a valid {@link Path} to the project root directory, or {@code null} if the user cancelled
+     * @return a valid {@link Path} to the project root directory, or {@code null} if the user canceled
      */
     public static Path getValidProjectPath() {
 
@@ -145,7 +145,7 @@ public final class ProjectPathResolver {
             return false;
         }
 
-        // Normalise Windows weirdness: trim whitespace, resolve canonical path
+        // Normalize Windows weirdness: trim whitespace, resolve canonical path
         try {
             projectPath = projectPath.toRealPath().normalize();
         } catch (Exception ignored) {
@@ -156,7 +156,7 @@ public final class ProjectPathResolver {
         Path confPath = projectPath.resolve(PAINT_CONFIGURATION_JSON);
 
         // Debugging output for Windows issues
-        String debugLevel = PaintPrefs.getString("Runtime", "Log Level", "INFO");
+//        String debugLevel = PaintPrefs.getString("Runtime", "Log Level", "INFO");
 
         PaintLogger.debugf("=== Project Folder Validation ===");
         PaintLogger.debugf("projectPath = [" + projectPath + "]");

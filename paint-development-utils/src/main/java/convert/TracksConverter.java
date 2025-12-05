@@ -3,14 +3,14 @@ package convert;
 import java.nio.file.*;
 import java.util.*;
 
-public final class TracksConverter implements CsvConverter {
+public final class TracksConverter {
 
-    private final Path inputDir;
+    //private final Path inputDir;
     private final Path inputFile;
     private final Path outputFile;
 
     public TracksConverter(Path inputDir) {
-        this.inputDir = inputDir;
+        //this.inputDir = inputDir;
         this.inputFile = inputDir.resolve("All Tracks.csv");
         this.outputFile = inputDir.resolve("Tracks.csv");
     }
@@ -87,34 +87,35 @@ public final class TracksConverter implements CsvConverter {
                 String val = r.get(oldH);
 
                 // Strip "-Threshold..." from Recording Name
-                if (newH.equals("Recording Name")) {
-                    row.put(newH, stripThresholdSuffix(val));
-                    continue;
-                }
+                switch (newH) {
+                    case "Recording Name":
+                        row.put(newH, stripThresholdSuffix(val));
+                        continue;
 
-                // INTEGER normalization
-                if (newH.equals("Number of Spots") ||
-                        newH.equals("Number of Gaps") ||
-                        newH.equals("Longest Gap")) {
 
-                    row.put(newH, toIntOrEmpty(val));
-                    continue;
-                }
+                        // INTEGER normalization
+                    case "Number of Spots":
+                    case "Number of Gaps":
+                    case "Longest Gap":
 
-                // DOUBLE normalization
-                if (newH.equals("Track Duration") ||
-                        newH.equals("Track X Location") ||
-                        newH.equals("Track Y Location") ||
-                        newH.equals("Track Displacement") ||
-                        newH.equals("Track Max Speed") ||
-                        newH.equals("Track Median Speed") ||
-                        newH.equals("Diffusion Coefficient") ||
-                        newH.equals("Diffusion Coefficient Ext") ||
-                        newH.equals("Total Distance") ||
-                        newH.equals("Confinement Ratio")) {
+                        row.put(newH, toIntOrEmpty(val));
+                        continue;
 
-                    row.put(newH, toDoubleOrEmpty(val));
-                    continue;
+
+                        // DOUBLE normalization
+                    case "Track Duration":
+                    case "Track X Location":
+                    case "Track Y Location":
+                    case "Track Displacement":
+                    case "Track Max Speed":
+                    case "Track Median Speed":
+                    case "Diffusion Coefficient":
+                    case "Diffusion Coefficient Ext":
+                    case "Total Distance":
+                    case "Confinement Ratio":
+
+                        row.put(newH, toDoubleOrEmpty(val));
+                        continue;
                 }
 
                 // Default

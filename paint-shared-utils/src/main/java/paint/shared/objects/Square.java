@@ -148,24 +148,24 @@ public class Square {
         this.y1             = round(y1, 2);
     }
 
-    /**
-     * Automatically computes square coordinates based on a grid layout.
-     */
-    public Square(int squareNumber, int nrSquares) {
-        int    perRow = (int) Math.sqrt(nrSquares);
-        double width  = IMAGE_WIDTH / perRow;
-        double height = IMAGE_HEIGHT / perRow;
-
-        initialiseDoublesToNaN(this);
-
-        colNumber = squareNumber % perRow;
-        rowNumber = squareNumber / perRow;
-
-        x0 = round(colNumber * width, 2);
-        x1 = round((colNumber + 1) * width, 2);
-        y0 = round(rowNumber * height, 2);
-        y1 = round((rowNumber + 1) * height, 2);
-    }
+//    /**
+//     * Automatically computes square coordinates based on a grid layout.
+//     */
+//    public Square(int squareNumber, int nrSquares) {
+//        int    perRow = (int) Math.sqrt(nrSquares);
+//        double width  = IMAGE_WIDTH / perRow;
+//        double height = IMAGE_HEIGHT / perRow;
+//
+//        initialiseDoublesToNaN(this);
+//
+//        colNumber = squareNumber % perRow;
+//        rowNumber = squareNumber / perRow;
+//
+//        x0 = round(colNumber * width, 2);
+//        x1 = round((colNumber + 1) * width, 2);
+//        y0 = round(rowNumber * height, 2);
+//        y1 = round((rowNumber + 1) * height, 2);
+//    }
 
     /**
      * Computes the theoretical square area for a given grid size.
@@ -572,11 +572,11 @@ public class Square {
             this.type = type;
         }
 
-        /**
-         * Returns the zero-based index of the column.
-         */
-        public int index() {
-            return ordinal();
-        }
+//        /**
+//         * Returns the zero-based index of the column.
+//         */
+//        public int index() {
+//            return ordinal();
+//        }
     }
 }

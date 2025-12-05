@@ -3,14 +3,14 @@ package convert;
 import java.nio.file.Path;
 import java.util.*;
 
-public final class SquaresConverter implements CsvConverter {
+public final class SquaresConverter {
 
-    private final Path inputDir;
+//    private final Path inputDir;
     private final Path inputFile;
     private final Path outputFile;
 
     public SquaresConverter(Path inputDir) {
-        this.inputDir = inputDir;
+//        this.inputDir = inputDir;
         this.inputFile = inputDir.resolve("All Squares.csv");
         this.outputFile = inputDir.resolve("Squares.csv");
     }
@@ -96,12 +96,11 @@ public final class SquaresConverter implements CsvConverter {
         INDEX_MAP.put("Median Track Duration",               46);
     }
 
-    @Override
-    public List<String> getOutputHeader() {
-        return HEADER;
-    }
+//    @Override
+//    public List<String> getOutputHeader() {
+//        return HEADER;
+//    }
 
-    @Override
     public List<Map<String,String>> convert(List<Map<String,String>> src) {
 
         List<Map<String,String>> out = new ArrayList<>();
@@ -125,21 +124,22 @@ public final class SquaresConverter implements CsvConverter {
                 val = (val == null ? "" : val.trim());
 
                 // SPECIAL: Unique Key cleanup
-                if (newCol.equals("Unique Key")) {
-                    row.put("Unique Key", stripThresholdForUniqueKey(val));
-                    continue;
-                }
+                switch (newCol) {
+                    case "Unique Key":
+                        row.put("Unique Key", stripThresholdForUniqueKey(val));
+                        continue;
 
-                // SPECIAL: Recording Name cleanup
-                if (newCol.equals("Recording Name")) {
-                    row.put("Recording Name", stripThresholdFromRecordingName(val));
-                    continue;
-                }
 
-                // SPECIAL: Label Number must be a valid integer
-                if (newCol.equals("Label Number")) {
-                    row.put("Label Number", parseOrZero(val));
-                    continue;
+                        // SPECIAL: Recording Name cleanup
+                    case "Recording Name":
+                        row.put("Recording Name", stripThresholdFromRecordingName(val));
+                        continue;
+
+
+                        // SPECIAL: Label Number must be a valid integer
+                    case "Label Number":
+                        row.put("Label Number", parseOrZero(val));
+                        continue;
                 }
 
                 // Normal mapping
@@ -210,8 +210,8 @@ public final class SquaresConverter implements CsvConverter {
 
     /**
      * For UNIQUE KEY:
-     *  "221012-Exp-1-A1-1-threshold-5 - 0"  → "221012-Exp-1-A1-1-0"
-     *  "111111-Exp-11-A1-Threshold - 5 -1"  → "111111-Exp-11-A1-1"
+     *  "221012-Exp-1-A1-1-threshold-5 - 0" → "221012-Exp-1-A1-1-0"
+     *  "111111-Exp-11-A1-Threshold - 5 -1" → "111111-Exp-11-A1-1"
      */
     private static String stripThresholdForUniqueKey(String v) {
         if (v == null) return "";
