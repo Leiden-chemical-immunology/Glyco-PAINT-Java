@@ -4,15 +4,15 @@
 
 
 
-<h1 style="text-align:center" style="margin:0; font-size:2.2em;">Glyco‑PAINT Application Processing Pipeline</h1>
-<h3 style="text-align:center" style="margin:6px 0 18px; font-weight:400;">Java implementation with FiJi/TrackMate integration</h3>
+<h1 style="text-align:center; margin:0; font-size:2.2em;">Glyco‑PAINT Application Processing Pipeline</h1>
+<h3 style="text-align:center; margin:6px 0 18px; font-weight:400;">Java implementation with FiJi/TrackMate integration</h3>
 
 <hr style="width:120px; border:0; border-top:2px solid #555; margin:18px auto 24px;" />
 
-<p style="text-align:center" style="margin:0; font-size:1.1em;">Version 0.0.132 · Updated: 5 December 2025</p>
+<p style="text-align:center; margin:0; font-size:1.1em;">Version 0.0.132 · Updated: 5 December 2025</p>
 
-<p style="text-align:center" style="margin:0;"><strong>Authors:</strong> J. Bakker</p>
-<p style="text-align:center" style="margin:4px 0 18px; color:#555;">Leiden Chemical Immunology | LIC, Leiden University</p>
+<p style="text-align:center; margin:0;"><strong>Authors:</strong> J. Bakker</p>
+<p style="text-align:center; margin:4px 0 18px; color:#555;">Leiden Chemical Immunology | LIC, Leiden University</p>
 
 <p style="text-align:center" style="margin:0;">
   <strong>Code:</strong>
@@ -82,7 +82,7 @@ The code is available on GitHub:
 - [Python version](https://github.com/Leiden-chemical-immunology/Glyco-PAINT)  
 - [Java version](https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java)  
 
-A full [JavaDoc reference](https://leiden-chemical-immunology.github.io/Glyco-PAINT-Java/) is also published online.  
+A full [Javadoc reference](https://leiden-chemical-immunology.github.io/Glyco-PAINT-Java/) is also published online.  
 
 Example images are available on Zenodo as [Glyco-PAINT reference images](https://doi.org/10.5281/zenodo.17487086).
 
@@ -179,7 +179,7 @@ At the core of the Glyco-PAINT pipeline are two directories:
 
 If your Project Root contains 'Exp A', 'Exp B' and 'Exp C', then your Images Root must contain the same directories:
 
-Each **Experiment directory** in the Images Root should include for every Recording:
+Each **Experiment directory** in the Images Root should contain for every Recording:
 - A multi-frame recording (typically ~2000 frames).
 
 - A single-frame brightfield image. 
@@ -319,9 +319,9 @@ At the bottom of the dialog:
    Experiment Info files are checked for:
    - Correct column names
    - Numeric values in numeric columns
-   - Valid boolean values  (TRUE, 1, Yes, Y and T or FALSE, 0, No, N and F (all case-insensitive))
+   - Valid boolean values (TRUE, 1, Yes, Y and T or FALSE, 0, No, N and F (all case-insensitive))
    - Consistency across replicates
-   In addition the format of the Paint Configuration is checked.
+   In addition, the format of the Paint Configuration is checked.
 
 2. **TrackMate Parameter Setup**
    TrackMate parameters are read from the Paint Configuration file. If *Verbose* is enabled, they are displayed in the Paint Console.
@@ -332,7 +332,7 @@ At the bottom of the dialog:
 
 4. **Experiments and Recordings selection** 
    
-   Experiments are selected by checkboxes. Which recordings are processe is determined on the ciontebt of the Experiment Info files in the Experiment directories. Recordings for which the Process Flag is to TRUE are processed, others are ignored
+   Experiments are selected by checkboxes. Which recordings are processed is determined on the context of the Experiment Info files in the Experiment directories. Recordings for which the Process Flag is to TRUE are processed, others are ignored
    
    ![experiment-info](./Pictures/experiment-info.png) 
    
@@ -437,7 +437,7 @@ Squares are generated for all recordings in the selected experiments. The workfl
 
 ## Parameters
 
-Several parameters control square generation. These can be set  via the plugin dialog or in the Paint Configuration file:
+Several parameters control square generation. These can be set via the plugin dialog or in the Paint Configuration file:
 
 | Parameter                       | Description                                 | Default |
 |---------------------------------| ------------------------------------------- | ------- |
@@ -482,7 +482,7 @@ To calculate Tau for an entire recording, all tracks within squares that meet th
 - Neighbour state  
 
 ### Visual Feedback
-If the *Tau Fitting Plots* flag (in the *Generate Squares* section) is set to `true`, plots are generated and stored in the *Tau Fitting Plots* directory under tye Output directory of each experiment. Plots are grouped into *Failed* and *Success* subdirectories.
+If the *Tau Fitting Plots* flag (in the *Generate Squares* section) is set to `true`, plots are generated and stored in the *Tau Fitting Plots* directory under the Output directory of each experiment. Plots are grouped into *Failed* and *Success* subdirectories.
 
 <img src="./Pictures/tau-fit-plot.png" alt="tau-fit-plot" style="zoom:33%;" />
 
@@ -549,7 +549,7 @@ The initial dialog resembles the TrackMate plugin, allowing you to select the **
 
 ## Viewer Layout
 
-Once the Project, Images amd Experiment  selections have been made, the Viewer dialog opens with three panels:
+Once the Project, Images and Experiment selections have been made, the Viewer dialog opens with three panels:
 
 - **Left**: attributes of the current recording (criteria such as Min Density Ratio, Max Variability, Min R², Neighbour Mode).
 - **Center**: TrackMate image (left) and brightfield image (right). 
@@ -591,7 +591,7 @@ The **Assign Cells** dialog lets you group squares into cells (1–6) or mark th
 
 Assignments are saved in a **Square Override** file under the Viewer directory.
 
-When the **Overrides** checkbox (left bottom of the main dialog) is clicked, previously made cell assignments  are applied.
+When the **Overrides** checkbox (left bottom of the main dialog) is clicked, previously made cell assignments are applied.
 
 <div style="text-align:center;">
 <img src="./Pictures/assign-cells-dialog.png" alt="assign-cells-dialog" style="zoom:33%;" />
@@ -646,13 +646,13 @@ This file contains the metadata and instructions required to run the pipeline.
 
 Apply a Regex to select the files of interest. The Recordings will be derived from the name of the 'films'. The Brightfield files are expected to be present, but do not need to be additionally selected. 
 
-A skeleton Experiment Info file is created in the specified Project Root in an Experiment that has the name of the directory in which the imnages are contained.
+A skeleton Experiment Info file is created in the specified Project Root in an Experiment that has the name of the directory in which the images are contained.
 
-Additional informatioin needs to be provided in the skeleton file. An example of a file is shown below.
+Additional information needs to be provided in the skeleton file. An example of a file is shown below.
 
 - **Experiment Name** is a text string.
 - **Recording Name** is a text string. It is convenient to have Recording Names that contain the experiment name, but it is not required.
-- **Condition Number** is  an integer ranging from 1 to the number of unique conditions in the experiment. All Recordings with a given Condition Number, need to have identical Probe Name, Probe Type, Cell Type, Adjuvant and Concentration.  
+- **Condition Number** is an integer ranging from 1 to the number of unique conditions in the experiment. All Recordings with a given Condition Number, need to have identical Probe Name, Probe Type, Cell Type, Adjuvant and Concentration.  
 - **Replicate number** is an integer ranging from 1 to the number of replicates for a given condition. 
 - **Probe Name**, **Probe Type**, **Cell Type**, and **Adjuvant** are text strings.
 - **Process Flag** needs to contain a value that can be interpreted as a boolean. Uppercase or lower case is supported.
@@ -665,7 +665,7 @@ Additional informatioin needs to be provided in the skeleton file. An example of
 
 # Analysis in R
 
-The end result of the Glyco-PAINT pipeline is a set of CSV files in the **Project Root**:
+The result of the Glyco-PAINT pipeline is a set of CSV files in the **Project Root**:
 
 - **Squares** 
 - **Tracks** 
@@ -673,9 +673,9 @@ The end result of the Glyco-PAINT pipeline is a set of CSV files in the **Projec
 
 These files contain experiment metadata and calculation results.  They can be imported into **RStudio** (or any other analysis environment) for statistical processing and visualization.
 
-The data in the Squares, Tracks and Recordings files are a compilation from the last time you ran Generate Squares (either directly or throught the TrackMate plugin). You can verify manually by for example opening the Recording file in Excel, apply a filter and see which Experiments are included. Per Experiment only the recordings are included for which the Process Flag was set to True.
+The data in the Squares, Tracks, and Recordings files are a compilation from the last time you ran Generate Squares (either directly or through the TrackMate plugin). You can verify manually by, for example, opening the Recording file in Excel, apply a filter and see which Experiments are included. Per Experiment only the recordings are included for which the Process Flag was set to True.
 
-The values you selected for Min Required Density Ratio, Min Required R Squared, Max Allowable Variability and Neighbour mode are incorporated in the Recordings file. The changes you may have made in the Viewer with the **Selecting Squares** or **Assign Cells** options are not included in the data, but stored in separate **Square Override** and **Recording Override** files (in the Project Root) yet and still need to be incorporated.  A separate command line utility is avaiulable for that.
+The values you selected for Min Required Density Ratio, Min Required R Squared, Max Allowable Variability and Neighbour mode are incorporated in the Recordings file. The changes you may have made in the Viewer with the **Selecting Squares** or **Assign Cells** options are not included in the data, but stored in separate **Square Override** and **Recording Override** files (in the Project Root) yet and still need to be incorporated.  A separate command line utility is available for that.
 
 
 
@@ -684,7 +684,7 @@ The values you selected for Min Required Density Ratio, Min Required R Squared, 
 
 ## JavaDoc
 
-A complete technical reference of the Glyco-PAINT Java codebase is available through [JavaDocs](https://leiden-chemical-immunology.github.io/Glyco-PAINT-Java/apidocs/index.html). 
+A complete technical reference of the Glyco-PAINT Java codebase is available through [Javadocs](https://leiden-chemical-immunology.github.io/Glyco-PAINT-Java/apidocs/index.html). 
 The site lists all public classes, methods, and data types, along with documentation comments from the source code.
 
 - Intended for developers and advanced users. 
@@ -763,7 +763,7 @@ Visual Code Studio is a development environment in its own right, but also a ver
 
 ## Fiji crashes on wakeup on Mac 
 
-On macOS there is a known issue with Fiji crashing on wake up of a computer when a long Fiji job is running. This is caused by macOS' agressive power management affecting the GPU, OpenGL and UI threads, the use by Fiji  of Java 8.
+On macOS there is a known issue with Fiji crashing on wake up of a computer when a long Fiji job is running. This is caused by macOS' aggressive power management affecting the GPU, OpenGL, and UI threads, the use by Fiji of Java 8.
 
 The workaround is to prevent macOS to engage in the power management. A simple native macOS, SleepKeeper will prevent this. The app can be downloaded from the Paint distribution, but is not signed and macOS will complain about it.
 
@@ -790,7 +790,7 @@ The default CSV format on Windows is not compatible with the Glyco-PAINT pipelin
 The following steps are necessary to address this:
 
 - Open the Windows Start menu and select the Control Panel
-- Open thye Regional and Language Options
+- Open the Regional and Language Options
 - Select the Regional options
 - Search for List Separator and type a comma
 - Confirm the chances 

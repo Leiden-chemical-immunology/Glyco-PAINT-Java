@@ -39,7 +39,7 @@ No special system requirements are identified, other than a minimum memory of 16
 
 ## License
 
-The software is provided as is under the [MIT license](LICENSE).
+The software is provided as is under the [MIT license](https://opensource.org/licenses/MIT).
 
 
 
