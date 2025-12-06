@@ -397,6 +397,7 @@ public class ProjectDialogController {
      */
     @FunctionalInterface
     public interface QuadRunnable {
+        @SuppressWarnings("unused")
         void run(Runnable a, Runnable b, Runnable c, Runnable d);
     }
 }

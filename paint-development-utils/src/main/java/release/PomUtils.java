@@ -31,6 +31,7 @@ final class PomUtils {
         return null;
     }
 
+    @SuppressWarnings("SameParameterValue")
     static void removeSnapshotFromAllPoms(Path base) throws IOException {
         try (java.util.stream.Stream<Path> files = Files.walk(base)) {
             files.filter(p -> p.getFileName().toString().equals("pom.xml"))

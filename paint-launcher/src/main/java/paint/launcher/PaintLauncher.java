@@ -100,7 +100,7 @@ public class PaintLauncher {
                 Color boxColor = "Run TrackMate".equals(label) ? runColor : analyseColor;
                 comp = createSectionLabel(label, boxColor, Color.DARK_GRAY, standardSize);
             } else {
-                JButton btn = createStyledButton(label, accent, fg, bg, standardSize);
+                JButton btn = createStyledButton(label, accent, fg, standardSize);
                 btn.addActionListener(e -> launchApp(target, frame));
                 comp = btn;
             }
@@ -138,11 +138,10 @@ public class PaintLauncher {
      * @param text   The text to be displayed on the button.
      * @param accent The primary accent color for the button (used as the background color).
      * @param fg     The color for the button's text.
-     * @param bg     The color for the background (though not directly set here, it may be relevant for overridden methods).
      * @param size   The dimensions of the button.
      * @return A JButton instance with the applied styles and behavior.
      */
-    private static JButton createStyledButton(String text, Color accent, Color fg, Color bg, Dimension size) {
+    private static JButton createStyledButton(String text, Color accent, Color fg, Dimension size) {
         JButton btn = new JButton(text);
         btn.setPreferredSize(size);
         btn.setMaximumSize(size);
@@ -180,6 +179,7 @@ public class PaintLauncher {
      * @param size    The dimensions of the label (preferred, maximum, and minimum sizes).
      * @return A JLabel instance with the applied styles and specified properties.
      */
+    @SuppressWarnings("SameParameterValue")
     private static JLabel createSectionLabel(String text, Color bgColor, Color fg, Dimension size) {
         JLabel label = new JLabel(text, SwingConstants.CENTER);
         label.setOpaque(true);

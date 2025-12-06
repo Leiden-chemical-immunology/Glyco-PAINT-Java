@@ -23,6 +23,7 @@ class ConfigStore {
 
     private JsonObject root;  // lazily loaded
 
+    @SuppressWarnings("SameParameterValue")
     ConfigStore(Path path, Gson gson) {
         this.path = path;
         this.gson = gson;

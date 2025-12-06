@@ -162,6 +162,7 @@ public class ReformatPoms {
     }
 
     /** Java 8-compatible repeat for spaces. */
+    @SuppressWarnings("SameParameterValue")
     private static String repeat(char c, int count) {
         if (count <= 0) return "";
         char[] chars = new char[count];

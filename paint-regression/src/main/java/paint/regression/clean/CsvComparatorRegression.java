@@ -222,6 +222,7 @@ public class CsvComparatorRegression {
     // ============================================================
     //  UTILITIES
     // ============================================================
+    @SuppressWarnings("SameParameterValue")
     private static String join(Set<String> s, String sep) {
         StringBuilder sb = new StringBuilder();
         for (String x : s) {

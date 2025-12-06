@@ -252,6 +252,7 @@ public class ProjectPathsPanel {
     /**
      * Invoked when text changes in either root field; triggers the rootsChanged callback.
      */
+    @SuppressWarnings("unused")
     private void onTextChanged(DocumentEvent e) {
         rootsChanged.run();
     }
@@ -268,6 +269,7 @@ public class ProjectPathsPanel {
     }
 
     /** Handles the Browse action for the Project Root. */
+    @SuppressWarnings("unused")
     private void browseProjectRoot(ActionEvent e) {
         File dir = DirectoryChooser.chooseDirectory(panel, "Project Root", valueOrHome(projectRootField.getText()));
         if (dir != null && dir.isDirectory()) {
@@ -277,6 +279,7 @@ public class ProjectPathsPanel {
     }
 
     /** Handles the Browse action for the Images Root. */
+    @SuppressWarnings("unused")
     private void browseImagesRoot(ActionEvent e) {
         File dir = DirectoryChooser.chooseDirectory(panel, "Images Root", valueOrHome(imagesRootField.getText()));
         if (dir != null && dir.isDirectory()) {

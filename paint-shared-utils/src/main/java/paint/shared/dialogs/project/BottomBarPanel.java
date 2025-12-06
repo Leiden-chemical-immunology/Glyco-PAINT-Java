@@ -216,6 +216,7 @@ public class BottomBarPanel {
     /**
      * Event handler for the Verbose checkbox.
      */
+    @SuppressWarnings("unused")
     private void handleVerbose(ActionEvent e) {
         boolean value = verbose.isSelected();
         PaintRuntime.setVerbose(value);
@@ -225,6 +226,7 @@ public class BottomBarPanel {
     /**
      * Event handler for the optional Sweep checkbox.
      */
+    @SuppressWarnings("unused")
     private void handleSweep(ActionEvent e) {
         onSweep.accept(sweep.isSelected());
     }
@@ -232,6 +234,7 @@ public class BottomBarPanel {
     /**
      * Event handler for the OK button.
      */
+    @SuppressWarnings("unused")
     private void handleOk(ActionEvent e) {
         onOk.run();
     }
@@ -239,6 +242,7 @@ public class BottomBarPanel {
     /**
      * Event handler for the Cancel button.
      */
+    @SuppressWarnings("unused")
     private void handleCancel(ActionEvent e) {
         onCancel.run();
     }

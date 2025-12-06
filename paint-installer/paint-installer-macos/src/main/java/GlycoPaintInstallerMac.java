@@ -54,6 +54,7 @@ import java.awt.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -671,23 +672,23 @@ public class GlycoPaintInstallerMac {
      * @throws IOException on IO failure
      */
     private Optional<Path> findPluginJar(Path root) throws IOException {
-        // Prefer paint-fiji-plugin-*.jar
         try (java.util.stream.Stream<Path> s = Files.walk(root)) {
-            Optional<Path> preferred = s
+
+            List<Path> jars = s
                     .filter(Files::isRegularFile)
-                    .filter(p -> p.getFileName().toString().endsWith(".jar"))
-                    .filter(p -> p.getFileName().toString().startsWith("paint-fiji-plugin-"))
-                    .sorted((a, b) -> b.getFileName().toString().compareTo(a.getFileName().toString()))
-                    .findFirst();
-            if (preferred.isPresent()) return preferred;
-        }
-        // Fallback: any .jar
-        try (java.util.stream.Stream<Path> s2 = Files.walk(root)) {
-            return s2
-                    .filter(Files::isRegularFile)
-                    .filter(p -> p.getFileName().toString().endsWith(".jar"))
-                    .sorted((a, b) -> b.getFileName().toString().compareTo(a.getFileName().toString()))
-                    .findFirst();
+                    .filter(p -> p.toString().endsWith(".jar"))
+                    .sorted(Comparator.comparing((Path p) -> p.getFileName().toString()).reversed())
+                    .collect(java.util.stream.Collectors.toList());
+
+            // Prefer "paint-fiji-plugin-*.jar"
+            for (Path p : jars) {
+                if (p.getFileName().toString().startsWith("paint-fiji-plugin-")) {
+                    return Optional.of(p);
+                }
+            }
+
+            // Fallback: first jar if available
+            return jars.isEmpty() ? Optional.empty() : Optional.of(jars.get(0));
         }
     }
 

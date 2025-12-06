@@ -68,6 +68,7 @@ import static paint.shared.utils.ProjectPathResolver.getValidProjectPath;
  * PAINT environment. Handles initialization, configuration, dialog management,
  * and execution of TrackMate processes.
  */
+@SuppressWarnings("unused")
 @Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run")
 public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
 
@@ -157,6 +158,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
      *
      * @param message warning message text to display
      */
+    @SuppressWarnings("SameParameterValue")
     private void showWarning(String message) {
         JOptionPane optionPane = new JOptionPane(message, JOptionPane.WARNING_MESSAGE);
         JDialog warnDialog = optionPane.createDialog(null, "Warning");
@@ -164,6 +166,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
         warnDialog.setVisible(true);
     }
 
+    @SuppressWarnings("unused")
     private boolean runTrackMatePipeline(Project project, boolean sweepSelected, ProjectDialog projDialog) {
         PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - experiments (1): %s", project.getExperimentNames());
         if (running) {

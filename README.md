@@ -27,7 +27,7 @@ The current version of the pipeline is a Java rewrite of the first pipeline writ
 
 ## Software environment 
 
-The software has been tested on a MacBook M3 Max with MacOS 26. 
+The software has been tested on a MacBook M3 Max with macOS 26. 
 
 
 

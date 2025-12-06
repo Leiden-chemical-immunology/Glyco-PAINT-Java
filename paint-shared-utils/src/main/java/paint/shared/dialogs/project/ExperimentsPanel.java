@@ -209,6 +209,7 @@ public class ExperimentsPanel {
         onChanged.run();  // Notify listeners of new state
     }
 
+    @SuppressWarnings("unused")
     private void selectAllExperiments(ActionEvent e) {
         for (JCheckBox cb : boxes) {
             cb.setSelected(true);
@@ -216,6 +217,7 @@ public class ExperimentsPanel {
         onChanged.run();
     }
 
+    @SuppressWarnings("unused")
     private void clearAllExperiments(ActionEvent e) {
         for (JCheckBox cb : boxes) {
             cb.setSelected(false);

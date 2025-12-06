@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 public final class JsonValidator {
 
@@ -66,6 +67,7 @@ public final class JsonValidator {
                 + "Error: " + msg;
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static int extractInt(String msg, String key, String delim) {
         if (msg == null) {
             return 1;
@@ -105,9 +107,7 @@ public final class JsonValidator {
 
     private static String spaces(int n) {
         char[] arr = new char[Math.max(0, n)];
-        for (int i = 0; i < arr.length; i++) {
-            arr[i] = ' ';
-        }
+        Arrays.fill(arr, ' ');
         return new String(arr);
     }
 

@@ -329,6 +329,7 @@ public final class PaintLogger {
     /**
      * Java 8-compatible implementation of String.repeat(int).
      */
+    @SuppressWarnings("SameParameterValue")
     private static String repeat(String string, int count) {
         StringBuilder sb = new StringBuilder(string.length() * count);
         for (int i = 0; i < count; i++) {

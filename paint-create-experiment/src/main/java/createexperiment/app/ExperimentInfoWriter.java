@@ -135,6 +135,7 @@ public class ExperimentInfoWriter {
      * @param fileName desired file name
      * @return a unique path reference that does not overwrite existing files
      */
+    @SuppressWarnings("SameParameterValue")
     private static Path uniqueFile(Path dirPath, String fileName) {
         int    dot  = fileName.lastIndexOf('.');
         String stem = (dot >= 0) ? fileName.substring(0, dot) : fileName;

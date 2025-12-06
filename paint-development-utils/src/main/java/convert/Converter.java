@@ -5,6 +5,7 @@ import paint.shared.validate.ValidationResult;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static paint.shared.constants.PaintFileNames.*;
@@ -23,7 +24,7 @@ public class Converter {
         new ExperimentInfoConverter(inputDir).run();
         new SquaresConverter(inputDir).run();
 
-        List<String> experimentNames = Arrays.asList(
+        List<String> experimentNames = Collections.singletonList(
                 "221012 - v39"
         );
 

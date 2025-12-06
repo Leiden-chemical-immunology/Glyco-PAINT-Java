@@ -6,6 +6,7 @@ import java.util.*;
 import java.time.*;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 public final class GitHubManager {
 
     private final String repo; // owner/repo, e.g. "JJBakker/paint"

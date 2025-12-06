@@ -448,6 +448,7 @@ public class SquaresCsvComparatorPythonJava {
      * @param numeric set of field names to consider as numeric
      * @return map of field → effective precision
      */
+    @SuppressWarnings("SameParameterValue")
     private static Map<String, Integer> computeEffectivePrecisions(
             List<Map<String, String>> a, List<Map<String, String>> b, Set<String> numeric) {
         Map<String, Integer> res = new HashMap<>();

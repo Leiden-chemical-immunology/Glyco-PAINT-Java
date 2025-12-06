@@ -294,10 +294,12 @@ public class SquaresParamsPanel {
     // Added overloaded event handlers for method references (NO formatting changed above)
     // ------------------------------------------------------------------------------------
 
+    @SuppressWarnings("unused")
     private void handleChange(java.awt.event.ActionEvent e) {
         onChange.run();
     }
 
+    @SuppressWarnings("unused")
     private void handleChange(javax.swing.event.DocumentEvent e) {
         onChange.run();
     }

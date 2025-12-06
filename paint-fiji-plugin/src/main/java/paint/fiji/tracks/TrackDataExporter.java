@@ -235,6 +235,7 @@ public final class TrackDataExporter {
      * @param ifNull  fallback value when input is null
      * @return rounded value or fallback
      */
+    @SuppressWarnings("SameParameterValue")
     private static Double roundOr(Double v, int places, double ifNull) {
         return v == null ? ifNull : roundTo(v, places);
     }

@@ -12,7 +12,7 @@ final class RegressionLogger {
     private PrintStream file;
     private boolean fileLoggingEnabled = true;
 
-    RegressionLogger(PrintStream console) {
+    RegressionLogger(@SuppressWarnings("SameParameterValue") PrintStream console) {
         this.console = console;
     }
 

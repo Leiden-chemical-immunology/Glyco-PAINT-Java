@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.List;
 
+@SuppressWarnings("SameParameterValue")
 final class GitUtils {
     private GitUtils() {
     }

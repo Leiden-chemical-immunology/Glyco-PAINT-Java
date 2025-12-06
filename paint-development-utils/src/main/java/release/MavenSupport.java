@@ -64,6 +64,7 @@ final class MavenSupport {
         Thread.sleep(2000);
     }
 
+    @SuppressWarnings("SameParameterValue")
     static void buildAndCollectMacApp(Path moduleDir, String profile, Path destDir)
             throws IOException, InterruptedException {
 
