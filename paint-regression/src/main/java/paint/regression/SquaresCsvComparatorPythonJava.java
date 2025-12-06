@@ -123,9 +123,6 @@ public class SquaresCsvComparatorPythonJava {
      */
     private static final Set<String> NUMERIC_FIELDS = new HashSet<>(NUMERIC_FIELDS_LIST);
 
-    // These fields are used for counting and collecting results
-//    Set<String> squaresWithDiffs = new HashSet<>();
-
     /**
      * Default rounding precision if nothing better is detected.
      */

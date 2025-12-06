@@ -308,11 +308,6 @@ public class CsvComparatorRegression {
         return diffs;
     }
 
-//    private static boolean emptyAndZeroEquiv(String a, String b) {
-//        // kept here only if you still want a direct call; otherwise use RegressionRules
-//        return RegressionRules.emptyAndZeroEquiv(a, b);
-//    }
-
     public static void main(String[] args) {
         Path baseline;
         Path testfile;

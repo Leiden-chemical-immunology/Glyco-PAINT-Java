@@ -155,9 +155,6 @@ public final class ProjectPathResolver {
         // Build expected Experiment Info path
         Path confPath = projectPath.resolve(PAINT_CONFIGURATION_JSON);
 
-        // Debugging output for Windows issues
-//        String debugLevel = PaintPrefs.getString("Runtime", "Log Level", "INFO");
-
         PaintLogger.debugf("=== Project Folder Validation ===");
         PaintLogger.debugf("projectPath = [" + projectPath + "]");
         PaintLogger.debugf("confPath    = [" + confPath + "]");

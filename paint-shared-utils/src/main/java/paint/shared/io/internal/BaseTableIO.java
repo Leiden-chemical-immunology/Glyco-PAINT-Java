@@ -118,25 +118,6 @@ abstract class BaseTableIO {
     // CSV READING WITH SCHEMA ENFORCEMENT
     // ───────────────────────────────────────────────────────────────────────────────
 
-//    /**
-//     * Builds a {@link CsvReadOptions} instance enforcing the provided column types.
-//     *
-//     * <p>Note: this is primarily used by subclasses that choose to let
-//     * Tablesaw perform direct type parsing. {@link #readCsvWithSchema(Path, String[], ColumnType[], boolean)}
-//     * provides a more robust two-phase import that first reads as strings and
-//     * then performs controlled conversion.</p>
-//     *
-//     * @param csvPath  path to the CSV file
-//     * @param colTypes expected column types
-//     * @return a configured {@link CsvReadOptions} instance
-//     */
-//    protected CsvReadOptions buildCsvReadOptions(Path csvPath, ColumnType[] colTypes) {
-//        return CsvReadOptions.builder(csvPath.toFile())
-//                             .header(true)
-//                             .columnTypes(colTypes)
-//                             .build();
-//    }
-
     /**
      * Reads a CSV file into a {@link Table} with a known schema and validates its
      * header and types.
@@ -348,36 +329,6 @@ abstract class BaseTableIO {
         }
         return errors;
     }
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // APPEND / MERGE OPERATIONS
-    // ───────────────────────────────────────────────────────────────────────────────
-
-//    /**
-//     * Appends all rows from {@code source} into {@code target} in place, enforcing
-//     * a strict schema match (same column count and identical column names/order).
-//     *
-//     * <p>Subclasses may provide schema-aware versions that iterate over known
-//     * schema columns, but this generic implementation is useful for simple
-//     * cases where both tables are known to share a schema.</p>
-//     *
-//     * @param target destination table
-//     * @param source source table
-//     */
-//    void appendInPlace(Table target, Table source) {
-//        if (target.columnCount() != source.columnCount()) {
-//            throw new IllegalArgumentException("Cannot append: column count mismatch ("
-//                                                       + target.columnCount() + " vs " + source.columnCount() + ")");
-//        }
-//        for (int i = 0; i < target.columnCount(); i++) {
-//            if (!target.column(i).name().equals(source.column(i).name())) {
-//                throw new IllegalArgumentException("Cannot append: schema mismatch at column " + i
-//                                                           + " (" + target.column(i).name() + " vs "
-//                                                           + source.column(i).name() + ")");
-//            }
-//        }
-//        target.append(source);
-//    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // CSV WRITING

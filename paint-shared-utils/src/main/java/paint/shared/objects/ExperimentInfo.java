@@ -222,21 +222,6 @@ public class ExperimentInfo {
         this.threshold = threshold;
     }
 
-//    public List<Square> getSquares() {
-//        return squares;
-//    }
-
-//    public void setSquares(List<Square> squares) {
-//        this.squares = squares;
-//    }
-
-//    public List<Track> getTracks() {
-//        return tracks;
-//    }
-
-//    public void setTracks(List<Track> tracks) {
-//        this.tracks = tracks;
-//    }
 
     /**
      * Returns a human-readable summary of this ExperimentInfo, useful
@@ -292,12 +277,5 @@ public class ExperimentInfo {
             this.header = header;
             this.type = type;
         }
-
-//        /**
-//         * Returns the column’s position in the schema.
-//         */
-//        public int index() {
-//            return ordinal();
-//        }
     }
 }

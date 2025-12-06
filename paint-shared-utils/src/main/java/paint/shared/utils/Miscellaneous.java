@@ -151,33 +151,6 @@ public final class Miscellaneous {
         }
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // BOOLEAN VALUE UTILITIES
-    // ───────────────────────────────────────────────────────────────────────────────
-
-//    /**
-//     * Evaluates a string as a boolean. Supports variations such as
-//     * {@code "true", "yes", "y", "1"} for {@code true} and
-//     * {@code "false", "no", "n", "0"} for {@code false}.
-//     * Invalid values log an error via {@link PaintLogger}.
-//     *
-//     * @param value input string
-//     * @return boolean interpretation of the input
-//     */
-//    public static boolean isBooleanValue(String value) {
-//        if (value.equals("true") || value.equals("1") ||
-//                value.equals("yes") || value.equals("y") || value.equals("t")) {
-//            return true;
-//        } else if (value.equals("false") || value.equals("0") ||
-//                value.equals("no") || value.equals("n") || value.equals("f")) {
-//            return false;
-//        } else {
-//            PaintLogger.errorf("Invalid boolean value: %s", value);
-//            return false;
-//        }
-//    }
-
-
     public static void initialiseDoublesToNaN(Object target) {
         for (Field field : target.getClass().getDeclaredFields()) {
             if (field.getType() == double.class) {

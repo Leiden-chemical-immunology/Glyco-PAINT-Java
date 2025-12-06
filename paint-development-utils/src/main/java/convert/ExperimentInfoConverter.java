@@ -6,12 +6,10 @@ import java.util.*;
 
 public final class ExperimentInfoConverter {
 
-//    private final Path inputDir;
     private final Path inputFile;
     private final Path outputFile;
 
     public ExperimentInfoConverter(Path inputDir) {
-//        this.inputDir = inputDir;
         this.inputFile = inputDir.resolve("Experiment Info - Python.csv");
         this.outputFile = inputDir.resolve("Experiment Info.csv");
     }
@@ -51,11 +49,6 @@ public final class ExperimentInfoConverter {
         INDEX_MAP.put("Process Flag",       13);
         INDEX_MAP.put("Threshold",          12);
     }
-
-//    @Override
-//    public List<String> getOutputHeader() {
-//        return HEADER;
-//    }
 
     public List<Map<String,String>> convert(List<Map<String,String>> src) {
 

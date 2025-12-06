@@ -7,12 +7,10 @@ import java.util.*;
 
 public final class RecordingsConverter {
 
-//    private final Path inputDir;
     private final Path inputFile;
     private final Path outputFile;
 
     public RecordingsConverter(Path inputDir) {
-//        this.inputDir = inputDir;
         this.inputFile = inputDir.resolve("All Recordings.csv");
         this.outputFile = inputDir.resolve("Recordings.csv");
     }
@@ -81,11 +79,6 @@ public final class RecordingsConverter {
     static {
         INDEX_MAP.put("Number of Tracks in Background", 15);
     }
-
-//    @Override
-//    public List<String> getOutputHeader() {
-//        return HEADER;
-//    }
 
     public List<Map<String,String>> convert(List<Map<String,String>> src) {
 

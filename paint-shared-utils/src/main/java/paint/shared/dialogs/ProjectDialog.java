@@ -86,19 +86,16 @@ public class ProjectDialog {
         boolean run(Project project);
     }
 
-    private final JDialog       dialog;
-    private final DialogMode    mode;
-
-    private Path                projectPath;
-    private CalculationCallback calculationCallback;
-    private volatile boolean    cancelled     = false;
-    private volatile Thread     workerThread;
-//    private boolean             workerStarted = false;
-
-    private final ProjectPathsPanel  projectPathsPanel;
-    private final SquaresParamsPanel squaresParamsPanel;
-    private final ExperimentsPanel   experimentsPanel;
-    private final BottomBarPanel     bottomBarPanel;
+    private final    JDialog             dialog;
+    private final    DialogMode          mode;
+    private          Path                projectPath;
+    private          CalculationCallback calculationCallback;
+    private volatile boolean             cancelled = false;
+    private volatile Thread              workerThread;
+    private final    ProjectPathsPanel   projectPathsPanel;
+    private final    SquaresParamsPanel  squaresParamsPanel;
+    private final    ExperimentsPanel    experimentsPanel;
+    private final    BottomBarPanel      bottomBarPanel;
 
     public ProjectDialog(Frame owner, Path initialProjectPath, DialogMode mode) {
         this.mode = mode;

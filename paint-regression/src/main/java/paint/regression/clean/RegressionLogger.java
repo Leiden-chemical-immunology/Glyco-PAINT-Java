@@ -25,14 +25,6 @@ final class RegressionLogger {
         println("");
     }
 
-//    void disableFileLogging() {
-//        fileLoggingEnabled = false;
-//    }
-
-//    void enableFileLoggingToCurrentFile() {
-//        fileLoggingEnabled = true;
-//    }
-
     void println(String msg) {
         console.println(msg);
         if (file != null && fileLoggingEnabled) {
@@ -46,13 +38,6 @@ final class RegressionLogger {
             file.printf(fmt, args);
         }
     }
-
-//    void flush() {
-//        console.flush();
-//        if (file != null && fileLoggingEnabled) {
-//            file.flush();
-//        }
-//    }
 
     /**
      * Compare the two latest log files in the given directory.

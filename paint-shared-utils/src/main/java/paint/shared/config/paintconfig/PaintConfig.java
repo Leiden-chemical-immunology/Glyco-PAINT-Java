@@ -190,17 +190,6 @@ public class PaintConfig {
         }
     }
 
-
-//    public Set<String> keys(String section) {
-//        JsonObject sec = getSection(section);
-//        return (sec != null) ? sec.keySet() : Collections.emptySet();
-//    }
-
-
-//    public JsonObject getJson() {
-//        return store.root();
-//    }
-
     @Override public String toString() {
         return GSON.toJson(store.root());
     }

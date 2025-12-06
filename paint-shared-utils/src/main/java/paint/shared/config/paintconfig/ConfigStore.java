@@ -117,22 +117,4 @@ class ConfigStore {
         return created;
     }
 
-//    void removeSection(String section) {
-//        ensureLoaded(null);
-//        String toRemove = null;
-//        for (String s : root.keySet()) {
-//            if (s.equalsIgnoreCase(section)) {
-//                toRemove = s;
-//                break;
-//            }
-//        }
-//        if (toRemove != null) {
-//            root.remove(toRemove);
-//        }
-//    }
-
-//    Set<String> sections() {
-//        ensureLoaded(null);
-//        return root.keySet();
-//    }
 }

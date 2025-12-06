@@ -5,12 +5,10 @@ import java.util.*;
 
 public final class SquaresConverter {
 
-//    private final Path inputDir;
     private final Path inputFile;
     private final Path outputFile;
 
     public SquaresConverter(Path inputDir) {
-//        this.inputDir = inputDir;
         this.inputFile = inputDir.resolve("All Squares.csv");
         this.outputFile = inputDir.resolve("Squares.csv");
     }
@@ -95,11 +93,6 @@ public final class SquaresConverter {
         INDEX_MAP.put("Total Track Duration",                45);
         INDEX_MAP.put("Median Track Duration",               46);
     }
-
-//    @Override
-//    public List<String> getOutputHeader() {
-//        return HEADER;
-//    }
 
     public List<Map<String,String>> convert(List<Map<String,String>> src) {
 

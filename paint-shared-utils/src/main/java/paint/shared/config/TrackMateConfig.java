@@ -205,20 +205,4 @@ public class TrackMateConfig {
                 "                  Allow Track Merging             = "  + allowTrackMerging + "\n" +
                 "                  Merging Max Distance            = "  + mergingMaxDistance + "\n";
     }
-
-//    /**
-//     * Writes the given TrackMateConfig to the specified file path as a structured string.
-//     *
-//     * @param trackMateConfig the configuration to write
-//     * @param filePath        the path of the file to write the configuration to
-//     */
-//    public static void trackMateConfigToFile(TrackMateConfig trackMateConfig, Path filePath) {
-//        String formattedString = trackMateConfig.toString();
-//
-//        try {
-//            Files.write(filePath, formattedString.getBytes(StandardCharsets.UTF_8));
-//        } catch (IOException e) {
-//            // Intentionally left blank; log an error if desired
-//        }
-//    }
 }

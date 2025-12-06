@@ -87,52 +87,6 @@ public class Track {
     /** Creates an empty, uninitialized track. */
     public Track() { }
 
-//    /**
-//     * Fully initializes a {@code Track} with all metadata and motion parameters.
-//     */
-//    public Track(String uniqueKey,
-//            String experimentName,
-//            String recordingName,
-//            int trackId,
-//            int numberOfSpots,
-//            int numberOfGaps,
-//            int longestGap,
-//            double trackDuration,
-//            double trackXLocation,
-//            double trackYLocation,
-//            double trackDisplacement,
-//            double trackMaxSpeed,
-//            double trackMedianSpeed,
-//            double diffusionCoefficient,
-//            double diffusionCoefficientExt,
-//            double totalDistance,
-//            double confinementRatio,
-//            int squareNumber,
-//            int labelNumber) {
-//
-//        initialiseDoublesToNaN(this);
-//
-//        this.uniqueKey = uniqueKey;
-//        this.experimentName = experimentName;
-//        this.recordingName = recordingName;
-//        this.trackId = trackId;
-//        this.numberOfSpots = numberOfSpots;
-//        this.numberOfGaps = numberOfGaps;
-//        this.longestGap = longestGap;
-//        this.trackDuration = trackDuration;
-//        this.trackXLocation = trackXLocation;
-//        this.trackYLocation = trackYLocation;
-//        this.trackDisplacement = trackDisplacement;
-//        this.trackMaxSpeed = trackMaxSpeed;
-//        this.trackMedianSpeed = trackMedianSpeed;
-//        this.diffusionCoefficient = diffusionCoefficient;
-//        this.diffusionCoefficientExt = diffusionCoefficientExt;
-//        this.totalDistance = totalDistance;
-//        this.confinementRatio = confinementRatio;
-//        this.squareNumber = squareNumber;
-//        this.labelNumber = labelNumber;
-//    }
-
     public String getUniqueKey() {
         return uniqueKey;
     }
@@ -340,12 +294,5 @@ public class Track {
             this.header = header;
             this.type = type;
         }
-
-//        /**
-//         * Returns the zero-based column index.
-//         */
-//        public int index() {
-//            return ordinal();
-//        }
     }
 }

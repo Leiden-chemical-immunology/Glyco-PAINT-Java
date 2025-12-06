@@ -185,19 +185,6 @@ public final class PaintLogger {
         }
     }
 
-//    /**
-//     * Closes the current log writer if open.
-//     */
-//    public static void close() {
-//        if (writer != null) {
-//            try {
-//                writer.close();
-//            } catch (IOException ignored) {
-//                // Deliberately empty
-//            }
-//        }
-//        initialised = false;
-//    }
 
     // ───────────────────────────────────────────────────────────────────────────────
     // CORE LOGGING

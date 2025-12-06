@@ -63,18 +63,6 @@ import static paint.shared.dialogs.ProjectDialog.DialogMode;
  */
 public class ProjectDialogController {
 
-//    /**
-//     * Factory for WindowAdapter that triggers a run() call on window close.
-//     */
-//    public static WindowAdapter onWindowClosing(Runnable action) {
-//        return new WindowAdapter() {
-//            @Override
-//            public void windowClosing(WindowEvent e) {
-//                action.run();
-//            }
-//        };
-//    }
-
     private final DialogMode          mode;
     private final JDialog             dialog;
     private final PaintConfig         paintConfig;

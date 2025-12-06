@@ -165,12 +165,6 @@ public class BottomBarPanel {
         cancelBtn.setEnabled(enabled);
     }
 
-//    /** Explicit UI recovery used after Cancel-before-start cases */
-//    public void enableAll() {
-//        setEnabled(true);
-//        okBtn.setText("OK");
-//    }
-
     public void updateOkEnabled(boolean enabled) {
         okBtn.setEnabled(enabled);
     }

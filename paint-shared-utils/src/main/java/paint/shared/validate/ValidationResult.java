@@ -87,15 +87,6 @@ public final class ValidationResult {
         warnings.add(message);
     }
 
-//    /**
-//     * Adds an informational message to the validation result.
-//     *
-//     * @param message descriptive text of the info
-//     */
-//    public void addInfo(String message) {
-//        infos.add(message);
-//    }
-
     // ───────────────────────────────────────────────────────────────────────────────
     // ACCESSORS
     // ───────────────────────────────────────────────────────────────────────────────

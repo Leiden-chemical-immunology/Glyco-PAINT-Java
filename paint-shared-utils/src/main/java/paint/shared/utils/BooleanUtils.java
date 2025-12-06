@@ -105,49 +105,6 @@ public final class BooleanUtils {
         return (b == null ? null : b.toString());
     }
 
-//    /**
-//     * Parses a boolean, logging invalid values via PaintLogger
-//     * but returning false if invalid.
-//     */
-//    public static boolean isBooleanValue(String value) {
-//        Boolean b = classify(value);
-//        if (b == null) {
-//            // Avoid dependency cycle: use reflection or soft logging
-//            try {
-//                Class<?> logClass = Class.forName("paint.shared.logging.PaintLogger");
-//                logClass.getMethod("errorf", String.class, Object[].class)
-//                        .invoke(null, "Invalid boolean value: %s", new Object[]{value});
-//            } catch (Exception ignored) {
-//                // Logging unavailable early in bootstrap → safely ignore
-//            }
-//            return false;
-//        }
-//        return b.booleanValue();
-//    }
-
-//    /**
-//     * Returns Boolean.TRUE, Boolean.FALSE, or null if invalid.
-//     */
-//    public static Boolean parseBooleanOrNull(String value) {
-//        return classify(value);
-//    }
-
-//    /**
-//     * Returns parsed boolean, or false if invalid/null/empty.
-//     */
-//    public static boolean parseBooleanOrFalse(String value) {
-//        Boolean b = classify(value);
-//        return (b == null ? false : b.booleanValue());
-//    }
-
-//    /**
-//     * Returns parsed boolean, or a specified default if invalid.
-//     */
-//    public static boolean parseBooleanOrDefault(String value, boolean defaultValue) {
-//        Boolean b = classify(value);
-//        return (b == null ? defaultValue : b.booleanValue());
-//    }
-
     /**
      * Returns true if the given value is explicitly recognized as a TRUE token.
      * Returns false for FALSE tokens, null/empty, or invalid values.
