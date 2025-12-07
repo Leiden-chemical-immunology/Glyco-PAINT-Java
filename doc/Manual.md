@@ -220,8 +220,6 @@ These files store attributes such as:
 
 You generally won’t edit these directly, but they control global pipeline behavior.
 
-</div>
-
 
 
 

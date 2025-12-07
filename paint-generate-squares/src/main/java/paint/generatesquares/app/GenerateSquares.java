@@ -45,8 +45,6 @@
 
 package paint.generatesquares.app;
 
-// import static paint.shared.constants.PaintColumnNames.*;
-
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
 import paint.shared.objects.Project;

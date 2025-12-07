@@ -55,14 +55,12 @@ public class PlotUtils {
         g2.fillRect(0, 0, width, height);
 
         // --- Define margins and plotting area ---
-        // @format:off
         int marginLeft   = 70;
         int marginRight  = 40;
         int marginTop    = 40;
         int marginBottom = 60;
         int x0           = marginLeft;
         int y0           = height - marginBottom;
-        // @format:on
 
         // --- Determine axis ranges from data ---
         double minX = Arrays.stream(x).min().orElse(0);
@@ -112,14 +110,12 @@ public class PlotUtils {
             double prevY = m * Math.exp(-t * prevX) + b;
             for (int i = 1; i <= steps; i++) {
 
-                // @format:off
                 double cx = minX + (maxX - minX) * i / steps;
                 double cy = m * Math.exp(-t * cx) + b;
                 int x1    = (int) (marginLeft + (prevX - minX) * xScale);
                 int y1    = (int) (y0 - (prevY - minY) * yScale);
                 int x2    = (int) (marginLeft + (cx - minX) * xScale);
                 int y2    = (int) (y0 - (cy - minY) * yScale);
-                // @format:on
 
                 g2.drawLine(x1, y1, x2, y2);
                 prevX = cx;
