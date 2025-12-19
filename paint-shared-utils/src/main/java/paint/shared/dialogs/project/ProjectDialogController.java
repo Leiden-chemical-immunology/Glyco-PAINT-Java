@@ -85,7 +85,7 @@ public class ProjectDialogController {
     private final Runnable            clearCancelled;
 
     // A callback provided by ProjectDialog to re-enable ALL UI elements
-    private final Runnable enableAllUiFromDialog;
+    private final Runnable            enableAllUiFromDialog;
 
     // ----------------------------------------------------------------------------------------------------
     //  Constructor
@@ -144,7 +144,7 @@ public class ProjectDialogController {
         }
 
         // Sweep toggle
-        bottom.onVerboseToggle();
+        bottom.onVerboseToggle(this::onVerboseToggle);
         bottom.onSweepToggle(this::onSweepToggle);
 
         // OK/Cancel
@@ -328,6 +328,9 @@ public class ProjectDialogController {
         }
 
         updateOk();
+    }
+
+    private void onVerboseToggle(boolean selected) {
     }
 
     // ----------------------------------------------------------------------------------------------------

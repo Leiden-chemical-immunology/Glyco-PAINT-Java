@@ -66,10 +66,10 @@ public class BottomBarPanel {
     private static final      Runnable NO_OP = () -> {};
     private static final      Consumer<Boolean> NO_OP_BOOL = b -> {};
 
-    private Runnable          onOk = NO_OP;
-    private Runnable          onCancel = NO_OP;
+    private Runnable          onOk      = NO_OP;
+    private Runnable          onCancel  = NO_OP;
     private Consumer<Boolean> onVerbose = NO_OP_BOOL;
-    private Consumer<Boolean> onSweep = NO_OP_BOOL;
+    private Consumer<Boolean> onSweep   = NO_OP_BOOL;
 
     /**
      * Constructs the bottom bar for the given mode.
@@ -136,7 +136,7 @@ public class BottomBarPanel {
      * Registers a callback for when the Verbose checkbox toggles.
      * NOTE: Current implementation resets onVerbose to a no-op. This is called once by the controller.
      */
-    public void onVerboseToggle() {
+    public void onVerboseToggle(Consumer<Boolean> c) {
         this.onVerbose = v -> {};
     }
 
