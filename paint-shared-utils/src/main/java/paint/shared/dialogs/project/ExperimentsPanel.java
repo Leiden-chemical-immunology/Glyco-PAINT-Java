@@ -98,6 +98,7 @@ public class ExperimentsPanel {
 
             // Select and clear all experiments
             selectAll.addActionListener(this::selectAllExperiments);
+            clearAll.addActionListener(this::clearAllExperiments);
 
             panel.add(controls, BorderLayout.NORTH);
         }
@@ -187,6 +188,12 @@ public class ExperimentsPanel {
             group = null;
         }
 
+        String  selectedExperiment       = null;
+        boolean singleExperimentSelected = false;
+
+        if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_SINGLE) {
+            selectedExperiment = PaintConfig.getString("Single Trackmate Mode", "SelectedExperiment", "");
+        }
         // Scan subdirectories of the project root
         File[] experimentDirectories = (projectRoot != null ? projectRoot.toFile().listFiles() : null);
         if (experimentDirectories != null) {
@@ -207,7 +214,6 @@ public class ExperimentsPanel {
                     continue;
                 }
 
-
                 AbstractButton abstractButton;
                 if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_SINGLE) {
                     abstractButton = new JRadioButton(experimentDirectory.getName());
@@ -216,11 +222,37 @@ public class ExperimentsPanel {
                     abstractButton = new JCheckBox(experimentDirectory.getName());
                 }
 
-                boolean saved = PaintConfig.getBoolean("Experiments", experimentDirectory.getName(), false);
-                abstractButton.setSelected(saved);
-                abstractButton.addActionListener(e -> onChanged.run());
+                if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_BATCH) {
+                    boolean saved = PaintConfig.getBoolean("Experiments", experimentDirectory.getName(), false);
+                    abstractButton.setSelected(saved);
+                }
+                else {
+                    if (experimentDirectory.getName().equals(selectedExperiment)) {
+                        abstractButton.setSelected(true);
+                        singleExperimentSelected = true;
+                    }
+                }
+                abstractButton.addActionListener(e -> {
+                    if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_SINGLE
+                            && abstractButton.isSelected()) {
+
+                        PaintConfig.setString(
+                                "Single TrackMate Mode",
+                                "SelectedExperiment",
+                                abstractButton.getText()
+                        );
+                    }
+
+                    onChanged.run();
+                });
                 boxes.add(abstractButton);
                 list.add(abstractButton);
+            }
+
+            if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_SINGLE) {
+                if (!singleExperimentSelected && !boxes.isEmpty()) {
+                    boxes.get(0).setSelected(true);
+                }
             }
         }
 

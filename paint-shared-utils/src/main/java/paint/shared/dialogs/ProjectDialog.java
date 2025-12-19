@@ -193,10 +193,10 @@ public class ProjectDialog {
                 title = "Run TrackMate on Selected Recording";
                 break;
             case GENERATE_SQUARES:
-                title = "Generate Squares for Project - '\" + projectName + \"'\"";
+                title = "Generate Squares for Project - '" + projectName + "'";
                 break;
             case VIEWER:
-                title = "View Recordings for Project - '\" + projectName + \"'\"";
+                title = "View Recordings for Project - '" + projectName + "'";
                 break;
             default:
                 title = "";
