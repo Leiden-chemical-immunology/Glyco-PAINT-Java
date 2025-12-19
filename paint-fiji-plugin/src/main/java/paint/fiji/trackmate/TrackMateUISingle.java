@@ -47,12 +47,8 @@ import org.scijava.plugin.Plugin;
 import paint.generatesquares.app.GenerateSquaresHeadless;
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
-import paint.shared.utils.PaintPrefs;
-import paint.shared.utils.JarInfoLogger;
-import paint.shared.utils.PaintConsoleWindow;
-import paint.shared.utils.PaintLogger;
-import paint.shared.utils.PaintRuntime;
 import paint.shared.objects.Project;
+import paint.shared.utils.*;
 
 import javax.swing.*;
 import java.nio.file.Files;
@@ -69,8 +65,8 @@ import static paint.shared.utils.ProjectPathResolver.getValidProjectPath;
  * and execution of TrackMate processes.
  */
 @SuppressWarnings("unused")
-@Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run Batch")
-public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
+@Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run Single")
+public class TrackMateUISingle extends RunTrackMateOnProjectSweep implements Command {
 
     /**
      * Prevents concurrent execution of multiple TrackMate runs.
@@ -126,7 +122,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
         PaintRuntime.initialiseFromPrefs();
 
         // Log version and timestamp
-        JarInfoLogger.JarInfo info = JarInfoLogger.getJarInfo(TrackMateUI.class);
+        JarInfoLogger.JarInfo info = JarInfoLogger.getJarInfo(TrackMateUISingle.class);
         if (info != null) {
             PaintLogger.infof("Compilation date: %s", info.implementationDate);
             PaintLogger.infof("Version: %s", info.implementationVersion);
@@ -140,7 +136,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
         // ---------------------------------------------------------------------
         // Step 4 – Show experiment dialog
         // ---------------------------------------------------------------------
-        ProjectDialog projDialog = new ProjectDialog(null, projectPath, ProjectDialog.DialogMode.TRACKMATE_BATCH);
+        ProjectDialog projDialog = new ProjectDialog(null, projectPath, ProjectDialog.DialogMode.TRACKMATE_SINGLE);
         PaintConsoleWindow.closeOnDialogDispose(projDialog.getDialog());
 
         // ---------------------------------------------------------------------

@@ -161,7 +161,7 @@ public class ProjectDialogController {
 
     private void handleOk() {
 
-        if (mode == DialogMode.TRACKMATE) {
+        if (mode == DialogMode.TRACKMATE_BATCH) {
             final String img = paths.imagesRootText().trim();
             if (!new File(img).isDirectory()) {
                 JOptionPane.showMessageDialog(

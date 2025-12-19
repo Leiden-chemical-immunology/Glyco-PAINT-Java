@@ -33,6 +33,7 @@
 package paint.shared.dialogs.project;
 
 import paint.shared.config.paintconfig.PaintConfig;
+import paint.shared.dialogs.ProjectDialog;
 import paint.shared.utils.PaintLogger;
 
 import javax.swing.*;
@@ -61,9 +62,11 @@ import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
 public class ExperimentsPanel {
 
 
-    private final JPanel          panel = new JPanel(new BorderLayout());   // The root container panel (BorderLayout).
-    private final JPanel          list  = new JPanel();                     // The vertical list panel holding all experiment checkboxes.
-    private final List<JCheckBox> boxes = new ArrayList<>();                // Stores the dynamically generated experiment checkboxes.
+    private final ProjectDialog.DialogMode dialogMode;
+    private final JPanel                   panel = new JPanel(new BorderLayout());   // The root container panel (BorderLayout).
+    private final JPanel                   list  = new JPanel();                     // The vertical list panel holding all experiment checkboxes.
+    private final List<AbstractButton>     boxes = new ArrayList<>();                // Stores the dynamically generated experiment checkboxes or radiobuttons.
+    private ButtonGroup                    group;                                    // only used in TRACKMATE_SINGLE
 
     /** Callback invoked whenever the checkbox selection changes. */
     private Runnable onChanged = () -> {
@@ -75,7 +78,9 @@ public class ExperimentsPanel {
      *
      * @param projectRoot the root directory of the project
      */
-    public ExperimentsPanel(Path projectRoot) {
+    public ExperimentsPanel(Path projectRoot, ProjectDialog.DialogMode dialogMode) {
+
+        this.dialogMode = dialogMode;
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
 
         // Scrollable container for experiment checkboxes
@@ -84,17 +89,18 @@ public class ExperimentsPanel {
         scroll.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
         // Top control bar (Select All / Clear All)
-        JPanel  controls  = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton selectAll = new JButton("Select All");
-        JButton clearAll  = new JButton("Clear All");
-        controls.add(selectAll);
-        controls.add(clearAll);
+        if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_BATCH) {
+            JPanel  controls  = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            JButton selectAll = new JButton("Select All");
+            JButton clearAll  = new JButton("Clear All");
+            controls.add(selectAll);
+            controls.add(clearAll);
 
-        // Select and clear all experiments
-        selectAll.addActionListener(this::selectAllExperiments);
-        clearAll.addActionListener(this::clearAllExperiments);
+            // Select and clear all experiments
+            selectAll.addActionListener(this::selectAllExperiments);
 
-        panel.add(controls, BorderLayout.NORTH);
+            panel.add(controls, BorderLayout.NORTH);
+        }
         panel.add(scroll, BorderLayout.CENTER);
 
         // Initial load
@@ -127,8 +133,8 @@ public class ExperimentsPanel {
      * @return true if any checkbox is selected, false otherwise
      */
     public boolean anySelected() {
-        for (JCheckBox cb : boxes) {
-            if (cb.isSelected()) {
+        for (AbstractButton abstractButton : boxes) {
+            if (abstractButton.isSelected()) {
                 return true;
             }
         }
@@ -143,9 +149,9 @@ public class ExperimentsPanel {
     public List<String> selectedExperimentNames() {
 
         List<String> experimentNames = new ArrayList<>();
-        for (JCheckBox cb : boxes) {
-            if (cb.isSelected()) {
-                experimentNames.add(cb.getText());
+        for (AbstractButton abstractButton : boxes) {
+            if (abstractButton.isSelected()) {
+                experimentNames.add(abstractButton.getText());
             }
         }
         PaintLogger.debugf( "ExperimentsPanel.selectedExperimentNames: %s", experimentNames);
@@ -158,8 +164,8 @@ public class ExperimentsPanel {
      * @param enabled whether the checkboxes should be enabled
      */
     public void setEnabled(boolean enabled) {
-        for (JCheckBox checkBox : boxes) {
-            checkBox.setEnabled(enabled);
+        for (AbstractButton abstractButton : boxes) {
+            abstractButton.setEnabled(enabled);
         }
     }
 
@@ -173,6 +179,13 @@ public class ExperimentsPanel {
     public void reload(Path projectRoot) {
         list.removeAll();
         boxes.clear();
+
+        // Create checkbox/radiobutton for the experiment
+        if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_SINGLE) {
+            group = new ButtonGroup();
+        } else {
+            group = null;
+        }
 
         // Scan subdirectories of the project root
         File[] experimentDirectories = (projectRoot != null ? projectRoot.toFile().listFiles() : null);
@@ -194,13 +207,20 @@ public class ExperimentsPanel {
                     continue;
                 }
 
-                // Create checkbox for the experiment
-                JCheckBox cb = new JCheckBox(experimentDirectory.getName());
+
+                AbstractButton abstractButton;
+                if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_SINGLE) {
+                    abstractButton = new JRadioButton(experimentDirectory.getName());
+                    group.add(abstractButton);
+                } else {
+                    abstractButton = new JCheckBox(experimentDirectory.getName());
+                }
+
                 boolean saved = PaintConfig.getBoolean("Experiments", experimentDirectory.getName(), false);
-                cb.setSelected(saved);
-                cb.addActionListener(e -> onChanged.run());
-                boxes.add(cb);
-                list.add(cb);
+                abstractButton.setSelected(saved);
+                abstractButton.addActionListener(e -> onChanged.run());
+                boxes.add(abstractButton);
+                list.add(abstractButton);
             }
         }
 
@@ -211,16 +231,16 @@ public class ExperimentsPanel {
 
     @SuppressWarnings("unused")
     private void selectAllExperiments(ActionEvent e) {
-        for (JCheckBox cb : boxes) {
-            cb.setSelected(true);
+        for (AbstractButton abstractButton : boxes) {
+            abstractButton.setSelected(true);
         }
         onChanged.run();
     }
 
     @SuppressWarnings("unused")
     private void clearAllExperiments(ActionEvent e) {
-        for (JCheckBox cb : boxes) {
-            cb.setSelected(false);
+        for (AbstractButton abstractButton : boxes) {
+            abstractButton.setSelected(false);
         }
         onChanged.run();
     }

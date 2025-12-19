@@ -110,7 +110,7 @@ public class SquaresParamsPanel {
         int row = 0;
 
         // TRACKMATE mode: checkbox to run Generate Squares after TrackMate completes
-        if (mode == DialogMode.TRACKMATE) {
+        if (mode == DialogMode.TRACKMATE_BATCH) {
             runAfterTrackMate = new JCheckBox(
                     "Run Generate Squares after TrackMate",
                     PaintConfig.getBoolean(TRACKMATE, RUN_GENERATE_SQUARES_AFTER, true)
@@ -174,7 +174,7 @@ public class SquaresParamsPanel {
         maxVariabilityField.getDocument().addDocumentListener((SimpleDocumentListener) this::handleChange);
 
         // Initial enable state for controls in TRACKMATE mode
-        if (mode == DialogMode.TRACKMATE) {
+        if (mode == DialogMode.TRACKMATE_BATCH) {
             setSquaresEnabled(runAfterTrackMate.isSelected());
         }
     }
@@ -238,7 +238,7 @@ public class SquaresParamsPanel {
             PaintConfig.setDouble(GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY ,
                                   parseDouble(maxVariabilityField.getText(), 10.0));
         }
-        if (mode == DialogMode.TRACKMATE && runAfterTrackMate != null) {
+        if (mode == DialogMode.TRACKMATE_BATCH && runAfterTrackMate != null) {
             PaintConfig.setBoolean(TRACKMATE, RUN_GENERATE_SQUARES_AFTER, runAfterTrackMate.isSelected());
         }
         PaintConfig.instance().save();

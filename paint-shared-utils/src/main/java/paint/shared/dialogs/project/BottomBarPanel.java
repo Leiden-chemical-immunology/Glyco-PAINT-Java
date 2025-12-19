@@ -86,7 +86,7 @@ public class BottomBarPanel {
         left.add(verbose);
 
         // Sweep checkbox only exists in TRACKMATE mode
-        if (mode == DialogMode.TRACKMATE) {
+        if (mode == DialogMode.TRACKMATE_BATCH) {
             sweep = new JCheckBox("Sweep", false);
             left.add(sweep);
         } else {

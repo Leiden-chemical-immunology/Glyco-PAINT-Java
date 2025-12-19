@@ -72,7 +72,8 @@ public class ProjectDialog {
      * Operation mode for the dialog. Determines UI content and behavior.
      */
     public enum DialogMode {
-        TRACKMATE,
+        TRACKMATE_BATCH,
+        TRACKMATE_SINGLE,
         GENERATE_SQUARES,
         VIEWER
     }
@@ -97,13 +98,13 @@ public class ProjectDialog {
     private final    ExperimentsPanel    experimentsPanel;
     private final    BottomBarPanel      bottomBarPanel;
 
-    public ProjectDialog(Frame owner, Path initialProjectPath, DialogMode mode) {
-        this.mode = mode;
+    public ProjectDialog(Frame owner, Path initialProjectPath, DialogMode dialogMode) {
+        this.mode        = dialogMode;
         this.projectPath = initialProjectPath;
 
         PaintConfig paintConfig = PaintConfig.instance();
 
-        final String title = getDialogTitle(mode);
+        final String title = getDialogTitle(dialogMode);
 
         this.dialog = new JDialog(owner, title, false);
         this.dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -119,8 +120,12 @@ public class ProjectDialog {
         final JPanel root = new JPanel(new BorderLayout());
         final JPanel form = new JPanel(new BorderLayout());
 
-        projectPathsPanel  = new ProjectPathsPanel(mode, projectPath);
-        squaresParamsPanel = (mode == DialogMode.VIEWER) ? null : new SquaresParamsPanel(mode);
+        projectPathsPanel  = new ProjectPathsPanel(dialogMode, projectPath);
+        if (dialogMode == DialogMode.VIEWER || dialogMode == DialogMode.TRACKMATE_SINGLE) {
+            squaresParamsPanel = null;
+        } else {
+            squaresParamsPanel = new SquaresParamsPanel(dialogMode);
+        }
 
         if (squaresParamsPanel != null) {
             form.add(projectPathsPanel.component(), BorderLayout.NORTH);
@@ -129,12 +134,12 @@ public class ProjectDialog {
             form.add(projectPathsPanel.component(), BorderLayout.NORTH);
         }
 
-        experimentsPanel = new ExperimentsPanel(projectPath);
+        experimentsPanel = new ExperimentsPanel(projectPath, dialogMode);
 
         final JPanel center = new JPanel(new BorderLayout());
         center.add(experimentsPanel.component(), BorderLayout.CENTER);
 
-        bottomBarPanel = new BottomBarPanel(mode, PaintRuntime.isVerbose());
+        bottomBarPanel = new BottomBarPanel(dialogMode, PaintRuntime.isVerbose());
 
         root.add(form, BorderLayout.NORTH);
         root.add(center, BorderLayout.CENTER);
@@ -147,7 +152,7 @@ public class ProjectDialog {
         // ---------------------------------------------------------------------
         final ProjectDialogController controller =
                 new ProjectDialogController(
-                        mode,
+                        dialogMode,
                         dialog,
                         paintConfig,
                         this::getProjectPath,
@@ -178,11 +183,25 @@ public class ProjectDialog {
                         ? projectPath.getFileName().toString()
                         : "(none)";
 
-        return (mode == DialogMode.TRACKMATE)
-                ? "Run TrackMate on Project - '" + projectName + "'"
-                : (mode == DialogMode.VIEWER)
-                ? "View Recordings for Project - '" + projectName + "'"
-                : "Generate Squares for Project - '" + projectName + "'";
+        String title;
+
+        switch (mode) {
+            case TRACKMATE_BATCH:
+                title = "Run TrackMate Batch on Project - '" + projectName + "'";
+                break;
+            case TRACKMATE_SINGLE:
+                title = "Run TrackMate on Selected Recording";
+                break;
+            case GENERATE_SQUARES:
+                title = "Generate Squares for Project - '\" + projectName + \"'\"";
+                break;
+            case VIEWER:
+                title = "View Recordings for Project - '\" + projectName + \"'\"";
+                break;
+            default:
+                title = "";
+        }
+        return title;
     }
 
     // -------------------------------------------------------------------------
