@@ -126,7 +126,7 @@ public class RecordingControlsPanel {
         assignCellsButton      = new JButton("Assign Cells");
         playRecordingButton    = new JButton("Play Recording");
         exportImageButton      = new JButton("Export Image");
-        showSquaresButton      = new JButton("Show Squares");
+        showSquaresButton      = new JButton("Show Squares Data");
 
         for (JButton button : new JButton[]{
                 filterRecordingsButton,
