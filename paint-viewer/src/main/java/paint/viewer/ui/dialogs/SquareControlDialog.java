@@ -362,13 +362,6 @@ public class SquareControlDialog extends JDialog {
         slider.setLabelTable(table);
         slider.setPaintLabels(true);
 
-        // Manual snapping to step values (NOT to major ticks!)
-        slider.addChangeListener(e -> {
-            int raw = slider.getValue();
-            int snapped = Math.round(raw); // raw represents the step index
-            if (raw != snapped) slider.setValue(snapped);
-        });
-
         return slider;
     }
 
