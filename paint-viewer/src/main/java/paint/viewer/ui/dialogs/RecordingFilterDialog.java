@@ -141,8 +141,7 @@ public class RecordingFilterDialog extends JDialog {
         cancelButton.setMaximumSize(btnSize);
 
         applyButton.addActionListener(e -> {
-            cancelled = false;
-            dispose();
+            closeAction();
         });
 
         resetAllButton.addActionListener(e -> {
@@ -188,6 +187,15 @@ public class RecordingFilterDialog extends JDialog {
             updateAllListsFrom(filteredRecordings);
         }
         updateResetButtonStates();
+
+        // Make sure that pressing the red close button is doung the same as cancel
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                closeAction();
+            }
+        });
     }
 
     // ===== UI helpers =====
@@ -431,5 +439,10 @@ public class RecordingFilterDialog extends JDialog {
                 selections.get(adjuvantList),
                 selections.get(concentrationList)
         );
+    }
+
+    private void closeAction() {
+        cancelled = true;
+        dispose();
     }
 }

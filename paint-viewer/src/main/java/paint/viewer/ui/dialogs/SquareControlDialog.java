@@ -61,7 +61,7 @@ import static paint.shared.constants.PaintStringConstants.NEIGHBOUR_MODE;
  * viewer; pressing an Apply button commits and saves the configuration.
  */
 public class SquareControlDialog extends JDialog {
-//    private static final DecimalFormat ONE_DEC = new DecimalFormat("0.0");
+
     private final JSlider                         densityRatioSlider;
     private final JSlider                         variabilitySlider;
     private final JSlider                         rSquaredSlider;
@@ -225,8 +225,7 @@ public class SquareControlDialog extends JDialog {
             dispose();
         });
         cancelButton.addActionListener(e -> {
-            restoreOriginals();
-            dispose();
+            closeAction();
         });
 
         // ─────────────────────────────────────────────────────────────────────
@@ -243,6 +242,15 @@ public class SquareControlDialog extends JDialog {
 
         pack();
         setLocationRelativeTo(owner);
+
+        // Make sure that pressing the red close button is doung the same as cancel
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                closeAction();
+            }
+        });
     }
 
     /**
@@ -387,5 +395,10 @@ public class SquareControlDialog extends JDialog {
 
     private double getSliderDouble(JSlider slider, double min, double step) {
         return min + slider.getValue() * step;
+    }
+
+    private void closeAction() {
+        restoreOriginals();
+        dispose();
     }
 }
