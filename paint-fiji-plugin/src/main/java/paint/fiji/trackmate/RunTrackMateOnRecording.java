@@ -104,11 +104,11 @@ public class RunTrackMateOnRecording {
      *         or a cancellation result if aborted
      */
     public static TrackMateResults runTrackMateOnRecording(Path experimentPath,
-            Path imagesPath,
+            Path            imagesPath,
             TrackMateConfig trackMateConfig,
-            double threshold,
-            ExperimentInfo experimentInfoRecord,
-            ProjectDialog dialog) {
+            double          threshold,
+            ExperimentInfo  experimentInfoRecord,
+            ProjectDialog   dialog) {
 
         LocalDateTime start = LocalDateTime.now();
         DebugTools.setRootLevel("OFF");
