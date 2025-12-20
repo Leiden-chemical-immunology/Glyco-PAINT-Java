@@ -40,6 +40,7 @@ package paint.fiji.trackmate;
 
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
+import paint.shared.config.TrackMateConfig;
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
 import paint.shared.io.MainIOInterface;
@@ -56,6 +57,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static paint.fiji.trackmate.RunTrackMateOnRecording.runTrackMateOnRecording;
 import static paint.shared.utils.ProjectPathResolver.getValidProjectPath;
 
 /**
@@ -164,10 +166,6 @@ public class TrackMateUISingle implements Command {
     @SuppressWarnings("unused")
     private boolean runTrackMateSingle(Project project, ProjectDialog projDialog) {
 
-        PaintLogger.infof("runTrackMateSingle: ENTER (project=%s)",
-                          project != null ? project.getProjectRootPath() : "null");
-        System.out.println("DEBUG: runTrackMateSingle ENTER");
-
         if (running) {
             showWarning("TrackMate processing is already running.\nPlease wait until it finishes.");
             return false;
@@ -182,8 +180,8 @@ public class TrackMateUISingle implements Command {
         final Path   projectRoot       = project.getProjectRootPath();
         final Path   imagesPath        = project.getImagesRootPath();
         final String experimentName    = project.getExperimentNames().get(0);
-        String lastRecordingName = "";
-        int    lastThreshold     = 5;
+              String lastRecordingName = "";
+              int    lastThreshold     = 5;
 
         Path experimentPath = projectRoot.resolve(experimentName);
 
@@ -255,13 +253,41 @@ public class TrackMateUISingle implements Command {
         String recName  = recNameRef.get();
         int    threshold = (threshRef.get() != null) ? threshRef.get() : lastThreshold;
 
+        // Build TrackMate config (however you normally do this in your project)
+        final TrackMateConfig trackMateConfig = new TrackMateConfig(); // or TrackMateConfig.fromPaintConfig(), etc.
+
+        // Find the ExperimentInfo row for the chosen recording
+        ExperimentInfo experimentInfoRecord = null;
+        for (ExperimentInfo experimentInfo : infos) {
+            if (experimentInfo != null && experimentInfo.getRecordingName() != null) {
+                if (experimentInfo.getRecordingName().trim().equals(recName)) {
+                    experimentInfoRecord = experimentInfo;
+                    break;
+                }
+            }
+        }
+
+        Path imagePath = imagesPath.resolve(experimentName);
+
+        if (experimentInfoRecord == null) {
+            showWarning("Selected recording not found in ExperimentInfo.csv:\n" + recName);
+            return false;
+        }
+
         // ---------------------------------------------------------------------
         // Handle actions
         // ---------------------------------------------------------------------
         switch (actionRef.get()) {
             case CALCULATE:
-                // TODO: run TrackMate once for 'recName' with 'threshold'
                 PaintLogger.infof("TrackMate CALCULATE: recording=%s, threshold=%d", recName, threshold);
+                running = true;
+                runTrackMateOnRecording(experimentPath,
+                                        imagePath,
+                                        trackMateConfig,
+                                        threshold,
+                                        experimentInfoRecord,
+                                        projDialog);
+                running = false;
                 break;
 
             case SAVE:
