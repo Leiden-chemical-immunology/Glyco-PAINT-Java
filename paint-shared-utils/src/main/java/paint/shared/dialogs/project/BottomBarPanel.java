@@ -137,7 +137,7 @@ public class BottomBarPanel {
      * NOTE: Current implementation resets onVerbose to a no-op. This is called once by the controller.
      */
     public void onVerboseToggle(Consumer<Boolean> c) {
-        this.onVerbose = v -> {};
+        this.onVerbose = (c != null ? c : NO_OP_BOOL);
     }
 
     /**
