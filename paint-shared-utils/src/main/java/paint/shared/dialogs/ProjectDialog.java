@@ -291,7 +291,6 @@ public class ProjectDialog {
 
         runUiDisable.run();
         cancelled     = false;
-//        workerStarted = true;
 
         final Project project = buildProject();
 

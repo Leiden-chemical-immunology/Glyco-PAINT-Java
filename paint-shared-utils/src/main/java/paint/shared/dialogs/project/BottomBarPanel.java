@@ -79,18 +79,18 @@ public class BottomBarPanel {
         JPanel left  = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-        saveExperiments = new JCheckBox("Save Experiments", false);
         verbose         = new JCheckBox("Verbose", verboseDefault);
-
-        left.add(saveExperiments);
         left.add(verbose);
 
         // Sweep checkbox only exists in TRACKMATE mode
         if (mode == DialogMode.TRACKMATE_BATCH) {
-            sweep = new JCheckBox("Sweep", false);
+            sweep           = new JCheckBox("Sweep", false);
+            saveExperiments = new JCheckBox("Save Experiments", false);
             left.add(sweep);
+            left.add(saveExperiments);
         } else {
-            sweep = null;
+            sweep           = null;
+            saveExperiments = null;
         }
 
         okBtn     = new JButton("OK");
@@ -156,7 +156,9 @@ public class BottomBarPanel {
     public void setEnabled(boolean enabled) {
         panel.setEnabled(enabled);
 
-        saveExperiments.setEnabled(enabled);
+        if (saveExperiments != null) {
+            saveExperiments.setEnabled(enabled);
+        }
         verbose.setEnabled(enabled);
         if (sweep != null) {
             sweep.setEnabled(enabled);
