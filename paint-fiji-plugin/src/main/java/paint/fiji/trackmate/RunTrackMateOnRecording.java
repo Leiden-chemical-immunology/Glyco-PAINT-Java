@@ -297,7 +297,7 @@ public class RunTrackMateOnRecording {
                                   numberOfSpots, trackMateConfig.getMaxNumberOfSpotsInImage());
                 return cancelEarly(imp, impBrightfield);
             } else {
-                String numberOfSpotsString = " (" + numberOfSpots + " spots detected).";
+                String numberOfSpotsString = " (" + numberOfSpots + " spots detected) ";
                 PaintLogger.raw(numberOfSpotsString);
             }
 
@@ -331,6 +331,10 @@ public class RunTrackMateOnRecording {
                 PaintLogger.errorf("Unexpected error during TrackMate process: %s", e.getMessage());
                 return cancelEarly(imp, impBrightfield);
             }
+
+            int numberOfFilteredTracks = model.getTrackModel().nTracks(true);
+            String numberOfTracksString = " (" + numberOfFilteredTracks + " tracks detected) ";
+            PaintLogger.raw(numberOfTracksString);
 
             // -----------------------------------------------------------------
             // Step 5 – Visualization
@@ -385,7 +389,7 @@ public class RunTrackMateOnRecording {
             // -----------------------------------------------------------------
             int numberOfSpotsTotal     = model.getSpots().getNSpots(true);
             int numberOfTracks         = model.getTrackModel().nTracks(false);
-            int numberOfFilteredTracks = model.getTrackModel().nTracks(true);
+            // int numberOfFilteredTracks = model.getTrackModel().nTracks(true);
             int numberOfFrames         = imp.getNFrames();
 
             Duration duration = Duration.between(start, LocalDateTime.now());

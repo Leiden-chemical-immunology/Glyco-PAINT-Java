@@ -261,12 +261,12 @@ public class TrackMateUISingle implements Command {
     }
 
     private void handleCalculate(String recName,
-            int threshold,
+            int                  threshold,
             List<ExperimentInfo> infos,
-            Path experimentPath,
-            Path imagePath,
-            TrackMateConfig trackMateConfig,
-            ProjectDialog projDialog) throws Exception {
+            Path                 experimentPath,
+            Path                 imagePath,
+            TrackMateConfig      trackMateConfig,
+            ProjectDialog        projDialog) throws Exception {
 
         ExperimentInfo experimentInfoRecord = findExperimentInfoByRecording(infos, recName);
         if (experimentInfoRecord == null) {
@@ -274,6 +274,7 @@ public class TrackMateUISingle implements Command {
         }
 
         running = true;
+        PaintLogger.infof("   Recording '%s' started TrackMate processing with threshold %d.", infos.get(0).getRecordingName(), threshold);
         try {
             runTrackMateOnRecording(
                     experimentPath,
@@ -341,7 +342,9 @@ public class TrackMateUISingle implements Command {
             String p = preferred.trim();
             if (!p.isEmpty()) {
                 for (String r : recordingNames) {
-                    if (r != null && r.trim().equals(p)) return p;
+                    if (r != null && r.trim().equals(p)) {
+                        return p;
+                    }
                 }
             }
         }
@@ -353,7 +356,7 @@ public class TrackMateUISingle implements Command {
         if (experimentInfo == null) {
             return fallback;
         }
-        double threshold =  experimentInfo.getThreshold();
+        double threshold = experimentInfo.getThreshold();
         if (threshold < 1) {
             return 1;
         }

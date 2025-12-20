@@ -145,7 +145,7 @@ public class BottomBarPanel {
      * If null is passed, it resets to a no-op Boolean consumer.
      */
     public void onSweepToggle(Consumer<Boolean> c) {
-        this.onSweep = (c != null ? c : s -> {});
+        this.onSweep = (c != null ? c : NO_OP_BOOL);
     }
 
     /**
