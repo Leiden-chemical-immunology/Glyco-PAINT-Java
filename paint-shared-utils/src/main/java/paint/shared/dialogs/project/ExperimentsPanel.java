@@ -214,13 +214,29 @@ public class ExperimentsPanel {
                     continue;
                 }
 
+                final String experimentName = experimentDirectory.getName();
+
                 AbstractButton abstractButton;
                 if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_SINGLE) {
-                    abstractButton = new JRadioButton(experimentDirectory.getName());
+                    abstractButton = new JRadioButton(experimentName);
                     group.add(abstractButton);
                 } else {
-                    abstractButton = new JCheckBox(experimentDirectory.getName());
+                    abstractButton = new JCheckBox(experimentName);
                 }
+
+                abstractButton.addActionListener(e -> {
+                    if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_SINGLE
+                            && abstractButton.isSelected()) {
+
+                        PaintConfig.setString(
+                                "Single TrackMate Mode",
+                                "SelectedExperiment",
+                                experimentName
+                        );
+                    }
+
+                    onChanged.run();
+                });
 
                 if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_BATCH) {
                     boolean saved = PaintConfig.getBoolean("Experiments", experimentDirectory.getName(), false);
@@ -232,19 +248,7 @@ public class ExperimentsPanel {
                         singleExperimentSelected = true;
                     }
                 }
-                abstractButton.addActionListener(e -> {
-                    if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_SINGLE
-                            && abstractButton.isSelected()) {
 
-                        PaintConfig.setString(
-                                "Single TrackMate Mode",
-                                "SelectedExperiment",
-                                abstractButton.getText()
-                        );
-                    }
-
-                    onChanged.run();
-                });
                 boxes.add(abstractButton);
                 list.add(abstractButton);
             }
