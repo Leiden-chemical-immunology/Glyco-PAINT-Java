@@ -5,13 +5,12 @@
  *  PURPOSE:
  *    Provides the main interactive entry point for running TrackMate within
  *    the PAINT environment. Integrates configuration handling, experiment
- *    selection, and optional sweep or post-processing operations.
+ *    selection.
  *
  *  DESCRIPTION:
  *    • Runs TrackMate interactively through the Fiji plugin menu.
  *    • Validates project root and configuration state.
  *    • Displays a user dialog for selecting and running experiments.
- *    • Supports sweep configurations when enabled.
  *    • Optionally executes GENERATE_SQUARES after successful completion.
  *    • Ensures only one processing instance runs at a time.
  *
@@ -26,8 +25,6 @@
  *
  *  DEPENDENCIES:
  *    – paint.shared.utils.*, paint.shared.config.*
- *    – paint.generatesquares.GenerateSquaresHeadless
- *    – paint.fiji.trackmate.RunTrackMateOnProjectSweep
  *
  *  AUTHOR:
  *    Hans Bakker (jjabakker)
@@ -41,22 +38,24 @@
 
 package paint.fiji.trackmate;
 
-
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
-import paint.generatesquares.app.GenerateSquaresHeadless;
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
+import paint.shared.io.MainIOInterface;
+import paint.shared.objects.ExperimentInfo;
 import paint.shared.objects.Project;
 import paint.shared.utils.*;
 
 import javax.swing.*;
-import java.nio.file.Files;
+import java.awt.*;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
-import static paint.shared.constants.PaintFileNames.PAINT_SWEEP_CONFIGURATION_JSON;
 import static paint.shared.utils.ProjectPathResolver.getValidProjectPath;
 
 /**
@@ -66,7 +65,7 @@ import static paint.shared.utils.ProjectPathResolver.getValidProjectPath;
  */
 @SuppressWarnings("unused")
 @Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run Single")
-public class TrackMateUISingle extends RunTrackMateOnProjectSweep implements Command {
+public class TrackMateUISingle implements Command {
 
     /**
      * Prevents concurrent execution of multiple TrackMate runs.
@@ -141,7 +140,7 @@ public class TrackMateUISingle extends RunTrackMateOnProjectSweep implements Com
 
         // ---------------------------------------------------------------------
         // Step 5 – Handle OK action callback
-        projDialog.setCalculationCallback(project -> runTrackMatePipeline(project, projDialog.isSweepSelected(), projDialog));
+        projDialog.setCalculationCallback(project -> runTrackMateSingle(project, projDialog));
         projDialog.showDialog();
     }
 
@@ -163,57 +162,119 @@ public class TrackMateUISingle extends RunTrackMateOnProjectSweep implements Com
     }
 
     @SuppressWarnings("unused")
-    private boolean runTrackMatePipeline(Project project, boolean sweepSelected, ProjectDialog projDialog) {
-        PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - experiments (1): %s", project.getExperimentNames());
+    private boolean runTrackMateSingle(Project project, ProjectDialog projDialog) {
+
+        PaintLogger.infof("runTrackMateSingle: ENTER (project=%s)",
+                          project != null ? project.getProjectRootPath() : "null");
+        System.out.println("DEBUG: runTrackMateSingle ENTER");
+
         if (running) {
             showWarning("TrackMate processing is already running.\nPlease wait until it finishes.");
             return false;
         }
 
-        running = true;
+        // SINGLE mode expects exactly one experiment
+        if (project.getExperimentNames() == null || project.getExperimentNames().size() != 1) {
+            showWarning("Please select exactly one experiment.");
+            return false;
+        }
+
+        final Path   projectRoot       = project.getProjectRootPath();
+        final Path   imagesPath        = project.getImagesRootPath();
+        final String experimentName    = project.getExperimentNames().get(0);
+        String lastRecordingName = "";
+        int    lastThreshold     = 5;
+
+        Path experimentPath = projectRoot.resolve(experimentName);
+
+        List<ExperimentInfo> infos = MainIOInterface.readExperimentInfo(experimentPath);
+        if (infos == null || infos.isEmpty()) {
+            showWarning("No ExperimentInfo.csv found or it is empty for:\n" + experimentPath);
+            return false;
+        }
+
+        List<String> recordingNames = new ArrayList<>();
+        for (ExperimentInfo ei : infos) {
+            if (ei != null && ei.getRecordingName() != null && !ei.getRecordingName().trim().isEmpty()) {
+                recordingNames.add(ei.getRecordingName().trim());
+            }
+        }
+
+        if (recordingNames.isEmpty()) {
+            showWarning("No recording names found in ExperimentInfo.csv.");
+            return false;
+        }
+
+        // ---------------------------------------------------------------------
+        // Show TrackMateSingleDialog on the EDT and capture the result
+        // ---------------------------------------------------------------------
+        final AtomicReference<TrackMateSingleDialog.Action> actionRef   = new AtomicReference<>(TrackMateSingleDialog.Action.CANCEL);
+        final AtomicReference<String>                       recNameRef  = new AtomicReference<>(null);
+        final AtomicReference<Integer>                      threshRef   = new AtomicReference<>(null);
+
+        Runnable showDialogTask = () -> {
+            Window owner = projDialog.getDialog();
+
+            TrackMateSingleDialog dlg = new TrackMateSingleDialog(
+                    owner,
+                    recordingNames,
+                    lastRecordingName,
+                    lastThreshold
+            );
+
+            dlg.setAlwaysOnTop(true);
+            dlg.setLocationRelativeTo(owner);
+            dlg.setVisible(true); // modal: blocks EDT until closed
+
+            if (!dlg.isCancelled()) {
+                actionRef.set(dlg.getAction());
+                recNameRef.set(dlg.getSelectedRecordingName());
+                threshRef.set(dlg.getSelectedThreshold());
+            }
+        };
 
         try {
-            Path    imagesPath         = project.getImagesRootPath();
-            Path    currentProjectRoot = project.getProjectRootPath();
-            boolean success;
-
-            if (sweepSelected) {
-                Path sweepFile = currentProjectRoot.resolve(PAINT_SWEEP_CONFIGURATION_JSON);
-                if (Files.exists(sweepFile)) {
-                    success = RunTrackMateOnProjectSweep.runWithSweep(
-                            currentProjectRoot,
-                            imagesPath,
-                            project.getExperimentNames()
-                    );
-                } else {
-                    PaintLogger.infof("No Sweep configuration found at %s", sweepFile);
-                    return false;
-                }
+            if (SwingUtilities.isEventDispatchThread()) {
+                // Already on EDT: just run it
+                showDialogTask.run();
             } else {
-                PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - experiments (2): %s", project.getExperimentNames());
-                success = RunTrackMateOnProject.runProject(
-                        currentProjectRoot,
-                        imagesPath,
-                        project.getExperimentNames(),
-                        projDialog,
-                        null
-                );
-
-                if (success && PaintConfig.getBoolean("TrackMate", "Run Generate Squares After", true)) {
-                    PaintLogger.infof("TrackMate finished successfully. Starting Generate Squares...");
-                    GenerateSquaresHeadless.run(currentProjectRoot, project.getExperimentNames());
-                    PaintLogger.infof("Generate Squares completed successfully.");
-                }
-                PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - Success: %b", success);
+                // Not on EDT: run dialog on EDT and wait for it to finish
+                SwingUtilities.invokeAndWait(showDialogTask);
             }
-
-            return success;
-
         } catch (Exception e) {
-            PaintLogger.errorf("Error during TrackMate execution: %s", e.getMessage());
+            PaintLogger.debugf("Error showing TrackMateSingleDialog: %s", e.getMessage());
+            showWarning("Error showing TrackMate selection dialog:\n" + e.getMessage());
             return false;
-        } finally {
-            running = false;
         }
+
+        // Dialog was cancelled
+        if (recNameRef.get() == null || actionRef.get() == TrackMateSingleDialog.Action.CANCEL) {
+            return true;
+        }
+
+        String recName  = recNameRef.get();
+        int    threshold = (threshRef.get() != null) ? threshRef.get() : lastThreshold;
+
+        // ---------------------------------------------------------------------
+        // Handle actions
+        // ---------------------------------------------------------------------
+        switch (actionRef.get()) {
+            case CALCULATE:
+                // TODO: run TrackMate once for 'recName' with 'threshold'
+                PaintLogger.infof("TrackMate CALCULATE: recording=%s, threshold=%d", recName, threshold);
+                break;
+
+            case SAVE:
+                // TODO: persist 'threshold' to ExperimentInfo.csv for 'recName'
+                PaintLogger.infof("TrackMate SAVE: recording=%s, threshold=%d", recName, threshold);
+                break;
+
+            case CANCEL:
+            default:
+                // already handled above
+                break;
+        }
+
+        return true;
     }
 }
