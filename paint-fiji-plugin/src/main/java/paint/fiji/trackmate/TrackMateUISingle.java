@@ -55,7 +55,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static paint.fiji.trackmate.RunTrackMateOnRecording.runTrackMateOnRecording;
 import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
@@ -73,7 +72,10 @@ public class TrackMateUISingle implements Command {
     /**
      * Prevents concurrent execution of multiple TrackMate runs.
      */
-    private static volatile boolean running = false;
+    private static volatile boolean               running = false;
+    private        volatile TrackMateSingleDialog singleDialog;
+    private        volatile String                lastRecordingName = "";
+    private        volatile int                   lastThreshold     = 5;
 
     /**
      * Executes the TrackMate workflow through an interactive GUI dialog.
@@ -178,13 +180,10 @@ public class TrackMateUISingle implements Command {
             return false;
         }
 
-        final Path   projectRoot       = project.getProjectRootPath();
-        final Path   imagesPath        = project.getImagesRootPath();
-        final String experimentName    = project.getExperimentNames().get(0);
-              String lastRecordingName = "";
-              int    lastThreshold     = 5;
-
-        Path experimentPath = projectRoot.resolve(experimentName);
+        final Path   projectRoot    = project.getProjectRootPath();
+        final Path   imagesPath     = project.getImagesRootPath();
+        final String experimentName = project.getExperimentNames().get(0);
+        final Path   experimentPath = projectRoot.resolve(experimentName);
 
         List<ExperimentInfo> infos = MainIOInterface.readExperimentInfo(experimentPath);
         if (infos == null || infos.isEmpty()) {
@@ -212,84 +211,155 @@ public class TrackMateUISingle implements Command {
         final TrackMateConfig trackMateConfig = new TrackMateConfig(); // TODO: replace with your real builder if needed
         Path imagePath = imagesPath.resolve(experimentName);
 
+        final String initialRecordingName = chooseInitialRecording(recordingNames, lastRecordingName);
+        final int    initialThreshold     = chooseInitialThreshold(infos, initialRecordingName, lastThreshold);
+
+        lastRecordingName = initialRecordingName;
+        lastThreshold     = initialThreshold;
+
         SwingUtilities.invokeLater(() -> {
             Window owner = projDialog.getDialog();
 
-            TrackMateSingleDialog dlg = new TrackMateSingleDialog(
+            // Prevent opening duplicates
+            if (singleDialog != null && singleDialog.isDisplayable()) {
+                singleDialog.toFront();
+                singleDialog.requestFocus();
+                return;
+            }
+
+            singleDialog = new TrackMateSingleDialog(
                     owner,
                     recordingNames,
-                    lastRecordingName,
-                    lastThreshold,
-
-                    // =======================
-                    // CALCULATE callback
-                    // =======================
-                    (recName, threshold) -> {
-
-                        // Find the ExperimentInfo row for the chosen recording
-                        ExperimentInfo experimentInfoRecord = null;
-                        for (ExperimentInfo ei : infos) {
-                            if (ei != null && ei.getRecordingName() != null
-                                    && ei.getRecordingName().trim().equals(recName)) {
-                                experimentInfoRecord = ei;
-                                break;
-                            }
-                        }
-
-                        if (experimentInfoRecord == null) {
-                            throw new IllegalArgumentException("Selected recording not found in ExperimentInfo.csv: " + recName);
-                        }
-
-                        // IMPORTANT: use the same imagesPath logic as batch (you already found this)
-                        // (do NOT append experimentName unless that's truly your structure)
-                        running = true;
-                        try {
-                            runTrackMateOnRecording(
-                                    experimentPath,
-                                    imagePath,
-                                    trackMateConfig,
-                                    threshold,
-                                    experimentInfoRecord,
-                                    projDialog
-                            );
-                        } finally {
-                            running = false;
-                        }
-                    },
-
-                    // =======================
-                    // SAVE callback
-                    // =======================
-                    (recName, threshold) -> {
-
-                        boolean updated = false;
-                        for (ExperimentInfo ei : infos) {
-                            if (ei != null && ei.getRecordingName() != null
-                                    && ei.getRecordingName().trim().equals(recName)) {
-                                ei.setThreshold(threshold);
-                                updated = true;
-                                break;
-                            }
-                        }
-
-                        if (!updated) {
-                            throw new IllegalArgumentException("Selected recording not found in ExperimentInfo.csv: " + recName);
-                        }
-
-                        // Write back ExperimentInfo.csv (your existing method)
-                        MainIOInterface.writeSpecificExperimentInfoFile(
-                                experimentPath.resolve(EXPERIMENT_INFO_CSV),
-                                infos
-                        );
-                    }
+                    initialRecordingName,
+                    initialThreshold,
+                    (recName, threshold) -> handleCalculate(
+                            recName,
+                            threshold,
+                            infos,
+                            experimentPath,
+                            imagePath,
+                            trackMateConfig,
+                            projDialog
+                    ),
+                    (recName, threshold) -> handleSave(
+                            recName,
+                            threshold,
+                            infos,
+                            experimentPath
+                    )
             );
 
-            dlg.setAlwaysOnTop(true);
-            dlg.setLocationRelativeTo(owner);
-            dlg.setVisible(true);
+            singleDialog.setThresholdProvider(recordingName -> chooseInitialThreshold(infos, recordingName, lastThreshold));
+
+            singleDialog.setAlwaysOnTop(true);
+            singleDialog.setLocationRelativeTo(owner);
+            singleDialog.setVisible(true);
         });
 
         return true;
 
+    }
+
+    private void handleCalculate(String recName,
+            int threshold,
+            List<ExperimentInfo> infos,
+            Path experimentPath,
+            Path imagePath,
+            TrackMateConfig trackMateConfig,
+            ProjectDialog projDialog) throws Exception {
+
+        ExperimentInfo experimentInfoRecord = findExperimentInfoByRecording(infos, recName);
+        if (experimentInfoRecord == null) {
+            throw new IllegalArgumentException("Selected recording not found in ExperimentInfo.csv: " + recName);
+        }
+
+        running = true;
+        try {
+            runTrackMateOnRecording(
+                    experimentPath,
+                    imagePath,
+                    trackMateConfig,
+                    threshold,
+                    experimentInfoRecord,
+                    projDialog
+            );
+        } finally {
+            running = false;
+        }
+
+        lastRecordingName = recName;
+        lastThreshold     = threshold;
+    }
+
+    private void handleSave(String recName,
+            int threshold,
+            List<ExperimentInfo> infos,
+            Path experimentPath) throws Exception {
+
+        ExperimentInfo experimentInfoRecord = findExperimentInfoByRecording(infos, recName);
+        if (experimentInfoRecord == null) {
+            throw new IllegalArgumentException("Selected recording not found in ExperimentInfo.csv: " + recName);
+        }
+
+        experimentInfoRecord.setThreshold(threshold);
+
+        MainIOInterface.writeSpecificExperimentInfoFile(
+                experimentPath.resolve(EXPERIMENT_INFO_CSV),
+                infos
+        );
+
+        lastRecordingName = recName;
+        lastThreshold     = threshold;
+    }
+
+    private ExperimentInfo findExperimentInfoByRecording(List<ExperimentInfo> infos, String recName) {
+        if (infos == null || recName == null) {
+            return null;
+        }
+        String target = recName.trim();
+
+        for (ExperimentInfo ei : infos) {
+            if (ei == null) {
+                continue;
+            }
+            String rn = ei.getRecordingName();
+            if (rn == null) {
+                continue;
+            }
+            if (rn.trim().equals(target)) {
+                return ei;
+            }
+        }
+        return null;
+    }
+
+    private String chooseInitialRecording(List<String> recordingNames, String preferred) {
+        if (recordingNames == null || recordingNames.isEmpty()) {
+            return "";
+        }
+        if (preferred != null) {
+            String p = preferred.trim();
+            if (!p.isEmpty()) {
+                for (String r : recordingNames) {
+                    if (r != null && r.trim().equals(p)) return p;
+                }
+            }
+        }
+        return recordingNames.get(0).trim();
+    }
+
+    private int chooseInitialThreshold(List<ExperimentInfo> infos, String recName, int fallback) {
+        ExperimentInfo experimentInfo = findExperimentInfoByRecording(infos, recName);
+        if (experimentInfo == null) {
+            return fallback;
+        }
+        double threshold =  experimentInfo.getThreshold();
+        if (threshold < 1) {
+            return 1;
+        }
+        if (threshold > 50) {
+            return 50;
+        }
+        return (int) threshold;
     }
 }

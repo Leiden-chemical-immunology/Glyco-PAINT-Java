@@ -43,7 +43,18 @@ public class TrackMateSingleDialog extends JDialog {
     private volatile Thread runningThread;
 
     private String selectedRecordingName;
-    private int selectedThreshold;
+    private int    selectedThreshold;
+
+    public interface ThresholdProvider {
+        int getThreshold(String recordingName);
+    }
+
+    private ThresholdProvider thresholdProvider;
+
+    public void setThresholdProvider(ThresholdProvider p) {
+        this.thresholdProvider = p;
+        applyThresholdFromProvider(); // set slider for current selection immediately
+    }
 
     public TrackMateSingleDialog(
             Window             owner,
@@ -98,7 +109,10 @@ public class TrackMateSingleDialog extends JDialog {
                 selectedRecordingName = rec;
             }
 
-            rb.addActionListener(e -> selectedRecordingName = rec);
+            rb.addActionListener(e -> {
+                selectedRecordingName = rec;
+                applyThresholdFromProvider();
+            });
 
             recordingGroup.add(rb);
             recordingButtons.add(rb);
@@ -153,7 +167,6 @@ public class TrackMateSingleDialog extends JDialog {
             thresholdValueLabel.setText(String.valueOf(v));
         });
 
-        thresholdPanel.add(new JLabel("Value:"));
         thresholdPanel.add(Box.createVerticalStrut(6));
         thresholdPanel.add(thresholdValueLabel);
         thresholdPanel.add(Box.createVerticalStrut(12));
@@ -306,5 +319,24 @@ public class TrackMateSingleDialog extends JDialog {
 
     private static String safeTrim(String s) {
         return s == null ? "" : s.trim();
+    }
+
+    private void applyThresholdFromProvider() {
+        if (thresholdProvider == null) {
+            return;
+        }
+        if (selectedRecordingName == null || selectedRecordingName.trim().isEmpty()) {
+            return;
+        }
+
+        int v = thresholdProvider.getThreshold(selectedRecordingName.trim());
+        if (v < 1) {
+            v = 1;
+        }
+        if (v > 50) {
+            v = 50;
+        }
+
+        thresholdSlider.setValue(v); // your changeListener will also update label & enforce 0->1
     }
 }
