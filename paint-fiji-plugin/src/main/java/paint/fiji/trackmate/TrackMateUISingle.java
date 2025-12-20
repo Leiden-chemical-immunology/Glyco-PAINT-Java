@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static paint.fiji.trackmate.RunTrackMateOnRecording.runTrackMateOnRecording;
+import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
 import static paint.shared.utils.ProjectPathResolver.getValidProjectPath;
 
 /**
@@ -204,103 +205,91 @@ public class TrackMateUISingle implements Command {
         }
 
         // ---------------------------------------------------------------------
-        // Show TrackMateSingleDialog on the EDT and capture the result
+        // Show TrackMateSingleDialog (MODELESS) so Calculate does NOT close it
         // ---------------------------------------------------------------------
-        final AtomicReference<TrackMateSingleDialog.Action> actionRef   = new AtomicReference<>(TrackMateSingleDialog.Action.CANCEL);
-        final AtomicReference<String>                       recNameRef  = new AtomicReference<>(null);
-        final AtomicReference<Integer>                      threshRef   = new AtomicReference<>(null);
 
-        Runnable showDialogTask = () -> {
+        // Build TrackMate config exactly how you do it in batch
+        final TrackMateConfig trackMateConfig = new TrackMateConfig(); // TODO: replace with your real builder if needed
+        Path imagePath = imagesPath.resolve(experimentName);
+
+        SwingUtilities.invokeLater(() -> {
             Window owner = projDialog.getDialog();
 
             TrackMateSingleDialog dlg = new TrackMateSingleDialog(
                     owner,
                     recordingNames,
                     lastRecordingName,
-                    lastThreshold
+                    lastThreshold,
+
+                    // =======================
+                    // CALCULATE callback
+                    // =======================
+                    (recName, threshold) -> {
+
+                        // Find the ExperimentInfo row for the chosen recording
+                        ExperimentInfo experimentInfoRecord = null;
+                        for (ExperimentInfo ei : infos) {
+                            if (ei != null && ei.getRecordingName() != null
+                                    && ei.getRecordingName().trim().equals(recName)) {
+                                experimentInfoRecord = ei;
+                                break;
+                            }
+                        }
+
+                        if (experimentInfoRecord == null) {
+                            throw new IllegalArgumentException("Selected recording not found in ExperimentInfo.csv: " + recName);
+                        }
+
+                        // IMPORTANT: use the same imagesPath logic as batch (you already found this)
+                        // (do NOT append experimentName unless that's truly your structure)
+                        running = true;
+                        try {
+                            runTrackMateOnRecording(
+                                    experimentPath,
+                                    imagePath,
+                                    trackMateConfig,
+                                    threshold,
+                                    experimentInfoRecord,
+                                    projDialog
+                            );
+                        } finally {
+                            running = false;
+                        }
+                    },
+
+                    // =======================
+                    // SAVE callback
+                    // =======================
+                    (recName, threshold) -> {
+
+                        boolean updated = false;
+                        for (ExperimentInfo ei : infos) {
+                            if (ei != null && ei.getRecordingName() != null
+                                    && ei.getRecordingName().trim().equals(recName)) {
+                                ei.setThreshold(threshold);
+                                updated = true;
+                                break;
+                            }
+                        }
+
+                        if (!updated) {
+                            throw new IllegalArgumentException("Selected recording not found in ExperimentInfo.csv: " + recName);
+                        }
+
+                        // Write back ExperimentInfo.csv (your existing method)
+                        MainIOInterface.writeSpecificExperimentInfoFile(
+                                experimentPath.resolve(EXPERIMENT_INFO_CSV),
+                                infos
+                        );
+                    }
             );
 
             dlg.setAlwaysOnTop(true);
             dlg.setLocationRelativeTo(owner);
-            dlg.setVisible(true); // modal: blocks EDT until closed
-
-            if (!dlg.isCancelled()) {
-                actionRef.set(dlg.getAction());
-                recNameRef.set(dlg.getSelectedRecordingName());
-                threshRef.set(dlg.getSelectedThreshold());
-            }
-        };
-
-        try {
-            if (SwingUtilities.isEventDispatchThread()) {
-                // Already on EDT: just run it
-                showDialogTask.run();
-            } else {
-                // Not on EDT: run dialog on EDT and wait for it to finish
-                SwingUtilities.invokeAndWait(showDialogTask);
-            }
-        } catch (Exception e) {
-            PaintLogger.debugf("Error showing TrackMateSingleDialog: %s", e.getMessage());
-            showWarning("Error showing TrackMate selection dialog:\n" + e.getMessage());
-            return false;
-        }
-
-        // Dialog was cancelled
-        if (recNameRef.get() == null || actionRef.get() == TrackMateSingleDialog.Action.CANCEL) {
-            return true;
-        }
-
-        String recName  = recNameRef.get();
-        int    threshold = (threshRef.get() != null) ? threshRef.get() : lastThreshold;
-
-        // Build TrackMate config (however you normally do this in your project)
-        final TrackMateConfig trackMateConfig = new TrackMateConfig(); // or TrackMateConfig.fromPaintConfig(), etc.
-
-        // Find the ExperimentInfo row for the chosen recording
-        ExperimentInfo experimentInfoRecord = null;
-        for (ExperimentInfo experimentInfo : infos) {
-            if (experimentInfo != null && experimentInfo.getRecordingName() != null) {
-                if (experimentInfo.getRecordingName().trim().equals(recName)) {
-                    experimentInfoRecord = experimentInfo;
-                    break;
-                }
-            }
-        }
-
-        Path imagePath = imagesPath.resolve(experimentName);
-
-        if (experimentInfoRecord == null) {
-            showWarning("Selected recording not found in ExperimentInfo.csv:\n" + recName);
-            return false;
-        }
-
-        // ---------------------------------------------------------------------
-        // Handle actions
-        // ---------------------------------------------------------------------
-        switch (actionRef.get()) {
-            case CALCULATE:
-                PaintLogger.infof("TrackMate CALCULATE: recording=%s, threshold=%d", recName, threshold);
-                running = true;
-                runTrackMateOnRecording(experimentPath,
-                                        imagePath,
-                                        trackMateConfig,
-                                        threshold,
-                                        experimentInfoRecord,
-                                        projDialog);
-                running = false;
-                break;
-
-            case SAVE:
-                // TODO: persist 'threshold' to ExperimentInfo.csv for 'recName'
-                PaintLogger.infof("TrackMate SAVE: recording=%s, threshold=%d", recName, threshold);
-                break;
-
-            case CANCEL:
-            default:
-                // already handled above
-                break;
-        }
+            dlg.setVisible(true);
+        });
 
         return true;
+
     }
 }

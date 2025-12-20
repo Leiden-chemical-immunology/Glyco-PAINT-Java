@@ -25,44 +25,45 @@ import java.util.List;
 
 public class TrackMateSingleDialog extends JDialog {
 
-    public enum Action {
-        CALCULATE,
-        SAVE,
-        CANCEL
+    public interface CalculationHandler {
+        void run(String recordingName, int threshold) throws Exception;
     }
 
-    private Action action = Action.CANCEL;
+    public interface SaveHandler {
+        void run(String recordingName, int threshold) throws Exception;
+    }
 
     private final ButtonGroup recordingGroup = new ButtonGroup();
     private final List<JRadioButton> recordingButtons = new ArrayList<>();
 
     private final JSlider thresholdSlider;
     private final JLabel  thresholdValueLabel;
+    private final JLabel  statusLabel;
+
+    private volatile Thread runningThread;
 
     private String selectedRecordingName;
-    private int    selectedThreshold;
+    private int selectedThreshold;
 
-    /**
-     * @param owner                 parent frame (can be null)
-     * @param recordingNames        list of recording names to show as radio buttons
-     * @param initialRecordingName  preferred initially selected recording (may be null/empty)
-     * @param initialThreshold      initial threshold (clamped to 1..50)
-     */
     public TrackMateSingleDialog(
-            Window       owner,
-            List<String> recordingNames,
-            String       initialRecordingName,
-            int          initialThreshold
+            Window             owner,
+            List<String>       recordingNames,
+            String             initialRecordingName,
+            int                initialThreshold,
+            CalculationHandler onCalculate,
+            SaveHandler        onSave
     ) {
-        super(owner, "TrackMate Single", ModalityType.APPLICATION_MODAL);
+        super(owner, "TrackMate Single", ModalityType.MODELESS);
 
-        List<String> names = (recordingNames == null) ? Collections.<String>emptyList() : new ArrayList<>(recordingNames);
+        List<String> names = (recordingNames == null)
+                ? Collections.<String>emptyList()
+                : new ArrayList<>(recordingNames);
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                cancelAndClose();
+                handleCancel(); // same behavior as Cancel button
             }
         });
 
@@ -71,7 +72,7 @@ public class TrackMateSingleDialog extends JDialog {
         setContentPane(root);
 
         // ---------------------------------------------------------------------
-        // Left: recordings (radio buttons, scrollable)
+        // Left: recordings
         // ---------------------------------------------------------------------
         JPanel recordingsPanel = new JPanel();
         recordingsPanel.setLayout(new BoxLayout(recordingsPanel, BoxLayout.Y_AXIS));
@@ -82,7 +83,10 @@ public class TrackMateSingleDialog extends JDialog {
 
         for (String name : names) {
             if (name == null) continue;
-            final String rec = name;
+            final String rec = name.trim();
+            if (rec.isEmpty()) {
+                continue;
+            }
 
             JRadioButton rb = new JRadioButton(rec);
             rb.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -108,9 +112,11 @@ public class TrackMateSingleDialog extends JDialog {
             selectedRecordingName = first.getText();
         }
 
-        JScrollPane recordingsScroll = new JScrollPane(recordingsPanel,
-                                                       JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                                                       JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        JScrollPane recordingsScroll = new JScrollPane(
+                recordingsPanel,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+        );
         recordingsScroll.setPreferredSize(new Dimension(420, 320));
 
         // ---------------------------------------------------------------------
@@ -126,15 +132,24 @@ public class TrackMateSingleDialog extends JDialog {
         thresholdValueLabel.setFont(thresholdValueLabel.getFont().deriveFont(Font.BOLD, 18f));
         thresholdValueLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        thresholdSlider = new JSlider(1, 50, initT);
+        thresholdSlider = new JSlider(0, 50, Math.max(1, initT));
         thresholdSlider.setMajorTickSpacing(10);
-        thresholdSlider.setMinorTickSpacing(1);
+        thresholdSlider.setMinorTickSpacing(0);     // no fine ticks
         thresholdSlider.setPaintTicks(true);
         thresholdSlider.setPaintLabels(true);
+        thresholdSlider.setSnapToTicks(false);
+
         thresholdSlider.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         thresholdSlider.addChangeListener(e -> {
             int v = thresholdSlider.getValue();
+
+            // Prevent selecting 0
+            if (v == 0) {
+                thresholdSlider.setValue(1);
+                v = 1;
+            }
+
             thresholdValueLabel.setText(String.valueOf(v));
         });
 
@@ -151,28 +166,44 @@ public class TrackMateSingleDialog extends JDialog {
         JPanel center = new JPanel(new BorderLayout(10, 10));
         center.add(recordingsScroll, BorderLayout.CENTER);
         center.add(thresholdPanel, BorderLayout.EAST);
-
         root.add(center, BorderLayout.CENTER);
 
         // ---------------------------------------------------------------------
         // Bottom buttons: Calculate / Save / Cancel
         // ---------------------------------------------------------------------
+        statusLabel = new JLabel(" ");
+        statusLabel.setBorder(new EmptyBorder(0, 0, 6, 0));
+
         JButton calculateBtn = new JButton("Calculate");
         JButton saveBtn      = new JButton("Save");
         JButton cancelBtn    = new JButton("Cancel");
-
-        Dimension btnSize = new Dimension(110, 30);
-        calculateBtn.setPreferredSize(btnSize);
-        saveBtn.setPreferredSize(btnSize);
-        cancelBtn.setPreferredSize(btnSize);
 
         calculateBtn.addActionListener(e -> {
             if (!captureSelections()) {
                 Toolkit.getDefaultToolkit().beep();
                 return;
             }
-            action = Action.CALCULATE;
-            dispose();
+            if (runningThread != null) {
+                Toolkit.getDefaultToolkit().beep();
+                return;
+            }
+
+            setUiRunning(true, "Running…");
+
+            runningThread = new Thread(() -> {
+                try {
+                    if (onCalculate != null) {
+                        onCalculate.run(selectedRecordingName, selectedThreshold);
+                    }
+                    SwingUtilities.invokeLater(() -> setUiRunning(false, "Completed"));
+                } catch (Exception ex) {
+                    SwingUtilities.invokeLater(() -> setUiRunning(false, "Failed: " + ex.getMessage()));
+                } finally {
+                    runningThread = null;
+                }
+            }, "TrackMateSingle-Worker");
+
+            runningThread.start();
         });
 
         saveBtn.addActionListener(e -> {
@@ -180,83 +211,96 @@ public class TrackMateSingleDialog extends JDialog {
                 Toolkit.getDefaultToolkit().beep();
                 return;
             }
-            action = Action.SAVE;
-            dispose();
+            if (runningThread != null) {
+                Toolkit.getDefaultToolkit().beep();
+                return;
+            }
+            try {
+                if (onSave != null) {
+                    onSave.run(selectedRecordingName, selectedThreshold);
+                }
+                statusLabel.setText("Saved");
+            } catch (Exception ex) {
+                statusLabel.setText("Save failed: " + ex.getMessage());
+            }
         });
 
-        cancelBtn.addActionListener(e -> cancelAndClose());
+        cancelBtn.addActionListener(e -> handleCancel());
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         buttons.add(calculateBtn);
         buttons.add(saveBtn);
         buttons.add(cancelBtn);
 
-        root.add(buttons, BorderLayout.SOUTH);
+        JPanel bottom = new JPanel(new BorderLayout());
+        bottom.add(statusLabel, BorderLayout.WEST);
+        bottom.add(buttons, BorderLayout.EAST);
 
-        // Initial capture
+        root.add(bottom, BorderLayout.SOUTH);
+
+        // store initial
         selectedThreshold = thresholdSlider.getValue();
 
         pack();
         setLocationRelativeTo(owner);
+
+        // local helpers that need button refs
+        this.calculateBtn = calculateBtn;
+        this.saveBtn = saveBtn;
+        this.cancelBtn = cancelBtn;
     }
 
-    // -------------------------------------------------------------------------
-    // Public getters
-    // -------------------------------------------------------------------------
+    // keep refs for enabling/disabling
+    private final JButton calculateBtn;
+    private final JButton saveBtn;
+    private final JButton cancelBtn;
 
-    public Action getAction() {
-        return action;
-    }
-
-    public boolean isCancelled() {
-        return action == Action.CANCEL;
-    }
-
-    public String getSelectedRecordingName() {
-        return selectedRecordingName;
-    }
-
-    public int getSelectedThreshold() {
-        return selectedThreshold;
-    }
-
-    // -------------------------------------------------------------------------
-    // Internals
-    // -------------------------------------------------------------------------
-
-    private void cancelAndClose() {
-        action = Action.CANCEL;
+    private void handleCancel() {
+        Thread t = runningThread;
+        if (t != null) {
+            // first Cancel interrupts running job (dialog stays open)
+            statusLabel.setText("Stopping…");
+            t.interrupt();
+            return;
+        }
         dispose();
     }
 
+    private void setUiRunning(boolean running, String status) {
+        statusLabel.setText(status);
+        calculateBtn.setEnabled(!running);
+        saveBtn.setEnabled(!running);
+        cancelBtn.setEnabled(true);
+        thresholdSlider.setEnabled(!running);
+        for (JRadioButton rb : recordingButtons) rb.setEnabled(!running);
+    }
+
     private boolean captureSelections() {
-        // Ensure a recording is selected
         String rec = selectedRecordingName;
         if (rec == null || rec.trim().isEmpty()) {
-            // Try to recover from the selected button
-            ButtonModel bm = recordingGroup.getSelection();
-            if (bm != null) {
-                for (JRadioButton rb : recordingButtons) {
-                    if (rb.isSelected()) {
-                        rec = rb.getText();
-                        break;
-                    }
+            for (JRadioButton rb : recordingButtons) {
+                if (rb.isSelected()) {
+                    rec = rb.getText();
+                    break;
                 }
             }
         }
-
         if (rec == null || rec.trim().isEmpty()) {
             return false;
         }
 
-        selectedRecordingName = rec;
+        selectedRecordingName = rec.trim();
         selectedThreshold     = thresholdSlider.getValue();
         return true;
     }
 
     private static int clamp(int v, int lo, int hi) {
-        if (v < lo) return lo;
-        if (v > hi) return hi;
+        if (v < lo) {
+            return lo;
+        }
+        if (v > hi) {
+            return hi;
+        }
         return v;
     }
 
