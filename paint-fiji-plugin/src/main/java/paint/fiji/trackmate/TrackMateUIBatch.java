@@ -1,5 +1,5 @@
 /*=============================================================================
- *  Class:        TrackMateUI.java
+ *  Class:        TrackMateUIBatch.java
  *  Package:      paint.fiji.trackmate
  *
  *  PURPOSE:
@@ -70,7 +70,7 @@ import static paint.shared.utils.ProjectPathResolver.getValidProjectPath;
  */
 @SuppressWarnings("unused")
 @Plugin(type = Command.class, menuPath = "Plugins>Glyco-PAINT>Run Batch")
-public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
+public class TrackMateUIBatch extends RunTrackMateOnProjectSweep implements Command {
 
     /**
      * Prevents concurrent execution of multiple TrackMate runs.
@@ -121,12 +121,12 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
         String debugLevel = PaintPrefs.getString("Runtime", "Log Level", "INFO");
         PaintLogger.setLevel(debugLevel);
         PaintLogger.initialise(projectPath, "TrackMateOnProject.log");
-        PaintLogger.debugf("TrackMateUI.run - TrackMate plugin started (Interactive).");
+        PaintLogger.debugf("TrackMateUIBatch.run - TrackMate plugin started (Interactive).");
 
         PaintRuntime.initialiseFromPrefs();
 
         // Log version and timestamp
-        JarInfoLogger.JarInfo info = JarInfoLogger.getJarInfo(TrackMateUI.class);
+        JarInfoLogger.JarInfo info = JarInfoLogger.getJarInfo(TrackMateUIBatch.class);
         if (info != null) {
             PaintLogger.infof("Compilation date: %s", info.implementationDate);
             PaintLogger.infof("Version: %s", info.implementationVersion);
@@ -161,14 +161,14 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
     @SuppressWarnings("SameParameterValue")
     private void showWarning(String message) {
         JOptionPane optionPane = new JOptionPane(message, JOptionPane.WARNING_MESSAGE);
-        JDialog warnDialog = optionPane.createDialog(null, "Warning");
+        JDialog     warnDialog = optionPane.createDialog(null, "Warning");
         warnDialog.setAlwaysOnTop(true);
         warnDialog.setVisible(true);
     }
 
     @SuppressWarnings("unused")
     private boolean runTrackMatePipeline(Project project, boolean sweepSelected, ProjectDialog projDialog) {
-        PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - experiments (1): %s", project.getExperimentNames());
+        PaintLogger.debugf("TrackMateUIBatch.runTrackMatePipeline - experiments (1): %s", project.getExperimentNames());
         if (running) {
             showWarning("TrackMate processing is already running.\nPlease wait until it finishes.");
             return false;
@@ -194,7 +194,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
                     return false;
                 }
             } else {
-                PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - experiments (2): %s", project.getExperimentNames());
+                PaintLogger.debugf("TrackMateUIBatch.runTrackMatePipeline - experiments (2): %s", project.getExperimentNames());
                 success = RunTrackMateOnProject.runProject(
                         currentProjectRoot,
                         imagesPath,
@@ -208,7 +208,7 @@ public class TrackMateUI extends RunTrackMateOnProjectSweep implements Command {
                     GenerateSquaresHeadless.run(currentProjectRoot, project.getExperimentNames());
                     PaintLogger.infof("Generate Squares completed successfully.");
                 }
-                PaintLogger.debugf("TrackMateUI.runTrackMatePipeline - Success: %b", success);
+                PaintLogger.debugf("TrackMateUIBatch.runTrackMatePipeline - Success: %b", success);
             }
 
             return success;
