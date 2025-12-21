@@ -195,6 +195,13 @@ public class ProjectDialogController {
         };
 
         Runnable onSuccess = () -> {
+            if (mode == DialogMode.TRACKMATE_SINGLE) {
+                // In SINGLE mode, OK just opens the modeless TrackMateSingleDialog.
+                // TrackMate runs later from that dialog, so don't claim success here.
+                bottom.resetOk(false); // or bottom.resetOk(validToRun()); if you prefer
+                return;
+            }
+
             PaintLogger.blankline();
             PaintLogger.infof("Operation completed successfully.");
             bottom.showCompleted(mode == DialogMode.VIEWER);
