@@ -1,5 +1,5 @@
 /*=============================================================================
- *  Class:        TrackMateUI.java
+ *  Class:        TrackMateUISingle.java
  *  Package:      paint.fiji.trackmate
  *
  *  PURPOSE:
@@ -121,7 +121,7 @@ public class TrackMateUISingle implements Command {
         String debugLevel = PaintPrefs.getString("Runtime", "Log Level", "INFO");
         PaintLogger.setLevel(debugLevel);
         PaintLogger.initialise(projectPath, "TrackMateOnProject.log");
-        PaintLogger.debugf("TrackMateUI.run - TrackMate plugin started (Interactive).");
+        PaintLogger.debugf("TrackMateUISingle.run - TrackMate plugin started (Interactive).");
 
         PaintRuntime.initialiseFromPrefs();
 
@@ -208,14 +208,15 @@ public class TrackMateUISingle implements Command {
         // ---------------------------------------------------------------------
 
         // Build TrackMate config exactly how you do it in batch
-        final TrackMateConfig trackMateConfig = new TrackMateConfig(); // TODO: replace with your real builder if needed
-        Path imagePath = imagesPath.resolve(experimentName);
-
-        final String initialRecordingName = chooseInitialRecording(recordingNames, lastRecordingName);
-        final int    initialThreshold     = chooseInitialThreshold(infos, initialRecordingName, lastThreshold);
+        final TrackMateConfig trackMateConfig      = new TrackMateConfig();
+        final Path            imagePath            = imagesPath.resolve(experimentName);
+        final String          initialRecordingName = chooseInitialRecording(recordingNames, lastRecordingName);
+        final int             initialThreshold     = chooseInitialThreshold(infos, initialRecordingName, lastThreshold);
 
         lastRecordingName = initialRecordingName;
         lastThreshold     = initialThreshold;
+
+        PaintLogger.infof(trackMateConfig.toString());
 
         SwingUtilities.invokeLater(() -> {
             Window owner = projDialog.getDialog();
