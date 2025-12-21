@@ -132,13 +132,20 @@ public class TrackMateSingleDialog extends JDialog {
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
         );
         recordingsScroll.setPreferredSize(new Dimension(420, 320));
+        recordingsScroll.setBorder(BorderFactory.createEmptyBorder());
 
         // ---------------------------------------------------------------------
         // Right: threshold slider
         // ---------------------------------------------------------------------
         JPanel thresholdPanel = new JPanel();
         thresholdPanel.setLayout(new BoxLayout(thresholdPanel, BoxLayout.Y_AXIS));
-        thresholdPanel.setBorder(BorderFactory.createTitledBorder("Threshold"));
+        thresholdPanel.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createTitledBorder("Threshold"),
+                        new EmptyBorder(8, 12, 8, 8) // top, left, bottom, right
+                )
+        );
+        // thresholdPanel.add(Box.createVerticalStrut(8));
 
         int initT = clamp(initialThreshold, 1, 50);
 
