@@ -77,7 +77,7 @@ public class RecordingsTableIO extends BaseTableIO {
             row.setInt(     NUMBER_OF_FRAMES,                recording.getNumberOfFrames());
             row.setDouble(  RUN_TIME,                        recording.getRunTime());
             row.setDateTime(TIME_STAMP,                      recording.getTimeStamp());
-            row.setBoolean( EXCLUDE,                         recording.isExclude());
+            row.setBoolean( EXCLUDE,                         recording.isExcluded());
             row.setDouble(  TAU,                             recording.getTau());
             row.setDouble(  R_SQUARED,                       recording.getRSquared());
             row.setDouble(  DENSITY,                         recording.getDensity());
@@ -120,7 +120,7 @@ public class RecordingsTableIO extends BaseTableIO {
             recording.setNumberOfFrames(              tablesawRow.getInt(      NUMBER_OF_FRAMES));
             recording.setRunTime(                     tablesawRow.getDouble(   RUN_TIME));
             recording.setTimeStamp(                   tablesawRow.getDateTime( TIME_STAMP));
-            recording.setExclude(                     tablesawRow.getBoolean(  EXCLUDE));
+            recording.setExcluded(                    tablesawRow.getBoolean(  EXCLUDE));
             recording.setTau(                         tablesawRow.getDouble(   TAU));
             recording.setRSquared(                    tablesawRow.getDouble(   R_SQUARED));
             recording.setDensity(                     tablesawRow.getDouble(   DENSITY));

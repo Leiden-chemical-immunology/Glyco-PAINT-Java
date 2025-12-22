@@ -295,11 +295,11 @@ public class Recording {
         this.timeStamp = timeStamp;
     }
 
-    public boolean isExclude() {
+    public boolean isExcluded() {
         return exclude;
     }
 
-    public void setExclude(boolean exclude) {
+    public void setExcluded(boolean exclude) {
         this.exclude = exclude;
     }
 
