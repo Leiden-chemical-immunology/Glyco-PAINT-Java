@@ -22,6 +22,7 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import paint.shared.utils.PaintLogger;
 
 public class TrackMateSingleDialog extends JDialog {
 
@@ -40,7 +41,9 @@ public class TrackMateSingleDialog extends JDialog {
     private final JLabel  thresholdValueLabel;
     private final JLabel  statusLabel;
 
-    private volatile Thread runningThread;
+    private volatile Thread  runningThread;
+    private volatile Thread  dotThread;
+    private volatile boolean dotRunning;
 
     private String selectedRecordingName;
     private int    selectedThreshold;
@@ -211,14 +214,26 @@ public class TrackMateSingleDialog extends JDialog {
             setUiRunning(true, "Running…");
 
             runningThread = new Thread(() -> {
+                startDots();
                 try {
                     if (onCalculate != null) {
                         onCalculate.run(selectedRecordingName, selectedThreshold);
                     }
+
+                    if (Thread.currentThread().isInterrupted()) {
+                        SwingUtilities.invokeLater(() -> setUiRunning(false, "Cancelled"));
+                        return;
+                    }
+
                     SwingUtilities.invokeLater(() -> setUiRunning(false, "Completed"));
                 } catch (Exception ex) {
-                    SwingUtilities.invokeLater(() -> setUiRunning(false, "Failed: " + ex.getMessage()));
+                    if (Thread.currentThread().isInterrupted()) {
+                        SwingUtilities.invokeLater(() -> setUiRunning(false, "Cancelled"));
+                    } else {
+                        SwingUtilities.invokeLater(() -> setUiRunning(false, "Failed: " + ex.getMessage()));
+                    }
                 } finally {
+                    stopDots();
                     runningThread = null;
                 }
             }, "TrackMateSingle-Worker");
@@ -280,6 +295,7 @@ public class TrackMateSingleDialog extends JDialog {
         if (t != null) {
             // first Cancel interrupts running job (dialog stays open)
             statusLabel.setText("Stopping…");
+            stopDots();
             t.interrupt();
             return;
         }
@@ -345,5 +361,54 @@ public class TrackMateSingleDialog extends JDialog {
         }
 
         thresholdSlider.setValue(v); // your changeListener will also update label & enforce 0->1
+    }
+
+    private void startDots() {
+        if (dotThread != null && dotThread.isAlive()) {
+            return;
+        }
+        if (dotRunning) {
+            return;
+        }
+        dotRunning = true;
+        dotThread = new Thread(() -> {
+            int dots = 0;
+            while (dotRunning && !Thread.currentThread().isInterrupted()) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+
+                if (!dotRunning) break;
+
+                PaintLogger.raw(".");
+                dots++;
+
+                if (dots >= 80) {
+                    PaintLogger.raw("\n                                                    ");
+                    dots = 0;
+                }
+            }
+        }, "TrackMateSingle-Dots");
+
+        dotThread.setDaemon(true);
+        dotThread.start();
+    }
+
+    private void stopDots() {
+        dotRunning = false;
+        Thread t = dotThread;
+        if (t != null) {
+            t.interrupt();
+        }
+        dotThread = null;
+    }
+
+    @Override
+    public void dispose() {
+        stopDots();
+        super.dispose();
     }
 }
