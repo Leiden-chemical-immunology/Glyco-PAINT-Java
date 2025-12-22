@@ -49,28 +49,15 @@ import java.util.List;
 
 import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
 
-/**
- * A Swing panel that displays a selectable list of experiment directories.
- * <p>
- * Each experiment is represented as a checkbox. Experiments are detected by
- * scanning the project root directory for subdirectories containing the
- * {@code ExperimentInfo.csv} file.
- * <p>
- * The panel also provides "Select All" and "Clear All" controls and exposes
- * helper methods to query selected experiments.
- */
 public class ExperimentsPanel {
 
-
     private final ProjectDialog.DialogMode dialogMode;
-    private final JPanel                   panel = new JPanel(new BorderLayout());   // The root container panel (BorderLayout).
-    private final JPanel                   list  = new JPanel();                     // The vertical list panel holding all experiment checkboxes.
-    private final List<AbstractButton>     boxes = new ArrayList<>();                // Stores the dynamically generated experiment checkboxes or radiobuttons.
-    private ButtonGroup                    group;                                    // only used in TRACKMATE_SINGLE
+    private final JPanel                   panel = new JPanel(new BorderLayout());
+    private final JPanel                   list  = new JPanel();
+    private final List<AbstractButton>     boxes = new ArrayList<>();
+    private ButtonGroup                    group; // only used in TRACKMATE_SINGLE
 
-    /** Callback invoked whenever the checkbox selection changes. */
-    private Runnable onChanged = () -> {
-    };
+    private Runnable onChanged = () -> {};
 
     /**
      * Constructs an {@code ExperimentsPanel} and immediately loads the list of
@@ -88,20 +75,20 @@ public class ExperimentsPanel {
         scroll.setPreferredSize(new Dimension(680, 240));
         scroll.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
-        // Top control bar (Select All / Clear All)
-        if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_BATCH) {
+        // Top control bar (Select All / Clear All) for checkbox modes
+        if (dialogMode != ProjectDialog.DialogMode.TRACKMATE_SINGLE) {
             JPanel  controls  = new JPanel(new FlowLayout(FlowLayout.LEFT));
             JButton selectAll = new JButton("Select All");
             JButton clearAll  = new JButton("Clear All");
             controls.add(selectAll);
             controls.add(clearAll);
 
-            // Select and clear all experiments
             selectAll.addActionListener(this::selectAllExperiments);
             clearAll.addActionListener(this::clearAllExperiments);
 
             panel.add(controls, BorderLayout.NORTH);
         }
+
         panel.add(scroll, BorderLayout.CENTER);
 
         // Initial load
@@ -125,8 +112,7 @@ public class ExperimentsPanel {
      * @param runnable a Runnable to invoke on selection change
      */
     public void onSelectionChanged(Runnable runnable) {
-        this.onChanged = (runnable != null ? runnable : () -> {
-        });
+        this.onChanged = (runnable != null ? runnable : () -> {});
     }
 
     /**
@@ -155,7 +141,7 @@ public class ExperimentsPanel {
                 experimentNames.add(abstractButton.getText());
             }
         }
-        PaintLogger.debugf( "ExperimentsPanel.selectedExperimentNames: %s", experimentNames);
+        PaintLogger.debugf("ExperimentsPanel.selectedExperimentNames: %s", experimentNames);
         return experimentNames;
     }
 
@@ -192,7 +178,7 @@ public class ExperimentsPanel {
         boolean singleExperimentSelected = false;
 
         if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_SINGLE) {
-            selectedExperiment = PaintConfig.getString("Single Trackmate Mode", "SelectedExperiment", "");
+            selectedExperiment = PaintConfig.getString("Single TrackMate Mode", "SelectedExperiment", "");
         }
         // Scan subdirectories of the project root
         File[] experimentDirectories = (projectRoot != null ? projectRoot.toFile().listFiles() : null);
@@ -209,7 +195,6 @@ public class ExperimentsPanel {
                     continue;
                 }
 
-                // Skip Sweep directory
                 if ("Sweep".equals(experimentDirectory.getName())) {
                     continue;
                 }
@@ -225,30 +210,25 @@ public class ExperimentsPanel {
                 }
 
                 abstractButton.addActionListener(e -> {
-                    if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_SINGLE
-                            && abstractButton.isSelected()) {
-
+                    if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_SINGLE && abstractButton.isSelected()) {
                         PaintConfig.setString(
                                 "Single TrackMate Mode",
                                 "SelectedExperiment",
                                 experimentName
                         );
                     }
-
                     onChanged.run();
                 });
 
-                if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_BATCH) {
-                    boolean saved = PaintConfig.getBoolean("Experiments", experimentDirectory.getName(), false);
-                    abstractButton.setSelected(saved);
-                }
-                else {
-                    if (experimentDirectory.getName().equals(selectedExperiment)) {
+                if (dialogMode == ProjectDialog.DialogMode.TRACKMATE_SINGLE) {
+                    if (experimentName.equals(selectedExperiment)) {
                         abstractButton.setSelected(true);
                         singleExperimentSelected = true;
                     }
+                } else {
+                    boolean saved = PaintConfig.getBoolean("Experiments", experimentName, false);
+                    abstractButton.setSelected(saved);
                 }
-
                 boxes.add(abstractButton);
                 list.add(abstractButton);
             }
@@ -262,7 +242,7 @@ public class ExperimentsPanel {
 
         list.revalidate();
         list.repaint();
-        onChanged.run();  // Notify listeners of new state
+        onChanged.run();
     }
 
     @SuppressWarnings("unused")
