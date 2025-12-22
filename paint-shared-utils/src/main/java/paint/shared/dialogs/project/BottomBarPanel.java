@@ -267,4 +267,8 @@ public class BottomBarPanel {
     public void keepCancelEnabled() {
         cancelBtn.setEnabled(true);
     }
+
+    public boolean isSaveExperimentsSelected() {
+        return saveExperiments != null && saveExperiments.isSelected();
+    }
 }
