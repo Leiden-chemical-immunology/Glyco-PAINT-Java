@@ -343,8 +343,8 @@ public class GenerateSquaresProcessor {
             }
             // ------------------------------------------------------------------
 
-            PaintLogger.debugf("Square %3d: %3d tracks assigned (label %d)",
-                               square.getSquareNumber(), tracks.size(), labelNumber);
+            // PaintLogger.debugf("Square %3d: %3d tracks assigned (label %d)",
+            //                    square.getSquareNumber(), tracks.size(), labelNumber);
 
             labelNumber++;
         }
