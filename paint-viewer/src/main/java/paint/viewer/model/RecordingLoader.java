@@ -163,7 +163,7 @@ public class RecordingLoader {
                 }
 
                 if (brightfieldImagePath == null) {
-                    PaintLogger.errorf("Missing Brightfield image for recording '%s'", recordingName);
+                    PaintLogger.warnf("Missing Brightfield image for recording '%s'", recordingName);
                     continue;
                 }
 
