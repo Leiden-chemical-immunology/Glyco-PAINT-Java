@@ -181,6 +181,14 @@ public class ProjectDialogController {
         PaintPrefs.putString("Path", "Project Root", paths.projectRootText());
         PaintPrefs.putString("Path", "Images Root", paths.imagesRootText());
 
+        // Persist experiment selection if requested (clear section, then write only selected)
+        if (bottom.isSaveExperimentsSelected()) {
+            PaintConfig.removeSection("Experiments"); // clears entire section + autosaves
+            for (String name : experiments.selectedExperimentNames()) {
+                PaintConfig.setBoolean("Experiments", name, true);
+            }
+        }
+
         clearCancelled.run();
         workerStarted = true;
 
