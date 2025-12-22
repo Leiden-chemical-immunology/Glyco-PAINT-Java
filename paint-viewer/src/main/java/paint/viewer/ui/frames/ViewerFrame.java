@@ -42,7 +42,9 @@
 package paint.viewer.ui.frames;
 
 import paint.shared.config.paintconfig.PaintConfig;
+import paint.shared.io.MainIOInterface;
 import paint.shared.objects.Project;
+import paint.shared.objects.Recording;
 import paint.shared.utils.PaintLogger;
 import paint.viewer.app.Viewer;
 import paint.viewer.io.FileHelper;
@@ -64,6 +66,9 @@ import paint.viewer.ui.panels.RecordingControlsPanel;
 import paint.viewer.ui.panels.SquareGridPanel;
 import paint.viewer.model.SquareControlParams;
 import paint.viewer.model.RecordingEntry;
+import tech.tablesaw.api.BooleanColumn;
+import tech.tablesaw.api.StringColumn;
+import tech.tablesaw.api.Table;
 
 import javax.swing.*;
 import java.awt.*;
@@ -73,6 +78,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
 import static paint.shared.constants.PaintStringConstants.GENERATE_SQUARES;
 import static paint.shared.constants.PaintStringConstants.NUMBER_OF_SQUARES_IN_RECORDING;
 import static paint.viewer.override.OverrideTool.processOverride;
@@ -312,6 +318,11 @@ public class ViewerFrame extends JFrame
         RecordingEntry entry = recordingEntries.get(index);
         displayUpdater.show(entry, index, recordingEntries.size());
         updateNavButtons();
+
+        // --- Ensure Exclude/Include UI always matches the current recording ---
+        if (controlsPanel != null) {
+            controlsPanel.setExcludeButtonText(entry.getRecording().isExcluded());
+        }
     }
 
     // =========================================================================================
@@ -373,6 +384,37 @@ public class ViewerFrame extends JFrame
     @Override
     public void onShowSquaresRequested() {
         openSquaresForCurrentRecording();
+    }
+
+    @Override
+    public void onExcludeToggleRequested() {
+        if (recordingEntries.isEmpty()
+                || currentIndex < 0
+                || currentIndex >= recordingEntries.size()) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+
+        RecordingEntry entry = recordingEntries.get(currentIndex);
+
+        // 1) Toggle model state
+        boolean newExcluded = !entry.getRecording().isExcluded();   // adapt to your actual getter/setter
+        entry.getRecording().setExcluded(newExcluded);
+
+        // 2) Persist to "All Recordings" (your existing writer or a new small helper)
+
+        // Update the RecordingEntry
+        entry.getRecording().setExcluded(newExcluded);
+
+        // Update the Recordings file
+        Path experimentPath = project.getProjectRootPath().resolve(entry.getExperimentName());
+        String recordingName = entry.getRecording().getRecordingName();
+        patchRecordingExcluded(experimentPath, recordingName, newExcluded);
+
+        // 3) Update UI (button text + labels)
+        controlsPanel.setExcludeButtonText(newExcluded);
+        displayUpdater.applyExcludedUi(entry); // e.g., add "(EXCLUDED)" to the text under images
+
     }
 
     // =========================================================================================
@@ -761,5 +803,31 @@ public class ViewerFrame extends JFrame
 
         // Always close the window afterwards
         this.dispose();
+    }
+
+    public static void patchRecordingExcluded(
+            Path experimentPath,
+            String recordingName,
+            boolean excluded
+    ) {
+        Table table = MainIOInterface.readRecordingsTable(experimentPath);
+        if (table == null) {
+            return;
+        }
+
+        StringColumn  nameCol     = table.stringColumn(Recording.Column.RECORDING_NAME.header);
+        BooleanColumn excludedCol = table.booleanColumn(Recording.Column.EXCLUDE.header);
+
+        for (int row = 0; row < table.rowCount(); row++) {
+            if (nameCol.get(row).equals(recordingName)) {
+                excludedCol.set(row, excluded);
+                break;
+            }
+        }
+
+        MainIOInterface.writeSpecificRecordingsFile(
+                experimentPath.resolve(RECORDINGS_CSV),
+                table
+        );
     }
 }

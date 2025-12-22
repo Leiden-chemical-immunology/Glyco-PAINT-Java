@@ -84,13 +84,11 @@ public class RecordingControlsPanel {
         /** Called when the numeric display mode (None, Label, Square) is changed. */
         void onNumberModeChanged(SquareGridPanel.NumberMode mode);
 
-        /**
-         * Called when square control parameters are applied or previewed.
-         *
-         * @param scope  either "Preview" or "Apply"
-         * @param params container for visibility threshold settings
-         */
+        /** Called when square control parameters are applied or previewed.*/
         void onApplySquareControl(String scope, SquareControlParams params);
+
+        /** Called when the Exclude/Incluse button is pressed. */
+        void onExcludeToggleRequested();
     }
 
     private final JPanel  root;
@@ -100,6 +98,7 @@ public class RecordingControlsPanel {
     private final JButton playRecordingButton;
     private final JButton exportImageButton;
     private final JButton showSquaresButton;
+    private final JButton excludeButton;
 
     /**
      * Constructs a {@code RecordingControlsPanel} containing action buttons,
@@ -127,6 +126,7 @@ public class RecordingControlsPanel {
         playRecordingButton    = new JButton("Play Recording");
         exportImageButton      = new JButton("Export Image");
         showSquaresButton      = new JButton("Show Squares Data");
+        excludeButton          = new JButton("Exclude Recording");
 
         for (JButton button : new JButton[]{
                 filterRecordingsButton,
@@ -134,7 +134,8 @@ public class RecordingControlsPanel {
                 assignCellsButton,
                 playRecordingButton,
                 exportImageButton,
-                showSquaresButton
+                showSquaresButton,
+                excludeButton
         }) {
             button.setAlignmentX(Component.CENTER_ALIGNMENT);
             button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
@@ -157,6 +158,8 @@ public class RecordingControlsPanel {
         controls.add(exportImageButton);
         controls.add(Box.createVerticalStrut(10));
         controls.add(showSquaresButton);
+        controls.add(Box.createVerticalStrut(10));
+        controls.add(excludeButton);
 
         // === Borders and shading toggles ===
         JCheckBox showBorders = new JCheckBox("Show borders", true);
@@ -199,6 +202,7 @@ public class RecordingControlsPanel {
         playRecordingButton.addActionListener(   e -> listener.onPlayRecordingRequested());
         exportImageButton.addActionListener(     e -> listener.onExportLeftImageRequested());
         showSquaresButton.addActionListener(     e -> listener.onShowSquaresRequested());
+        excludeButton.addActionListener(         e -> listener.onExcludeToggleRequested());
 
         showBorders.addActionListener(           e -> listener.onBordersToggled(showBorders.isSelected()));
         showShading.addActionListener(           e -> listener.onShadingToggled(showShading.isSelected()));
@@ -242,5 +246,20 @@ public class RecordingControlsPanel {
         playRecordingButton.setEnabled(enabled);
         exportImageButton.setEnabled(enabled);
         showSquaresButton.setEnabled(enabled);
+        excludeButton.setEnabled(enabled);
+    }
+
+    public void setExcludeButtonText(boolean excluded) {
+        if (excludeButton == null) {
+            return;
+        }
+
+        excludeButton.setText(excluded ? "Include Recording" : "Exclude Recording");
+        Color defaultFg = UIManager.getColor("Button.foreground");
+        if (defaultFg == null) {
+            defaultFg = Color.BLACK;
+        }
+
+        excludeButton.setForeground(excluded ? Color.RED : defaultFg);
     }
 }

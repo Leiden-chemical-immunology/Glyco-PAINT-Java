@@ -47,6 +47,7 @@ import paint.viewer.ui.panels.SquareGridPanel;
 import paint.viewer.ui.panels.RecordingAttributesPanel;
 
 import javax.swing.*;
+import java.awt.Color;
 
 import static paint.shared.constants.PaintStringConstants.GENERATE_SQUARES;
 import static paint.shared.constants.PaintStringConstants.NUMBER_OF_SQUARES_IN_RECORDING;
@@ -71,6 +72,7 @@ public final class RecordingDisplayUpdater {
     private final JLabel                   experimentLabel;
     private final JLabel                   recordingLabel;
     private final RecordingAttributesPanel attributesPanel;
+    private final Color                    defaultRecordingLabelColor;
 
     /**
      * Creates a new updater bound to the UI components it controls.
@@ -88,11 +90,12 @@ public final class RecordingDisplayUpdater {
             JLabel recordingLabel,
             RecordingAttributesPanel attributesPanel
     ) {
-        this.leftGridPanel     = leftGridPanel;
-        this.rightImageLabel   = rightImageLabel;
-        this.experimentLabel   = experimentLabel;
-        this.recordingLabel    = recordingLabel;
-        this.attributesPanel   = attributesPanel;
+        this.leftGridPanel              = leftGridPanel;
+        this.rightImageLabel            = rightImageLabel;
+        this.experimentLabel            = experimentLabel;
+        this.recordingLabel             = recordingLabel;
+        this.attributesPanel            = attributesPanel;
+        this.defaultRecordingLabelColor = recordingLabel.getForeground();
     }
 
     /**
@@ -124,7 +127,7 @@ public final class RecordingDisplayUpdater {
                         + "   [" + (index + 1) + "/" + totalSize + "]"
         );
 
-        recordingLabel.setText("Recording: " + entry.getRecordingName());
+        applyExcludedUi(entry);
 
         // --- Attribute table ---
         int numberOfSquares = PaintConfig.getInt(
@@ -137,5 +140,31 @@ public final class RecordingDisplayUpdater {
 
         // --- Refresh grid ---
         leftGridPanel.repaint();
+    }
+
+    /**
+     * Updates the recording label to reflect whether the current recording is excluded.
+     * If excluded, appends "(Excluded)" and sets the label text to red.
+     */
+    public void applyExcludedUi(RecordingEntry entry) {
+        final boolean excluded = isExcluded(entry);
+        if (excluded) {
+            recordingLabel.setText("Recording: " + entry.getRecordingName() + " (Excluded)");
+            recordingLabel.setForeground(Color.RED);
+        } else {
+            recordingLabel.setText("Recording: " + entry.getRecordingName());
+            recordingLabel.setForeground(defaultRecordingLabelColor);
+        }
+    }
+
+    /**
+     * Attempts to read an "excluded" flag from the RecordingEntry / Recording model.
+     */
+    private static boolean isExcluded(RecordingEntry recordingEntry) {
+        if (recordingEntry == null) {
+            return false;
+        }
+
+        return recordingEntry.getRecording().isExcluded();
     }
 }
