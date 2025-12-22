@@ -288,6 +288,7 @@ public class TrackMateUISingle implements Command {
         } finally {
             running = false;
         }
+        PaintLogger.blankline();
 
         lastRecordingName = recName;
         lastThreshold     = threshold;
