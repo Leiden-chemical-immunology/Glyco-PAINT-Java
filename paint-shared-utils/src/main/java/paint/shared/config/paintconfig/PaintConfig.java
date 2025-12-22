@@ -194,6 +194,32 @@ public class PaintConfig {
         return GSON.toJson(store.root());
     }
 
+    public void removeValue(String section, String key, boolean autoSave) {
+        JsonObject sec = getSection(section);
+        if (sec != null) {
+            String real = jsonCase.findKeyIgnoreCase(sec, key);
+            if (real != null) {
+                sec.remove(real);
+                if (autoSave) save();
+            }
+        }
+    }
+
+    public void removeSectionValue(String section, boolean autoSave) {
+        store.removeSection(section);
+        if (autoSave) {
+            save();
+        }
+    }
+
+    public static void remove (String s, String k) {
+        instance().removeValue (s, k, true);
+    }
+
+    public static void removeSection(String s) {
+        instance().removeSectionValue(s, true);
+    }
+
     // ---------------------------------------------------------------------
     // Static API (shortcuts) — unchanged
     // ---------------------------------------------------------------------
