@@ -106,13 +106,7 @@ public class Viewer {
                     return true;
 
                 } catch (Exception ex) {
-                    PaintLogger.errorf("Viewer launch failed: %s", ex.getMessage());
-                    JOptionPane.showMessageDialog(
-                            null,
-                            "Viewer launch failed:\n" + ex.getMessage(),
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE
-                    );
+                    PaintLogger.errorf("Viewer launch failed");
                     return false;
                 }
             });
