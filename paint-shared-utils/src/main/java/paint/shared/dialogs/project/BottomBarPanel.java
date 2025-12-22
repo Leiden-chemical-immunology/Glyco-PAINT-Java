@@ -85,11 +85,16 @@ public class BottomBarPanel {
         // Sweep checkbox only exists in TRACKMATE mode
         if (mode == DialogMode.TRACKMATE_BATCH) {
             sweep           = new JCheckBox("Sweep", false);
-            saveExperiments = new JCheckBox("Save Experiments", false);
             left.add(sweep);
-            left.add(saveExperiments);
         } else {
             sweep           = null;
+        }
+
+        // SaveExperiments checkbox not in TRACKMATE_SINGLE mode
+        if (mode != DialogMode.TRACKMATE_SINGLE) {
+            saveExperiments = new JCheckBox("Save Experiments", false);
+            left.add(saveExperiments);
+        } else {
             saveExperiments = null;
         }
 
