@@ -226,7 +226,7 @@ public class ExperimentsPanel {
                         singleExperimentSelected = true;
                     }
                 } else {
-                    boolean saved = PaintConfig.getBoolean("Experiments", experimentName, false);
+                    boolean saved = PaintConfig.instance().getBooleanValueNoWarning("Experiments", experimentName, false);
                     abstractButton.setSelected(saved);
                 }
                 boxes.add(abstractButton);

@@ -80,7 +80,9 @@ public class PaintConfig {
     // Persistence
     // ---------------------------------------------------------------------
 
-    public void save() { store.save(); }
+    public void save() {
+        store.save();
+    }
 
     // ---------------------------------------------------------------------
     // Sweep defaults file (same behavior, new home calls writer)
@@ -154,6 +156,20 @@ public class PaintConfig {
             }
         }
         PaintLogger.warnf("No value for '%s', default %b applied", key, def);
+        setBooleanValue(section, key, def, true);
+        return def;
+    }
+
+    public boolean getBooleanValueNoWarning(String section, String key, boolean def) {
+        JsonObject sec = getSection(section);
+        if (sec != null) {
+            String real = jsonCase.findKeyIgnoreCase(sec, key);
+            if (real != null && sec.get(real).isJsonPrimitive()) {
+                try {
+                    return sec.getAsJsonPrimitive(real).getAsBoolean();
+                } catch (Exception ignored) { /* fallthrough */ }
+            }
+        }
         setBooleanValue(section, key, def, true);
         return def;
     }
