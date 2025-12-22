@@ -34,7 +34,7 @@ public class TrackMateSingleDialog extends JDialog {
         void run(String recordingName, int threshold) throws Exception;
     }
 
-    private final ButtonGroup recordingGroup = new ButtonGroup();
+    private final ButtonGroup        recordingGroup   = new ButtonGroup();
     private final List<JRadioButton> recordingButtons = new ArrayList<>();
 
     private final JSlider thresholdSlider;
