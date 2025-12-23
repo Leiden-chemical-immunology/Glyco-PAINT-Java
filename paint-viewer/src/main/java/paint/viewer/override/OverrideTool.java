@@ -48,7 +48,7 @@
 package paint.viewer.override;
 
 import paint.shared.objects.Square;
-import paint.shared.utils.PaintLogger;
+import paint.viewer.override.recording_exclude.RecordingExclude;
 import paint.viewer.override.recording_override.RecordingOverride;
 import paint.viewer.override.square_override.SquareOverride;
 import tech.tablesaw.api.Table;
@@ -60,6 +60,8 @@ import java.util.List;
 
 import static paint.shared.io.MainIOInterface.*;
 import static paint.shared.utils.SharedSquareUtils.applyVisibilityFilterOnRecording;
+import static paint.viewer.override.recording_exclude.RecordingExcludeApplier.applyRecordingExclude;
+import static paint.viewer.override.recording_exclude.RecordingExcludeApplier.loadRecordingExclude;
 import static paint.viewer.override.recording_override.RecordingOverrideApplier.loadRecordingOverride;
 import static paint.viewer.override.square_override.SquareOverrideApplier.loadSquareOverride;
 
@@ -177,6 +179,24 @@ public class OverrideTool {
             writeSpecificRecordingsFile(overrideRecordingsCsvPath, recordingsTable);
         }
 
+
+        ////////////////////////////////////////
+        // Process Exclude recordings
+        ////////////////////////////////////////
+
+        // Read the Recordings Exclude if it exists
+        Path recordingExcludePath = projectPath.resolve("Viewer").resolve("Recording Exclude.csv");
+        List<RecordingExclude> recordingExcludes = null;
+        if (Files.exists(recordingExcludePath)) {
+            recordingExcludes = loadRecordingExclude(recordingExcludePath);
+        }
+
+        // Apply the overrides and save the recordings
+        if (recordingExcludes != null) {
+            applyRecordingExclude(recordingsTable, projectPath);
+        }
+
+
         ////////////////////////////////////////
         // Process squares
         ////////////////////////////////////////
@@ -252,8 +272,6 @@ public class OverrideTool {
                 squaresTable.append(updatedSquaresTable);
             }
         }
-
-        PaintLogger.infof("Recording overrides applied: " + applied);
     }
 
     /**
@@ -294,7 +312,7 @@ public class OverrideTool {
             }
         }
 
-        PaintLogger.infof("Square overrides applied: " + applied);
+        // PaintLogger.infof("Square overrides applied: " + applied);
     }
 
     /**

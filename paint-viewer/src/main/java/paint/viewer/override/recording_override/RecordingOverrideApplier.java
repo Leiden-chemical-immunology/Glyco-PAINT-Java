@@ -118,7 +118,6 @@ public final class RecordingOverrideApplier {
             map.put(key(override.getExperimentName(), override.getRecordingName()), override);
         }
 
-        int applied = 0;
 
         for (RecordingEntry entry : entries) {
 
@@ -138,8 +137,6 @@ public final class RecordingOverrideApplier {
                 entry.getRecording().setMinRequiredRSquared(override.getMinRequiredRSquared());
                 entry.getRecording().setMaxAllowableVariability(override.getMaxAllowableVariability());
                 entry.getRecording().setNeighbourMode(override.getNeighbourMode());
-
-                applied++;
 
                 // LOG full detail for this recording
                 PaintLogger.infof(
@@ -161,8 +158,6 @@ public final class RecordingOverrideApplier {
                 );
             }
         }
-
-        // PaintLogger.infof("Recording overrides applied: " + applied);
     }
 
     // ────────────────────────────────────────────────────────────

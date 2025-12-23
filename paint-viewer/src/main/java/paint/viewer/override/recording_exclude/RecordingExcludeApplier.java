@@ -1,8 +1,6 @@
 package paint.viewer.override.recording_exclude;
 
 import paint.shared.utils.PaintLogger;
-import paint.viewer.model.RecordingEntry;
-import paint.viewer.override.recording_override.RecordingOverride;
 import tech.tablesaw.api.BooleanColumn;
 import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
@@ -10,15 +8,10 @@ import tech.tablesaw.api.Table;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
 
 import static paint.shared.constants.PaintStringConstants.*;
-import static paint.shared.constants.PaintStringConstants.MAX_ALLOWABLE_VARIABILITY;
-import static paint.shared.constants.PaintStringConstants.MIN_REQUIRED_R_SQUARED;
-import static paint.shared.constants.PaintStringConstants.NEIGHBOUR_MODE;
-import static paint.shared.io.MainIOInterface.readRecordingsTable;
 import static paint.shared.io.MainIOInterface.writeSpecificRecordingsFile;
 
 public class RecordingExcludeApplier {

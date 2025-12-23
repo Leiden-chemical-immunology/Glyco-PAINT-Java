@@ -258,7 +258,6 @@ public class SquareGridPanel extends JPanel {
         int squareH = getHeight() / rows;
         int row     = mouseY / squareH;
         int col     = mouseX / squareW;
-        int index   = row * cols + col;
 
         Square square = findSquareAt(row, col);
         if (square == null) {

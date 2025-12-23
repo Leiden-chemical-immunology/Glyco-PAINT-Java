@@ -847,7 +847,7 @@ public class ViewerFrame extends JFrame
                 Files.createDirectories(viewerDir);
             }
 
-            Path file = viewerDir.resolve("Recordings Exclude.csv");
+            Path file = viewerDir.resolve("Recording Exclude.csv");
 
             final String colName = "Recording Name";
             Table table;
