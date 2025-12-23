@@ -435,10 +435,10 @@ public class Recording {
             }
         }
 
-        sb.append(String.format("\t                Min Required Density Ratio     : %.4f%n", minRequiredDensityRatio));
-        sb.append(String.format("\t                Min Required R Squared         : %.4f%n", minRequiredRSquared));
-        sb.append(String.format("\t                Max Allowable Variability      : %.4f%n", maxAllowableVariability));
-        sb.append(String.format("\t                Neighbour Mode                 : %s%n", neighbourMode));
+        sb.append(String.format("\t                Min Required Density Ratio    : %.2f%n", minRequiredDensityRatio));
+        sb.append(String.format("\t                Min Required R Squared        : %.2f%n", minRequiredRSquared));
+        sb.append(String.format("\t                Max Allowable Variability     : %.2f%n", maxAllowableVariability));
+        sb.append(String.format("\t                Neighbour Mode                : %s%n", neighbourMode));
 
         return sb.toString();
     }
