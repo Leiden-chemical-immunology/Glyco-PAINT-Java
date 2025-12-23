@@ -1,21 +1,21 @@
 /*=============================================================================
- *  Class:        RecordingOverride.java
+ *  Class:        SquareOverride.java
  *  Package:      paint.shared.objects
  *
  *  PURPOSE:
- *    Represents an override entry for a Recording. Overrides are applied to the
- *    main Recordings table to correct or replace threshold parameters for a 
- *    specific recording identified by (experimentName, recordingName).
+ *    Represents an override entry for a Square. Overrides are applied to the
+ *    main Squares table to correct or replace the cellId for a specific square
+ *    identified by (experimentName, recordingName, squareId).
  *
  *  DESCRIPTION:
- *    This class models one row from the Recording Override CSV file. It contains
- *    plain fields with getters and setters so it can be parsed directly from CSV
- *    and consumed by RecordingOverrideApplier.
+ *    This class models one row from the Squares Override CSV file. It contains
+ *    only simple fields with getters and setters so it can be parsed directly
+ *    from CSV and used in the override-application process.
  *
  *  KEY FEATURES:
  *    • Plain data container (POJO).
  *    • Matches the CSV columns exactly.
- *    • Used by RecordingOverrideApplier to update Recording rows.
+ *    • Used by SquareOverrideApplier to update Square objects.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -30,24 +30,23 @@
  *    © 2025 Hans Bakker. All rights reserved.
 =============================================================================*/
 
-package paint.viewer.override;
+package paint.viewer.override.square_override;
 
-public class RecordingOverride {
+public class SquareOverride {
 
     private String experimentName;
     private String recordingName;
-
-    private double minRequiredDensityRatio;
-    private double minRequiredRSquared;
-    private double maxAllowableVariability;
-    private String neighbourMode;
+    private int    squareNumber;
+    private int    cellId;
+    private String timestamp;
 
     // ───────────────────────────────────────────────────────────────────────────────
     // CONSTRUCTORS
     // ───────────────────────────────────────────────────────────────────────────────
 
-    public RecordingOverride() {
+    public SquareOverride() {
     }
+
 
     // ───────────────────────────────────────────────────────────────────────────────
     // ACCESSORS
@@ -69,36 +68,24 @@ public class RecordingOverride {
         this.recordingName = recordingName;
     }
 
-    public double getMinRequiredDensityRatio() {
-        return minRequiredDensityRatio;
+    public int getSquareNumber() {
+        return squareNumber;
     }
 
-    public void setMinRequiredDensityRatio(double minRequiredDensityRatio) {
-        this.minRequiredDensityRatio = minRequiredDensityRatio;
+    public void setSquareNumber(int squareNumber) {
+        this.squareNumber = squareNumber;
     }
 
-    public double getMinRequiredRSquared() {
-        return minRequiredRSquared;
+    public int getCellId() {
+        return cellId;
     }
 
-    public void setMinRequiredRSquared(double minRequiredRSquared) {
-        this.minRequiredRSquared = minRequiredRSquared;
+    public void setCellId(int cellId) {
+        this.cellId = cellId;
     }
 
-    public double getMaxAllowableVariability() {
-        return maxAllowableVariability;
-    }
-
-    public void setMaxAllowableVariability(double maxAllowableVariability) {
-        this.maxAllowableVariability = maxAllowableVariability;
-    }
-
-    public String getNeighbourMode() {
-        return neighbourMode;
-    }
-
-    public void setNeighbourMode(String neighbourMode) {
-        this.neighbourMode = neighbourMode;
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
     }
 
     // ───────────────────────────────────────────────────────────────────────────────
@@ -107,13 +94,12 @@ public class RecordingOverride {
 
     @Override
     public String toString() {
-        return "RecordingOverride{" +
+        return "SquareOverride{" +
                 "experimentName='" + experimentName + '\'' +
                 ", recordingName='" + recordingName + '\'' +
-                ", minRequiredDensityRatio=" + minRequiredDensityRatio +
-                ", minRequiredRSquared=" + minRequiredRSquared +
-                ", maxAllowableVariability=" + maxAllowableVariability +
-                ", neighbourMode='" + neighbourMode + '\'' +
+                ", squareNumber=" + squareNumber +
+                ", cellId=" + cellId +
+                ", timestamp='" + timestamp + '\'' +
                 '}';
     }
 }

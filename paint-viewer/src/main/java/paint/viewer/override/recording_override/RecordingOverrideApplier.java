@@ -37,7 +37,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
 ==============================================================================*/
 
-package paint.viewer.override;
+package paint.viewer.override.recording_override;
 
 import static paint.shared.constants.PaintStringConstants.*;
 

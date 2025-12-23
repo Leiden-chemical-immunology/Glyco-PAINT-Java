@@ -57,9 +57,9 @@ import paint.viewer.ui.dialogs.CellAssignmentDialog;
 import paint.viewer.ui.dialogs.RecordingFilterDialog;
 import paint.viewer.ui.dialogs.SquareControlDialog;
 import paint.viewer.control.CellAssignmentManager;
-import paint.viewer.override.RecordingOverrideWriter;
+import paint.viewer.override.recording_override.RecordingOverrideWriter;
 import paint.viewer.control.SquareControlHandler;
-import paint.viewer.override.SquareOverrideWriter;
+import paint.viewer.override.square_override.SquareOverrideWriter;
 import paint.viewer.ui.panels.NavigationPanel;
 import paint.viewer.ui.panels.RecordingAttributesPanel;
 import paint.viewer.ui.panels.RecordingControlsPanel;
@@ -83,8 +83,8 @@ import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
 import static paint.shared.constants.PaintStringConstants.GENERATE_SQUARES;
 import static paint.shared.constants.PaintStringConstants.NUMBER_OF_SQUARES_IN_RECORDING;
 import static paint.viewer.override.OverrideTool.processOverride;
-import static paint.viewer.override.RecordingOverrideApplier.applyRecordingOverrides;
-import static paint.viewer.override.SquareOverrideApplier.applySquareOverrides;
+import static paint.viewer.override.recording_override.RecordingOverrideApplier.applyRecordingOverrides;
+import static paint.viewer.override.square_override.SquareOverrideApplier.applySquareOverrides;
 
 /**
  * The {@code RecordingViewerFrame} class defines the main window of the PAINT Viewer.

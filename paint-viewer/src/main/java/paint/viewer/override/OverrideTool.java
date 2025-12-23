@@ -49,6 +49,8 @@ package paint.viewer.override;
 
 import paint.shared.objects.Square;
 import paint.shared.utils.PaintLogger;
+import paint.viewer.override.recording_override.RecordingOverride;
+import paint.viewer.override.square_override.SquareOverride;
 import tech.tablesaw.api.Table;
 
 import java.nio.file.Files;
@@ -58,8 +60,8 @@ import java.util.List;
 
 import static paint.shared.io.MainIOInterface.*;
 import static paint.shared.utils.SharedSquareUtils.applyVisibilityFilterOnRecording;
-import static paint.viewer.override.RecordingOverrideApplier.loadRecordingOverride;
-import static paint.viewer.override.SquareOverrideApplier.loadSquareOverride;
+import static paint.viewer.override.recording_override.RecordingOverrideApplier.loadRecordingOverride;
+import static paint.viewer.override.square_override.SquareOverrideApplier.loadSquareOverride;
 
 import static paint.shared.constants.PaintStringConstants.*;
 import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;

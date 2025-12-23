@@ -41,7 +41,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
 ==============================================================================*/
 
-package paint.viewer.override;
+package paint.viewer.override.square_override;
 
 import static paint.shared.constants.PaintStringConstants.SQUARE_NUMBER;
 import static paint.shared.constants.PaintStringConstants.CELL_ID;
