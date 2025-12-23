@@ -80,6 +80,7 @@ public class Viewer {
             // --- Step 2: Initialise logging and configuration ---
             PaintConfig.initialise(projectPath);
             PaintLogger.initialise(projectPath, "Viewer");
+            PaintLogger.setLevel(PaintPrefs.getString("Runtime", "Log Level", "INFO"));
 
             // --- Step 3: Show the project specification dialog ---
             ProjectDialog specificationDialog =
