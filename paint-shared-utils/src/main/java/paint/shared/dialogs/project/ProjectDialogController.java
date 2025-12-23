@@ -203,7 +203,7 @@ public class ProjectDialogController {
         };
 
         Runnable onSuccess = () -> {
-            if (mode == DialogMode.TRACKMATE_SINGLE) {
+            if (mode == DialogMode.TRACKMATE_SINGLE || mode == DialogMode.VIEWER) {
                 // In SINGLE mode, OK just opens the modeless TrackMateSingleDialog.
                 // TrackMate runs later from that dialog, so don't claim success here.
                 bottom.resetOk(false); // or bottom.resetOk(validToRun()); if you prefer
