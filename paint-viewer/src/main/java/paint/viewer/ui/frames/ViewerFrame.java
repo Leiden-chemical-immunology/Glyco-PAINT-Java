@@ -305,6 +305,11 @@ public class ViewerFrame extends JFrame
      * @param index the target recording index to display.
      */
     private void showRecordingEntry(int index) {
+        // Reset grid interaction deterministically
+        leftGridPanel.setInteractionEnabled(true);
+        leftGridPanel.setSelectionEnabled(false);
+        leftGridPanel.setInfoPopupsEnabled(true);
+
         if (index < 0 || index >= recordingEntries.size()) {
             return;
         }
@@ -842,7 +847,7 @@ public class ViewerFrame extends JFrame
                 Files.createDirectories(viewerDir);
             }
 
-            Path file = viewerDir.resolve("Exclude Recordings.csv");
+            Path file = viewerDir.resolve("Recordings Exclude.csv");
 
             final String colName = "Recording Name";
             Table table;

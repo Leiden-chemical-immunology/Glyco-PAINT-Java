@@ -153,11 +153,20 @@ public class SquareGridPanel extends JPanel {
 
         // --- Mouse listener for selection and info popups ---
         addMouseListener(new MouseAdapter() {
+
             @Override
             public void mousePressed(MouseEvent e) {
+
+                // Right press: hide popup immediately (more reliable than mouseClicked)
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    hideInfoPopup();
+                    return;
+                }
+
                 if (!selectionEnabled) {
                     return;
                 }
+
                 dragStart = e.getPoint();
                 selectionRect = new Rectangle(dragStart);
             }
@@ -176,42 +185,42 @@ public class SquareGridPanel extends JPanel {
 
             @Override
             public void mouseClicked(MouseEvent e) {
+
                 int squareW = getWidth() / cols;
                 int squareH = getHeight() / rows;
                 int col     = e.getX() / squareW;
                 int row     = e.getY() / squareH;
 
+                // Selection mode: toggle selection
                 if (selectionEnabled) {
-                    for (Square square : squares) {
-                        if (square.getRowNumber() == row && square.getColNumber() == col) {
+                    Square square = findSquareAt(row, col);
+                    if (square != null) {
 
-                            // 🔹 Only allow user selection if the square is visible
-                            if (!square.isVisible()) {
-                                Toolkit.getDefaultToolkit().beep();
-                                return;
-                            }
-
-                            int sqNum = square.getSquareNumber();
-                            if (selectedSquaresNumbers.contains(sqNum)) {
-                                selectedSquaresNumbers.remove(sqNum);
-                            } else {
-                                selectedSquaresNumbers.add(sqNum);
-                            }
-
-                            SquareGridPanel.this.repaint();
-                            break;
+                        if (!square.isVisible()) {
+                            Toolkit.getDefaultToolkit().beep();
+                            return;
                         }
+
+                        int sqNum = square.getSquareNumber();
+                        if (selectedSquaresNumbers.contains(sqNum)) {
+                            selectedSquaresNumbers.remove(sqNum);
+                        } else {
+                            selectedSquaresNumbers.add(sqNum);
+                        }
+
+                        SquareGridPanel.this.repaint();
                     }
+                    return;
                 }
 
-                // Left-click shows info only if popups enabled; right-click hides popup
+                // Normal viewer mode: show info on LEFT click (keep here, but it will now be much more reliable)
                 if (SwingUtilities.isLeftMouseButton(e) && infoPopupsEnabled) {
                     showSquareInfo(e.getX(), e.getY());
-                } else if (SwingUtilities.isRightMouseButton(e)) {
-                    hideInfoPopup();
                 }
             }
         });
+
+
 
         // --- Mouse motion listener for drag-selection ---
         addMouseMotionListener(new MouseMotionAdapter() {
@@ -251,11 +260,10 @@ public class SquareGridPanel extends JPanel {
         int col     = mouseX / squareW;
         int index   = row * cols + col;
 
-        if (index < 0 || index >= squares.size()) {
+        Square square = findSquareAt(row, col);
+        if (square == null) {
             return;
         }
-
-        Square square     = squares.get(index);
         int    trackCount = square.getNumberOfTracks();
 
         String html = String.format(
@@ -626,5 +634,17 @@ public class SquareGridPanel extends JPanel {
             hideSquareInfoIfVisible();
         }
         this.infoPopupsEnabled = enabled;
+    }
+
+    private Square findSquareAt(int row, int col) {
+        if (squares == null) {
+            return null;
+        }
+        for (Square sq : squares) {
+            if (sq.getRowNumber() == row && sq.getColNumber() == col) {
+                return sq;
+            }
+        }
+        return null;
     }
 }
