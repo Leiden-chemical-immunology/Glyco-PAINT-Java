@@ -1,8 +1,12 @@
-# v0.0.132
+# v0.0.134
+- Fixed fatal bug in Viewer (problem occurred with Recordings file that contained Process Flag 'false' entries)
+
+
+# v0.0.133
 - Implemented 'Exclude' functionality in the Viewer.
 
 
-# v0.0.131
+# v0.0.132
 - Fixed bug in closing Viewer Windows.
 - Implemented a new TrackMate Single mode
 
