@@ -73,6 +73,7 @@ import tech.tablesaw.api.Table;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -211,7 +212,7 @@ public class ViewerFrame extends JFrame
         setSize(1500, 700);
         setLocationRelativeTo(null);
 
-        // Load first entry if available
+        // Load the first entry if available
         if (!recordingEntries.isEmpty()) {
             showRecordingEntry(0);
         }
@@ -235,7 +236,7 @@ public class ViewerFrame extends JFrame
             }
         });
 
-        // Startup behaviour: if already selected, perform import once
+        // Startup behavior: if already selected, perform import once
         if (importOverridesCheckBox.isSelected()) {
             performImportOverrides();
         }
@@ -410,6 +411,9 @@ public class ViewerFrame extends JFrame
         Path experimentPath = project.getProjectRootPath().resolve(entry.getExperimentName());
         String recordingName = entry.getRecording().getRecordingName();
         patchRecordingExcluded(experimentPath, recordingName, newExcluded);
+
+        // Write a record in the Exclude file
+        updateExcludeRecordingsCsv(recordingName, newExcluded);
 
         // 3) Update UI (button text + labels)
         controlsPanel.setExcludeButtonText(newExcluded);
@@ -829,5 +833,55 @@ public class ViewerFrame extends JFrame
                 experimentPath.resolve(RECORDINGS_CSV),
                 table
         );
+    }
+
+    private void updateExcludeRecordingsCsv(String recordingName, boolean excluded) {
+        try {
+            Path viewerDir = project.getProjectRootPath().resolve("Viewer");
+            if (Files.notExists(viewerDir)) {
+                Files.createDirectories(viewerDir);
+            }
+
+            Path file = viewerDir.resolve("Exclude Recordings.csv");
+
+            final String colName = "Recording Name";
+            Table table;
+
+            if (Files.exists(file)) {
+                table = Table.read().csv(file.toString());
+                if (!table.columnNames().contains(colName)) {
+                    // If file exists but is malformed, rebuild minimal table.
+                    table = Table.create("Exclude Recordings", StringColumn.create(colName));
+                }
+            } else {
+                table = Table.create("Exclude Recordings", StringColumn.create(colName));
+            }
+
+            StringColumn col = table.stringColumn(colName);
+
+            if (excluded) {
+                boolean already = false;
+                for (int i = 0; i < table.rowCount(); i++) {
+                    if (recordingName.equals(col.get(i))) {
+                        already = true;
+                        break;
+                    }
+                }
+                if (!already) {
+                    col.append(recordingName);
+                }
+            } else {
+                for (int i = table.rowCount() - 1; i >= 0; i--) {
+                    if (recordingName.equals(col.get(i))) {
+                        table = table.dropRows(i);
+                    }
+                }
+            }
+
+            table.write().csv(file.toString());
+
+        } catch (Exception e) {
+            PaintLogger.errorf("Failed to update Exclude Recordings.csv: %s", e.getMessage());
+        }
     }
 }
