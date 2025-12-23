@@ -114,7 +114,7 @@ public class RecordingAttributesPanel {
         model.addRow(new Object[]{"Threshold",         recordingEntry.getThreshold()});
         model.addRow(new Object[]{"Min Density Ratio", recordingEntry.getRecording().getMinRequiredDensityRatio()});
         model.addRow(new Object[]{"Max Variability",   recordingEntry.getRecording().getMaxAllowableVariability()});
-        model.addRow(new Object[]{"Min Required R²",   recordingEntry.getRecording().getMinRequiredRSquared()});
+        model.addRow(new Object[]{"Min Required R²",   format(recordingEntry.getRecording().getMinRequiredRSquared(), 2)});
         model.addRow(new Object[]{"Neighbour Mode",    recordingEntry.getRecording().getNeighbourMode()});
     }
 
@@ -150,7 +150,7 @@ public class RecordingAttributesPanel {
         model.addRow(new Object[]{"Threshold",           recordingEntry.getThreshold()});
         model.addRow(new Object[]{"Min Density Ratio",   format(minDensityRatio, 1)});
         model.addRow(new Object[]{"Max Variability",     format(maxVariability,  1)});
-        model.addRow(new Object[]{"Min R²",              format(minRSquared,     2)});
+        model.addRow(new Object[]{"Min Required R²",     format(minRSquared,     2)});
         model.addRow(new Object[]{"Neighbour Mode",      neighbourMode});
     }
 
