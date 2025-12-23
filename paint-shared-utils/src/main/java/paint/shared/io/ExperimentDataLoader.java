@@ -41,6 +41,7 @@ import paint.shared.objects.Square;
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.Table;
 
+import javax.swing.*;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -136,17 +137,27 @@ public final class ExperimentDataLoader {
                 return null;
             }
 
-            int numberOfRecordings          = recordings.size();
+            int numberOfRecordingsToProcess =
+                    (int) recordings.stream()
+                                    .filter(Recording::isProcessFlagSet)
+                                    .count();
             int numberOfSquares             = squaresTable.rowCount();
-            int numberOfSquaresPerRecording = (numberOfRecordings == 0) ? 0 : numberOfSquares / numberOfRecordings;
+            int numberOfSquaresPerRecording = (numberOfRecordingsToProcess == 0) ? 0 : numberOfSquares / numberOfRecordingsToProcess;
 
             int numberOfRows = (numberOfSquaresPerRecording > 0)
                     ? (int) Math.round(Math.sqrt(numberOfSquaresPerRecording))
                     : 0;
 
             if (numberOfRows > 0 && numberOfRows * numberOfRows != numberOfSquaresPerRecording) {
-                PaintLogger.errorf("Invalid squares layout in experiment '%s'", experimentName);
-                System.exit(-1);
+                String msg = "Invalid squares layout in experiment '" + experimentName + "'";
+                PaintLogger.errorf(msg);
+
+                JOptionPane.showMessageDialog(
+                        null,
+                        msg,
+                        "Invalid Configuration",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
 
             for (Recording rec : recordings) {
