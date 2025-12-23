@@ -89,7 +89,7 @@ public final class SquareOverrideApplier {
 
         Path csvPath = projectPath.resolve("Viewer").resolve("Square Override.csv");
         if (!Files.exists(csvPath)) {
-            PaintLogger.warnf("Square Override.csv not found → no overrides applied.");
+            PaintLogger.infof("No Square Override.csv present - no overrides to apply.");
             return;
         }
 

@@ -86,7 +86,7 @@ public final class RecordingOverrideApplier {
         Path csvPath = projectPath.resolve("Viewer").resolve("Recording Override.csv");
 
         if (!Files.exists(csvPath)) {
-            PaintLogger.warnf("Recording Override.csv not found → no overrides applied.");
+            PaintLogger.infof("No Recording Override.csv present - no overrides to apply.");
             return;
         }
 
@@ -162,7 +162,7 @@ public final class RecordingOverrideApplier {
             }
         }
 
-        PaintLogger.infof("Recording overrides applied: " + applied);
+        // PaintLogger.infof("Recording overrides applied: " + applied);
     }
 
     // ────────────────────────────────────────────────────────────
