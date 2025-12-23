@@ -206,8 +206,6 @@ You can edit the file with any text editor (e.g., Visual Studio Code, BBEdit, Su
 ![paint-config-json](./Pictures/paint-config-json.png)
 
 
-<div style="page-break-inside: avoid;">
-
 ## System-Wide Settings
 
 System-wide preferences are stored separately:
