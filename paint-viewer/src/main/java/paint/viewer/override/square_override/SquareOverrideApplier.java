@@ -51,6 +51,7 @@ import static paint.shared.constants.PaintStringConstants.RECORDING_NAME;
 
 import paint.shared.objects.Square;
 import paint.shared.utils.PaintLogger;
+import paint.shared.utils.PaintRuntime;
 import paint.viewer.model.RecordingEntry;
 
 import tech.tablesaw.api.Table;
@@ -61,6 +62,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Loads and applies per-square override values to Square objects.
@@ -130,6 +132,7 @@ public final class SquareOverrideApplier {
 
         int applied = 0;
 
+        String recordingName = "";
         for (Square square : squares) {
 
             String k = key(square.getExperimentName(),
@@ -140,24 +143,35 @@ public final class SquareOverrideApplier {
 
             // Only apply if present and different
             if (newCellId != null && newCellId != square.getCellId()) {
-
-                int oldCellId = square.getCellId();   // capture BEFORE change
+                recordingName = squares.get(0).getRecordingName();
+                int oldCellId  = square.getCellId();   // capture BEFORE change
 
                 square.setCellId(newCellId);
                 applied++;
 
-                PaintLogger.infof(
-                        "Updated square: %s / %s / #%3d | cellId %d → %d",
-                        square.getExperimentName(),
-                        square.getRecordingName(),
-                        square.getSquareNumber(),
-                        oldCellId,
-                        newCellId
-                );
+                if (PaintRuntime.isVerbose()) {
+                    PaintLogger.infof(
+                            "Updated square: %s / %s / #%3d | cellId %2d → %2d",
+                            square.getExperimentName(),
+                            square.getRecordingName(),
+                            square.getSquareNumber(),
+                            oldCellId,
+                            newCellId);
+                }
             }
         }
 
-        PaintLogger.infof("Square overrides applied: " + applied);
+        Map<String, Long> squaresPerRecording =
+                overrides.stream()
+                         .collect(Collectors.groupingBy(
+                                 SquareOverride::getRecordingName,
+                                 Collectors.counting()
+                         ));
+
+        PaintLogger.infof("Applied squares overrides:");
+        for (String rec : squaresPerRecording.keySet()) {
+            PaintLogger.infof("                    %s: %d squares", rec, squaresPerRecording.get(rec));
+        }
     }
 
     // ────────────────────────────────────────────────────────────

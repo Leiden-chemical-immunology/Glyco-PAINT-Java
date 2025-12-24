@@ -42,6 +42,7 @@ package paint.viewer.override.recording_override;
 import static paint.shared.constants.PaintStringConstants.*;
 
 import paint.shared.utils.PaintLogger;
+import paint.shared.utils.PaintRuntime;
 import paint.viewer.model.RecordingEntry;
 import tech.tablesaw.api.Table;
 
@@ -140,22 +141,32 @@ public final class RecordingOverrideApplier {
 
                 // LOG full detail for this recording
                 PaintLogger.infof(
-                        "Recording override applied: %s / %s\n" +
-                                "                    DensityRatio:   %.4f → %.4f\n" +
-                                "                    R²:             %.4f → %.4f\n" +
-                                "                    Variability:    %.4f → %.4f\n" +
-                                "                    NeighbourMode:  %s → %s",
-                        entry.getExperimentName(),
-                        entry.getRecordingName(),
-                        oldDensityRatio,
-                        override.getMinRequiredDensityRatio(),
-                        oldRSquared,
-                        override.getMinRequiredRSquared(),
-                        oldVariability,
-                        override.getMaxAllowableVariability(),
-                        oldNeighbourMode,
-                        override.getNeighbourMode()
-                );
+                        "Applied Recording override on %s",
+                        entry.getRecordingName());
+
+                if (oldDensityRatio != override.getMinRequiredDensityRatio()) {
+                    PaintLogger.infof("                    DensityRatio:   %-6.2f → %.2f",
+                                    oldDensityRatio, override.getMinRequiredDensityRatio());
+                }
+
+                if (oldRSquared != override.getMinRequiredRSquared()) {
+                    PaintLogger.infof("                    R²:             %-6.2f → %.2f",
+                                      oldRSquared,
+                                      override.getMinRequiredRSquared());
+                }
+
+                if (oldVariability != override.getMaxAllowableVariability()) {
+                    PaintLogger.infof("                    Variability:    %-6.2f → %.2f",
+                                      oldVariability,
+                                      override.getMaxAllowableVariability());
+                }
+
+                if (!oldNeighbourMode.equals(override.getNeighbourMode())) {
+                    PaintLogger.infof("                    Neighbour Mode: %6s → %s",
+                                      oldNeighbourMode,
+                                      override.getNeighbourMode());
+                }
+                PaintLogger.blankline();
             }
         }
     }

@@ -247,7 +247,7 @@ public class ViewerFrame extends JFrame
      * and applying them to the current project's recording and square metadata.
      */
     private void performImportOverrides() {
-        PaintLogger.infof("Import Overrides requested (checkbox is checked).");
+        PaintLogger.debugf("Import Overrides requested (checkbox is checked).");
 
         // 1) Apply overrides to all RecordingEntry objects
         applyRecordingOverrides(allRecordingEntries, project.getProjectRootPath());
