@@ -191,7 +191,7 @@ public final class SharedSquareUtils {
                 continue;
             }
 
-            // We test against RSquared. so we need to be certain there is actually a value
+            // We test against RSquared, so we need to be certain there is actually a value
             boolean passes =
                     !Double.isNaN(square.getRSquared()) &&
                             square.getDensityRatio() >= minRequiredDensityRatio &&

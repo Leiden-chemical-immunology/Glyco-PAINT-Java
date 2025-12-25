@@ -1,6 +1,8 @@
 package paint.viewer.override.recording_exclude;
 
+import javafx.print.PageOrientation;
 import paint.shared.utils.PaintLogger;
+import paint.viewer.model.RecordingEntry;
 import tech.tablesaw.api.BooleanColumn;
 import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
@@ -21,11 +23,21 @@ public class RecordingExcludeApplier {
      * RecordingEntry objects. If the override CSV does not exist,
      * the method exits without modifying anything.
      *
-     * @param recordingsTable list of in-memory RecordingEntry objects
      * @param projectPath      project root folder containing /Viewer
      */
-    public static void applyRecordingExclude(Table recordingsTable,
-            Path projectPath) {
+    public static void applyRecordingExcludes(List<RecordingEntry> recordingEntries, Path projectPath) {
+        Path csvPath = projectPath.resolve("Viewer").resolve("Recording Exclude.csv");
+
+        if (!Files.exists(csvPath)) {
+            PaintLogger.infof("No Recording Override.csv present - no overrides to apply.");
+            return;
+        }
+
+        List<RecordingExclude> excludes = loadRecordingExclude(csvPath);
+        applyInternal(projectPath, recordingEntries, excludes);
+    }
+
+    public static void applyRecordingExcludes(Table recordingsTable, Path projectPath) {
 
         Path csvPath = projectPath.resolve("Viewer").resolve("Recording Exclude.csv");
 
@@ -55,15 +67,15 @@ public class RecordingExcludeApplier {
     private static void applyInternal(Path projectPath, Table recordingsTable,
             List<RecordingExclude> excludes) {
 
-        // Reset all the Exclude flags to false
-        // Table recordingsTable  = readRecordingsTable(projectPath);
-
         BooleanColumn excludeCol = recordingsTable.booleanColumn("Exclude");
 
         for (int i = 0; i < excludeCol.size(); i++) {
             excludeCol.set(i, false);
         }
 
+        // You also need to update the recording entries!
+
+        boolean first = true;
         for (RecordingExclude exclude : excludes) {
             StringColumn  nameCol      = recordingsTable.stringColumn("Recording Name");
             String        recordingName = exclude.getRecordingName();
@@ -71,13 +83,40 @@ public class RecordingExcludeApplier {
             for (int row = 0; row < recordingsTable.rowCount(); row++) {
                 if (recordingName.equals(nameCol.get(row))) {
                     excludeCol.set(row, true);
+                    if (first) {
+                        PaintLogger.blankline();
+                        first = false;
+                    }
                     PaintLogger.infof("Recording excluded: " + recordingName);
                     break;
                 }
             }
         }
         Path filePath = projectPath.resolve("Recordings-override.csv");
-        writeSpecificRecordingsFile(filePath, recordingsTable);
+        // writeSpecificRecordingsFile(filePath, recordingsTable);
+    }
+
+    private static void applyInternal(Path projectPath, List<RecordingEntry> recordingEntries,
+            List<RecordingExclude> excludes) {
+
+        // You also need to update the recording entries!
+        for (RecordingEntry entry : recordingEntries) {
+            entry.getRecording().setExcluded(false);
+        }
+
+        for (RecordingExclude exclude : excludes) {
+            String recordingName = exclude.getRecordingName();
+
+            for (RecordingEntry entry : recordingEntries) {
+                if (recordingName.equals(entry.getRecordingName())) {
+                    entry.getRecording().setExcluded(true);
+                    PaintLogger.infof("Recording excluded: " + recordingName);
+                    break;
+                }
+            }
+        }
+        Path filePath = projectPath.resolve("Recordings-override.csv");
+        //writeSpecificRecordingsFile(filePath, recordingsTable);      //@@@@@
     }
 
     // ────────────────────────────────────────────────────────────

@@ -86,8 +86,7 @@ public final class SquareOverrideApplier {
      * @param recordingEntries all recordings whose squares should be updated
      * @param projectPath      the project root containing /Viewer/Square Override.csv
      */
-    public static void applySquareOverrides(List<RecordingEntry> recordingEntries,
-            Path projectPath) {
+    public static void applySquareOverrides(List<RecordingEntry> recordingEntries, Path projectPath) {
 
         Path csvPath = projectPath.resolve("Viewer").resolve("Square Override.csv");
         if (!Files.exists(csvPath)) {
@@ -117,8 +116,7 @@ public final class SquareOverrideApplier {
      * @param squares   list of Square objects from one or more recordings
      * @param overrides parsed override objects from CSV
      */
-    private static void applyInternal(List<Square> squares,
-            List<SquareOverride> overrides) {
+    private static void applyInternal(List<Square> squares, List<SquareOverride> overrides) {
 
         // Map: key(exp, rec, square) → cellId
         Map<String, Integer> overrideCellIds = new HashMap<>();
@@ -132,18 +130,20 @@ public final class SquareOverrideApplier {
 
         int applied = 0;
 
-        String recordingName = "";
+        //String recordingName = "";
         for (Square square : squares) {
 
-            String k = key(square.getExperimentName(),
-                           square.getRecordingName(),
-                           square.getSquareNumber());
+            String experimentName = square.getExperimentName();
+            String recordingName  = square.getRecordingName();
+            int    squareNumber   = square.getSquareNumber();
 
-            Integer newCellId = overrideCellIds.get(k);
+            String key = key(experimentName, recordingName, squareNumber);
+
+            Integer newCellId = overrideCellIds.get(key);
 
             // Only apply if present and different
             if (newCellId != null && newCellId != square.getCellId()) {
-                recordingName = squares.get(0).getRecordingName();
+                //recordingName = squares.get(0).getRecordingName();
                 int oldCellId  = square.getCellId();   // capture BEFORE change
 
                 square.setCellId(newCellId);
@@ -161,16 +161,18 @@ public final class SquareOverrideApplier {
             }
         }
 
-        Map<String, Long> squaresPerRecording =
-                overrides.stream()
-                         .collect(Collectors.groupingBy(
-                                 SquareOverride::getRecordingName,
-                                 Collectors.counting()
-                         ));
+        if (applied > 0) {
+            Map<String, Long> squaresPerRecording =
+                    overrides.stream()
+                             .collect(Collectors.groupingBy(
+                                     SquareOverride::getRecordingName,
+                                     Collectors.counting()
+                             ));
 
-        PaintLogger.infof("Applied squares overrides:");
-        for (String rec : squaresPerRecording.keySet()) {
-            PaintLogger.infof("                    %s: %d squares", rec, squaresPerRecording.get(rec));
+            PaintLogger.infof("Applied squares overrides:");
+            for (String rec : squaresPerRecording.keySet()) {
+                PaintLogger.infof("                    %s: %d squares", rec, squaresPerRecording.get(rec));
+            }
         }
     }
 

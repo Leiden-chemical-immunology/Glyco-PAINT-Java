@@ -42,7 +42,6 @@ package paint.viewer.override.recording_override;
 import static paint.shared.constants.PaintStringConstants.*;
 
 import paint.shared.utils.PaintLogger;
-import paint.shared.utils.PaintRuntime;
 import paint.viewer.model.RecordingEntry;
 import tech.tablesaw.api.Table;
 
@@ -81,8 +80,7 @@ public final class RecordingOverrideApplier {
      * @param recordingEntries list of in-memory RecordingEntry objects
      * @param projectPath      project root folder containing /Viewer
      */
-    public static void applyRecordingOverrides(List<RecordingEntry> recordingEntries,
-            Path projectPath) {
+    public static void applyRecordingOverrides(List<RecordingEntry> recordingEntries, Path projectPath) {
 
         Path csvPath = projectPath.resolve("Viewer").resolve("Recording Override.csv");
 
@@ -109,10 +107,8 @@ public final class RecordingOverrideApplier {
      * @param entries   recording entries to update
      * @param overrides list of overrides parsed from CSV
      */
-    private static void applyInternal(List<RecordingEntry> entries,
-            List<RecordingOverride> overrides) {
+    private static void applyInternal(List<RecordingEntry> entries, List<RecordingOverride> overrides) {
 
-        // Map: "exp§rec" → RecordingOverride
         Map<String, RecordingOverride> map = new HashMap<>();
 
         for (RecordingOverride override : overrides) {
@@ -122,8 +118,10 @@ public final class RecordingOverrideApplier {
 
         for (RecordingEntry entry : entries) {
 
-            String k = key(entry.getExperimentName(), entry.getRecordingName());
-            RecordingOverride override = map.get(k);
+            String experimentName = entry.getExperimentName();
+            String recordingName  = entry.getRecordingName();
+
+            RecordingOverride override = map.get(key(experimentName, recordingName));
 
             if (override != null) {
 
