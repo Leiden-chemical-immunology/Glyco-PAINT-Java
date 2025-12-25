@@ -3,34 +3,40 @@
  *  Package:      paint.viewer.override
  *
  *  PURPOSE:
- *    Standalone command-line utility for applying Recording and Square override
- *    CSV files to a PAINT project. This tool reads the project's Recordings.csv
- *    and Squares.csv files, loads applicable overrides from the Viewer folder,
- *    applies all modifications, and writes new CSV files suffixed with a
- *    user-defined extension (default: "-override").
+ *    Standalone command-line utility for applying Viewer-generated override data
+ *    to a PAINT project. It reads the project's core CSV files (Recordings,
+ *    Squares, and optionally Tracks), loads override/exclude instructions from
+ *    the <project>/Viewer folder, applies the mutations in-memory, and writes
+ *    new CSV outputs with a safe suffix (default: "-override").
  *
  *  DESCRIPTION:
- *    The ExportOverridesFromViewer performs four major operations:
+ *    ExportOverridesFromViewer performs up to three independent operations:
  *
- *      1. Loads the Squares.csv and Recordings.csv tables for a project.
- *      2. Loads "Recording Override.csv" and "Square Override.csv" files when
- *         present in the project's Viewer directory.
- *      3. Applies the loaded overrides:
- *          • Recording overrides: update filtering thresholds (density ratio,
- *            R², variability, neighbour mode) and recompute square visibility.
- *          • Square overrides: update cell assignments for individual squares.
- *      4. Writes new CSV files containing the overridden data, preserving the
- *         original versions and preventing accidental overwrites.
+ *      1) Recording overrides
+ *         • Reads "Recording Override.csv" (if present)
+ *         • Applies per-recording filtering thresholds (density ratio, R²,
+ *           variability, neighbour mode)
+ *         • Recomputes square visibility for affected recordings
  *
- *    The tool is typically executed automatically when the Viewer closes with
- *    "Import Overrides" enabled, but may be run manually for batch processing.
+ *      2) Recording excludes
+ *         • Reads "Recording Exclude.csv" (if present)
+ *         • Sets the Recordings "Exclude" flag for listed recordings
+ *         • Removes excluded recordings from Squares and Tracks tables
+ *           (Tracks is only loaded/updated when an exclude file exists)
+ *
+ *      3) Square overrides
+ *         • Reads "Square Override.csv" (if present)
+ *         • Applies per-square Cell ID corrections
+ *
+ *    Outputs are written as new CSV files in the project root to avoid
+ *    accidental overwrites of the original inputs.
  *
  *  KEY FEATURES:
- *    • Fully CLI-driven, no GUI dependencies.
- *    • Reads/writes Tablesaw CSV structures.
- *    • Atomic override handling for both recordings and squares.
- *    • Recomputes square visibility after filtering thresholds are replaced.
- *    • Produces new CSV files with a safe extension suffix.
+ *    • Fully CLI-driven (no GUI dependencies).
+ *    • Uses Tablesaw for CSV I/O and column-level mutations.
+ *    • Applies recording overrides, recording excludes, and square overrides.
+ *    • Recomputes visibility for squares when thresholds change.
+ *    • Writes results to new files using a user-defined suffix.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -39,7 +45,7 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-11-17
+ *    2025-12-25
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -68,17 +74,23 @@ import static paint.shared.utils.SharedSquareUtils.applyVisibilityFilterOnRecord
 import static paint.viewer.override.recording_exclude.ImportRecordingExclude.*;
 
 import static paint.shared.constants.PaintStringConstants.*;
+import static paint.viewer.override.recording_override.ImportRecordingOverride.loadRecordingOverride;
+import static paint.viewer.override.square_override.ImportSquareOverride.loadSquareOverride;
 
 /**
- * Command-line utility for applying both Recording and Square override files
- * to a PAINT project. This tool processes:
+ * Command-line utility for applying Viewer-generated override and exclude CSV
+ * files to a PAINT project.
+ *
+ * <p>This tool processes up to three files in {@code <project>/Viewer}:</p>
  * <ul>
- *   <li>{@code Recording Override.csv}</li>
- *   <li>{@code Square Override.csv}</li>
+ *   <li>{@code Recording Override.csv} (optional)</li>
+ *   <li>{@code Recording Exclude.csv} (optional)</li>
+ *   <li>{@code Square Override.csv} (optional)</li>
  * </ul>
- * and generates updated CSV files containing the applied corrections.
- * <p>
- * Intended for automatic or manual batch override processing.
+ *
+ * <p>The tool reads the project-level input tables (Recordings, Squares, and
+ * optionally Tracks), applies all requested mutations in-memory, and writes
+ * new CSV outputs with a safe suffix (default: {@code -override}).</p>
  */
 public class ExportOverridesFromViewer {
 
@@ -113,10 +125,14 @@ public class ExportOverridesFromViewer {
     }
 
     /**
-     * Executes the full override procedure on the given project path.
+     * Executes the full override/exclude procedure on the given project path.
+     *
+     * <p>Inputs are read from the project root. Override/exclude instructions are
+     * read from {@code <project>/Viewer}. Outputs are written back into the
+     * project root with a suffix (default: {@code -override}).</p>
      *
      * @param projectPath project root directory
-     * @param extension   extension added to output CSV files (e.g. "-override")
+     * @param extension   suffix added to output CSV files (e.g. {@code -override})
      */
     public static void exportOverrides(Path projectPath, String extension) {
 
@@ -293,12 +309,12 @@ public class ExportOverridesFromViewer {
     }
 
     /**
-     * Applies all RecordingOverride rows to the recordings table and recalculates
-     * visibility of squares for the affected recordings.
+     * Applies all {@link RecordingOverride} rows to the recordings table and
+     * recomputes square visibility for affected recordings.
      *
-     * @param recordingsTable target recordings table
-     * @param squaresTable    target squares table
-     * @param overrides       list of RecordingOverride objects
+     * @param recordingsTable target Recordings table (mutated in-place)
+     * @param squaresTable    target Squares table (mutated in-place)
+     * @param overrides       parsed override rows
      */
     public static void applyRecordingOverrides(Table recordingsTable, Table squaresTable, List<RecordingOverride> overrides) {
 
@@ -350,11 +366,13 @@ public class ExportOverridesFromViewer {
     }
 
     /**
-     * Applies all SquareOverride rows to the squares table.
-     * Only squares matching (experiment, recording, squareNumber) are updated.
+     * Applies all {@link SquareOverride} rows to the squares table.
      *
-     * @param squaresTable target squares table
-     * @param overrides    list of SquareOverride objects
+     * <p>Only rows matching the composite key
+     * {@code (experimentName, recordingName, squareNumber)} are updated.</p>
+     *
+     * @param squaresTable target Squares table (mutated in-place)
+     * @param overrides    parsed override rows
      */
     public static void applySquareOverrides(Table squaresTable, List<SquareOverride> overrides) {
 
@@ -403,7 +421,16 @@ public class ExportOverridesFromViewer {
     }
 
 
-
+    /**
+     * Applies recording excludes from {@code Viewer/Recording Exclude.csv} by
+     * setting the "Exclude" flag in the provided Recordings table.
+     *
+     * <p>This method does not delete rows from other tables; the caller may
+     * choose to remove excluded recordings from Squares/Tracks.</p>
+     *
+     * @param recordingsTable target Recordings table (mutated in-place)
+     * @param projectPath     project root directory
+     */
     public static void applyRecordingExcludes(Table recordingsTable, Path projectPath) {
 
         PaintLogger.infof("Processing Recordings that were exclude");
@@ -436,84 +463,14 @@ public class ExportOverridesFromViewer {
         }
     }
 
-    /**
-     * Composite key utility for (experiment, recording, square).
-     */
+    /** Composite key utility for (experiment, recording, squareNumber). */
     private static String key(String exp, String rec, int sq) {
         return exp + "§" + rec + "§" + sq;
     }
 
-    /**
-     * Composite key utility for (experiment, recording).
-     */
+    /** Composite key utility for (experiment, recording). */
     private static String key(String exp, String rec) {
         return exp + "§" + rec;
-    }
-
-    /**
-     * Loads all rows from the `Recording Override.csv` file into a list of
-     * RecordingOverride objects.
-     *
-     * @param csvFile path to Recording Override.csv
-     * @return list of parsed RecordingOverride objects
-     */
-    public static List<RecordingOverride> loadRecordingOverride(Path csvFile) {
-
-        List<RecordingOverride> list = new ArrayList<>();
-
-        try {
-            Table table = Table.read().csv(csvFile.toString());
-
-            for (int i = 0; i < table.rowCount(); i++) {
-                RecordingOverride recordingOverride = new RecordingOverride();
-
-                recordingOverride.setExperimentName(          table.column(EXPERIMENT_NAME).get(i).toString());
-                recordingOverride.setRecordingName(           table.column(RECORDING_NAME).get(i).toString());
-                recordingOverride.setMinRequiredDensityRatio( Double.parseDouble(table.column(MIN_REQUIRED_DENSITY_RATIO).get(i).toString()));
-                recordingOverride.setMinRequiredRSquared(     Double.parseDouble(table.column(MIN_REQUIRED_R_SQUARED).get(i).toString()));
-                recordingOverride.setMaxAllowableVariability( Double.parseDouble(table.column(MAX_ALLOWABLE_VARIABILITY).get(i).toString()));
-                recordingOverride.setNeighbourMode(           table.column(NEIGHBOUR_MODE).get(i).toString());
-
-                list.add(recordingOverride);
-            }
-        } catch (Exception ex) {
-            PaintLogger.errorf( "Error reading Recording Override.csv → " + ex.getMessage());
-        }
-
-        return list;
-    }
-
-    /**
-     * Loads square overrides from "Square Override.csv".
-     *
-     * @param csvFile full path to the override file
-     * @return a list of SquareOverride objects
-     */
-    public static List<SquareOverride> loadSquareOverride(Path csvFile) {
-
-        List<SquareOverride> list = new ArrayList<>();
-
-        try {
-            Table table = Table.read().csv(csvFile.toString());
-
-            for (int i = 0; i < table.rowCount(); i++) {
-
-                SquareOverride squareOverride = new SquareOverride();
-
-                squareOverride.setExperimentName(table.column(EXPERIMENT_NAME).get(i).toString());
-                squareOverride.setRecordingName(table.column(RECORDING_NAME).get(i).toString());
-                squareOverride.setSquareNumber(Integer.parseInt(table.column(SQUARE_NUMBER).get(i).toString()));
-                squareOverride.setCellId(Integer.parseInt(table.column(CELL_ID).get(i).toString()));
-                squareOverride.setTimestamp(table.column(TIME_STAMP).get(i).toString());
-
-                list.add(squareOverride);
-            }
-
-        } catch (Exception ex) {
-            PaintLogger.errorf("Error reading Square Override.csv → " + ex.getMessage());
-        }
-
-        return list;
     }
 
 }

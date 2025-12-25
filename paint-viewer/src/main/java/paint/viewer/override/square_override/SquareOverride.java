@@ -1,30 +1,36 @@
 /*=============================================================================
  *  Class:        SquareOverride.java
- *  Package:      paint.shared.objects
+ *  Package:      paint.viewer.override.square_override
  *
  *  PURPOSE:
- *    Represents an override entry for a Square. Overrides are applied to the
- *    main Squares table to correct or replace the cellId for a specific square
- *    identified by (experimentName, recordingName, squareId).
+ *    Represents a single per-square override entry originating from the Viewer
+ *    override CSV. A SquareOverride replaces the {@code cellId} for one specific
+ *    square identified by (experimentName, recordingName, squareNumber).
  *
  *  DESCRIPTION:
- *    This class models one row from the Squares Override CSV file. It contains
- *    only simple fields with getters and setters so it can be parsed directly
- *    from CSV and used in the override-application process.
+ *    This class models one row in:
+ *
+ *        <project>/Viewer/Square Override.csv
+ *
+ *    It is a simple POJO with getters/setters so it can be:
+ *      1) parsed directly from CSV, and
+ *      2) consumed by override application code (e.g. ImportSquareOverride).
+ *
+ *    No validation or persistence logic is implemented here.
  *
  *  KEY FEATURES:
- *    • Plain data container (POJO).
- *    • Matches the CSV columns exactly.
- *    • Used by ImportSquareOverride to update Square objects.
+ *    • Plain data container (POJO) for square overrides.
+ *    • Mirrors the CSV columns used by the Viewer.
+ *    • Supports deterministic matching via experiment/recording/squareNumber.
  *
  *  AUTHOR:
  *    Hans Bakker
  *
  *  MODULE:
- *    paint-shared-utils
+ *    paint-viewer
  *
  *  UPDATED:
- *    2025-11-11
+ *    2025-12-25
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -32,58 +38,110 @@
 
 package paint.viewer.override.square_override;
 
+/**
+ * Data container representing a single row from {@code Square Override.csv}.
+ * <p>
+ * Each instance identifies one square via:
+ * <ul>
+ *   <li>{@code experimentName}</li>
+ *   <li>{@code recordingName}</li>
+ *   <li>{@code squareNumber}</li>
+ * </ul>
+ * and provides the overridden {@code cellId} (plus an informational timestamp).
+ * <p>
+ * This class contains no business logic; it is intended for CSV parsing and
+ * in-memory override application.
+ */
 public class SquareOverride {
 
+    /** Experiment identifier used for matching. */
     private String experimentName;
+
+    /** Recording identifier used for matching. */
     private String recordingName;
+
+    /** Square number within the recording used for matching. */
     private int    squareNumber;
+
+    /** Overridden cell ID to apply to the matched square. */
     private int    cellId;
+
+    /** Timestamp captured when the override was written (informational). */
     private String timestamp;
 
     // ───────────────────────────────────────────────────────────────────────────────
     // CONSTRUCTORS
     // ───────────────────────────────────────────────────────────────────────────────
 
+    /** Creates an empty SquareOverride (typically populated via CSV parsing). */
     public SquareOverride() {
     }
-
 
     // ───────────────────────────────────────────────────────────────────────────────
     // ACCESSORS
     // ───────────────────────────────────────────────────────────────────────────────
 
+    /** @return experiment name used for matching */
     public String getExperimentName() {
         return experimentName;
     }
 
+    /**
+     * Sets the experiment name used for matching.
+     *
+     * @param experimentName experiment identifier
+     */
     public void setExperimentName(String experimentName) {
         this.experimentName = experimentName;
     }
 
+    /** @return recording name used for matching */
     public String getRecordingName() {
         return recordingName;
     }
 
+    /**
+     * Sets the recording name used for matching.
+     *
+     * @param recordingName recording identifier
+     */
     public void setRecordingName(String recordingName) {
         this.recordingName = recordingName;
     }
 
+    /** @return square number used for matching */
     public int getSquareNumber() {
         return squareNumber;
     }
 
+    /**
+     * Sets the square number used for matching.
+     *
+     * @param squareNumber square index/number within the recording
+     */
     public void setSquareNumber(int squareNumber) {
         this.squareNumber = squareNumber;
     }
 
+    /** @return overridden cell ID */
     public int getCellId() {
         return cellId;
     }
 
+    /**
+     * Sets the overridden cell ID to apply to the matched square.
+     *
+     * @param cellId new cell assignment
+     */
     public void setCellId(int cellId) {
         this.cellId = cellId;
     }
 
+    /**
+     * Sets the informational timestamp associated with this override.
+     *
+     * @param timestamp timestamp string as written in the CSV
+     */
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
     }
@@ -92,6 +150,11 @@ public class SquareOverride {
     // DEBUG
     // ───────────────────────────────────────────────────────────────────────────────
 
+    /**
+     * Debug-friendly representation of this override row.
+     *
+     * @return string representation
+     */
     @Override
     public String toString() {
         return "SquareOverride{" +

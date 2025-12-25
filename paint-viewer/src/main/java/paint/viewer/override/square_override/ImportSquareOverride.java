@@ -1,32 +1,33 @@
 /*==============================================================================
  *  Class:        ImportSquareOverride.java
- *  Package:      paint.viewer.override
+ *  Package:      paint.viewer.override.square_override
  *
  *  PURPOSE:
- *    Applies per-square cell assignment overrides to in-memory Square objects
- *    during project loading or batch override processing. Overrides may be
- *    defined for any combination of experiment, recording, and square number.
+ *    Loads and applies per-square cell-assignment overrides (cellId) from the
+ *    Viewer override CSV to in-memory Square objects. This is used when the
+ *    Viewer loads a project or when override import is triggered.
  *
  *  DESCRIPTION:
- *    This utility reads "Square Override.csv" from the <project>/Viewer
- *    directory and applies the cellId values to Square objects held inside
- *    RecordingEntry instances or provided via direct square lists.
+ *    Reads the file:
  *
- *    The override file contains rows structured as:
+ *        <project>/Viewer/Square Override.csv
  *
- *        experimentName, recordingName, squareNumber, cellId, timestamp
+ *    Each CSV row identifies a square by:
  *
- *    Overrides are matched via a composite key:
+ *        experimentName, recordingName, squareNumber
+ *
+ *    and provides an updated cellId plus a timestamp. Overrides are matched by
+ *    a stable composite key:
  *
  *        experimentName + "§" + recordingName + "§" + squareNumber
  *
- *    Only in-memory mutation occurs here. The writer responsible for
- *    generating the override CSV is {@link paint.viewer.override.WriteSquareOverride}.
+ *    This class performs in-memory mutation only; it does not write any files.
+ *    Writing/maintaining the override CSV is handled elsewhere.
  *
  *  KEY FEATURES:
- *    • Reads and applies overrides to Square objects.
- *    • Composite-key lookup for fast matching.
- *    • Supports applying overrides to RecordingEntry collections or raw Square lists.
+ *    • Fast composite-key lookup for per-square updates.
+ *    • Applies overrides across one or many recordings via flattened square list.
+ *    • Optional verbose logging per updated square.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -35,7 +36,7 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-11-17
+ *    2025-12-25
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -65,13 +66,15 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Loads and applies per-square override values to Square objects.
+ * Loads and applies per-square override values to {@link Square} objects.
  * <p>
  * Each override row in the CSV sets a new {@code cellId} for one specific square
  * in a specific recording. Matching uses a stable composite key:
  * <pre>
  *   experimentName + "§" + recordingName + "§" + squareNumber
  * </pre>
+ * <p>
+ * This class mutates in-memory squares only; it does not persist any output.
  */
 public final class ImportSquareOverride {
 
@@ -80,11 +83,11 @@ public final class ImportSquareOverride {
     // ────────────────────────────────────────────────────────────
 
     /**
-     * Loads overrides (if present) and applies them to all Square objects
-     * found inside the provided RecordingEntry list.
+     * Loads overrides (if present) and applies them to all {@link Square} objects
+     * referenced by the provided {@link RecordingEntry} list.
      *
      * @param recordingEntries all recordings whose squares should be updated
-     * @param projectPath      the project root containing /Viewer/Square Override.csv
+     * @param projectPath      the project root containing {@code Viewer/Square Override.csv}
      */
     public static void importSquareOverrides(List<RecordingEntry> recordingEntries, Path projectPath) {
 
@@ -96,7 +99,7 @@ public final class ImportSquareOverride {
 
         List<SquareOverride> overrides = loadSquareOverride(csvPath);
 
-        // Flatten all squares from all recordings
+        // Flatten all squares from all recordings into one list so overrides can be applied in one pass.
         List<Square> allSquares = new ArrayList<>();
         for (RecordingEntry recordingEntry : recordingEntries) {
             allSquares.addAll(recordingEntry.getRecording().getSquaresOfRecording());
@@ -110,15 +113,15 @@ public final class ImportSquareOverride {
     // ────────────────────────────────────────────────────────────
 
     /**
-     * Applies overrides to the provided list of Square objects.
+     * Applies overrides to the provided list of {@link Square} objects.
      * Only squares with a matching composite key are updated.
      *
      * @param squares   list of Square objects from one or more recordings
-     * @param overrides parsed override objects from CSV
+     * @param overrides parsed override objects loaded from CSV
      */
     private static void applyInternal(List<Square> squares, List<SquareOverride> overrides) {
 
-        // Map: key(exp, rec, square) → cellId
+        // Map: key(exp, rec, squareNumber) → overridden cellId
         Map<String, Integer> overrideCellIds = new HashMap<>();
 
         for (SquareOverride override : overrides) {
@@ -130,7 +133,7 @@ public final class ImportSquareOverride {
 
         int applied = 0;
 
-        //String recordingName = "";
+        // Apply overrides in-place to the in-memory Square list.
         for (Square square : squares) {
 
             String experimentName = square.getExperimentName();
@@ -141,9 +144,8 @@ public final class ImportSquareOverride {
 
             Integer newCellId = overrideCellIds.get(key);
 
-            // Only apply if present and different
+            // Only apply if an override exists and the value actually changes.
             if (newCellId != null && newCellId != square.getCellId()) {
-                //recordingName = squares.get(0).getRecordingName();
                 int oldCellId  = square.getCellId();   // capture BEFORE change
 
                 square.setCellId(newCellId);
@@ -161,6 +163,7 @@ public final class ImportSquareOverride {
             }
         }
 
+        // Summary logging (grouped per recording) when any updates were applied.
         if (applied > 0) {
             Map<String, Long> squaresPerRecording =
                     overrides.stream()
@@ -181,10 +184,10 @@ public final class ImportSquareOverride {
     // ────────────────────────────────────────────────────────────
 
     /**
-     * Loads square overrides from "Square Override.csv".
+     * Loads square overrides from {@code Square Override.csv}.
      *
      * @param csvFile full path to the override file
-     * @return a list of SquareOverride objects
+     * @return a list of {@link SquareOverride} objects parsed from the CSV
      */
     public static List<SquareOverride> loadSquareOverride(Path csvFile) {
 
@@ -207,7 +210,7 @@ public final class ImportSquareOverride {
             }
 
         } catch (Exception ex) {
-           PaintLogger.errorf("Error reading Square Override.csv → " + ex.getMessage());
+            PaintLogger.errorf("Error reading Square Override.csv → " + ex.getMessage());
         }
 
         return list;
@@ -222,5 +225,6 @@ public final class ImportSquareOverride {
         return experimentName + "§" + recordingName + "§" + squareId;
     }
 
+    /** Private constructor — utility class. */
     private ImportSquareOverride() {}
 }

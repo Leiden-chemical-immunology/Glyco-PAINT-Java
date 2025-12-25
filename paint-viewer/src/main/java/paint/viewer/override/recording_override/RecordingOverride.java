@@ -1,34 +1,38 @@
-/*=============================================================================
+/*==============================================================================
  *  Class:        RecordingOverride.java
- *  Package:      paint.shared.objects
+ *  Package:      paint.viewer.override.recording_override
  *
  *  PURPOSE:
- *    Represents an override entry for a Recording. Overrides are applied to the
- *    main Recordings table to correct or replace threshold parameters for a 
- *    specific recording identified by (experimentName, recordingName).
+ *    Represents a single recording-level override entry. Each instance defines
+ *    replacement threshold parameters for one recording, identified by the
+ *    (experimentName, recordingName) pair.
  *
  *  DESCRIPTION:
- *    This class models one row from the Recording Override CSV file. It contains
- *    plain fields with getters and setters so it can be parsed directly from CSV
- *    and consumed by ImportRecordingOverride.
+ *    This class models one row from the "Recording Override.csv" file located in
+ *    the Viewer directory of a PAINT project. It is a simple data container
+ *    designed for direct CSV parsing and in-memory consumption by
+ *    ImportRecordingOverride and related override/export utilities.
+ *
+ *    The values stored here replace the corresponding threshold parameters
+ *    (density ratio, R², variability, neighbour mode) on the target recording.
  *
  *  KEY FEATURES:
- *    • Plain data container (POJO).
- *    • Matches the CSV columns exactly.
- *    • Used by ImportRecordingOverride to update Recording rows.
+ *    • Plain data container (POJO) with no behavior.
+ *    • Field layout mirrors the Recording Override CSV columns.
+ *    • Used exclusively for override import/export and in-memory mutation.
  *
  *  AUTHOR:
  *    Hans Bakker
  *
  *  MODULE:
- *    paint-shared-utils
+ *    paint-viewer
  *
  *  UPDATED:
- *    2025-11-11
+ *    2025-12-25
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+==============================================================================*/
 
 package paint.viewer.override.recording_override;
 
@@ -46,6 +50,9 @@ public class RecordingOverride {
     // CONSTRUCTORS
     // ───────────────────────────────────────────────────────────────────────────────
 
+    /**
+     * Default constructor required for CSV parsing and reflective instantiation.
+     */
     public RecordingOverride() {
     }
 
@@ -105,6 +112,10 @@ public class RecordingOverride {
     // DEBUG
     // ───────────────────────────────────────────────────────────────────────────────
 
+    /**
+     * Returns a human-readable representation of this override entry,
+     * primarily intended for logging and debugging.
+     */
     @Override
     public String toString() {
         return "RecordingOverride{" +

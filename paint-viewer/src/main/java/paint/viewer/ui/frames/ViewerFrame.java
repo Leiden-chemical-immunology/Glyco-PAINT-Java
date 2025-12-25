@@ -67,7 +67,6 @@ import paint.viewer.model.RecordingEntry;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,8 +77,8 @@ import static paint.shared.constants.PaintStringConstants.NUMBER_OF_SQUARES_IN_R
 import static paint.viewer.override.ExportOverridesFromViewer.exportOverrides;
 
 import static paint.viewer.override.recording_exclude.ImportRecordingExclude.importRecordingExcludes;
-import static paint.viewer.override.recording_exclude.writeRecordingExclude.patchRecordingExcluded;
-import static paint.viewer.override.recording_exclude.writeRecordingExclude.updateExcludeRecordingsCsv;
+import static paint.viewer.override.recording_exclude.WriteRecordingExclude.patchRecordingExcluded;
+import static paint.viewer.override.recording_exclude.WriteRecordingExclude.updateExcludeRecordingsCsv;
 import static paint.viewer.override.recording_override.ImportRecordingOverride.importRecordingOverrides;
 import static paint.viewer.override.square_override.ImportSquareOverride.importSquareOverrides;
 

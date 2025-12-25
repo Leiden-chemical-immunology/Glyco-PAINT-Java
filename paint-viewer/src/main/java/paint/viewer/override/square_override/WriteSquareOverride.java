@@ -1,35 +1,36 @@
 /*==============================================================================
  *  Class:        WriteSquareOverride.java
- *  Package:      paint.viewer.override
+ *  Package:      paint.viewer.override.square_override
  *
  *  PURPOSE:
- *    Manages persistence of per-square cell assignment overrides in the
- *    PAINT Viewer. Allows user-selected squares to be assigned to specific
- *    cell IDs, and ensures these assignments are stored on disk and restored
- *    across viewer sessions.
+ *    Persists per-square cell assignment overrides (cellId) for the PAINT Viewer.
+ *    This allows user-selected square→cellId mappings to be saved to disk and
+ *    restored across Viewer sessions.
  *
  *  DESCRIPTION:
- *    This class writes and updates the CSV file:
+ *    Maintains the CSV file:
  *
- *        Viewer/Square Override.csv
+ *        <project>/Viewer/Square Override.csv
  *
- *    Each row records a mapping:
+ *    Each row stores one square-level override:
+ *
  *        experimentName, recordingName, squareNumber, cellId, timestamp
  *
- *    Assignments are stored per square, per recording, and are maintained
- *    non-destructively unless explicitly replaced. The class supports:
+ *    The writer supports:
+ *      • Merging (add/update/remove) overrides for a recording.
+ *      • Replacing all overrides for a recording in one operation.
+ *      • Querying whether a recording already has overrides.
+ *      • Atomic writes via temporary file replacement.
  *
- *      • Merging new assignments into existing ones.
- *      • Replacing all assignments for a recording.
- *      • Checking whether any assignments exist for a recording.
- *      • Atomically writing changes using temporary file replacement.
+ *    Header validation is performed; malformed headers cause the writer to
+ *    rebuild the file contents from scratch (non-destructive to in-memory state).
  *
  *  KEY FEATURES:
- *    • Per-square persistent cell assignments for the PAINT Viewer.
- *    • Non-destructive merging of overrides.
- *    • Complete replacement mode for a recording’s overrides.
- *    • Fully atomic file writes.
- *    • Automatically rebuilds malformed CSV headers.
+ *    • Per-square persistent cell assignments (squareNumber → cellId).
+ *    • Non-destructive merge semantics (remove when cellId == 0).
+ *    • Full replace mode for a recording’s overrides.
+ *    • Atomic on-disk writes to reduce risk of corruption.
+ *    • Automatic header validation and recovery.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -38,7 +39,7 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-10-30
+ *    2025-12-25
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -63,32 +64,19 @@ import static paint.shared.constants.PaintStringConstants.RECORDING_NAME;
 //import static paint.shared.constants.PaintColumnNames.*;
 
 /**
- * Handles persistent per-square cell assignments by maintaining the CSV file
- * {@code Square Override.csv} inside the project's {@code Viewer} directory.
+ * Writes and maintains per-square cell assignment overrides for the PAINT Viewer.
  * <p>
- * Each override entry specifies:
- * <ul>
- *     <li>Experiment name</li>
- *     <li>Recording name</li>
- *     <li>Square number</li>
- *     <li>Cell ID</li>
- *     <li>Timestamp</li>
- * </ul>
- *
- * <p>The class supports:
- * <ul>
- *     <li>Merging new assignments into existing ones</li>
- *     <li>Replacing all assignments for a recording</li>
- *     <li>Checking whether overrides exist for a recording</li>
- *     <li>Atomic writes using a temporary file</li>
- * </ul>
+ * Overrides are stored in {@code <project>/Viewer/Square Override.csv}. Each row identifies
+ * a square using {@code (experimentName, recordingName, squareNumber)} and provides an
+ * overridden {@code cellId} plus a timestamp. This class performs disk I/O only; it does
+ * not apply overrides to in-memory {@link paint.shared.objects.Square} instances.
  */
 public class WriteSquareOverride {
 
     /** Path to: Viewer/Square Override.csv */
     private final Path csvFilePath;
 
-    /** CSV header columns */
+    /** CSV header columns (must match the persisted file exactly) */
     private static final String[] HEADER = {
             EXPERIMENT_NAME,
             RECORDING_NAME,
@@ -105,8 +93,7 @@ public class WriteSquareOverride {
     }
 
     /**
-     * Constructs a new writer for the given project.
-     * Ensures that the Viewer/ directory exists.
+     * Constructs a new writer for the given project and ensures the {@code Viewer/} directory exists.
      *
      * @param projectPath root path of the project
      */
@@ -121,10 +108,15 @@ public class WriteSquareOverride {
 
     /**
      * Writes or updates the cell assignment overrides for selected squares.
-     * This merges new assignments with any existing ones.
+     * <p>
+     * The provided {@code assignments} are merged into any existing overrides:
+     * <ul>
+     *     <li>If {@code cellId == 0}, the override row for that square is removed.</li>
+     *     <li>Otherwise, the square’s row is added or replaced with the new cellId and timestamp.</li>
+     * </ul>
      *
-     * @param recordingEntry          the recording entry to update
-     * @param assignments map of squareNumber → cellId
+     * @param recordingEntry the recording entry to update
+     * @param assignments    map of squareNumber → cellId
      */
     public void writeSquareOverridesToFile(RecordingEntry recordingEntry, Map<Integer, Integer> assignments) {
         String experiment = recordingEntry.getExperimentName();
@@ -145,7 +137,7 @@ public class WriteSquareOverride {
                 // Remove override for this square
                 map.remove(k);
             } else {
-                // Update override
+                // Update override (replace existing row for this square)
                 String line = experiment + "," +
                         recording  + "," +
                         square     + "," +
@@ -165,7 +157,9 @@ public class WriteSquareOverride {
 
     /**
      * Reads the CSV file into a map keyed by (experiment, recording, square).
-     * Automatically handles missing files or malformed headers.
+     * <p>
+     * If the file is missing, an empty map is returned. If the header is malformed,
+     * a warning is logged and an empty map is returned (caller will rewrite a clean file).
      *
      * @return a map of compositeKey → CSV row
      */
@@ -244,7 +238,7 @@ public class WriteSquareOverride {
     // ========================================================================
 
     /**
-     * Checks whether this recording already has override entries.
+     * Checks whether this recording already has override entries in {@code Square Override.csv}.
      *
      * @param re recording entry
      * @return true if at least one override exists for this recording
@@ -269,7 +263,8 @@ public class WriteSquareOverride {
     // ========================================================================
 
     /**
-     * Merges new assignments into existing ones without removing others.
+     * Merges new assignments into existing ones without removing other squares
+     * (except where {@code cellId == 0}, which removes that square’s override row).
      */
     public void mergeSquareOverrides(RecordingEntry re, Map<Integer, Integer> newAssignments) {
         writeSquareOverridesToFile(re, newAssignments);
@@ -311,7 +306,9 @@ public class WriteSquareOverride {
 
             for (Map.Entry<Integer,Integer> entry : newAssignments.entrySet()) {
                 int cellId = entry.getValue();
-                if (cellId == 0) continue;
+                if (cellId == 0) {
+                    continue;
+                }
 
                 int squareNumber = entry.getKey();
 

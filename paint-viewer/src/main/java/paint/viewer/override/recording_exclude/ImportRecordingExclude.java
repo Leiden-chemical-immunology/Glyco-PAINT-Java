@@ -1,3 +1,44 @@
+/*==============================================================================
+ *  Class:        ImportRecordingExclude.java
+ *  Package:      paint.viewer.override.recording_exclude
+ *
+ *  PURPOSE:
+ *    Loads "Recording Exclude.csv" from the project's /Viewer folder and applies
+ *    the exclude list to either:
+ *      • in-memory Viewer RecordingEntry objects, or
+ *      • an in-memory Tablesaw Recordings table.
+ *
+ *  DESCRIPTION:
+ *    The exclude file is intentionally minimal and currently contains only:
+ *
+ *        Recording Name
+ *
+ *    Applying excludes is a two-step operation:
+ *      1) Reset all recordings to Exclude = false.
+ *      2) For each Recording Name listed in the exclude file, set Exclude = true
+ *         on the matching recording(s).
+ *
+ *    This importer performs in-memory mutation only. Persistence (writing updated
+ *    Recordings CSVs) is handled elsewhere.
+ *
+ *  KEY FEATURES:
+ *    • Safe no-op when the CSV file does not exist.
+ *    • Applies excludes to both RecordingEntry lists and Tablesaw tables.
+ *    • Resets Exclude flags before applying new excludes for deterministic results.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-viewer
+ *
+ *  UPDATED:
+ *    2025-12-25
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+==============================================================================*/
+
 package paint.viewer.override.recording_exclude;
 
 import paint.shared.utils.PaintLogger;
@@ -11,23 +52,23 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import static paint.shared.constants.PaintStringConstants.*;
 
 public class ImportRecordingExclude {
 
     /**
-     * Loads and applies all recording overrides to the given list of
-     * RecordingEntry objects. If the override CSV does not exist,
-     * the method exits without modifying anything.
+     * Loads and applies recording excludes to the provided list of {@link RecordingEntry}
+     * objects. If "Recording Exclude.csv" does not exist, this method returns without
+     * modifying anything.
      *
-     * @param projectPath      project root folder containing /Viewer
+     * @param recordingEntries recordings to update in memory
+     * @param projectPath      project root folder containing /Viewer/Recording Exclude.csv
      */
     public static void importRecordingExcludes(List<RecordingEntry> recordingEntries, Path projectPath) {
         Path csvPath = projectPath.resolve("Viewer").resolve("Recording Exclude.csv");
 
         if (!Files.exists(csvPath)) {
-            PaintLogger.infof("No Recording Override.csv present - no overrides to apply.");
+            PaintLogger.infof("No Recording Exclude.csv present - no overrides to apply.");
             return;
         }
 
@@ -35,6 +76,14 @@ public class ImportRecordingExclude {
         applyInternal(projectPath, recordingEntries, excludes);
     }
 
+    /**
+     * Loads and applies recording excludes to the provided in-memory Recordings table.
+     * If "Recording Exclude.csv" does not exist, this method returns without modifying
+     * anything.
+     *
+     * @param recordingsTable Recordings table to update in memory
+     * @param projectPath     project root folder containing /Viewer/Recording Exclude.csv
+     */
     public static void importRecordingExcludes(Table recordingsTable, Path projectPath) {
 
         Path csvPath = projectPath.resolve("Viewer").resolve("Recording Exclude.csv");
@@ -53,29 +102,28 @@ public class ImportRecordingExclude {
     // ────────────────────────────────────────────────────────────
 
     /**
-     * Applies overrides already loaded from CSV. This method performs:
-     * <ol>
-     *     <li>Composite-key indexing</li>
-     *     <li>In-place mutation of RecordingEntry thresholds</li>
-     * </ol>
+     * Applies excludes already loaded from CSV to the provided Recordings table.
+     * This method always resets the full Exclude column to {@code false} first,
+     * and then sets {@code true} only for Recording Names listed in the exclude file.
      *
-     * @param recordingsTable   recording entries to update
-     * @param excludes   list of excludes parsed from CSV
+     * @param projectPath      project root folder (currently only used for optional debug output)
+     * @param recordingsTable  target Recordings table to update
+     * @param excludes         list of excludes parsed from CSV
      */
     private static void applyInternal(Path projectPath, Table recordingsTable,
             List<RecordingExclude> excludes) {
 
         BooleanColumn excludeCol = recordingsTable.booleanColumn("Exclude");
 
+        // Reset all to false first (deterministic)
         for (int i = 0; i < excludeCol.size(); i++) {
             excludeCol.set(i, false);
         }
 
-        // You also need to update the recording entries!
-
+        // Apply excludes by Recording Name
         boolean first = true;
         for (RecordingExclude exclude : excludes) {
-            StringColumn  nameCol      = recordingsTable.stringColumn("Recording Name");
+            StringColumn  nameCol       = recordingsTable.stringColumn("Recording Name");
             String        recordingName = exclude.getRecordingName();
 
             for (int row = 0; row < recordingsTable.rowCount(); row++) {
@@ -90,18 +138,29 @@ public class ImportRecordingExclude {
                 }
             }
         }
+
         Path filePath = projectPath.resolve("Recordings-override.csv");
         // writeSpecificRecordingsFile(filePath, recordingsTable);
     }
 
+    /**
+     * Applies excludes already loaded from CSV to the provided list of {@link RecordingEntry}
+     * objects. This method always resets all entries to {@code excluded=false} first,
+     * and then sets {@code true} only for Recording Names listed in the exclude file.
+     *
+     * @param projectPath      project root folder (currently only used for optional debug output)
+     * @param recordingEntries target entries to update in memory
+     * @param excludes         list of excludes parsed from CSV
+     */
     private static void applyInternal(Path projectPath, List<RecordingEntry> recordingEntries,
             List<RecordingExclude> excludes) {
 
-        // You also need to update the recording entries!
+        // Reset all to false first (deterministic)
         for (RecordingEntry entry : recordingEntries) {
             entry.getRecording().setExcluded(false);
         }
 
+        // Apply excludes by Recording Name
         for (RecordingExclude exclude : excludes) {
             String recordingName = exclude.getRecordingName();
 
@@ -113,6 +172,7 @@ public class ImportRecordingExclude {
                 }
             }
         }
+
         Path filePath = projectPath.resolve("Recordings-override.csv");
         //writeSpecificRecordingsFile(filePath, recordingsTable);      //@@@@@
     }
@@ -122,11 +182,11 @@ public class ImportRecordingExclude {
     // ────────────────────────────────────────────────────────────
 
     /**
-     * Loads all rows from the `Recording Override.csv` file into a list of
-     * RecordingOverride objects.
+     * Loads all rows from "Recording Exclude.csv" into a list of {@link RecordingExclude}
+     * objects. The file is expected to contain a column named {@code Recording Name}.
      *
-     * @param csvFile path to Recording Override.csv
-     * @return list of parsed RecordingOverride objects
+     * @param csvFile path to Recording Exclude.csv
+     * @return list of parsed {@link RecordingExclude} objects (possibly empty)
      */
     public static List<RecordingExclude> loadRecordingExclude(Path csvFile) {
 

@@ -1,28 +1,29 @@
 /*==============================================================================
  *  Class:        ImportRecordingOverride.java
- *  Package:      paint.viewer.override
+ *  Package:      paint.viewer.override.recording_override
  *
  *  PURPOSE:
- *    Applies recording-level threshold overrides (density ratio, variability,
- *    R², neighbour mode) to in-memory RecordingEntry objects when the Viewer
- *    loads a project or when the user requests override import.
+ *    Imports and applies per-recording threshold overrides from the Viewer
+ *    folder to in-memory {@link paint.viewer.model.RecordingEntry} objects.
  *
  *  DESCRIPTION:
- *    This utility reads a pre-generated CSV file ("Recording Override.csv")
- *    located in the <project>/Viewer directory. Each row contains updated
- *    threshold values for a particular recording. The applier:
+ *    Reads <project>/Viewer/Recording Override.csv and updates the corresponding
+ *    in-memory RecordingEntry/Recording fields:
+ *      • Min Required Density Ratio
+ *      • Min Required R²
+ *      • Max Allowable Variability
+ *      • Neighbour Mode
  *
- *       1. Loads overrides from the CSV via Tablesaw.
- *       2. Builds a composite-key map for fast lookup.
- *       3. Updates each RecordingEntry object with the overridden values.
+ *    Matching is performed using a composite key:
+ *      experimentName + "§" + recordingName
  *
- *    No disk writes occur here — this class strictly mutates in-memory models.
- *    Writing override files is handled separately by WriteRecordingOverride.
+ *    This class does not write anything to disk; it only mutates runtime model
+ *    objects. Persisting overrides is handled elsewhere.
  *
  *  KEY FEATURES:
- *    • Lightweight override loader and applier.
- *    • Composite key lookup for fast matching.
- *    • Purely updates in-memory recording threshold fields.
+ *    • Safe no-op if the override CSV is missing.
+ *    • Composite-key lookup for fast matching.
+ *    • Logs only the values that actually changed.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -31,7 +32,7 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-11-17
+ *    2025-12-25
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -53,18 +54,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Applies recording-level overrides to a collection of RecordingEntry objects.
+ * Imports and applies recording-level threshold overrides to a collection of
+ * {@link RecordingEntry} objects.
  * <p>
- * Each override row specifies:
- * <ul>
- *     <li>experimentName</li>
- *     <li>recordingName</li>
- *     <li>minRequiredDensityRatio</li>
- *     <li>minRequiredRSquared</li>
- *     <li>maxAllowableVariability</li>
- *     <li>neighbourMode</li>
- * </ul>
- * Matching is performed using a composite key: {@code experimentName + "§" + recordingName}.
+ * Overrides are loaded from <project>/Viewer/Recording Override.csv. Each row
+ * specifies the updated threshold values for a single recording. Rows are matched
+ * to {@link RecordingEntry} objects using a composite key:
+ * {@code experimentName + "§" + recordingName}.
+ * <p>
+ * This class performs in-memory mutation only (no file writes).
  */
 public final class ImportRecordingOverride {
 
@@ -74,11 +72,13 @@ public final class ImportRecordingOverride {
 
     /**
      * Loads and applies all recording overrides to the given list of
-     * RecordingEntry objects. If the override CSV does not exist,
-     * the method exits without modifying anything.
+     * {@link RecordingEntry} objects.
+     * <p>
+     * If <project>/Viewer/Recording Override.csv does not exist, this method
+     * returns immediately without modifying anything.
      *
-     * @param recordingEntries list of in-memory RecordingEntry objects
-     * @param projectPath      project root folder containing /Viewer
+     * @param recordingEntries list of in-memory {@link RecordingEntry} objects to update
+     * @param projectPath      project root folder containing the {@code Viewer} directory
      */
     public static void importRecordingOverrides(List<RecordingEntry> recordingEntries, Path projectPath) {
 
@@ -98,14 +98,17 @@ public final class ImportRecordingOverride {
     // ────────────────────────────────────────────────────────────
 
     /**
-     * Applies overrides already loaded from CSV. This method performs:
-     * <ol>
-     *     <li>Composite-key indexing</li>
-     *     <li>In-place mutation of RecordingEntry thresholds</li>
-     * </ol>
+     * Applies overrides that were already loaded from CSV.
+     * <p>
+     * Implementation notes:
+     * <ul>
+     *   <li>Builds a composite-key map for O(1) override lookup.</li>
+     *   <li>Mutates {@link RecordingEntry} recording threshold fields in place.</li>
+     *   <li>Logs only fields whose values changed.</li>
+     * </ul>
      *
      * @param entries   recording entries to update
-     * @param overrides list of overrides parsed from CSV
+     * @param overrides overrides parsed from CSV
      */
     private static void applyInternal(List<RecordingEntry> entries, List<RecordingOverride> overrides) {
 
@@ -125,26 +128,26 @@ public final class ImportRecordingOverride {
 
             if (override != null) {
 
-                // BEFORE applying, capture old values for logging
+                // Capture current values for change-only logging
                 double oldDensityRatio   = entry.getRecording().getMinRequiredDensityRatio();
                 double oldRSquared       = entry.getRecording().getMinRequiredRSquared();
                 double oldVariability    = entry.getRecording().getMaxAllowableVariability();
                 String oldNeighbourMode  = entry.getRecording().getNeighbourMode();
 
-                // APPLY overrides
+                // Apply overrides (in-memory only)
                 entry.getRecording().setMinRequiredDensityRatio(override.getMinRequiredDensityRatio());
                 entry.getRecording().setMinRequiredRSquared(override.getMinRequiredRSquared());
                 entry.getRecording().setMaxAllowableVariability(override.getMaxAllowableVariability());
                 entry.getRecording().setNeighbourMode(override.getNeighbourMode());
 
-                // LOG full detail for this recording
+                // Log what changed for this recording
                 PaintLogger.infof(
                         "Applied Recording override on %s",
                         entry.getRecordingName());
 
                 if (oldDensityRatio != override.getMinRequiredDensityRatio()) {
                     PaintLogger.infof("                    DensityRatio:   %-6.2f → %.2f",
-                                    oldDensityRatio, override.getMinRequiredDensityRatio());
+                                      oldDensityRatio, override.getMinRequiredDensityRatio());
                 }
 
                 if (oldRSquared != override.getMinRequiredRSquared()) {
@@ -174,11 +177,11 @@ public final class ImportRecordingOverride {
     // ────────────────────────────────────────────────────────────
 
     /**
-     * Loads all rows from the `Recording Override.csv` file into a list of
-     * RecordingOverride objects.
+     * Loads all rows from {@code Recording Override.csv} into a list of
+     * {@link RecordingOverride} objects.
      *
-     * @param csvFile path to Recording Override.csv
-     * @return list of parsed RecordingOverride objects
+     * @param csvFile path to {@code Recording Override.csv}
+     * @return list of parsed {@link RecordingOverride} objects (possibly empty)
      */
     public static List<RecordingOverride> loadRecordingOverride(Path csvFile) {
 
@@ -207,12 +210,16 @@ public final class ImportRecordingOverride {
     }
 
     /**
-     * Builds composite key used for override lookups.
+     * Builds the composite key used for override lookups.
+     *
+     * @param experimentName experiment name
+     * @param recordingName  recording name
+     * @return composite key in the format {@code experimentName + "§" + recordingName}
      */
     private static String key(String experimentName, String recordingName) {
         return experimentName + "§" + recordingName;
     }
 
-    /** Private constructor — utility class. */
+    /** Utility class; not instantiable. */
     private ImportRecordingOverride() {}
 }
