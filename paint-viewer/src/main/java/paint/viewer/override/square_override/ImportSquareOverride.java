@@ -1,5 +1,5 @@
 /*==============================================================================
- *  Class:        SquareOverrideApplier.java
+ *  Class:        ImportSquareOverride.java
  *  Package:      paint.viewer.override
  *
  *  PURPOSE:
@@ -21,7 +21,7 @@
  *        experimentName + "§" + recordingName + "§" + squareNumber
  *
  *    Only in-memory mutation occurs here. The writer responsible for
- *    generating the override CSV is {@link paint.viewer.override.SquareOverrideWriter}.
+ *    generating the override CSV is {@link paint.viewer.override.WriteSquareOverride}.
  *
  *  KEY FEATURES:
  *    • Reads and applies overrides to Square objects.
@@ -73,7 +73,7 @@ import java.util.stream.Collectors;
  *   experimentName + "§" + recordingName + "§" + squareNumber
  * </pre>
  */
-public final class SquareOverrideApplier {
+public final class ImportSquareOverride {
 
     // ────────────────────────────────────────────────────────────
     // PUBLIC ENTRY POINT (RecordingEntries + projectPath)
@@ -86,7 +86,7 @@ public final class SquareOverrideApplier {
      * @param recordingEntries all recordings whose squares should be updated
      * @param projectPath      the project root containing /Viewer/Square Override.csv
      */
-    public static void applySquareOverrides(List<RecordingEntry> recordingEntries, Path projectPath) {
+    public static void importSquareOverrides(List<RecordingEntry> recordingEntries, Path projectPath) {
 
         Path csvPath = projectPath.resolve("Viewer").resolve("Square Override.csv");
         if (!Files.exists(csvPath)) {
@@ -222,5 +222,5 @@ public final class SquareOverrideApplier {
         return experimentName + "§" + recordingName + "§" + squareId;
     }
 
-    private SquareOverrideApplier() {}
+    private ImportSquareOverride() {}
 }

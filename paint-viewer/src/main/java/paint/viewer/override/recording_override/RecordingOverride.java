@@ -10,12 +10,12 @@
  *  DESCRIPTION:
  *    This class models one row from the Recording Override CSV file. It contains
  *    plain fields with getters and setters so it can be parsed directly from CSV
- *    and consumed by RecordingOverrideApplier.
+ *    and consumed by ImportRecordingOverride.
  *
  *  KEY FEATURES:
  *    • Plain data container (POJO).
  *    • Matches the CSV columns exactly.
- *    • Used by RecordingOverrideApplier to update Recording rows.
+ *    • Used by ImportRecordingOverride to update Recording rows.
  *
  *  AUTHOR:
  *    Hans Bakker

@@ -1,5 +1,5 @@
 /*==============================================================================
- *  Class:        SquareOverrideWriter.java
+ *  Class:        WriteSquareOverride.java
  *  Package:      paint.viewer.override
  *
  *  PURPOSE:
@@ -83,7 +83,7 @@ import static paint.shared.constants.PaintStringConstants.RECORDING_NAME;
  *     <li>Atomic writes using a temporary file</li>
  * </ul>
  */
-public class SquareOverrideWriter {
+public class WriteSquareOverride {
 
     /** Path to: Viewer/Square Override.csv */
     private final Path csvFilePath;
@@ -110,7 +110,7 @@ public class SquareOverrideWriter {
      *
      * @param projectPath root path of the project
      */
-    public SquareOverrideWriter(Path projectPath) {
+    public WriteSquareOverride(Path projectPath) {
         Path viewerPath = projectPath.resolve("Viewer");
         try {
             Files.createDirectories(viewerPath);
@@ -123,15 +123,12 @@ public class SquareOverrideWriter {
      * Writes or updates the cell assignment overrides for selected squares.
      * This merges new assignments with any existing ones.
      *
-     * @param re          the recording entry to update
+     * @param recordingEntry          the recording entry to update
      * @param assignments map of squareNumber → cellId
      */
-    public void writeSquareOverrides(
-            RecordingEntry re,
-            Map<Integer, Integer> assignments
-    ) {
-        String experiment = re.getExperimentName();
-        String recording  = re.getRecordingName();
+    public void writeSquareOverridesToFile(RecordingEntry recordingEntry, Map<Integer, Integer> assignments) {
+        String experiment = recordingEntry.getExperimentName();
+        String recording  = recordingEntry.getRecordingName();
         String timestamp  = LocalDateTime.now().toString();
 
         // Load existing overrides into a map
@@ -275,7 +272,7 @@ public class SquareOverrideWriter {
      * Merges new assignments into existing ones without removing others.
      */
     public void mergeSquareOverrides(RecordingEntry re, Map<Integer, Integer> newAssignments) {
-        writeSquareOverrides(re, newAssignments);
+        writeSquareOverridesToFile(re, newAssignments);
     }
 
     /**
@@ -332,7 +329,6 @@ public class SquareOverrideWriter {
             Path tmp = csvFilePath.resolveSibling("Square Override.tmp");
             Files.write(tmp, lines);
             Files.move(tmp, csvFilePath, StandardCopyOption.REPLACE_EXISTING);
-
         } catch (IOException ex) {
             PaintLogger.errorf("Error writing square overrides: %s", ex.getMessage());
         }

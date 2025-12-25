@@ -42,9 +42,7 @@
 package paint.viewer.ui.frames;
 
 import paint.shared.config.paintconfig.PaintConfig;
-import paint.shared.io.MainIOInterface;
 import paint.shared.objects.Project;
-import paint.shared.objects.Recording;
 import paint.shared.utils.PaintLogger;
 import paint.viewer.app.Viewer;
 import paint.viewer.io.FileHelper;
@@ -65,9 +63,6 @@ import paint.viewer.ui.panels.RecordingControlsPanel;
 import paint.viewer.ui.panels.SquareGridPanel;
 import paint.viewer.model.SquareControlParams;
 import paint.viewer.model.RecordingEntry;
-import tech.tablesaw.api.BooleanColumn;
-import tech.tablesaw.api.StringColumn;
-import tech.tablesaw.api.Table;
 
 import javax.swing.*;
 import java.awt.*;
@@ -78,16 +73,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
 import static paint.shared.constants.PaintStringConstants.GENERATE_SQUARES;
 import static paint.shared.constants.PaintStringConstants.NUMBER_OF_SQUARES_IN_RECORDING;
-import static paint.viewer.override.OverrideTool.processOverride;
-import static paint.viewer.override.recording_exclude.RecordingExcludeApplier.applyRecordingExcludes;
-import static paint.viewer.override.recording_override.RecordingOverrideApplier.applyRecordingOverrides;
-import static paint.viewer.override.square_override.SquareOverrideApplier.applySquareOverrides;
+import static paint.viewer.override.ExportOverridesFromViewer.exportOverrides;
 
-import paint.viewer.override.recording_override.RecordingOverrideWriter;
-import paint.viewer.override.square_override.SquareOverrideWriter;
+import static paint.viewer.override.recording_exclude.ImportRecordingExclude.importRecordingExcludes;
+import static paint.viewer.override.recording_exclude.writeRecordingExclude.patchRecordingExcluded;
+import static paint.viewer.override.recording_exclude.writeRecordingExclude.updateExcludeRecordingsCsv;
+import static paint.viewer.override.recording_override.ImportRecordingOverride.importRecordingOverrides;
+import static paint.viewer.override.square_override.ImportSquareOverride.importSquareOverrides;
+
+import paint.viewer.override.recording_override.WriteRecordingOverride;
+import paint.viewer.override.square_override.WriteSquareOverride;
 
 /**
  * The {@code RecordingViewerFrame} class defines the main window of the PAINT Viewer.
@@ -131,8 +128,8 @@ public class ViewerFrame extends JFrame
     private final SquareControlHandler         controlHandler    = new SquareControlHandler();
     private       JDialog                      activeDialog      = null;
 
-    private final RecordingOverrideWriter      recordingOverrideWriter;
-    private final SquareOverrideWriter         squareOverrideWriter;
+    private final WriteRecordingOverride writeRecordingOverride;
+    private final WriteSquareOverride    writeSquareOverride;
 
     private final RecordingPlaybackController  playbackController = new RecordingPlaybackController(this);
     private       RecordingDisplayUpdater      displayUpdater;
@@ -153,8 +150,8 @@ public class ViewerFrame extends JFrame
         this.project                 = project;
         this.allRecordingEntries     = new ArrayList<>(recordingEntries);                          // This is the unfiltered set of recordings
         this.recordingEntries        = new ArrayList<>(recordingEntries);                          // This is the filtered set of recordings
-        this.recordingOverrideWriter = new RecordingOverrideWriter(project.getProjectRootPath());
-        this.squareOverrideWriter    = new SquareOverrideWriter(project.getProjectRootPath());
+        this.writeRecordingOverride = new WriteRecordingOverride(project.getProjectRootPath());
+        this.writeSquareOverride = new WriteSquareOverride(project.getProjectRootPath());
         this.navigator               = new RecordingNavigator(this::showRecordingEntry);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -253,9 +250,9 @@ public class ViewerFrame extends JFrame
         PaintLogger.debugf("Import Overrides requested (checkbox is checked).");
 
         // 1) Apply overrides to all RecordingEntry objects
-        applyRecordingOverrides (allRecordingEntries, project.getProjectRootPath());
-        applySquareOverrides    (allRecordingEntries, project.getProjectRootPath());
-        applyRecordingExcludes  (allRecordingEntries, project.getProjectRootPath());
+        importRecordingOverrides (allRecordingEntries, project.getProjectRootPath());
+        importSquareOverrides    (allRecordingEntries, project.getProjectRootPath());
+        importRecordingExcludes  (allRecordingEntries, project.getProjectRootPath());
 
         // 2) Re-apply filter for the currently visible recording
         if (recordingEntries.isEmpty()
@@ -417,12 +414,12 @@ public class ViewerFrame extends JFrame
         entry.getRecording().setExcluded(newExcluded);
 
         // Update the Recordings file
-        Path experimentPath = project.getProjectRootPath().resolve(entry.getExperimentName());
-        String recordingName = entry.getRecording().getRecordingName();
+        Path   experimentPath = project.getProjectRootPath().resolve(entry.getExperimentName());
+        String recordingName  = entry.getRecording().getRecordingName();
         patchRecordingExcluded(experimentPath, recordingName, newExcluded);
 
         // Write a record in the Exclude file
-        updateExcludeRecordingsCsv(recordingName, newExcluded);
+        updateExcludeRecordingsCsv(project.getProjectRootPath(), recordingName, newExcluded);
 
         // 3) Update UI (button text + labels)
         controlsPanel.setExcludeButtonText(newExcluded);
@@ -568,7 +565,7 @@ public class ViewerFrame extends JFrame
                 RecordingEntry current = recordingEntries.get(currentIndex);
 
                 // --- Ask the user what to do with existing overrides ---
-                boolean hasExisting = squareOverrideWriter.hasOverridesFor(current);
+                boolean hasExisting = writeSquareOverride.hasOverridesFor(current);
 
                 boolean keepOld = true;
 
@@ -592,9 +589,9 @@ public class ViewerFrame extends JFrame
                 }
 
                 if (keepOld) {
-                    squareOverrideWriter.mergeSquareOverrides(current, userSelectedSquares);
+                    writeSquareOverride.mergeSquareOverrides(current, userSelectedSquares);
                 } else {
-                    squareOverrideWriter.replaceSquareOverrides(current, userSelectedSquares);
+                    writeSquareOverride.replaceSquareOverrides(current, userSelectedSquares);
                 }
             }
 
@@ -667,7 +664,7 @@ public class ViewerFrame extends JFrame
      * <p>
      * When invoked in "Preview" mode, recalculates Tau, R², and density values dynamically
      * without committing them to disk. For full application, thresholds are persisted via
-     * {@link RecordingOverrideWriter}.
+     * {@link WriteRecordingOverride}.
      *
      * @param scope  the operational scope ("Preview" or "Apply").
      * @param params parameter bundle defining the visibility thresholds and neighbour mode.
@@ -697,7 +694,7 @@ public class ViewerFrame extends JFrame
 
         // Full application: persist thresholds and repaint
         controlHandler.apply(params, leftGridPanel);
-        recordingOverrideWriter.applyAndWrite(scope, params, recordingEntries, currentIndex);
+        writeRecordingOverride.writeRecordingOverridesToFile(scope, params, recordingEntries, currentIndex);
         leftGridPanel.repaint();
     }
 
@@ -799,7 +796,7 @@ public class ViewerFrame extends JFrame
 
             if (choice == JOptionPane.YES_OPTION) {
                 try {
-                    processOverride(project.getProjectRootPath(), "-override");
+                    exportOverrides(project.getProjectRootPath(), "-override");
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(
@@ -818,79 +815,5 @@ public class ViewerFrame extends JFrame
         this.dispose();
     }
 
-    public static void patchRecordingExcluded(
-            Path experimentPath,
-            String recordingName,
-            boolean excluded
-    ) {
-        Table table = MainIOInterface.readRecordingsTable(experimentPath);
-        if (table == null) {
-            return;
-        }
 
-        StringColumn  nameCol     = table.stringColumn(Recording.Column.RECORDING_NAME.header);
-        BooleanColumn excludedCol = table.booleanColumn(Recording.Column.EXCLUDE.header);
-
-        for (int row = 0; row < table.rowCount(); row++) {
-            if (nameCol.get(row).equals(recordingName)) {
-                excludedCol.set(row, excluded);
-                break;
-            }
-        }
-
-        MainIOInterface.writeSpecificRecordingsFile(
-                experimentPath.resolve(RECORDINGS_CSV),
-                table
-        );
-    }
-
-    private void updateExcludeRecordingsCsv(String recordingName, boolean excluded) {
-        try {
-            Path viewerDir = project.getProjectRootPath().resolve("Viewer");
-            if (Files.notExists(viewerDir)) {
-                Files.createDirectories(viewerDir);
-            }
-
-            Path file = viewerDir.resolve("Recording Exclude.csv");
-
-            final String colName = "Recording Name";
-            Table table;
-
-            if (Files.exists(file)) {
-                table = Table.read().csv(file.toString());
-                if (!table.columnNames().contains(colName)) {
-                    // If file exists but is malformed, rebuild minimal table.
-                    table = Table.create("Exclude Recordings", StringColumn.create(colName));
-                }
-            } else {
-                table = Table.create("Exclude Recordings", StringColumn.create(colName));
-            }
-
-            StringColumn col = table.stringColumn(colName);
-
-            if (excluded) {
-                boolean already = false;
-                for (int i = 0; i < table.rowCount(); i++) {
-                    if (recordingName.equals(col.get(i))) {
-                        already = true;
-                        break;
-                    }
-                }
-                if (!already) {
-                    col.append(recordingName);
-                }
-            } else {
-                for (int i = table.rowCount() - 1; i >= 0; i--) {
-                    if (recordingName.equals(col.get(i))) {
-                        table = table.dropRows(i);
-                    }
-                }
-            }
-
-            table.write().csv(file.toString());
-
-        } catch (Exception e) {
-            PaintLogger.errorf("Failed to update Exclude Recordings.csv: %s", e.getMessage());
-        }
-    }
 }

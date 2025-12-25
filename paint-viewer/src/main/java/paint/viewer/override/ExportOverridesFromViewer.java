@@ -1,5 +1,5 @@
 /*==============================================================================
- *  Class:        OverrideTool.java
+ *  Class:        ExportOverridesFromViewer.java
  *  Package:      paint.viewer.override
  *
  *  PURPOSE:
@@ -10,7 +10,7 @@
  *    user-defined extension (default: "-override").
  *
  *  DESCRIPTION:
- *    The OverrideTool performs four major operations:
+ *    The ExportOverridesFromViewer performs four major operations:
  *
  *      1. Loads the Squares.csv and Recordings.csv tables for a project.
  *      2. Loads "Recording Override.csv" and "Square Override.csv" files when
@@ -65,7 +65,7 @@ import java.util.stream.Collectors;
 import static paint.shared.constants.PaintFileNames.*;
 import static paint.shared.io.MainIOInterface.*;
 import static paint.shared.utils.SharedSquareUtils.applyVisibilityFilterOnRecording;
-import static paint.viewer.override.recording_exclude.RecordingExcludeApplier.*;
+import static paint.viewer.override.recording_exclude.ImportRecordingExclude.*;
 
 import static paint.shared.constants.PaintStringConstants.*;
 
@@ -80,7 +80,7 @@ import static paint.shared.constants.PaintStringConstants.*;
  * <p>
  * Intended for automatic or manual batch override processing.
  */
-public class OverrideTool {
+public class ExportOverridesFromViewer {
 
     /**
      * Entry point for command-line execution.
@@ -96,7 +96,7 @@ public class OverrideTool {
         String extension;
 
         if (args.length != 1 && args.length != 2) {
-            System.err.println("Usage: java -cp paint-viewer.jar paint.viewer.cli.OverrideTool <Project-Path> <Extension>");
+            System.err.println("Usage: java -cp paint-viewer.jar paint.viewer.cli.ExportOverridesFromViewer <Project-Path> <Extension>");
             System.exit(1);
         }
 
@@ -109,7 +109,7 @@ public class OverrideTool {
             extension = "-override";
         }
 
-        processOverride(projectPath, extension);
+        exportOverrides(projectPath, extension);
     }
 
     /**
@@ -118,7 +118,7 @@ public class OverrideTool {
      * @param projectPath project root directory
      * @param extension   extension added to output CSV files (e.g. "-override")
      */
-    public static void processOverride(Path projectPath, String extension) {
+    public static void exportOverrides(Path projectPath, String extension) {
 
         Table                   recordingsTable;
         Table                   squaresTable;

@@ -1,6 +1,5 @@
 package paint.viewer.override.recording_exclude;
 
-import javafx.print.PageOrientation;
 import paint.shared.utils.PaintLogger;
 import paint.viewer.model.RecordingEntry;
 import tech.tablesaw.api.BooleanColumn;
@@ -14,9 +13,8 @@ import java.util.List;
 
 
 import static paint.shared.constants.PaintStringConstants.*;
-import static paint.shared.io.MainIOInterface.writeSpecificRecordingsFile;
 
-public class RecordingExcludeApplier {
+public class ImportRecordingExclude {
 
     /**
      * Loads and applies all recording overrides to the given list of
@@ -25,7 +23,7 @@ public class RecordingExcludeApplier {
      *
      * @param projectPath      project root folder containing /Viewer
      */
-    public static void applyRecordingExcludes(List<RecordingEntry> recordingEntries, Path projectPath) {
+    public static void importRecordingExcludes(List<RecordingEntry> recordingEntries, Path projectPath) {
         Path csvPath = projectPath.resolve("Viewer").resolve("Recording Exclude.csv");
 
         if (!Files.exists(csvPath)) {
@@ -37,7 +35,7 @@ public class RecordingExcludeApplier {
         applyInternal(projectPath, recordingEntries, excludes);
     }
 
-    public static void applyRecordingExcludes(Table recordingsTable, Path projectPath) {
+    public static void importRecordingExcludes(Table recordingsTable, Path projectPath) {
 
         Path csvPath = projectPath.resolve("Viewer").resolve("Recording Exclude.csv");
 

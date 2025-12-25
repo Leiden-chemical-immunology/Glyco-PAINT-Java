@@ -15,7 +15,7 @@
  *  KEY FEATURES:
  *    • Plain data container (POJO).
  *    • Matches the CSV columns exactly.
- *    • Used by SquareOverrideApplier to update Square objects.
+ *    • Used by ImportSquareOverride to update Square objects.
  *
  *  AUTHOR:
  *    Hans Bakker

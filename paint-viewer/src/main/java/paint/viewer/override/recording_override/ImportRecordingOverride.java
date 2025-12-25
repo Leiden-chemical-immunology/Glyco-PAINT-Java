@@ -1,5 +1,5 @@
 /*==============================================================================
- *  Class:        RecordingOverrideApplier.java
+ *  Class:        ImportRecordingOverride.java
  *  Package:      paint.viewer.override
  *
  *  PURPOSE:
@@ -17,7 +17,7 @@
  *       3. Updates each RecordingEntry object with the overridden values.
  *
  *    No disk writes occur here — this class strictly mutates in-memory models.
- *    Writing override files is handled separately by RecordingOverrideWriter.
+ *    Writing override files is handled separately by WriteRecordingOverride.
  *
  *  KEY FEATURES:
  *    • Lightweight override loader and applier.
@@ -66,7 +66,7 @@ import java.util.Map;
  * </ul>
  * Matching is performed using a composite key: {@code experimentName + "§" + recordingName}.
  */
-public final class RecordingOverrideApplier {
+public final class ImportRecordingOverride {
 
     // ────────────────────────────────────────────────────────────
     // PUBLIC ENTRY POINT
@@ -80,7 +80,7 @@ public final class RecordingOverrideApplier {
      * @param recordingEntries list of in-memory RecordingEntry objects
      * @param projectPath      project root folder containing /Viewer
      */
-    public static void applyRecordingOverrides(List<RecordingEntry> recordingEntries, Path projectPath) {
+    public static void importRecordingOverrides(List<RecordingEntry> recordingEntries, Path projectPath) {
 
         Path csvPath = projectPath.resolve("Viewer").resolve("Recording Override.csv");
 
@@ -214,5 +214,5 @@ public final class RecordingOverrideApplier {
     }
 
     /** Private constructor — utility class. */
-    private RecordingOverrideApplier() {}
+    private ImportRecordingOverride() {}
 }

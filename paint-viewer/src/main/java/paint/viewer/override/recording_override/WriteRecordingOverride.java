@@ -1,5 +1,5 @@
 /*==============================================================================
- *  Class:        RecordingOverrideWriter.java
+ *  Class:        WriteRecordingOverride.java
  *  Package:      paint.viewer.override
  *
  *  PURPOSE:
@@ -73,7 +73,7 @@ import static paint.shared.constants.PaintStringConstants.*;
  * threshold values chosen by the user. This enables restoring user-defined
  * thresholds between viewer sessions or applying batch updates.
  */
-public class RecordingOverrideWriter {
+public class WriteRecordingOverride {
 
     /** Path to: Viewer/Recording Override.csv */
     private final Path csvFilePath;
@@ -97,11 +97,11 @@ public class RecordingOverrideWriter {
     }
 
     /**
-     * Creates a new RecordingOverrideWriter and ensures the {@code Viewer/} folder exists.
+     * Creates a new WriteRecordingOverride and ensures the {@code Viewer/} folder exists.
      *
      * @param projectPath root of the PAINT project
      */
-    public RecordingOverrideWriter(Path projectPath) {
+    public WriteRecordingOverride(Path projectPath) {
         Path viewerPath = projectPath.resolve("Viewer");
 
         try {
@@ -125,7 +125,7 @@ public class RecordingOverrideWriter {
      * Overrides are written non-destructively: existing rows for the same
      * (experimentName, recordingName) pair are replaced; all other entries kept.
      */
-    public void applyAndWrite(
+    public void writeRecordingOverridesToFile(
             String scope,
             SquareControlParams params,
             List<RecordingEntry> recordingEntries,
