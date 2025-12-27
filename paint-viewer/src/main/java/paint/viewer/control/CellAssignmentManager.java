@@ -60,6 +60,9 @@ public class CellAssignmentManager {
     /** Stack of previous assignment snapshots, enabling undo. */
     private final Deque<Map<Integer, Integer>> undoStack = new ArrayDeque<>();
 
+    /** Tracks whether this is the first assignment action since switching recordings. */
+    private boolean firstAssignmentForRecording = true;
+
     /**
      * Assigns the specified cell ID to all user-selected squares.
      * <p>
@@ -132,5 +135,13 @@ public class CellAssignmentManager {
     public void clear() {
         undoStack.clear();
         squareAssignments.clear();
+    }
+
+    public void setFirstAssignmentForRecording(boolean firstAssignmentForRecording) {
+        this.firstAssignmentForRecording = firstAssignmentForRecording;
+    }
+
+    public boolean isFirstAssignmentForRecording() {
+        return firstAssignmentForRecording;
     }
 }
