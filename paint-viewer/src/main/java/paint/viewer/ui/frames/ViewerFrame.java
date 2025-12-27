@@ -127,8 +127,8 @@ public class ViewerFrame extends JFrame
     private final SquareControlHandler         controlHandler    = new SquareControlHandler();
     private       JDialog                      activeDialog      = null;
 
-    private final WriteRecordingOverride writeRecordingOverride;
-    private final WriteSquareOverride    writeSquareOverride;
+    private final WriteRecordingOverride       writeRecordingOverride;
+    private final WriteSquareOverride          writeSquareOverride;
 
     private final RecordingPlaybackController  playbackController = new RecordingPlaybackController(this);
     private       RecordingDisplayUpdater      displayUpdater;
@@ -149,8 +149,8 @@ public class ViewerFrame extends JFrame
         this.project                 = project;
         this.allRecordingEntries     = new ArrayList<>(recordingEntries);                          // This is the unfiltered set of recordings
         this.recordingEntries        = new ArrayList<>(recordingEntries);                          // This is the filtered set of recordings
-        this.writeRecordingOverride = new WriteRecordingOverride(project.getProjectRootPath());
-        this.writeSquareOverride = new WriteSquareOverride(project.getProjectRootPath());
+        this.writeRecordingOverride  = new WriteRecordingOverride(project.getProjectRootPath());
+        this.writeSquareOverride     = new WriteSquareOverride(project.getProjectRootPath());
         this.navigator               = new RecordingNavigator(this::showRecordingEntry);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
