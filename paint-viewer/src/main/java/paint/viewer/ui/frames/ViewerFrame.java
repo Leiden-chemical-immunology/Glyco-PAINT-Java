@@ -77,11 +77,9 @@ import static paint.shared.constants.PaintStringConstants.NUMBER_OF_SQUARES_IN_R
 import static paint.viewer.override.ExportOverridesFromViewer.exportOverrides;
 
 import static paint.viewer.override.recording_exclude.ImportRecordingExclude.importRecordingExcludes;
-import static paint.viewer.override.recording_exclude.WriteRecordingExclude.patchRecordingExcluded;
 import static paint.viewer.override.recording_exclude.WriteRecordingExclude.updateExcludeRecordingsCsv;
 import static paint.viewer.override.recording_override.ImportRecordingOverride.importRecordingOverrides;
 import static paint.viewer.override.square_override.ImportSquareOverride.importSquareOverrides;
-
 import paint.viewer.override.recording_override.WriteRecordingOverride;
 import paint.viewer.override.square_override.WriteSquareOverride;
 
@@ -288,6 +286,14 @@ public class ViewerFrame extends JFrame
 
         // 5) Redraw the left grid
         leftGridPanel.repaint();
+
+        // Ensure UI reflects new exclude state after import
+        if (displayUpdater != null) {
+            displayUpdater.applyExcludedUi(current);
+        }
+        if (controlsPanel != null) {
+            controlsPanel.setExcludeButtonText(current.getRecording().isExcluded());
+        }
     }
 
     /**
@@ -412,17 +418,15 @@ public class ViewerFrame extends JFrame
         // Update the RecordingEntry
         entry.getRecording().setExcluded(newExcluded);
 
-        // Update the Recordings file
-        Path   experimentPath = project.getProjectRootPath().resolve(entry.getExperimentName());
-        String recordingName  = entry.getRecording().getRecordingName();
-        patchRecordingExcluded(experimentPath, recordingName, newExcluded);
-
         // Write a record in the Exclude file
+        String recordingName  = entry.getRecording().getRecordingName();
         updateExcludeRecordingsCsv(project.getProjectRootPath(), recordingName, newExcluded);
 
         // 3) Update UI (button text + labels)
         controlsPanel.setExcludeButtonText(newExcluded);
-        displayUpdater.applyExcludedUi(entry); // e.g., add "(EXCLUDED)" to the text under images
+        if (displayUpdater != null) {
+            displayUpdater.applyExcludedUi(entry);
+        }
 
     }
 
