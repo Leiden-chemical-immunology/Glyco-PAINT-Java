@@ -200,7 +200,7 @@ public class ViewerLayoutBuilder {
 
         // --- Bottom panel with import overrides checkbox + close button ---
         JPanel    bottomPanel             = new JPanel(new BorderLayout(10, 10));
-        JCheckBox importOverridesCheckBox = new JCheckBox("Overrides");
+        JCheckBox importOverridesCheckBox = new JCheckBox("Import Overrides");
         bottomPanel.add(importOverridesCheckBox, BorderLayout.WEST);
         JButton    closeButton            = new JButton("Close Viewer");
         closeButton.addActionListener(e -> closeListener.onClose());

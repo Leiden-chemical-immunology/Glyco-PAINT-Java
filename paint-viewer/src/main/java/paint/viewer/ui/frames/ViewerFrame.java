@@ -134,6 +134,9 @@ public class ViewerFrame extends JFrame
 
     private       JCheckBox                    importOverridesCheckBox;
 
+    private static final String OVERRIDE_TEXT_OFF = "Import Overrides";
+    private static final String OVERRIDE_TEXT_ON  = "Export Overrides";
+
     /**
      * Constructs a {@code RecordingViewerFrame} that initializes and displays the complete
      * recording viewer environment. The frame sets up grid visualization, navigation,
@@ -226,17 +229,34 @@ public class ViewerFrame extends JFrame
             return;
         }
 
-        // Attach listener for runtime toggles
-        importOverridesCheckBox.addActionListener(e -> {
-            if (importOverridesCheckBox.isSelected()) {
+        // Set initial label based on initial state
+        importOverridesCheckBox.setText(
+                importOverridesCheckBox.isSelected() ? OVERRIDE_TEXT_ON : OVERRIDE_TEXT_OFF
+        );
+
+        importOverridesCheckBox.addItemListener(e -> {
+            boolean selected = importOverridesCheckBox.isSelected();
+
+            // Update title immediately
+            importOverridesCheckBox.setText(selected ? OVERRIDE_TEXT_ON : OVERRIDE_TEXT_OFF);
+
+            // Your existing behavior
+            if (selected) {
                 performImportOverrides();
+            } else {
+                // Optional: tell user they must restart to fully “unimport”
+                // JOptionPane.showMessageDialog(this, "To remove imported overrides, restart the viewer.", ...);
             }
         });
 
-        // Startup behavior: if already selected, perform import once
+        // Startup behavior: if already selected, import once
         if (importOverridesCheckBox.isSelected()) {
             performImportOverrides();
         }
+
+        importOverridesCheckBox.setToolTipText(
+                "When enabled, reads override CSV files and applies them to the current session."
+        );
     }
 
     /**
@@ -558,44 +578,7 @@ public class ViewerFrame extends JFrame
         final JFrame owner = this;
         activeDialog = new CellAssignmentDialog(owner, new CellAssignmentDialog.Listener() {
             public void onAssign(int cellId) {
-                Map<Integer, Integer> userSelectedSquares =
-                        assignmentManager.assignUserSelectedSquares(cellId, leftGridPanel);
-
-                if (userSelectedSquares.isEmpty()) {
-                    return;
-                }
-
-                RecordingEntry current = recordingEntries.get(currentIndex);
-
-                // --- Ask the user what to do with existing overrides ---
-                boolean hasExisting = writeSquareOverride.hasOverridesFor(current);
-
-                boolean keepOld = true;
-
-                if (hasExisting) {
-                    int choice = JOptionPane.showConfirmDialog(
-                            owner,
-                            "There are existing cell assignments for this recording.\n\n" +
-                                    "Do you want to keep those and only update the selected squares?\n\n" +
-                                    "Choose 'Yes' to merge assignments.\n" +
-                                    "Choose 'No' to replace all existing assignments.",
-                            "Existing Assignments Found",
-                            JOptionPane.YES_NO_CANCEL_OPTION,
-                            JOptionPane.QUESTION_MESSAGE
-                    );
-
-                    if (choice == JOptionPane.CANCEL_OPTION || choice == JOptionPane.CLOSED_OPTION) {
-                        return; // abort
-                    }
-
-                    keepOld = (choice == JOptionPane.YES_OPTION);
-                }
-
-                if (keepOld) {
-                    writeSquareOverride.mergeSquareOverrides(current, userSelectedSquares);
-                } else {
-                    writeSquareOverride.replaceSquareOverrides(current, userSelectedSquares);
-                }
+                handleCellAssignment(cellId);
             }
 
             public void onUndo() {
@@ -619,6 +602,46 @@ public class ViewerFrame extends JFrame
         });
 
         activeDialog.setVisible(true);
+    }
+
+    private void handleCellAssignment(int cellId) {
+        Map<Integer, Integer> userSelectedSquares = assignmentManager.assignUserSelectedSquares(cellId, leftGridPanel);
+
+        if (userSelectedSquares.isEmpty()) {
+            return;
+        }
+
+        RecordingEntry current                = recordingEntries.get(currentIndex);
+        boolean        hasExistingOverrides   = writeSquareOverride.hasOverridesFor(current);
+        boolean        existingOverridesShown = (importOverridesCheckBox != null && importOverridesCheckBox.isSelected());
+        boolean        keepOld                = true;
+
+        // If there are existing overrides and if thgey are not shown ask
+        if (hasExistingOverrides && !existingOverridesShown && assignmentManager.isFirstAssignmentForRecording()) {
+            int choice = JOptionPane.showConfirmDialog(
+                    this,
+                    "There are existing cell assignments for this recording.\n\n" +
+                            "Do you want to keep those and only update the selected squares?\n\n" +
+                            "Choose 'Yes' to merge assignments.\n" +
+                            "Choose 'No' to replace all existing assignments.",
+                    "Existing Assignments Found",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE
+            );
+
+            if (choice == JOptionPane.CANCEL_OPTION || choice == JOptionPane.CLOSED_OPTION) {
+                return;
+            }
+
+            keepOld = (choice == JOptionPane.YES_OPTION);
+        }
+        assignmentManager.setFirstAssignmentForRecording(false);
+
+        if (keepOld) {
+            writeSquareOverride.mergeSquareOverrides(current, userSelectedSquares);
+        } else {
+            writeSquareOverride.replaceSquareOverrides(current, userSelectedSquares);
+        }
     }
 
     // =========================================================================================
