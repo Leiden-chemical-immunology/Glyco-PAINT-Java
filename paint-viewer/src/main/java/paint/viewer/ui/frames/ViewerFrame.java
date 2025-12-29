@@ -134,7 +134,7 @@ public class ViewerFrame extends JFrame
 
     private       JCheckBox                    importOverridesCheckBox;
 
-    private static final String OVERRIDE_TEXT_OFF = "Import Overrides";
+    private static final String OVERRIDE_TEXT_OFF = "Overrides";
     private static final String OVERRIDE_TEXT_ON  = "Export Overrides";
 
     /**
@@ -206,7 +206,7 @@ public class ViewerFrame extends JFrame
                 this.attributesPanel
         );
 
-        // Wire behaviour for "Import Overrides" checkbox
+        // Wire behaviour for "Overrides" checkbox
         initImportOverridesBehaviour();
 
         setSize(1500, 700);
@@ -264,7 +264,7 @@ public class ViewerFrame extends JFrame
      * and applying them to the current project's recording and square metadata.
      */
     private void performImportOverrides() {
-        PaintLogger.debugf("Import Overrides requested (checkbox is checked).");
+        PaintLogger.debugf("Overrides requested (checkbox is checked).");
 
         // 1) Apply overrides to all RecordingEntry objects
         importRecordingOverrides (allRecordingEntries, project.getProjectRootPath());
