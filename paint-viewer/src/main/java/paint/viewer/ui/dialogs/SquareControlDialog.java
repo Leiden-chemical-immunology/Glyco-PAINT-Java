@@ -245,6 +245,8 @@ public class SquareControlDialog extends JDialog {
             dispose();
         });
 
+        cancelButton.addActionListener(e -> closeAction());
+
         // ─────────────────────────────────────────────────────────────────────
         // Preserve original values for cancel/restore
         // ─────────────────────────────────────────────────────────────────────
