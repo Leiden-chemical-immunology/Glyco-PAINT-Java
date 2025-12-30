@@ -55,40 +55,17 @@ public class RecordingControlsPanel {
      * Defines callback methods for handling user actions triggered
      * by buttons or toggle components on this panel.
      */
-    public interface Listener {
-
-        /** Called when the user requests to filter the recording list. */
-        void onFilterRequested();
-
-        /** Called when the user opens the square-selection dialog. */
-        void onSelectSquaresRequested();
-
-        /** Called when the user opens the cell-assignment dialog. */
-        void onAssignCellsRequested();
-
-        /** Called when the user requests to play the current recording. */
-        void onPlayRecordingRequested();
-
-        /** Called when the user requests to export the left grid image. */
-        void onExportLeftImageRequested();
-
-        /** Called when the user requests to view the squares CSV. */
-        void onShowSquaresRequested();
-
-        /** Triggered when borders are toggled on or off. */
-        void onBordersToggled(boolean showBorders);
-
-        /** Triggered when shading is toggled on or off. */
-        void onShadingToggled(boolean showShading);
-
-        /** Called when the numeric display mode (None, Label, Square) is changed. */
-        void onNumberModeChanged(SquareGridPanel.NumberMode mode);
-
-        /** Called when square control parameters are applied or previewed.*/
-        void onApplySquareControl(String scope, SquareControlParams params);
-
-        /** Called when the Exclude/Incluse button is pressed. */
-        void onExcludeToggleRequested();
+    public interface RecordingsControlListener {
+        void onFilterRequested();                                             // Called when the user requests to filter the recording list
+        void onSelectSquaresRequested();                                      // Called when the user opens the square-selection dialog
+        void onAssignCellsRequested();                                        // Called when the user opens the cell-assignment dialog
+        void onPlayRecordingRequested();                                      // Called when the user requests to play the current recording
+        void onExportLeftImageRequested();                                    // Called when the user requests to export the left grid image
+        void onShowSquaresRequested();                                        // Called when the user requests to view the squares CSV
+        void onBordersToggled(boolean showBorders);                           // Triggered when borders are toggled on or off
+        void onShadingToggled(boolean showShading);                           // Triggered when borders are toggled on or off
+        void onNumberModeChanged(SquareGridPanel.NumberMode mode);            // Called when the numeric display mode (None, Label, Square) is changed
+        void onExcludeToggleRequested();                                      // Called when the Exclude/Incluse button is pressed
     }
 
     private final JPanel  root;
@@ -103,11 +80,11 @@ public class RecordingControlsPanel {
     /**
      * Constructs a {@code RecordingControlsPanel} containing action buttons,
      * visualization toggles, and numbering mode options. All actions are
-     * delegated to the provided {@link Listener}.
+     * delegated to the provided {@link RecordingsControlListener}.
      *
-     * @param listener the listener that receives callbacks when user actions occur
+     * @param recordingsControlListener the recordingsControlListener that receives callbacks when user actions occur
      */
-    public RecordingControlsPanel(final Listener listener) {
+    public RecordingControlsPanel(final RecordingsControlListener recordingsControlListener) {
 
         root = new JPanel(new BorderLayout());
         root.setBorder(BorderFactory.createCompoundBorder(
@@ -196,19 +173,19 @@ public class RecordingControlsPanel {
         numbers.add(square);
 
         // === Action listeners ===
-        filterRecordingsButton.addActionListener(e -> listener.onFilterRequested());
-        selectSquaresButton.addActionListener(   e -> listener.onSelectSquaresRequested());
-        assignCellsButton.addActionListener(     e -> listener.onAssignCellsRequested());
-        playRecordingButton.addActionListener(   e -> listener.onPlayRecordingRequested());
-        exportImageButton.addActionListener(     e -> listener.onExportLeftImageRequested());
-        showSquaresButton.addActionListener(     e -> listener.onShowSquaresRequested());
-        excludeButton.addActionListener(         e -> listener.onExcludeToggleRequested());
+        filterRecordingsButton.addActionListener(e -> recordingsControlListener.onFilterRequested());
+        selectSquaresButton.addActionListener(   e -> recordingsControlListener.onSelectSquaresRequested());
+        assignCellsButton.addActionListener(     e -> recordingsControlListener.onAssignCellsRequested());
+        playRecordingButton.addActionListener(   e -> recordingsControlListener.onPlayRecordingRequested());
+        exportImageButton.addActionListener(     e -> recordingsControlListener.onExportLeftImageRequested());
+        showSquaresButton.addActionListener(     e -> recordingsControlListener.onShowSquaresRequested());
+        excludeButton.addActionListener(         e -> recordingsControlListener.onExcludeToggleRequested());
 
-        showBorders.addActionListener(           e -> listener.onBordersToggled(showBorders.isSelected()));
-        showShading.addActionListener(           e -> listener.onShadingToggled(showShading.isSelected()));
-        none.addActionListener(                  e -> listener.onNumberModeChanged(SquareGridPanel.NumberMode.NONE));
-        label.addActionListener(                 e -> listener.onNumberModeChanged(SquareGridPanel.NumberMode.LABEL));
-        square.addActionListener(                e -> listener.onNumberModeChanged(SquareGridPanel.NumberMode.SQUARE));
+        showBorders.addActionListener(           e -> recordingsControlListener.onBordersToggled(showBorders.isSelected()));
+        showShading.addActionListener(           e -> recordingsControlListener.onShadingToggled(showShading.isSelected()));
+        none.addActionListener(                  e -> recordingsControlListener.onNumberModeChanged(SquareGridPanel.NumberMode.NONE));
+        label.addActionListener(                 e -> recordingsControlListener.onNumberModeChanged(SquareGridPanel.NumberMode.LABEL));
+        square.addActionListener(                e -> recordingsControlListener.onNumberModeChanged(SquareGridPanel.NumberMode.SQUARE));
 
         // === Layout order ===
         content.add(controls);

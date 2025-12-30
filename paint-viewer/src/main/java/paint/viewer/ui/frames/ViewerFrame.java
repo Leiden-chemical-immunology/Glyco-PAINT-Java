@@ -102,10 +102,11 @@ import paint.viewer.override.square_override.WriteSquareOverride;
  * This class is instantiated by {@link Viewer} after successful
  * project initialization. All UI updates occur on the Swing event dispatch thread.
  */
-public class ViewerFrame extends JFrame
-        implements RecordingControlsPanel.Listener,
-                   NavigationPanel.Listener,
-                   ViewerLayoutBuilder.CloseListener {
+public class ViewerFrame extends JFrame implements
+        RecordingControlsPanel.RecordingsControlListener,
+        SquareControlDialog.SquareControlListener,
+        NavigationPanel.Listener,
+        ViewerLayoutBuilder.CloseListener {
 
     // Remembers the last used filter criteria for the filter dialog
     private RecordingFilterDialog.FilterCriteria lastFilterCriteria = null;
@@ -542,6 +543,7 @@ public class ViewerFrame extends JFrame
                         "Free"
                 )
         );
+
         setGridEnabled(false); // Disable grid
 
         activeDialog.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -695,9 +697,12 @@ public class ViewerFrame extends JFrame
      * @param scope  the operational scope ("Preview" or "Apply").
      * @param params parameter bundle defining the visibility thresholds and neighbour mode.
      */
+
     @Override
-    public void onApplySquareControl(String scope, SquareControlParams params) {
-        if ("Preview".equals(scope)) {
+    public void onApplySquareControl(SquareControlDialog.SquareControlListener.Scope scope,
+            SquareControlParams params) {
+
+        if (scope == SquareControlDialog.SquareControlListener.Scope.PREVIEW) {
             controlHandler.apply(params, leftGridPanel);
             leftGridPanel.applyVisibilityFilter();
 
@@ -720,7 +725,7 @@ public class ViewerFrame extends JFrame
 
         // Full application: persist thresholds and repaint
         controlHandler.apply(params, leftGridPanel);
-        writeRecordingOverride.writeRecordingOverridesToFile(scope, params, recordingEntries, currentIndex);
+        writeRecordingOverride.writeRecordingOverridesToFile(scope.name(), params, recordingEntries, currentIndex);
         leftGridPanel.repaint();
     }
 

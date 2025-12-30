@@ -40,7 +40,6 @@
 
 package paint.viewer.ui.dialogs;
 
-import paint.viewer.ui.panels.RecordingControlsPanel;
 import paint.viewer.ui.panels.SquareGridPanel;
 import paint.viewer.model.SquareControlParams;
 
@@ -62,35 +61,46 @@ import static paint.shared.constants.PaintStringConstants.NEIGHBOUR_MODE;
  */
 public class SquareControlDialog extends JDialog {
 
-    private final JSlider                         densityRatioSlider;
-    private final JSlider                         variabilitySlider;
-    private final JSlider                         rSquaredSlider;
-    private final JLabel                          densityRatioValue;
-    private final JLabel                          variabilityValue;
-    private final JLabel                          rSquaredValue;
-    private final JRadioButton                    neighbourFree;
-    private final JRadioButton                    neighbourRelaxed;
-    private final JRadioButton                    neighbourStrict;
-    private final RecordingControlsPanel.Listener listener;
-    private final double                          origDensityRatio;
-    private final double                          origVariability;
-    private final double                          origRSquared;
-    private final String                          origNeighbourMode;
+    public interface SquareControlListener {
+        enum Scope {
+            PREVIEW,
+            RECORDING,
+            EXPERIMENT,
+            PROJECT }
+
+        void onApplySquareControl(Scope scope, SquareControlParams params);
+    }
+
+    private final SquareControlListener squareControlListener;
+
+    private final JSlider       densityRatioSlider;
+    private final JSlider       variabilitySlider;
+    private final JSlider       rSquaredSlider;
+    private final JLabel        densityRatioValue;
+    private final JLabel        variabilityValue;
+    private final JLabel        rSquaredValue;
+    private final JRadioButton  neighbourFree;
+    private final JRadioButton  neighbourRelaxed;
+    private final JRadioButton  neighbourStrict;
+    private final double        origDensityRatio;
+    private final double        origVariability;
+    private final double        origRSquared;
+    private final String        origNeighbourMode;
     /**
      * Constructs a dialog that enables interactive adjustment of square grid
      * parameters such as Density Ratio, Variability, and R² thresholds.
      *
      * @param owner      the parent frame that owns this dialog
      * @param gridPanel  the grid panel to update visually during preview
-     * @param listener   listener receiving apply and preview callbacks
+     * @param squareControlListener   squareControlListener receiving apply and preview callbacks
      * @param initParams the initial square control parameters
      */
-    public SquareControlDialog(JFrame owner,
-                               SquareGridPanel gridPanel,
-                               RecordingControlsPanel.Listener listener,
-                               SquareControlParams initParams) {
+    public SquareControlDialog(JFrame                owner,
+                               SquareGridPanel       gridPanel,
+                               SquareControlListener squareControlListener,
+                               SquareControlParams   initParams) {
         super(owner, "Square Controls", false);
-        this.listener = listener;
+        this.squareControlListener = squareControlListener;
 
         setLayout(new BorderLayout(10, 10));
 
@@ -213,19 +223,16 @@ public class SquareControlDialog extends JDialog {
 
         // Apply button actions (commit and write to the file)
         applyRecording.addActionListener(e -> {
-            listener.onApplySquareControl("Recording", collectParams());
+            squareControlListener.onApplySquareControl(SquareControlListener.Scope.RECORDING, collectParams());
             dispose();
         });
         applyExperiment.addActionListener(e -> {
-            listener.onApplySquareControl("Experiment", collectParams());
+            squareControlListener.onApplySquareControl(SquareControlListener.Scope.EXPERIMENT, collectParams());
             dispose();
         });
         applyProject.addActionListener(e -> {
-            listener.onApplySquareControl("Project", collectParams());
+            squareControlListener.onApplySquareControl(SquareControlListener.Scope.PROJECT, collectParams());
             dispose();
-        });
-        cancelButton.addActionListener(e -> {
-            closeAction();
         });
 
         // ─────────────────────────────────────────────────────────────────────
@@ -284,8 +291,7 @@ public class SquareControlDialog extends JDialog {
      * Sends live parameter updates for real-time preview without persistence.
      */
     private void propagatePreview() {
-        SquareControlParams params = collectParams();
-        listener.onApplySquareControl("Preview", params);
+        squareControlListener.onApplySquareControl(SquareControlListener.Scope.PREVIEW, collectParams());
     }
 
     /**

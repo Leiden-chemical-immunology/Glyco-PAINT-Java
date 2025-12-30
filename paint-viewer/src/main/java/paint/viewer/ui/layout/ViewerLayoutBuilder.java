@@ -147,15 +147,15 @@ public class ViewerLayoutBuilder {
      *
      * @param gridDim             dimension of the square grid (gridDim × gridDim)
      * @param navigationListener  listener for previous/next recording navigation
-     * @param controlsListener    listener for recording-specific control actions
+     * @param recordingsControlListener    listener for recording-specific control actions
      * @param closeListener       callback for closing the viewer
      * @return a {@link LayoutComponents} instance containing all UI components
      */
     public LayoutComponents build(
-            int                             gridDim,
-            NavigationPanel.Listener        navigationListener,
-            RecordingControlsPanel.Listener controlsListener,
-            CloseListener                   closeListener) {
+            int                                              gridDim,
+            NavigationPanel.Listener                         navigationListener,
+            RecordingControlsPanel.RecordingsControlListener recordingsControlListener,
+            CloseListener                                    closeListener) {
 
         // --- Components created here so ViewerFrame never constructs them itself ---
         JLabel rightImageLabel = new JLabel("", SwingConstants.CENTER);
@@ -165,7 +165,7 @@ public class ViewerLayoutBuilder {
         SquareGridPanel          leftGridPanel   = new SquareGridPanel(gridDim, gridDim);
         RecordingAttributesPanel attributesPanel = new RecordingAttributesPanel();
         NavigationPanel          navigationPanel = new NavigationPanel(navigationListener);
-        RecordingControlsPanel   controlsPanel   = new RecordingControlsPanel(controlsListener);
+        RecordingControlsPanel   controlsPanel   = new RecordingControlsPanel(recordingsControlListener);
 
         // --- Image panels side-by-side (left grid + right image) ---
         JPanel imagesInner = new JPanel(new GridLayout(1, 2, 15, 0));
