@@ -63,10 +63,20 @@ public class SquareControlDialog extends JDialog {
 
     public interface SquareControlListener {
         enum Scope {
-            PREVIEW,
-            RECORDING,
-            EXPERIMENT,
-            PROJECT }
+            PREVIEW("Preview"),
+            RECORDING("Recording"),
+            EXPERIMENT("Experiment"),
+            PROJECT("Project");
+
+            private final String label;
+
+            Scope(String label) {
+                this.label = label;
+            }
+            public String label() {
+                return label;
+            }
+        }
 
         void onApplySquareControl(Scope scope, SquareControlParams params);
     }

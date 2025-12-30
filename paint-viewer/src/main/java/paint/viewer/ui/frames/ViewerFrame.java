@@ -725,7 +725,7 @@ public class ViewerFrame extends JFrame implements
 
         // Full application: persist thresholds and repaint
         controlHandler.apply(params, leftGridPanel);
-        writeRecordingOverride.writeRecordingOverridesToFile(scope.name(), params, recordingEntries, currentIndex);
+        writeRecordingOverride.writeRecordingOverridesToFile(scope.label(), params, recordingEntries, currentIndex);
         leftGridPanel.repaint();
     }
 
