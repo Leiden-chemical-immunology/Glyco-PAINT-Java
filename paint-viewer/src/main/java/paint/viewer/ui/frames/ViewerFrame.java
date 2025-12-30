@@ -540,7 +540,7 @@ public class ViewerFrame extends JFrame implements
                         current.getRecording().getMinRequiredDensityRatio(),
                         current.getRecording().getMaxAllowableVariability(),
                         current.getRecording().getMinRequiredRSquared(),
-                        "Free"
+                        current.getRecording().getNeighbourMode()
                 )
         );
 
