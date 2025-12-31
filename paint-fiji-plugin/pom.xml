@@ -191,4 +191,18 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>ci-mode</id>
+            <activation>
+                <property>
+                    <name>env.CI</name>
+                </property>
+            </activation>
+            <properties>
+                <skip.deployment>true</skip.deployment>
+            </properties>
+        </profile>
+    </profiles>
 </project>
