@@ -29,28 +29,24 @@
         <dependency>
             <groupId>com.github.jjabakker</groupId>
             <artifactId>paint-shared-utils</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <!-- Apache Commons CSV (needed for CSVFormat, CSVParser, etc.) -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
-            <version>1.9.0</version>
         </dependency>
 
         <!-- Logging (optional, consistent with other modules) -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
-            <version>1.7.36</version>
             <scope>runtime</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.26.2</version>
         </dependency>
 
     </dependencies>
