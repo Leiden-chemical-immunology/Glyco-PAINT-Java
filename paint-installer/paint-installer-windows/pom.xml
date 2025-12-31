@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.github.jjabakker</groupId>
         <artifactId>paint-installer</artifactId>
-        <version>0.0.136-SNAPSHOT</version>
+        <version>0.0.137-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -19,8 +19,6 @@
     <description>Self-extracting GUI installer for Glyco-PAINT (Windows)</description>
 
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
         <main.class>GlycoPaintInstallerWindows</main.class>
         <exe.name>Glyco-PAINT-Installer</exe.name>
     </properties>
@@ -48,7 +46,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.3</version>
                 <executions>
                     <execution>
                         <phase>package</phase>

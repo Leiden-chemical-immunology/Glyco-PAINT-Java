@@ -8,7 +8,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jjabakker</groupId>
     <artifactId>paint-parent</artifactId>
-    <version>0.0.136-SNAPSHOT</version>
+    <version>0.0.137-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Paint Parent</name>
     <description>Parent POM for Paint projects</description>
@@ -90,6 +90,41 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
+        <!-- Dependency Versions -->
+        <tablesaw.version>0.43.1</tablesaw.version>
+        <gson.version>2.11.0</gson.version>
+        <commons-csv.version>1.10.0</commons-csv.version>
+        <opencsv.version>5.9</opencsv.version>
+        <ij.version>1.54h</ij.version>
+        <trackmate.version>7.14.0</trackmate.version>
+        <fiji-lib.version>2.1.3</fiji-lib.version>
+        <imglib2.version>7.1.5</imglib2.version>
+        <bio-formats.version>6.13.0</bio-formats.version>
+        <pdfbox.version>2.0.30</pdfbox.version>
+        <imageio.version>3.10.1</imageio.version>
+        <logback.version>1.2.13</logback.version>
+        <scijava-common.version>2.94.1</scijava-common.version>
+        <guava.version>32.1.3-jre</guava.version>
+        <fastutil.version>8.5.12</fastutil.version>
+        <univocity.version>2.9.1</univocity.version>
+        <slf4j.version>1.7.36</slf4j.version>
+        <ome-common.version>6.0.25</ome-common.version>
+        <junit.version>5.10.0</junit.version>
+        <commons-compress.version>1.26.2</commons-compress.version>
+
+        <!-- Plugin Versions -->
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <maven-assembly-plugin.version>3.7.1</maven-assembly-plugin.version>
+        <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
+        <maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
+        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+        <maven-enforcer-plugin.version>3.1.0</maven-enforcer-plugin.version>
+        <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
+        <maven-site-plugin.version>3.12.1</maven-site-plugin.version>
+        <maven-project-info-reports-plugin.version>3.4.5</maven-project-info-reports-plugin.version>
+        <maven-scm-publish-plugin.version>3.1.0</maven-scm-publish-plugin.version>
+        <maven-shade-plugin.version>3.5.3</maven-shade-plugin.version>
+
         <!-- Default JVM arguments for applications -->
         <app.jvm.args>-Xms512m -Xmx2048m -XX:ReservedCodeCacheSize=256m</app.jvm.args>
     </properties>
@@ -107,24 +142,144 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.github.jjabakker</groupId>
+                <artifactId>paint-generate-squares</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- Common external libraries -->
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-csv</artifactId>
-                <version>1.10.0</version>
+                <version>${commons-csv.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.scijava</groupId>
                 <artifactId>scijava-common</artifactId>
-                <version>2.94.1</version>
+                <version>${scijava-common.version}</version>
             </dependency>
 
-            <!-- Safe, globally pinned Guava version -->
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>32.1.3-jre</version>
+                <version>${guava.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${gson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>tech.tablesaw</groupId>
+                <artifactId>tablesaw-core</artifactId>
+                <version>${tablesaw.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.opencsv</groupId>
+                <artifactId>opencsv</artifactId>
+                <version>${opencsv.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.imagej</groupId>
+                <artifactId>ij</artifactId>
+                <version>${ij.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>sc.fiji</groupId>
+                <artifactId>TrackMate</artifactId>
+                <version>${trackmate.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>sc.fiji</groupId>
+                <artifactId>fiji-lib</artifactId>
+                <version>${fiji-lib.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.imglib2</groupId>
+                <artifactId>imglib2</artifactId>
+                <version>${imglib2.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ome</groupId>
+                <artifactId>bio-formats_plugins</artifactId>
+                <version>${bio-formats.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ome</groupId>
+                <artifactId>formats-gpl</artifactId>
+                <version>${bio-formats.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ome</groupId>
+                <artifactId>formats-api</artifactId>
+                <version>${bio-formats.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.pdfbox</groupId>
+                <artifactId>pdfbox</artifactId>
+                <version>${pdfbox.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.twelvemonkeys.imageio</groupId>
+                <artifactId>imageio-tiff</artifactId>
+                <version>${imageio.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>it.unimi.dsi</groupId>
+                <artifactId>fastutil</artifactId>
+                <version>${fastutil.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.univocity</groupId>
+                <artifactId>univocity-parsers</artifactId>
+                <version>${univocity.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-nop</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.openmicroscopy</groupId>
+                <artifactId>ome-common</artifactId>
+                <version>${ome-common.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>${commons-compress.version}</version>
             </dependency>
 
         </dependencies>
@@ -160,35 +315,46 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.11.0</version>
+                    <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                    </configuration>
                 </plugin>
 
                 <!-- Assembly (for fat JARs) -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.6.0</version>
+                    <version>${maven-assembly-plugin.version}</version>
+                </plugin>
+
+                <!-- Jar -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven-jar-plugin.version}</version>
                 </plugin>
 
                 <!-- AntRun (for scripted build steps) -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
-                    <version>3.1.0</version>
+                    <version>${maven-antrun-plugin.version}</version>
                 </plugin>
 
                 <!-- Surefire (unit testing) -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.2.5</version>
+                    <version>${maven-surefire-plugin.version}</version>
                 </plugin>
 
                 <!-- Enforce Java 8 requirement -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.1.0</version>
+                    <version>${maven-enforcer-plugin.version}</version>
                     <executions>
                         <execution>
                             <id>enforce-java</id>
@@ -205,6 +371,41 @@
                         </execution>
                     </executions>
                 </plugin>
+
+                <!-- Javadoc -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven-javadoc-plugin.version}</version>
+                </plugin>
+
+                <!-- Site -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>${maven-site-plugin.version}</version>
+                </plugin>
+
+                <!-- SCM Publish -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-scm-publish-plugin</artifactId>
+                    <version>${maven-scm-publish-plugin.version}</version>
+                </plugin>
+
+                <!-- Project Info Reports -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-project-info-reports-plugin</artifactId>
+                    <version>${maven-project-info-reports-plugin.version}</version>
+                </plugin>
+
+                <!-- Shade plugin -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${maven-shade-plugin.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -215,7 +416,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.12.0</version>
 
                 <executions>
                     <execution>
@@ -240,14 +440,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.12.1</version>
             </plugin>
 
             <!-- Publish site to GitHub Pages -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-scm-publish-plugin</artifactId>
-                <version>3.1.0</version>
                 <configuration>
                     <checkoutDirectory>${project.build.directory}/scmpublish</checkoutDirectory>
                     <pubScmUrl>scm:git:git@github.com:jjabakker/JavaPaintProjects.git</pubScmUrl>
@@ -262,10 +460,21 @@
     <!-- =============================================================== -->
     <!-- Plugin repositories -->
     <!-- =============================================================== -->
+    <repositories>
+        <repository>
+            <id>scijava.public</id>
+            <url>https://maven.scijava.org/content/groups/public</url>
+        </repository>
+    </repositories>
+
     <pluginRepositories>
         <pluginRepository>
             <id>maven-central</id>
             <url>https://repo1.maven.org/maven2/</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>scijava.public</id>
+            <url>https://maven.scijava.org/content/groups/public</url>
         </pluginRepository>
     </pluginRepositories>
 
@@ -279,7 +488,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>3.4.5</version>
                 <reportSets>
                     <reportSet>
                         <reports>
@@ -295,7 +503,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.7.0</version>
                 <reportSets>
                     <reportSet>
                         <reports>
