@@ -1,3 +1,30 @@
+/*=============================================================================
+ *  Class:        RecordingsTableIO.java
+ *  Package:      paint.shared.io.internal
+ *
+ *  PURPOSE:
+ *    Handles low-level I/O and data conversion between PAINT {@link Recording}
+ *    objects and Tablesaw {@link Table} structures.
+ *
+ *  DESCRIPTION:
+ *    The {@code RecordingsTableIO} class provides implementation for mapping
+ *    recording entity fields to CSV columns and vice versa. It manages the
+ *    schema specific to "recordings.csv" files, ensuring that data types
+ *    and headers are correctly applied during conversion.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package paint.shared.io.internal;
 
 import paint.shared.objects.Recording;
@@ -39,6 +66,9 @@ public class RecordingsTableIO extends BaseTableIO {
     //  TABLE CREATION
     // =====================================================================
 
+    /**
+     * @return a new empty {@link Table} with the Recordings schema.
+     */
     public Table emptyTable() {
         return newEmptyTable(
                 "Recordings",
@@ -51,6 +81,12 @@ public class RecordingsTableIO extends BaseTableIO {
     //  ENTITY → TABLE CONVERSION
     // =====================================================================
 
+    /**
+     * Converts a list of {@link Recording} entities into a Tablesaw {@link Table}.
+     *
+     * @param recordings list of recording objects to convert
+     * @return a table containing the recording data
+     */
     public Table toTable(List<Recording> recordings) {
         Table table = emptyTable();
 
@@ -94,6 +130,12 @@ public class RecordingsTableIO extends BaseTableIO {
     //  TABLE → ENTITY CONVERSION
     // =====================================================================
 
+    /**
+     * Converts a Tablesaw {@link Table} into a list of {@link Recording} entities.
+     *
+     * @param table the table to convert
+     * @return a list of recording objects
+     */
     public List<Recording> toEntities(Table table) {
         List<Recording> recordings = new ArrayList<>();
 

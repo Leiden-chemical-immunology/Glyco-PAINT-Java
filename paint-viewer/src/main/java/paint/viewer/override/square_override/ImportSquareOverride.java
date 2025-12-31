@@ -36,7 +36,7 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-12-25
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.

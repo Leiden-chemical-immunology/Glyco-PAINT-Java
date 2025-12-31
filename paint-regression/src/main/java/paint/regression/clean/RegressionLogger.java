@@ -1,3 +1,27 @@
+/*=============================================================================
+ *  Class:        RegressionLogger.java
+ *  Package:      paint.regression.clean
+ *
+ *  PURPOSE:
+ *    Provides specialized logging for the PAINT regression testing suite.
+ *
+ *  DESCRIPTION:
+ *    The {@code RegressionLogger} handles the reporting of test results,
+ *    comparison failures, and statistical summaries during regression runs.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-regression
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package paint.regression.clean;
 
 import java.io.IOException;

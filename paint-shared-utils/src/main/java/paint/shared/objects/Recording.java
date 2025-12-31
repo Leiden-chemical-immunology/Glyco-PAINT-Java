@@ -48,7 +48,7 @@
  *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-11-29
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -131,6 +131,9 @@ public class Recording {
     //  CONSTRUCTORS
     // ============================================================================
 
+    /**
+     * @return the name of the experiment this recording belongs to.
+     */
     public String getExperimentName() {
         return experimentName;
     }
@@ -139,248 +142,430 @@ public class Recording {
     //  GETTERS / SETTERS  (GENERATED, UNCHANGED)
     // ============================================================================
 
+    /**
+     * @param experimentName the name of the experiment this recording belongs to.
+     */
     public void setExperimentName(String experimentName) {
         this.experimentName = experimentName;
     }
 
+    /**
+     * @return the unique name of this recording.
+     */
     public String getRecordingName() {
         return recordingName;
     }
 
+    /**
+     * @param recordingName the unique name of this recording.
+     */
     public void setRecordingName(String recordingName) {
         this.recordingName = recordingName;
     }
 
+    /**
+     * @return the condition number associated with this recording.
+     */
     public int getConditionNumber() {
         return conditionNumber;
     }
 
+    /**
+     * @param conditionNumber the condition number associated with this recording.
+     */
     public void setConditionNumber(int conditionNumber) {
         this.conditionNumber = conditionNumber;
     }
 
+    /**
+     * @return the replicate number of this recording.
+     */
     public int getReplicateNumber() {
         return replicateNumber;
     }
 
+    /**
+     * @param replicateNumber the replicate number of this recording.
+     */
     public void setReplicateNumber(int replicateNumber) {
         this.replicateNumber = replicateNumber;
     }
 
+    /**
+     * @return the name of the probe used in this recording.
+     */
     public String getProbeName() {
         return probeName;
     }
 
+    /**
+     * @param probeName the name of the probe used in this recording.
+     */
     public void setProbeName(String probeName) {
         this.probeName = probeName;
     }
 
+    /**
+     * @return the type of probe used.
+     */
     public String getProbeType() {
         return probeType;
     }
 
+    /**
+     * @param probeType the type of probe used.
+     */
     public void setProbeType(String probeType) {
         this.probeType = probeType;
     }
 
+    /**
+     * @return the cell type used in this experiment.
+     */
     public String getCellType() {
         return cellType;
     }
 
+    /**
+     * @param cellType the cell type used in this experiment.
+     */
     public void setCellType(String cellType) {
         this.cellType = cellType;
     }
 
+    /**
+     * @return the adjuvant used in this recording.
+     */
     public String getAdjuvant() {
         return adjuvant;
     }
 
+    /**
+     * @param adjuvant the adjuvant used in this recording.
+     */
     public void setAdjuvant(String adjuvant) {
         this.adjuvant = adjuvant;
     }
 
+    /**
+     * @return the probe concentration.
+     */
     public double getConcentration() {
         return concentration;
     }
 
+    /**
+     * @param concentration the probe concentration.
+     */
     public void setConcentration(double concentration) {
         this.concentration = concentration;
     }
 
+    /**
+     * @return true if the process flag is set for this recording.
+     */
     public boolean isProcessFlagSet() {
         return processFlag;
     }
 
+    /**
+     * @param processFlag whether to set the process flag.
+     */
     public void setProcessFlag(boolean processFlag) {
         this.processFlag = processFlag;
     }
 
+    /**
+     * @return the analysis threshold used.
+     */
     public double getThreshold() {
         return threshold;
     }
 
+    /**
+     * @param threshold the analysis threshold to set.
+     */
     public void setThreshold(double threshold) {
         this.threshold = threshold;
     }
 
+    /**
+     * @return the total number of spots detected.
+     */
     public int getNumberOfSpots() {
         return numberOfSpots;
     }
 
+    /**
+     * @param numberOfSpots the total number of spots detected.
+     */
     public void setNumberOfSpots(int numberOfSpots) {
         this.numberOfSpots = numberOfSpots;
     }
 
+    /**
+     * @return the total number of tracks identified.
+     */
     public int getNumberOfTracks() {
         return numberOfTracks;
     }
 
+    /**
+     * @param numberOfTracks the total number of tracks identified.
+     */
     public void setNumberOfTracks(int numberOfTracks) {
         this.numberOfTracks = numberOfTracks;
     }
 
+    /**
+     * @return the number of tracks identified in the background area.
+     */
     public int getNumberOfTracksInBackground() {
         return numberOfTracksInBackground;
     }
 
+    /**
+     * @param numberOfTracksInBackground the number of tracks in the background.
+     */
     public void setNumberOfTracksInBackground(int numberOfTracksInBackground) {
         this.numberOfTracksInBackground = numberOfTracksInBackground;
     }
 
+    /**
+     * @return the number of squares designated as background.
+     */
     public int getNumberOfSquaresInBackground() {
         return numberOfSquaresInBackground;
     }
 
+    /**
+     * @param numberOfSquaresInBackground the number of squares in the background.
+     */
     public void setNumberOfSquaresInBackground(int numberOfSquaresInBackground) {
         this.numberOfSquaresInBackground = numberOfSquaresInBackground;
     }
 
+    /**
+     * @return the average track count per background square.
+     */
     public double getAverageTracksInBackGround() {
         return averageTracksInBackGround;
     }
 
+    /**
+     * @param averageTracksInBackGround the average background track count.
+     */
     public void setAverageTracksInBackGround(double averageTracksInBackGround) {
         this.averageTracksInBackGround = averageTracksInBackGround;
     }
 
+    /**
+     * @return the total number of spots across all tracks.
+     */
     public int getNumberOfSpotsInAllTracks() {
         return numberOfSpotsInAllTracks;
     }
 
+    /**
+     * @param numberOfSpotsInAllTracks the total number of spots in tracks.
+     */
     public void setNumberOfSpotsInAllTracks(int numberOfSpotsInAllTracks) {
         this.numberOfSpotsInAllTracks = numberOfSpotsInAllTracks;
     }
 
+    /**
+     * @return the total number of frames in the movie.
+     */
     public int getNumberOfFrames() {
         return numberOfFrames;
     }
 
+    /**
+     * @param numberOfFrames the total number of frames.
+     */
     public void setNumberOfFrames(int numberOfFrames) {
         this.numberOfFrames = numberOfFrames;
     }
 
+    /**
+     * @return the total acquisition time in seconds.
+     */
     public double getRunTime() {
         return runTime;
     }
 
+    /**
+     * @param runTime the total acquisition time.
+     */
     public void setRunTime(double runTime) {
         this.runTime = runTime;
     }
 
+    /**
+     * @return the timestamp of the analysis.
+     */
     public LocalDateTime getTimeStamp() {
         return timeStamp;
     }
 
+    /**
+     * @param timeStamp the timestamp of the analysis.
+     */
     public void setTimeStamp(LocalDateTime timeStamp) {
         this.timeStamp = timeStamp;
     }
 
+    /**
+     * @return true if this recording is excluded from final analysis.
+     */
     public boolean isExcluded() {
         return exclude;
     }
 
+    /**
+     * @param exclude whether to exclude this recording.
+     */
     public void setExcluded(boolean exclude) {
         this.exclude = exclude;
     }
 
+    /**
+     * @return the computed Tau value for the recording.
+     */
     public double getTau() {
         return tau;
     }
 
+    /**
+     * @param tau the computed Tau value.
+     */
     public void setTau(double tau) {
         this.tau = tau;
     }
 
+    /**
+     * @return the R-squared value of the binding kinetics fit.
+     */
     public double getRSquared() {
         return rSquared;
     }
 
+    /**
+     * @param rSquared the R-squared value.
+     */
     public void setRSquared(double rSquared) {
         this.rSquared = rSquared;
     }
 
+    /**
+     * @return the computed binding density.
+     */
     public double getDensity() {
         return density;
     }
 
+    /**
+     * @param density the binding density.
+     */
     public void setDensity(double density) {
         this.density = density;
     }
 
+    /**
+     * @return the list of {@link Square} objects associated with this recording.
+     */
     public List<Square> getSquaresOfRecording() {
         return squares;
     }
 
+    /**
+     * @param squares the list of squares.
+     */
     public void setSquaresOfRecording(List<Square> squares) {
         this.squares = squares;
     }
 
+    /**
+     * @param tracks the list of tracks.
+     */
     public void setTracksList(List<Track> tracks) {
         this.tracks = tracks;
     }
 
+    /**
+     * @return the {@link Table} of track data.
+     */
     public Table getTracksTable() {
         return tracksTable;
     }
 
+    /**
+     * @param tracksTable the track data table.
+     */
     public void setTracksTable(Table tracksTable) {
         this.tracksTable = tracksTable;
     }
 
+    /**
+     * @return minimum required density ratio for filtering.
+     */
     public double getMinRequiredDensityRatio() {
         return minRequiredDensityRatio;
     }
 
+    /**
+     * @param minRequiredDensityRatio the minimum density ratio threshold.
+     */
     public void setMinRequiredDensityRatio(double minRequiredDensityRatio) {
         this.minRequiredDensityRatio = minRequiredDensityRatio;
     }
 
+    /**
+     * @return minimum required R-squared for filtering.
+     */
     public double getMinRequiredRSquared() {
         return minRequiredRSquared;
     }
 
+    /**
+     * @param minRequiredRSquared the minimum R-squared threshold.
+     */
     public void setMinRequiredRSquared(double minRequiredRSquared) {
         this.minRequiredRSquared = minRequiredRSquared;
     }
 
+    /**
+     * @return maximum allowable variability for filtering.
+     */
     public double getMaxAllowableVariability() {
         return maxAllowableVariability;
     }
 
+    /**
+     * @param maxAllowableVariability the maximum variability threshold.
+     */
     public void setMaxAllowableVariability(double maxAllowableVariability) {
         this.maxAllowableVariability = maxAllowableVariability;
     }
 
+    /**
+     * @return the mode used for determining background neighbors.
+     */
     public String getNeighbourMode() {
         return neighbourMode;
     }
 
+    /**
+     * @param neighbourMode the neighbor mode to set.
+     */
     public void setNeighbourMode(String neighbourMode) {
         this.neighbourMode = neighbourMode;
     }
 
     /**
-     * Append multiple squares into this recording.
+     * Appends a list of {@link Square} objects to this recording's internal square collection.
+     *
+     * @param squares the list of squares to add
      */
     public void addSquares(List<Square> squares) {
         this.squares.addAll(squares);

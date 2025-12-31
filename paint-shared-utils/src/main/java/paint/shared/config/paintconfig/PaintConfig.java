@@ -1,3 +1,39 @@
+/*=============================================================================
+ *  Class:        PaintConfig.java
+ *  Package:      paint.shared.config.paintconfig
+ *
+ *  PURPOSE:
+ *    Provides a high-level API (façade) for accessing and managing the
+ *    central "Paint Configuration.json" file.
+ *
+ *  DESCRIPTION:
+ *    The {@code PaintConfig} class serves as the primary entry point for
+ *    reading and writing application settings. It organizes configuration
+ *    into sections (e.g., "Generate Squares", "TrackMate") and supports
+ *    case-insensitive key lookups. It ensures that default values are
+ *    populated if a configuration file is missing and handles reinitialization
+ *    when switching projects.
+ *
+ *  KEY FEATURES:
+ *    • Singleton-based access to application-wide configuration.
+ *    • Section-based organization of settings.
+ *    • Automatic default value population via {@link DefaultConfigLoader}.
+ *    • Fault-tolerant loading with automatic backup of invalid files.
+ *    • Case-insensitive key retrieval.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package paint.shared.config.paintconfig;
 
 import com.google.gson.Gson;
@@ -240,34 +276,94 @@ public class PaintConfig {
     // Static API (shortcuts) — unchanged
     // ---------------------------------------------------------------------
 
+    /**
+     * Retrieves a string value from the configuration.
+     *
+     * @param s the configuration section
+     * @param k the key within the section
+     * @param d the default value if not found
+     * @return the configuration value or default
+     */
     public static String getString(String s, String k, String d) {
         return instance().getStringValue(s, k, d);
     }
 
+    /**
+     * Retrieves an integer value from the configuration.
+     *
+     * @param s the configuration section
+     * @param k the key within the section
+     * @param d the default value if not found
+     * @return the configuration value or default
+     */
     public static int getInt(String s, String k, int d) {
         return instance().getIntValue(s, k, d);
     }
 
+    /**
+     * Retrieves a double value from the configuration.
+     *
+     * @param s the configuration section
+     * @param k the key within the section
+     * @param d the default value if not found
+     * @return the configuration value or default
+     */
     public static double getDouble(String s, String k, double d) {
         return instance().getDoubleValue(s, k, d);
     }
 
+    /**
+     * Retrieves a boolean value from the configuration.
+     *
+     * @param s the configuration section
+     * @param k the key within the section
+     * @param d the default value if not found
+     * @return the configuration value or default
+     */
     public static boolean getBoolean(String s, String k, boolean d) {
         return instance().getBooleanValue(s, k, d);
     }
 
+    /**
+     * Sets a string value in the configuration and saves it.
+     *
+     * @param s section
+     * @param k key
+     * @param v value
+     */
     public static void setString(String s, String k, String v) {
         instance().setStringValue(s, k, v, true);
     }
 
+    /**
+     * Sets an integer value in the configuration and saves it.
+     *
+     * @param s section
+     * @param k key
+     * @param v value
+     */
     public static void setInt(String s, String k, int v) {
         instance().setIntValue(s, k, v, true);
     }
 
+    /**
+     * Sets a double value in the configuration and saves it.
+     *
+     * @param s section
+     * @param k key
+     * @param v value
+     */
     public static void setDouble(String s, String k, double v) {
         instance().setDoubleValue(s, k, v, true);
     }
 
+    /**
+     * Sets a boolean value in the configuration and saves it.
+     *
+     * @param s section
+     * @param k key
+     * @param v value
+     */
     public static void setBoolean(String s, String k, boolean v) {
         instance().setBooleanValue(s, k, v, true);
     }

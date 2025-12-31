@@ -1,39 +1,28 @@
-// =================================================================================================
-//  File: src/main/java/paint/shared/dialogs/project/BottomBarPanel.java
-// =================================================================================================
-
-/* =================================================================================================
- *  PURPOSE
- *      Bottom bar component used by ProjectDialog. Provides the OK/Cancel buttons, the Verbose
- *      toggle, and (in TRACKMATE mode) the Sweep toggle. It offers callback hooks so the dialog
- *      controller can respond to user actions in a decoupled way.
+/*=============================================================================
+ *  Class:        BottomBarPanel.java
+ *  Package:      paint.shared.dialogs.project
  *
- *  DESCRIPTION
- *      This panel builds and wires the bottom toolbar used in PAINT project dialogs. It exposes
- *      callback registration methods (onOk, onCancel, onVerboseToggle, onSweepToggle) and internally
- *      manages UI state such as enabling, disabled states, and transient feedback such as "Running…"
- *      and "Completed". Verbose and Sweep (when available) act as behavioral modifiers for the run.
+ *  PURPOSE:
+ *    Provides the footer control bar for the {@link paint.shared.dialogs.ProjectDialog}.
  *
- *  KEY FEATURES
- *      - Decoupled event callbacks using Runnable and Consumer<Boolean>.
- *      - Uses method references for clean event wiring.
- *      - Provides consistent UI state updates for Running, Completed, OK/Cancel, etc.
- *      - Gracefully handles null callbacks via NO_OP and NO_OP_BOOL fallbacks.
+ *  DESCRIPTION:
+ *    The {@code BottomBarPanel} contains the main action buttons (OK, Cancel)
+ *    and provides callbacks for their interactions. It also includes a
+ *    toggle for "Save and Recalculate" mode, which is specifically used
+ *    in Generate Squares mode.
  *
- *  AUTHOR
- *      PAINT Toolkit
+ *  AUTHOR:
+ *    Hans Bakker
  *
- *  MODULE
- *      paint.shared.dialogs.project
+ *  MODULE:
+ *    paint-shared-utils
  *
- *  UPDATED
- *      2025-11-21
+ *  UPDATED:
+ *    2025-12-31
  *
- *  COPYRIGHT
- *      Copyright (c) 2020–2025.
- *      All rights reserved.
- * =================================================================================================
- */
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
 
 package paint.shared.dialogs.project;
 

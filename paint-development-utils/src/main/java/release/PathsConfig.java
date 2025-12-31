@@ -1,3 +1,23 @@
+/*=============================================================================
+ *  Class:        PathsConfig.java
+ *  Package:      release
+ *
+ *  PURPOSE:
+ *    Defines path constants and directory structures for the release pipeline.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-development-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package release;
 
 import java.nio.file.*;

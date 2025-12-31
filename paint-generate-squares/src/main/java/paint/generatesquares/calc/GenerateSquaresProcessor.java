@@ -43,7 +43,7 @@
  *    Hans Bakker
  *
  *  UPDATED:
- *    2025-10-28
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -200,12 +200,11 @@ public class GenerateSquaresProcessor {
     }
 
     /**
-     * Generates a list of {@code Square} objects for the given recording. Each square corresponds to a
-     * segment of the recording area based on the configuration provided.
+     * Segments a single recording into square regions based on configuration.
      *
      * @param recording             the recording for which squares are to be generated
      * @param generateSquaresConfig the configuration specifying the number of squares and related parameters
-     * @return a list of {@code Square} objects representing the segmented areas of the recording
+     * @return a list of generated {@link Square} objects
      */
     public static List<Square> generateSquaresForRecording(Recording recording,
             GenerateSquaresConfig generateSquaresConfig) {

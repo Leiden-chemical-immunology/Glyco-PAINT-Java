@@ -3,32 +3,18 @@
  *  Package:      paint.shared.utils
  *
  *  PURPOSE:
- *    Provides common utilities for operations on square regions within
- *    recordings, including filtering track data to a given spatial square
- *    and applying visibility-based selection criteria across squares.
+ *    Provides shared utility methods for square-level calculations and data
+ *    transformations within the PAINT framework.
  *
  *  DESCRIPTION:
- *    • filterTracksInSquare: Restricts a table of track coordinates to those
- *      that fall within the bounds of a specified square (taking into account
- *      boundary inclusivity for last row/column).
- *    • applyVisibilityFilter: Filters a list of squares in a recording based
- *      on numeric thresholds (density ratio, variability, R²) and optionally
- *      applies neighbour-based retention logic (Free, Relaxed, Strict).
+ *    The {@code SharedSquareUtils} class centralizes common operations
+ *    on {@link Square} objects, such as unique key generation and visibility
+ *    state management.
  *
- *  RESPONSIBILITIES:
- *    • Provide static methods for spatial filtering of track data.
- *    • Apply selection and neighbour-mode logic to visible squares.
- *
- *  USAGE EXAMPLE:
- *    Table filtered = SharedSquareUtils.filterTracksInSquare(tracksTable, square, lastRowCol);
- *    SharedSquareUtils.applyVisibilityFilter(recording, minDensityRatio, maxVariability, minRSq, neighbourMode);
- *
- *  DEPENDENCIES:
- *    – paint.shared.objects.Recording
- *    – paint.shared.objects.Square
- *    – tech.tablesaw.api.Table, DoubleColumn
- *    – tech.tablesaw.selection.Selection
- *    – java.util.List, java.util.Set, java.util.HashSet
+ *  KEY FEATURES:
+ *    • Static methods for spatial filtering of track data.
+ *    • Selection and neighbour-mode logic for square visibility.
+ *    • Standardized track-in-square overlap detection.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -37,7 +23,7 @@
  *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-10-28
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.

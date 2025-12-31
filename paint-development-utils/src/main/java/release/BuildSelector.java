@@ -1,3 +1,24 @@
+/*=============================================================================
+ *  Class:        BuildSelector.java
+ *  Package:      release
+ *
+ *  PURPOSE:
+ *    Interactive CLI utility to select modules and platforms for the build
+ *    process.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-development-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package release;
 
 import javax.swing.*;

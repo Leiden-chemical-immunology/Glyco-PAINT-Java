@@ -83,6 +83,9 @@ public class TracksTableIO extends BaseTableIO {
     //  TABLE CREATION
     // =====================================================================
 
+    /**
+     * @return a new empty {@link Table} with the Tracks schema.
+     */
     public Table emptyTable() {
         return newEmptyTable(
                 "Tracks",
@@ -96,10 +99,10 @@ public class TracksTableIO extends BaseTableIO {
     // =====================================================================
 
     /**
-     * Converts a list of {@link Track} entities into a schema-validated table.
+     * Converts a list of {@link Track} entities into a Tablesaw {@link Table}.
      *
-     * @param tracks list of {@code Track} objects to convert
-     * @return a {@link Table} containing one row per track
+     * @param tracks list of track objects to convert
+     * @return a table containing the track data
      */
     public Table toTable(List<Track> tracks) {
         Table table = emptyTable();

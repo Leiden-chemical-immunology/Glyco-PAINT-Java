@@ -27,7 +27,7 @@
  *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-11-01
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.

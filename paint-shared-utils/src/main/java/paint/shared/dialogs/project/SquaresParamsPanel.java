@@ -1,49 +1,35 @@
-// =================================================================================================
-//  File: src/main/java/paint/shared/dialogs/project/SquaresParamsPanel.java
-// =================================================================================================
-
-/* =================================================================================================
- *  PURPOSE
- *      UI panel for displaying and editing parameters related to the "Generate Squares" step.
- *      Includes number of squares, minimum R², density ratio, and variability. In TRACKMATE mode,
- *      also offers an option to run Generate Squares automatically after TrackMate finishes.
+/*=============================================================================
+ *  Class:        SquaresParamsPanel.java
+ *  Package:      paint.shared.dialogs.project
  *
- *  DESCRIPTION
- *      This panel is constructed using GridBagLayout and exposes a callback (onParamsChanged)
- *      that the controller can register to be notified whenever any parameter changes.
+ *  PURPOSE:
+ *    Provides a user interface panel for configuring square-generation
+ *    parameters (e.g., grid size, R² threshold, density ratio).
  *
- *      GridBagLayout as a spreadsheet with rows and columns
+ *  DESCRIPTION:
+ *    The {@code SquaresParamsPanel} allows users to input and refine the
+ *    statistical thresholds used during the "Generate Squares" pipeline.
+ *    In TrackMate mode, it also provides a toggle to automatically execute
+ *    square generation after tracking completes.
  *
- *      | col0 | col1 |
- *      |------|------|
- *      | row0 | row0 |
- *      | row1 | row1 |
- *      | row2 | row2 |
+ *  KEY FEATURES:
+ *    • Interactive fields for grid size and statistical thresholds.
+ *    • Mode-dependent UI (TrackMate vs. Viewer/Generate Squares).
+ *    • Real-time change notifications via callback.
+ *    • Automated persistence to {@link PaintConfig}.
  *
- *      Parameters are initialized from PaintConfig and can be persisted back using persistTo().
- *      For TrackMate mode, enabling/disabling of squares parameters is tied to a checkbox that
- *      controls whether Generate Squares should run after TrackMate.
+ *  AUTHOR:
+ *    Hans Bakker
  *
- *  KEY FEATURES
- *      - Supports two modes: TRACKMATE (shows checkbox) and VIEWER (no checkbox).
- *      - Automatic persistence to PaintConfig.
- *      - Document listener and combo box listener fire a single onChange callback.
- *      - Clear separation of UI creation, enable/disable logic, and persistence logic.
+ *  MODULE:
+ *    paint-shared-utils
  *
- *  AUTHOR
- *      PAINT Toolkit
+ *  UPDATED:
+ *    2025-12-31
  *
- *  MODULE
- *      paint.shared.dialogs.project
- *
- *  UPDATED
- *      2025-11-21
- *
- *  COPYRIGHT
- *      Copyright (c) 2020–2025.
- *      All rights reserved.
- * =================================================================================================
- */
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
 
 package paint.shared.dialogs.project;
 

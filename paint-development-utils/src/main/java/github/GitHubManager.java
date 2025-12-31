@@ -1,3 +1,23 @@
+/*=============================================================================
+ *  Class:        GitHubManager.java
+ *  Package:      github
+ *
+ *  PURPOSE:
+ *    Handles interaction with the GitHub API for managing releases and uploads.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-development-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package github;
 
 import java.io.BufferedReader;
@@ -6,16 +26,31 @@ import java.util.*;
 import java.time.*;
 import java.util.stream.Collectors;
 
+/**
+ * Provides an automated interface for managing GitHub releases, tags,
+ * workflow runs, and artifacts using the GitHub CLI ({@code gh}).
+ */
 @SuppressWarnings("unused")
 public final class GitHubManager {
 
     private final String repo; // owner/repo, e.g. "JJBakker/paint"
     private boolean dryRun = false;
 
+    /**
+     * Constructs a {@code GitHubManager} for the specified repository.
+     *
+     * @param repo the GitHub repository identifier (e.g., "owner/repo")
+     */
     public GitHubManager(String repo) {
         this.repo = repo;
     }
 
+    /**
+     * Enables or disables dry-run mode. When enabled, commands are printed to
+     * the console instead of being executed.
+     *
+     * @param dry {@code true} to enable dry-run mode
+     */
     public void setDryRun(boolean dry) {
         this.dryRun = dry;
     }
@@ -23,6 +58,14 @@ public final class GitHubManager {
     // --------------------------------------------------------------------------------------------
     // Internal command runner
     // --------------------------------------------------------------------------------------------
+
+    /**
+     * Executes a system command and returns the output as a list of strings.
+     *
+     * @param cmd the command and its arguments
+     * @return the command output lines
+     * @throws Exception if the command fails or an I/O error occurs
+     */
     private List<String> run(String... cmd) throws Exception {
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.redirectErrorStream(true);
@@ -39,6 +82,12 @@ public final class GitHubManager {
         return out;
     }
 
+    /**
+     * Executes a command or prints it if dry-run mode is enabled.
+     *
+     * @param cmd the command and its arguments
+     * @throws Exception if the command fails
+     */
     private void runOrDry(String... cmd) throws Exception {
         if (dryRun) {
             System.out.println("[DRY RUN] " + String.join(" ", cmd));
@@ -50,14 +99,32 @@ public final class GitHubManager {
     // --------------------------------------------------------------------------------------------
     // Releases
     // --------------------------------------------------------------------------------------------
+
+    /**
+     * Lists all releases for the repository.
+     *
+     * @return a list of strings representing the releases
+     * @throws Exception if the GitHub CLI call fails
+     */
     public List<String> listReleases() throws Exception {
         return run("gh", "release", "list", "--repo", repo);
     }
 
+    /**
+     * Deletes a release identified by its tag.
+     *
+     * @param tag the tag of the release to delete
+     * @throws Exception if the deletion fails
+     */
     public void deleteRelease(String tag) throws Exception {
         runOrDry("gh", "release", "delete", tag, "--repo", repo, "--yes");
     }
 
+    /**
+     * Deletes all releases for the repository.
+     *
+     * @throws Exception if any deletion fails
+     */
     public void deleteAllReleases() throws Exception {
         for (String line : listReleases()) {
             String tag = line.split("\\s+")[0];
@@ -65,6 +132,12 @@ public final class GitHubManager {
         }
     }
 
+    /**
+     * Retrieves a list of all release tags.
+     *
+     * @return a list of release tag strings
+     * @throws Exception if the GitHub CLI call fails
+     */
     public List<String> listReleaseTagsOnly() throws Exception {
         List<String> out = new ArrayList<>();
         for (String line : listReleases()) {
@@ -73,7 +146,11 @@ public final class GitHubManager {
         return out;
     }
 
-    // Delete only prereleases
+    /**
+     * Deletes all prereleases for the repository.
+     *
+     * @throws Exception if any deletion fails
+     */
     public void deletePrereleases() throws Exception {
         List<Map<String,String>> releases = run(
                 "gh", "release", "list", "--repo", repo, "--json", "tagName,isPrerelease"

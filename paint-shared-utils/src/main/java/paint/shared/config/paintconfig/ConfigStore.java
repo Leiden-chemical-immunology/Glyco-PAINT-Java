@@ -1,3 +1,31 @@
+/*=============================================================================
+ *  Class:        ConfigStore.java
+ *  Package:      paint.shared.config.paintconfig
+ *
+ *  PURPOSE:
+ *    Manages the lifecycle of a PAINT configuration JSON file, including
+ *    loading, validation, backup of invalid files, and persistence.
+ *
+ *  DESCRIPTION:
+ *    The {@code ConfigStore} acts as an internal owner of the root
+ *    {@link JsonObject} for a specific configuration file (e.g.,
+ *    "Paint Configuration.json"). It ensures that configuration is
+ *    lazily loaded, validated upon reading, and safely backed up if
+ *    structural errors are detected.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package paint.shared.config.paintconfig;
 
 import com.google.gson.Gson;

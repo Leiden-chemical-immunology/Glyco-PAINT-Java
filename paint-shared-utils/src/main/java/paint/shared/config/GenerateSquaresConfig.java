@@ -34,7 +34,7 @@
  *    Hans Bakker (jjabakker)
  *
  *  UPDATED:
- *    2025-10-28
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -87,30 +87,51 @@ public class GenerateSquaresConfig {
         
     }
 
+    /**
+     * @return total number of squares in a recording grid.
+     */
     public int getNumberOfSquaresInRecording() {
         return numberOfSquaresInRecording;
     }
 
+    /**
+     * @return minimum number of tracks needed for basic calculations.
+     */
     public int getMinTracksToCalculate() {
         return minTracksToCalculate;
     }
 
+    /**
+     * @return minimum track count required to compute a valid Tau value.
+     */
     public int getMinTracksToCalculateTau() {
         return minTracksToCalculateTau;
     }
 
+    /**
+     * @return the threshold for minimum acceptable R² of binding kinetics fits.
+     */
     public double getMinRequiredRSquared() {
         return minRequiredRSquared;
     }
 
+    /**
+     * @return the threshold for minimum density ratio (foreground vs background).
+     */
     public double getMinRequiredDensityRatio() {
         return minRequiredDensityRatio;
     }
 
+    /**
+     * @return the maximum allowed coefficient of variation for selection.
+     */
     public double getMaxAllowableVariability() {
         return maxAllowableVariability;
     }
 
+    /**
+     * @return the active neighbour mode (e.g., "Free", "Strict").
+     */
     public String getNeighbourMode() {
         return neighbourMode;
     }

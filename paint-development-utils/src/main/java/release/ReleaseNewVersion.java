@@ -1,11 +1,23 @@
-// =================================================================================================
-//  PURPOSE    : Orchestrate full multi-module Glyco-PAINT builds across macOS and Windows.
-//               (Behavior-preserving refactor: delegates to helper classes without changing logic.)
-//  AUTHOR     : J.J. Bakker
-//  MODULE     : paint-development-utils
-//  UPDATED    : 2025-11-10
-//  COPYRIGHT  : (c) 2025 J.J. Bakker. All rights reserved.
-// =================================================================================================
+/*=============================================================================
+ *  Class:        ReleaseNewVersion.java
+ *  Package:      release
+ *
+ *  PURPOSE:
+ *    Orchestrates full multi-module Glyco-PAINT builds across macOS and Windows.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-development-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package release;
 
 import java.nio.file.Files;
@@ -14,8 +26,24 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Orchestrates the full multi-module build and release process for the
+ * Glyco-PAINT software suite. This includes version bumping, compilation,
+ * packaging for macOS and Windows, and optionally tagging and pushing
+ * to GitHub.
+ */
 public class ReleaseNewVersion {
 
+    /**
+     * Entry point for the release tool. Provides an interactive menu or
+     * accepts command-line arguments to trigger builds or releases.
+     *
+     * @param args command-line options:
+     *             <ul>
+     *               <li>{@code --bump-version}: updates the POM versions</li>
+     *               <li>{@code --release}: triggers full tagging and pushing</li>
+     *             </ul>
+     */
     public static void main(String[] args) {
         boolean bumpVersion = false;  // default: rebuild only
         boolean doRelease   = false;  // release implies bump + tag + push

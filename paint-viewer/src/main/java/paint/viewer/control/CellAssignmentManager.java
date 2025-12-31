@@ -28,7 +28,7 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-10-29
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -137,10 +137,18 @@ public class CellAssignmentManager {
         squareAssignments.clear();
     }
 
+    /**
+     * Sets whether this is the first assignment for the current recording.
+     *
+     * @param firstAssignmentForRecording {@code true} if first assignment
+     */
     public void setFirstAssignmentForRecording(boolean firstAssignmentForRecording) {
         this.firstAssignmentForRecording = firstAssignmentForRecording;
     }
 
+    /**
+     * @return {@code true} if this is the first assignment for the recording.
+     */
     public boolean isFirstAssignmentForRecording() {
         return firstAssignmentForRecording;
     }

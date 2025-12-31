@@ -1,3 +1,30 @@
+/*=============================================================================
+ *  Class:        SquaresTableIO.java
+ *  Package:      paint.shared.io.internal
+ *
+ *  PURPOSE:
+ *    Handles low-level I/O and data conversion between PAINT {@link Square}
+ *    objects and Tablesaw {@link Table} structures.
+ *
+ *  DESCRIPTION:
+ *    The {@code SquaresTableIO} class provides implementation for mapping
+ *    square entity fields to CSV columns and vice versa. It manages the
+ *    schema specific to "squares.csv" files, ensuring that data types
+ *    and headers are correctly applied during conversion.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package paint.shared.io.internal;
 
 import static paint.shared.constants.PaintStringConstants.*;
@@ -43,6 +70,9 @@ public class SquaresTableIO extends BaseTableIO {
     //  TABLE CREATION
     // =====================================================================
 
+    /**
+     * @return a new empty {@link Table} with the Squares schema.
+     */
     public Table emptyTable() {
         return newEmptyTable(
                 "Squares",
@@ -52,9 +82,15 @@ public class SquaresTableIO extends BaseTableIO {
     }
 
     // =====================================================================
-    //  ENTITY → TABLE CONVERSION  (UNCHANGED)
+    //  ENTITY → TABLE CONVERSION
     // =====================================================================
 
+    /**
+     * Converts a list of {@link Square} entities into a Tablesaw {@link Table}.
+     *
+     * @param squares list of square objects to convert
+     * @return a table containing the square data
+     */
     public Table toTable(List<Square> squares) {
         Table table = emptyTable();
 
@@ -104,6 +140,12 @@ public class SquaresTableIO extends BaseTableIO {
     //  TABLE → ENTITY CONVERSION (UNCHANGED)
     // =====================================================================
 
+    /**
+     * Converts a Tablesaw {@link Table} into a list of {@link Square} entities.
+     *
+     * @param table the table to convert
+     * @return a list of square objects
+     */
     public List<Square> toEntities(Table table) {
         List<Square> squares = new ArrayList<>();
 

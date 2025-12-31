@@ -29,7 +29,7 @@
  *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-10-28
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -228,6 +228,9 @@ public final class PaintLogger {
 
     /**
      * Logs an INFO message with printf-style formatting.
+     *
+     * @param fmt  printf-style format string
+     * @param args arguments for the format string
      */
     public static void infof(String fmt, Object... args) {
         log(Level.INFO, String.format(fmt, args));
@@ -235,6 +238,9 @@ public final class PaintLogger {
 
     /**
      * Logs a DEBUG message with printf-style formatting.
+     *
+     * @param fmt  printf-style format string
+     * @param args arguments for the format string
      */
     public static void debugf(String fmt, Object... args) {
         log(Level.DEBUG, String.format(fmt, args));
@@ -242,6 +248,9 @@ public final class PaintLogger {
 
     /**
      * Logs a WARN message with printf-style formatting.
+     *
+     * @param fmt  printf-style format string
+     * @param args arguments for the format string
      */
     public static void warnf(String fmt, Object... args) {
         log(Level.WARN, String.format(fmt, args));
@@ -249,6 +258,9 @@ public final class PaintLogger {
 
     /**
      * Logs an ERROR message with printf-style formatting.
+     *
+     * @param fmt  printf-style format string
+     * @param args arguments for the format string
      */
     public static void errorf(String fmt, Object... args) {
         log(Level.ERROR, String.format(fmt, args));

@@ -1,45 +1,36 @@
-// =================================================================================================
-//  File: src/main/java/paint/shared/dialogs/project/ProjectDialogController.java
-// =================================================================================================
-
-/* =================================================================================================
- *  PURPOSE
- *      Controller class coordinating UI behavior for the ProjectDialog. It responds to user input,
- *      updates panels, validates run conditions, and delegates background execution and cancellation
- *      to the ProjectDialog via functional interfaces.
+/*=============================================================================
+ *  Class:        ProjectDialogController.java
+ *  Package:      paint.shared.dialogs.project
  *
- *  DESCRIPTION
- *      This controller is the glue between the dialog panels (paths, parameters, experiments, bottom
- *      bar) and the dialog logic. It does not own any UI components; instead it receives references
- *      to getters, setters, and worker functions from ProjectDialog. It handles:
- *          - browse button actions
- *          - enabling/disabling OK depending on validity
- *          - sweep configuration creation
- *          - executing the worker (via QuadRunnable)
- *          - managing cancellation behavior
- *          - EDT-safe updates
+ *  PURPOSE:
+ *    Manages the business logic and user interaction flow for the
+ *    {@link paint.shared.dialogs.ProjectDialog}.
  *
- *  KEY FEATURES
- *      - Clean method-reference-based communication with ProjectDialog.
- *      - Uses Supplier, Consumer, Runnable, and QuadRunnable to remain fully decoupled.
- *      - Handles validation logic for when the OK button may be enabled.
- *      - Performs sweep creation checks.
- *      - Coordinates UI disable/enable states during background work.
+ *  DESCRIPTION:
+ *    The {@code ProjectDialogController} handles experiment discovery,
+ *    validation of project paths, persistence of user selections (preferences),
+ *    and coordination of background calculation tasks. It acts as the
+ *    bridge between the dialog's UI components and the underlying PAINT
+ *    data models.
  *
- *  AUTHOR
- *      PAINT Toolkit
+ *  KEY FEATURES:
+ *    • Automated discovery and filtering of experiment directories.
+ *    • Path resolution and validation against the PAINT project schema.
+ *    • Persistent storage of last-used paths and selected experiments.
+ *    • Coordination of mode-specific initialization logic.
  *
- *  MODULE
- *      paint.shared.dialogs.project
+ *  AUTHOR:
+ *    Hans Bakker
  *
- *  UPDATED
- *      2025-11-21
+ *  MODULE:
+ *    paint-shared-utils
  *
- *  COPYRIGHT
- *      Copyright (c) 2020–2025.
- *      All rights reserved.
- * =================================================================================================
- */
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
 
 package paint.shared.dialogs.project;
 

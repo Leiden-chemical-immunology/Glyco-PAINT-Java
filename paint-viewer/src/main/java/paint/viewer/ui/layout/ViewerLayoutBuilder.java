@@ -35,7 +35,7 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-11-17
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -99,24 +99,50 @@ public class ViewerLayoutBuilder {
      * Listener for the viewer close event.
      */
     public interface CloseListener {
+        /**
+         * Called when the viewer should be closed.
+         */
         void onClose();
     }
 
     /**
      * Holds all top-level Swing components created by the layout builder.
-     * ViewerFrame uses this object to update the UI during navigation.
+     * {@link paint.viewer.ui.frames.ViewerFrame} uses this object to update the
+     * UI during navigation.
      */
     public static class LayoutComponents {
+        /** The main root panel of the viewer. */
         public final JPanel                   rootPanel;
+        /** Label displaying the right-side (reference) image. */
         public final JLabel                   rightImageLabel;
+        /** Label displaying the current experiment name. */
         public final JLabel                   experimentLabel;
+        /** Label displaying the current recording name. */
         public final JLabel                   recordingLabel;
+        /** Panel containing the grid of squares. */
         public final SquareGridPanel          leftGridPanel;
+        /** Panel displaying recording metadata attributes. */
         public final RecordingAttributesPanel attributesPanel;
+        /** Panel containing navigation buttons. */
         public final NavigationPanel          navigationPanel;
+        /** Panel containing interactive recording controls. */
         public final RecordingControlsPanel   controlsPanel;
+        /** Checkbox for enabling override import. */
         public final JCheckBox                importOverridesCheckBox;
 
+        /**
+         * Constructs a new {@code LayoutComponents} container.
+         *
+         * @param rootPanel               the root panel
+         * @param rightImageLabel         right image label
+         * @param experimentLabel         experiment label
+         * @param recordingLabel          recording label
+         * @param leftGridPanel           left grid panel
+         * @param attributesPanel         attributes panel
+         * @param navigationPanel         navigation panel
+         * @param controlsPanel           controls panel
+         * @param importOverridesCheckBox overrides checkbox
+         */
         LayoutComponents(
                 JPanel                   rootPanel,
                 JLabel                   rightImageLabel,

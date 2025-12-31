@@ -1,3 +1,30 @@
+/*=============================================================================
+ *  Class:        ExperimentInfoTableIO.java
+ *  Package:      paint.shared.io.internal
+ *
+ *  PURPOSE:
+ *    Handles low-level I/O and data conversion between PAINT {@link ExperimentInfo}
+ *    objects and Tablesaw {@link Table} structures.
+ *
+ *  DESCRIPTION:
+ *    The {@code ExperimentInfoTableIO} class provides implementation for mapping
+ *    experiment metadata fields to CSV columns and vice versa. It manages the
+ *    schema specific to "experiment_info.csv" files, ensuring that data types
+ *    and headers are correctly applied during conversion.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package paint.shared.io.internal;
 
 import paint.shared.objects.ExperimentInfo;
@@ -46,7 +73,9 @@ public class ExperimentInfoTableIO extends BaseTableIO {
     //  TABLE CREATION
     // =====================================================================
 
-
+    /**
+     * @return a new empty {@link Table} with the Experiment Info schema.
+     */
     public Table emptyTable() {
         return newEmptyTable("Experiment Info", getColumnHeaders(), getColumnTypes());
     }
@@ -55,7 +84,12 @@ public class ExperimentInfoTableIO extends BaseTableIO {
     //  ENTITY → TABLE CONVERSION
     // =====================================================================
 
-
+    /**
+     * Converts a list of {@link ExperimentInfo} entities into a Tablesaw {@link Table}.
+     *
+     * @param infos list of experiment info objects to convert
+     * @return a table containing the metadata
+     */
     public Table toTable(List<ExperimentInfo> infos) {
         Table table = emptyTable();
 
@@ -82,6 +116,12 @@ public class ExperimentInfoTableIO extends BaseTableIO {
     //  TABLE → ENTITY CONVERSION
     // =====================================================================
 
+    /**
+     * Converts a Tablesaw {@link Table} into a list of {@link ExperimentInfo} entities.
+     *
+     * @param table the table to convert
+     * @return a list of experiment info objects
+     */
     public List<ExperimentInfo> toEntities(Table table) {
         List<ExperimentInfo> list = new ArrayList<>();
 

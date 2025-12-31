@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        GenerateSquaresHeadless.java
- *  Package:      generatesquares
+ *  Package:      paint.generatesquares.app
  *
  *  PURPOSE:
  *    Provides a headless (non-GUI) execution mode for the “Generate Squares”
@@ -14,27 +14,20 @@
  *    {@link paint.generatesquares.calc.GenerateSquaresProcessor}, and exports
  *    all resulting files.
  *
- *  RESPONSIBILITIES:
+ *  KEY FEATURES:
  *    • Validate experiment input files prior to computation
  *    • Execute square-based calculations for each experiment
  *    • Export per-experiment histogram PNGs
  *    • Concatenate experiment-level CSVs into project-level summaries
  *
- *  USAGE EXAMPLE:
- *    GenerateSquaresHeadless.run(projectPath, Arrays.asList("Exp01", "Exp02"));
- *
- *  DEPENDENCIES:
- *    - paint.shared.config.{PaintConfig, GenerateSquaresConfig}
- *    - paint.shared.objects.{Project, Experiment}
- *    - paint.shared.utils.{PaintLogger}
- *    - paint.shared.validate.ValidationHandler
- *    - generatesquares.calc.GenerateSquaresProcessor
- *
  *  AUTHOR:
- *    Hans Bakker (jjabakker)
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-generate-squares
  *
  *  UPDATED:
- *    2025-10-23
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.

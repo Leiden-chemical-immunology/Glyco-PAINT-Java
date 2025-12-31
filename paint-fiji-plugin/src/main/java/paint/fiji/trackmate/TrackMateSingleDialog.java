@@ -1,16 +1,39 @@
-/*=============================================================================
+/*==============================================================================
  *  Class:        TrackMateSingleDialog.java
  *  Package:      paint.fiji.trackmate
  *
  *  PURPOSE:
- *    Modal dialog for TRACKMATE_SINGLE mode: choose one Recording Name (radio
- *    buttons), choose a Threshold (slider 1..50), and choose an action:
- *    Calculate / Save / Cancel.
+ *    Provides a modeless dialog for running TrackMate on a single recording
+ *    with interactive threshold adjustment.
  *
- *  NOTES:
- *    - Closing via red window button behaves like Cancel.
- *    - Java 8 compatible.
- *============================================================================*/
+ *  DESCRIPTION:
+ *    The dialog allows users to:
+ *      • Select a recording from the current project/experiment.
+ *      • Adjust the spot detection threshold via a slider.
+ *      • Trigger TrackMate calculation in a background thread.
+ *      • Save the resulting track and spot data to CSV.
+ *
+ *    It provides visual feedback during long-running TrackMate operations
+ *    and prevents concurrent execution through UI-state management.
+ *
+ *  KEY FEATURES:
+ *    • Interactive recording selection and threshold tuning.
+ *    • Background thread execution for responsive UI.
+ *    • Status feedback with animated dots for active processes.
+ *    • Java 8 compatible.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-fiji-plugin
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *==============================================================================*/
 
 package paint.fiji.trackmate;
 

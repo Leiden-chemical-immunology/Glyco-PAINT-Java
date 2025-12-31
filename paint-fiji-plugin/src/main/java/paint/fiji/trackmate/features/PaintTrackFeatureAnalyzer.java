@@ -1,3 +1,32 @@
+/*==============================================================================
+ *  Class:        PaintTrackFeatureAnalyzer.java
+ *  Package:      paint.fiji.trackmate.features
+ *
+ *  PURPOSE:
+ *    Intended to provide custom TrackMate features (diffusion, distance,
+ *    confinement) directly within the TrackMate framework.
+ *
+ *  DESCRIPTION:
+ *    This class implements the TrackMate {@code TrackAnalyzer} interface
+ *    to compute and register PAINT-specific motion metrics.
+ *
+ *  STATUS:
+ *    Currently disabled (commented out) as it is not actively used in the
+ *    main workflow.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-fiji-plugin
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *==============================================================================*/
+
 package paint.fiji.trackmate.features;
 
 /* IGNORE START

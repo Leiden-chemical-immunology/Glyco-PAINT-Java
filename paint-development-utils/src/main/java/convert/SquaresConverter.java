@@ -1,3 +1,23 @@
+/*=============================================================================
+ *  Class:        SquaresConverter.java
+ *  Package:      convert
+ *
+ *  PURPOSE:
+ *    Specialized converter for the squares table.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-development-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package convert;
 
 import java.nio.file.Path;

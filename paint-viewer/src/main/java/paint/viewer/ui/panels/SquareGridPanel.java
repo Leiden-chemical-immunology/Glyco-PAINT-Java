@@ -38,7 +38,7 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-10-29
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -605,6 +605,11 @@ public class SquareGridPanel extends JPanel {
         }
     }
 
+    /**
+     * Enables or disables user interaction with the grid (selection, tooltips).
+     *
+     * @param enabled {@code true} to enable interaction, {@code false} to disable
+     */
     public void setInteractionEnabled(boolean enabled) {
         this.interactionEnabled = enabled;
         if (!enabled) {

@@ -26,7 +26,7 @@
  *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-10-28
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -111,26 +111,44 @@ public class Project {
         }
     }
 
+    /**
+     * @return the root directory path of the project.
+     */
     public Path getProjectRootPath() {
         return projectRootPath;
     }
 
+    /**
+     * @return the directory path where experiment images are stored.
+     */
     public Path getImagesRootPath() {
         return imagesRootPath;
     }
 
+    /**
+     * @return the current configuration for the Generate Squares workflow.
+     */
     public GenerateSquaresConfig getGenerateSquaresConfig() {
         return generateSquaresConfig;
     }
 
+    /**
+     * @param generateSquaresConfig the configuration to set.
+     */
     public void setGenerateSquaresConfig(GenerateSquaresConfig generateSquaresConfig) {
         this.generateSquaresConfig = generateSquaresConfig;
     }
 
+    /**
+     * @return the list of names of experiments in this project.
+     */
     public List<String> getExperimentNames() {
         return experimentNames;
     }
 
+    /**
+     * @param experimentNames the list of experiment names to set.
+     */
     public void setExperimentNames(List<String> experimentNames) {
         this.experimentNames = experimentNames;
     }

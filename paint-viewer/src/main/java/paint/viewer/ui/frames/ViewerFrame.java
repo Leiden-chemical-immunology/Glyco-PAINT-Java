@@ -1,6 +1,6 @@
 /*==============================================================================
- *  Class:        RecordingViewerFrame.java
- *  Package:      paint.viewer
+ *  Class:        ViewerFrame.java
+ *  Package:      paint.viewer.ui.frames
  *
  *  PURPOSE:
  *    Provides the primary graphical interface for exploring and analyzing
@@ -33,7 +33,7 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-10-29
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -44,7 +44,6 @@ package paint.viewer.ui.frames;
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.objects.Project;
 import paint.shared.utils.PaintLogger;
-import paint.viewer.app.Viewer;
 import paint.viewer.io.FileHelper;
 import paint.viewer.io.PanelExporter;
 import paint.viewer.ui.RecordingDisplayUpdater;
@@ -84,7 +83,7 @@ import paint.viewer.override.recording_override.WriteRecordingOverride;
 import paint.viewer.override.square_override.WriteSquareOverride;
 
 /**
- * The {@code RecordingViewerFrame} class defines the main window of the PAINT Viewer.
+ * The {@code ViewerFrame} class defines the main window of the PAINT Viewer.
  * It combines left and right image panels, navigation controls, and metadata panels into
  * a cohesive interface for browsing, filtering, and analyzing experiment recordings.
  * <p>
@@ -99,7 +98,7 @@ import paint.viewer.override.square_override.WriteSquareOverride;
  *   <li>Preview live recalculations of Tau, R², and density metrics.</li>
  * </ul>
  * <p>
- * This class is instantiated by {@link Viewer} after successful
+ * This class is instantiated by {@link paint.viewer.app.Viewer} after successful
  * project initialization. All UI updates occur on the Swing event dispatch thread.
  */
 public class ViewerFrame extends JFrame implements
@@ -370,21 +369,33 @@ public class ViewerFrame extends JFrame implements
         navigator.first(recordingEntries);
     }
 
+    /**
+     * Navigates to the previous recording entry.
+     */
     @Override
     public void onPrev() {
         navigator.prev(recordingEntries, currentIndex);
     }
 
+    /**
+     * Navigates to the next recording entry.
+     */
     @Override
     public void onNext() {
         navigator.next(recordingEntries, currentIndex);
     }
 
+    /**
+     * Navigates to the last recording entry in the list.
+     */
     @Override
     public void onLast() {
         navigator.last(recordingEntries);
     }
 
+    /**
+     * Opens a file chooser to export the current left grid view as a high-resolution image.
+     */
     @Override
     public void onExportLeftImageRequested() {
         JFileChooser chooser = new JFileChooser();
@@ -414,11 +425,18 @@ public class ViewerFrame extends JFrame implements
         }
     }
 
+    /**
+     * Opens the squares CSV file for the currently selected recording.
+     */
     @Override
     public void onShowSquaresRequested() {
         openSquaresForCurrentRecording();
     }
 
+    /**
+     * Toggles the excluded state of the current recording and updates the
+     * project-level exclude CSV and experiment-level recordings CSV.
+     */
     @Override
     public void onExcludeToggleRequested() {
         if (recordingEntries.isEmpty()
@@ -784,14 +802,24 @@ public class ViewerFrame extends JFrame implements
     }
 
     // Accessors used by the playback controller
+    /**
+     * @return the {@link SquareGridPanel} displaying the current recording's squares.
+     */
     public SquareGridPanel getLeftGridPanel() {
         return leftGridPanel;
     }
 
+    /**
+     * @return the {@link Project} associated with this viewer.
+     */
     public Project getProject() {
         return project;
     }
 
+    /**
+     * Disables the user interface components.
+     * Used during long-running background tasks.
+     */
     public void disableUI() {
         setActionButtonsEnabled(false);        // right control panel
         setGridEnabled(false);                 // left grid
@@ -799,6 +827,10 @@ public class ViewerFrame extends JFrame implements
         attributesPanel.getComponent().setEnabled(false);    // optional: prevent editing attributes
     }
 
+    /**
+     * Enables the user interface components.
+     * Restores interactive state after background tasks.
+     */
     public void enableUI() {
         setActionButtonsEnabled(true);
         setGridEnabled(true);

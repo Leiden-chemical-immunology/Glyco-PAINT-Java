@@ -33,7 +33,7 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-12-25
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -89,7 +89,7 @@ public class ImportRecordingExclude {
         Path csvPath = projectPath.resolve("Viewer").resolve("Recording Exclude.csv");
 
         if (!Files.exists(csvPath)) {
-            PaintLogger.infof("No Recording Override.csv present - no overrides to apply.");
+            PaintLogger.infof("No Recording Exclude.csv present - no overrides to apply.");
             return;
         }
 
@@ -138,9 +138,6 @@ public class ImportRecordingExclude {
                 }
             }
         }
-
-        Path filePath = projectPath.resolve("Recordings-override.csv");
-        // writeSpecificRecordingsFile(filePath, recordingsTable);
     }
 
     /**
@@ -172,9 +169,6 @@ public class ImportRecordingExclude {
                 }
             }
         }
-
-        Path filePath = projectPath.resolve("Recordings-override.csv");
-        //writeSpecificRecordingsFile(filePath, recordingsTable);      //@@@@@
     }
 
     // ────────────────────────────────────────────────────────────

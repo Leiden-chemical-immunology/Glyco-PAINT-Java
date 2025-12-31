@@ -1,6 +1,6 @@
 /*==============================================================================
  *  Class:        RecordingControlsPanel.java
- *  Package:      paint.viewer.panels
+ *  Package:      paint.viewer.ui.panels
  *
  *  PURPOSE:
  *    Provides a control panel for managing recording-related actions and
@@ -15,7 +15,7 @@
  *      2) Visualization toggles for borders and shading
  *      3) Number display mode options (None, Label, Square)
  *
- *    A {@link Listener} interface defines callbacks for all interactive
+ *    A {@link RecordingsControlListener} interface defines callbacks for all interactive
  *    controls, allowing the parent viewer frame to handle the actions.
  *    Layout is vertical for readability, with consistent sizing and spacing
  *    across buttons and toggle groups.
@@ -32,15 +32,13 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-10-29
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
 ==============================================================================*/
 
 package paint.viewer.ui.panels;
-
-import paint.viewer.model.SquareControlParams;
 
 import javax.swing.*;
 import java.awt.*;
@@ -63,9 +61,9 @@ public class RecordingControlsPanel {
         void onExportLeftImageRequested();                                    // Called when the user requests to export the left grid image
         void onShowSquaresRequested();                                        // Called when the user requests to view the squares CSV
         void onBordersToggled(boolean showBorders);                           // Triggered when borders are toggled on or off
-        void onShadingToggled(boolean showShading);                           // Triggered when borders are toggled on or off
+        void onShadingToggled(boolean showShading);                           // Triggered when shading is toggled on or off
         void onNumberModeChanged(SquareGridPanel.NumberMode mode);            // Called when the numeric display mode (None, Label, Square) is changed
-        void onExcludeToggleRequested();                                      // Called when the Exclude/Incluse button is pressed
+        void onExcludeToggleRequested();                                      // Called when the Exclude/Include button is pressed
     }
 
     private final JPanel  root;
@@ -226,6 +224,13 @@ public class RecordingControlsPanel {
         excludeButton.setEnabled(enabled);
     }
 
+    /**
+     * Updates the text and appearance of the exclusion toggle button
+     * based on the current recording's exclusion status.
+     *
+     * @param excluded {@code true} if the recording is currently excluded,
+     *                 {@code false} otherwise
+     */
     public void setExcludeButtonText(boolean excluded) {
         if (excludeButton == null) {
             return;

@@ -1,3 +1,31 @@
+/*=============================================================================
+ *  Class:        DefaultConfigLoader.java
+ *  Package:      paint.shared.config.paintconfig
+ *
+ *  PURPOSE:
+ *    Populates the PAINT configuration store with factory-default values.
+ *
+ *  DESCRIPTION:
+ *    The {@code DefaultConfigLoader} is used during application initialization
+ *    when no project-specific or user-specific configuration file is found.
+ *    It defines standard starting values for:
+ *      • Generate Squares parameters (Tau calculation, filtering)
+ *      • TrackMate parameters (linking distances, gap closing, spot radii)
+ *      • Debug settings
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package paint.shared.config.paintconfig;
 
 import com.google.gson.JsonObject;

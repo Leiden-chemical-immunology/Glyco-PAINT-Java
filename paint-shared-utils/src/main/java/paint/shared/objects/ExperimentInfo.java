@@ -31,7 +31,7 @@
  *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-11-29
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -130,6 +130,9 @@ public class ExperimentInfo {
         }
     }
 
+    /**
+     * @return the name of the experiment.
+     */
     public String getExperimentName() {
         return experimentName;
     }
@@ -138,86 +141,149 @@ public class ExperimentInfo {
     //  ACCESSORS & MUTATORS
     //=========================================================================
 
+    /**
+     * @param experimentName the experiment name to set.
+     */
     public void setExperimentName(String experimentName) {
         this.experimentName = experimentName;
     }
 
+    /**
+     * @return the unique name of the recording.
+     */
     public String getRecordingName() {
         return recordingName;
     }
 
+    /**
+     * @param recordingName the recording name to set.
+     */
     public void setRecordingName(String recordingName) {
         this.recordingName = recordingName;
     }
 
+    /**
+     * @return the condition number.
+     */
     public int getConditionNumber() {
         return conditionNumber;
     }
 
+    /**
+     * @param conditionNumber the condition number to set.
+     */
     public void setConditionNumber(int conditionNumber) {
         this.conditionNumber = conditionNumber;
     }
 
+    /**
+     * @return the replicate number.
+     */
     public int getReplicateNumber() {
         return replicateNumber;
     }
 
+    /**
+     * @param replicateNumber the replicate number to set.
+     */
     public void setReplicateNumber(int replicateNumber) {
         this.replicateNumber = replicateNumber;
     }
 
+    /**
+     * @return the name of the probe.
+     */
     public String getProbeName() {
         return probeName;
     }
 
+    /**
+     * @param probeName the probe name to set.
+     */
     public void setProbeName(String probeName) {
         this.probeName = probeName;
     }
 
+    /**
+     * @return the type of probe.
+     */
     public String getProbeType() {
         return probeType;
     }
 
+    /**
+     * @param probeType the probe type to set.
+     */
     public void setProbeType(String probeType) {
         this.probeType = probeType;
     }
 
+    /**
+     * @return the cell type used.
+     */
     public String getCellType() {
         return cellType;
     }
 
+    /**
+     * @param cellType the cell type to set.
+     */
     public void setCellType(String cellType) {
         this.cellType = cellType;
     }
 
+    /**
+     * @return the adjuvant used.
+     */
     public String getAdjuvant() {
         return adjuvant;
     }
 
+    /**
+     * @param adjuvant the adjuvant to set.
+     */
     public void setAdjuvant(String adjuvant) {
         this.adjuvant = adjuvant;
     }
 
+    /**
+     * @return the probe concentration.
+     */
     public double getConcentration() {
         return concentration;
     }
 
+    /**
+     * @param concentration the concentration to set.
+     */
     public void setConcentration(double concentration) {
         this.concentration = concentration;
     }
 
+    /**
+     * @return true if the process flag is set.
+     */
     public boolean isProcessFlagSet() {
         return processFlag;
     }
 
+    /**
+     * @param processFlag the process flag to set.
+     */
     public void setProcessFlag(boolean processFlag) {
         this.processFlag = processFlag;
     }
 
+    /**
+     * @return the analysis threshold.
+     */
     public double getThreshold() {
         return threshold;
     }
 
+    /**
+     * @param threshold the threshold to set.
+     */
     public void setThreshold(double threshold) {
         this.threshold = threshold;
     }

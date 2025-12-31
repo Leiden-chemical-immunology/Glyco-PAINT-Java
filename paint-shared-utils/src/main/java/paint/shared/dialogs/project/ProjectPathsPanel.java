@@ -1,34 +1,29 @@
-/*
- * ============================================================================
- *  PURPOSE
- *      Swing panel for selecting and managing the Project Root and Images Root paths.
+/*=============================================================================
+ *  Class:        ProjectPathsPanel.java
+ *  Package:      paint.shared.dialogs.project
  *
- *  DESCRIPTION
- *      This class provides UI components for entering or browsing directories used by
- *      the application. It supports callbacks for detecting root changes, browsing actions,
- *      and mode-dependent behaviors (such as disabling the Images Root field in
- *      GENERATE_SQUARES mode).
+ *  PURPOSE:
+ *    Provides a user interface panel for selecting and managing project
+ *    and experiment directory paths.
  *
- *  KEY FEATURES
- *      - Project Root and Images Root text fields
- *      - Browse buttons with directory chooser dialogs
- *      - Callbacks via Runnable and Consumer interfaces
- *      - Mode-dependent UI restrictions
- *      - Automatic notifications on text edits
+ *  DESCRIPTION:
+ *    The {@code ProjectPathsPanel} displays the current project root and
+ *    provides a button to browse for a new directory using a
+ *    {@link DirectoryChooser}. It also provides visual feedback on path
+ *    validity and integrates with the project dialog's validation system.
  *
- *  AUTHOR
- *      PAINT Automatic Header Generator
+ *  AUTHOR:
+ *    Hans Bakker
  *
- *  MODULE
- *      paint.shared.dialogs.project
+ *  MODULE:
+ *    paint-shared-utils
  *
- *  UPDATED
- *      2025-11-24
+ *  UPDATED:
+ *    2025-12-31
  *
- *  COPYRIGHT
- *      © PAINT Project. All rights reserved.
- * ============================================================================
- */
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
 
 package paint.shared.dialogs.project;
 

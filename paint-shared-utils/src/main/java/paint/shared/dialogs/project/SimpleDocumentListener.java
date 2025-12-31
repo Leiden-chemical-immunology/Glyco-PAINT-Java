@@ -1,35 +1,28 @@
-/*
- * ============================================================================
- *  PURPOSE
- *      Functional wrapper around Swing's DocumentListener interface.
+/*=============================================================================
+ *  Class:        SimpleDocumentListener.java
+ *  Package:      paint.shared.dialogs.project
  *
- *  DESCRIPTION
- *      The standard javax.swing.event.DocumentListener interface requires
- *      implementing three separate methods (insertUpdate, removeUpdate,
- *      changedUpdate). In most cases, an application simply wants to react to
- *      "any" document change. This interface reduces boilerplate by allowing
- *      implementers to define a single update(...) method. All inherited
- *      DocumentListener methods delegate to this unified update method.
+ *  PURPOSE:
+ *    Provides a simplified interface for Swing {@link DocumentListener} events.
  *
- *  KEY FEATURES
- *      - Provides a single functional method for all document change events.
- *      - Fully compatible with Java 8 method references and lambdas.
- *      - Implements all required DocumentListener methods using default
- *        implementations.
+ *  DESCRIPTION:
+ *    The {@code SimpleDocumentListener} functional interface reduces the
+ *    boilerplate code required to listen for text changes in {@link JTextField}
+ *    components. It collapses insert, remove, and change events into a
+ *    single callback.
  *
- *  AUTHOR
- *      PAINT Automatic Header Generator
+ *  AUTHOR:
+ *    Hans Bakker
  *
- *  MODULE
- *      paint.shared.dialogs.project
+ *  MODULE:
+ *    paint-shared-utils
  *
- *  UPDATED
- *      2025-11-24
+ *  UPDATED:
+ *    2025-12-31
  *
- *  COPYRIGHT
- *      © PAINT Project. All rights reserved.
- * ============================================================================
- */
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
 
 package paint.shared.dialogs.project;
 

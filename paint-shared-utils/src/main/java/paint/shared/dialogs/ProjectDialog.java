@@ -1,41 +1,35 @@
-// =================================================================================================
-//  File: src/main/java/paint/shared/dialogs/ProjectDialog.java
-// =================================================================================================
-
-/* =================================================================================================
- *  PURPOSE
- *      Main dialog for configuring and executing PAINT project operations (TrackMate, Generate
- *      Squares, Viewer). Manages UI composition, background worker behavior, and persistence of
- *      user selections.
+/*=============================================================================
+ *  Class:        ProjectDialog.java
+ *  Package:      paint.shared.dialogs
  *
- *  DESCRIPTION
- *      This dialog acts as the central UI entry point for project-level operations. It wires
- *      together all project-related panels (paths, experiments, parameters), connects to a
- *      ProjectDialogController via method references, manages the worker thread for expensive
- *      computations, and ensures correct EDT behavior for UI updates.
+ *  PURPOSE:
+ *    Provides a comprehensive project-selection and configuration dialog
+ *    used across the PAINT application suite.
  *
- *  KEY FEATURES
- *      - Supports three modes: TRACKMATE, GENERATE_SQUARES, VIEWER.
- *      - Assembles panels and components dynamically based on selected mode.
- *      - Provides a consistent project-building pipeline (persist + construct).
- *      - Includes cancel-safe worker thread execution with interrupt support.
- *      - Uses clear method references for controller wiring.
+ *  DESCRIPTION:
+ *    The {@code ProjectDialog} acts as a central coordinator for defining
+ *    project paths, selecting experiments, and configuring calculation
+ *    parameters (e.g., Tau, R², density ratio). It supports multiple
+ *    modes (VIEWER, GENERATE_SQUARES) and integrates interactive validation.
  *
- *  AUTHOR
- *      PAINT Toolkit
+ *  KEY FEATURES:
+ *    • Flexible UI for path selection and experiment filtering.
+ *    • Real-time validation of project structure.
+ *    • Mode-specific UI adjustments.
+ *    • Integrated configuration for square-generation parameters.
  *
- *  MODULE
- *      paint.shared.dialogs
+ *  AUTHOR:
+ *    Hans Bakker
  *
- *  UPDATED
- *      2025-11-21
+ *  MODULE:
+ *    paint-shared-utils
  *
- *  COPYRIGHT
- *      Copyright (c) 2020–2025.
- *      All rights reserved.
- * =================================================================================================
- */
-
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
 
 package paint.shared.dialogs;
 

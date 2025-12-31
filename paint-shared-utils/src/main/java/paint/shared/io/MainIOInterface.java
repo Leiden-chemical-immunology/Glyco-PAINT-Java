@@ -1,3 +1,37 @@
+/*=============================================================================
+ *  Class:        MainIOInterface.java
+ *  Package:      paint.shared.io
+ *
+ *  PURPOSE:
+ *    Provides a high-level API (façade) for reading and writing all core
+ *    PAINT data tables (Experiment Info, Recordings, Squares, and Tracks).
+ *
+ *  DESCRIPTION:
+ *    The {@code MainIOInterface} serves as the primary entry point for
+ *    I/O operations. It coordinates between high-level model requests and
+ *    low-level Tablesaw-based implementations found in the {@code internal}
+ *    package. It handles path resolution, schema extraction from enums,
+ *    and error logging.
+ *
+ *  KEY FEATURES:
+ *    • Centralized access for all CSV table operations.
+ *    • Automated schema management using entity Column enums.
+ *    • Standardized error reporting via {@link PaintLogger}.
+ *    • Support for both project-level and experiment-level I/O.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package paint.shared.io;
 
 import paint.shared.io.internal.ExperimentInfoTableIO;

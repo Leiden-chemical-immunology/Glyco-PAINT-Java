@@ -1,34 +1,35 @@
-/*
- * ============================================================================
- *  PURPOSE
- *      Panel for displaying and selecting experiments within a project.
+/*=============================================================================
+ *  Class:        ExperimentsPanel.java
+ *  Package:      paint.shared.dialogs.project
  *
- *  DESCRIPTION
- *      This class builds a UI component consisting of a scrollable list of
- *      experiment directories represented as checkboxes. Experiments are
- *      discovered by scanning the project root for subdirectories containing
- *      the ExperimentInfo.csv file. It also provides Select All / Clear All
- *      controls and exposes selection change notifications.
+ *  PURPOSE:
+ *    Provides a user interface panel for selecting and filtering experiments
+ *    within a PAINT project.
  *
- *  KEY FEATURES
- *      - Dynamically loads experiment list from project root.
- *      - Persists checkbox states using PaintConfig.
- *      - Provides callbacks when selection changes.
- *      - Allows external components to query selected experiments.
+ *  DESCRIPTION:
+ *    The {@code ExperimentsPanel} displays a list of discovered experiment
+ *    directories as checkboxes, allowing users to choose which data to
+ *    process or view. It includes buttons for mass selection/deselection
+ *    and integrates with the project dialog's validation logic.
  *
- *  AUTHOR
- *      PAINT Automatic Header Generator
+ *  KEY FEATURES:
+ *    • Dynamically loads experiment list from project root.
+ *    • Persists checkbox states using PaintConfig.
+ *    • Provides callbacks when selection changes.
+ *    • Allows external components to query selected experiments.
  *
- *  MODULE
- *      paint.shared.dialogs.project
+ *  AUTHOR:
+ *    Hans Bakker
  *
- *  UPDATED
- *      2025-11-24
+ *  MODULE:
+ *    paint-shared-utils
  *
- *  COPYRIGHT
- *      © PAINT Project. All rights reserved.
- * ============================================================================
- */
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
 
 package paint.shared.dialogs.project;
 

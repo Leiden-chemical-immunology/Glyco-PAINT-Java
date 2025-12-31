@@ -1,3 +1,23 @@
+/*=============================================================================
+ *  Class:        ProcessRunner.java
+ *  Package:      release
+ *
+ *  PURPOSE:
+ *    Utility to execute external system processes and capture their output.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-development-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package release;
 
 import java.io.BufferedReader;

@@ -1,3 +1,23 @@
+/*=============================================================================
+ *  Class:        PomUtils.java
+ *  Package:      release
+ *
+ *  PURPOSE:
+ *    Utility methods for updating version information in Maven pom.xml files.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-development-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package release;
 
 import org.w3c.dom.Document;

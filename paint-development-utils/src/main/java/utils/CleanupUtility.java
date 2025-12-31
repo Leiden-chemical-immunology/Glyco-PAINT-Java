@@ -1,3 +1,24 @@
+/*=============================================================================
+ *  Class:        CleanupUtility.java
+ *  Package:      utils
+ *
+ *  PURPOSE:
+ *    Utility to remove non-source files (e.g., .DS_Store) and clean up
+ *    the project directory.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-development-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package utils;
 
 import java.io.IOException;

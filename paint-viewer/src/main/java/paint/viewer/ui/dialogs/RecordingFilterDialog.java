@@ -1,18 +1,33 @@
 /*==============================================================================
  *  Class:        RecordingFilterDialog.java
- *  Package:      paint.viewer.dialogs
+ *  Package:      paint.viewer.ui.dialogs
  *
  *  PURPOSE:
  *    Modal dialog to filter a list of RecordingEntry objects by metadata
  *    (Cell Type, Probe Name, Probe Type, Adjuvant, Concentration).
  *
- *  NOTES:
- *    - Highlights list boxes that have an active filter (blue border).
- *    - Per-column "Reset" only clears that column and reapplies the remaining filters.
- *    - "Reset All" clears everything and restores the full dataset.
+ *  DESCRIPTION:
+ *    Provides an interactive interface for selecting and refining recording
+ *    filters. It dynamically updates list options based on active selections
+ *    and highlights columns that have active filters applied.
+ *
+ *  KEY FEATURES:
+ *    • Multi-column filtering with dynamic cross-filtering between categories.
+ *    • Visual feedback (blue borders) for columns with active filters.
+ *    • Per-column "Reset" and global "Reset All" functionality.
+ *    • Consistent behavior with the PAINT Viewer dataset.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-viewer
  *
  *  UPDATED:
- *    2025-11-01
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
  ==============================================================================*/
 
 package paint.viewer.ui.dialogs;
@@ -28,6 +43,13 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Modal dialog to filter a list of {@link RecordingEntry} objects by metadata.
+ * <p>
+ * Supports multi-column filtering with dynamic cross-filtering, allowing users to
+ * refine recording sets based on Cell Type, Probe Name, Probe Type, Adjuvant,
+ * and Concentration.
+ */
 public class RecordingFilterDialog extends JDialog {
 
     // ----- Data sets -----
@@ -51,7 +73,14 @@ public class RecordingFilterDialog extends JDialog {
 
     private       boolean            cancelled                                         = true;
 
-    // ===== Constructor =====
+    /**
+     * Constructs a new filter dialog.
+     *
+     * @param owner                    the parent frame
+     * @param currentVisibleRecordings the recordings currently shown in the viewer
+     * @param allRecordings           all available recordings in the project
+     * @param initialCriteria         previously applied filter criteria (optional)
+     */
     public RecordingFilterDialog(Frame owner,
                                  List<RecordingEntry> currentVisibleRecordings,
                                  List<RecordingEntry> allRecordings,
@@ -389,13 +418,30 @@ public class RecordingFilterDialog extends JDialog {
 
     // ===== Criteria I/O =====
 
+    /**
+     * Data class holding selected filter criteria for recordings.
+     */
     public static class FilterCriteria {
+        /** Selected cell types. */
         public final List<String> cellTypes;
+        /** Selected probe names. */
         public final List<String> probeNames;
+        /** Selected probe types. */
         public final List<String> probeTypes;
+        /** Selected adjuvants. */
         public final List<String> adjuvants;
+        /** Selected concentrations (stored as strings). */
         public final List<String> concentrations;
 
+        /**
+         * Constructs a new {@code FilterCriteria} instance.
+         *
+         * @param cellTypes      list of selected cell types
+         * @param probeNames     list of selected probe names
+         * @param probeTypes     list of selected probe types
+         * @param adjuvants      list of selected adjuvants
+         * @param concentrations list of selected concentrations
+         */
         public FilterCriteria(List<String> cellTypes,
                               List<String> probeNames,
                               List<String> probeTypes,
@@ -408,6 +454,7 @@ public class RecordingFilterDialog extends JDialog {
             this.concentrations = concentrations;
         }
 
+        /** @return a new empty filter criteria object */
         public static FilterCriteria empty() {
             return new FilterCriteria(
                     Collections.emptyList(),
@@ -418,6 +465,7 @@ public class RecordingFilterDialog extends JDialog {
             );
         }
 
+        /** @return true if no filters are active */
         public boolean isEmpty() {
             return cellTypes.isEmpty()
                     && probeNames.isEmpty()
@@ -426,6 +474,7 @@ public class RecordingFilterDialog extends JDialog {
                     && concentrations.isEmpty();
         }
 
+        /** @return true if any filter is active */
         public boolean isNotEmpty() {
             return !isEmpty();
         }

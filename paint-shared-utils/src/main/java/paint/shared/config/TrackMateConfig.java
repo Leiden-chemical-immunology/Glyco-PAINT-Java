@@ -23,7 +23,7 @@
  *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-10-28
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -115,70 +115,121 @@ public class TrackMateConfig {
 
     // Getters only, Setter methods are not needed either, as the attributes are final
 
+    /**
+     * @return the maximum allowed gap in frames between two spots in a track.
+     */
     public int getMaxFrameGap() {
         return maxFrameGap;
     }
 
+    /**
+     * @return factor used for alternative linking cost calculations.
+     */
     public double getAlternativeLinkingCostFactor() {
         return alternativeLinkingCostFactor;
     }
 
+    /**
+     * @return {@code true} if subpixel localization is enabled.
+     */
     public boolean isDoSubpixelLocalization() {
         return doSubpixelLocalization;
     }
 
+    /**
+     * @return the minimum required number of spots for a valid track.
+     */
     public int getMinNumberOfSpotsInTrack() {
         return minNumberOfSpotsInTrack;
     }
 
+    /**
+     * @return the maximum distance allowed for linking two spots.
+     */
     public double getLinkingMaxDistance() {
         return linkingMaxDistance;
     }
 
+    /**
+     * @return the maximum number of spots allowed per image.
+     */
     public int getMaxNumberOfSpotsInImage() {
         return maxNumberOfSpotsInImage;
     }
 
+    /**
+     * @return the maximum processing time allowed per image in seconds.
+     */
     public int getMaxNumberOfSecondsPerImage() {
         return maxNumberOfSecondsPerImage;
     }
 
+    /**
+     * @return the maximum distance allowed for closing gaps between track segments.
+     */
     public double getGapClosingMaxDistance() {
         return gapClosingMaxDistance;
     }
 
+    /**
+     * @return the target image channel for tracking.
+     */
     public int getTargetChannel() {
         return targetChannel;
     }
 
+    /**
+     * @return the maximum distance allowed for track splitting.
+     */
     public double getSplittingMaxDistance() {
         return splittingMaxDistance;
     }
 
+    /**
+     * @return the color mode used for track visualization.
+     */
     public String getTrackColoring() {
         return trackColouring;
     }
 
+    /**
+     * @return the radius of spots to be tracked.
+     */
     public double getRadius() {
         return radius;
     }
 
+    /**
+     * @return {@code true} if gap closing is allowed.
+     */
     public boolean isAllowGapClosing() {
         return allowGapClosing;
     }
 
+    /**
+     * @return {@code true} if median filtering is enabled.
+     */
     public boolean isMedianFiltering() {
         return medianFiltering;
     }
 
+    /**
+     * @return {@code true} if track splitting is allowed.
+     */
     public boolean isAllowTrackSplitting() {
         return allowTrackSplitting;
     }
 
+    /**
+     * @return {@code true} if track merging is allowed.
+     */
     public boolean isAllowTrackMerging() {
         return allowTrackMerging;
     }
 
+    /**
+     * @return the maximum distance allowed for track merging.
+     */
     public double getMergingMaxDistance() {
         return mergingMaxDistance;
     }

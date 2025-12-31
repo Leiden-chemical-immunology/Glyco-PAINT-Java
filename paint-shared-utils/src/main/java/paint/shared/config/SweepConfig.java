@@ -15,16 +15,16 @@
  *    - Retrieves maps of numeric values for enabled sweep attributes
  *
  *  AUTHOR:
- *    Your Name (or Hans Bakker if appropriate)
+ *    Hans Bakker
  *
  *  MODULE:
  *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-10-28
+ *    2025-12-31
  *
  *  COPYRIGHT:
- *    © 2025 Your Name. All rights reserved.
+ *    © 2025 Hans Bakker. All rights reserved.
 =============================================================================*/
 
 package paint.shared.config;

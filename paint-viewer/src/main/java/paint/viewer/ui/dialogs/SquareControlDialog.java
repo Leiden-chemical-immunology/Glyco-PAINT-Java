@@ -1,6 +1,6 @@
 /*==============================================================================
  *  Class:        SquareControlDialog.java
- *  Package:      paint.viewer.dialogs
+ *  Package:      paint.viewer.ui.dialogs
  *
  *  PURPOSE:
  *    Provides a modeless dialog for interactively adjusting square-level
@@ -32,7 +32,7 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-10-29
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -61,11 +61,21 @@ import static paint.shared.constants.PaintStringConstants.NEIGHBOUR_MODE;
  */
 public class SquareControlDialog extends JDialog {
 
+    /**
+     * Listener interface for responding to square control parameter changes.
+     */
     public interface SquareControlListener {
+        /**
+         * Defines the persistence scope for applied parameters.
+         */
         enum Scope {
+            /** Temporary preview in the UI. */
             PREVIEW("Preview"),
+            /** Persist only for the current recording. */
             RECORDING("Recording"),
+            /** Persist for all recordings in the current experiment. */
             EXPERIMENT("Experiment"),
+            /** Persist for all experiments in the project. */
             PROJECT("Project");
 
             private final String label;
@@ -73,11 +83,19 @@ public class SquareControlDialog extends JDialog {
             Scope(String label) {
                 this.label = label;
             }
+
+            /** @return the display label for the scope */
             public String label() {
                 return label;
             }
         }
 
+        /**
+         * Called when parameters are applied (or previewed).
+         *
+         * @param scope  the target persistence scope
+         * @param params the new parameter values
+         */
         void onApplySquareControl(Scope scope, SquareControlParams params);
     }
 

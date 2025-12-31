@@ -1,3 +1,28 @@
+/*=============================================================================
+ *  Class:        RegressionRules.java
+ *  Package:      paint.regression.clean
+ *
+ *  PURPOSE:
+ *    Defines the configuration and tolerance rules for regression tests.
+ *
+ *  DESCRIPTION:
+ *    The {@code RegressionRules} class specifies which CSV columns should
+ *    be compared, which should be ignored, and the allowable numerical
+ *    variance (epsilon) for specific metrics.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-regression
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package paint.regression.clean;
 
 import java.util.*;

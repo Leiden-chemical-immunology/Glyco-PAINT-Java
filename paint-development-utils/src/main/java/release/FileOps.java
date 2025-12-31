@@ -1,3 +1,23 @@
+/*=============================================================================
+ *  Class:        FileOps.java
+ *  Package:      release
+ *
+ *  PURPOSE:
+ *    Utility methods for file system operations during the release process.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-development-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package release;
 
 import java.io.*;

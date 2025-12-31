@@ -1,3 +1,36 @@
+/*=============================================================================
+ *  Class:        JsonValidator.java
+ *  Package:      paint.shared.validate
+ *
+ *  PURPOSE:
+ *    Provides utility methods to validate the syntax of JSON configuration
+ *    files using the Google GSON library.
+ *
+ *  DESCRIPTION:
+ *    The {@code JsonValidator} reads a JSON file and attempts to parse it
+ *    to check for structural errors. If parsing fails, it generates a
+ *    detailed error report including the line and column number of the
+ *    failure, along with a visual snippet of the code where the error
+ *    occurred.
+ *
+ *  KEY FEATURES:
+ *    • Strict JSON syntax validation.
+ *    • Contextual error reporting with line/column pointers.
+ *    • Lightweight integration with GSON.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-shared-utils
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package paint.shared.validate;
 
 import com.google.gson.Gson;
@@ -15,14 +48,23 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
+/**
+ * Provides utility methods to validate the syntax of JSON configuration
+ * files using the Google GSON library.
+ */
 public final class JsonValidator {
 
     private static final Gson GSON = new GsonBuilder()
             // Strict is default; do not call setLenient(false) — method takes no args.
             .create();
 
+    /**
+     * Represents the result of a JSON validation attempt.
+     */
     public static final class Result {
+        /** True if the JSON is syntactically valid. */
         public final boolean valid;
+        /** The error message if validation failed, otherwise null. */
         public final String error;
 
         private Result(boolean valid, String error) {
@@ -30,11 +72,22 @@ public final class JsonValidator {
             this.error = error;
         }
 
+        /** @return a successful validation result */
         public static Result ok()   { return new Result(true, null); }
+
+        /**
+         * @param error the error message
+         * @return a failed validation result
+         */
         public static Result fail(String error) { return new Result(false, error); }
     }
 
-    /** Validates JSON syntax only. */
+    /**
+     * Validates JSON syntax for the specified file.
+     *
+     * @param jsonPath path to the JSON file
+     * @return a {@link Result} indicating success or failure
+     */
     public static Result validate(Path jsonPath) {
         String content;
         try {

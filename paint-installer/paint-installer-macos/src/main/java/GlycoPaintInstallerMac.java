@@ -43,7 +43,7 @@
  *    paint-installer
  *
  *  UPDATED:
- *    2025-11-09
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.

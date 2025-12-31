@@ -1,3 +1,29 @@
+/*=============================================================================
+ *  Class:        CsvComparatorRegression.java
+ *  Package:      paint.regression.clean
+ *
+ *  PURPOSE:
+ *    Performs precise CSV-to-CSV comparisons for PAINT regression testing.
+ *
+ *  DESCRIPTION:
+ *    The {@code CsvComparatorRegression} class compares two CSV files
+ *    (typically an expected "gold standard" and a newly generated result).
+ *    It supports column-specific comparison rules, fuzzy matching for
+ *    numeric values, and detailed failure reporting.
+ *
+ *  AUTHOR:
+ *    Hans Bakker
+ *
+ *  MODULE:
+ *    paint-regression
+ *
+ *  UPDATED:
+ *    2025-12-31
+ *
+ *  COPYRIGHT:
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
+
 package paint.regression.clean;
 
 import java.io.BufferedReader;

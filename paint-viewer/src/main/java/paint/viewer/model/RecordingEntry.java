@@ -35,7 +35,7 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-10-29
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -145,42 +145,72 @@ public class RecordingEntry {
     // =========================================================================================
 
 
+    /**
+     * @return the name of the recording.
+     */
     public String getRecordingName() {
         return recording.getRecordingName();
     }
 
+    /**
+     * @return the name of the experiment.
+     */
     public String getExperimentName() {
         return experimentName;
     }
 
+    /**
+     * @return the name of the probe.
+     */
     public String getProbeName() {
         return recording.getProbeName();
     }
 
+    /**
+     * @return the type of probe.
+     */
     public String getProbeType() {
         return recording.getProbeType();
     }
 
+    /**
+     * @return the adjuvant used.
+     */
     public String getAdjuvant() {
         return recording.getAdjuvant();
     }
 
+    /**
+     * @return the cell type used.
+     */
     public String getCellType() {
         return recording.getCellType();
     }
 
+    /**
+     * @return the probe concentration.
+     */
     public double getConcentration() {
         return recording.getConcentration();
     }
 
+    /**
+     * @return the total number of spots.
+     */
     public int getNumberOfSpots() {
         return recording.getNumberOfSpots();
     }
 
+    /**
+     * @return the total number of tracks.
+     */
     public int getNumberOfTracks() {
         return recording.getNumberOfTracks();
     }
 
+    /**
+     * @return the analysis threshold.
+     */
     public double getThreshold() {
         return recording.getThreshold();
     }
@@ -190,14 +220,23 @@ public class RecordingEntry {
     // IMAGE AND RECORDING ACCESS
     // =========================================================================================
 
+    /**
+     * @return the TrackMate preview image.
+     */
     public ImageIcon getLeftImage() {
         return leftImage;
     }
 
+    /**
+     * @return the brightfield image.
+     */
     public ImageIcon getRightImage() {
         return rightImage;
     }
 
+    /**
+     * @return the underlying {@link Recording} data object.
+     */
     public Recording getRecording() {
         return recording;
     }

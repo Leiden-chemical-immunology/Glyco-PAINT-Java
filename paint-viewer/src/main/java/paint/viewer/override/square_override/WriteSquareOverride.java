@@ -39,7 +39,7 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-12-25
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -61,7 +61,6 @@ import static paint.shared.constants.PaintStringConstants.TIME_STAMP;
 import static paint.shared.constants.PaintStringConstants.EXPERIMENT_NAME;
 import static paint.shared.constants.PaintStringConstants.RECORDING_NAME;
 
-//import static paint.shared.constants.PaintColumnNames.*;
 
 /**
  * Writes and maintains per-square cell assignment overrides for the PAINT Viewer.

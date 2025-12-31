@@ -1,30 +1,19 @@
 /*==============================================================================
- *  Class:        RecordingDisplayUpdater.java
+ *  Class:        RecordingNavigator.java
  *  Package:      paint.viewer.ui
  *
  *  PURPOSE:
- *    Centralizes all UI updates that must occur when navigating to a new
- *    {@link paint.viewer.model.RecordingEntry}. Ensures that all visible
- *    components in the ViewerFrame—grid, images, labels, and metadata panel—
- *    are fully synchronized with the newly selected recording.
+ *    Handles safe navigation through a list of recordings.
  *
  *  DESCRIPTION:
- *    This utility class performs a coordinated refresh of the viewer UI
- *    whenever the active recording changes. It updates:
- *
- *      • The left grid panel (recording object, squares list, background image)
- *      • The right-side preview image (scaled to viewer constants)
- *      • The experiment and recording labels
- *      • The attribute panel (recording metadata table)
- *
- *    The class is stateless, containing no retained model logic. It operates
- *    solely on the Swing components provided through its constructor.
+ *    This utility class provides methods to navigate to the first, last, next,
+ *    and previous recording in a list. It notifies a {@link Listener} whenever
+ *    a navigation action occurs, allowing the UI to update accordingly.
  *
  *  KEY FEATURES:
- *    • Complete UI refresh in response to navigation actions.
- *    • High-quality deterministic image scaling for the preview panel.
- *    • Reliable metadata updates via {@link paint.shared.config.paintconfig.PaintConfig}.
- *    • No external dependencies—lightweight and side-effect-free.
+ *    • Simple first/last/next/prev navigation logic.
+ *    • Decouples navigation from UI implementation via a listener.
+ *    • Bounds checking to prevent IndexOutOfBoundsException.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -33,7 +22,7 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-10-29
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -47,37 +36,72 @@ import java.util.List;
 
 /**
  * Handles safe navigation through a list of recordings.
- * ViewerFrame registers as the listener and updates the UI whenever
- * a new index is selected.
+ * {@link paint.viewer.ui.frames.ViewerFrame} registers as the listener and
+ * updates the UI whenever a new index is selected.
  */
 public final class RecordingNavigator {
 
+    /**
+     * Listener interface for responding to navigation events.
+     */
     public interface Listener {
+        /**
+         * Called when a navigation action requires shifting to a new recording.
+         *
+         * @param newIndex the target index in the recording list
+         */
         void onNavigateTo(int newIndex);
     }
 
     private final Listener listener;
 
+    /**
+     * Constructs a {@code RecordingNavigator} with the specified listener.
+     *
+     * @param listener the object to notify when navigation occurs
+     */
     public RecordingNavigator(Listener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Navigates to the first recording in the list.
+     *
+     * @param entries the list of available recordings
+     */
     public void first(List<RecordingEntry> entries) {
         if (entries.isEmpty()) return;
         listener.onNavigateTo(0);
     }
 
+    /**
+     * Navigates to the last recording in the list.
+     *
+     * @param entries the list of available recordings
+     */
     public void last(List<RecordingEntry> entries) {
         if (entries.isEmpty()) return;
         listener.onNavigateTo(entries.size() - 1);
     }
 
+    /**
+     * Navigates to the next recording in the list.
+     *
+     * @param entries      the list of available recordings
+     * @param currentIndex the index of the currently displayed recording
+     */
     public void next(List<RecordingEntry> entries, int currentIndex) {
         if (entries.isEmpty()) return;
         int next = Math.min(entries.size() - 1, currentIndex + 1);
         listener.onNavigateTo(next);
     }
 
+    /**
+     * Navigates to the previous recording in the list.
+     *
+     * @param entries      the list of available recordings
+     * @param currentIndex the index of the currently displayed recording
+     */
     public void prev(List<RecordingEntry> entries, int currentIndex) {
         if (entries.isEmpty()) return;
         int prev = Math.max(0, currentIndex - 1);

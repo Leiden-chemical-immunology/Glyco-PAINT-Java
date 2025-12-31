@@ -1,6 +1,6 @@
 /*==============================================================================
  *  Class:        CellAssignmentDialog.java
- *  Package:      paint.viewer.dialogs
+ *  Package:      paint.viewer.ui.dialogs
  *
  *  PURPOSE:
  *    Provides a dialog window for assigning, undoing, or canceling cell
@@ -32,7 +32,7 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-10-29
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -70,8 +70,21 @@ public class CellAssignmentDialog extends JDialog {
 
     /** Listener interface for handling cell assignment actions. */
     public interface Listener {
+        /**
+         * Called when the user clicks 'Assign' for a specific cell ID.
+         *
+         * @param cellId the selected cell ID
+         */
         void onAssign(int cellId);
+
+        /**
+         * Called when the user clicks 'Undo'.
+         */
         void onUndo();
+
+        /**
+         * Called when the user clicks 'Cancel Selection'.
+         */
         void onCancelSelection();
     }
 

@@ -45,7 +45,7 @@
  *    paint-viewer
  *
  *  UPDATED:
- *    2025-12-25
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -77,20 +77,12 @@ import static paint.shared.constants.PaintStringConstants.*;
 import static paint.viewer.override.recording_override.ImportRecordingOverride.loadRecordingOverride;
 import static paint.viewer.override.square_override.ImportSquareOverride.loadSquareOverride;
 
+
 /**
- * Command-line utility for applying Viewer-generated override and exclude CSV
- * files to a PAINT project.
- *
- * <p>This tool processes up to three files in {@code <project>/Viewer}:</p>
- * <ul>
- *   <li>{@code Recording Override.csv} (optional)</li>
- *   <li>{@code Recording Exclude.csv} (optional)</li>
- *   <li>{@code Square Override.csv} (optional)</li>
- * </ul>
- *
- * <p>The tool reads the project-level input tables (Recordings, Squares, and
- * optionally Tracks), applies all requested mutations in-memory, and writes
- * new CSV outputs with a safe suffix (default: {@code -override}).</p>
+ * Provides functionality to apply and export manual overrides and exclusions
+ * from the PAINT viewer. This class processes recording-level overrides,
+ * square-level overrides, and recording-level exclusions, merging them back
+ * into the main project CSV files.
  */
 public class ExportOverridesFromViewer {
 

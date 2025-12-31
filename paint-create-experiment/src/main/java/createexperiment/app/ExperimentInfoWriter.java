@@ -3,25 +3,19 @@
  *  Package:      createexperiment.app
  *
  *  PURPOSE:
- *    Generates and writes the experiment-info CSV file based on a list of
- *    selected ND2 recording files. Metadata such as condition and replicate
- *    numbers is extracted directly from filenames, and the resulting structured
- *    experiment metadata is persisted safely using unique file naming.
+ *    Utility for generating and writing "experiment_info.csv" files for
+ *    newly created experiments.
  *
  *  DESCRIPTION:
- *    • Parses ND2 filenames using regex to extract condition and replicate IDs.
- *    • Builds a list of {@link paint.shared.objects.ExperimentInfo} objects.
- *    • Creates the experiment directory if missing.
- *    • Ensures non-overwriting output via a unique-file naming strategy.
- *    • Converts and writes the resulting table to CSV using
- *      {@link paint.shared.io.MainDataInterface#writeSpecificExperimentInfoFile}.
+ *    The {@code ExperimentInfoWriter} class facilitates the creation of
+ *    standardized experiment metadata files. It ensures that all required
+ *    columns are present and correctly formatted according to the
+ *    {@link ExperimentInfo} schema.
  *
  *  KEY FEATURES:
  *    • Robust filename-based metadata extraction.
  *    • Automatic directory creation.
  *    • Safe CSV output with unique filenames.
- *    • Clean separation between metadata extraction and CSV serialization.
- *    • No GUI dependencies; purely file-based workflow.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -30,7 +24,7 @@
  *    paint-create-experiment
  *
  *  UPDATED:
- *    2025-10-28
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.

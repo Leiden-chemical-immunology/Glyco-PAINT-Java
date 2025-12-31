@@ -12,7 +12,7 @@
  *    • Eliminates inconsistent boolean logic across modules.
  *    • Ensures all modules classify values using the exact same rule set.
  *
- *  RESPONSIBILITIES:
+ *  KEY FEATURES:
  *    • Centralized boolean classification.
  *    • String → boolean parsing with strict/lenient modes.
  *    • Normalization to canonical "true"/"false" strings.
@@ -24,7 +24,7 @@
  *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-11-25
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -36,6 +36,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Provides a fully unified and consistent interpretation of boolean-like
+ * values across all PAINT components (validators, converters, readers).
+ */
 public final class BooleanUtils {
 
     // ───────────────────────────────────────────────────────────────────────────────
@@ -90,6 +94,9 @@ public final class BooleanUtils {
 
     /**
      * Returns true if the input is a recognized boolean token.
+     *
+     * @param value the string to check
+     * @return true if it is a recognized boolean token
      */
     public static boolean checkBooleanValue(String value) {
         return classify(value) != null;
@@ -98,6 +105,7 @@ public final class BooleanUtils {
     /**
      * Normalizes to canonical "true" or "false".
      *
+     * @param value the string to normalize
      * @return "true", "false", or null if invalid
      */
     public static String normalizeBoolean(String value) {
@@ -108,7 +116,11 @@ public final class BooleanUtils {
     /**
      * Returns true if the given value is explicitly recognized as a TRUE token.
      * Returns false for FALSE tokens, null/empty, or invalid values.
+     * <p>
      * TRUE tokens: y, ye, yes, ok, true, t, 1
+     *
+     * @param value the string to check
+     * @return true if the value is truthy
      */
     public static boolean isBooleanTrue(String value) {
         Boolean b = classify(value);

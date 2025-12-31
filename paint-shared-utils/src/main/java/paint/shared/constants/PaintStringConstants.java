@@ -14,7 +14,7 @@
  *    paint-shared-utils
  *
  *  UPDATED:
- *    2025-11-24
+ *    2025-12-31
  *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
@@ -22,6 +22,13 @@
 
 package paint.shared.constants;
 
+/**
+ * Centralizes all string constants used as keys in configuration files,
+ * preference stores, and as column headers in CSV tables.
+ *
+ * <p>Using constants instead of string literals prevents typos and ensures
+ * consistency across different modules (I/O, validation, UI, and processing).</p>
+ */
 public final class PaintStringConstants {
 
     private PaintStringConstants() {

@@ -1,31 +1,33 @@
-/*
- * =============================================================================
+/*=============================================================================
+ *  Class:        DirectoryChooser.java
+ *  Package:      paint.shared.dialogs.project
+ *
  *  PURPOSE:
- *      Provide platform-aware file and directory selection dialogs.
+ *    Provides standardized directory selection dialogs, using native AWT dialogs
+ *    on macOS and Swing {@link JFileChooser} on other platforms.
  *
  *  DESCRIPTION:
- *      This utility class offers a unified API to prompt the user to select
- *      directories, using native file dialogs on macOS and Swing-based dialogs
- *      on other platforms. The underlying selection logic remains unchanged.
+ *    The {@code DirectoryChooser} utility class simplifies folder selection
+ *    across different operating systems. It ensures that only directories are
+ *    selectable and handles path initialization and error logging.
  *
  *  KEY FEATURES:
- *      - macOS directory selection using AWT FileDialog with directory-only mode
- *      - Cross-platform fallback to JFileChooser for directory selection
- *      - Robust handling of invalid or null initial directories
+ *    • Platform-aware directory selection (AWT on macOS, Swing elsewhere).
+ *    • Robust handling of invalid or null initial directories.
+ *    • Automated configuration for directory-only selection mode.
  *
  *  AUTHOR:
- *      Your Name
+ *    Hans Bakker
  *
  *  MODULE:
- *      paint.shared.dialogs.project
+ *    paint-shared-utils
  *
  *  UPDATED:
- *      2025-11-24
+ *    2025-12-31
  *
  *  COPYRIGHT:
- *      © 2025 Your Organization or Name. All rights reserved.
- * =============================================================================
- */
+ *    © 2025 Hans Bakker. All rights reserved.
+ *=============================================================================*/
 
 package paint.shared.dialogs.project;
 
