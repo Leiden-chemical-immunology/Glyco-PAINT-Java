@@ -682,6 +682,32 @@ public class Square {
     // UTILITIES
     //=========================================================================
 
+    /**
+     * Resets all calculated metrics to {@link Double#NaN}.
+     * This is useful before re-running calculations or when a square fails
+     * to meet the minimum requirements for analysis.
+     */
+    public void resetCalculatedAttributes() {
+        this.tau                           = Double.NaN;
+        this.rSquared                      = Double.NaN;
+        this.variability                   = Double.NaN;
+        this.density                       = Double.NaN;
+        this.densityRatio                  = Double.NaN;
+        this.densityRatioOri               = Double.NaN;
+        this.medianDiffusionCoefficient    = Double.NaN;
+        this.medianDiffusionCoefficientExt = Double.NaN;
+        this.medianDisplacement            = Double.NaN;
+        this.maxDisplacement               = Double.NaN;
+        this.totalDisplacement             = Double.NaN;
+        this.medianMaxSpeed                = Double.NaN;
+        this.maxMaxSpeed                   = Double.NaN;
+        this.medianMedianSpeed             = Double.NaN;
+        this.maxMedianSpeed                = Double.NaN;
+        this.maxTrackDuration              = Double.NaN;
+        this.totalTrackDuration            = Double.NaN;
+        this.medianTrackDuration           = Double.NaN;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

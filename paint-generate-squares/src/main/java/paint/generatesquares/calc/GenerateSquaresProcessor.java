@@ -68,13 +68,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static paint.shared.constants.PaintStringConstants.*;
-import static paint.shared.io.ExperimentDataLoader.loadExperiment;
-
+import static paint.shared.io.ExperimentDataLoader.*;
 import static paint.shared.io.MainIOInterface.*;
 import static paint.shared.utils.Miscellaneous.formatDuration;
 import static paint.shared.utils.SharedSquareUtils.filterTracksInSquare;
@@ -84,8 +81,6 @@ import static paint.shared.constants.PaintGeometry.IMAGE_WIDTH;
 
 public class GenerateSquaresProcessor {
 
-    // Total number of squares in one dimension (e.g., 20 for a 20×20 grid).
-    private static       int     numberOfSquaresInOneDimension;
     private static final boolean debugGenerateSquaresForExperiment = PaintConfig.getBoolean("Debug", DEBUG_GENERATE_SQUARES_FOR_EXPERIMENT, false);
 
     /**
@@ -142,7 +137,7 @@ public class GenerateSquaresProcessor {
             recording.setSquaresOfRecording(squares);
 
             // Assign the recording tracks to the squares
-            assignTracksToSquares(recording);
+            assignTracksToSquares(recording, generateSquaresConfig);
 
             // CHECK mid-work before calculating attributes
             if (Thread.currentThread().isInterrupted()) {
@@ -211,15 +206,15 @@ public class GenerateSquaresProcessor {
 
         // Total number of squares per recording.
         int numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
-        numberOfSquaresInOneDimension  = (int) Math.sqrt(numberOfSquaresInRecording);
+        int gridSize                   = (int) Math.sqrt(numberOfSquaresInRecording);
 
         List<Square> squares      = new ArrayList<>();
-        double       squareWidth  = IMAGE_WIDTH  / numberOfSquaresInOneDimension;
-        double       squareHeight = IMAGE_HEIGHT / numberOfSquaresInOneDimension;
+        double       squareWidth  = IMAGE_WIDTH  / gridSize;
+        double       squareHeight = IMAGE_HEIGHT / gridSize;
 
         int squareNumber = 0;
-        for (int rowNumber = 0; rowNumber < numberOfSquaresInOneDimension; rowNumber++) {
-            for (int columnNumber = 0; columnNumber < numberOfSquaresInOneDimension; columnNumber++) {
+        for (int rowNumber = 0; rowNumber < gridSize; rowNumber++) {
+            for (int columnNumber = 0; columnNumber < gridSize; columnNumber++) {
                 double X0 = columnNumber * squareWidth;
                 double Y0 = rowNumber    * squareHeight;
                 double X1 = (columnNumber + 1) * squareWidth;
@@ -249,17 +244,19 @@ public class GenerateSquaresProcessor {
      * It processes the tracks table of the recording, assigns each track to the relevant square,
      * updates the square attributes, and compiles a complete tracks table for the recording.
      *
-     * @param recording the {@code Recording} instance containing track and square data.
-     *                  The method modifies this object by assigning tracks to the corresponding squares
-     *                  and updating their track-related attributes.
+     * @param recording             the {@code Recording} instance containing track and square data.
+     *                              The method modifies this object by assigning tracks to the corresponding squares
+     *                              and updating their track-related attributes.
+     * @param generateSquaresConfig the configuration specifying the number of squares and related parameters
      */
-    public static void assignTracksToSquares(Recording recording) throws IOException {
+    public static void assignTracksToSquares(Recording recording, GenerateSquaresConfig generateSquaresConfig) throws IOException {
 
-        Table         tracksOfRecording   = recording.getTracksTable();
-        Table         recordingTrackTable = newEmptyTrackTable();
+        Table tracksOfRecording   = recording.getTracksTable();
+        Table recordingTrackTable = newEmptyTrackTable();
 
-        int lastRowCol            = numberOfSquaresInOneDimension - 1;
-        int labelNumber           = 0;
+        int numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
+        int gridSize                   = (int) Math.sqrt(numberOfSquaresInRecording);
+
         int incrementalTrackCount = 0;
 
         PaintLogger.debugf("Assigning tracks to squares (%d total tracks)",
@@ -271,10 +268,8 @@ public class GenerateSquaresProcessor {
         Path debugCsvPath = null;
 
         if (debugGenerateSquaresForExperiment) {
-
             Path debugDirPath = Paths.get(System.getProperty("user.home")).resolve("Downloads").resolve("Debug");
             Files.createDirectories(debugDirPath);
-
             debugCsvPath = debugDirPath.resolve("all_square_tracks.csv");
 
             // Write header once
@@ -286,46 +281,71 @@ public class GenerateSquaresProcessor {
         }
         // ------------------------------------------------------------------
 
-        for (Square square : recording.getSquaresOfRecording()) {
+        // We optimize track assignment by calculating the square index for each track directly.
+        // O(N_tracks) instead of O(N_squares * N_tracks).
 
-            Table squareTracksTable = filterTracksInSquare(tracksOfRecording, square, lastRowCol);
-            incrementalTrackCount += squareTracksTable.rowCount();
+        List<Track> allTracks = trackTableToList(tracksOfRecording);
+        Map<Integer, List<Track>> tracksBySquare = new HashMap<>();
 
-            if (squareTracksTable.rowCount() == 0) {
-                square.setTracksList(Collections.emptyList());
-                square.setTracksTable(squareTracksTable);
-                square.setNumberOfTracks(0);
-                continue;
+        double squareWidth  = IMAGE_WIDTH  / gridSize;
+        double squareHeight = IMAGE_HEIGHT / gridSize;
+
+        for (Track track : allTracks) {
+            double tx = track.getTrackXLocation();
+            double ty = track.getTrackYLocation();
+
+            int col = (int) (tx / squareWidth);
+            int row = (int) (ty / squareHeight);
+
+            // Boundary handling (ensure it doesn't exceed grid dimensions)
+            if (col >= gridSize) {
+                col = gridSize - 1;
+            }
+            if (row >= gridSize) {
+                row = gridSize - 1;
+            }
+            if (col < 0) {
+                col = 0;
+            }
+            if (row < 0) {
+                row = 0;
             }
 
-            List<Track> tracks = trackTableToList(squareTracksTable);
+            int squareIndex = row * gridSize + col;
+            tracksBySquare.computeIfAbsent(squareIndex, k -> new ArrayList<>()).add(track);
+        }
+
+        int labelNumber = 0;
+        for (Square square : recording.getSquaresOfRecording()) {
+            int squareIndex = square.getSquareNumber();
+            List<Track> tracksInSquare = tracksBySquare.getOrDefault(squareIndex, Collections.emptyList());
+
+            incrementalTrackCount += tracksInSquare.size();
 
             // Update the fields on each Track
-            for (Track track : tracks) {
-                track.setSquareNumber(square.getSquareNumber());
+            for (Track track : tracksInSquare) {
+                track.setSquareNumber(squareIndex);
                 track.setLabelNumber(labelNumber);
             }
 
-            Table updatedSquareTracks = trackListToTable(tracks);
+            Table updatedSquareTracks = trackListToTable(tracksInSquare);
             recordingTrackTable.append(updatedSquareTracks);
 
             // Update the square
-            square.setTracksList(tracks);
+            square.setTracksList(tracksInSquare);
             square.setTracksTable(updatedSquareTracks);
-            square.setNumberOfTracks(tracks.size());
+            square.setNumberOfTracks(tracksInSquare.size());
 
             // ------------------------------------------------------------------
             // 🔥 DEBUG CSV APPEND (only when flag enabled)
             // ------------------------------------------------------------------
             if (debugGenerateSquaresForExperiment && debugCsvPath != null) {
-
                 StringBuilder sb = new StringBuilder();
-
-                for (Track track : tracks) {
+                for (Track track : tracksInSquare) {
                     sb.append(String.format(
                             "%s,%d,%s,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%d,%d%n",
                             square.getRecordingName(),
-                            square.getSquareNumber(),
+                            squareIndex,
                             track.getTrackId(),
                             track.getTrackXLocation(),
                             track.getTrackYLocation(),
@@ -337,13 +357,9 @@ public class GenerateSquaresProcessor {
                             square.getColNumber()
                     ));
                 }
-
                 Files.write(debugCsvPath, sb.toString().getBytes(), StandardOpenOption.APPEND);
             }
             // ------------------------------------------------------------------
-
-            // PaintLogger.debugf("Square %3d: %3d tracks assigned (label %d)",
-            //                    square.getSquareNumber(), tracks.size(), labelNumber);
 
             labelNumber++;
         }

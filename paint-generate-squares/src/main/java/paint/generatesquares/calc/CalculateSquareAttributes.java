@@ -95,102 +95,22 @@ public class CalculateSquareAttributes {
         double                     concentration                    = recording.getConcentration();
         List<Square>               squaresOfRecording               = recording.getSquaresOfRecording();
         boolean                    showTauFittingPlots              = PaintConfig.getBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS, false);
-        BackgroundEstimationResult result                           = calculateBackgroundDensity(squaresOfRecording);
-        double                     numberOfTracksInBackgroundSquare = result.getNumberOfTracksInBackgroundSquare();
-        int                        numberOfBackgroundSquares        = result.getNumberOfBackgroundSquares();
-        double                     backgroundTracksOri              = calcAverageTrackCountInBackgroundSquares(squaresOfRecording,
-                                                                                                   (int) (0.1 * numberOfSquaresInRecording));
+        BackgroundEstimationResult bgResult                         = calculateBackgroundDensity(squaresOfRecording);
+        CalcParams                 params                           = new CalcParams(recording, generateSquaresConfig, bgResult);
+
         PaintLogger.debugf("Estimated Background track count = %.2f, number of background squares = %d%n",
-                           numberOfTracksInBackgroundSquare, numberOfBackgroundSquares);
+                           params.numberOfTracksInBackgroundSquare, bgResult.getNumberOfBackgroundSquares());
 
         for (Square square : squaresOfRecording) {
-
-            List<Track> tracksInSquare = square.getTracks();
-            if (tracksInSquare == null || tracksInSquare.isEmpty()) {
-                continue;
-            }
-
-            Table table = square.getTracksTable();
-            if (table.rowCount() == 0) {
-                continue;
-            }
-
-            // Do not calculate attributes if not enough tracks
-            if (tracksInSquare.size() < minNumberOfTracksToCalculate) {
-                square.setTau(Double.NaN);
-                square.setRSquared(Double.NaN);
-                square.setVariability(Double.NaN);
-                square.setDensity(Double.NaN);
-                square.setDensityRatio(Double.NaN);
-                square.setDensityRatioOri(Double.NaN);
-                square.setMedianDiffusionCoefficient(Double.NaN);
-                square.setMedianDiffusionCoefficientExt(Double.NaN);
-                square.setMedianDisplacement(Double.NaN);
-                square.setMaxDisplacement(Double.NaN);
-                square.setTotalDisplacement(Double.NaN);
-                square.setMedianMaxSpeed(Double.NaN);
-                square.setMaxMaxSpeed(Double.NaN);
-                square.setMedianMedianSpeed(Double.NaN);
-                square.setMaxMedianSpeed(Double.NaN);
-                square.setMaxTrackDuration(Double.NaN);
-                square.setTotalTrackDuration(Double.NaN);
-                square.setMedianTrackDuration(Double.NaN);
-                continue;
-            }
-
-            int squareNumber = square.getSquareNumber();
-
-            // --- Tau fitting ---
-            if (tracksInSquare.size() >= minNumberOfTracksToCalculateTau) {
-                CalculateTau.CalculateTauResult results = calculateTau(tracksInSquare, minRequiredRSquared);
-
-                if (showTauFittingPlots) {
-                    saveTauFitPlot(tracksInSquare, results, experimentPath,
-                                   recording.getRecordingName(), squareNumber);
-                }
-
-                if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
-                    square.setTau(round(results.getTau(), 0));
-                    square.setRSquared(round(results.getRSquared(), 3));
-                } else {
-                    square.setTau(Double.NaN);
-                    square.setRSquared(Double.NaN);
-                }
-            } else {
-                square.setTau(Double.NaN);
-                square.setRSquared(Double.NaN);
-            }
-
-            // --- Variability, density, kinematic metrics ---
-            square.setVariability(round(calculateVariability(table, squareNumber, numberOfSquaresInRecording, 10), 2));
-            square.setDensity(round(calculateDensity(tracksInSquare.size(), squareArea, RECORDING_DURATION, concentration), 3));
-            square.setDensityRatio(round(calculateDensityRatio(tracksInSquare.size(), numberOfTracksInBackgroundSquare), 2));
-            square.setDensityRatioOri(round(calculateDensityRatio(tracksInSquare.size(), backgroundTracksOri), 2));
-
-            square.setMedianDiffusionCoefficient(round(table.doubleColumn(DIFFUSION_COEFFICIENT).median(), 2));
-            square.setMedianDiffusionCoefficientExt(round(table.doubleColumn(DIFFUSION_COEFFICIENT_EXT).median(), 2));
-
-            square.setMedianDisplacement(round(table.doubleColumn(TRACK_DISPLACEMENT).median(), 1));
-            square.setMaxDisplacement(round(table.doubleColumn(TRACK_DISPLACEMENT).max(), 1));
-            square.setTotalDisplacement(round(table.doubleColumn(TRACK_DISPLACEMENT).sum(), 1));
-
-            square.setMedianMaxSpeed(round(table.doubleColumn(TRACK_MAX_SPEED).median(), 1));
-            square.setMaxMaxSpeed(round(table.doubleColumn(TRACK_MAX_SPEED).max(), 1));
-
-            square.setMedianMedianSpeed(round(table.doubleColumn(TRACK_MEDIAN_SPEED).median(), 1));
-            square.setMaxMedianSpeed(round(table.doubleColumn(TRACK_MEDIAN_SPEED).max(), 1));
-
-            square.setMaxTrackDuration(round(table.doubleColumn(TRACK_DURATION).max(), 1));
-            square.setTotalTrackDuration(round(table.doubleColumn(TRACK_DURATION).sum(), 1));
-            square.setMedianTrackDuration(round(table.doubleColumn(TRACK_DURATION).median(), 1));
+            calculateAttributesForSquare(square, experimentPath, recording, generateSquaresConfig, params);
         }
 
         // --- Apply visibility filters ---
         applyVisibilityFilter(squaresOfRecording,
-                              minRequiredDensityRatio,
-                              maxAllowableVariability,
-                              minRequiredRSquared,
-                              neighbourMode);
+                              params.minRequiredDensityRatio,
+                              params.maxAllowableVariability,
+                              params.minRequiredRSquared,
+                              params.neighbourMode);
 
         // --- Assign label numbers to visible squares ---
         int labelNumber = 0;
@@ -199,6 +119,106 @@ public class CalculateSquareAttributes {
                 sq.setLabelNumber(labelNumber++);
             }
         }
+    }
+
+    /**
+     * Container for calculation parameters to reduce argument counts.
+     */
+    private static class CalcParams {
+        final double  minRequiredRSquared;
+        final int     minNumberOfTracksToCalculate;
+        final int     minNumberOfTracksToCalculateTau;
+        final double  maxAllowableVariability;
+        final double  minRequiredDensityRatio;
+        final String  neighbourMode;
+        final int     numberOfSquaresInRecording;
+        final double  squareArea;
+        final double  concentration;
+        final boolean showTauFittingPlots;
+        final double  numberOfTracksInBackgroundSquare;
+        final double  backgroundTracksOri;
+
+        CalcParams(Recording recording, GenerateSquaresConfig config, BackgroundEstimationResult bgResult) {
+            this.minRequiredRSquared              = config.getMinRequiredRSquared();
+            this.minNumberOfTracksToCalculate     = config.getMinTracksToCalculate();
+            this.minNumberOfTracksToCalculateTau  = config.getMinTracksToCalculateTau();
+            this.maxAllowableVariability          = config.getMaxAllowableVariability();
+            this.minRequiredDensityRatio          = config.getMinRequiredDensityRatio();
+            this.neighbourMode                    = config.getNeighbourMode();
+            this.numberOfSquaresInRecording       = config.getNumberOfSquaresInRecording();
+            this.squareArea                       = calculateSquareArea(numberOfSquaresInRecording);
+            this.concentration                    = recording.getConcentration();
+            this.showTauFittingPlots              = PaintConfig.getBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS, false);
+            this.numberOfTracksInBackgroundSquare = bgResult.getNumberOfTracksInBackgroundSquare();
+            this.backgroundTracksOri              = calcAverageTrackCountInBackgroundSquares(recording.getSquaresOfRecording(),
+                                                                                            (int) (0.1 * numberOfSquaresInRecording));
+        }
+    }
+
+    private static void calculateAttributesForSquare(Square square, Path experimentPath, Recording recording,
+                                                     GenerateSquaresConfig config, CalcParams params) {
+
+        List<Track> tracksInSquare = square.getTracks();
+        if (tracksInSquare == null || tracksInSquare.isEmpty()) {
+            return;
+        }
+
+        Table table = square.getTracksTable();
+        if (table.rowCount() == 0) {
+            return;
+        }
+
+        // Do not calculate attributes if not enough tracks
+        if (tracksInSquare.size() < params.minNumberOfTracksToCalculate) {
+            square.resetCalculatedAttributes();
+            return;
+        }
+
+        int squareNumber = square.getSquareNumber();
+
+        // --- Tau fitting ---
+        if (tracksInSquare.size() >= params.minNumberOfTracksToCalculateTau) {
+            CalculateTau.CalculateTauResult results = calculateTau(tracksInSquare, params.minRequiredRSquared);
+
+            if (params.showTauFittingPlots) {
+                saveTauFitPlot(tracksInSquare, results, experimentPath,
+                               recording.getRecordingName(), squareNumber);
+            }
+
+            if (results.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
+                square.setTau(round(results.getTau(), 0));
+                square.setRSquared(round(results.getRSquared(), 3));
+            } else {
+                square.setTau(Double.NaN);
+                square.setRSquared(Double.NaN);
+            }
+        } else {
+            square.setTau(Double.NaN);
+            square.setRSquared(Double.NaN);
+        }
+
+        // --- Variability, density, kinematic metrics ---
+        square.setVariability(round(calculateVariability(table, squareNumber, params.numberOfSquaresInRecording, 10), 2));
+        square.setDensity(round(calculateDensity(tracksInSquare.size(), params.squareArea, RECORDING_DURATION, params.concentration), 3));
+        square.setDensityRatio(round(calculateDensityRatio(tracksInSquare.size(), params.numberOfTracksInBackgroundSquare), 2));
+        square.setDensityRatioOri(round(calculateDensityRatio(tracksInSquare.size(), params.backgroundTracksOri), 2));
+
+        square.setMedianDiffusionCoefficient(round(table.doubleColumn(DIFFUSION_COEFFICIENT).median(), 2));
+        square.setMedianDiffusionCoefficientExt(round(table.doubleColumn(DIFFUSION_COEFFICIENT_EXT).median(), 2));
+
+        square.setMedianDisplacement(round(table.doubleColumn(TRACK_DISPLACEMENT).median(), 1));
+        square.setMaxDisplacement(round(table.doubleColumn(TRACK_DISPLACEMENT).max(), 1));
+        square.setTotalDisplacement(round(table.doubleColumn(TRACK_DISPLACEMENT).sum(), 1));
+
+        square.setMedianMaxSpeed(round(table.doubleColumn(TRACK_MAX_SPEED).median(), 1));
+        square.setMaxMaxSpeed(round(table.doubleColumn(TRACK_MAX_SPEED).max(), 1));
+
+        square.setMedianMedianSpeed(round(table.doubleColumn(TRACK_MEDIAN_SPEED).median(), 1));
+        square.setMaxMedianSpeed(round(table.doubleColumn(TRACK_MEDIAN_SPEED).max(), 1));
+
+        square.setMaxTrackDuration(round(table.doubleColumn(TRACK_DURATION).max(), 1));
+        square.setTotalTrackDuration(round(table.doubleColumn(TRACK_DURATION).sum(), 1));
+        square.setMedianTrackDuration(round(table.doubleColumn(TRACK_DURATION).median(), 1));
     }
 
     /**
@@ -213,21 +233,29 @@ public class CalculateSquareAttributes {
 
         double minRequiredRSquared = generateSquaresConfig.getMinRequiredRSquared();
 
-        BackgroundEstimationResult result = calculateBackgroundDensity(recording.getSquaresOfRecording());
+        List<Square>               squaresOfRecording   = recording.getSquaresOfRecording();
+        BackgroundEstimationResult bgResult             = calculateBackgroundDensity(squaresOfRecording);
+        double                     meanBackgroundTracks = bgResult.getNumberOfTracksInBackgroundSquare();
+        int                        backgroundTracks     = bgResult.getBackgroundSquares()
+                                                                  .stream()
+                                                                  .mapToInt(Square::getNumberOfTracks)
+                                                                  .sum();
 
-        double meanBackgroundTracks = result.getNumberOfTracksInBackgroundSquare();
-        int backgroundTracks = result.getBackgroundSquares()
-                                     .stream()
-                                     .mapToInt(Square::getNumberOfTracks)
-                                     .sum();
-
-        recording.setNumberOfSquaresInBackground(result.getBackgroundSquares().size());
+        recording.setNumberOfSquaresInBackground(bgResult.getBackgroundSquares().size());
         recording.setNumberOfTracksInBackground(backgroundTracks);
         recording.setAverageTracksInBackGround(round(meanBackgroundTracks, 3));
 
-        List<Track> selectedTracks = getTracksFromSelectedSquares(recording.getSquaresOfRecording());
-        CalculateTau.CalculateTauResult tauResult =
-                calculateTau(selectedTracks, minRequiredRSquared);
+        List<Track> selectedTracks = getTracksFromSelectedSquares(squaresOfRecording);
+
+        if (selectedTracks.isEmpty()) {
+            recording.setTau(Double.NaN);
+            recording.setRSquared(Double.NaN);
+            recording.setDensity(0.0);
+            return;
+        }
+
+        // --- Tau for the whole recording ---
+        CalculateTau.CalculateTauResult tauResult = calculateTau(selectedTracks, minRequiredRSquared);
 
         if (tauResult.getStatus() == CalculateTau.CalculateTauResult.Status.TAU_SUCCESS) {
             recording.setTau(round(tauResult.getTau(), 0));
@@ -237,13 +265,14 @@ public class CalculateSquareAttributes {
             recording.setRSquared(Double.NaN);
         }
 
-        double density = calculateDensity(
-                selectedTracks.size(),
-                calculateSquareArea(getNumberOfSelectedSquares(recording)),
-                RECORDING_DURATION,
-                recording.getConcentration());
+        // --- Recording density metrics ---
+        int totalTracks = selectedTracks.size();
 
-        recording.setDensity(round(density, 2));
+        int    nSelectedSquares = getNumberOfSelectedSquares(recording);
+        double area             = calculateSquareArea(generateSquaresConfig.getNumberOfSquaresInRecording()) * nSelectedSquares;
+        double concentration    = recording.getConcentration();
+
+        recording.setDensity(round(calculateDensity(totalTracks, area, RECORDING_DURATION, concentration), 3));
     }
 
     /**

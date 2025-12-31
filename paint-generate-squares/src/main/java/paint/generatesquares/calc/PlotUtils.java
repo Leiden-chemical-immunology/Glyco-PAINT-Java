@@ -22,6 +22,17 @@ import static paint.shared.constants.PaintStringConstants.TAU_FITTING_PLOTS;
 
 public class PlotUtils {
 
+    // --- Styling Constants ---
+    private static final int   MARGIN_LEFT   = 70;
+    private static final int   MARGIN_RIGHT  = 40;
+    private static final int   MARGIN_TOP    = 40;
+    private static final int   MARGIN_BOTTOM = 60;
+    private static final Color COLOR_DATA    = new Color(30, 100, 200);
+    private static final Color COLOR_FIT     = Color.RED;
+    private static final Color COLOR_AXES    = Color.GRAY;
+    private static final Color COLOR_SUCCESS = new Color(0, 128, 0);
+    private static final Font  FONT_LABEL    = new Font("SansSerif", Font.PLAIN, 12);
+
     private PlotUtils() {
         // Utility class — prevent instantiation
     }
@@ -55,12 +66,8 @@ public class PlotUtils {
         g2.fillRect(0, 0, width, height);
 
         // --- Define margins and plotting area ---
-        int marginLeft   = 70;
-        int marginRight  = 40;
-        int marginTop    = 40;
-        int marginBottom = 60;
-        int x0           = marginLeft;
-        int y0           = height - marginBottom;
+        int x0 = MARGIN_LEFT;
+        int y0 = height - MARGIN_BOTTOM;
 
         // --- Determine axis ranges from data ---
         double minX = Arrays.stream(x).min().orElse(0);
@@ -80,19 +87,19 @@ public class PlotUtils {
         maxY += padY;
 
         // --- Scaling factors ---
-        double xScale = (width - marginLeft - marginRight) / (maxX - minX);
-        double yScale = (height - marginTop - marginBottom) / (maxY - minY);
+        double xScale = (width - MARGIN_LEFT - MARGIN_RIGHT) / (maxX - minX);
+        double yScale = (height - MARGIN_TOP - MARGIN_BOTTOM) / (maxY - minY);
 
         // --- Axes ---
-        g2.setColor(Color.GRAY);
-        g2.drawLine(x0, y0, width - marginRight, y0);
-        g2.drawLine(x0, y0, x0, marginTop);
+        g2.setColor(COLOR_AXES);
+        g2.drawLine(x0, y0, width - MARGIN_RIGHT, y0);
+        g2.drawLine(x0, y0, x0, MARGIN_TOP);
 
         // --- Data points ---
-        g2.setColor(new Color(30, 100, 200));
+        g2.setColor(COLOR_DATA);
         for (int i = 0; i < x.length; i++) {
-            int px = (int)(marginLeft + (x[i] - minX) * xScale);
-            int py = (int)(y0 - (y[i] - minY) * yScale);
+            int px = (int) (MARGIN_LEFT + (x[i] - minX) * xScale);
+            int py = (int) (y0 - (y[i] - minY) * yScale);
             g2.fillOval(px - 3, py - 3, 6, 6);
         }
 
@@ -103,19 +110,19 @@ public class PlotUtils {
 
             double m = Arrays.stream(y).max().orElse(1);
             double b = Arrays.stream(y).min().orElse(0);
-            g2.setColor(Color.RED);
+            g2.setColor(COLOR_FIT);
 
-            int steps = 200;
+            int    steps = 200;
             double prevX = minX;
             double prevY = m * Math.exp(-t * prevX) + b;
             for (int i = 1; i <= steps; i++) {
 
                 double cx = minX + (maxX - minX) * i / steps;
                 double cy = m * Math.exp(-t * cx) + b;
-                int x1    = (int) (marginLeft + (prevX - minX) * xScale);
-                int y1    = (int) (y0 - (prevY - minY) * yScale);
-                int x2    = (int) (marginLeft + (cx - minX) * xScale);
-                int y2    = (int) (y0 - (cy - minY) * yScale);
+                int    x1 = (int) (MARGIN_LEFT + (prevX - minX) * xScale);
+                int    y1 = (int) (y0 - (prevY - minY) * yScale);
+                int    x2 = (int) (MARGIN_LEFT + (cx - minX) * xScale);
+                int    y2 = (int) (y0 - (cy - minY) * yScale);
 
                 g2.drawLine(x1, y1, x2, y2);
                 prevX = cx;
@@ -125,7 +132,7 @@ public class PlotUtils {
 
         // --- Axis labels ---
         g2.setColor(Color.BLACK);
-        g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 12f));
+        g2.setFont(FONT_LABEL);
         g2.drawString("Duration", width / 2 - 30, height - 20);
 
         g2.rotate(-Math.PI / 2);
@@ -133,12 +140,11 @@ public class PlotUtils {
         g2.rotate(Math.PI / 2);
 
         // --- Fit annotation ---
-        g2.setColor(fitFailed ? Color.RED.darker() : new Color(0, 128, 0));
+        g2.setColor(fitFailed ? Color.RED.darker() : COLOR_SUCCESS);
         String msg = fitFailed
                 ? "Fit failed"
                 : String.format("Tau = %.1f ms, R² = %.3f", result.getTau(), result.getRSquared());
-        g2.setFont(g2.getFont().deriveFont(Font.BOLD, 14f));
-        g2.drawString(msg, marginLeft + 10, marginTop + 20);
+        g2.drawString(msg, MARGIN_LEFT + 10, MARGIN_TOP + 20);
 
         g2.dispose();
         return img;
