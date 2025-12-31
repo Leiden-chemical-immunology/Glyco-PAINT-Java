@@ -628,11 +628,14 @@ public class TracksCsvComparatorPythonJava {
      * @param summaryCsv    output summary file
      * @param total         total number of old tracks
      */
-    private static void summarize(List<String> perfectIds, List<String> reasonableIds,
-                                  List<String> unmatchedIds, Path diagCsv,
-                                  Path summaryCsv, int total) throws IOException {
+    private static void summarize(List<String> perfectIds,
+            List<String> reasonableIds,
+            List<String> unmatchedIds,
+            Path         diagCsv,
+            Path         summaryCsv,
+            int          total) throws IOException {
 
-        int phase1Perfect = perfectIds.size();
+        int phase1Perfect    = perfectIds.size();
         int phase2Reasonable = 0;
 
         // Scan diagnostic file for acceptable RMS scores
@@ -644,8 +647,8 @@ public class TracksCsvComparatorPythonJava {
                     if (parts.length < 12) {
                         continue;
                     }
-                    String oldId = parts[1].trim();
-                    String bestId = parts[2].trim();
+                    String oldId    = parts[1].trim();
+                    String bestId   = parts[2].trim();
                     String scoreStr = parts[11].trim();
                     if (!bestId.equals("-") && !scoreStr.startsWith("No")) {
                         try {
