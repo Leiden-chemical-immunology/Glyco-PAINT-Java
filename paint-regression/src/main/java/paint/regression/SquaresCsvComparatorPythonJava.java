@@ -54,6 +54,95 @@ import static paint.shared.constants.PaintStringConstants.SQUARE_NUMBER;
 
 public class SquaresCsvComparatorPythonJava {
 
+
+    // ---------------------------- Main ----------------------------
+
+    /**
+     * The main method orchestrates the entire workflow for comparing and validating
+     * CSV data related to square structures. It performs tasks such as reading CSVs,
+     * normalizing data, calculating precision levels, generating comparison files,
+     * and optimizing tolerance levels.
+     *
+     * @param args Command-line arguments passed to the program.
+     */
+    public static void main(String[] args) {
+        try {
+            // Prepare the output directory under ~/Downloads/Validate/Squares
+            Path outDir = Paths.get(System.getProperty("user.home"), "Downloads", "Validate", "Squares");
+            Files.createDirectories(outDir);
+
+            // Define file paths for old/new CSVs
+            // This comparison is for squares between Python and Java implementations
+            Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Squares.csv");
+            Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/Squares.csv");
+
+            // Step 1: Read both CSVs
+            System.out.println("Reading CSVs...");
+            List<Map<String, String>> oldRows = readCsv(oldCsv);
+            List<Map<String, String>> newRows = readCsv(newCsv);
+            System.out.printf("   OLD: %d rows%n   NEW: %d rows%n", oldRows.size(), newRows.size());
+
+            // Step 2: Normalize both versions to a unified structure
+            System.out.println("Normalizing...");
+            List<Map<String, String>> normOld = normalizeOld(oldRows);
+            List<Map<String, String>> normNew = normalizeNew(newRows);
+
+            // Step 3: Determine shared numeric precision for each field
+            EFFECTIVE_PRECISION_MAP.clear();
+            EFFECTIVE_PRECISION_MAP.putAll(computeEffectivePrecisions(normOld, normNew, NUMERIC_FIELDS));
+            System.out.println("Effective numeric precision (shared):");
+            EFFECTIVE_PRECISION_MAP.forEach((k, v) -> System.out.printf("   %-35s -> %d%n", k, v));
+
+            // Step 4: Write normalized versions for manual inspection
+            Path normOldPath = outDir.resolve("Squares Validation - Old Normalized.csv");
+            Path normNewPath = outDir.resolve("Squares Validation - New Normalized.csv");
+            System.out.println("Writing normalized outputs...");
+            writeCsv(normOld, normOldPath);
+            writeCsv(normNew, normNewPath);
+            System.out.println("   -> " + normOldPath);
+            System.out.println("   -> " + normNewPath);
+
+            // Step 4a Read the normalised files in again to get the aligned precision that was enforced during the writing
+            System.out.println("Reading CSVs again...");
+            normOld = readCsv(normOldPath);
+            normNew = readCsv(normNewPath);
+
+            // Step 5: Compare normalized data
+            System.out.println("Comparing (status per field)...");
+            Path comparisonCsv = outDir.resolve("Squares Validation - Comparison.csv");
+            compareStatus(normOld, normNew, outDir);
+
+            // Step 6: Write the detailed numeric difference table
+            System.out.println("Writing detailed numeric diff...");
+            Path detailedCsv = outDir.resolve("Squares Validation - Detailed.csv");
+            writeDetailed(normOld, normNew, detailedCsv);
+
+            // Step 7: Write the overview of selected (included) squares
+            System.out.println("Writing selected overview...");
+            Path selectedCsv = outDir.resolve("Squares Validation - Selected Overview.csv");
+            writeSelectedOverview(normOld, normNew, selectedCsv);
+
+            // Step 8: Optional short pause for a file flush on some systems
+            try {
+                Thread.sleep(150);
+            } catch (InterruptedException ignored) {
+            }
+
+            // Step 9: Suggest optimized tolerance levels based on data
+            System.out.println("Optimizing tolerances...");
+            Path tolCsv = outDir.resolve("Squares Validation - Tolerance Optimization.csv");
+            optimizeTolerances(comparisonCsv, tolCsv);
+
+            // Done
+            System.out.println("All tasks complete.");
+            System.out.println("Output directory: " + outDir.toAbsolutePath());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
     /**
      * A static and final map that serves as a key-value data structure
      * for storing mappings of strings. The map is initialized as a
@@ -154,86 +243,6 @@ public class SquaresCsvComparatorPythonJava {
      */
     private static final Map<String, Integer> EFFECTIVE_PRECISION_MAP = new HashMap<>();
 
-    // ---------------------------- Main ----------------------------
-
-    /**
-     * The main method orchestrates the entire workflow for comparing and validating
-     * CSV data related to square structures. It performs tasks such as reading CSVs,
-     * normalizing data, calculating precision levels, generating comparison files,
-     * and optimizing tolerance levels.
-     *
-     * @param args Command-line arguments passed to the program.
-     */
-    public static void main(String[] args) {
-        try {
-            // Prepare the output directory under ~/Downloads/Validate/Squares
-            Path outDir = Paths.get(System.getProperty("user.home"), "Downloads", "Validate", "Squares");
-            Files.createDirectories(outDir);
-
-            // Define file paths for old/new CSVs
-            Path oldCsv = Paths.get("/Users/hans/Paint Test Project/221012 - Python/All Squares.csv");
-            Path newCsv = Paths.get("/Users/hans/Paint Test Project/221012/Squares.csv");
-
-            // Step 1: Read both CSVs
-            System.out.println("Reading CSVs...");
-            List<Map<String, String>> oldRows = readCsv(oldCsv);
-            List<Map<String, String>> newRows = readCsv(newCsv);
-            System.out.printf("   OLD: %d rows%n   NEW: %d rows%n", oldRows.size(), newRows.size());
-
-            // Step 2: Normalize both versions to a unified structure
-            System.out.println("Normalizing...");
-            List<Map<String, String>> normOld = normalizeOld(oldRows);
-            List<Map<String, String>> normNew = normalizeNew(newRows);
-
-            // Step 3: Determine shared numeric precision for each field
-            EFFECTIVE_PRECISION_MAP.clear();
-            EFFECTIVE_PRECISION_MAP.putAll(computeEffectivePrecisions(normOld, normNew, NUMERIC_FIELDS));
-            System.out.println("Effective numeric precision (shared):");
-            EFFECTIVE_PRECISION_MAP.forEach((k, v) -> System.out.printf("   %-35s -> %d%n", k, v));
-
-            // Step 4: Write normalized versions for manual inspection
-            Path normOldPath = outDir.resolve("Squares Validation - Old Normalized.csv");
-            Path normNewPath = outDir.resolve("Squares Validation - New Normalized.csv");
-            System.out.println("Writing normalized outputs...");
-            writeCsv(normOld, normOldPath);
-            writeCsv(normNew, normNewPath);
-            System.out.println("   -> " + normOldPath);
-            System.out.println("   -> " + normNewPath);
-
-            // Step 5: Compare normalized data
-            System.out.println("Comparing (status per field)...");
-            Path comparisonCsv = outDir.resolve("Squares Validation - Comparison.csv");
-            compareStatus(normOld, normNew, outDir);
-
-            // Step 6: Write the detailed numeric difference table
-            System.out.println("Writing detailed numeric diff...");
-            Path detailedCsv = outDir.resolve("Squares Validation - Detailed.csv");
-            writeDetailed(normOld, normNew, detailedCsv);
-
-            // Step 7: Write the overview of selected (included) squares
-            System.out.println("Writing selected overview...");
-            Path selectedCsv = outDir.resolve("Squares Validation - Selected Overview.csv");
-            writeSelectedOverview(normOld, normNew, selectedCsv);
-
-            // Step 8: Optional short pause for a file flush on some systems
-            try {
-                Thread.sleep(150);
-            } catch (InterruptedException ignored) {
-            }
-
-            // Step 9: Suggest optimized tolerance levels based on data
-            System.out.println("Optimizing tolerances...");
-            Path tolCsv = outDir.resolve("Squares Validation - Tolerance Optimization.csv");
-            optimizeTolerances(comparisonCsv, tolCsv);
-
-            // Done
-            System.out.println("All tasks complete.");
-            System.out.println("Output directory: " + outDir.toAbsolutePath());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     // ---------------------------- IO ----------------------------
 
@@ -495,12 +504,13 @@ public class SquaresCsvComparatorPythonJava {
     private static void compareStatus(List<Map<String, String>> oldN, List<Map<String, String>> newN, Path outDir) throws IOException {
         Path out = outDir.resolve("Squares Validation - Comparison.csv");
 
-        List<String[]> diffs = new ArrayList<>();
-        int total = 0, diffCount = 0;
-        Set<String> squaresWithDiffs = new HashSet<>();
+        List<String[]> diffs            = new ArrayList<>();
+        int            total            = 0;
+        int            diffCount        = 0;
+        Set<String>    squaresWithDiffs = new HashSet<>();
 
         // Track field-level differences
-        Map<String, Integer> diffByField = new HashMap<>();
+        Map<String, Integer> diffByField    = new HashMap<>();
         Map<String, Integer> missingByField = new HashMap<>();
 
         // Build lookup map for new dataset
