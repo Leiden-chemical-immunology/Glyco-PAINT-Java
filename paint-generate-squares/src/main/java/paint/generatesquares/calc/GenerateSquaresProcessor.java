@@ -189,9 +189,7 @@ public class GenerateSquaresProcessor {
         writeRecordings(experimentPath, experiment.getRecordings());
 
         // All tracks
-        Table allTracksTable = compileAllTracks(experiment);
-        allTracksTable = allTracksTable.sortOn(RECORDING_NAME, TRACK_ID);
-        writeTracks(experimentPath, allTracksTable);
+        writeTracks(experimentPath, compileAllTracks(experiment).sortOn(RECORDING_NAME, TRACK_ID));
     }
 
     /**
