@@ -198,27 +198,35 @@ public class CalculateSquareAttributes {
         }
 
         // --- Variability, density, kinematic metrics ---
-        square.setVariability(round(calculateVariability(table, squareNumber, params.numberOfSquaresInRecording, 10), 2));
-        square.setDensity(round(calculateDensity(tracksInSquare.size(), params.squareArea, RECORDING_DURATION, params.concentration), 3));
-        square.setDensityRatio(round(calculateDensityRatio(tracksInSquare.size(), params.numberOfTracksInBackgroundSquare), 2));
-        square.setDensityRatioOri(round(calculateDensityRatio(tracksInSquare.size(), params.backgroundTracksOri), 2));
 
-        square.setMedianDiffusionCoefficient(round(table.doubleColumn(DIFFUSION_COEFFICIENT).median(), 2));
-        square.setMedianDiffusionCoefficientExt(round(table.doubleColumn(DIFFUSION_COEFFICIENT_EXT).median(), 2));
+        // Note that double values are written with 3 decimals in Squares
 
-        square.setMedianDisplacement(round(table.doubleColumn(TRACK_DISPLACEMENT).median(), 1));
-        square.setMaxDisplacement(round(table.doubleColumn(TRACK_DISPLACEMENT).max(), 1));
-        square.setTotalDisplacement(round(table.doubleColumn(TRACK_DISPLACEMENT).sum(), 1));
+        final int PRECISION_L  = 2;
+        final int PRECISION_M1 = 3;
+        final int PRECISION_M2 = 4;
+        final int PRECISION_H  = 5;
 
-        square.setMedianMaxSpeed(round(table.doubleColumn(TRACK_MAX_SPEED).median(), 1));
-        square.setMaxMaxSpeed(round(table.doubleColumn(TRACK_MAX_SPEED).max(), 1));
+        square.setVariability(round(calculateVariability(table, squareNumber, params.numberOfSquaresInRecording, 10),       PRECISION_M1));
+        square.setDensity(round(calculateDensity(tracksInSquare.size(), params.squareArea, RECORDING_DURATION, params.concentration), PRECISION_H));
+        square.setDensityRatio(round(calculateDensityRatio(tracksInSquare.size(), params.numberOfTracksInBackgroundSquare),           PRECISION_M1));
+        square.setDensityRatioOri(round(calculateDensityRatio(tracksInSquare.size(), params.backgroundTracksOri),                     PRECISION_M1));
 
-        square.setMedianMedianSpeed(round(table.doubleColumn(TRACK_MEDIAN_SPEED).median(), 1));
-        square.setMaxMedianSpeed(round(table.doubleColumn(TRACK_MEDIAN_SPEED).max(), 1));
+        square.setMedianDiffusionCoefficient(round(table.doubleColumn(DIFFUSION_COEFFICIENT).median(),        PRECISION_M2));
+        square.setMedianDiffusionCoefficientExt(round(table.doubleColumn(DIFFUSION_COEFFICIENT_EXT).median(), PRECISION_M1));
 
-        square.setMaxTrackDuration(round(table.doubleColumn(TRACK_DURATION).max(), 1));
-        square.setTotalTrackDuration(round(table.doubleColumn(TRACK_DURATION).sum(), 1));
-        square.setMedianTrackDuration(round(table.doubleColumn(TRACK_DURATION).median(), 1));
+        square.setMedianDisplacement(round(table.doubleColumn(TRACK_DISPLACEMENT).median(), PRECISION_L));
+        square.setMaxDisplacement(round(table.doubleColumn(TRACK_DISPLACEMENT).max(),       PRECISION_L));
+        square.setTotalDisplacement(round(table.doubleColumn(TRACK_DISPLACEMENT).sum(),     PRECISION_L));
+
+        square.setMedianMaxSpeed(round(table.doubleColumn(TRACK_MAX_SPEED).median(),        PRECISION_L));
+        square.setMaxMaxSpeed(round(table.doubleColumn(TRACK_MAX_SPEED).max(),              PRECISION_L));
+
+        square.setMedianMedianSpeed(round(table.doubleColumn(TRACK_MEDIAN_SPEED).median(),  PRECISION_L));
+        square.setMaxMedianSpeed(round(table.doubleColumn(TRACK_MEDIAN_SPEED).max(),        PRECISION_L));
+
+        square.setMaxTrackDuration(round(table.doubleColumn(TRACK_DURATION).max(),          PRECISION_L));
+        square.setTotalTrackDuration(round(table.doubleColumn(TRACK_DURATION).sum(),        PRECISION_L));
+        square.setMedianTrackDuration(round(table.doubleColumn(TRACK_DURATION).median(),    PRECISION_L));
     }
 
     /**
