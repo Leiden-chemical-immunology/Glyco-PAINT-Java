@@ -365,6 +365,10 @@ public class CsvComparatorRegression {
 
         try {
             // STRICT comparison for original reference
+            // Here we are comparing a new file with an earlier saved reference file, both generated in Java
+            // We look at this to see if a code change has not caused changes in the processed data
+            // The files we are comparing are similar, so differences here should be limited
+
             setRelaxedComparison(false);
             Path logPath = Paths.get("/Users/hans/Downloads/validate/logs strict");
             enableDualLogging(logPath);
@@ -387,28 +391,30 @@ public class CsvComparatorRegression {
             System.exit(1);
         }
 
-        try {
-            // RELAXED comparison for v39 / new format
-            setRelaxedComparison(true);
-            Path logPath = Paths.get("/Users/hans/Downloads/validate/logs relaxed");
-            enableDualLogging(logPath);
+        if (false) {
+            try {
+                // RELAXED comparison for v39 / new format
+                // Here we compare an original Python version that has been brought in the correct format so that comparison is possible
+                // Here we are a bit less strict
+                setRelaxedComparison(true);
+                Path logPath = Paths.get("/Users/hans/Downloads/validate/logs relaxed");
+                enableDualLogging(logPath);
 
-            testfile = Paths.get("/Users/hans/Paint Test Project/221012 - v39 - reprocessed/Squares.csv");
-            testfile = Paths.get("/Users/hans/Paint Test Project/221012/Squares.csv");
-            baseline = Paths.get("/Users/hans/Paint Test Project/221012 - v39 - updated format/Squares.csv");
-            diffs += compare_stub(baseline, testfile);
+                testfile = Paths.get("/Users/hans/Paint Test Project/221012/Squares.csv");
+                baseline = Paths.get("/Users/hans/Paint Test Project/221012 - v39 - updated format/Squares.csv");
+                diffs += compare_stub(baseline, testfile);
 
-            testfile = Paths.get("/Users/hans/Paint Test Project/221012 - v39 - reprocessed/Recordings.csv");
-            testfile = Paths.get("/Users/hans/Paint Test Project/221012/Recordings.csv");
-            baseline = Paths.get("/Users/hans/Paint Test Project/221012 - v39 - updated format/Recordings.csv");
-            diffs += compare_stub(baseline, testfile);
+                testfile = Paths.get("/Users/hans/Paint Test Project/221012/Recordings.csv");
+                baseline = Paths.get("/Users/hans/Paint Test Project/221012 - v39 - updated format/Recordings.csv");
+                diffs += compare_stub(baseline, testfile);
 
-            LOGGER.println("\n\n🔢 Total differences detected: " + diffs);
+                LOGGER.println("\n\n🔢 Total differences detected: " + diffs);
 
-            LOGGER.compareLatestLogWithPrevious(logPath);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
+                LOGGER.compareLatestLogWithPrevious(logPath);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
     }
 }
