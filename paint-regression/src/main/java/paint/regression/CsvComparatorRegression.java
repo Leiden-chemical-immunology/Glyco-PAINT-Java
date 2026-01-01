@@ -24,7 +24,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package paint.regression.clean;
+package paint.regression;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -39,10 +39,9 @@ import static paint.shared.constants.PaintStringConstants.SQUARE_NUMBER;
  */
 public class CsvComparatorRegression {
 
+    private static final RegressionLogger LOGGER = new RegressionLogger(System.out);
     // GLOBAL MODE: RELAXED vs STRICT
     private static boolean relaxedComparison = true;
-
-    private static final RegressionLogger LOGGER = new RegressionLogger(System.out);
 
     public static void enableDualLogging(Path logDir) throws IOException {
         LOGGER.enableFileLogging(logDir);
@@ -92,8 +91,12 @@ public class CsvComparatorRegression {
         for (String key : allKeys) {
             List<Map<String, String>> ol = oldMulti.get(key);
             List<Map<String, String>> nl = newMulti.get(key);
-            if (ol == null) ol = Collections.emptyList();
-            if (nl == null) nl = Collections.emptyList();
+            if (ol == null) {
+                ol = Collections.emptyList();
+            }
+            if (nl == null) {
+                nl = Collections.emptyList();
+            }
 
             int max = Math.max(ol.size(), nl.size());
 
@@ -124,23 +127,35 @@ public class CsvComparatorRegression {
                 String sq = o.containsKey(SQUARE_NUMBER) ? safe(o.get(SQUARE_NUMBER)) : "";
 
                 for (String f : fields) {
-                    if (f == null || f.trim().isEmpty()) continue;
-                    if (RegressionRules.isIgnoredColumn(f, relaxedComparison)) continue;
+                    if (f == null || f.trim().isEmpty()) {
+                        continue;
+                    }
+                    if (RegressionRules.isIgnoredColumn(f, relaxedComparison)) {
+                        continue;
+                    }
 
                     String ov = RegressionRules.clean(o.get(f));
                     String nv = RegressionRules.clean(n.get(f));
 
                     if (RegressionRules.isIgnoreCaseField(f)) {
-                        if (ov.equalsIgnoreCase(nv)) continue;
+                        if (ov.equalsIgnoreCase(nv)) {
+                            continue;
+                        }
                     }
 
-                    if (RegressionRules.emptyAndZeroEquiv(ov, nv)) continue;
+                    if (RegressionRules.emptyAndZeroEquiv(ov, nv)) {
+                        continue;
+                    }
 
                     if (RegressionRules.isIgnoreCaseField(f)) {
-                        if (ov.equalsIgnoreCase(nv)) continue;
+                        if (ov.equalsIgnoreCase(nv)) {
+                            continue;
+                        }
                     }
 
-                    if (RegressionRules.valuesEqual(ov, nv)) continue;
+                    if (RegressionRules.valuesEqual(ov, nv)) {
+                        continue;
+                    }
 
                     Double od = RegressionRules.parseDouble(ov);
                     Double nd = RegressionRules.parseDouble(nv);
@@ -223,7 +238,9 @@ public class CsvComparatorRegression {
             LOGGER.println("Recording: " + recEntry.getKey());
             for (Map.Entry<String, List<String[]>> sqEntry : recEntry.getValue().entrySet()) {
                 String sq = sqEntry.getKey();
-                if (!sq.equals("—")) squaresWithDiffs.add(sq);
+                if (!sq.equals("—")) {
+                    squaresWithDiffs.add(sq);
+                }
 
                 LOGGER.println("  ▫ Square " + sq + ":");
                 for (String[] row : sqEntry.getValue()) {
@@ -252,7 +269,9 @@ public class CsvComparatorRegression {
     private static String join(Set<String> s, String sep) {
         StringBuilder sb = new StringBuilder();
         for (String x : s) {
-            if (sb.length() > 0) sb.append(sep);
+            if (sb.length() > 0) {
+                sb.append(sep);
+            }
             sb.append(x);
         }
         return sb.toString();
@@ -285,7 +304,9 @@ public class CsvComparatorRegression {
         BufferedReader br = Files.newBufferedReader(path);
         try {
             String headerLine = br.readLine();
-            if (headerLine == null) return rows;
+            if (headerLine == null) {
+                return rows;
+            }
 
             String[] headers = headerLine.split(",", -1);
             for (int i = 0; i < headers.length; i++) {
@@ -294,7 +315,9 @@ public class CsvComparatorRegression {
 
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.isEmpty()) continue;
+                if (line.isEmpty()) {
+                    continue;
+                }
 
                 String[] vals = line.split(",", -1);
                 Map<String, String> row = new LinkedHashMap<>();
@@ -343,7 +366,7 @@ public class CsvComparatorRegression {
         try {
             // STRICT comparison for original reference
             setRelaxedComparison(false);
-            Path logPath = Paths.get("/Users/hans/Downloads/logs1");
+            Path logPath = Paths.get("/Users/hans/Downloads/validate/logs strict");
             enableDualLogging(logPath);
 
             Path projectRoot = Paths.get(System.getProperty("user.dir"));
@@ -367,14 +390,16 @@ public class CsvComparatorRegression {
         try {
             // RELAXED comparison for v39 / new format
             setRelaxedComparison(true);
-            Path logPath = Paths.get("/Users/hans/Downloads/logs2");
+            Path logPath = Paths.get("/Users/hans/Downloads/validate/logs relaxed");
             enableDualLogging(logPath);
 
             testfile = Paths.get("/Users/hans/Paint Test Project/221012 - v39 - reprocessed/Squares.csv");
+            testfile = Paths.get("/Users/hans/Paint Test Project/221012/Squares.csv");
             baseline = Paths.get("/Users/hans/Paint Test Project/221012 - v39 - updated format/Squares.csv");
             diffs += compare_stub(baseline, testfile);
 
             testfile = Paths.get("/Users/hans/Paint Test Project/221012 - v39 - reprocessed/Recordings.csv");
+            testfile = Paths.get("/Users/hans/Paint Test Project/221012/Recordings.csv");
             baseline = Paths.get("/Users/hans/Paint Test Project/221012 - v39 - updated format/Recordings.csv");
             diffs += compare_stub(baseline, testfile);
 

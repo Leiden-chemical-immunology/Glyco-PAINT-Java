@@ -22,7 +22,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package paint.regression.clean;
+package paint.regression;
 
 import java.io.IOException;
 import java.io.PrintStream;

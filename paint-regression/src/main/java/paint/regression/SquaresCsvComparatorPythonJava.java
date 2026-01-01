@@ -132,10 +132,10 @@ public class SquaresCsvComparatorPythonJava {
         for (String f : NUMERIC_FIELDS) {
             ROUNDING_MAP.put(f, 3);
         }
-        ROUNDING_MAP.put("Variability", 1);
-        ROUNDING_MAP.put("Tau", 2);
+        ROUNDING_MAP.put("Variability",   1);
+        ROUNDING_MAP.put("Tau",           2);
         ROUNDING_MAP.put("Density Ratio", 2);
-        ROUNDING_MAP.put("R Squared", 2);
+        ROUNDING_MAP.put("R Squared",     2);
     }
 
     /**

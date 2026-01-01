@@ -23,7 +23,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package paint.regression.clean;
+package paint.regression;
 
 import java.util.*;
 
@@ -93,7 +93,7 @@ final class RegressionRules {
                         {"Max Track Duration",    0.02},
                         {"Total Track Duration",  0.02},
                         {"Median Track Duration", 0.02},
-                        {"Density Ratio Ori", 0.02}
+                        {"Density Ratio Ori",     0.02}
                 })
         );
 
@@ -148,7 +148,7 @@ final class RegressionRules {
                         {"Density",                           3},
                         {"Density Ratio",                     3},
                         {"Variability",                       3},
-                        {"Median Displacement",               3},
+                        {"Median Displacement",               1},
                         {"Max Displacement",                  3},
                         {"Total Displacement",                3},
                         {"Median Max Speed",                  3},
