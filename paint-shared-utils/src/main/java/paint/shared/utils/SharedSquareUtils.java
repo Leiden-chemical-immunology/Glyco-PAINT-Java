@@ -226,6 +226,11 @@ public final class SharedSquareUtils {
                     continue;
                 }
 
+                // Both must be in the same recording for neighbour detection
+                if (!square.getRecordingName().equals(other.getRecordingName())) {
+                    continue;
+                }
+
                 int differenceInRow    = Math.abs(other.getRowNumber() - rowNumber);
                 int differenceInColumn = Math.abs(other.getColNumber() - colNumber);
 
