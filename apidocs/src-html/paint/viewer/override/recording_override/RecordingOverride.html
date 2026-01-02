@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang>
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*==============================================================================<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  Class:        RecordingOverride.java<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  Package:      paint.viewer.override.recording_override<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *  PURPOSE:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *    Represents a single recording-level override entry. Each instance defines<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *    replacement threshold parameters for one recording, identified by the<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *    (experimentName, recordingName) pair.<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  DESCRIPTION:<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    This class models one row from the "Recording Override.csv" file located in<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    the Viewer directory of a PAINT project. It is a simple data container<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *    designed for direct CSV parsing and in-memory consumption by<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *    ImportRecordingOverride and related override/export utilities.<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *    The values stored here replace the corresponding threshold parameters<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *    (density ratio, R², variability, neighbour mode) on the target recording.<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *  KEY FEATURES:<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *    • Plain data container (POJO) with no behavior.<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *    • Field layout mirrors the Recording Override CSV columns.<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *    • Used exclusively for override import/export and in-memory mutation.<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *  AUTHOR:<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *    Hans Bakker<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *  MODULE:<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *    paint-viewer<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *  UPDATED:<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *    2025-12-31<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *  COPYRIGHT:<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *    © 2025 Hans Bakker. All rights reserved.<a name="line.34"></a>
+<span class="sourceLineNo">035</span>==============================================================================*/<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>package paint.viewer.override.recording_override;<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>public class RecordingOverride {<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>    private String experimentName;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>    private String recordingName;<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span>    private double minRequiredDensityRatio;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>    private double minRequiredRSquared;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>    private double maxAllowableVariability;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>    private String neighbourMode;<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.49"></a>
+<span class="sourceLineNo">050</span>    // CONSTRUCTORS<a name="line.50"></a>
+<span class="sourceLineNo">051</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>    /**<a name="line.53"></a>
+<span class="sourceLineNo">054</span>     * Default constructor required for CSV parsing and reflective instantiation.<a name="line.54"></a>
+<span class="sourceLineNo">055</span>     */<a name="line.55"></a>
+<span class="sourceLineNo">056</span>    public RecordingOverride() {<a name="line.56"></a>
+<span class="sourceLineNo">057</span>    }<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.59"></a>
+<span class="sourceLineNo">060</span>    // ACCESSORS<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.61"></a>
+<span class="sourceLineNo">062</span><a name="line.62"></a>
+<span class="sourceLineNo">063</span>    public String getExperimentName() {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        return experimentName;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    }<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>    public void setExperimentName(String experimentName) {<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        this.experimentName = experimentName;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    }<a name="line.69"></a>
+<span class="sourceLineNo">070</span><a name="line.70"></a>
+<span class="sourceLineNo">071</span>    public String getRecordingName() {<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        return recordingName;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>    }<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>    public void setRecordingName(String recordingName) {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        this.recordingName = recordingName;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    }<a name="line.77"></a>
+<span class="sourceLineNo">078</span><a name="line.78"></a>
+<span class="sourceLineNo">079</span>    public double getMinRequiredDensityRatio() {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        return minRequiredDensityRatio;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    }<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>    public void setMinRequiredDensityRatio(double minRequiredDensityRatio) {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        this.minRequiredDensityRatio = minRequiredDensityRatio;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>    }<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>    public double getMinRequiredRSquared() {<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        return minRequiredRSquared;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    }<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>    public void setMinRequiredRSquared(double minRequiredRSquared) {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        this.minRequiredRSquared = minRequiredRSquared;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>    }<a name="line.93"></a>
+<span class="sourceLineNo">094</span><a name="line.94"></a>
+<span class="sourceLineNo">095</span>    public double getMaxAllowableVariability() {<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        return maxAllowableVariability;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    }<a name="line.97"></a>
+<span class="sourceLineNo">098</span><a name="line.98"></a>
+<span class="sourceLineNo">099</span>    public void setMaxAllowableVariability(double maxAllowableVariability) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        this.maxAllowableVariability = maxAllowableVariability;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    }<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>    public String getNeighbourMode() {<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        return neighbourMode;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>    }<a name="line.105"></a>
+<span class="sourceLineNo">106</span><a name="line.106"></a>
+<span class="sourceLineNo">107</span>    public void setNeighbourMode(String neighbourMode) {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        this.neighbourMode = neighbourMode;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    }<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.111"></a>
+<span class="sourceLineNo">112</span>    // DEBUG<a name="line.112"></a>
+<span class="sourceLineNo">113</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>    /**<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     * Returns a human-readable representation of this override entry,<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     * primarily intended for logging and debugging.<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     */<a name="line.118"></a>
+<span class="sourceLineNo">119</span>    @Override<a name="line.119"></a>
+<span class="sourceLineNo">120</span>    public String toString() {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        return "RecordingOverride{" +<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                "experimentName='" + experimentName + '\'' +<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                ", recordingName='" + recordingName + '\'' +<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                ", minRequiredDensityRatio=" + minRequiredDensityRatio +<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                ", minRequiredRSquared=" + minRequiredRSquared +<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                ", maxAllowableVariability=" + maxAllowableVariability +<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                ", neighbourMode='" + neighbourMode + '\'' +<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                '}';<a name="line.128"></a>
+<span class="sourceLineNo">129</span>    }<a name="line.129"></a>
+<span class="sourceLineNo">130</span>}<a name="line.130"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

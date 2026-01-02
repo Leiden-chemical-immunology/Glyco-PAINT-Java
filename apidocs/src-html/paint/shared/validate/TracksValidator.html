@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang>
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*=============================================================================<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  Class:        TracksValidator.java<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  Package:      paint.shared.validate<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *  PURPOSE:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *    Validates the structure and data types of "tracks.csv" files against<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *    the expected schema defined in the {@link Track} object.<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *  DESCRIPTION:<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *    The {@code TracksValidator} extends {@link AbstractFileValidator} to<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    enforce schema consistency for track-level data. It verifies that<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    the file contains all required columns with the correct headers and<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *    compatible data types (e.g., Integer, Double, String).<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *  KEY FEATURES:<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *    • Automated header validation using the {@link Track.Column} enum.<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *    • Column type checking based on the Tablesaw {@link ColumnType} API.<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *    • Reusable within the PAINT validation pipeline.<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *  AUTHOR:<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *    Hans Bakker<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *  MODULE:<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *    paint-shared-utils<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *  UPDATED:<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *    2025-12-31<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *  COPYRIGHT:<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *    © 2025 Hans Bakker. All rights reserved.<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *=============================================================================*/<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>package paint.shared.validate;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>import paint.shared.objects.Track;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import tech.tablesaw.api.ColumnType;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>import java.util.ArrayList;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import java.util.List;<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>/**<a name="line.41"></a>
+<span class="sourceLineNo">042</span> * Validates the schema of {@code tracks.csv} by checking header correctness<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * and column data types according to {@link Track.Column}.<a name="line.43"></a>
+<span class="sourceLineNo">044</span> *<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * &lt;p&gt;This version no longer depends on TrackSchema; it uses the embedded<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * schema directly inside the Track class.&lt;/p&gt;<a name="line.46"></a>
+<span class="sourceLineNo">047</span> */<a name="line.47"></a>
+<span class="sourceLineNo">048</span>public final class TracksValidator extends AbstractFileValidator {<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.50"></a>
+<span class="sourceLineNo">051</span>    // HEADER VALIDATION<a name="line.51"></a>
+<span class="sourceLineNo">052</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>    /**<a name="line.54"></a>
+<span class="sourceLineNo">055</span>     * Validates that the actual CSV headers match the expected headers defined in<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     * {@link Track.Column}.<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     *<a name="line.57"></a>
+<span class="sourceLineNo">058</span>     * @param actualHeader the list of headers found in the CSV file<a name="line.58"></a>
+<span class="sourceLineNo">059</span>     * @param result       the {@link ValidationResult} to record any mismatches<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     */<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    @Override<a name="line.61"></a>
+<span class="sourceLineNo">062</span>    protected void validateHeader(List&lt;String&gt; actualHeader, ValidationResult result) {<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span>        // Build expected header from Track.Column enum<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        List&lt;String&gt; expected = new ArrayList&lt;&gt;();<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        for (Track.Column col : Track.Column.values()) {<a name="line.66"></a>
+<span class="sourceLineNo">067</span>            expected.add(col.header);<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        }<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>        headersMatch(expected, actualHeader, result);<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    }<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    // TYPE VALIDATION<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>    /**<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     * Returns the expected {@link ColumnType} for each column in the tracks CSV,<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     * as defined in {@link Track.Column}.<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     *<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * @return an array of expected column types<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     */<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    @Override<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    protected ColumnType[] getExpectedTypes() {<a name="line.84"></a>
+<span class="sourceLineNo">085</span><a name="line.85"></a>
+<span class="sourceLineNo">086</span>        Track.Column[] cols = Track.Column.values();<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        ColumnType[]  types = new ColumnType[cols.length];<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>        for (int i = 0; i &lt; cols.length; i++) {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>            types[i] = cols[i].type;<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        }<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span>        return types;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>    }<a name="line.94"></a>
+<span class="sourceLineNo">095</span>}<a name="line.95"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

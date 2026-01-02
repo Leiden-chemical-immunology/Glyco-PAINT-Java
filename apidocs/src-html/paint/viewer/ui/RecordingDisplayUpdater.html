@@ -1,0 +1,242 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang>
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*==============================================================================<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  Class:        RecordingDisplayUpdater.java<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  Package:      paint.viewer.ui<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *  PURPOSE:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *    Centralizes all UI updates required when the viewer navigates to a new<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *    {@link paint.viewer.model.RecordingEntry}. Ensures that every visible<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *    component in the ViewerFrame reflects the newly selected recording.<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  DESCRIPTION:<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    This class updates the PAINT viewer UI whenever the user steps forward or<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    backward through the list of loaded recording entries. It refreshes:<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *      • The left grid panel (recording, square list, and background image)<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *      • The right image display (scaled image preview)<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *      • The experiment and recording labels<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *      • The attribute table showing recording metadata<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *    All updates are performed in a coordinated manner to avoid inconsistent<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *    or partially refreshed UI states. This class is stateless; it operates<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *    exclusively on the components passed in via the constructor.<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *  KEY FEATURES:<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *    • Fully refreshes the grid, images, labels, and attributes panel.<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *    • Performs deterministic high-quality scaling of the right-side image.<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *    • Reads the expected square count from {@link PaintConfig}.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *    • Lightweight utility class with no retained business logic.<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *  AUTHOR:<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *    Hans Bakker<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *  MODULE:<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *    paint-viewer<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *<a name="line.34"></a>
+<span class="sourceLineNo">035</span> *  UPDATED:<a name="line.35"></a>
+<span class="sourceLineNo">036</span> *    2025-12-31<a name="line.36"></a>
+<span class="sourceLineNo">037</span> *<a name="line.37"></a>
+<span class="sourceLineNo">038</span> *  COPYRIGHT:<a name="line.38"></a>
+<span class="sourceLineNo">039</span> *    © 2025 Hans Bakker. All rights reserved.<a name="line.39"></a>
+<span class="sourceLineNo">040</span> ==============================================================================*/<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span>package paint.viewer.ui;<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span>import paint.shared.config.paintconfig.PaintConfig;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import paint.viewer.model.RecordingEntry;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import paint.viewer.ui.panels.SquareGridPanel;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import paint.viewer.ui.panels.RecordingAttributesPanel;<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>import javax.swing.*;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import java.awt.Color;<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>import static paint.shared.constants.PaintStringConstants.GENERATE_SQUARES;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import static paint.shared.constants.PaintStringConstants.NUMBER_OF_SQUARES_IN_RECORDING;<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span>import static paint.shared.constants.PaintGeometry.NUMBER_PIXELS_HEIGHT;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import static paint.shared.constants.PaintGeometry.NUMBER_PIXELS_WIDTH;<a name="line.56"></a>
+<span class="sourceLineNo">057</span><a name="line.57"></a>
+<span class="sourceLineNo">058</span>/**<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * Utility class responsible for synchronizing the UI with a newly selected<a name="line.59"></a>
+<span class="sourceLineNo">060</span> * {@link RecordingEntry}. Called whenever the user navigates between recordings<a name="line.60"></a>
+<span class="sourceLineNo">061</span> * in the viewer.<a name="line.61"></a>
+<span class="sourceLineNo">062</span> *<a name="line.62"></a>
+<span class="sourceLineNo">063</span> * &lt;p&gt;This updater replaces the displayed grid, rescaled images, labels, and<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * attribute table to reflect the active recording. No state is stored inside<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * this class—its job is to apply a complete UI refresh against the components<a name="line.65"></a>
+<span class="sourceLineNo">066</span> * provided to the constructor.&lt;/p&gt;<a name="line.66"></a>
+<span class="sourceLineNo">067</span> */<a name="line.67"></a>
+<span class="sourceLineNo">068</span>public final class RecordingDisplayUpdater {<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>    private final SquareGridPanel          leftGridPanel;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    private final JLabel                   rightImageLabel;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>    private final JLabel                   experimentLabel;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>    private final JLabel                   recordingLabel;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    private final RecordingAttributesPanel attributesPanel;<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    private final Color                    defaultRecordingLabelColor;<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>    /**<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     * Creates a new updater bound to the UI components it controls.<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     *<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     * @param leftGridPanel     the grid used for displaying square layout and overlays<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * @param rightImageLabel   the label used to show the right-side image<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     * @param experimentLabel   the label displaying the experiment name<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     * @param recordingLabel    the label displaying the recording name<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     * @param attributesPanel   the table panel showing recording metadata<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     */<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    public RecordingDisplayUpdater(<a name="line.86"></a>
+<span class="sourceLineNo">087</span>            SquareGridPanel leftGridPanel,<a name="line.87"></a>
+<span class="sourceLineNo">088</span>            JLabel rightImageLabel,<a name="line.88"></a>
+<span class="sourceLineNo">089</span>            JLabel experimentLabel,<a name="line.89"></a>
+<span class="sourceLineNo">090</span>            JLabel recordingLabel,<a name="line.90"></a>
+<span class="sourceLineNo">091</span>            RecordingAttributesPanel attributesPanel<a name="line.91"></a>
+<span class="sourceLineNo">092</span>    ) {<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        this.leftGridPanel              = leftGridPanel;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        this.rightImageLabel            = rightImageLabel;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        this.experimentLabel            = experimentLabel;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        this.recordingLabel             = recordingLabel;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        this.attributesPanel            = attributesPanel;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        this.defaultRecordingLabelColor = recordingLabel.getForeground();<a name="line.98"></a>
+<span class="sourceLineNo">099</span>    }<a name="line.99"></a>
+<span class="sourceLineNo">100</span><a name="line.100"></a>
+<span class="sourceLineNo">101</span>    /**<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     * Updates all UI components to show the given recording entry.<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     *<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     * @param entry      the new {@link RecordingEntry} to display<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     * @param index      the zero-based index of the entry in the full list<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     * @param totalSize  the total number of loaded recording entries<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     */<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    public void show(RecordingEntry entry, int index, int totalSize) {<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span>        // --- Left grid panel ---<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        leftGridPanel.setBackgroundImage(entry.getLeftImage());<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        leftGridPanel.setSquares(entry.getRecording().getSquaresOfRecording());<a name="line.112"></a>
+<span class="sourceLineNo">113</span><a name="line.113"></a>
+<span class="sourceLineNo">114</span>        // --- Right image ---<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        ImageIcon scaled = new ImageIcon(<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                entry.getRightImage().getImage().getScaledInstance(<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                        NUMBER_PIXELS_WIDTH,<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                        NUMBER_PIXELS_HEIGHT,<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                        java.awt.Image.SCALE_SMOOTH<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                )<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        );<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        rightImageLabel.setIcon(scaled);<a name="line.122"></a>
+<span class="sourceLineNo">123</span><a name="line.123"></a>
+<span class="sourceLineNo">124</span>        // --- Labels ---<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        experimentLabel.setText(<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                "Experiment: " + entry.getExperimentName()<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                        + "   [" + (index + 1) + "/" + totalSize + "]"<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        );<a name="line.128"></a>
+<span class="sourceLineNo">129</span><a name="line.129"></a>
+<span class="sourceLineNo">130</span>        applyExcludedUi(entry);<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>        // --- Attribute table ---<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        int numberOfSquares = PaintConfig.getInt(<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                GENERATE_SQUARES,<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                NUMBER_OF_SQUARES_IN_RECORDING,<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                -1<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        );<a name="line.137"></a>
+<span class="sourceLineNo">138</span><a name="line.138"></a>
+<span class="sourceLineNo">139</span>        attributesPanel.updateFromEntry(entry, numberOfSquares);<a name="line.139"></a>
+<span class="sourceLineNo">140</span><a name="line.140"></a>
+<span class="sourceLineNo">141</span>        // --- Refresh grid ---<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        leftGridPanel.repaint();<a name="line.142"></a>
+<span class="sourceLineNo">143</span>    }<a name="line.143"></a>
+<span class="sourceLineNo">144</span><a name="line.144"></a>
+<span class="sourceLineNo">145</span>    /**<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     * Updates the recording label to reflect whether the current recording is excluded.<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     * If excluded, appends "(Excluded)" and sets the label text to red.<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     */<a name="line.148"></a>
+<span class="sourceLineNo">149</span>    public void applyExcludedUi(RecordingEntry entry) {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        final boolean excluded = isExcluded(entry);<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        if (excluded) {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>            recordingLabel.setText("Recording: " + entry.getRecordingName() + " (Excluded)");<a name="line.152"></a>
+<span class="sourceLineNo">153</span>            recordingLabel.setForeground(Color.RED);<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        } else {<a name="line.154"></a>
+<span class="sourceLineNo">155</span>            recordingLabel.setText("Recording: " + entry.getRecordingName());<a name="line.155"></a>
+<span class="sourceLineNo">156</span>            recordingLabel.setForeground(defaultRecordingLabelColor);<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        }<a name="line.157"></a>
+<span class="sourceLineNo">158</span>    }<a name="line.158"></a>
+<span class="sourceLineNo">159</span><a name="line.159"></a>
+<span class="sourceLineNo">160</span>    /**<a name="line.160"></a>
+<span class="sourceLineNo">161</span>     * Attempts to read an "excluded" flag from the RecordingEntry / Recording model.<a name="line.161"></a>
+<span class="sourceLineNo">162</span>     */<a name="line.162"></a>
+<span class="sourceLineNo">163</span>    private static boolean isExcluded(RecordingEntry recordingEntry) {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        if (recordingEntry == null) {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            return false;<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        }<a name="line.166"></a>
+<span class="sourceLineNo">167</span><a name="line.167"></a>
+<span class="sourceLineNo">168</span>        return recordingEntry.getRecording().isExcluded();<a name="line.168"></a>
+<span class="sourceLineNo">169</span>    }<a name="line.169"></a>
+<span class="sourceLineNo">170</span>}<a name="line.170"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

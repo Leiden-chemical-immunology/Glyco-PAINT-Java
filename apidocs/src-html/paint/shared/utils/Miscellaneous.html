@@ -1,0 +1,238 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang>
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*=============================================================================<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  Class:        Miscellaneous.java<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  Package:      paint.shared.utils<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *  PURPOSE:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *    Provides general-purpose utility methods used throughout the PAINT framework.<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *  DESCRIPTION:<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *    The {@code Miscellaneous} class serves as a static utility collection for<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *    handling common operations not tied to a specific subsystem. This includes<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    duration formatting, rounding, exception message handling, and flexible<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    boolean string interpretation.<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *    It is designed for convenience and internal consistency across all modules<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *    of the PAINT system and is fully static and non-instantiable.<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *  KEY FEATURES:<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *    • Format time durations into human-readable strings.<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *    • Round floating-point numbers to a given number of decimals.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *    • Safely extract concise error messages from exceptions.<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *    • Interpret textual boolean expressions in flexible formats.<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *    • Validate user or CSV-provided boolean strings robustly.<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *  AUTHOR:<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *    Hans Bakker<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *  MODULE:<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *    paint-shared-utils<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *  UPDATED:<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *    2025-12-31<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *  COPYRIGHT:<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *    © 2025 Hans Bakker. All rights reserved.<a name="line.34"></a>
+<span class="sourceLineNo">035</span>=============================================================================*/<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>package paint.shared.utils;<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>import java.lang.reflect.Field;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import java.time.Duration;<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span>/**<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * Static utility class containing miscellaneous helper methods used across PAINT modules.<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * &lt;p&gt;<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * Provides methods for time formatting, numeric rounding, and<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * robust boolean string parsing.<a name="line.46"></a>
+<span class="sourceLineNo">047</span> */<a name="line.47"></a>
+<span class="sourceLineNo">048</span>public final class Miscellaneous {<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span>    /**<a name="line.50"></a>
+<span class="sourceLineNo">051</span>     * Prevents instantiation of this static utility class.<a name="line.51"></a>
+<span class="sourceLineNo">052</span>     */<a name="line.52"></a>
+<span class="sourceLineNo">053</span>    private Miscellaneous() {<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        // Prevent instantiation<a name="line.54"></a>
+<span class="sourceLineNo">055</span>    }<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.57"></a>
+<span class="sourceLineNo">058</span>    // MAIN (DEMONSTRATION)<a name="line.58"></a>
+<span class="sourceLineNo">059</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.59"></a>
+<span class="sourceLineNo">060</span><a name="line.60"></a>
+<span class="sourceLineNo">061</span>    /**<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     * Demonstration entry point for manual testing.<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     *<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     * @param args command-line arguments (unused)<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     */<a name="line.65"></a>
+<span class="sourceLineNo">066</span>    public static void main(String[] args) {<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        int[] testValues = {0, 5, 59, 60, 61, 65, 3599, 3600, 3605, 3665, 7322};<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        for (int seconds : testValues) {<a name="line.68"></a>
+<span class="sourceLineNo">069</span>            System.out.printf("%5d seconds → %s%n", seconds, formatDuration(seconds));<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        }<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    }<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    // DURATION FORMATTING UTILITIES<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>    /**<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     * Formats a duration given in seconds into a human-readable string such as<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     * "1 hour 2 minutes 5 seconds".<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     *<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * @param totalSeconds duration in seconds<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     * @return formatted human-readable duration string<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     */<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    public static String formatDuration(int totalSeconds) {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        int hours   = totalSeconds / 3600;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        int minutes = (totalSeconds % 3600) / 60;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        int secs    = totalSeconds % 60;<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>        StringBuilder sb = new StringBuilder();<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        if (hours &gt; 0) {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>            sb.append(hours).append(" hour").append(hours == 1 ? "" : "s").append(" ");<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        }<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        if (minutes &gt; 0) {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>            sb.append(minutes).append(" minute").append(minutes == 1 ? "" : "s").append(" ");<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        }<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        if (secs &gt; 0 || sb.length() == 0) {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>            sb.append(secs).append(" second").append(secs == 1 ? "" : "s");<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        }<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span>        return sb.toString().trim();<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    }<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>    /**<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     * Converts a {@link Duration} object into a human-readable string.<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     * @param duration duration instance to format<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     * @return formatted string representation of the duration<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     */<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    public static String formatDuration(Duration duration) {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        int totalSeconds = (int) duration.getSeconds();<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        return formatDuration(totalSeconds);<a name="line.111"></a>
+<span class="sourceLineNo">112</span>    }<a name="line.112"></a>
+<span class="sourceLineNo">113</span><a name="line.113"></a>
+<span class="sourceLineNo">114</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.114"></a>
+<span class="sourceLineNo">115</span>    // ERROR HANDLING UTILITIES<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.116"></a>
+<span class="sourceLineNo">117</span><a name="line.117"></a>
+<span class="sourceLineNo">118</span>    /**<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     * Extracts a concise user-friendly message from a {@link Throwable}.<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     * If no colon is present in the exception message, returns the raw text.<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     *<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     * @param t exception or error object<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     * @return trimmed message string or an empty string if {@code t} is null<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     */<a name="line.124"></a>
+<span class="sourceLineNo">125</span>    public static String friendlyMessage(Throwable t) {<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        if (t == null) {<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            return "";<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        }<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        String m     = t.toString();<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        int    colon = m.lastIndexOf(':');<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        return (colon != -1) ? m.substring(colon + 1).trim() : m;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>    }<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.134"></a>
+<span class="sourceLineNo">135</span>    // NUMERIC UTILITIES<a name="line.135"></a>
+<span class="sourceLineNo">136</span>    // ───────────────────────────────────────────────────────────────────────────────<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>    /**<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     * Rounds a floating-point number to a specified number of decimal places.<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     *<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     * @param value    numeric value to round<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     * @param decimals number of decimal places<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     * @return rounded numeric value<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     */<a name="line.144"></a>
+<span class="sourceLineNo">145</span>    public static double round(double value, int decimals) {<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        if (decimals &lt; 0) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>            return value;<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        } else {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>            double scale = Math.pow(10, decimals);<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            return Math.round(value * scale) / scale;<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        }<a name="line.151"></a>
+<span class="sourceLineNo">152</span>    }<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>    public static void initialiseDoublesToNaN(Object target) {<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        for (Field field : target.getClass().getDeclaredFields()) {<a name="line.155"></a>
+<span class="sourceLineNo">156</span>            if (field.getType() == double.class) {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                try {<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                    field.setAccessible(true);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                    field.setDouble(target, Double.NaN);<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                } catch (IllegalAccessException e) {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                    throw new RuntimeException(e);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                }<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            }<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        }<a name="line.164"></a>
+<span class="sourceLineNo">165</span>    }<a name="line.165"></a>
+<span class="sourceLineNo">166</span>}<a name="line.166"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

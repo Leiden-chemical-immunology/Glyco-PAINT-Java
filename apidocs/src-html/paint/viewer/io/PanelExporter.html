@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang>
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*==============================================================================<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  Class:        PanelExporter.java<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  Package:      paint.viewer.io<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *  PURPOSE:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *    Provides a high-resolution PNG export for Swing panels used in the<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *    PAINT Viewer (e.g., the left square grid panel).<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *  DESCRIPTION:<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *    This utility class renders any Swing {@link JPanel} to an off-screen<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    {@link BufferedImage} at an arbitrary scaling factor. High-quality<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    rendering hints are applied to ensure smooth edges, sharp text, and<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *    correct scaling of overlays such as square outlines or shading layers.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *    The exported image is written as a PNG to the specified file path.<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *    Directories are created automatically if necessary.<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *  KEY FEATURES:<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *    • High-resolution PNG exports using scalable rendering.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *    • High-quality antialiasing, interpolation, and rendering hints.<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *    • Simple one-method API: {@code export(panel, output, scale)}.<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *    • Pure utility class — cannot be instantiated.<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *  AUTHOR:<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *    Hans Bakker<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *  MODULE:<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *    paint-viewer<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *  UPDATED:<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *    2025-10-29<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *  COPYRIGHT:<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *    © 2025 Hans Bakker. All rights reserved.<a name="line.34"></a>
+<span class="sourceLineNo">035</span> *==============================================================================*/<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>package paint.viewer.io;<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>import javax.swing.*;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import java.awt.*;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import java.awt.image.BufferedImage;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import java.nio.file.Files;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import java.nio.file.Path;<a name="line.43"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">045</span>/**<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * Static utility for exporting Swing panels as high-resolution PNG images.<a name="line.46"></a>
+<span class="sourceLineNo">047</span> *<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * &lt;p&gt;This class cannot be instantiated.&lt;/p&gt;<a name="line.48"></a>
+<span class="sourceLineNo">049</span> */<a name="line.49"></a>
+<span class="sourceLineNo">050</span>public final class PanelExporter {<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>    /** Prevent instantiation. */<a name="line.52"></a>
+<span class="sourceLineNo">053</span>    private PanelExporter() { }<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span>    /**<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     * Exports the given {@link JPanel} to a PNG image at a specified scaling factor.<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     * All visual overlays painted on the panel are included.<a name="line.57"></a>
+<span class="sourceLineNo">058</span>     *<a name="line.58"></a>
+<span class="sourceLineNo">059</span>     * &lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt;&lt;br&gt;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     * {@code export(leftGridPanel, Paths.get("output.png"), 2.0);} produces a<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     * double-resolution export suitable for publication-quality figures.&lt;/p&gt;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     *<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     * @param panel  the panel to render<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     * @param output the destination PNG file<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     * @param scale  scale factor (1.0 = current on-screen size)<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     *<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     * @throws Exception if rendering or writing fails<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     */<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    public static void export(JPanel panel, Path output, double scale) throws Exception {<a name="line.69"></a>
+<span class="sourceLineNo">070</span><a name="line.70"></a>
+<span class="sourceLineNo">071</span>        // Compute scaled output dimensions<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        int width  = (int) (panel.getWidth()  * scale);<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        int height = (int) (panel.getHeight() * scale);<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>        // Create image buffer<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);<a name="line.76"></a>
+<span class="sourceLineNo">077</span><a name="line.77"></a>
+<span class="sourceLineNo">078</span>        Graphics2D g2 = img.createGraphics();<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>        // High-quality rendering hints<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                            RenderingHints.VALUE_ANTIALIAS_ON);<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        g2.setRenderingHint(RenderingHints.KEY_RENDERING,<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                            RenderingHints.VALUE_RENDER_QUALITY);<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                            RenderingHints.VALUE_INTERPOLATION_BICUBIC);<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>        // Apply scaling and render the panel<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        g2.scale(scale, scale);<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        panel.paintAll(g2);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        g2.dispose();<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span>        // Ensure directory exists<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        if (output.getParent() != null) {<a name="line.94"></a>
+<span class="sourceLineNo">095</span>            Files.createDirectories(output.getParent());<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        }<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span>        // Write PNG<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        javax.imageio.ImageIO.write(img, "png", output.toFile());<a name="line.99"></a>
+<span class="sourceLineNo">100</span>    }<a name="line.100"></a>
+<span class="sourceLineNo">101</span>}<a name="line.101"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>
