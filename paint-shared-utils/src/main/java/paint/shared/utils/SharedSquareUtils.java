@@ -162,22 +162,30 @@ public final class SharedSquareUtils {
             double       minRequiredRSquared,
             String       neighbourMode) {
 
-        // When there are no squares, nothing to do.
         if (squares == null || squares.isEmpty()) {
+            return;
+        }
+
+        // Build the subset we will actually process.
+        List<Square> target = new ArrayList<>();
+        if (recordingName == null) {
+            target.addAll(squares);
+        } else {
+            for (Square s : squares) {
+                if (recordingName.equals(s.getRecordingName())) {
+                    target.add(s);
+                }
+            }
+        }
+
+        if (target.isEmpty()) {
             return;
         }
 
         int visibleBasic = 0;
 
-        // Pass 1 — Numeric filter
-        for (Square square : squares) {
-
-            // Look for a specific recording unless null is specified
-            if (recordingName != null && !recordingName.equals(square.getRecordingName())) {
-                continue;
-            }
-
-            // We test against RSquared, so we need to be certain there is actually a value
+        // Pass 1 — Numeric filter (ONLY on target)
+        for (Square square : target) {
             boolean passes =
                     !Double.isNaN(square.getRSquared()) &&
                             square.getDensityRatio() >= minRequiredDensityRatio &&
@@ -190,43 +198,47 @@ public final class SharedSquareUtils {
             }
         }
 
-        // Pass 2 — Neighbour-based refinement
+        // Pass 2 — Neighbour-based refinement (ONLY on target)
         if ("Free".equalsIgnoreCase(neighbourMode)) {
-            return;     // Free mode imposes no neighbour constraints
+            return;
         }
 
-        Set<Square> keep = new HashSet<>();
-        int keptCount    = 0;
+        boolean relaxed = "Relaxed".equalsIgnoreCase(neighbourMode);
+        boolean strict  = "Strict".equalsIgnoreCase(neighbourMode);
+        if (!relaxed && !strict) {
+            throw new IllegalArgumentException("Invalid neighbourMode: " + neighbourMode);
+        }
 
-        for (Square square : squares) {
-            if (!square.isVisible()) { // Squares that are not visible now will not become visible
+        Set<Square> keep      = new HashSet<>();
+        int         keptCount = 0;
+
+        for (Square square : target) {
+            if (!square.isVisible()) {
                 continue;
             }
 
             boolean hasNeighbour = false;
-            int     rowNumber    = square.getRowNumber();
-            int     colNumber    = square.getColNumber();
+            int rowNumber = square.getRowNumber();
+            int colNumber = square.getColNumber();
 
-            for (Square otherSquare : squares) {
-                if (otherSquare == square || !otherSquare.isVisible()) {
+            for (Square other : target) {
+                if (other == square || !other.isVisible()) {
                     continue;
                 }
-                int differenceInRow    = Math.abs(otherSquare.getRowNumber() - rowNumber);
-                int differenceInColumn = Math.abs(otherSquare.getColNumber() - colNumber);
 
-                if ("Relaxed".equalsIgnoreCase(neighbourMode)) {
+                int differenceInRow    = Math.abs(other.getRowNumber() - rowNumber);
+                int differenceInColumn = Math.abs(other.getColNumber() - colNumber);
+
+                if (relaxed) {
                     if (differenceInRow <= 1 && differenceInColumn <= 1) {
                         hasNeighbour = true;
                         break;
                     }
-                } else if ("Strict".equalsIgnoreCase(neighbourMode)) {
-                    if ((differenceInRow == 1 && differenceInColumn == 0) ||
-                            (differenceInRow == 0 && differenceInColumn == 1)) {
+                } else { // strict
+                    if ((differenceInRow == 1 && differenceInColumn == 0) || (differenceInRow == 0 && differenceInColumn == 1)) {
                         hasNeighbour = true;
                         break;
                     }
-                } else {
-                    throw new IllegalArgumentException("Invalid neighbourMode: " + neighbourMode);
                 }
             }
 
@@ -236,8 +248,8 @@ public final class SharedSquareUtils {
             }
         }
 
-        // --- Apply neighbour filtering result ---
-        for (Square square : squares) {
+        // Apply neighbour filtering result (ONLY on target)
+        for (Square square : target) {
             if (!keep.contains(square)) {
                 square.setVisible(false);
             }
