@@ -340,6 +340,8 @@ public class ExportOverridesFromViewer {
                 PaintLogger.blankline();
 
                 // Now apply the filter criteria to the Squares of the Recordings
+                long visBefore = squaresTable.where(squaresTable.stringColumn(RECORDING_NAME).isEqualTo(recordingName))
+                                             .booleanColumn(VISIBLE).countTrue();
 
                 List<Square> squareList = squareTableToList(squaresTable);
                 applyVisibilityFilterOnRecording(
@@ -353,6 +355,9 @@ public class ExportOverridesFromViewer {
                 Table updatedSquaresTable = squareListToTable(squareList);
                 squaresTable.clear();                   // This is a trick to ensure that old references are not invalidated
                 squaresTable.append(updatedSquaresTable);
+
+                long visAfter = squaresTable.where(squaresTable.stringColumn(RECORDING_NAME).isEqualTo(recordingName))
+                                            .booleanColumn(VISIBLE).countTrue();
             }
         }
     }
