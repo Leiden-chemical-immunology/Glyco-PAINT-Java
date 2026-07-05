@@ -45,28 +45,6 @@ import java.util.List;
 public class SquaresTableIO extends BaseTableIO {
 
     // =====================================================================
-    //  INTERNAL HELPERS (schema extracted from Square.Column)
-    // =====================================================================
-
-    private String[] getColumnHeaders() {
-        Square.Column[] cols = Square.Column.values();
-        String[] headers = new String[cols.length];
-        for (int i = 0; i < cols.length; i++) {
-            headers[i] = cols[i].header;
-        }
-        return headers;
-    }
-
-    private ColumnType[] getColumnTypes() {
-        Square.Column[] cols = Square.Column.values();
-        ColumnType[] types = new ColumnType[cols.length];
-        for (int i = 0; i < cols.length; i++) {
-            types[i] = cols[i].type;
-        }
-        return types;
-    }
-
-    // =====================================================================
     //  TABLE CREATION
     // =====================================================================
 
@@ -74,11 +52,7 @@ public class SquaresTableIO extends BaseTableIO {
      * @return a new empty {@link Table} with the Squares schema.
      */
     public Table emptyTable() {
-        return newEmptyTable(
-                "Squares",
-                getColumnHeaders(),
-                getColumnTypes()
-        );
+        return newEmptyTable("Squares", Square.Column.values(), c -> c.header, c -> c.type);
     }
 
     // =====================================================================

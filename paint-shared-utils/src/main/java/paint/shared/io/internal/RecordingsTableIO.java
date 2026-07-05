@@ -29,7 +29,6 @@ package paint.shared.io.internal;
 
 import paint.shared.objects.Recording;
 
-import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 
@@ -41,28 +40,6 @@ import static paint.shared.constants.PaintStringConstants.*;
 public class RecordingsTableIO extends BaseTableIO {
 
     // =====================================================================
-    //  INTERNAL HELPERS (extract schema from Recording.Column)
-    // =====================================================================
-
-    private String[] getColumnHeaders() {
-        Recording.Column[] cols = Recording.Column.values();
-        String[] headers = new String[cols.length];
-        for (int i = 0; i < cols.length; i++) {
-            headers[i] = cols[i].header;
-        }
-        return headers;
-    }
-
-    private ColumnType[] getColumnTypes() {
-        Recording.Column[] cols = Recording.Column.values();
-        ColumnType[] types = new ColumnType[cols.length];
-        for (int i = 0; i < cols.length; i++) {
-            types[i] = cols[i].type;
-        }
-        return types;
-    }
-
-    // =====================================================================
     //  TABLE CREATION
     // =====================================================================
 
@@ -70,11 +47,7 @@ public class RecordingsTableIO extends BaseTableIO {
      * @return a new empty {@link Table} with the Recordings schema.
      */
     public Table emptyTable() {
-        return newEmptyTable(
-                "Recordings",
-                getColumnHeaders(),
-                getColumnTypes()
-        );
+        return newEmptyTable("Recordings", Recording.Column.values(), c -> c.header, c -> c.type);
     }
 
     // =====================================================================

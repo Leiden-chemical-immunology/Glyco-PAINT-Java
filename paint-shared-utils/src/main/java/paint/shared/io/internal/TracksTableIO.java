@@ -57,28 +57,6 @@ import java.util.List;
  */
 public class TracksTableIO extends BaseTableIO {
 
-    // =========================================================================
-    //  INTERNAL HELPERS (schema extracted from Track.Column)
-    // =========================================================================
-
-    private String[] getColumnHeaders() {
-        Track.Column[] cols = Track.Column.values();
-        String[] headers = new String[cols.length];
-        for (int i = 0; i < cols.length; i++) {
-            headers[i] = cols[i].header;
-        }
-        return headers;
-    }
-
-    private ColumnType[] getColumnTypes() {
-        Track.Column[] cols = Track.Column.values();
-        ColumnType[] types = new ColumnType[cols.length];
-        for (int i = 0; i < cols.length; i++) {
-            types[i] = cols[i].type;
-        }
-        return types;
-    }
-
     // =====================================================================
     //  TABLE CREATION
     // =====================================================================
@@ -87,11 +65,7 @@ public class TracksTableIO extends BaseTableIO {
      * @return a new empty {@link Table} with the Tracks schema.
      */
     public Table emptyTable() {
-        return newEmptyTable(
-                "Tracks",
-                getColumnHeaders(),
-                getColumnTypes()
-        );
+        return newEmptyTable("Tracks", Track.Column.values(), c -> c.header, c -> c.type);
     }
 
     // =====================================================================

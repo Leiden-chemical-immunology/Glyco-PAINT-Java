@@ -74,6 +74,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 
 import static paint.shared.utils.BooleanUtils.normalizeBoolean;
 
@@ -112,6 +113,36 @@ abstract class BaseTableIO {
             table.addColumns(c);
         }
         return table;
+    }
+
+    /**
+     * Creates a new empty {@link Table} whose schema is derived from a column
+     * enum. This replaces the per-subclass {@code getColumnHeaders()} /
+     * {@code getColumnTypes()} helpers: each TableIO implementation supplies its
+     * {@code Column} enum values plus accessors for the header name and column
+     * type, and this method assembles the name/type arrays in enum order and
+     * delegates to {@link #newEmptyTable(String, String[], ColumnType[])}.
+     *
+     * @param tableName name of the resulting table
+     * @param columns   the schema enum's values, in schema order
+     * @param headerFn  extracts the CSV header name from a column value
+     * @param typeFn     extracts the {@link ColumnType} from a column value
+     * @param <E>       the column enum type
+     * @return a new empty {@link Table} with the derived schema
+     */
+    protected static <E extends Enum<E>> Table newEmptyTable(
+            String tableName,
+            E[] columns,
+            Function<E, String> headerFn,
+            Function<E, ColumnType> typeFn) {
+
+        String[]     names = new String[columns.length];
+        ColumnType[] types = new ColumnType[columns.length];
+        for (int i = 0; i < columns.length; i++) {
+            names[i] = headerFn.apply(columns[i]);
+            types[i] = typeFn.apply(columns[i]);
+        }
+        return newEmptyTable(tableName, names, types);
     }
 
     // ───────────────────────────────────────────────────────────────────────────────

@@ -29,7 +29,6 @@ package paint.shared.io.internal;
 
 import paint.shared.objects.ExperimentInfo;
 
-import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 
@@ -52,24 +51,6 @@ import java.util.List;
 public class ExperimentInfoTableIO extends BaseTableIO {
 
     // =====================================================================
-    //  INTERNAL HELPERS
-    // =====================================================================
-
-    private String[] getColumnHeaders() {
-        ExperimentInfo.Column[] cols = ExperimentInfo.Column.values();
-        String[] headers = new String[cols.length];
-        for (int i = 0; i < cols.length; i++) headers[i] = cols[i].header;
-        return headers;
-    }
-
-    private ColumnType[] getColumnTypes() {
-        ExperimentInfo.Column[] cols = ExperimentInfo.Column.values();
-        ColumnType[] types = new ColumnType[cols.length];
-        for (int i = 0; i < cols.length; i++) types[i] = cols[i].type;
-        return types;
-    }
-
-    // =====================================================================
     //  TABLE CREATION
     // =====================================================================
 
@@ -77,7 +58,7 @@ public class ExperimentInfoTableIO extends BaseTableIO {
      * @return a new empty {@link Table} with the Experiment Info schema.
      */
     public Table emptyTable() {
-        return newEmptyTable("Experiment Info", getColumnHeaders(), getColumnTypes());
+        return newEmptyTable("Experiment Info", ExperimentInfo.Column.values(), c -> c.header, c -> c.type);
     }
 
     // =====================================================================
