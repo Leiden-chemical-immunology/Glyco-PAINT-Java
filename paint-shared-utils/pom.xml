@@ -77,6 +77,13 @@
             <version>1.23</version>
         </dependency>
 
+        <!-- Unit testing (JUnit 5; version managed by parent POM) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <!-- =============================================================== -->
