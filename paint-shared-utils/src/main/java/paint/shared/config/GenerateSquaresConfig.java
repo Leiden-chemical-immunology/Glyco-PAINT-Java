@@ -81,7 +81,7 @@ public class GenerateSquaresConfig {
         this.minTracksToCalculate        = PaintConfig.getInt(    GENERATE_SQUARES, MIN_TRACKS_TO_CALCULATE,         5);
         this.minTracksToCalculateTau     = PaintConfig.getInt(    GENERATE_SQUARES, MIN_TRACKS_TO_CALCULATE_TAU,     20);
         this.minRequiredRSquared         = PaintConfig.getDouble( GENERATE_SQUARES, MIN_REQUIRED_R_SQUARED,          0.1);
-        this.minRequiredDensityRatio     = PaintConfig.getDouble( GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,      0.1);
+        this.minRequiredDensityRatio     = PaintConfig.getDouble( GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,      2.0);
         this.maxAllowableVariability     = PaintConfig.getDouble( GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY,       10.0);
         this.neighbourMode               = PaintConfig.getString( GENERATE_SQUARES, NEIGHBOUR_MODE,                  "Free");
         
