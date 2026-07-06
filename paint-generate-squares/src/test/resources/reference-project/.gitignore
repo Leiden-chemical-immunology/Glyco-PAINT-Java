@@ -1,0 +1,31 @@
+# Golden-master reference data for the Generate Squares regression gate.
+#
+# Only the per-experiment INPUT + OUTPUT CSVs are committed:
+#   221012/Experiment Info.csv, Recordings.csv, Tracks.csv  (inputs)
+#   221012/Squares.csv                                       (golden output)
+#   Paint Configuration.json                                 (records the params used)
+#
+# Everything below is generated/derived and must NOT be committed.
+
+# Generated image artifacts (also covered globally by the root .gitignore)
+*.jpg
+*.jpeg
+*.tif
+*.tiff
+*.png
+
+# Per-experiment generated artifacts
+Brightfield Images/
+TrackMate Images/
+Output/
+Logs/
+logs/
+*.log
+.DS_Store
+
+# Project-level concatenated CSVs at the reference-project root
+# (derivable by re-running the pipeline; not needed as gate inputs)
+/Experiment Info.csv
+/Recordings.csv
+/Squares.csv
+/Tracks.csv
