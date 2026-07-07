@@ -78,6 +78,13 @@ class GenerateSquaresRegressionGateTest {
         f.add(new Field("Max Track Duration", Square::getMaxTrackDuration));
         f.add(new Field("Total Track Duration", Square::getTotalTrackDuration));
         f.add(new Field("Median Track Duration", Square::getMedianTrackDuration));
+        f.add(new Field("Median Diffusion Coefficient Ext", Square::getMedianDiffusionCoefficientExt));
+        // Integer columns, compared as exact values (int getters widen to double).
+        f.add(new Field("Number of Tracks", s -> s.getNumberOfTracks()));
+        f.add(new Field("Row Number", s -> s.getRowNumber()));
+        f.add(new Field("Column Number", s -> s.getColNumber()));
+        f.add(new Field("Label Number", s -> s.getLabelNumber()));
+        f.add(new Field("Cell Id", s -> s.getCellId()));
         return f;
     }
 
@@ -147,7 +154,7 @@ class GenerateSquaresRegressionGateTest {
         Map<String, Double> fieldMaxDiff = new LinkedHashMap<>();
         for (Field f : fields) { fieldDiffCount.put(f.name, 0); fieldMaxDiff.put(f.name, 0.0); }
 
-        int missing = 0, extra = 0, identical = 0, differing = 0, visibleMismatch = 0, tracksMismatch = 0;
+        int missing = 0, extra = 0, identical = 0, differing = 0, booleanMismatch = 0;
 
         for (Map.Entry<String, Square> e : golden.entrySet()) {
             Square g = e.getValue();
@@ -155,8 +162,9 @@ class GenerateSquaresRegressionGateTest {
             if (p == null) { missing++; continue; }
 
             boolean anyDiff = false;
-            if (g.isVisible() != p.isVisible()) { visibleMismatch++; anyDiff = true; }
-            if (g.getNumberOfTracks() != p.getNumberOfTracks()) { tracksMismatch++; anyDiff = true; }
+            if (g.isVisible() != p.isVisible()) { booleanMismatch++; anyDiff = true; }
+            if (g.isSquareManuallyExcluded() != p.isSquareManuallyExcluded()) { booleanMismatch++; anyDiff = true; }
+            if (g.isImageExcluded() != p.isImageExcluded()) { booleanMismatch++; anyDiff = true; }
 
             for (Field f : fields) {
                 double gv = f.get.applyAsDouble(g), pv = f.get.applyAsDouble(p);
@@ -181,8 +189,8 @@ class GenerateSquaresRegressionGateTest {
         sb.append(String.format("Extra   (produced only): %d%n", extra));
         sb.append(String.format("Identical             : %d%n", identical));
         sb.append(String.format("Differing             : %d%n", differing));
-        sb.append(String.format("  'Visible' mismatches : %d%n", visibleMismatch));
-        sb.append(String.format("  'Number of Tracks'   : %d%n", tracksMismatch));
+        sb.append(String.format("  boolean-flag mismatches: %d%n", booleanMismatch));
+        sb.append(String.format("Fields compared/square : %d numeric + 3 boolean%n", fields.size()));
         sb.append(String.format("Tolerance             : %.1e%n", TOL));
         sb.append("--- per-field differences (count beyond tolerance / max abs diff) ---\n");
         for (Field f : fields) {
