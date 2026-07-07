@@ -298,6 +298,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                         // We are not changing the variable trackMateResults itself (the reference to the array never changes),
                         // We pass the address of the array that does not change, but the contents can change.
                         final TrackMateResults[] trackMateResults = new TrackMateResults[1];
+                        final Throwable[]        trackMateFailure = new Throwable[1];
 
                         // Run TrackMate in a monitored thread
                         boolean finished = runWithWatchdog(() -> {
@@ -305,7 +306,9 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                                 trackMateResults[0] = RunTrackMateOnRecording.runTrackMateOnRecording(
                                         experimentPath, imagesPath, trackMateConfig, threshold, experimentInfo, dialog);
                             } catch (Exception e) {
-                                // Swallow exceptions here; outer code will detect failure via trackMateResults[0]
+                                // Capture the real cause so it can be reported below, rather than
+                                // leaving only a generic "failed" message with no diagnostic.
+                                trackMateFailure[0] = e;
                             }
                         }, maxSecondsPerRecording, dialog);
 
@@ -316,6 +319,9 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                                 break;
                             } else {
                                 PaintLogger.errorf("   TrackMate failed or timed out for '%s'.", recordingName);
+                                if (trackMateFailure[0] != null) {
+                                    PaintLogger.errorf("      Cause: %s", trackMateFailure[0]);
+                                }
                                 PaintLogger.blankline();
                                 status = false;
                                 continue;
@@ -325,6 +331,9 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                         // Validate processing results
                         if (trackMateResults[0] == null || !trackMateResults[0].isSuccess()) {
                             PaintLogger.errorf("   TrackMate failed for '%s'.", recordingName);
+                            if (trackMateFailure[0] != null) {
+                                PaintLogger.errorf("      Cause: %s", trackMateFailure[0]);
+                            }
                             status = false;
                             continue;
                         }
