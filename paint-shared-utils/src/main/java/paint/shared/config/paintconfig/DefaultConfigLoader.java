@@ -39,6 +39,7 @@ class DefaultConfigLoader {
 
         // Generate Squares
         JsonObject generateSquares = new JsonObject();
+        generateSquares.addProperty(MIN_TRACKS_TO_CALCULATE,        5);
         generateSquares.addProperty(MIN_TRACKS_TO_CALCULATE_TAU,    20);
         generateSquares.addProperty(MIN_REQUIRED_R_SQUARED,         0.1);
         generateSquares.addProperty(MAX_ALLOWABLE_VARIABILITY,      10.0);
@@ -72,11 +73,11 @@ class DefaultConfigLoader {
         trackMate.addProperty(MERGING_MAX_DISTANCE,     15.0);
         root.add(TRACKMATE, trackMate);
 
-        // Debug
-        JsonObject debug = new JsonObject();
-        debug.addProperty(DEBUG_RUN_TRACK_MATE_ON_PROJECT, false);
-        debug.addProperty(DEBUG_RUN_TRACK_MATE_ON_RECORDING, false);
-        root.add(DEBUG, debug);
+        // Note: debug flags are intentionally NOT seeded. They are internal
+        // developer toggles that default to off when absent, so seeding them
+        // would only clutter every user's config file. (The two former debug
+        // seeds, runTrackMateOnProject/runTrackMateOnRecording, were never read
+        // by any code and have been removed.)
 
         // Immediately saved by ConfigStore during first creation
     }
