@@ -53,8 +53,10 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -94,7 +96,7 @@ public final class ConditionConsistencyChecker {
         Set<String>      seenErrors = new HashSet<>(); // <-- prevent duplicates
 
         // Cannot use a standard reading method, because this one covers two different formats
-        try (FileReader reader = new FileReader(file);
+        try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8);
              CSVParser  parser = CSVFormat.DEFAULT.builder()
                      .setHeader()
                      .setSkipHeaderRecord(true)

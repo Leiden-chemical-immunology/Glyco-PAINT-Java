@@ -33,8 +33,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -77,7 +80,7 @@ public class SweepConfig {
      * @throws IOException if an I/O error occurs while reading the file.
      */
     public SweepConfig(String filePath) throws IOException {
-        try (FileReader reader = new FileReader(filePath)) {
+        try (Reader reader = Files.newBufferedReader(Paths.get(filePath), StandardCharsets.UTF_8)) {
             this.root = JsonParser.parseReader(reader).getAsJsonObject();
         }
     }
