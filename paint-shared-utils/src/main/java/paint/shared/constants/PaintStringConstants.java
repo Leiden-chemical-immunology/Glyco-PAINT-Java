@@ -50,8 +50,6 @@ public final class PaintStringConstants {
     public static final String CONFINEMENT_RATIO                           = "Confinement Ratio";
     public static final String DEBUG                                       = "Debug";
     public static final String DEBUG_GENERATE_SQUARES_FOR_EXPERIMENT       = "generateSquaresForExperiment";
-    public static final String DEBUG_RUN_TRACK_MATE_ON_PROJECT             = "runTrackMateOnProject";
-    public static final String DEBUG_RUN_TRACK_MATE_ON_RECORDING           = "runTrackMateOnRecording";
     public static final String DENSITY                                     = "Density";
     public static final String DENSITY_RATIO                               = "Density Ratio";
     public static final String DENSITY_RATIO_ORI                           = "Density Ratio Ori";
