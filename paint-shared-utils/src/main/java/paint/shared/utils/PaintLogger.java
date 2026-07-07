@@ -97,6 +97,8 @@ public final class PaintLogger {
 
     private static          BufferedWriter    writer;
     private static          boolean           initialised    = false;
+    /** Guards all access to the shared {@link #writer} (logging happens from multiple threads). */
+    private static final    Object            WRITER_LOCK    = new Object();
     private static final    DateTimeFormatter TIME_FMT       = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static          boolean           justPrintedRaw = false;
     private static volatile Level             currentLevel   = Level.INFO;
@@ -177,8 +179,10 @@ public final class PaintLogger {
                 logFile = logsDir.resolve(String.format("%s-%d.log", logBaseName, index++));
             } while (logFile.toFile().exists());
 
-            writer = new BufferedWriter(new FileWriter(logFile.toFile(), true));
-            initialised = true;
+            synchronized (WRITER_LOCK) {
+                writer = new BufferedWriter(new FileWriter(logFile.toFile(), true));
+                initialised = true;
+            }
             infof("Logger initialised: %s", logFile);
         } catch (IOException e) {
             System.err.println("PaintLogger could not initialise: " + e.getMessage());
@@ -211,13 +215,26 @@ public final class PaintLogger {
 
         PaintConsoleWindow.log(formatted, level.color());
 
-        if (initialised && writer != null) {
-            try {
-                writer.write(formatted);
-                writer.newLine();
-                writer.flush();
-            } catch (IOException e) {
-                System.err.println("PaintLogger failed to write log: " + e.getMessage());
+        writeLineToFile(formatted);
+    }
+
+    /**
+     * Writes a single line to the log file, if a writer is active. Synchronized
+     * on {@link #WRITER_LOCK} so concurrent log calls from worker/watchdog
+     * threads cannot interleave or corrupt the shared buffered writer.
+     *
+     * @param text the line text (may be empty for a blank line)
+     */
+    private static void writeLineToFile(String text) {
+        synchronized (WRITER_LOCK) {
+            if (initialised && writer != null) {
+                try {
+                    writer.write(text);
+                    writer.newLine();
+                    writer.flush();
+                } catch (IOException e) {
+                    System.err.println("PaintLogger failed to write log: " + e.getMessage());
+                }
             }
         }
     }
@@ -292,14 +309,7 @@ public final class PaintLogger {
         }
         PaintConsoleWindow.log("", Color.BLACK);
 
-        if (initialised && writer != null) {
-            try {
-                writer.newLine();
-                writer.flush();
-            } catch (IOException e) {
-                System.err.println("PaintLogger failed to write blank line: " + e.getMessage());
-            }
-        }
+        writeLineToFile("");
     }
 
     /**
@@ -321,15 +331,7 @@ public final class PaintLogger {
             String formatted = indent + line;
             PaintConsoleWindow.log(formatted, Level.INFO.color());
 
-            if (initialised && writer != null) {
-                try {
-                    writer.write(formatted);
-                    writer.newLine();
-                    writer.flush();
-                } catch (IOException e) {
-                    System.err.println("PaintLogger failed to write doc line: " + e.getMessage());
-                }
-            }
+            writeLineToFile(formatted);
         }
         blankline();
     }
