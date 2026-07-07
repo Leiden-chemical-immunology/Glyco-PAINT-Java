@@ -82,6 +82,12 @@ public class PaintConfig {
                 if (INSTANCE == null) {
                     INSTANCE = new PaintConfig(configPath);
                     INSTANCE.store.ensureLoaded(() -> DefaultConfigLoader.loadDefaults(INSTANCE.store));
+                    // Defensive: an existing config file may pre-date a key or be
+                    // missing one. Add any absent default (existing values are kept)
+                    // and persist once, so the file is always complete.
+                    if (DefaultConfigLoader.backfillMissing(INSTANCE.store)) {
+                        INSTANCE.store.save();
+                    }
                 }
             }
         } else {
@@ -141,7 +147,8 @@ public class PaintConfig {
             }
         }
         PaintLogger.warnf("No value for '%s' found, default '%s' applied", key, def);
-        setStringValue(section, key, def, true);
+        // A read must not touch disk (A4): cache the default in memory only.
+        setStringValue(section, key, def, false);
         return def;
     }
 
@@ -154,12 +161,13 @@ public class PaintConfig {
                     return sec.getAsJsonPrimitive(real).getAsInt();
                 } catch (Exception ignored) {
                     PaintLogger.warnf("Invalid '%s', default %d applied", real, def);
-                    setIntValue(section, key, def, true);
+                    setIntValue(section, key, def, false);
                 }
             }
         }
         PaintLogger.warnf("No value for '%s', default %d applied", key, def);
-        setIntValue(section, key, def, true);
+        // A read must not touch disk (A4): cache the default in memory only.
+        setIntValue(section, key, def, false);
         return def;
     }
 
@@ -172,12 +180,13 @@ public class PaintConfig {
                     return sec.getAsJsonPrimitive(real).getAsDouble();
                 } catch (Exception ignored) {
                     PaintLogger.warnf("Invalid '%s', default %.2f applied", real, def);
-                    setDoubleValue(section, key, def, true);
+                    setDoubleValue(section, key, def, false);
                 }
             }
         }
         PaintLogger.warnf("No value for '%s', default %.2f applied", key, def);
-        setDoubleValue(section, key, def, true);
+        // A read must not touch disk (A4): cache the default in memory only.
+        setDoubleValue(section, key, def, false);
         return def;
     }
 
@@ -192,7 +201,8 @@ public class PaintConfig {
             }
         }
         PaintLogger.warnf("No value for '%s', default %b applied", key, def);
-        setBooleanValue(section, key, def, true);
+        // A read must not touch disk (A4): cache the default in memory only.
+        setBooleanValue(section, key, def, false);
         return def;
     }
 
@@ -206,7 +216,8 @@ public class PaintConfig {
                 } catch (Exception ignored) { /* fallthrough */ }
             }
         }
-        setBooleanValue(section, key, def, true);
+        // A read must not touch disk (A4): cache the default in memory only.
+        setBooleanValue(section, key, def, false);
         return def;
     }
 

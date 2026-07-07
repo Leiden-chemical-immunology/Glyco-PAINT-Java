@@ -3,15 +3,16 @@
  *  Package:      paint.shared.config.paintconfig
  *
  *  PURPOSE:
- *    Populates the PAINT configuration store with factory-default values.
+ *    Defines the factory-default configuration and applies it in two ways:
+ *      • loadDefaults   — seed a brand-new store with the full default set.
+ *      • backfillMissing — defensively add any default key that is absent from
+ *                          an existing store (preserving existing values).
  *
  *  DESCRIPTION:
- *    The {@code DefaultConfigLoader} is used during application initialization
- *    when no project-specific or user-specific configuration file is found.
- *    It defines standard starting values for:
- *      • Generate Squares parameters (Tau calculation, filtering)
- *      • TrackMate parameters (linking distances, gap closing, spot radii)
- *      • Debug settings
+ *    Both paths share a single source of truth, {@link #buildDefaults()}, so a
+ *    default value can never disagree with itself. Debug flags are intentionally
+ *    NOT seeded: they are internal developer toggles that default to off when
+ *    absent, so seeding them would only clutter every user's config file.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -19,23 +20,27 @@
  *  MODULE:
  *    paint-shared-utils
  *
- *  UPDATED:
- *    2025-12-31
- *
  *  COPYRIGHT:
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
 package paint.shared.config.paintconfig;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import java.util.Map;
+
 import static paint.shared.constants.PaintStringConstants.*;
 
-/** Populates initial defaults into the store when no file exists. */
+/** Defines and applies the factory-default configuration. */
 class DefaultConfigLoader {
 
-    static void loadDefaults(ConfigStore store) {
-        JsonObject root = store.root();
+    private DefaultConfigLoader() {}
+
+    /** The single source of truth for all seeded configuration defaults. */
+    private static JsonObject buildDefaults() {
+        JsonObject root = new JsonObject();
 
         // Generate Squares
         JsonObject generateSquares = new JsonObject();
@@ -73,14 +78,65 @@ class DefaultConfigLoader {
         trackMate.addProperty(MERGING_MAX_DISTANCE,     15.0);
         root.add(TRACKMATE, trackMate);
 
-        // Note: debug flags are intentionally NOT seeded. They are internal
-        // developer toggles that default to off when absent, so seeding them
-        // would only clutter every user's config file. (The two former debug
-        // seeds, runTrackMateOnProject/runTrackMateOnRecording, were never read
-        // by any code and have been removed.)
-
-        // Immediately saved by ConfigStore during first creation
+        return root;
     }
 
-    private DefaultConfigLoader() {}
+    /** Seed a brand-new store with the complete default set. */
+    static void loadDefaults(ConfigStore store) {
+        JsonObject root = store.root();
+        for (Map.Entry<String, JsonElement> section : buildDefaults().entrySet()) {
+            root.add(section.getKey(), section.getValue());
+        }
+    }
+
+    /**
+     * Defensively adds any default key that is missing from the store, while
+     * preserving every existing value. Section and key names are matched
+     * case-insensitively, consistent with the store's case-insensitive lookup,
+     * so no duplicate-cased keys are ever introduced.
+     *
+     * @param store the configuration store to complete
+     * @return true if anything was added (the caller should then persist)
+     */
+    static boolean backfillMissing(ConfigStore store) {
+        JsonObject root = store.root();
+        boolean changed = false;
+
+        for (Map.Entry<String, JsonElement> secEntry : buildDefaults().entrySet()) {
+            String     sectionName = secEntry.getKey();
+            JsonObject defSection  = secEntry.getValue().getAsJsonObject();
+
+            JsonObject rootSection = findSectionIgnoreCase(root, sectionName);
+            if (rootSection == null) {
+                root.add(sectionName, defSection);
+                changed = true;
+                continue;
+            }
+            for (Map.Entry<String, JsonElement> keyEntry : defSection.entrySet()) {
+                if (!hasKeyIgnoreCase(rootSection, keyEntry.getKey())) {
+                    rootSection.add(keyEntry.getKey(), keyEntry.getValue());
+                    changed = true;
+                }
+            }
+        }
+        return changed;
+    }
+
+    private static JsonObject findSectionIgnoreCase(JsonObject root, String name) {
+        for (String k : root.keySet()) {
+            if (k.equalsIgnoreCase(name) && root.get(k).isJsonObject()) {
+                return root.getAsJsonObject(k);
+            }
+        }
+        return null;
+    }
+
+    private static boolean hasKeyIgnoreCase(JsonObject section, String key) {
+        for (String k : section.keySet()) {
+            if (k.equalsIgnoreCase(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
