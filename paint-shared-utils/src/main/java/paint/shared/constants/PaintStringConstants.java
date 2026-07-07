@@ -58,9 +58,7 @@ public final class PaintStringConstants {
     public static final String DO_MEDIAN_FILTERING                         = "DO_MEDIAN_FILTERING";
     public static final String DO_SUBPIXEL_LOCALIZATION                    = "DO_SUBPIXEL_LOCALIZATION";
     public static final String EXCLUDE                                     = "Exclude";
-    public static final String EXCLUDE_ZERO_DC_TRACKS_FROM_TAU_CALCULATION = "Exclude zero DC tracks from Tau Calculation";
     public static final String EXPERIMENT_NAME                             = "Experiment Name";
-    public static final String FRACTION_OF_SQUARES_TO_DETERMINE_BACKGROUND = "Fraction of Squares to Determine Background";
     public static final String GAP_CLOSING_MAX_DISTANCE                    = "GAP_CLOSING_MAX_DISTANCE";
     public static final String GENERATE_SQUARES                            = "Generate Squares";
     public static final String IMAGE_EXCLUDED                              = "Image Excluded";

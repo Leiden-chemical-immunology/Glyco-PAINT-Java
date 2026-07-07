@@ -160,9 +160,7 @@ class   SweepConfigWriter {
         JsonObject genSquaresSweep = new JsonObject();
         genSquaresSweep.addProperty(MIN_REQUIRED_R_SQUARED,                      false);
         genSquaresSweep.addProperty(MIN_TRACKS_TO_CALCULATE_TAU,                 true);
-        genSquaresSweep.addProperty(FRACTION_OF_SQUARES_TO_DETERMINE_BACKGROUND, false);
         genSquaresSweep.addProperty(NUMBER_OF_SQUARES_IN_ROW,                    false);
-        genSquaresSweep.addProperty(EXCLUDE_ZERO_DC_TRACKS_FROM_TAU_CALCULATION, false);
         genSquaresSweep.addProperty(MAX_ALLOWABLE_VARIABILITY,                   false);
         genSquaresSweep.addProperty(MIN_REQUIRED_DENSITY_RATIO,                  false);
         genSquaresSweep.addProperty(NUMBER_OF_SQUARES_IN_COLUMN,                 false);
