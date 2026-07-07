@@ -39,11 +39,8 @@
 
 package paint.shared.objects;
 
-import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.ColumnType;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -121,12 +118,10 @@ public class ExperimentInfo {
             this.threshold       = parseDouble(row.get(THRESHOLD));
         }
         catch (Exception e) {
-            PaintLogger.errorf("Problem parsing Experiment Info");
-            PaintLogger.errorf(row.toString());
-
-            StringWriter sw = new StringWriter();
-            e.printStackTrace(new PrintWriter(sw));
-            PaintLogger.errorf("Exception details:\n" + sw);
+            // Fail fast with context instead of leaving a half-built object that
+            // the caller would process as if valid. The single caller
+            // (RunTrackMateOnExperiment) catches this per-record and skips it.
+            throw new IllegalArgumentException("Could not parse Experiment Info row: " + row, e);
         }
     }
 
