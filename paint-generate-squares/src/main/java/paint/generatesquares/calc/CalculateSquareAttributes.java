@@ -72,6 +72,15 @@ import static paint.shared.constants.PaintStringConstants.*;
 public class CalculateSquareAttributes {
 
     /**
+     * Fraction of a recording's squares (those with the lowest track counts) used
+     * to estimate the background track density for the "original" density ratio
+     * ({@code Density Ratio Ori}). This is a fixed methodological constant of the
+     * original Python method, not a user-tunable parameter; it is kept explicit
+     * here rather than as a magic literal.
+     */
+    private static final double BACKGROUND_SQUARES_FRACTION = 0.1;
+
+    /**
      * Calculates attributes for every square in a recording, including Tau,
      * density, variability, density ratio, and various kinematic statistics.
      * Visibility filtering is performed based on configuration parameters,
@@ -151,7 +160,7 @@ public class CalculateSquareAttributes {
             this.showTauFittingPlots              = PaintConfig.getBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS, false);
             this.numberOfTracksInBackgroundSquare = bgResult.getNumberOfTracksInBackgroundSquare();
             this.backgroundTracksOri              = calcAverageTrackCountInBackgroundSquares(recording.getSquaresOfRecording(),
-                                                                                            (int) (0.1 * numberOfSquaresInRecording));
+                                                                                            (int) (BACKGROUND_SQUARES_FRACTION * numberOfSquaresInRecording));
         }
     }
 
