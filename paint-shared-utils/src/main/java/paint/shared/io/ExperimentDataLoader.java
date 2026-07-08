@@ -41,7 +41,6 @@ import paint.shared.objects.Square;
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.Table;
 
-import javax.swing.*;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -149,15 +148,10 @@ public final class ExperimentDataLoader {
                     : 0;
 
             if (numberOfRows > 0 && numberOfRows * numberOfRows != numberOfSquaresPerRecording) {
-                String msg = "Invalid squares layout in experiment '" + experimentName + "'";
-                PaintLogger.errorf(msg);
-
-                JOptionPane.showMessageDialog(
-                        null,
-                        msg,
-                        "Invalid Configuration",
-                        JOptionPane.ERROR_MESSAGE
-                );
+                // Log the condition; do NOT show a dialog here. This I/O method runs
+                // headless and on worker threads, where a modal dialog would hang or
+                // throw. UI notification, if desired, belongs in the UI layer.
+                PaintLogger.errorf("Invalid squares layout in experiment '%s'", experimentName);
             }
 
             for (Recording rec : recordings) {
