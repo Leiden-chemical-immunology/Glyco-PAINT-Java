@@ -320,7 +320,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                             } else {
                                 PaintLogger.errorf("   TrackMate failed or timed out for '%s'.", recordingName);
                                 if (trackMateFailure[0] != null) {
-                                    PaintLogger.errorf("      Cause: %s", trackMateFailure[0]);
+                                    PaintLogger.error("      Cause of TrackMate failure:", trackMateFailure[0]);
                                 }
                                 PaintLogger.blankline();
                                 status = false;
@@ -332,7 +332,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                         if (trackMateResults[0] == null || !trackMateResults[0].isSuccess()) {
                             PaintLogger.errorf("   TrackMate failed for '%s'.", recordingName);
                             if (trackMateFailure[0] != null) {
-                                PaintLogger.errorf("      Cause: %s", trackMateFailure[0]);
+                                PaintLogger.error("      Cause of TrackMate failure:", trackMateFailure[0]);
                             }
                             status = false;
                             continue;

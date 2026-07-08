@@ -41,6 +41,8 @@ import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -281,6 +283,23 @@ public final class PaintLogger {
      */
     public static void errorf(String fmt, Object... args) {
         log(Level.ERROR, String.format(fmt, args));
+    }
+
+    /**
+     * Logs an ERROR message together with the full stack trace of a throwable.
+     * Prefer this over {@code printStackTrace()} / {@code System.err} so the
+     * diagnostic reaches the log file and console like any other message.
+     *
+     * @param message descriptive context for the error
+     * @param t       the throwable whose stack trace should be logged (may be null)
+     */
+    public static void error(String message, Throwable t) {
+        log(Level.ERROR, message);
+        if (t != null) {
+            StringWriter sw = new StringWriter();
+            t.printStackTrace(new PrintWriter(sw));
+            log(Level.ERROR, sw.toString());
+        }
     }
 
 
