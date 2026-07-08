@@ -100,7 +100,11 @@ public class WriteSquareOverride {
         Path viewerPath = projectPath.resolve("Viewer");
         try {
             Files.createDirectories(viewerPath);
-        } catch (IOException ignored) {}
+        } catch (IOException e) {
+            // Don't swallow: a failure here makes the later CSV write fail with a
+            // confusing "no such directory" error. Log it so the real cause is clear.
+            PaintLogger.error("Could not create Viewer directory: " + viewerPath, e);
+        }
 
         this.csvFilePath = viewerPath.resolve("Square Override.csv");
     }
