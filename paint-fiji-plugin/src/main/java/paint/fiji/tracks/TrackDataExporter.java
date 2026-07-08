@@ -201,8 +201,7 @@ public final class TrackDataExporter {
             writeSpecificTracksFile(csvTracksFilePath, tracksTable);
 
         } catch (Exception e) {
-            PaintLogger.errorf("Failed writing track CSV: %s", e.getMessage());
-            e.printStackTrace();
+            PaintLogger.error("Failed writing track CSV", e);
         }
 
         return totalSpots;

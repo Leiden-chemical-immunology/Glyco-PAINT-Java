@@ -56,6 +56,8 @@ import java.io.PrintStream;
 import loci.plugins.BF;
 import loci.plugins.in.ImporterOptions;
 
+import paint.shared.utils.PaintLogger;
+
 /**
  * A lightweight GUI-based TIFF stack movie player built on ImageJ and Swing.
  * <p>
@@ -123,7 +125,7 @@ public class TiffMoviePlayer {
                         imp = imps[0];
                     }
                 } catch (Exception bfErr) {
-                    bfErr.printStackTrace();
+                    PaintLogger.error("Failed to open image with Bio-Formats", bfErr);
                 }
             }
             // Restore normal stdout

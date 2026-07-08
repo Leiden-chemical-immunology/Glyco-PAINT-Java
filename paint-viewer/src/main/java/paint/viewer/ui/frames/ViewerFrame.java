@@ -861,7 +861,7 @@ public class ViewerFrame extends JFrame implements
                 try {
                     exportOverrides(project.getProjectRootPath(), "-override");
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    PaintLogger.error("Failed to export overrides", ex);
                     JOptionPane.showMessageDialog(
                             this,
                             "Error while processing overrides:\n" + ex.getMessage(),
