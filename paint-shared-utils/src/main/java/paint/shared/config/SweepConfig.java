@@ -81,7 +81,11 @@ public class SweepConfig {
      */
     public SweepConfig(String filePath) throws IOException {
         try (Reader reader = Files.newBufferedReader(Paths.get(filePath), StandardCharsets.UTF_8)) {
-            this.root = JsonParser.parseReader(reader).getAsJsonObject();
+            JsonElement parsed = JsonParser.parseReader(reader);
+            if (!parsed.isJsonObject()) {
+                throw new IOException("Sweep configuration is not a JSON object: " + filePath);
+            }
+            this.root = parsed.getAsJsonObject();
         }
     }
 
@@ -110,8 +114,13 @@ public class SweepConfig {
         }
 
         for (Map.Entry<String, JsonElement> entry : sweep.entrySet()) {
-            String  attribute = entry.getKey();
-            boolean enabled   = entry.getValue().getAsBoolean();
+            String      attribute = entry.getKey();
+            JsonElement flag      = entry.getValue();
+            // A malformed (non-boolean) flag disables that one attribute rather
+            // than throwing and aborting the whole sweep read.
+            boolean     enabled   = flag.isJsonPrimitive()
+                    && flag.getAsJsonPrimitive().isBoolean()
+                    && flag.getAsBoolean();
 
             if (enabled && root.has(attribute) && root.get(attribute).isJsonObject()) {
                 JsonObject section = root.getAsJsonObject(attribute);
