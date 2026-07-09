@@ -39,7 +39,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
 =============================================================================*/
 
-package paint.regression;
+package paint.compare;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -258,7 +258,7 @@ public class SquaresCsvComparatorPythonJava {
     private static List<Map<String, String>> readCsv(Path p) throws IOException {
         // Robust CSV parsing (handles quoted commas) via the shared CsvSource,
         // replacing the previous hand-rolled line.split(",").
-        return paint.regression.compare.CsvSource.read(p);
+        return paint.compare.compare.CsvSource.read(p);
     }
 
     /**

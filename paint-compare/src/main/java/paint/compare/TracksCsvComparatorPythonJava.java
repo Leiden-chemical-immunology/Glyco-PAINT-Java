@@ -39,7 +39,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
 =============================================================================*/
 
-package paint.regression;
+package paint.compare;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -742,7 +742,7 @@ public class TracksCsvComparatorPythonJava {
     private static List<Map<String, String>> readCsv(Path path) throws IOException {
         // Robust CSV parsing (handles quoted commas) via the shared CsvSource,
         // replacing the previous hand-rolled line.split(",").
-        List<Map<String, String>> rows = paint.regression.compare.CsvSource.read(path);
+        List<Map<String, String>> rows = paint.compare.compare.CsvSource.read(path);
         System.out.println("Loaded " + rows.size() + " rows from " + path.getFileName());
         return rows;
     }

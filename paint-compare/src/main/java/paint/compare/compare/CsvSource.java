@@ -1,4 +1,4 @@
-package paint.regression.compare;
+package paint.compare.compare;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;

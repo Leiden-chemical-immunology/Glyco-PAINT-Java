@@ -1,4 +1,4 @@
-package paint.regression.compare;
+package paint.compare.compare;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        RegressionRules.java
- *  Package:      paint.regression.clean
+ *  Package:      paint.compare.clean
  *
  *  PURPOSE:
  *    Defines the configuration and tolerance rules for regression tests.
@@ -23,7 +23,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package paint.regression;
+package paint.compare;
 
 import java.util.*;
 

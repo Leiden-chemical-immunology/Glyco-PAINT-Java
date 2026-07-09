@@ -1,4 +1,4 @@
-package paint.regression.compare;
+package paint.compare.compare;
 
 import java.util.ArrayList;
 import java.util.List;

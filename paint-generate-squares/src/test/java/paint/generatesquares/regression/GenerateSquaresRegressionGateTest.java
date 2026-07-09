@@ -5,10 +5,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import paint.generatesquares.app.GenerateSquaresHeadless;
-import paint.regression.compare.ComparisonResult;
-import paint.regression.compare.CsvSource;
-import paint.regression.compare.PaintStrictComparator;
-import paint.regression.compare.TableComparer;
+import paint.compare.compare.ComparisonResult;
+import paint.compare.compare.CsvSource;
+import paint.compare.compare.PaintStrictComparator;
+import paint.compare.compare.TableComparer;
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.utils.PaintLogger;
 
