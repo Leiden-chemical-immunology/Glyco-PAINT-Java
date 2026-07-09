@@ -1,26 +1,34 @@
 package paint.generatesquares.regression;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import paint.generatesquares.app.GenerateSquaresHeadless;
+import paint.regression.compare.ComparisonResult;
+import paint.regression.compare.CsvSource;
+import paint.regression.compare.PaintStrictComparator;
+import paint.regression.compare.TableComparer;
 import paint.shared.config.paintconfig.PaintConfig;
-import paint.shared.io.internal.SquaresTableIO;
-import paint.shared.objects.Square;
 import paint.shared.utils.PaintLogger;
-import tech.tablesaw.api.ColumnType;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.function.ToDoubleFunction;
+import java.util.Set;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static paint.shared.constants.PaintStringConstants.BACKGROUND_PLOTS;
 import static paint.shared.constants.PaintStringConstants.GENERATE_SQUARES;
@@ -29,100 +37,59 @@ import static paint.shared.constants.PaintStringConstants.TAU_FITTING_PLOTS;
 /**
  * End-to-end regression gate for the Generate Squares pipeline.
  *
- * <p>Runs the real pipeline on the committed golden-master inputs
+ * <p>Runs the real pipeline headless on the committed golden-master inputs
  * ({@code reference-project/221012}) with factory-default configuration, then
- * asserts that the freshly produced {@code Squares.csv} reproduces the committed
- * golden {@code Squares.csv} exactly (every square, every field, within a
- * 3-decimal tolerance). Any change that alters the scientific output fails this
- * test.</p>
+ * compares the freshly produced {@code Squares.csv} <b>and</b> {@code Recordings.csv}
+ * against the committed golden files using the shared regression comparison engine
+ * ({@link TableComparer} / {@link CsvSource} / {@link ComparisonResult}) — the same
+ * code the regression tooling uses — in <b>exact</b> mode (zero tolerance, every
+ * column). Squares are keyed on {@code Unique Key}, recordings on
+ * {@code Recording Name}. Any change that alters the scientific output fails this
+ * test, so it catches unintentional changes.</p>
  *
- * <p>A per-field difference report is printed on every run, so a failure shows
- * precisely which columns diverged, on how many squares, and by how much.</p>
+ * <p>Pass {@code -Dpaint.rules=relaxed} to compare with the Paint tolerance rules
+ * instead of exactly — handy for checking whether a failing exact run's
+ * differences are actually acceptable.</p>
  *
- * <p>(Filename retains "Spike" for historical reasons; it is now an asserting
- * gate.)</p>
+ * <p>When a change <em>is</em> intentional, re-run with
+ * {@code -Dpaint.updateGolden=true} to overwrite the golden masters with the new
+ * output, then review the git diff and commit it.</p>
  */
 @DisplayName("Generate Squares — end-to-end regression gate (reference-project/221012)")
 class GenerateSquaresRegressionGateTest {
 
     private static final String EXPERIMENT = "221012";
-    private static final double TOL = 1e-3; // both files are written at 3-decimal precision
 
-    /** A numeric square attribute to compare, with a human-readable name. */
-    private static final class Field {
-        final String name;
-        final ToDoubleFunction<Square> get;
-        Field(String name, ToDoubleFunction<Square> get) { this.name = name; this.get = get; }
-    }
+    /**
+     * Set {@code -Dpaint.updateGolden=true} to overwrite the committed golden files
+     * with the freshly produced output — i.e. to accept an intentional change —
+     * instead of asserting.
+     */
+    private static final boolean UPDATE_GOLDEN = Boolean.getBoolean("paint.updateGolden");
 
-    private static List<Field> numericFields() {
-        List<Field> f = new ArrayList<>();
-        f.add(new Field("X0", Square::getX0));
-        f.add(new Field("Y0", Square::getY0));
-        f.add(new Field("X1", Square::getX1));
-        f.add(new Field("Y1", Square::getY1));
-        f.add(new Field("Variability", Square::getVariability));
-        f.add(new Field("Density", Square::getDensity));
-        f.add(new Field("Density Ratio", Square::getDensityRatio));
-        f.add(new Field("Density Ratio Ori", Square::getDensityRatioOri));
-        f.add(new Field("Tau", Square::getTau));
-        f.add(new Field("R Squared", Square::getRSquared));
-        f.add(new Field("Median Diffusion Coefficient", Square::getMedianDiffusionCoefficient));
-        f.add(new Field("Median Displacement", Square::getMedianDisplacement));
-        f.add(new Field("Max Displacement", Square::getMaxDisplacement));
-        f.add(new Field("Total Displacement", Square::getTotalDisplacement));
-        f.add(new Field("Median Max Speed", Square::getMedianMaxSpeed));
-        f.add(new Field("Max Max Speed", Square::getMaxMaxSpeed));
-        f.add(new Field("Median Median Speed", Square::getMedianMedianSpeed));
-        f.add(new Field("Max Median Speed", Square::getMaxMedianSpeed));
-        f.add(new Field("Max Track Duration", Square::getMaxTrackDuration));
-        f.add(new Field("Total Track Duration", Square::getTotalTrackDuration));
-        f.add(new Field("Median Track Duration", Square::getMedianTrackDuration));
-        f.add(new Field("Median Diffusion Coefficient Ext", Square::getMedianDiffusionCoefficientExt));
-        // Integer columns, compared as exact values (int getters widen to double).
-        f.add(new Field("Number of Tracks", s -> s.getNumberOfTracks()));
-        f.add(new Field("Row Number", s -> s.getRowNumber()));
-        f.add(new Field("Column Number", s -> s.getColNumber()));
-        f.add(new Field("Label Number", s -> s.getLabelNumber()));
-        f.add(new Field("Cell Id", s -> s.getCellId()));
-        return f;
-    }
+    /**
+     * Comparison mode. Default is exact (any difference fails). Pass
+     * {@code -Dpaint.rules=relaxed} to use the Paint tolerance rules instead
+     * (accept small changes, ignore unimportant fields) — useful to check whether
+     * a failing exact run's differences are actually acceptable.
+     */
+    private static final boolean RELAXED = "relaxed".equalsIgnoreCase(System.getProperty("paint.rules"));
 
-    private static String[] headers() {
-        Square.Column[] c = Square.Column.values();
-        String[] h = new String[c.length];
-        for (int i = 0; i < c.length; i++) h[i] = c[i].header;
-        return h;
-    }
-
-    private static ColumnType[] types() {
-        Square.Column[] c = Square.Column.values();
-        ColumnType[] t = new ColumnType[c.length];
-        for (int i = 0; i < c.length; i++) t[i] = c[i].type;
-        return t;
-    }
-
-    private static boolean eq(double a, double b) {
-        return (Double.isNaN(a) && Double.isNaN(b)) || Math.abs(a - b) <= TOL;
-    }
-
-    private List<Square> load(Path csv) throws Exception {
-        SquaresTableIO io = new SquaresTableIO();
-        return io.toEntities(io.readCsvWithSchema(csv, headers(), types(), false));
-    }
-
-    private static Map<String, Square> byKey(List<Square> squares) {
-        Map<String, Square> m = new LinkedHashMap<>();
-        for (Square s : squares) m.put(s.getUniqueKey(), s);
-        return m;
-    }
+    /** Wall-clock run metadata (not scientific output); excluded in exact mode. */
+    private static final Set<String> VOLATILE = new HashSet<>(Arrays.asList("Run Time", "Time Stamp"));
 
     @Test
-    @DisplayName("produced Squares.csv reproduces the golden master exactly")
+    @DisplayName("produced Squares.csv and Recordings.csv reproduce the golden master exactly")
     void runAndReport(@TempDir Path projectDir) throws Exception {
-        // --- Locate committed golden data on the test classpath ---
-        Path goldenDir = Paths.get(getClass().getResource("/reference-project/" + EXPERIMENT).toURI());
-        Path goldenSquares = goldenDir.resolve("Squares.csv");
+        // --- Locate the reference data (kept out of git; the gate is local-only) ---
+        java.net.URL ref = getClass().getResource("/reference-project/" + EXPERIMENT);
+        Assumptions.assumeTrue(ref != null,
+                "reference-project data not present on the classpath — local-only regression gate skipped");
+        Path goldenDir = Paths.get(ref.toURI());
+        for (String f : new String[]{"Experiment Info.csv", "Recordings.csv", "Tracks.csv"}) {
+            Assumptions.assumeTrue(Files.isRegularFile(goldenDir.resolve(f)),
+                    "reference input '" + f + "' not present — local-only regression gate skipped");
+        }
 
         // --- Stage inputs into a fresh temp project: projectDir/<experiment>/{inputs} ---
         Path expDir = projectDir.resolve(EXPERIMENT);
@@ -132,85 +99,78 @@ class GenerateSquaresRegressionGateTest {
         }
 
         // --- Force factory-default configuration (isolated to the temp project) ---
-        PaintLogger.initialise(projectDir, "regression-spike");
+        PaintLogger.initialise(projectDir, "regression-gate");
         PaintConfig.reinitialise(projectDir);
         PaintConfig.setBoolean(GENERATE_SQUARES, BACKGROUND_PLOTS, false);
         PaintConfig.setBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS, false);
 
-        // --- Run the real pipeline ---
+        // --- Run the real pipeline (recomputes and overwrites Squares.csv and Recordings.csv) ---
         GenerateSquaresHeadless.run(projectDir, Collections.singletonList(EXPERIMENT));
 
-        Path producedSquares = expDir.resolve("Squares.csv");
-        assertTrue(Files.isRegularFile(producedSquares),
-                "pipeline did not produce a Squares.csv");
+        Path producedSquares    = expDir.resolve("Squares.csv");
+        Path producedRecordings = expDir.resolve("Recordings.csv");
+        assertTrue(Files.isRegularFile(producedSquares),    "pipeline did not produce a Squares.csv");
+        assertTrue(Files.isRegularFile(producedRecordings), "pipeline did not produce a Recordings.csv");
 
-        // --- Load both sides through the tested production IO ---
-        Map<String, Square> golden = byKey(load(goldenSquares));
-        Map<String, Square> produced = byKey(load(producedSquares));
+        // --- Compare both, exactly, with the shared engine ---
+        ComparisonResult squares    = compareExact(goldenDir.resolve("Squares.csv"),
+                producedSquares,    "Unique Key",     true,  "Squares");
+        ComparisonResult recordings = compareExact(goldenDir.resolve("Recordings.csv"),
+                producedRecordings, "Recording Name", false, "Recordings");
 
-        // --- Compare ---
-        List<Field> fields = numericFields();
-        Map<String, Integer> fieldDiffCount = new LinkedHashMap<>();
-        Map<String, Double> fieldMaxDiff = new LinkedHashMap<>();
-        for (Field f : fields) { fieldDiffCount.put(f.name, 0); fieldMaxDiff.put(f.name, 0.0); }
-
-        int missing = 0, extra = 0, identical = 0, differing = 0, booleanMismatch = 0;
-
-        for (Map.Entry<String, Square> e : golden.entrySet()) {
-            Square g = e.getValue();
-            Square p = produced.get(e.getKey());
-            if (p == null) { missing++; continue; }
-
-            boolean anyDiff = false;
-            if (g.isVisible() != p.isVisible()) { booleanMismatch++; anyDiff = true; }
-            if (g.isSquareManuallyExcluded() != p.isSquareManuallyExcluded()) { booleanMismatch++; anyDiff = true; }
-            if (g.isImageExcluded() != p.isImageExcluded()) { booleanMismatch++; anyDiff = true; }
-
-            for (Field f : fields) {
-                double gv = f.get.applyAsDouble(g), pv = f.get.applyAsDouble(p);
-                if (!eq(gv, pv)) {
-                    anyDiff = true;
-                    fieldDiffCount.put(f.name, fieldDiffCount.get(f.name) + 1);
-                    double d = Math.abs(gv - pv);
-                    if (!Double.isNaN(d) && d > fieldMaxDiff.get(f.name)) fieldMaxDiff.put(f.name, d);
-                }
-            }
-            if (anyDiff) differing++; else identical++;
+        // --- Accept-an-intentional-change mode: overwrite the golden masters, don't assert ---
+        if (UPDATE_GOLDEN) {
+            blessGolden("Squares.csv",    producedSquares);
+            blessGolden("Recordings.csv", producedRecordings);
+            System.out.println("   Review the git diff and commit it to accept this intentional change.");
+            return;
         }
-        for (String key : produced.keySet()) if (!golden.containsKey(key)) extra++;
 
-        // --- Report ---
-        StringBuilder sb = new StringBuilder();
-        sb.append("\n================ Generate Squares regression spike ================\n");
-        sb.append(String.format("Experiment            : %s%n", EXPERIMENT));
-        sb.append(String.format("Golden squares        : %d%n", golden.size()));
-        sb.append(String.format("Produced squares      : %d%n", produced.size()));
-        sb.append(String.format("Missing (golden only) : %d%n", missing));
-        sb.append(String.format("Extra   (produced only): %d%n", extra));
-        sb.append(String.format("Identical             : %d%n", identical));
-        sb.append(String.format("Differing             : %d%n", differing));
-        sb.append(String.format("  boolean-flag mismatches: %d%n", booleanMismatch));
-        sb.append(String.format("Fields compared/square : %d numeric + 3 boolean%n", fields.size()));
-        sb.append(String.format("Tolerance             : %.1e%n", TOL));
-        sb.append("--- per-field differences (count beyond tolerance / max abs diff) ---\n");
-        for (Field f : fields) {
-            int c = fieldDiffCount.get(f.name);
-            if (c > 0) sb.append(String.format("  %-32s %6d   max=%.6g%n", f.name, c, fieldMaxDiff.get(f.name)));
-        }
-        if (differing == 0 && missing == 0 && extra == 0) {
-            sb.append("RESULT: produced output matches the golden master within tolerance.\n");
-        } else {
-            sb.append("RESULT: differences found — see the per-field breakdown above.\n");
-        }
-        sb.append("==================================================================\n");
-        System.out.println(sb);
+        // --- Regression gate: the pipeline must reproduce both golden masters exactly ---
+        assertClean(squares,    "Squares");
+        assertClean(recordings, "Recordings");
+    }
 
-        // --- Regression gate: the pipeline must reproduce the golden master exactly ---
-        assertTrue(Files.isRegularFile(producedSquares), "pipeline did not produce a Squares.csv");
-        assertEquals(golden.size(), produced.size(), "square count differs from the golden master");
-        assertEquals(0, missing, "squares present in the golden master are missing from the output");
-        assertEquals(0, extra, "extra squares produced that are not in the golden master");
-        assertEquals(0, differing,
-                "one or more squares differ from the golden master beyond tolerance — see the report above");
+    /** Reads both files, compares them exactly (keyed on {@code keyColumn}), and prints the report. */
+    private static ComparisonResult compareExact(Path golden, Path produced, String keyColumn,
+                                                 boolean splitSquare, String label) throws Exception {
+        List<Map<String, String>> g = CsvSource.read(golden);
+        List<Map<String, String>> p = CsvSource.read(produced);
+        Function<Map<String, String>, String> keyFn = row -> row.getOrDefault(keyColumn, "");
+        ComparisonResult result = RELAXED
+                ? TableComparer.compare(g, p, keyFn, new PaintStrictComparator())
+                : TableComparer.compare(g, p, keyFn, VOLATILE, 0.0);
+        System.out.println("==== " + label + " (" + (RELAXED ? "relaxed" : "exact") + ") ====");
+        System.out.println(result.reportGrouped(splitSquare));
+        return result;
+    }
+
+    /** Overwrites the committed golden file with freshly produced output, backing up the old one first. */
+    private static void blessGolden(String name, Path produced) throws IOException {
+        Path srcGolden = Paths.get("src", "test", "resources", "reference-project", EXPERIMENT, name);
+        Files.createDirectories(srcGolden.getParent());
+
+        // Save a timestamped copy of the existing golden before overwriting it.
+        // The ".bak" suffix keeps these backups out of git (see .gitignore).
+        if (Files.isRegularFile(srcGolden)) {
+            String stamp  = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
+            Path   backup = srcGolden.resolveSibling(name + "." + stamp + ".bak");
+            Files.copy(srcGolden, backup, StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("🗄  Previous golden saved: " + backup.toAbsolutePath());
+        }
+
+        Files.copy(produced, srcGolden, StandardCopyOption.REPLACE_EXISTING);
+        System.out.println("✅ Golden master updated: " + srcGolden.toAbsolutePath());
+    }
+
+    private static void assertClean(ComparisonResult r, String what) {
+        assertEquals(0L, r.count(ComparisonResult.Difference.Kind.MISSING),
+                what + ": rows present in the golden master are missing from the output");
+        assertEquals(0L, r.count(ComparisonResult.Difference.Kind.EXTRA),
+                what + ": extra rows produced that are not in the golden master");
+        assertEquals(0L, r.count(ComparisonResult.Difference.Kind.DUPLICATE_KEY),
+                what + ": the key column is not unique — comparison is unreliable");
+        assertFalse(r.hasDifferences(),
+                what + ": output differs from the golden master — see the report above");
     }
 }

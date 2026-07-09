@@ -99,6 +99,7 @@ class ConfigStore {
                 root = new JsonObject();
             }
         } else {
+            PaintLogger.warnf("No configuration file found at %s; creating one with default values.", path);
             root = new JsonObject();
             if (defaultsLoader != null) defaultsLoader.run();
             save();

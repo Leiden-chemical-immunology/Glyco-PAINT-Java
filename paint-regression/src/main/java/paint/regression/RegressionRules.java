@@ -27,7 +27,7 @@ package paint.regression;
 
 import java.util.*;
 
-final class RegressionRules {
+public final class RegressionRules {
 
     // ===========================
     //  Column groups
@@ -188,15 +188,15 @@ final class RegressionRules {
     // ===========================
     //  Helpers
     // ===========================
-    static boolean isIgnoredColumn(String field, boolean relaxed) {
+    public static boolean isIgnoredColumn(String field, boolean relaxed) {
         return (relaxed ? IGNORE_COLUMNS_RELAXED : IGNORE_COLUMNS_STRICT).contains(field);
     }
 
-    static boolean isIgnoreCaseField(String field) {
+    public static boolean isIgnoreCaseField(String field) {
         return IGNORE_CASE_FIELDS.contains(field);
     }
 
-    static String clean(String s) {
+    public static String clean(String s) {
         if (s == null) {
             return "";
         }
@@ -210,7 +210,7 @@ final class RegressionRules {
         return t;
     }
 
-    static boolean emptyAndZeroEquiv(String a, String b) {
+    public static boolean emptyAndZeroEquiv(String a, String b) {
         String x = (a == null ? "" : a.trim());
         String y = (b == null ? "" : b.trim());
 
@@ -227,7 +227,7 @@ final class RegressionRules {
                 "-3".equals(v) || "-3.0".equals(v);
     }
 
-    static boolean valuesEqual(String a, String b) {
+    public static boolean valuesEqual(String a, String b) {
         if (Objects.equals(a, b)) {
             return true;
         }
@@ -241,7 +241,7 @@ final class RegressionRules {
         return false;
     }
 
-    static Double parseDouble(String s) {
+    public static Double parseDouble(String s) {
         if (s == null || s.isEmpty()) {
             return null;
         }
@@ -253,7 +253,7 @@ final class RegressionRules {
         }
     }
 
-    static boolean numericEqualWithTolerance(String field, double a, double b, boolean relaxed) {
+    public static boolean numericEqualWithTolerance(String field, double a, double b, boolean relaxed) {
 
         if (relaxed) {
             if (Double.isNaN(a) || Double.isNaN(b)) {
@@ -291,7 +291,7 @@ final class RegressionRules {
     /**
      * Track-count-based correction for density-like quantities.
      */
-    static Double correctedValueIfTrackDependent(
+    public static Double correctedValueIfTrackDependent(
             String field, Double oldVal, Double newVal,
             Map<String, String> oldRow, Map<String, String> newRow) {
 
@@ -325,7 +325,7 @@ final class RegressionRules {
      * <p>
      * Applies to BOTH relaxed and strict modes.
      */
-    static boolean numericMissingSkipDifference(Double a, Double b) {
+    public static boolean numericMissingSkipDifference(Double a, Double b) {
 
         // Both present → evaluate normally
         if (a != null && b != null) {

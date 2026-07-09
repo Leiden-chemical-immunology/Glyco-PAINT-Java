@@ -89,6 +89,71 @@ public final class TableComparer {
         return result;
     }
 
+    /**
+     * Compares two tables using a pluggable {@link FieldComparator}, which decides
+     * per column whether to skip it and whether two values count as a difference.
+     * Row matching (by key, 1:1), missing/extra/duplicate handling, and result
+     * accounting are identical to the tolerance-based overload above.
+     *
+     * @param baseline   rows of the reference/old file
+     * @param test       rows of the new file
+     * @param keyFn      extracts a unique row key
+     * @param comparator the per-field comparison policy
+     * @return a structured {@link ComparisonResult}
+     */
+    public static ComparisonResult compare(
+            List<Map<String, String>> baseline,
+            List<Map<String, String>> test,
+            Function<Map<String, String>, String> keyFn,
+            FieldComparator comparator) {
+
+        ComparisonResult result = new ComparisonResult();
+
+        Map<String, Map<String, String>> baseByKey = index(baseline, keyFn, result);
+        Map<String, Map<String, String>> testByKey = index(test, keyFn, result);
+
+        for (Map.Entry<String, Map<String, String>> entry : baseByKey.entrySet()) {
+            String              key = entry.getKey();
+            Map<String, String> b   = entry.getValue();
+            Map<String, String> t   = testByKey.get(key);
+
+            if (t == null) {
+                result.addMissing(key);
+                continue;
+            }
+
+            result.incComparedRows();
+
+            Set<String> fields = new LinkedHashSet<>();
+            fields.addAll(b.keySet());
+            fields.addAll(t.keySet());
+
+            boolean anyDifference = false;
+            for (String field : fields) {
+                if (comparator.isIgnored(field)) {
+                    continue;
+                }
+                String bv = trim(b.get(field));
+                String tv = trim(t.get(field));
+                if (!comparator.equal(field, bv, tv, b, t)) {
+                    result.addValueDifference(key, field, bv, tv);
+                    anyDifference = true;
+                }
+            }
+            if (!anyDifference) {
+                result.incIdenticalRows();
+            }
+        }
+
+        for (String key : testByKey.keySet()) {
+            if (!baseByKey.containsKey(key)) {
+                result.addExtra(key);
+            }
+        }
+
+        return result;
+    }
+
     /** Index rows by key; a repeated key is recorded as a duplicate (last wins in the map). */
     private static Map<String, Map<String, String>> index(
             List<Map<String, String>> rows,

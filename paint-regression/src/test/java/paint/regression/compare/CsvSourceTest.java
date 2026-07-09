@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@DisplayName("CsvSource / RegressionComparator — robust CSV comparison")
+@DisplayName("CsvSource / TableComparer — robust CSV comparison")
 class CsvSourceTest {
 
     private static Path write(Path dir, String name, String content) throws IOException {
@@ -50,7 +50,7 @@ class CsvSourceTest {
         Path a = write(dir, "a.csv", content);
         Path b = write(dir, "b.csv", content);
 
-        ComparisonResult r = RegressionComparator.compareFiles(a, b, "Unique Key", noIgnore(), 1e-3);
+        ComparisonResult r = compareFiles(a, b);
         assertFalse(r.hasDifferences(), r.report());
     }
 
@@ -60,7 +60,7 @@ class CsvSourceTest {
         Path a = write(dir, "a.csv", "Unique Key,Density\nk1,1.000\nk2,2.000\n");
         Path b = write(dir, "b.csv", "Unique Key,Density\nk1,1.000\nk2,2.500\n");
 
-        ComparisonResult r = RegressionComparator.compareFiles(a, b, "Unique Key", noIgnore(), 1e-3);
+        ComparisonResult r = compareFiles(a, b);
         assertTrue(r.hasDifferences());
         assertEquals(1, r.count(ComparisonResult.Difference.Kind.VALUE));
     }
@@ -71,7 +71,13 @@ class CsvSourceTest {
         Path a = write(dir, "a.csv", "Unique Key,Density\nk1,1.000\nk2,2.000\n");
         Path b = write(dir, "b.csv", "Unique Key,Density\nk2,2.000\nk1,1.000\n");
 
-        assertFalse(RegressionComparator.compareFiles(a, b, "Unique Key", noIgnore(), 1e-3).hasDifferences());
+        assertFalse(compareFiles(a, b).hasDifferences());
+    }
+
+    /** Reads both CSVs and compares them keyed on Unique Key, tolerance 1e-3. */
+    private static ComparisonResult compareFiles(Path a, Path b) throws IOException {
+        return TableComparer.compare(CsvSource.read(a), CsvSource.read(b),
+                row -> row.getOrDefault("Unique Key", ""), noIgnore(), 1e-3);
     }
 
     private static Set<String> noIgnore() {

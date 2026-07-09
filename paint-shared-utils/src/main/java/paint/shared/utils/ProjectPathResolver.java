@@ -162,16 +162,11 @@ public final class ProjectPathResolver {
         PaintLogger.debugf("IsRegular   = " + Files.isRegularFile(confPath));
         PaintLogger.debugf("=================================");
 
-        // Final decision
+        // A missing configuration file is no longer fatal: the folder is accepted
+        // and the config is created with default values on first load (ConfigStore
+        // logs a warning when it does so). Only warn here; do not block the user.
         if (!Files.exists(confPath) || !Files.isRegularFile(confPath)) {
-            JOptionPane.showMessageDialog(
-                    null,
-                    "The project folder does not contain:\n" + confPath +
-                            "\n\nPlease select a valid project folder.",
-                    "Invalid Project Path",
-                    JOptionPane.WARNING_MESSAGE
-            );
-            return false;
+            PaintLogger.warnf("No configuration file at %s; it will be created with default values.", confPath);
         }
 
         return true;
