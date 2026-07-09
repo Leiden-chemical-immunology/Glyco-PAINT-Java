@@ -540,7 +540,7 @@ public class GlycoPaintInstallerWindows {
     }
 
     /** Recursively copies one directory tree into another (REPLACE_EXISTING). */
-    private void copyDirectory(Path src, Path dst) {
+    private void copyDirectory(Path src, Path dst) throws IOException {
         try (java.util.stream.Stream<Path> walk = Files.walk(src)) {
             walk.forEach(source -> {
                 Path target = dst.resolve(src.relativize(source));
@@ -554,7 +554,10 @@ public class GlycoPaintInstallerWindows {
                     log("Copy failed: " + source + " -> " + target + ": " + e.getMessage());
                 }
             });
-        } catch (IOException ignored) {}
+        }
+        // Let a whole-operation failure (e.g. Files.walk) propagate to the caller,
+        // which reports "Installation failed" — matching the macOS installer.
+        // (Previously swallowed, so a failed copy still logged "Installation complete".)
     }
 
     /** Appends a line to the UI log area on the EDT. */
