@@ -132,32 +132,14 @@ public class GenerateSquaresProcessor {
             PaintLogger.infof("   Processing: %s", recording.getRecordingName());
             PaintLogger.debugf(recording.toString());
 
-            // Create the squares with basic geometric information
-            List<Square> squares = generateSquaresForRecording(recording, generateSquaresConfig);
-            recording.setSquaresOfRecording(squares);
-
-            // Assign the recording tracks to the squares
-            assignTracksToSquares(recording, generateSquaresConfig);
-
-            // CHECK mid-work before calculating attributes
-            if (Thread.currentThread().isInterrupted()) {
+            // Pure compute: generate squares, assign tracks, calculate attributes.
+            Path experimentPath = project.getProjectRootPath()
+                                         .resolve(experiment.getExperimentName());
+            if (!SquareGenerationService.computeRecording(recording, generateSquaresConfig, experimentPath)) {
                 PaintLogger.infof("Cancelled before attribute calculation for %s",
                                   recording.getRecordingName());
                 return;
             }
-
-            // Calculate square-level and recording-level attributes
-            Path experimentPath = project.getProjectRootPath()
-                                         .resolve(experiment.getExperimentName());
-            CalculateSquareAttributes.calculateSquareAttributes(
-                    experimentPath,
-                    recording,
-                    generateSquaresConfig
-            );
-            CalculateSquareAttributes.calculateRecordingAttributes(
-                    recording,
-                    generateSquaresConfig
-            );
         }
 
         Duration duration = Duration.between(start, LocalDateTime.now());
