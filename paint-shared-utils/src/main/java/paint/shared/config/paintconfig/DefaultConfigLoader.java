@@ -49,12 +49,10 @@ class DefaultConfigLoader {
         generateSquares.addProperty(MIN_REQUIRED_R_SQUARED,         0.1);
         generateSquares.addProperty(MAX_ALLOWABLE_VARIABILITY,      10.0);
         generateSquares.addProperty(MIN_REQUIRED_DENSITY_RATIO,     2.0);
-        generateSquares.addProperty(MIN_TRACK_DURATION,             0);
-        generateSquares.addProperty(MAX_TRACK_DURATION,             2000000);
         generateSquares.addProperty(NEIGHBOUR_MODE,                 "Free");
         generateSquares.addProperty(NUMBER_OF_SQUARES_IN_RECORDING, 400);
-        generateSquares.addProperty(TAU_FITTING_PLOTS,              true);
-        generateSquares.addProperty(BACKGROUND_PLOTS,               true);
+        generateSquares.addProperty(TAU_FITTING_PLOTS,              false);
+        generateSquares.addProperty(BACKGROUND_PLOTS,               false);
         root.add(GENERATE_SQUARES, generateSquares);
 
         // TrackMate
@@ -76,6 +74,7 @@ class DefaultConfigLoader {
         trackMate.addProperty(ALLOW_TRACK_SPLITTING,    false);
         trackMate.addProperty(ALLOW_TRACK_MERGING,      false);
         trackMate.addProperty(MERGING_MAX_DISTANCE,     15.0);
+        trackMate.addProperty(RUN_GENERATE_SQUARES_AFTER, false);
         root.add(TRACKMATE, trackMate);
 
         return root;

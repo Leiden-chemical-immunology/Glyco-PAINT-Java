@@ -103,7 +103,7 @@ public class CalculateSquareAttributes {
         double                     squareArea                       = calculateSquareArea(numberOfSquaresInRecording);    // Here we look at the single square
         double                     concentration                    = recording.getConcentration();
         List<Square>               squaresOfRecording               = recording.getSquaresOfRecording();
-        boolean                    showTauFittingPlots              = PaintConfig.getBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS, false);
+        boolean                    showTauFittingPlots              = generateSquaresConfig.isTauFittingPlots();
         BackgroundEstimationResult bgResult                         = calculateBackgroundDensity(squaresOfRecording);
         CalcParams                 params                           = new CalcParams(recording, generateSquaresConfig, bgResult);
 
@@ -157,7 +157,7 @@ public class CalculateSquareAttributes {
             this.numberOfSquaresInRecording       = config.getNumberOfSquaresInRecording();
             this.squareArea                       = calculateSquareArea(numberOfSquaresInRecording);
             this.concentration                    = recording.getConcentration();
-            this.showTauFittingPlots              = PaintConfig.getBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS, false);
+            this.showTauFittingPlots              = config.isTauFittingPlots();
             this.numberOfTracksInBackgroundSquare = bgResult.getNumberOfTracksInBackgroundSquare();
             this.backgroundTracksOri              = calcAverageTrackCountInBackgroundSquares(recording.getSquaresOfRecording(),
                                                                                             (int) (BACKGROUND_SQUARES_FRACTION * numberOfSquaresInRecording));

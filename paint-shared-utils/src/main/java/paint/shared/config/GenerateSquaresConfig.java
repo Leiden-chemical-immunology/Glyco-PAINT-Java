@@ -53,13 +53,15 @@ import static paint.shared.constants.PaintStringConstants.*;
  */
 public class GenerateSquaresConfig {
 
-    private final int    numberOfSquaresInRecording;
-    private final int    minTracksToCalculate;
-    private final int    minTracksToCalculateTau;
-    private final double minRequiredRSquared;
-    private final double minRequiredDensityRatio;
-    private final double maxAllowableVariability;
-    private final String neighbourMode;
+    private final int     numberOfSquaresInRecording;
+    private final int     minTracksToCalculate;
+    private final int     minTracksToCalculateTau;
+    private final double  minRequiredRSquared;
+    private final double  minRequiredDensityRatio;
+    private final double  maxAllowableVariability;
+    private final String  neighbourMode;
+    private final boolean tauFittingPlots;
+    private final boolean backgroundPlots;
 
 
     /**
@@ -84,7 +86,9 @@ public class GenerateSquaresConfig {
         this.minRequiredDensityRatio     = PaintConfig.getDouble( GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,      2.0);
         this.maxAllowableVariability     = PaintConfig.getDouble( GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY,       10.0);
         this.neighbourMode               = PaintConfig.getString( GENERATE_SQUARES, NEIGHBOUR_MODE,                  "Free");
-        
+        this.tauFittingPlots             = PaintConfig.getBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS,               false);
+        this.backgroundPlots             = PaintConfig.getBoolean(GENERATE_SQUARES, BACKGROUND_PLOTS,                false);
+
     }
 
     /**
@@ -136,6 +140,20 @@ public class GenerateSquaresConfig {
         return neighbourMode;
     }
 
+    /**
+     * @return {@code true} if per-square Tau-fitting plots should be generated (default {@code false}).
+     */
+    public boolean isTauFittingPlots() {
+        return tauFittingPlots;
+    }
+
+    /**
+     * @return {@code true} if background histogram plots should be generated (default {@code false}).
+     */
+    public boolean isBackgroundPlots() {
+        return backgroundPlots;
+    }
+
     @Override
     public String toString() {
 
@@ -147,6 +165,8 @@ public class GenerateSquaresConfig {
                 ", Min Required Density Ratio  = " + minRequiredDensityRatio +
                 ", Max Allowable Variability   = " + maxAllowableVariability +
                 ", Neighbour Mode              = '"+ neighbourMode + '\'' +
+                ", Tau Fitting Plots           = " + tauFittingPlots +
+                ", Background Plots            = " + backgroundPlots +
                 '}';
     }
 }

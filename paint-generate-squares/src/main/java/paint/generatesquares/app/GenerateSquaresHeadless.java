@@ -110,10 +110,11 @@ public class GenerateSquaresHeadless {
         Project project = new Project();
         project.setProjectRootPath(projectPath);
         project.setExperimentNames(experimentNames);
-        project.setGenerateSquaresConfig(new GenerateSquaresConfig());    // This reads the config data using PaintConfig
+        GenerateSquaresConfig generateSquaresConfig = new GenerateSquaresConfig();  // Reads the config via PaintConfig
+        project.setGenerateSquaresConfig(generateSquaresConfig);
 
         // -- See if we should generate background plots ---
-        boolean showPlots = PaintConfig.getBoolean(GENERATE_SQUARES, BACKGROUND_PLOTS, false);
+        boolean showPlots = generateSquaresConfig.isBackgroundPlots();
 
         // --- Run each experiment ---
         for (String experimentName : experimentNames) {

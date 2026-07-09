@@ -45,6 +45,7 @@ package paint.fiji.trackmate;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 import paint.generatesquares.app.GenerateSquaresHeadless;
+import paint.shared.config.TrackMateConfig;
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.dialogs.ProjectDialog;
 import paint.shared.utils.PaintPrefs;
@@ -203,7 +204,7 @@ public class TrackMateUIBatch extends RunTrackMateOnProjectSweep implements Comm
                         null
                 );
 
-                if (success && PaintConfig.getBoolean("TrackMate", "Run Generate Squares After", true)) {
+                if (success && new TrackMateConfig().isRunGenerateSquaresAfter()) {
                     PaintLogger.infof("TrackMate finished successfully. Starting Generate Squares...");
                     GenerateSquaresHeadless.run(currentProjectRoot, project.getExperimentNames());
                     PaintLogger.infof("Generate Squares completed successfully.");

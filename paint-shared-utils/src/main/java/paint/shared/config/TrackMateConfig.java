@@ -84,6 +84,7 @@ public class TrackMateConfig {
     private final boolean allowTrackSplitting;
     private final boolean allowTrackMerging;
     private final double  mergingMaxDistance;
+    private final boolean runGenerateSquaresAfter;
 
     /**
      * Constructs a configuration object for TrackMate using the parameters provided
@@ -110,6 +111,7 @@ public class TrackMateConfig {
         this.allowTrackSplitting          = PaintConfig.getBoolean( TRACKMATE, ALLOW_TRACK_SPLITTING,          false);
         this.allowTrackMerging            = PaintConfig.getBoolean( TRACKMATE, ALLOW_TRACK_MERGING,            false);
         this.mergingMaxDistance           = PaintConfig.getDouble(  TRACKMATE, MERGING_MAX_DISTANCE,           15.0);
+        this.runGenerateSquaresAfter      = PaintConfig.getBoolean( TRACKMATE, RUN_GENERATE_SQUARES_AFTER,     false);
     }
 
 
@@ -234,6 +236,13 @@ public class TrackMateConfig {
         return mergingMaxDistance;
     }
 
+    /**
+     * @return {@code true} if Generate Squares should run automatically after TrackMate (default {@code false}).
+     */
+    public boolean isRunGenerateSquaresAfter() {
+        return runGenerateSquaresAfter;
+    }
+
     @Override
     public String toString() {
 
@@ -254,6 +263,7 @@ public class TrackMateConfig {
                 "                  Do Median Filtering             = "  + medianFiltering + "\n" +
                 "                  Allow Track Splitting           = "  + allowTrackSplitting + "\n" +
                 "                  Allow Track Merging             = "  + allowTrackMerging + "\n" +
-                "                  Merging Max Distance            = "  + mergingMaxDistance + "\n";
+                "                  Merging Max Distance            = "  + mergingMaxDistance + "\n" +
+                "                  Run Generate Squares After      = "  + runGenerateSquaresAfter + "\n";
     }
 }

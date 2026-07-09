@@ -99,7 +99,7 @@ public class SquaresParamsPanel {
         if (mode == DialogMode.TRACKMATE_BATCH) {
             runAfterTrackMate = new JCheckBox(
                     "Run Generate Squares after TrackMate",
-                    PaintConfig.getBoolean(TRACKMATE, RUN_GENERATE_SQUARES_AFTER, true)
+                    PaintConfig.getBoolean(TRACKMATE, RUN_GENERATE_SQUARES_AFTER, false)
             );
             pg.gridx = 0; pg.gridy = row; pg.gridwidth = 2;
             panel.add(runAfterTrackMate, pg);
