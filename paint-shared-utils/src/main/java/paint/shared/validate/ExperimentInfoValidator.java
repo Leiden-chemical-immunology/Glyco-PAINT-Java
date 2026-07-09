@@ -14,7 +14,7 @@
  *    condition share identical experimental parameters.
  *
  *  KEY FEATURES:
- *    • Automated header and type validation using {@link ExperimentInfo.Column}.
+ *    • Automated header and type validation using {@link paint.shared.objects.ExperimentInfo.Column ExperimentInfo.Column}.
  *    • Logical consistency checks for shared experimental conditions.
  *    • Integrated with the global validation framework.
  *
@@ -44,7 +44,7 @@ import java.util.List;
  * Validates the structure and data of {@code experiment_info.csv}.
  *
  * <p>This updated version uses the embedded schema in
- * {@link ExperimentInfo.Column} instead of ExperimentInfoSchema.</p>
+ * {@link paint.shared.objects.ExperimentInfo.Column ExperimentInfo.Column} instead of ExperimentInfoSchema.</p>
  *
  * <p>Performs:</p>
  * <ul>
@@ -61,7 +61,7 @@ public final class ExperimentInfoValidator extends AbstractFileValidator {
 
     /**
      * Validates that the actual CSV headers match the expected headers defined in
-     * {@link ExperimentInfo.Column}.
+     * {@link paint.shared.objects.ExperimentInfo.Column ExperimentInfo.Column}.
      *
      * @param actualHeader the list of headers found in the CSV file
      * @param result       the {@link ValidationResult} to record any mismatches
@@ -84,7 +84,7 @@ public final class ExperimentInfoValidator extends AbstractFileValidator {
 
     /**
      * Returns the expected {@link ColumnType} for each column in the experiment info CSV,
-     * as defined in {@link ExperimentInfo.Column}.
+     * as defined in {@link paint.shared.objects.ExperimentInfo.Column ExperimentInfo.Column}.
      *
      * @return an array of expected column types
      */

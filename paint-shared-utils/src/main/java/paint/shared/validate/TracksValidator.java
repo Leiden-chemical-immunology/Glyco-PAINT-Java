@@ -13,7 +13,7 @@
  *    compatible data types (e.g., Integer, Double, String).
  *
  *  KEY FEATURES:
- *    • Automated header validation using the {@link Track.Column} enum.
+ *    • Automated header validation using the {@link paint.shared.objects.Track.Column Track.Column} enum.
  *    • Column type checking based on the Tablesaw {@link ColumnType} API.
  *    • Reusable within the PAINT validation pipeline.
  *
@@ -40,7 +40,7 @@ import java.util.List;
 
 /**
  * Validates the schema of {@code tracks.csv} by checking header correctness
- * and column data types according to {@link Track.Column}.
+ * and column data types according to {@link paint.shared.objects.Track.Column Track.Column}.
  *
  * <p>This version no longer depends on TrackSchema; it uses the embedded
  * schema directly inside the Track class.</p>
@@ -53,7 +53,7 @@ public final class TracksValidator extends AbstractFileValidator {
 
     /**
      * Validates that the actual CSV headers match the expected headers defined in
-     * {@link Track.Column}.
+     * {@link paint.shared.objects.Track.Column Track.Column}.
      *
      * @param actualHeader the list of headers found in the CSV file
      * @param result       the {@link ValidationResult} to record any mismatches
@@ -76,7 +76,7 @@ public final class TracksValidator extends AbstractFileValidator {
 
     /**
      * Returns the expected {@link ColumnType} for each column in the tracks CSV,
-     * as defined in {@link Track.Column}.
+     * as defined in {@link paint.shared.objects.Track.Column Track.Column}.
      *
      * @return an array of expected column types
      */

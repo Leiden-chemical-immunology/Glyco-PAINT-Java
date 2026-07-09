@@ -13,7 +13,7 @@
  *    conditions are consistently documented across all recordings.
  *
  *  KEY FEATURES:
- *    • Automated header and type validation using {@link Recording.Column}.
+ *    • Automated header and type validation using {@link paint.shared.objects.Recording.Column Recording.Column}.
  *    • Consistency checks for shared experimental conditions.
  *    • Robust integration with the Tablesaw and PAINT validation framework.
  *
@@ -43,7 +43,7 @@ import java.util.List;
  * Validates the structural and logical integrity of {@code recordings.csv}.
  *
  * <p>This version has been updated to use the embedded schema defined in
- * {@link Recording.Column} instead of RecordingSchema.</p>
+ * {@link paint.shared.objects.Recording.Column Recording.Column} instead of RecordingSchema.</p>
  *
  * <p>Performs:</p>
  * <ul>
@@ -60,7 +60,7 @@ final class RecordingsValidator extends AbstractFileValidator {
 
     /**
      * Validates that the actual CSV headers match the expected headers defined in
-     * {@link Recording.Column}.
+     * {@link paint.shared.objects.Recording.Column Recording.Column}.
      *
      * @param actualHeader the list of headers found in the CSV file
      * @param result       the {@link ValidationResult} to record any mismatches
@@ -82,7 +82,7 @@ final class RecordingsValidator extends AbstractFileValidator {
 
     /**
      * Returns the expected {@link ColumnType} for each column in the recordings CSV,
-     * as defined in {@link Recording.Column}.
+     * as defined in {@link paint.shared.objects.Recording.Column Recording.Column}.
      *
      * @return an array of expected column types
      */

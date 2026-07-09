@@ -13,7 +13,7 @@
  *    compatible data types (e.g., Integer, Double, String).
  *
  *  KEY FEATURES:
- *    • Automated header validation using the {@link Square.Column} enum.
+ *    • Automated header validation using the {@link paint.shared.objects.Square.Column Square.Column} enum.
  *    • Column type checking based on the Tablesaw {@link ColumnType} API.
  *    • Lightweight integration with the validation pipeline.
  *
@@ -40,7 +40,7 @@ import java.util.List;
 
 /**
  * Validates the schema of {@code squares.csv} by checking header correctness
- * and column data types according to {@link Square.Column}.
+ * and column data types according to {@link paint.shared.objects.Square.Column Square.Column}.
  *
  * <p>This version no longer depends on SquareSchema; it uses the
  * embedded schema inside the entity class.</p>
@@ -53,7 +53,7 @@ final class SquaresValidator extends AbstractFileValidator {
 
     /**
      * Validates that the actual CSV headers match the expected headers defined in
-     * {@link Square.Column}.
+     * {@link paint.shared.objects.Square.Column Square.Column}.
      *
      * @param actualHeader the list of headers found in the CSV file
      * @param result       the {@link ValidationResult} to record any mismatches
@@ -76,7 +76,7 @@ final class SquaresValidator extends AbstractFileValidator {
 
     /**
      * Returns the expected {@link ColumnType} for each column in the squares CSV,
-     * as defined in {@link Square.Column}.
+     * as defined in {@link paint.shared.objects.Square.Column Square.Column}.
      *
      * @return an array of expected column types
      */
