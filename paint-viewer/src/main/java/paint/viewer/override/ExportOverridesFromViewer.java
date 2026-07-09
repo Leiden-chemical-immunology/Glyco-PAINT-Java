@@ -159,7 +159,10 @@ public class ExportOverridesFromViewer {
         // Does the project root exist?
         if (!Files.exists(projectPath) || !Files.isDirectory(projectPath)) {
             PaintLogger.errorf("Error: Specified Project root '%s' does not exist or is not a directory", projectPath);
-            System.exit(2);
+            // Throw (consistent with the other error paths in this method) rather
+            // than System.exit: exportOverrides is called from the viewer GUI, where
+            // exiting would kill the whole application. The GUI caller catches this.
+            throw new RuntimeException("Project root does not exist or is not a directory: " + projectPath);
         }
 
 
