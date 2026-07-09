@@ -11,13 +11,13 @@
         <version>0.0.138-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>paint-regression</artifactId>
+    <artifactId>paint-compare</artifactId>
     <packaging>jar</packaging>
 
     <!-- =============================================================== -->
     <!-- Metadata -->
     <!-- =============================================================== -->
-    <name>Regression</name>
+    <name>Compare</name>
     <description>Regression for all Squares and Tracks</description>
 
     <!-- =============================================================== -->
@@ -46,36 +46,6 @@
 
     </dependencies>
 
-    <!-- =============================================================== -->
-    <!-- Build configuration -->
-    <!-- =============================================================== -->
-    <build>
-        <plugins>
-
-            <!-- Create executable fat JAR -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <mainClass>paint.regression.compare.RegressionComparator</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+    <!-- This module is a plain library (comparison engine + Python parity tools);
+         it has no runnable entry point, so no assembly/fat-jar is built. -->
 </project>

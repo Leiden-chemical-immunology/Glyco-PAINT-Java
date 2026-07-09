@@ -102,11 +102,11 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Shared regression comparison engine (TableComparer/CsvSource/ComparisonResult),
+        <!-- Shared comparison engine (TableComparer/CsvSource/ComparisonResult),
              reused by the end-to-end regression gate test. -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>paint-regression</artifactId>
+            <artifactId>paint-compare</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

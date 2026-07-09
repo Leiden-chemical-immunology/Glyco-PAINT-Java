@@ -66,7 +66,7 @@
         <module>paint-viewer</module>
         <module>paint-get-omero</module>
         <module>paint-launcher</module>
-        <module>paint-regression</module>
+        <module>paint-compare</module>
         <module>paint-development-utils</module>
 
         <!-- Installer aggregator -->
