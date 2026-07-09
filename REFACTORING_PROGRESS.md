@@ -1,7 +1,7 @@
 # Glyco-PAINT-Java — Refactoring Progress
 
 **Date:** 2026-07-07
-**Branch:** `develop` (19 commits ahead of `main`; `main` untouched at tagged `stable-baseline-0.0.138`)
+**Branch:** `develop` (27 commits ahead of `main`; `main` untouched at tagged `stable-baseline-0.0.138`)
 **Build status:** `mvn clean install` green across all 13 modules.
 
 This document tracks what has been done in the refactoring effort and what
@@ -67,17 +67,30 @@ Two levels of protection now exist:
 - Deduplicated the four copy-pasted TableIO schema helpers into one generic
   `BaseTableIO.newEmptyTable(...)`. *(eac48f2f)*
 
-### Robustness (R1–R4 from the review)
-- **R4** — `ConditionConsistencyChecker` and `SweepConfig` now read with explicit
-  UTF-8 instead of the platform default charset. *(7595aa55)*
-- **R2** — `PaintLogger` file writes are now thread-safe (single synchronized
-  helper; the shared writer can no longer be corrupted by concurrent threads).
-  *(8e40ab0e)*
+### Robustness (R1–R10 from the review — complete)
+- **R1** — TrackMate failures log the real cause, now as a full stack trace via
+  the new logger overload, instead of swallowing the exception. *(3fc18e47, ef3bf6ce)*
+- **R2** — `PaintLogger` file writes are thread-safe (single synchronized helper;
+  the shared writer can no longer be corrupted by concurrent threads). *(8e40ab0e)*
 - **R3** — `ExperimentInfo(Map)` fails fast on a malformed row instead of leaving
-  a half-built object; the sole caller already skips bad records. Netted by a new
-  test. *(717ed1c0)*
-- **R1** — TrackMate failures now log the real cause instead of swallowing the
-  exception behind a generic "failed or timed out". *(3fc18e47)*
+  a half-built object; the sole caller already skips bad records. Netted. *(717ed1c0)*
+- **R4** — `ConditionConsistencyChecker` and `SweepConfig` read with explicit
+  UTF-8 instead of the platform default charset. *(7595aa55)*
+- **R5 / A2** — the data loader (`ExperimentDataLoader`) no longer pops a modal
+  dialog on a bad layout (which hung the headless pipeline); it logs instead.
+  *(89dfefa7)* (`ProjectPathResolver`'s dialogs are a genuine interactive GUI
+  helper — reclassified as the A1 layering concern, deferred.)
+- **R6** — `SweepConfig` parses defensively: a non-object file → a clear
+  `IOException`, and a non-boolean flag disables that attribute instead of
+  throwing. Netted. *(d4f506ae)*
+- **R7** — a failed `Viewer` directory creation is logged, not swallowed. *(d587a3f1)*
+- **R8** — new `PaintLogger.error(String, Throwable)` overload (netted); the
+  genuine app-code `printStackTrace()` sites now route through it.
+  *(ef3bf6ce, 2353d0d7)*
+- **R9** — `TiffMoviePlayer` restores redirected stdout in a `finally`, so the
+  process's stdout is never left permanently silenced. *(e37a4ff6)*
+- **R10** — GUI-called `exportOverrides` throws instead of `System.exit`, so a
+  bad path can't kill the whole viewer (and Fiji). *(2a74b608)*
 
 ---
 
@@ -92,10 +105,10 @@ Two levels of protection now exist:
   appears (concurrent projects, parallel test isolation).
 
 ### Architecture
-- **A1 / A2** — Swing UI lives inside `paint-shared-utils`, and the I/O layer
-  (`ExperimentDataLoader`, `ProjectPathResolver`) pops `JOptionPane` directly,
-  which is unsafe from headless/worker contexts. Extract UI out of the base
-  module; return errors instead of showing dialogs from I/O.
+- **A1** — Swing UI still lives inside `paint-shared-utils` (the `dialogs/`
+  package, `PaintConsoleWindow`, and `ProjectPathResolver`'s interactive
+  dialogs). Extract it into a UI module so the base layer is UI-free. (A2 — the
+  I/O layer popping a dialog — is **done**; see R5 above.)
 - **A5** — the Generate Squares pipeline is static and interleaves load → compute
   → write, making the core hard to unit-test in isolation (the gate covers it
   end-to-end, but not in pieces). Split into a pure service + I/O adapters.
@@ -103,18 +116,6 @@ Two levels of protection now exist:
   coupled to Tablesaw; many `main()` entry points in library classes; stale
   package/dependency banners in file headers; `paint-generate-squares` pulling
   heavyweight imaging deps it may not need.
-
-### Robustness (R5–R10)
-- Modal dialogs from headless/off-EDT code (overlaps A2).
-- Unvalidated JSON coercion in `SweepConfig` (`getAsBoolean` / `getAsJsonObject`
-  can throw on malformed input).
-- Swallowed `Files.createDirectories` failure in `WriteSquareOverride`.
-- `printStackTrace`/`System.err` instead of `PaintLogger` in several places
-  (R8) — output can be lost in a packaged app. Consider a `PaintLogger` overload
-  that accepts a `Throwable`.
-- Global `System.setOut` redirect from a worker thread (`TiffMoviePlayer`, R9) —
-  restore in a `finally`.
-- `System.exit` inside viewer library code (`ExportOverridesFromViewer`, R10).
 
 ### Maintainability (M3–M9)
 - **M3** — the macOS and Windows installers are ~90% duplicated (~500 lines).
