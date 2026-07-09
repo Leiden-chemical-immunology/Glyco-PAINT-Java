@@ -740,23 +740,9 @@ public class TracksCsvComparatorPythonJava {
      * No quoting is processed beyond trimming — suitable for standard CSVs.
      */
     private static List<Map<String, String>> readCsv(Path path) throws IOException {
-        List<Map<String, String>> rows = new ArrayList<>();
-        try (BufferedReader br = Files.newBufferedReader(path)) {
-            String headerLine = br.readLine();
-            if (headerLine == null) {
-                return rows;
-            }
-            String[] headers = headerLine.split(",", -1);
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",", -1);
-                Map<String, String> map = new LinkedHashMap<>();
-                for (int i = 0; i < headers.length; i++) {
-                    map.put(headers[i].trim(), i < parts.length ? parts[i].trim() : "");
-                }
-                rows.add(map);
-            }
-        }
+        // Robust CSV parsing (handles quoted commas) via the shared CsvSource,
+        // replacing the previous hand-rolled line.split(",").
+        List<Map<String, String>> rows = paint.regression.compare.CsvSource.read(path);
         System.out.println("Loaded " + rows.size() + " rows from " + path.getFileName());
         return rows;
     }

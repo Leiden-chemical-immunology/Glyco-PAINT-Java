@@ -256,27 +256,9 @@ public class SquaresCsvComparatorPythonJava {
      * @throws IOException if there is an error opening or reading the file
      */
     private static List<Map<String, String>> readCsv(Path p) throws IOException {
-        List<Map<String, String>> rows = new ArrayList<>();
-        try (BufferedReader br = Files.newBufferedReader(p)) {
-            String header = br.readLine();
-            if (header == null) {
-                return rows;
-            }
-            String[] h = header.split(",", -1);
-            String line;
-            while ((line = br.readLine()) != null) {
-                if (line.trim().isEmpty()) {
-                    continue;
-                }
-                String[] parts = line.split(",", -1);
-                Map<String, String> m = new LinkedHashMap<>();
-                for (int i = 0; i < h.length; i++) {
-                    m.put(h[i].trim(), i < parts.length ? parts[i].trim() : "");
-                }
-                rows.add(m);
-            }
-        }
-        return rows;
+        // Robust CSV parsing (handles quoted commas) via the shared CsvSource,
+        // replacing the previous hand-rolled line.split(",").
+        return paint.regression.compare.CsvSource.read(p);
     }
 
     /**
