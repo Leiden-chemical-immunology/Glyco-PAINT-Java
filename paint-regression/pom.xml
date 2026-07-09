@@ -31,6 +31,12 @@
             <artifactId>paint-shared-utils</artifactId>
         </dependency>
 
+        <!-- Robust CSV parsing (version managed by parent POM) -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+        </dependency>
+
         <!-- JUnit 5 (for testing) -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
