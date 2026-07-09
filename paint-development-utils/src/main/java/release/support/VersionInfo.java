@@ -18,12 +18,12 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package release;
+package release.support;
 
-final class VersionInfo {
-    final String releaseVersion;
-    final String nextDevVersion;
-    VersionInfo(String release, String next) {
+public final class VersionInfo {
+    public final String releaseVersion;
+    public final String nextDevVersion;
+    public VersionInfo(String release, String next) {
         this.releaseVersion = release;
         this.nextDevVersion = next;
     }

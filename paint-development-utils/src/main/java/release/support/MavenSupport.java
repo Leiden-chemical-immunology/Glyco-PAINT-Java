@@ -18,7 +18,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package release;
+package release.support;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -27,11 +27,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-final class MavenSupport {
+public final class MavenSupport {
     private MavenSupport() {
     }
 
-    static void rebuildSharedUtils() throws IOException, InterruptedException {
+    public static void rebuildSharedUtils() throws IOException, InterruptedException {
         Path utilsDir = PathsConfig.BASE_PATH.resolve("paint-shared-utils");
         System.out.println("\n🧱 Building paint-shared-utils...");
         if (!Files.exists(utilsDir.resolve("pom.xml"))) {
@@ -56,7 +56,7 @@ final class MavenSupport {
         System.out.println("✅ paint-shared-utils installed successfully (refreshed local repo).");
     }
 
-    static void buildAndCollect(Path moduleDir, String profile, String glob, Path destDir)
+    public static void buildAndCollect(Path moduleDir, String profile, String glob, Path destDir)
             throws IOException, InterruptedException {
 
         String localRepo = System.getProperty("user.home") + "/.m2/repository";
@@ -85,7 +85,7 @@ final class MavenSupport {
     }
 
     @SuppressWarnings("SameParameterValue")
-    static void buildAndCollectMacApp(Path moduleDir, String profile, Path destDir)
+    public static void buildAndCollectMacApp(Path moduleDir, String profile, Path destDir)
             throws IOException, InterruptedException {
 
         String localRepo = System.getProperty("user.home") + "/.m2/repository";
@@ -116,7 +116,7 @@ final class MavenSupport {
         Thread.sleep(2000);
     }
 
-    static void installParentPom() throws IOException, InterruptedException {
+    public static void installParentPom() throws IOException, InterruptedException {
         Path parentPom = PathsConfig.BASE_PATH.resolve("pom.xml");
         System.out.println("\n🧩 Installing parent POM locally...");
         if (!Files.exists(parentPom)) {
@@ -140,7 +140,7 @@ final class MavenSupport {
         System.out.println("✅ Parent POM installed locally.");
     }
 
-    static void installParentPomAsRelease(String releaseVersion) throws IOException, InterruptedException {
+    public static void installParentPomAsRelease(String releaseVersion) throws IOException, InterruptedException {
         Path parentPom = PathsConfig.BASE_PATH.resolve("pom.xml");
         if (!Files.exists(parentPom)) {
             System.out.println("⚠️  Parent POM not found — skipping release install.");
@@ -191,7 +191,7 @@ final class MavenSupport {
         }
     }
 
-    static void runMavenModule(String module, String version) throws Exception {
+    public static void runMavenModule(String module, String version) throws Exception {
         List<String> cmd = Arrays.asList(
                 "mvn", "-q", "-U", "clean", "package",
                 "-pl", module, "-am",
@@ -206,7 +206,7 @@ final class MavenSupport {
         }
     }
 
-    static void alignAllPomVersions(String newVersion) throws IOException, InterruptedException {
+    public static void alignAllPomVersions(String newVersion) throws IOException, InterruptedException {
         System.out.println("🔄 Aligning all POM versions to " + newVersion + " using Maven Versions Plugin...");
 
         Path projectRoot = PathsConfig.BASE_PATH.toAbsolutePath();
@@ -241,7 +241,7 @@ final class MavenSupport {
         System.out.println("✅ All modules (including nested) now aligned to version " + newVersion);
     }
 
-    static void runMaven(List<String> cmd, Path dir, String label) throws IOException, InterruptedException {
+    public static void runMaven(List<String> cmd, Path dir, String label) throws IOException, InterruptedException {
         System.out.println("🔧 Running (" + label + "): " + String.join(" ", cmd));
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(dir.toFile());

@@ -18,7 +18,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package release;
+package release.support;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -33,11 +33,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
-final class PomUtils {
+public final class PomUtils {
     private PomUtils() {
     }
 
-    static String getVersionFromPom(Path pomPath) {
+    public static String getVersionFromPom(Path pomPath) {
         try (InputStream in = Files.newInputStream(pomPath)) {
             DocumentBuilder b    = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             Document        doc  = b.parse(in);
@@ -52,7 +52,7 @@ final class PomUtils {
     }
 
     @SuppressWarnings("SameParameterValue")
-    static void removeSnapshotFromAllPoms(Path base) throws IOException {
+    public static void removeSnapshotFromAllPoms(Path base) throws IOException {
         try (java.util.stream.Stream<Path> files = Files.walk(base)) {
             files.filter(p -> p.getFileName().toString().equals("pom.xml"))
                     .forEach(p -> {
@@ -70,7 +70,7 @@ final class PomUtils {
         }
     }
 
-    static VersionInfo computeVersions(String currentVersion) {
+    public static VersionInfo computeVersions(String currentVersion) {
         String base = currentVersion.replace("-SNAPSHOT", "").trim();
         String[] parts = base.split("\\.");
         int lastNum = Integer.parseInt(parts[parts.length - 1]);

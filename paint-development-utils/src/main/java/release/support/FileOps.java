@@ -18,20 +18,20 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package release;
+package release.support;
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.Comparator;
 import java.util.function.Predicate;
 
-final class FileOps {
+public final class FileOps {
 
     private FileOps() {
 
     }
 
-    static void copyMatchingFiles(Path fromDir, String glob, Path destDir) throws IOException {
+    public static void copyMatchingFiles(Path fromDir, String glob, Path destDir) throws IOException {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(fromDir, glob)) {
             for (Path file : stream) {
                 Files.copy(file, destDir.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
@@ -40,7 +40,7 @@ final class FileOps {
         }
     }
 
-    static void copyDirectory(Path source, Path target) throws IOException {
+    public static void copyDirectory(Path source, Path target) throws IOException {
         try (java.util.stream.Stream<Path> paths = Files.walk(source)) {
             paths.forEach(path -> {
                 try {
@@ -57,7 +57,7 @@ final class FileOps {
         }
     }
 
-    static void zipPayload(Path appDir, Path pluginDir, Path outputZip) throws Exception {
+    public static void zipPayload(Path appDir, Path pluginDir, Path outputZip) throws Exception {
         // zip -qry outputZip .
         ProcessBuilder pb = new ProcessBuilder("zip", "-qry", outputZip.toString(), ".");
         pb.directory(appDir.toFile());
@@ -87,7 +87,7 @@ final class FileOps {
         }
     }
 
-    static Path latestMatching(Path dir, Predicate<String> fileNamePredicate) throws IOException {
+    public static Path latestMatching(Path dir, Predicate<String> fileNamePredicate) throws IOException {
         try (java.util.stream.Stream<Path> stream = Files.list(dir)) {
             return stream
                     .filter(p -> fileNamePredicate.test(p.getFileName().toString()))

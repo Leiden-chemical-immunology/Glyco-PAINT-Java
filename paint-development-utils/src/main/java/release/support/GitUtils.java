@@ -18,7 +18,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package release;
+package release.support;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,11 +27,11 @@ import java.nio.file.Path;
 import java.util.List;
 
 @SuppressWarnings("SameParameterValue")
-final class GitUtils {
+public final class GitUtils {
     private GitUtils() {
     }
 
-    static void runCommand(List<String> cmd, Path dir) throws IOException, InterruptedException {
+    public static void runCommand(List<String> cmd, Path dir) throws IOException, InterruptedException {
         System.out.println("🔧 Running: " + String.join(" ", cmd));
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(dir.toFile());
@@ -42,7 +42,7 @@ final class GitUtils {
         }
     }
 
-    static boolean tagExists(String tagName, Path repoDir) throws IOException, InterruptedException {
+    public static boolean tagExists(String tagName, Path repoDir) throws IOException, InterruptedException {
         ProcessBuilder checkPb = new ProcessBuilder("git", "tag", "--list", tagName);
         checkPb.directory(repoDir.toFile());
         Process checkProc = checkPb.start();
@@ -59,7 +59,7 @@ final class GitUtils {
         return exists;
     }
 
-    static void createLocalTag(String tagName, Path repoDir) throws IOException, InterruptedException {
+    public static void createLocalTag(String tagName, Path repoDir) throws IOException, InterruptedException {
         System.out.println("🏷️  Creating local tag " + tagName);
         ProcessBuilder tagPb = new ProcessBuilder("git", "tag", "-a", tagName, "-m", "Release " + tagName);
         tagPb.directory(repoDir.toFile());
@@ -71,7 +71,7 @@ final class GitUtils {
         System.out.println("✅ Created local tag " + tagName);
     }
 
-    static void pushTag(String tagName, Path repoDir) throws IOException, InterruptedException {
+    public static void pushTag(String tagName, Path repoDir) throws IOException, InterruptedException {
         System.out.println("📤 Pushing tag " + tagName);
         ProcessBuilder pushPb = new ProcessBuilder("git", "push", "origin", tagName);
         pushPb.directory(repoDir.toFile());

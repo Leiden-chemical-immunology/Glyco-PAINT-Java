@@ -18,18 +18,18 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package release;
+package release.support;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
 
-final class ProcessRunner {
+public final class ProcessRunner {
     private ProcessRunner() {
     }
 
-    static void enforceJava8(ProcessBuilder pb) {
+    public static void enforceJava8(ProcessBuilder pb) {
         try {
             Process proc = new ProcessBuilder("/usr/libexec/java_home", "-v", "1.8").start();
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
@@ -48,7 +48,7 @@ final class ProcessRunner {
         }
     }
 
-    static Process startAndFilterOutput(ProcessBuilder pb, String moduleName) throws IOException {
+    public static Process startAndFilterOutput(ProcessBuilder pb, String moduleName) throws IOException {
         pb.redirectErrorStream(true);
         enforceJava8(pb);
         Process process = pb.start();
