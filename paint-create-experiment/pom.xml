@@ -77,7 +77,7 @@
                             <Implementation-Version>${project.version}</Implementation-Version>
                         </manifestEntries>
                     </archive>
-                    <appendAssemblyId>false</appendAssemblyId>
+                    <appendAssemblyId>true</appendAssemblyId>
                 </configuration>
                 <executions>
                     <execution>
@@ -130,7 +130,7 @@
                                         <mkdir dir="${app.bundle}/Contents/Resources"/>
 
                                         <!-- Copy binaries and resources -->
-                                        <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
+                                        <copy file="${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar"
                                               todir="${app.bundle}/Contents/Java" failonerror="false"/>
                                         <copy file="${app.icon.macos}" todir="${app.bundle}/Contents/Resources" failonerror="false"/>
 
@@ -171,7 +171,7 @@ else
   JAVA_CMD="$JAVA_HOME/bin/java"
 fi
 
-exec "$JAVA_CMD" -Xmx2G -jar "${project.artifactId}-${project.version}.jar"
+exec "$JAVA_CMD" -Xmx2G -jar "${project.artifactId}-${project.version}-jar-with-dependencies.jar"
 ]]></echo>
                                         <fixcrlf eol="unix" file="${app.bundle}/Contents/MacOS/launch"/>
                                         <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
@@ -221,7 +221,7 @@ exec "$JAVA_CMD" -Xmx2G -jar "${project.artifactId}-${project.version}.jar"
                                 </goals>
                                 <configuration>
                                     <outfile>${project.build.directory}/${app.name}.exe</outfile>
-                                    <jar>${project.build.directory}/${project.artifactId}-${project.version}.jar</jar>
+                                    <jar>${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar</jar>
                                     <dontWrapJar>false</dontWrapJar>
                                     <icon>${app.icon.windows}</icon>
                                     <jre>

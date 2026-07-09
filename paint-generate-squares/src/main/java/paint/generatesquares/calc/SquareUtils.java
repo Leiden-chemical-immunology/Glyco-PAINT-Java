@@ -67,7 +67,7 @@ public class SquareUtils {
      *      threshold = mean + 2 * standardDeviation
      * <p>
      * The mean is recalculated each iteration until:
-     *   • It stabilizes (relative change < EPSILON), or
+     *   • It stabilizes (relative change &lt; EPSILON), or
      *   • A maximum number of iterations is reached.
      *
      * @param squares List of squares containing track counts; must not be null or empty.
