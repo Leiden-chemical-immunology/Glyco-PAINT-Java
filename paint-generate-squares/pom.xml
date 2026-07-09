@@ -152,6 +152,12 @@
                         </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <!-- Attach the fat jar under a classifier so the module's MAIN artifact
+                                 stays a thin library jar. Downstream fat jars (e.g. paint-fiji-plugin)
+                                 then depend on the thin jar and resolve shared libraries once, instead
+                                 of re-bundling this module's already-shaded copy. -->
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>standalone</shadedClassifierName>
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
@@ -219,7 +225,7 @@
                                         <mkdir dir="${app.bundle}/Contents/Java"/>
                                         <mkdir dir="${app.bundle}/Contents/Resources"/>
 
-                                        <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
+                                        <copy file="${project.build.directory}/${project.artifactId}-${project.version}-standalone.jar"
                                               todir="${app.bundle}/Contents/Java" failonerror="false"/>
                                         <copy file="${app.icon.macos}" todir="${app.bundle}/Contents/Resources" failonerror="false"/>
 
@@ -256,7 +262,7 @@ else
   JAVA_CMD="$JAVA_HOME/bin/java"
 fi
 
-exec "$JAVA_CMD" -Xmx2G -jar "${project.artifactId}-${project.version}.jar"
+exec "$JAVA_CMD" -Xmx2G -jar "${project.artifactId}-${project.version}-standalone.jar"
 ]]></echo>
                                         <fixcrlf eol="unix" file="${app.bundle}/Contents/MacOS/launch"/>
                                         <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
@@ -305,7 +311,7 @@ exec "$JAVA_CMD" -Xmx2G -jar "${project.artifactId}-${project.version}.jar"
                                 </goals>
                                 <configuration>
                                     <outfile>${project.build.directory}/${app.name}.exe</outfile>
-                                    <jar>${project.build.directory}/${project.artifactId}-${project.version}.jar</jar>
+                                    <jar>${project.build.directory}/${project.artifactId}-${project.version}-standalone.jar</jar>
                                     <dontWrapJar>false</dontWrapJar>
                                     <icon>${app.icon.windows}</icon>
                                     <jre>

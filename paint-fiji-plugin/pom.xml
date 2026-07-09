@@ -149,6 +149,15 @@
                                         <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
                                     </manifestEntries>
                                 </transformer>
+                                <!-- Merge duplicated java.util.ServiceLoader files instead of dropping all but one. -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <!-- Concatenate the legal-notice text files that every bundled jar ships,
+                                     silencing the harmless "overlapping resource" warnings for these. -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer"/>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/DEPENDENCIES</resource>
+                                </transformer>
                             </transformers>
                         </configuration>
                     </execution>
