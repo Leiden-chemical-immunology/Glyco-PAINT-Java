@@ -111,25 +111,30 @@ public class TiffMoviePlayer {
                 public void write(int b) { /* ignore console output */ }
             }));
 
-            ImagePlus imp = IJ.openImage(tiffPath);
+            ImagePlus imp;
+            try {
+                imp = IJ.openImage(tiffPath);
 
-            if (imp == null) {
-                try {
-                    ImporterOptions opts = new ImporterOptions();
-                    opts.setId(tiffPath);
-                    opts.setAutoscale(true);
-                    opts.setStackOrder(ImporterOptions.ORDER_XYCZT);
+                if (imp == null) {
+                    try {
+                        ImporterOptions opts = new ImporterOptions();
+                        opts.setId(tiffPath);
+                        opts.setAutoscale(true);
+                        opts.setStackOrder(ImporterOptions.ORDER_XYCZT);
 
-                    ImagePlus[] imps = BF.openImagePlus(opts);
-                    if (imps != null && imps.length > 0) {
-                        imp = imps[0];
+                        ImagePlus[] imps = BF.openImagePlus(opts);
+                        if (imps != null && imps.length > 0) {
+                            imp = imps[0];
+                        }
+                    } catch (Exception bfErr) {
+                        PaintLogger.error("Failed to open image with Bio-Formats", bfErr);
                     }
-                } catch (Exception bfErr) {
-                    PaintLogger.error("Failed to open image with Bio-Formats", bfErr);
                 }
+            } finally {
+                // Always restore stdout, even if opening throws, so the process's
+                // console output isn't left permanently silenced.
+                System.setOut(originalOut);
             }
-            // Restore normal stdout
-            System.setOut(originalOut);
 
             // Close loading dialog
             SwingUtilities.invokeLater(loadingDialog::dispose);
