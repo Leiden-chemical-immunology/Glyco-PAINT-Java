@@ -62,7 +62,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>paint.regression.CompareAllSquares</mainClass>
+                            <mainClass>paint.regression.compare.RegressionComparator</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
