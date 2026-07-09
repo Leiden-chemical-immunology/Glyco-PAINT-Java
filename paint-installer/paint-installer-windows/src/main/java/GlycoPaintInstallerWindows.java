@@ -58,7 +58,6 @@
 =============================================================================*/
 
 import javax.swing.*;
-import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.io.*;
 import java.nio.file.*;
@@ -227,10 +226,14 @@ public class GlycoPaintInstallerWindows {
        ====================================================================== */
 
     private void show() {
+        // Use user.home as the default parent (matches the macOS installer). The
+        // previous FileSystemView.getDefaultDirectory() call resolves Windows shell
+        // "special" folders and can NPE (e.g. on VMs / redirected or network
+        // profiles), crashing the installer before its window even appears.
         String defaultParent = PaintPrefs.getString(
                 PREF_NODE,
                 KEY_PARENT_DIR,
-                FileSystemView.getFileSystemView().getDefaultDirectory().getAbsolutePath()
+                System.getProperty("user.home")
         );
 
         Path parent = Paths.get(defaultParent);
