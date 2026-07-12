@@ -41,6 +41,7 @@
 
 package paint.viewer.ui.frames;
 
+import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.objects.Project;
 import paint.shared.utils.PaintLogger;
@@ -158,22 +159,25 @@ public class ViewerFrame extends JFrame implements
         setLayout(new BorderLayout());
         setResizable(false);
 
-        // Validate grid configuration: can only be a limited set
-        int     numberOfSquaresInRecording = PaintConfig.getInt(GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING, -1);
-        int[]   validSquareLayouts         = {25, 100, 225, 400, 900};
-        boolean isValidSquareLayout        = false;
+        // The grid must be square. Validate exactly that, rather than checking against a hardcoded
+        // list of layouts: the list used to be {25, 100, 225, 400, 900} while the dropdown the user
+        // actually picks from offers 5x5 .. 40x40 ({25, 100, 225, 400, 625, 900, 1225, 1600}), so
+        // choosing 25x25, 35x35 or 40x40 made the Viewer reject a perfectly valid project.
+        //
+        // Use the same one definition of the square-count -> grid-side conversion as the pipeline.
+        int numberOfSquaresInRecording   = PaintConfig.getInt(GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING, -1);
+        int numberOfSquareInOneDimension = GenerateSquaresConfig.gridSizeFor(numberOfSquaresInRecording);
 
-        for (int valid : validSquareLayouts) {
-            if (numberOfSquaresInRecording == valid) {
-                isValidSquareLayout = true;
-                break;
-            }
+        if (numberOfSquaresInRecording <= 0
+                || numberOfSquareInOneDimension * numberOfSquareInOneDimension != numberOfSquaresInRecording) {
+            // Fail loudly. This used to `return` from the constructor, which left leftGridPanel,
+            // displayUpdater, attributesPanel, navigationPanel and controlsPanel all null — and
+            // Viewer then called setVisible(true) on the half-built frame regardless, giving an
+            // empty window that threw NullPointerException on any interaction.
+            throw new IllegalStateException(String.format(
+                    "'%s' is %d, which is not a square grid; the Viewer cannot display it.",
+                    NUMBER_OF_SQUARES_IN_RECORDING, numberOfSquaresInRecording));
         }
-        if (!isValidSquareLayout) {
-            PaintLogger.errorf("Invalid square layout (d x d)");
-            return;
-        }
-        int numberOfSquareInOneDimension = (int) Math.sqrt(numberOfSquaresInRecording);
 
         // --- Build UI layout using the layout builder ---
         ViewerLayoutBuilder builder = new ViewerLayoutBuilder();

@@ -107,7 +107,16 @@ public class Viewer {
                     return true;
 
                 } catch (Exception ex) {
-                    PaintLogger.errorf("Viewer launch failed");
+                    // Log the cause, not just the fact. This used to discard `ex` entirely, which
+                    // made every startup failure undiagnosable — and it silently hid the case where
+                    // ViewerFrame could not build its grid, leaving the user with nothing at all.
+                    PaintLogger.error("Viewer launch failed", ex);
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "The Viewer could not be opened:\n\n" + ex.getMessage(),
+                            "Viewer failed to start",
+                            JOptionPane.ERROR_MESSAGE
+                    );
                     return false;
                 }
             });
