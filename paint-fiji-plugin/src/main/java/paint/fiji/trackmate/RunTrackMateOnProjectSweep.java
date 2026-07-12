@@ -166,11 +166,19 @@ public class RunTrackMateOnProjectSweep {
                 String parameter    = entry.getKey();       // Holds a parameter that we sweep
                 List<Number> values = entry.getValue();     // Values holds the values
 
-                // Store original parameter value for restoration
-                String originalValue = null;
-                if (!THRESHOLD.equals(parameter)) {
-                    originalValue = PaintConfig.getString("TrackMate", parameter, "undefined");
-                }
+                // NOTE: nothing is captured for "restoration" here, deliberately.
+                //
+                // A sweep never modifies the project's configuration: each value copies the
+                // pristine project config into its own sweep directory and PaintConfig is
+                // repointed at that copy (below), so every write lands on the copy.
+                //
+                // There used to be a "restore the original value" step at the end of this loop.
+                // It was wrong twice over: by then PaintConfig pointed at the *last sweep
+                // directory*, so it wrote the original value into that sweep's config — destroying
+                // the record of which value actually produced those results — and on the second
+                // and later parameters it had *read* the "original" from a sweep copy rather than
+                // from the project. Restoring the config context (not the value) is handled once,
+                // in the finally block.
 
                 for (Number val : values) {
                     PaintLogger.blankline();
@@ -242,10 +250,6 @@ public class RunTrackMateOnProjectSweep {
                     }
                 }
 
-                // Optionally restore original value after each parameter sweep
-                if (!THRESHOLD.equals(parameter)) {
-                    PaintConfig.setString("TrackMate", parameter, originalValue);
-                }
             }
 
         } finally {
