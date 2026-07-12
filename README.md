@@ -52,6 +52,14 @@ An overview of the functionality of the pipeline, how to use it and a detailed d
 
 
 
+## Testing
+
+The build runs around 120 automated tests, and GitHub Actions runs them on every push. [TESTING.md](TESTING.md) explains in plain language what they check, and what they deliberately do not.
+
+The most important is the golden-master test: it runs the whole Generate Squares pipeline on a sample project and compares every number against a stored known-good result, so no change can alter the scientific output unnoticed.
+
+
+
 ## Troubleshooting
 
 If a recording will not play, if a long run becomes inexplicably slow, or if something appears to do nothing at all, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
