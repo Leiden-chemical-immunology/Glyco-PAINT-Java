@@ -170,7 +170,7 @@ public class RecordingFilterDialog extends JDialog {
         cancelButton.setMaximumSize(btnSize);
 
         applyButton.addActionListener(e -> {
-            closeAction();
+            applyAction();
         });
 
         resetAllButton.addActionListener(e -> {
@@ -217,12 +217,12 @@ public class RecordingFilterDialog extends JDialog {
         }
         updateResetButtonStates();
 
-        // Make sure that pressing the red close button is doung the same as cancel
+        // Make sure that pressing the red close button does the same as Cancel.
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
-                closeAction();
+                cancelAction();
             }
         });
     }
@@ -490,7 +490,25 @@ public class RecordingFilterDialog extends JDialog {
         );
     }
 
-    private void closeAction() {
+    /**
+     * Accepts the current selection: the caller will read {@link #getFilteredRecordings()}.
+     * <p>
+     * This must clear {@code cancelled}. It previously shared a single {@code closeAction()}
+     * with the Cancel button and the window's close box, which set {@code cancelled = true} —
+     * so Apply took the cancel path, {@code isCancelled()} always returned {@code true}, and
+     * {@code ViewerFrame.onFilterRequested} never applied the filter. Applying a filter did
+     * nothing at all.
+     */
+    private void applyAction() {
+        cancelled = false;
+        dispose();
+    }
+
+    /**
+     * Discards the selection. Used by the Cancel button and by the window's close box, which
+     * is deliberately made to behave the same as Cancel.
+     */
+    private void cancelAction() {
         cancelled = true;
         dispose();
     }
