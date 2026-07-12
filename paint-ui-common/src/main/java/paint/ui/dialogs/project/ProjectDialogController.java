@@ -165,8 +165,8 @@ public class ProjectDialogController {
             }
         }
 
-        PaintLogger.debugf("ProjectDialogController.handleOK - project path: %s", paths.imagesRootText());
-        PaintLogger.debugf("ProjectDialogController.handleOK - images  path: %s", paths.projectRootText());
+        PaintLogger.debugf("ProjectDialogController.handleOK - project path: %s", paths.projectRootText());
+        PaintLogger.debugf("ProjectDialogController.handleOK - images  path: %s", paths.imagesRootText());
         PaintLogger.debugf("ProjectDialogController.handleOK - experiments : %s", experiments.selectedExperimentNames());
 
         PaintPrefs.putString("Path", "Project Root", paths.projectRootText());
