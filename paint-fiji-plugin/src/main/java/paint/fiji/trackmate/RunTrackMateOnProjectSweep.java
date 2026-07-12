@@ -123,7 +123,6 @@ public class RunTrackMateOnProjectSweep {
         }
 
         boolean overallStatus = true;
-        List<String[]> summaryRows = new ArrayList<>();
 
         // ---------------------------------------------------------------------
         // Phase 2 – Generate sweep summary for logging
@@ -240,11 +239,8 @@ public class RunTrackMateOnProjectSweep {
                     // Run TrackMate workflow for all experiments under current sweep
                     boolean status = RunTrackMateOnProject.runProject(projectPath, imagesPath, experimentNames, null, sweepPath);
 
-                    summaryRows.add(new String[]{
-                            parameter, val.toString(), sweepPath.toString(),
-                            status ? "SUCCESS" : "FAILED"
-                    });
-
+                    // (A "summaryRows" list used to be built here and then never read. Each run
+                    // already logs its own outcome, and overallStatus carries the verdict.)
                     if (!status) {
                         overallStatus = false;
                     }
