@@ -1,6 +1,5 @@
-package paint.compare.compare;
+package paint.compare;
 
-import paint.compare.RegressionRules;
 
 import java.util.Map;
 

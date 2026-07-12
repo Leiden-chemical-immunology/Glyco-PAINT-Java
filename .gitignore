@@ -35,6 +35,12 @@ $RECYCLE.BIN/
 # Linux
 *~
 
+# FUSE leftovers. When a file is deleted or moved while a process still holds it open, a
+# FUSE-mounted filesystem cannot unlink it, so it renames it to .fuse_hiddenXXXX and keeps
+# it until the last handle closes. They are dead copies of old file contents and must never
+# be committed.
+.fuse_hidden*
+
 # ======================
 # Logs and temp files
 # ======================

@@ -1,4 +1,4 @@
-package paint.compare.compare;
+package paint.compare;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;

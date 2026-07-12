@@ -1,4 +1,4 @@
-package paint.compare.compare;
+package paint.compare;
 
 import java.util.ArrayList;
 import java.util.List;
