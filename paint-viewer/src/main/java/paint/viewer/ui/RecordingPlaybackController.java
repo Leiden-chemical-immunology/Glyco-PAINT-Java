@@ -134,6 +134,25 @@ public final class RecordingPlaybackController {
             return;
         }
 
+        // The file can exist and still not be readable. On macOS the images usually live on an
+        // external drive, and access to removable volumes is gated: the file is visible, but
+        // opening it fails with "Operation not permitted". Say so here, rather than letting the
+        // image loader report it as an obscure Bio-Formats failure.
+        if (!Files.isReadable(imagePath)) {
+            PaintLogger.errorf("Not permitted to read %s", imagePath);
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "The recording exists but cannot be read:\n" + imagePath
+                            + "\n\nIf it is on an external drive, macOS may be blocking access."
+                            + "\nGrant the application access under System Settings > Privacy &"
+                            + " Security > Files and Folders (Removable Volumes), or Full Disk"
+                            + " Access, and restart it.",
+                    "Cannot Read Recording",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
+
         // Mark playback active and disable the viewer UI. TiffMoviePlayer calls us back on the
         // EDT when its window closes (or immediately if the file cannot be loaded), so the UI
         // is always re-enabled exactly once.
