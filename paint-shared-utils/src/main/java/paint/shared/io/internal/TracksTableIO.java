@@ -1,37 +1,9 @@
-/*=============================================================================
- *  Class:        TracksTableIO.java
- *  Package:      paint.shared.io.internal
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Public-but-internal implementation of CSV and table I/O for
- *    {@link paint.shared.objects.Track} entities. Although declared public so
- *    that {@link paint.shared.io.MainDataInterface} can access it across
- *    package boundaries, this class is NOT part of PAINT’s public API and must
- *    not be used directly by external modules.
- *
- *  DESCRIPTION:
- *    Handles all low-level operations for the “tracks.csv” data layer:
- *
- *       • Creating schema-compliant Tablesaw tables
- *       • Converting {@link Track} ↔ Tablesaw rows
- *       • Reading CSV files with strict schema validation (via BaseTableIO)
- *       • Performing safe, schema-aware append operations
- *
- *    All external callers must use {@link MainDataInterface}, which exposes the
- *    official high-level API for Track reading and writing.
- *
- *  DESIGN NOTES:
- *    • Visibility is public only because package-private classes in
- *      paint.shared.io.internal cannot be accessed from MainDataInterface.
- *    • Despite being public, this class is considered internal API.
- *    • All column names, order, and types are defined by {@link TrackSchema}.
- *    • Fully compatible with Java 8 and Tablesaw 0.43+.
- *
- *  AUTHOR:       Hans Bakker
- *  MODULE:       paint-shared-utils
- *  UPDATED:      2025-10-28
- *  COPYRIGHT:    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.io.internal;
 

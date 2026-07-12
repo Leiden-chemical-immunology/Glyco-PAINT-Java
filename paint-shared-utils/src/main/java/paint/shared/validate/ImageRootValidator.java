@@ -1,57 +1,9 @@
-/*=============================================================================
- *  Class:        ImageRootValidator.java
- *  Package:      paint.shared.validate
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Validates the existence of experiment image directories and checks that
- *    all recordings flagged for processing in each experiment’s metadata have
- *    matching `.nd2` files in the global image root.
- *
- *  DESCRIPTION:
- *    • Confirms the existence of an image directory for each experiment under
- *      the global image root.
- *    • Confirms that each experiment folder contains its required
- *      “Experiment Info.csv”.
- *    • Loads Experiment Info rows via the standard helper method
- *      {@code HelperIO.readExperimentInfo}, ensuring consistent schema parsing.
- *    • For each metadata row where {@code ProcessFlag == true}, verifies that a
- *      corresponding `.nd2` recording file exists in the experiment’s image
- *      directory.
- *
- *  RESPONSIBILITIES:
- *    • Cross-validate Experiment Info metadata and image repository structure.
- *    • Report missing experiment folders, missing metadata files, or missing
- *      recording files.
- *    • Provide a summarised or detailed validation report.
- *
- *  USAGE EXAMPLE:
- *    List<String> experiments = Arrays.asList("221108", "221122");
- *    ValidationResult result = ImageRootValidator.validateImageRoot(
- *        projectPath,
- *        imagesRootPath,
- *        experiments
- *    );
- *    PaintLogger.infof(result.getReport());
- *
- *  DEPENDENCIES:
- *    – paint.shared.io.HelperIO.readExperimentInfo
- *    – paint.shared.objects.ExperimentInfo
- *    – paint.shared.validate.ValidationResult
- *    – java.nio.file.{Files, Path}
- *    – java.util.List
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.validate;
 

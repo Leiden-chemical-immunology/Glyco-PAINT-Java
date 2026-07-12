@@ -1,55 +1,9 @@
-/*==============================================================================
- *  Class:        ExportOverridesFromViewer.java
- *  Package:      paint.viewer.override
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Standalone command-line utility for applying Viewer-generated override data
- *    to a PAINT project. It reads the project's core CSV files (Recordings,
- *    Squares, and optionally Tracks), loads override/exclude instructions from
- *    the <project>/Viewer folder, applies the mutations in-memory, and writes
- *    new CSV outputs with a safe suffix (default: "-override").
- *
- *  DESCRIPTION:
- *    ExportOverridesFromViewer performs up to three independent operations:
- *
- *      1) Recording overrides
- *         • Reads "Recording Override.csv" (if present)
- *         • Applies per-recording filtering thresholds (density ratio, R²,
- *           variability, neighbour mode)
- *         • Recomputes square visibility for affected recordings
- *
- *      2) Recording excludes
- *         • Reads "Recording Exclude.csv" (if present)
- *         • Sets the Recordings "Exclude" flag for listed recordings
- *         • Removes excluded recordings from Squares and Tracks tables
- *           (Tracks is only loaded/updated when an exclude file exists)
- *
- *      3) Square overrides
- *         • Reads "Square Override.csv" (if present)
- *         • Applies per-square Cell ID corrections
- *
- *    Outputs are written as new CSV files in the project root to avoid
- *    accidental overwrites of the original inputs.
- *
- *  KEY FEATURES:
- *    • Fully CLI-driven (no GUI dependencies).
- *    • Uses Tablesaw for CSV I/O and column-level mutations.
- *    • Applies recording overrides, recording excludes, and square overrides.
- *    • Recomputes visibility for squares when thresholds change.
- *    • Writes results to new files using a user-defined suffix.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.override;
 

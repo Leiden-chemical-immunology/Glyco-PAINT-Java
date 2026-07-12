@@ -1,22 +1,9 @@
-/*=============================================================================
- *  Class:        ExperimentInfoConverter.java
- *  Package:      convert
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Specialized converter for the experiment metadata table.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-development-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package convert;
 
@@ -24,6 +11,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+/**
+ * Specialized converter for the experiment metadata table.
+ */
 public final class ExperimentInfoConverter {
 
     private final Path inputFile;

@@ -1,37 +1,9 @@
-/*=============================================================================
- *  Class:        ExperimentDataLoader.java
- *  Package:      paint.shared.io
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Loads experiment data including recordings, optionally tracks, and (for
- *    mature projects) squares from CSV files into structured
- *    {@link paint.shared.objects.Experiment} objects.
- *
- *  DESCRIPTION:
- *    Reads Tablesaw CSV files for recordings, tracks, and optionally squares using
- *    schema validation provided by their respective TableIO classes. Constructs
- *    {@link paint.shared.objects.Recording} and {@link paint.shared.objects.Square}
- *    entities, associates tracks with recordings (if requested), and maps tracks
- *    to individual squares (if both tracks and squares are loaded).
- *
- *  KEY FEATURES:
- *    • Reads and validates CSV data for recordings, tracks, and squares.
- *    • Supports partial experiment loading (e.g., only recordings and squares).
- *    • Performs schema enforcement via BaseTableIO-derived classes.
- *    • Integrates with PaintLogger for debug/error tracking.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.io;
 

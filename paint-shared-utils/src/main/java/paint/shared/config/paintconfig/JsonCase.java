@@ -1,35 +1,26 @@
-/*=============================================================================
- *  Class:        JsonCase.java
- *  Package:      paint.shared.config.paintconfig
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides internal utility methods for case-insensitive key lookups
- *    within Google GSON {@link JsonObject} instances.
- *
- *  DESCRIPTION:
- *    The {@code JsonCase} class assists in retrieving keys from JSON objects
- *    when the exact casing of the key name is not guaranteed. It iterates
- *    through the object's keyset and returns the first matching key
- *    regardless of case.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.config.paintconfig;
 
 import com.google.gson.JsonObject;
 
-/** Case-insensitive JSON helpers kept separate for reuse. */
+/**
+ * Case-insensitive JSON helpers kept separate for reuse.
+ * <p>
+ * Provides internal utility methods for case-insensitive key lookups within Google GSON {@link
+ * JsonObject} instances.
+ * </p>
+ * <p>
+ * The {@code JsonCase} class assists in retrieving keys from JSON objects when the exact
+ * casing of the key name is not guaranteed. It iterates through the object's keyset and
+ * returns the first matching key regardless of case.
+ * </p>
+ */
 class JsonCase {
 
     String findKeyIgnoreCase(JsonObject obj, String key) {

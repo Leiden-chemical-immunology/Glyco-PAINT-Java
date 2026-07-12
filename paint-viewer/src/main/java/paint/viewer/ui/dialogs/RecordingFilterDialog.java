@@ -1,34 +1,9 @@
-/*==============================================================================
- *  Class:        RecordingFilterDialog.java
- *  Package:      paint.viewer.ui.dialogs
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Modal dialog to filter a list of RecordingEntry objects by metadata
- *    (Cell Type, Probe Name, Probe Type, Adjuvant, Concentration).
- *
- *  DESCRIPTION:
- *    Provides an interactive interface for selecting and refining recording
- *    filters. It dynamically updates list options based on active selections
- *    and highlights columns that have active filters applied.
- *
- *  KEY FEATURES:
- *    • Multi-column filtering with dynamic cross-filtering between categories.
- *    • Visual feedback (blue borders) for columns with active filters.
- *    • Per-column "Reset" and global "Reset All" functionality.
- *    • Consistent behavior with the PAINT Viewer dataset.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- ==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.ui.dialogs;
 import static paint.shared.constants.PaintStringConstants.*;

@@ -1,40 +1,9 @@
-/*=============================================================================
- *  Class:        TrackMateUISingle.java
- *  Package:      paint.fiji.trackmate
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides the main interactive entry point for running TrackMate within
- *    the PAINT environment. Integrates configuration handling, experiment
- *    selection.
- *
- *  DESCRIPTION:
- *    • Runs TrackMate interactively through the Fiji plugin menu.
- *    • Validates project root and configuration state.
- *    • Displays a user dialog for selecting and running experiments.
- *    • Optionally executes GENERATE_SQUARES after successful completion.
- *    • Ensures only one processing instance runs at a time.
- *
- *  KEY FEATURES:
- *    • Headless and GUI-compatible operation through {@link ProjectDialog}.
- *    • Runtime configuration using {@link PaintConfig} and {@link PaintPrefs}.
- *    • Integrated console logging via {@link PaintConsoleWindow}.
- *    • Thread-safe execution with a static volatile lock flag.
- *
- *  USAGE EXAMPLE:
- *    Plugin menu: Plugins → Glyco-PAINT → Run
- *
- *  DEPENDENCIES:
- *    – paint.shared.utils.*, paint.shared.config.*
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.fiji.trackmate;
 

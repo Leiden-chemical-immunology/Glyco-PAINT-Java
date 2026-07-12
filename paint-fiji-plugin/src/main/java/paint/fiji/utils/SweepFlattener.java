@@ -1,43 +1,9 @@
-/*=============================================================================
- *  Class:        SweepFlattener.java
- *  Package:      paint.fiji.utils
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Flattens multi-parameter sweep directories by merging experimental CSVs,
- *    running downstream analysis (Generate Squares), and optionally removing
- *    intermediate experiment folders.
- *
- *  DESCRIPTION:
- *    • Iterates through all sweep parameter directories (e.g., “[Param]-[Value]”).
- *    • Runs {@link paint.generatesquares.GenerateSquaresHeadless} for each case.
- *    • Adds the “Case” column to each per-experiment CSV.
- *    • Concatenates results (Squares, Tracks, Recordings, Experiment Info)
- *      into unified CSVs both per-parameter and across all parameters.
- *    • Optionally removes processed experiment subdirectories.
- *
- *  RESPONSIBILITIES:
- *    • Automate post-sweep data consolidation.
- *    • Maintain deterministic output structure for all sweeps.
- *    • Integrate “Generate Squares” into the flattening pipeline.
- *
- *  USAGE EXAMPLE:
- *    SweepFlattener.flattenSweep(sweepPath, Arrays.asList("221012", "AnyName"), true);
- *
- *  DEPENDENCIES:
- *    – paint.generatesquares.GenerateSquaresHeadless
- *    – paint.shared.utils.CsvUtils
- *    – paint.shared.utils.PaintLogger
- *    – org.apache.commons.io.FileUtils
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.fiji.utils;
 

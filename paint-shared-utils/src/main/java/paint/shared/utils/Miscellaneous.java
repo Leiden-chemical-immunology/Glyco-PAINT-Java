@@ -1,38 +1,9 @@
-/*=============================================================================
- *  Class:        Miscellaneous.java
- *  Package:      paint.shared.utils
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides general-purpose utility methods used throughout the PAINT framework.
- *
- *  DESCRIPTION:
- *    The {@code Miscellaneous} class serves as a static utility collection for
- *    handling common operations not tied to a specific subsystem. This includes
- *    duration formatting, rounding, exception message handling, and flexible
- *    boolean string interpretation.
- *
- *    It is designed for convenience and internal consistency across all modules
- *    of the PAINT system and is fully static and non-instantiable.
- *
- *  KEY FEATURES:
- *    • Format time durations into human-readable strings.
- *    • Round floating-point numbers to a given number of decimals.
- *    • Safely extract concise error messages from exceptions.
- *    • Interpret textual boolean expressions in flexible formats.
- *    • Validate user or CSV-provided boolean strings robustly.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.utils;
 

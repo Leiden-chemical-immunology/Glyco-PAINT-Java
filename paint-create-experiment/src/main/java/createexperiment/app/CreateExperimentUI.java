@@ -1,38 +1,9 @@
-/*=============================================================================
- *  Class:        CreateExperimentUI.java
- *  Package:      createexperiment.app
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a complete Swing-based user interface for creating experiment
- *    configuration files. It allows users to select directories, filter image
- *    files by regular expression, and generate an "Experiment Info.csv" file.
- *
- *  DESCRIPTION:
- *    This class defines a graphical desktop tool that enables users to manage
- *    experiment setup through directory selection, regex-based filtering, and
- *    automated CSV generation. Regex history, directory paths, and UI state
- *    are stored in user preferences for convenience between sessions.
- *
- *  KEY FEATURES:
- *    • Persistent regex and directory preferences using java.util.prefs.
- *    • Interactive regex management (add, delete, apply filters).
- *    • Automatic refresh of visible file lists when input or filters change.
- *    • File processing workflow via ExperimentInfoWriter.
- *    • Cross-platform compatibility (macOS, Windows, Linux).
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  MODULE:
- *    paint-create-experiment
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *    Licensed under the MIT License.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package createexperiment.app;
 
@@ -52,6 +23,24 @@ import static createexperiment.app.ExperimentInfoWriter.exportExperimentInfo;
 
 /**
  * Fixed and visually balanced CreateExperimentUI.
+ * <p>
+ * Provides a complete Swing-based user interface for creating experiment configuration files.
+ * It allows users to select directories, filter image files by regular expression, and
+ * generate an "Experiment Info.csv" file.
+ * </p>
+ * <p>
+ * This class defines a graphical desktop tool that enables users to manage experiment setup
+ * through directory selection, regex-based filtering, and automated CSV generation. Regex
+ * history, directory paths, and UI state are stored in user preferences for convenience
+ * between sessions.
+ * </p>
+ * <ul>
+ *   <li>Persistent regex and directory preferences using java.util.prefs.</li>
+ *   <li>Interactive regex management (add, delete, apply filters).</li>
+ *   <li>Automatic refresh of visible file lists when input or filters change.</li>
+ *   <li>File processing workflow via ExperimentInfoWriter.</li>
+ *   <li>Cross-platform compatibility (macOS, Windows, Linux).</li>
+ * </ul>
  */
 public class CreateExperimentUI {
 

@@ -1,51 +1,9 @@
-/*=============================================================================
- *  Class:        RunTrackMateOnRecording.java
- *  Package:      paint.fiji.trackmate
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Executes the TrackMate tracking pipeline for a single microscopy recording.
- *    Handles image loading, brightfield snapshot generation, TrackMate
- *    configuration setup, execution, visualization, and CSV result export.
- *
- *  DESCRIPTION:
- *    • Loads the ND2 image and optional brightfield reference.
- *    • Configures and runs TrackMate in deterministic, headless mode.
- *    • Applies spot and track filtering based on configuration parameters.
- *    • Exports per-recording images and tracking data to the experiment directory.
- *    • Supports cancellation and safe cleanup of ImagePlus instances.
- *
- *  RESPONSIBILITIES:
- *    • Manage end-to-end TrackMate processing for a single recording.
- *    • Integrate Paint configuration and runtime parameters.
- *    • Handle user cancellation gracefully during processing.
- *    • Collect and summarize analysis results in {@link TrackMateResults}.
- *
- *  USAGE EXAMPLE:
- *    TrackMateResults result = RunTrackMateOnRecording.runTrackMateOnRecording(
- *        experimentPath,
- *        imagesPath,
- *        trackMateConfig,
- *        threshold,
- *        experimentInfo,
- *        dialog);
- *
- *  DEPENDENCIES:
- *    – fiji.plugin.trackmate.*
- *    – paint.shared.config.TrackMateConfig
- *    – paint.shared.objects.ExperimentInfo
- *    – paint.ui.dialogs.ProjectDialog
- *    – paint.shared.utils.PaintLogger
- *    – paint.fiji.tracks.TrackDataExporter
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.fiji.trackmate;
 

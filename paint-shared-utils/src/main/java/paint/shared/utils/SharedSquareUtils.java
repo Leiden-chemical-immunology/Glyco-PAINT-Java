@@ -1,33 +1,9 @@
-/*=============================================================================
- *  Class:        SharedSquareUtils.java
- *  Package:      paint.shared.utils
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides shared utility methods for square-level calculations and data
- *    transformations within the PAINT framework.
- *
- *  DESCRIPTION:
- *    The {@code SharedSquareUtils} class centralizes common operations
- *    on {@link Square} objects, such as unique key generation and visibility
- *    state management.
- *
- *  KEY FEATURES:
- *    • Static methods for spatial filtering of track data.
- *    • Selection and neighbour-mode logic for square visibility.
- *    • Standardized track-in-square overlap detection.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.utils;
 

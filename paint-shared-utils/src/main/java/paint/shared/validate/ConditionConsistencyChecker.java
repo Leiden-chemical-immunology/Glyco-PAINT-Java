@@ -1,49 +1,9 @@
-/*=============================================================================
- *  Class:        ConditionConsistencyChecker.java
- *  Package:      paint.shared.validate
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Performs consistency validation across condition groups in experiment
- *    metadata CSV files. Ensures that all rows sharing the same
- *    CONDITION_NUMBER have identical key attributes such as probe and cell
- *    properties.
- *
- *  DESCRIPTION:
- *    • Groups all records by CONDITION_NUMBER.
- *    • Compares attribute values (Probe Name, Probe Type, Cell Type,
- *      Adjuvant, Concentration) across rows of each group.
- *    • Reports inconsistencies if any attribute differs within a group.
- *    • Prevents duplicate error reporting for repeated issues.
- *
- *  RESPONSIBILITIES:
- *    • Validate intra-condition consistency of experiment metadata.
- *    • Detect deviations in descriptive attributes for the same condition.
- *    • Return results encapsulated in a {@link ValidationResult}.
- *
- *  USAGE EXAMPLE:
- *    File csv = new File("Experiment_Info.csv");
- *    ValidationResult result = ConditionConsistencyChecker.check(csv, "Experiment 001");
- *    if (result.hasErrors()) {
- *        result.printSummary();
- *    }
- *
- *  DEPENDENCIES:
- *    – org.apache.commons.csv.{CSVFormat, CSVParser, CSVRecord}
- *    – paint.shared.validate.ValidationResult
- *    – java.util.{Map, Set, List, HashMap, HashSet, Arrays, LinkedHashMap}
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.validate;
 import static paint.shared.constants.PaintStringConstants.*;

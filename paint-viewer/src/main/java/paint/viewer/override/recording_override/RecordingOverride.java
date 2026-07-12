@@ -1,41 +1,29 @@
-/*==============================================================================
- *  Class:        RecordingOverride.java
- *  Package:      paint.viewer.override.recording_override
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Represents a single recording-level override entry. Each instance defines
- *    replacement threshold parameters for one recording, identified by the
- *    (experimentName, recordingName) pair.
- *
- *  DESCRIPTION:
- *    This class models one row from the "Recording Override.csv" file located in
- *    the Viewer directory of a PAINT project. It is a simple data container
- *    designed for direct CSV parsing and in-memory consumption by
- *    ImportRecordingOverride and related override/export utilities.
- *
- *    The values stored here replace the corresponding threshold parameters
- *    (density ratio, R², variability, neighbour mode) on the target recording.
- *
- *  KEY FEATURES:
- *    • Plain data container (POJO) with no behavior.
- *    • Field layout mirrors the Recording Override CSV columns.
- *    • Used exclusively for override import/export and in-memory mutation.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.override.recording_override;
 
+/**
+ * Represents a single recording-level override entry. Each instance defines replacement
+ * threshold parameters for one recording, identified by the (experimentName, recordingName)
+ * pair.
+ * <p>
+ * This class models one row from the "Recording Override.csv" file located in the Viewer
+ * directory of a PAINT project. It is a simple data container designed for direct CSV parsing
+ * and in-memory consumption by ImportRecordingOverride and related override/export utilities.
+ * The values stored here replace the corresponding threshold parameters (density ratio, R²,
+ * variability, neighbour mode) on the target recording.
+ * </p>
+ * <ul>
+ *   <li>Plain data container (POJO) with no behavior.</li>
+ *   <li>Field layout mirrors the Recording Override CSV columns.</li>
+ *   <li>Used exclusively for override import/export and in-memory mutation.</li>
+ * </ul>
+ */
 public class RecordingOverride {
 
     private String experimentName;

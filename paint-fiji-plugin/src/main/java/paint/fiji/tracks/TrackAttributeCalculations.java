@@ -1,40 +1,9 @@
-/*=============================================================================
- *  Class:        TrackAttributeCalculations.java
- *  Package:      paint.fiji.tracks
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Utility class for calculating motion-related attributes for tracks
- *    in a TrackMate dataset. This class analyses trajectories of spots
- *    in tracks by computing metrics such as total travel distance,
- *    diffusion coefficients, confinement ratio, and net displacement.
- *
- *  DESCRIPTION:
- *    Includes methods to:
- *      • Compute key track attributes from the track model, track ID and time delta.
- *      • Safely retrieve feature values from individual spots.
- *
- *  RESPONSIBILITIES:
- *    • Provide a static calculation method for TrackAttributes based on a track.
- *    • Prevent instantiation (utility class).
- *
- *  USAGE EXAMPLE:
- *    TrackAttributes attrs = TrackAttributeCalculations
- *                              .calculateTrackAttributes(trackModel, trackId, dtSeconds);
- *
- *  DEPENDENCIES:
- *    – fiji.plugin.trackmate.TrackModel
- *    – fiji.plugin.trackmate.Spot
- *    – paint.shared.utils.Miscellaneous (for rounding)
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.fiji.tracks;
 

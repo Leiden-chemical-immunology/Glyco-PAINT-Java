@@ -1,46 +1,9 @@
-/*==============================================================================
- *  Class:        ImportSquareOverride.java
- *  Package:      paint.viewer.override.square_override
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Loads and applies per-square cell-assignment overrides (cellId) from the
- *    Viewer override CSV to in-memory Square objects. This is used when the
- *    Viewer loads a project or when override import is triggered.
- *
- *  DESCRIPTION:
- *    Reads the file:
- *
- *        <project>/Viewer/Square Override.csv
- *
- *    Each CSV row identifies a square by:
- *
- *        experimentName, recordingName, squareNumber
- *
- *    and provides an updated cellId plus a timestamp. Overrides are matched by
- *    a stable composite key:
- *
- *        experimentName + "§" + recordingName + "§" + squareNumber
- *
- *    This class performs in-memory mutation only; it does not write any files.
- *    Writing/maintaining the override CSV is handled elsewhere.
- *
- *  KEY FEATURES:
- *    • Fast composite-key lookup for per-square updates.
- *    • Applies overrides across one or many recordings via flattened square list.
- *    • Optional verbose logging per updated square.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.override.square_override;
 

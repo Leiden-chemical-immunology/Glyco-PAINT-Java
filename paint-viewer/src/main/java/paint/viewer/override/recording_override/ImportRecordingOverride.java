@@ -1,42 +1,9 @@
-/*==============================================================================
- *  Class:        ImportRecordingOverride.java
- *  Package:      paint.viewer.override.recording_override
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Imports and applies per-recording threshold overrides from the Viewer
- *    folder to in-memory {@link paint.viewer.model.RecordingEntry} objects.
- *
- *  DESCRIPTION:
- *    Reads <project>/Viewer/Recording Override.csv and updates the corresponding
- *    in-memory RecordingEntry/Recording fields:
- *      • Min Required Density Ratio
- *      • Min Required R²
- *      • Max Allowable Variability
- *      • Neighbour Mode
- *
- *    Matching is performed using a composite key:
- *      experimentName + "§" + recordingName
- *
- *    This class does not write anything to disk; it only mutates runtime model
- *    objects. Persisting overrides is handled elsewhere.
- *
- *  KEY FEATURES:
- *    • Safe no-op if the override CSV is missing.
- *    • Composite-key lookup for fast matching.
- *    • Logs only the values that actually changed.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.override.recording_override;
 

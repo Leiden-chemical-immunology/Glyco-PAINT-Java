@@ -1,42 +1,9 @@
-/*==============================================================================
- *  Class:        TiffMoviePlayer.java
- *  Package:      paint.viewer.io
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides an ImageJ-powered movie viewer for multi-frame TIFF recordings.
- *    Allows playback, pausing, speed control, and manual frame navigation.
- *
- *  DESCRIPTION:
- *    The {@code TiffMoviePlayer} loads multi-frame TIFF files using ImageJ
- *    and renders them inside a Swing window. A lightweight control panel enables:
- *
- *      • Play / Pause toggling
- *      • Frame navigation via slider
- *      • Playback speed adjustment (0.5× – 4×)
- *      • Clean closing of movie windows
- *
- *    A short loading dialog is displayed while images are prepared in a
- *    background thread. All UI rendering occurs on the Swing EDT as required.
- *
- *  KEY FEATURES:
- *    • Plays TIFF stacks as movies using ImageJ processors.
- *    • Uses calibration metadata (frame interval) when available.
- *    • Thread-safe interplay between worker threads and Swing.
- *    • Graceful cleanup when the movie window is closed.
- *    • Suppresses ImageJ console output for clean UI integration.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.io;
 

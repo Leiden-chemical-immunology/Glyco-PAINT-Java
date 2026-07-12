@@ -1,22 +1,9 @@
-/*=============================================================================
- *  Class:        MavenSupport.java
- *  Package:      release.support
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides support for Maven-related operations during the release process.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-development-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package release.support;
 
@@ -27,6 +14,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Provides support for Maven-related operations during the release process.
+ */
 public final class MavenSupport {
     private MavenSupport() {
     }

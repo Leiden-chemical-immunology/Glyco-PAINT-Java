@@ -1,49 +1,9 @@
-/*=============================================================================
- *  Class:        RunTrackMateOnExperiment.java
- *  Package:      paint.fiji.trackmate
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Executes the TrackMate analysis workflow for a single experiment within
- *    the Paint project framework. Handles experiment-level validation,
- *    configuration setup, per-recording execution, and aggregation of results.
- *
- *  DESCRIPTION:
- *    • Reads and validates the experiment configuration and info files.
- *    • Executes TrackMate on each recording defined in the experiment.
- *    • Monitors progress using a watchdog with timeouts and user cancellation.
- *    • Collects per-recording results and concatenates them into summary CSVs.
- *    • Records execution parameters and logs runtime details.
- *
- *  RESPONSIBILITIES:
- *    • Manage experiment-level execution lifecycle.
- *    • Handle user interaction via {@link ProjectDialog}.
- *    • Orchestrate per-recording analysis via {@link RunTrackMateOnRecording}.
- *    • Maintain consistency in experiment result aggregation.
- *
- *  USAGE EXAMPLE:
- *    Path experiment = Paths.get("/Paint Project/221108");
- *    Path images     = Paths.get("/Omero/221108");
- *    boolean ok = RunTrackMateOnExperiment.runTrackMateOnExperiment(
- *                     experiment, images, dialog);
- *
- *  DEPENDENCIES:
- *    – paint.fiji.trackmate.RunTrackMateOnRecording
- *    – paint.shared.config.paintconfig.PaintConfig
- *    – paint.shared.config.TrackMateConfig
- *    – paint.ui.dialogs.ProjectDialog
- *    – paint.shared.utils.PaintLogger
- *    – paint.shared.utils.CsvUtils
- *    – paint.shared.objects.ExperimentInfo
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.fiji.trackmate;
 

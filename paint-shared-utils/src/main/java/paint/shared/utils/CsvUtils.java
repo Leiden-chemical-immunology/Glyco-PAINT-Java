@@ -1,38 +1,9 @@
-/*=============================================================================
- *  Class:        CsvUtils.java
- *  Package:      paint.shared.utils
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides reusable utility methods for handling CSV files within the
- *    PAINT data processing framework.
- *
- *  DESCRIPTION:
- *    The {@code CsvUtils} class offers static helper methods for performing
- *    frequent CSV operations, including counting flagged records, concatenating
- *    multiple CSV files, and adding or updating specific columns.
- *
- *    The class uses Apache Commons CSV for reliable CSV parsing and writing,
- *    and integrates with the PAINT logging system for consistent output.
- *
- *  KEY FEATURES:
- *    • Count CSV records based on conditional column values.
- *    • Concatenate multiple CSV files with header management.
- *    • Add or overwrite "Case" columns in experiment result files.
- *    • Supports optional deletion of input files after concatenation.
- *    • UTF-8 encoding, safe file handling, and explicit exception control.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.utils;
 

@@ -1,23 +1,9 @@
-/*=============================================================================
- *  Class:        BuildSelector.java
- *  Package:      release
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Interactive CLI utility to select modules and platforms for the build
- *    process.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-development-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package release;
 
@@ -33,6 +19,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Interactive CLI utility to select modules and platforms for the build process.
+ */
 public class BuildSelector {
 
     private static final Path PROJECT_ROOT =

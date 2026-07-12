@@ -1,39 +1,9 @@
-/*=============================================================================
- *  Class:        JarInfoLogger.java
- *  Package:      paint.shared.utils
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides functionality to inspect and log metadata from JAR manifest files.
- *
- *  DESCRIPTION:
- *    The {@code JarInfoLogger} class extracts implementation and specification
- *    metadata from JAR manifests. It supports both direct code-source access
- *    and fallback scanning via the classpath. The retrieved information includes
- *    build timestamps, titles, versions, and vendor data.
- *
- *    The class also provides a time conversion utility that formats UTC
- *    timestamps into the Amsterdam timezone for standardized reporting.
- *    Metadata is encapsulated in the immutable {@link JarInfo} nested class.
- *
- *  KEY FEATURES:
- *    • Reads MANIFEST.MF files from JARs or classpath.
- *    • Extracts key manifest attributes such as implementation and specification info.
- *    • Converts UTC timestamps to localized Amsterdam time.
- *    • Provides formatted summaries for console or log output.
- *    • Fully static, non-instantiable design.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.utils;
 

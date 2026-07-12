@@ -1,34 +1,9 @@
-/*=============================================================================
- *  Class:        RecordingsValidator.java
- *  Package:      paint.shared.validate
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Validates the structure, data types, and logical consistency of
- *    "recordings.csv" files.
- *
- *  DESCRIPTION:
- *    The {@code RecordingsValidator} ensures that recording metadata
- *    files conform to the schema defined in {@link Recording}. It performs
- *    header and type validation, and ensures that shared experimental
- *    conditions are consistently documented across all recordings.
- *
- *  KEY FEATURES:
- *    • Automated header and type validation using {@link paint.shared.objects.Recording.Column Recording.Column}.
- *    • Consistency checks for shared experimental conditions.
- *    • Robust integration with the Tablesaw and PAINT validation framework.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.validate;
 

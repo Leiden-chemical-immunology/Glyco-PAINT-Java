@@ -1,33 +1,9 @@
-/*=============================================================================
- *  Class:        DirectoryChooser.java
- *  Package:      paint.ui.dialogs.project
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides standardized directory selection dialogs, using native AWT dialogs
- *    on macOS and Swing {@link JFileChooser} on other platforms.
- *
- *  DESCRIPTION:
- *    The {@code DirectoryChooser} utility class simplifies folder selection
- *    across different operating systems. It ensures that only directories are
- *    selectable and handles path initialization and error logging.
- *
- *  KEY FEATURES:
- *    • Platform-aware directory selection (AWT on macOS, Swing elsewhere).
- *    • Robust handling of invalid or null initial directories.
- *    • Automated configuration for directory-only selection mode.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-ui-common
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.ui.dialogs.project;
 

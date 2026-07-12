@@ -1,48 +1,10 @@
-/*==============================================================================
- *  Class:        SquareGridPanel.java
- *  Package:      paint.viewer.ui.panels
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Renders and manages an interactive grid of squares inside the PAINT Viewer,
- *    supporting visual selection, annotation, shading, numeric display modes,
- *    and visibility filtering based on configurable analysis parameters.
- *
- *  DESCRIPTION:
- *    The {@code SquareGridPanel} provides a graphical representation of
- *    {@link paint.shared.objects.Square} objects arranged in a fixed grid.
- *    Each square corresponds to a defined spatial region of an experiment and may
- *    contain metrics such as density, density ratio, variability, R², and track count.
- *
- *    The panel supports:
- *      • User-driven selection (click and drag).
- *      • Dynamic visibility filtering (via {@link SharedSquareUtils}).
- *      • Colored cell assignments and shading overlays.
- *      • Flexible numeric display modes (label numbers or square numbers).
- *      • On-demand contextual popups showing square-specific statistics.
- *
- *    It is typically coordinated by {@link paint.viewer.control.SquareControlHandler}
- *    as part of the full viewer interface (see {@code ViewerFrame}).
- *
- *  KEY FEATURES:
- *    • High-performance grid rendering with overlays and borders.
- *    • Click or drag-based interactive selection with visibility-aware behavior.
- *    • Supports contextual info popups for any visible square.
- *    • Integrates directly with visibility filters and control parameters.
- *    • Stable and deterministic color mapping for assigned cell IDs.
- *    • Independent component usable outside of the viewer if needed.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
+
 package paint.viewer.ui.panels;
 
 import paint.shared.objects.Square;

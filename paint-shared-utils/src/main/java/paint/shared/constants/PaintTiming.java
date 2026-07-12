@@ -1,34 +1,18 @@
-/*=============================================================================
- *  Class:        PaintTiming.java
- *  Package:      paint.shared.constants
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Defines timing-related constants and playback settings for the PAINT
- *    application.
- *
- *  DESCRIPTION:
- *    The {@code PaintTiming} class centralizes constants related to
- *    frame intervals, acquisition rates, and UI animation/playback
- *    timings.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.constants;
 
 /**
- * Defines timing-related constants and playback settings for the PAINT
- * application.
+ * Defines timing-related constants and playback settings for the PAINT application.
+ * <p>
+ * The {@code PaintTiming} class centralizes constants related to frame intervals, acquisition
+ * rates, and UI animation/playback timings.
+ * </p>
  */
 public final class PaintTiming {
 

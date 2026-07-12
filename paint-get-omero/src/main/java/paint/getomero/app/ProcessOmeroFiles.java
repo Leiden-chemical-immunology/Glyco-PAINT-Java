@@ -1,38 +1,9 @@
-/*=============================================================================
- *  Class:        ProcessOmeroFiles.java
- *  Package:      paint.getomero.app
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Handles reorganization of Omero-exported directories by extracting files
- *    from "Fileset" subdirectories and moving them to the root directory.
- *
- *  DESCRIPTION:
- *    This utility processes directories that contain nested "Fileset*" folders
- *    (typically produced by Omero exports). It moves all valid files from
- *    these subdirectories into the root directory and removes the now-empty
- *    "Fileset" folders. It is used internally by {@link GetOmeroUI} and can
- *    also be invoked headlessly for batch cleanup operations.
- *
- *  KEY FEATURES:
- *    • Detects and processes subdirectories beginning with "Fileset".
- *    • Moves contained files directly into the parent directory.
- *    • Deletes empty "Fileset" folders after transfer.
- *    • Supports safe overwrite using StandardCopyOption.REPLACE_EXISTING.
- *    • Designed for batch automation and GUI invocation.
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  MODULE:
- *    paint-get-omero
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *    Licensed under the MIT License.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.getomero.app;
 

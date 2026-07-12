@@ -1,24 +1,9 @@
-/*=============================================================================
- *  Class:        PaintColumnNames.java
- *  Package:      paint.shared.constants
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Centralizes all column name String constants used in PAINT CSV tables.
- *
- *  DESCRIPTION:
- *    Provides named String constants for all columns appearing in tracks,
- *    squares, recordings, and experiment info tables. This avoids hard-coded
- *    literals and keeps schema definitions consistent.
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.constants;
 

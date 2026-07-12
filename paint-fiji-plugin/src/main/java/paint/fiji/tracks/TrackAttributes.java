@@ -1,39 +1,9 @@
-/*=============================================================================
- *  Class:        TrackAttributes.java
- *  Package:      paint.fiji.tracks
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Immutable data container representing the motion-related attributes
- *    of a single TrackMate track.
- *
- *  DESCRIPTION:
- *    • Stores core descriptive statistics derived from a particle trajectory,
- *      such as distance, diffusion coefficients, confinement ratio, and
- *      displacement.
- *    • Used primarily as the return type from
- *      {@link paint.fiji.tracks.TrackAttributeCalculations#calculateTrackAttributes}.
- *
- *  RESPONSIBILITIES:
- *    • Encapsulate track-level quantitative metrics.
- *    • Provide a consistent structure for motion statistics.
- *    • Maintain immutability for safe multithreaded usage.
- *
- *  USAGE EXAMPLE:
- *    TrackAttributes attrs = new TrackAttributes(
- *        34, 125.7, 0.042, 0.038, 0.89, 111.3);
- *
- *  DEPENDENCIES:
- *    – None (pure data object)
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.fiji.tracks;
 

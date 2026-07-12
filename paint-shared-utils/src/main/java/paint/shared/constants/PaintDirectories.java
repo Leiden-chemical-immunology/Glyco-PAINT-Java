@@ -1,34 +1,18 @@
-/*=============================================================================
- *  Class:        PaintDirectories.java
- *  Package:      paint.shared.constants
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Defines standard directory names and folder structures used by the
- *    PAINT application.
- *
- *  DESCRIPTION:
- *    The {@code PaintDirectories} class centralizes constants for core
- *    project folders, such as where experiments, viewer data, and exports
- *    are stored.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.constants;
 
 /**
- * Defines standard directory names and folder structures used by the
- * PAINT application.
+ * Defines standard directory names and folder structures used by the PAINT application.
+ * <p>
+ * The {@code PaintDirectories} class centralizes constants for core project folders, such as
+ * where experiments, viewer data, and exports are stored.
+ * </p>
  */
 public final class PaintDirectories {
 

@@ -1,42 +1,9 @@
-/*==============================================================================
- *  Class:        RecordingControlsPanel.java
- *  Package:      paint.viewer.ui.panels
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a control panel for managing recording-related actions and
- *    grid display options in the PAINT viewer. Supports filtering, square
- *    selection, cell assignment, playback, data export, and visualization
- *    toggling.
- *
- *  DESCRIPTION:
- *    The panel organizes a structured set of user controls into three groups:
- *      1) Recording and grid action buttons (Filter, Select, Assign, Play,
- *         Export, Show Squares)
- *      2) Visualization toggles for borders and shading
- *      3) Number display mode options (None, Label, Square)
- *
- *    A {@link RecordingsControlListener} interface defines callbacks for all interactive
- *    controls, allowing the parent viewer frame to handle the actions.
- *    Layout is vertical for readability, with consistent sizing and spacing
- *    across buttons and toggle groups.
- *
- *  KEY FEATURES:
- *    • Centralized control panel for recording actions and display settings.
- *    • Live toggles for borders, shading, and number-display modes.
- *    • Listener interface for flexible integration with viewer logic.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.ui.panels;
 

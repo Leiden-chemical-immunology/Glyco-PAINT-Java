@@ -1,34 +1,9 @@
-/*=============================================================================
- *  Class:        PaintLauncher.java
- *  Package:      paint.launcher
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a graphical entry point (launcher) for the Glyco-PAINT software
- *    suite.
- *
- *  DESCRIPTION:
- *    The {@code PaintLauncher} class creates a unified GUI that allows users
- *    to navigate through the PAINT workflow. It provides buttons for
- *    launching individual pipeline modules (Get Omero, Generate Squares,
- *    Viewer) and displays visual indicators for manual workflow steps.
- *
- *  KEY FEATURES:
- *    • Centralized GUI for the Glyco-PAINT toolset.
- *    • Workflow visualization with interactive and informational elements.
- *    • Platform-independent application launching.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-launcher
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.launcher;
 

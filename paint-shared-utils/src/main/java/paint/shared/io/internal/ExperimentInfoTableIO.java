@@ -1,29 +1,9 @@
-/*=============================================================================
- *  Class:        ExperimentInfoTableIO.java
- *  Package:      paint.shared.io.internal
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Handles low-level I/O and data conversion between PAINT {@link ExperimentInfo}
- *    objects and Tablesaw {@link Table} structures.
- *
- *  DESCRIPTION:
- *    The {@code ExperimentInfoTableIO} class provides implementation for mapping
- *    experiment metadata fields to CSV columns and vice versa. It manages the
- *    schema specific to "experiment_info.csv" files, ensuring that data types
- *    and headers are correctly applied during conversion.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.io.internal;
 

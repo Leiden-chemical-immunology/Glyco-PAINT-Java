@@ -1,44 +1,9 @@
-/*=============================================================================
- *  Class:        GenerateSquaresConfig.java
- *  Package:      paint.shared.config
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Encapsulates configuration settings for the “generate squares” process
- *    within the Glyco-PAINT system. Loads values from the configuration file
- *    and provides typed access (int, double, String) to each parameter.
- *
- *  DESCRIPTION:
- *    • numberOfSquaresInRecording: total number of squares in a recording
- *    • minTracksToCalculateTau: minimum track count required to compute Tau
- *    • minRequiredRSquared: minimum R² threshold for accepting a square
- *    • minRequiredDensityRatio: minimum density ratio threshold
- *    • maxAllowableVariability: upper bound on coefficient of variation for selection
- *    • neighbourMode: mode for neighbor-based logic (e.g., "Free", "Strict", "Relaxed")
- *
- *  RESPONSIBILITIES:
- *    • Read configuration values from the section identified by
- *      {@link PaintConfig#GENERATE_SQUARES}
- *    • Provide getters for each configuration parameter
- *    • Enforce default values if configuration keys are missing
- *
- *  USAGE EXAMPLE:
- *    GenerateSquaresConfig config = GenerateSquaresConfig.from();
- *    int squareCount = config.getNumberOfSquaresInRecording();
- *    String mode = config.getNeighbourMode();
- *
- *  DEPENDENCIES:
- *    – {@link PaintConfig} for reading configuration values
- *    – {@link paint.shared.constants.PaintColumnNames} for configuration keys
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.config;
 

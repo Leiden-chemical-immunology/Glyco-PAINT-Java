@@ -1,39 +1,9 @@
-/*==============================================================================
- *  Class:        SquareControlParams.java
- *  Package:      paint.viewer.model
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Encapsulates the control parameters for square configuration within the
- *    PAINT viewer system, defining thresholds and neighbor interaction modes.
- *
- *  DESCRIPTION:
- *    The {@code SquareControlParams} class provides an immutable structure that
- *    stores numerical and categorical parameters controlling visibility and
- *    filtering behavior of square grids. It includes threshold values for
- *    density ratio, variability, and R², as well as a string-based neighbour mode.
- *
- *    These parameters are typically passed to handlers such as
- *    {@link paint.viewer.control.SquareControlHandler} to apply filtering logic
- *    and update visibility across square grids.
- *
- *  KEY FEATURES:
- *    • Immutable container for visibility and control parameters.
- *    • Defines thresholds for density ratio, variability, and R².
- *    • Encodes neighbour visibility mode as a string.
- *    • Provides an informative string representation for debugging or logging.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.model;
 

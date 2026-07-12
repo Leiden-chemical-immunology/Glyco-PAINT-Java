@@ -1,39 +1,9 @@
-/*==============================================================================
- *  Class:        TrackMateSingleDialog.java
- *  Package:      paint.fiji.trackmate
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a modeless dialog for running TrackMate on a single recording
- *    with interactive threshold adjustment.
- *
- *  DESCRIPTION:
- *    The dialog allows users to:
- *      • Select a recording from the current project/experiment.
- *      • Adjust the spot detection threshold via a slider.
- *      • Trigger TrackMate calculation in a background thread.
- *      • Save the resulting track and spot data to CSV.
- *
- *    It provides visual feedback during long-running TrackMate operations
- *    and prevents concurrent execution through UI-state management.
- *
- *  KEY FEATURES:
- *    • Interactive recording selection and threshold tuning.
- *    • Background thread execution for responsive UI.
- *    • Status feedback with animated dots for active processes.
- *    • Java 8 compatible.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-fiji-plugin
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.fiji.trackmate;
 
@@ -47,6 +17,29 @@ import java.util.Collections;
 import java.util.List;
 import paint.shared.utils.PaintLogger;
 
+/**
+ * Provides a modeless dialog for running TrackMate on a single recording with interactive
+ * threshold adjustment.
+ * <p>
+ * The dialog allows users to:
+ * </p>
+ * <ul>
+ *   <li>Select a recording from the current project/experiment.</li>
+ *   <li>Adjust the spot detection threshold via a slider.</li>
+ *   <li>Trigger TrackMate calculation in a background thread.</li>
+ *   <li>Save the resulting track and spot data to CSV.</li>
+ * </ul>
+ * <p>
+ * It provides visual feedback during long-running TrackMate operations and prevents concurrent
+ * execution through UI-state management.
+ * </p>
+ * <ul>
+ *   <li>Interactive recording selection and threshold tuning.</li>
+ *   <li>Background thread execution for responsive UI.</li>
+ *   <li>Status feedback with animated dots for active processes.</li>
+ *   <li>Java 8 compatible.</li>
+ * </ul>
+ */
 public class TrackMateSingleDialog extends JDialog {
 
     public interface CalculationHandler {

@@ -1,43 +1,9 @@
-/*=============================================================================
- *  Class:        PaintRuntime.java
- *  Package:      paint.shared.utils
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Utility class for managing runtime settings of the PAINT application,
- *    such as verbosity and log level. It interacts with preference storage
- *    (via {@link PaintPrefs}) to load and persist settings that affect how
- *    the application logs and reports information.
- *
- *  DESCRIPTION:
- *    • Provides initialization from stored preferences.
- *    • Allows querying whether verbose mode is enabled.
- *    • Allows retrieving and updating the current logging level.
- *    • Ensures that these configurations persist across sessions.
- *
- *  RESPONSIBILITIES:
- *    • Maintain and provide access to global runtime flags for logging behavior.
- *    • Persist changes to these flags into the preference store.
- *
- *  USAGE EXAMPLE:
- *    PaintRuntime.initialiseFromPrefs();
- *    if (PaintRuntime.isVerbose()) { … }
- *    PaintRuntime.setLogLevel("DEBUG");
- *
- *  DEPENDENCIES:
- *    – paint.shared.utils.PaintPrefs
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.utils;
 

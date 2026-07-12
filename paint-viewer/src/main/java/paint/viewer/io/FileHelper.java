@@ -1,39 +1,9 @@
-/*==============================================================================
- *  Class:        FileHelper.java
- *  Package:      paint.viewer.io
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides static utility methods for exporting viewer panels as high-resolution
- *    images and for generating temporary, filtered CSV files from project data.
- *
- *  DESCRIPTION:
- *    This class contains general-purpose file operations used by the PAINT Viewer:
- *
- *      • High-resolution PNG export of any Swing component (e.g. the square grid).
- *      • Extraction of a temporary CSV containing only rows for a given recording.
- *      • Automatic directory creation and safe file handling.
- *
- *    {@code FileHelper} is strictly a static utility class and cannot be
- *    instantiated.
- *
- *  KEY FEATURES:
- *    • Scaled PNG export with high-quality rendering hints.
- *    • CSV filtering by recording name with automatic temp-file creation.
- *    • Desktop integration to immediately open generated CSV files.
- *    • Zero state — all methods are pure utilities.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-10-29
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.io;
 

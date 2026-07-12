@@ -1,39 +1,9 @@
-/*==============================================================================
- *  Class:        NavigationPanel.java
- *  Package:      paint.viewer.ui.panels
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a reusable navigation control panel with buttons for moving
- *    between records, images, or pages in the PAINT viewer interface.
- *
- *  DESCRIPTION:
- *    Displays a simple four-button layout for navigation:
- *      • “|<” — Jump to the first item
- *      • “<”  — Move to the previous item
- *      • “>”  — Move to the next item
- *      • “>|” — Jump to the last item
- *
- *    A listener interface is used to connect navigation actions to custom
- *    logic in the parent component. Button enabled states can be updated
- *    dynamically to reflect navigation bounds.
- *
- *  KEY FEATURES:
- *    • Simple reusable navigation panel.
- *    • Listener-based event handling for flexibility.
- *    • Dynamic enable/disable control for navigation limits.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.ui.panels;
 

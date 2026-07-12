@@ -1,40 +1,9 @@
-/*=============================================================================
- *  Class:        SquareOverride.java
- *  Package:      paint.viewer.override.square_override
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Represents a single per-square override entry originating from the Viewer
- *    override CSV. A SquareOverride replaces the {@code cellId} for one specific
- *    square identified by (experimentName, recordingName, squareNumber).
- *
- *  DESCRIPTION:
- *    This class models one row in:
- *
- *        <project>/Viewer/Square Override.csv
- *
- *    It is a simple POJO with getters/setters so it can be:
- *      1) parsed directly from CSV, and
- *      2) consumed by override application code (e.g. ImportSquareOverride).
- *
- *    No validation or persistence logic is implemented here.
- *
- *  KEY FEATURES:
- *    • Plain data container (POJO) for square overrides.
- *    • Mirrors the CSV columns used by the Viewer.
- *    • Supports deterministic matching via experiment/recording/squareNumber.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.override.square_override;
 

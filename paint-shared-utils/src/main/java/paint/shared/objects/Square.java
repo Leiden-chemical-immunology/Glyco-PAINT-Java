@@ -1,48 +1,9 @@
-/*=============================================================================
- *  Class:        Square.java
- *  Package:      paint.shared.objects
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Represents a spatial analysis region (square) within a PAINT recording.
- *    A square models:
- *
- *       • Its grid location (row/column)
- *       • Pixel coordinates (x0,y0,x1,y1)
- *       • Associated track statistics
- *       • Visibility and exclusion flags
- *       • A list of Track objects and (optional) a Tablesaw track table
- *
- *  DESCRIPTION:
- *    Each square corresponds to a rectangular region extracted from a
- *    recording frame. It forms the basis for spatial analysis across:
- *
- *       • Single-molecule densities
- *       • Variability and diffusion metrics
- *       • Track-based temporal properties
- *
- *    This version embeds the schema through the {@link Column} enum,
- *    replacing the old SquareSchema class entirely. All table I/O classes now
- *    rely on Square.Column.values() for headers and column types.
- *
- *  KEY FEATURES:
- *    • Full embedded schema enum with CSV headers + Tablesaw types
- *    • Rich metadata including geometry, track metrics, and flags
- *    • Utility constructors for fully-specified and grid-generated squares
- *    • Integration with PAINT’s track pipeline via a Track list and table
- *    • Clean, formatted debugging/diagnostic output via toString()
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.objects;
 

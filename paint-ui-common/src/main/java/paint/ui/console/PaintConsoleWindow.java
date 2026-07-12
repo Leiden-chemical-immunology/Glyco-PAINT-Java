@@ -1,39 +1,9 @@
-/*=============================================================================
- *  Class:        PaintConsoleWindow.java
- *  Package:      paint.ui.console
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a Swing-based graphical console window for logging, monitoring,
- *    and visually inspecting messages from the PAINT framework.
- *
- *  DESCRIPTION:
- *    The {@code PaintConsoleWindow} class implements an interactive console
- *    using Swing components. It supports colored message output, problem
- *    highlighting (e.g., "Error", "Warning", "Exception"), scroll lock control,
- *    and the ability to save or close the console from within the GUI.
- *
- *    The console is intended as a visual log window for PAINT-based desktop
- *    applications, allowing both text-based and GUI-integrated feedback.
- *
- *  KEY FEATURES:
- *    • Thread-safe message logging and dynamic color highlighting.
- *    • Scroll lock and caret control for controlled auto-scrolling.
- *    • Interactive buttons for saving, closing, and navigating problem messages.
- *    • Pattern-based highlighting of "Error", "Warning", and "Exception".
- *    • Fully self-contained Swing UI with no external dependencies.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-ui-common
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.ui.console;
 

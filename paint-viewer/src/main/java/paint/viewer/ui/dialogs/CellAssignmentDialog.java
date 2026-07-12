@@ -1,42 +1,9 @@
-/*==============================================================================
- *  Class:        CellAssignmentDialog.java
- *  Package:      paint.viewer.ui.dialogs
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a dialog window for assigning, undoing, or canceling cell
- *    assignments within the PAINT viewer’s square grid interface.
- *
- *  DESCRIPTION:
- *    The dialog presents a scrollable list of available cell IDs, each
- *    represented by a color-coded square and a radio button label.
- *    The user can:
- *      • Select a cell ID and assign it to the current selection.
- *      • Undo the most recent cell assignment.
- *      • Cancel the current selection.
- *      • Close the dialog window.
- *
- *    The dialog interacts with {@link CellAssignmentDialog.Listener}, allowing
- *    external components (e.g., the viewer frame) to handle user actions.
- *    It operates modelessly, remaining accessible while the viewer remains active.
- *
- *  KEY FEATURES:
- *    • Scrollable, color-coded list of cell options.
- *    • Modeless behavior for fluid interaction with the main viewer.
- *    • Integrated event callback through {@link Listener}.
- *    • Intuitive visual feedback for selected cell options.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.ui.dialogs;
 

@@ -1,22 +1,9 @@
-/*=============================================================================
- *  Class:        CsvIO.java
- *  Package:      convert
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Utility class for low-level CSV input/output operations during conversion.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-development-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package convert;
 
@@ -24,6 +11,9 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
+/**
+ * Utility class for low-level CSV input/output operations during conversion.
+ */
 final class CsvIO {
 
     static List<Map<String,String>> readSimpleCsv(Path file) throws Exception {

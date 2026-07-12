@@ -1,42 +1,9 @@
-/*==============================================================================
- *  Class:        SquareControlDialog.java
- *  Package:      paint.viewer.ui.dialogs
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a modeless dialog for interactively adjusting square-level
- *    filtering and neighbor control parameters within the PAINT viewer.
- *
- *  DESCRIPTION:
- *    The dialog allows users to modify and preview key filtering parameters
- *    for grid squares:
- *      • Minimum Density Ratio
- *      • Maximum Variability
- *      • Minimum R²
- *      • Neighbour Mode (Free, Relaxed, or Strict)
- *
- *    Parameter adjustments are immediately previewed in the main viewer
- *    without permanent changes. Pressing one of the Apply buttons commits
- *    the settings to the relevant scope (Recording, Experiment, or Project)
- *    and triggers file updates through the associated listener.
- *
- *  KEY FEATURES:
- *    • Live preview of slider and neighbour mode changes.
- *    • Modeless operation allowing real-time visual feedback.
- *    • Apply buttons for different persistence scopes.
- *    • Revert functionality restoring original values on Cancel.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- ==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.ui.dialogs;
 

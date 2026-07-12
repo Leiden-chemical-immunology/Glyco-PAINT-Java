@@ -1,43 +1,9 @@
-/*==============================================================================
- *  Class:        RecordingDisplayUpdater.java
- *  Package:      paint.viewer.ui
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Centralizes all UI updates required when the viewer navigates to a new
- *    {@link paint.viewer.model.RecordingEntry}. Ensures that every visible
- *    component in the ViewerFrame reflects the newly selected recording.
- *
- *  DESCRIPTION:
- *    This class updates the PAINT viewer UI whenever the user steps forward or
- *    backward through the list of loaded recording entries. It refreshes:
- *
- *      • The left grid panel (recording, square list, and background image)
- *      • The right image display (scaled image preview)
- *      • The experiment and recording labels
- *      • The attribute table showing recording metadata
- *
- *    All updates are performed in a coordinated manner to avoid inconsistent
- *    or partially refreshed UI states. This class is stateless; it operates
- *    exclusively on the components passed in via the constructor.
- *
- *  KEY FEATURES:
- *    • Fully refreshes the grid, images, labels, and attributes panel.
- *    • Performs deterministic high-quality scaling of the right-side image.
- *    • Reads the expected square count from {@link PaintConfig}.
- *    • Lightweight utility class with no retained business logic.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- ==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.ui;
 

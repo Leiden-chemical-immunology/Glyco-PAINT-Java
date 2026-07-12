@@ -1,49 +1,9 @@
-/*==============================================================================
- *  Class:        WriteSquareOverride.java
- *  Package:      paint.viewer.override.square_override
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Persists per-square cell assignment overrides (cellId) for the PAINT Viewer.
- *    This allows user-selected square→cellId mappings to be saved to disk and
- *    restored across Viewer sessions.
- *
- *  DESCRIPTION:
- *    Maintains the CSV file:
- *
- *        <project>/Viewer/Square Override.csv
- *
- *    Each row stores one square-level override:
- *
- *        experimentName, recordingName, squareNumber, cellId, timestamp
- *
- *    The writer supports:
- *      • Merging (add/update/remove) overrides for a recording.
- *      • Replacing all overrides for a recording in one operation.
- *      • Querying whether a recording already has overrides.
- *      • Atomic writes via temporary file replacement.
- *
- *    Header validation is performed; malformed headers cause the writer to
- *    rebuild the file contents from scratch (non-destructive to in-memory state).
- *
- *  KEY FEATURES:
- *    • Per-square persistent cell assignments (squareNumber → cellId).
- *    • Non-destructive merge semantics (remove when cellId == 0).
- *    • Full replace mode for a recording’s overrides.
- *    • Atomic on-disk writes to reduce risk of corruption.
- *    • Automatic header validation and recovery.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.override.square_override;
 

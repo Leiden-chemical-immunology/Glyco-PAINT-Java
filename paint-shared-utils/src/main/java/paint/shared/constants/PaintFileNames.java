@@ -1,34 +1,20 @@
-/*=============================================================================
- *  Class:        PaintFileNames.java
- *  Package:      paint.shared.constants
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Centralizes the naming conventions for all primary data files used
- *    within the PAINT application.
- *
- *  DESCRIPTION:
- *    The {@code PaintFileNames} class defines constants for CSV files
- *    (Recordings, Squares, Tracks), configuration JSONs, and other
- *    standard outputs produced or consumed by the pipeline modules.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.constants;
 
 /**
- * Centralizes the naming conventions for all primary data files used
- * within the PAINT application.
+ * Centralizes the naming conventions for all primary data files used within the PAINT
+ * application.
+ * <p>
+ * The {@code PaintFileNames} class defines constants for CSV files (Recordings, Squares,
+ * Tracks), configuration JSONs, and other standard outputs produced or consumed by the
+ * pipeline modules.
+ * </p>
  */
 public final class PaintFileNames {
 

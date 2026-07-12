@@ -1,49 +1,9 @@
-/*=============================================================================
- *  Class:        RunTrackMateOnProject.java
- *  Package:      paint.fiji.trackmate
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides orchestration for running the TrackMate analysis pipeline
- *    across multiple experiments within a project directory structure.
- *    Handles input validation, error reporting, user cancellation, and
- *    duration logging. Extends the functionality provided by
- *    {@link RunTrackMateOnExperiment} to operate at a project scale.
- *
- *  DESCRIPTION:
- *    • Validates that all required image and experiment files exist.
- *    • Performs per-experiment execution of the TrackMate workflow.
- *    • Supports user interruption via {@link ProjectDialog}.
- *    • Reports overall runtime and summary status through {@link PaintLogger}.
- *
- *  RESPONSIBILITIES:
- *    • Coordinate experiment-level processing into a project-level workflow.
- *    • Perform validation of both images and CSV configuration files.
- *    • Manage progress logging, duration measurement, and error handling.
- *
- *  USAGE EXAMPLE:
- *    boolean ok = RunTrackMateOnProject.runProject(
- *                     projectPath,
- *                     imagesPath,
- *                     experimentNames,
- *                     dialog,
- *                     sweepDir);
- *
- *  DEPENDENCIES:
- *    – paint.fiji.trackmate.RunTrackMateOnExperiment
- *    – paint.ui.dialogs.ProjectDialog
- *    – paint.shared.utils.PaintLogger
- *    – paint.shared.validate.ImageRootValidator
- *    – paint.shared.validate.ValidationHandler
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.fiji.trackmate;
 

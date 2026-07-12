@@ -1,34 +1,9 @@
-/*=============================================================================
- *  Class:        SquaresValidator.java
- *  Package:      paint.shared.validate
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Validates the structure and data types of "squares.csv" files against
- *    the expected schema defined in the {@link Square} object.
- *
- *  DESCRIPTION:
- *    The {@code SquaresValidator} extends {@link AbstractFileValidator} to
- *    enforce schema consistency for square-level data. It verifies that
- *    the file contains all required columns with the correct headers and
- *    compatible data types (e.g., Integer, Double, String).
- *
- *  KEY FEATURES:
- *    • Automated header validation using the {@link paint.shared.objects.Square.Column Square.Column} enum.
- *    • Column type checking based on the Tablesaw {@link ColumnType} API.
- *    • Lightweight integration with the validation pipeline.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.validate;
 

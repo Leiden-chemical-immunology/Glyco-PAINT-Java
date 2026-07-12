@@ -1,36 +1,9 @@
-/*=============================================================================
- *  Class:        Project.java
- *  Package:      paint.shared.objects
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Represents a complete PAINT analysis project that encapsulates
- *    configuration data, experiments, and related metadata.
- *
- *  DESCRIPTION:
- *    The {@code Project} class serves as the top-level container for the
- *    PAINT framework, grouping multiple {@link Experiment} objects along
- *    with global configuration instances such as {@link PaintConfig},
- *    {@link TrackMateConfig}, and {@link GenerateSquaresConfig}.
- *    It manages the project structure, file paths, and experiment hierarchy.
- *
- *  KEY FEATURES:
- *    • Encapsulates root paths, configuration, and experiment data.
- *    • Provides constructors for flexible initialization.
- *    • Includes methods for retrieving and managing experiments.
- *    • Provides a detailed string representation for logging.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.objects;
 

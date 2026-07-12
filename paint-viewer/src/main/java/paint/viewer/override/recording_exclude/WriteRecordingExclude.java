@@ -1,42 +1,9 @@
-/*==============================================================================
- *  Class:        WriteRecordingExclude.java
- *  Package:      paint.viewer.override.recording_exclude
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Persists "recording excluded" state from the Viewer, by maintaining the
- *    project-level Viewer/Recording Exclude.csv list.
- *
- *  DESCRIPTION:
- *    The Viewer can mark recordings as excluded. Toggling the Exclude/Include
- *    button calls updateExcludeRecordingsCsv(...), which updates the project-level
- *    Viewer/Recording Exclude.csv file. That file holds a single column
- *    ("Recording Name") listing every excluded recording. When excluded=true the
- *    recording is added (if not already present); when excluded=false it is
- *    removed (if present).
- *
- *    Recording Exclude.csv — not the Exclude column of any Recordings.csv — is the
- *    authoritative record of what the user excluded. ImportRecordingExclude and
- *    ExportOverridesFromViewer both rebuild that column from this file, clearing it
- *    first. Nothing therefore writes the Exclude column directly; a
- *    patchRecordingExcluded(...) method that did so was never called by anything and
- *    has been removed.
- *
- *  KEY FEATURES:
- *    • Maintains the Viewer/Recording Exclude.csv list (create/read/update).
- *    • Avoids duplicates when adding; removes all matching rows when removing.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.override.recording_exclude;
 

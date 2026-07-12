@@ -1,36 +1,9 @@
-/*=============================================================================
- *  Class:        MainIOInterface.java
- *  Package:      paint.shared.io
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a high-level API (façade) for reading and writing all core
- *    PAINT data tables (Experiment Info, Recordings, Squares, and Tracks).
- *
- *  DESCRIPTION:
- *    The {@code MainIOInterface} serves as the primary entry point for
- *    I/O operations. It coordinates between high-level model requests and
- *    low-level Tablesaw-based implementations found in the {@code internal}
- *    package. It handles path resolution, schema extraction from enums,
- *    and error logging.
- *
- *  KEY FEATURES:
- *    • Centralized access for all CSV table operations.
- *    • Automated schema management using entity Column enums.
- *    • Standardized error reporting via {@link PaintLogger}.
- *    • Support for both project-level and experiment-level I/O.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.io;
 
@@ -59,6 +32,22 @@ import static paint.shared.constants.PaintFileNames.TRACKS_CSV;
 
 import static paint.shared.utils.Miscellaneous.friendlyMessage;
 
+/**
+ * Provides a high-level API (façade) for reading and writing all core PAINT data tables
+ * (Experiment Info, Recordings, Squares, and Tracks).
+ * <p>
+ * The {@code MainIOInterface} serves as the primary entry point for I/O operations. It
+ * coordinates between high-level model requests and low-level Tablesaw-based implementations
+ * found in the {@code internal} package. It handles path resolution, schema extraction from
+ * enums, and error logging.
+ * </p>
+ * <ul>
+ *   <li>Centralized access for all CSV table operations.</li>
+ *   <li>Automated schema management using entity Column enums.</li>
+ *   <li>Standardized error reporting via {@link PaintLogger}.</li>
+ *   <li>Support for both project-level and experiment-level I/O.</li>
+ * </ul>
+ */
 public final class MainIOInterface {
 
     private MainIOInterface() { }

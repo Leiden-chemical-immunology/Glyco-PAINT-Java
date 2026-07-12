@@ -1,38 +1,9 @@
-/*==============================================================================
- *  Class:        CellAssignmentManager.java
- *  Package:      paint.viewer.control
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Manages cell assignment and undo functionality for square grids within
- *    the PAINT viewer. Enables assigning a cell ID to selected squares and
- *    supports reverting to the previous assignment state.
- *
- *  DESCRIPTION:
- *    This class maintains a mapping between square numbers and assigned cell IDs.
- *    Assignments are applied to the currently selected squares, and each operation
- *    records the previous state in an undo stack to allow reversal.
- *
- *    Collaboration occurs with {@link paint.viewer.ui.panels.SquareGridPanel},
- *    which exposes square lists, selection state, and repaint triggering.
- *
- *  KEY FEATURES:
- *    • Bulk assignment of a cell ID to selected squares.
- *    • Undo support by restoring previous assignment snapshots.
- *    • Automatic grid refresh after each modification.
- *    • Fully self-contained logic with no retained UI state.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.control;
 

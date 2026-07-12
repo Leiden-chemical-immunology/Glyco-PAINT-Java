@@ -1,44 +1,9 @@
-/*=============================================================================
- *  Class:        Track.java
- *  Package:      paint.shared.objects
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Represents a single molecular trajectory ("track") detected in a PAINT
- *    recording. A track consists of a series of spatial positions over time,
- *    from which a wide range of analytical metrics are derived:
- *
- *       • Displacement and total distance
- *       • Max/median speed
- *       • Diffusion coefficients
- *       • Gaps, duration, confinement ratios
- *
- *    The class also stores key metadata tying the track to its parent
- *    experiment, recording, and spatial region (square).
- *
- *  DESCRIPTION:
- *    This version embeds its own schema via the {@link Column} enum, replacing
- *    the external TrackSchema. Tablesaw-based IO now uses Track.Column.values()
- *    for both CSV header names and column types.
- *
- *  KEY FEATURES:
- *    • Embedded, fully self-describing schema enum
- *    • Complete set of motion and diffusion metrics
- *    • Grid/region association via square and label numbers
- *    • Clean, consistent toString() summary for diagnostics
- *    • Fully compatible with Tablesaw 0.43+ and Java 8
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.objects;
 

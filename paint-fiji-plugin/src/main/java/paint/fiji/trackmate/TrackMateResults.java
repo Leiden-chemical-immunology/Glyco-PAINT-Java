@@ -1,41 +1,9 @@
-/*=============================================================================
- *  Class:        TrackMateResults.java
- *  Package:      paint.fiji.trackmate
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Represents the outcome of a TrackMate analysis run, encapsulating
- *    success flags, detection statistics, frame counts, and runtime duration.
- *
- *  DESCRIPTION:
- *    • Captures and stores per-recording results after TrackMate processing.
- *    • Tracks number of detected spots, total and filtered tracks, and
- *      the number of frames analyzed.
- *    • Provides duration metrics for performance reporting.
- *    • Used by {@link RunTrackMateOnRecording} and higher-level classes
- *      to summarize execution results.
- *
- *  RESPONSIBILITIES:
- *    • Store immutable TrackMate result data for one recording.
- *    • Provide structured accessors for logging and reporting.
- *    • Support consistent summary formatting via {@link #toString()}.
- *
- *  USAGE EXAMPLE:
- *    TrackMateResults result = new TrackMateResults(
- *        true, true, 452, 87, 73, 300, Duration.ofSeconds(28), 6124);
- *
- *  DEPENDENCIES:
- *    – java.time.Duration
- *    – paint.fiji.trackmate.RunTrackMateOnRecording
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.fiji.trackmate;
 

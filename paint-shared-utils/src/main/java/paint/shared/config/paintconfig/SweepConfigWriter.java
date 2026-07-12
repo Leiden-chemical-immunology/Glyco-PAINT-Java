@@ -1,29 +1,9 @@
-/*=============================================================================
- *  Class:        SweepConfigWriter.java
- *  Package:      paint.shared.config.paintconfig
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Handles the generation and persistence of the "Paint Sweep Configuration.json"
- *    file.
- *
- *  DESCRIPTION:
- *    The {@code SweepConfigWriter} provides static methods to build a default
- *    sweep configuration containing predefined parameter ranges for TrackMate
- *    and Generate Squares. This allows users to perform parameter sensitivity
- *    analyses (sweeps) with a standardized starting point.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.config.paintconfig;
 
@@ -37,7 +17,17 @@ import java.nio.file.Path;
 
 import static paint.shared.constants.PaintStringConstants.*;
 
-/** Builds and writes the “Paint Sweep Configuration.json” file. */
+/**
+ * Builds and writes the “Paint Sweep Configuration.json” file.
+ * <p>
+ * Handles the generation and persistence of the "Paint Sweep Configuration.json" file.
+ * </p>
+ * <p>
+ * The {@code SweepConfigWriter} provides static methods to build a default sweep configuration
+ * containing predefined parameter ranges for TrackMate and Generate Squares. This allows users
+ * to perform parameter sensitivity analyses (sweeps) with a standardized starting point.
+ * </p>
+ */
 class   SweepConfigWriter {
 
     static void writeDefaultSweepJson(Path projectPath) {

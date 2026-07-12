@@ -1,28 +1,18 @@
-/*=============================================================================
- *  Class:        PathsConfig.java
- *  Package:      release.support
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Defines path constants and directory structures for the release pipeline.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-development-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package release.support;
 
 import java.nio.file.*;
 import java.util.*;
 
+/**
+ * Defines path constants and directory structures for the release pipeline.
+ */
 public final class PathsConfig {
     private PathsConfig() {}
 

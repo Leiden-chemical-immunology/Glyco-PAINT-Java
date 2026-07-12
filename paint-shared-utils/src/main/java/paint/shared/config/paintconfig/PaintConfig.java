@@ -1,38 +1,9 @@
-/*=============================================================================
- *  Class:        PaintConfig.java
- *  Package:      paint.shared.config.paintconfig
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a high-level API (façade) for accessing and managing the
- *    central "Paint Configuration.json" file.
- *
- *  DESCRIPTION:
- *    The {@code PaintConfig} class serves as the primary entry point for
- *    reading and writing application settings. It organizes configuration
- *    into sections (e.g., "Generate Squares", "TrackMate") and supports
- *    case-insensitive key lookups. It ensures that default values are
- *    populated if a configuration file is missing and handles reinitialization
- *    when switching projects.
- *
- *  KEY FEATURES:
- *    • Singleton-based access to application-wide configuration.
- *    • Section-based organization of settings.
- *    • Automatic default value population via {@link DefaultConfigLoader}.
- *    • Fault-tolerant loading with automatic backup of invalid files.
- *    • Case-insensitive key retrieval.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.config.paintconfig;
 
@@ -46,10 +17,26 @@ import java.nio.file.Paths;
 
 import static paint.shared.constants.PaintFileNames.PAINT_CONFIGURATION_JSON;
 
-
 /**
- * Thin façade over a JSON-backed config store.
- * Keeps the original public/static API intact.
+ * Thin façade over a JSON-backed config store. Keeps the original public/static API intact.
+ * <p>
+ * Provides a high-level API (façade) for accessing and managing the central "Paint
+ * Configuration.json" file.
+ * </p>
+ * <p>
+ * The {@code PaintConfig} class serves as the primary entry point for reading and writing
+ * application settings. It organizes configuration into sections (e.g., "Generate Squares",
+ * "TrackMate") and supports case-insensitive key lookups. It ensures that default values are
+ * populated if a configuration file is missing and handles reinitialization when switching
+ * projects.
+ * </p>
+ * <ul>
+ *   <li>Singleton-based access to application-wide configuration.</li>
+ *   <li>Section-based organization of settings.</li>
+ *   <li>Automatic default value population via {@link DefaultConfigLoader}.</li>
+ *   <li>Fault-tolerant loading with automatic backup of invalid files.</li>
+ *   <li>Case-insensitive key retrieval.</li>
+ * </ul>
  */
 public class PaintConfig {
 

@@ -1,49 +1,9 @@
-/*==============================================================================
- *  Class:        RecordingLoader.java
- *  Package:      paint.viewer.model
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Loads and validates all experiment recordings for a PAINT project,
- *    constructing fully populated {@link RecordingEntry} objects that include
- *    metadata, square data, and preloaded image resources.
- *
- *  DESCRIPTION:
- *    The {@code RecordingLoader} iterates over experiment folders inside a
- *    {@link paint.shared.objects.Project}, loads each experiment using
- *    {@link paint.shared.io.ExperimentDataLoader}, and creates a
- *    {@link RecordingEntry} for each recording that:
- *
- *      • Has its process flag enabled.
- *      • Has a valid TrackMate overlay image.
- *      • Has a matching Brightfield reference image.
- *
- *    Recordings missing mandatory resources are skipped with diagnostic logging.
- *    TrackMate images are expected in:
- *
- *      <experiment>/TrackMate Images/<recording>.jpg
- *
- *    Brightfield images are expected in:
- *
- *      <experiment>/Brightfield Images/<recording>[-BF*].jpg
- *
- *  KEY FEATURES:
- *    • Loads experiments, recordings, squares (no tracks).
- *    • Validates all required image assets.
- *    • Returns a complete, ready-to-display list of {@link RecordingEntry}.
- *    • Uses {@link paint.shared.utils.PaintLogger} for structured diagnostics.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.model;
 

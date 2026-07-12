@@ -1,39 +1,9 @@
-/*==============================================================================
- *  Class:        RecordingPlaybackController.java
- *  Package:      paint.viewer.ui
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Controls playback of ND2 or TIFF recordings and manages the state of the
- *    PAINT Viewer UI during playback: only one recording plays at a time, and the
- *    viewer UI is disabled for exactly as long as the player window is open.
- *
- *  DESCRIPTION:
- *    This controller resolves the recording's image file and hands it to
- *    {@link paint.viewer.io.TiffMoviePlayer}, which loads the image on its own
- *    background thread and opens a Swing player window. The controller disables the
- *    ViewerFrame UI before starting, and re-enables it from the callback the player
- *    invokes when its window closes — or immediately, if the file cannot be loaded.
- *
- *    The player is a plain Swing window owned by this application. It is not a Fiji
- *    window: Fiji (ImageJ) is used only to decode the image data.
- *
- *  KEY FEATURES:
- *    • Rejects a second playback request while one is already running.
- *    • Disables the viewer UI during playback and always restores it afterwards.
- *    • Reports a missing image file or an unset Images Root to the user.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.ui;
 

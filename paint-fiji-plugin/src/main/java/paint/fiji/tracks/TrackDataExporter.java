@@ -1,62 +1,9 @@
-/*=============================================================================
- *  Class:        TrackDataExporter.java
- *  Package:      paint.fiji.tracks
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Extracts TrackMate per-track motion statistics, augments them with
- *    PAINT-calculated features, and exports the resulting dataset as a
- *    schema-compliant Tracks table (CSV).
- *
- *  DESCRIPTION:
- *    This class bridges Fiji TrackMate with the PAINT shared data layer:
- *
- *      • Reads TrackMate model + features for each track
- *      • Computes extended PAINT attributes via
- *        {@link paint.fiji.tracks.TrackAttributeCalculations}
- *      • Builds fully typed {@link paint.shared.objects.Track} entities
- *      • Produces a schema-validated {@link tech.tablesaw.api.Table}
- *        (using PAINT’s shared I/O layer)
- *      • Assigns deterministic track IDs and recording-scoped unique keys
- *      • Persists the final table via
- *        {@link paint.shared.io.MainDataInterface#writeSpecificTracksFile}
- *
- *  RESPONSIBILITIES:
- *      • Convert TrackMate track data → PAINT Track objects
- *      • Compute diffusion, displacement, confinement ratio, and related metrics
- *      • Ensure deterministic row order for reproducibility
- *      • Export the Tracks CSV in strict alignment with PAINT’s
- *        {@code TrackSchema} definition
- *
- *  USAGE EXAMPLE:
- *
- *      int totalSpots = TrackDataExporter.writeTracksCsv(
- *          trackmate,
- *          "ExperimentA",
- *          "Recording1",
- *          Paths.get("tracks.csv"),
- *          true
- *      );
- *
- *  DEPENDENCIES:
- *      – Fiji TrackMate (fiji.plugin.trackmate.*)
- *      – paint.shared.objects.Track
- *      – paint.fiji.tracks.TrackAttributeCalculations
- *      – paint.shared.io.MainDataInterface
- *      – tech.tablesaw.api.Table
- *      – paint.shared.utils.PaintLogger
- *
- *  AUTHOR:
- *      Hans Bakker
- *
- *  MODULE:
- *      paint-fiji-plugin
- *
- *  UPDATED:
- *      2025-12-31
- *
- *  COPYRIGHT:
- *      © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.fiji.tracks;
 

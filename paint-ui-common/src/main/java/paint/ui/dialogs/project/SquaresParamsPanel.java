@@ -1,35 +1,9 @@
-/*=============================================================================
- *  Class:        SquaresParamsPanel.java
- *  Package:      paint.ui.dialogs.project
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a user interface panel for configuring square-generation
- *    parameters (e.g., grid size, R² threshold, density ratio).
- *
- *  DESCRIPTION:
- *    The {@code SquaresParamsPanel} allows users to input and refine the
- *    statistical thresholds used during the "Generate Squares" pipeline.
- *    In TrackMate mode, it also provides a toggle to automatically execute
- *    square generation after tracking completes.
- *
- *  KEY FEATURES:
- *    • Interactive fields for grid size and statistical thresholds.
- *    • Mode-dependent UI (TrackMate vs. Viewer/Generate Squares).
- *    • Real-time change notifications via callback.
- *    • Automated persistence to {@link PaintConfig}.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-ui-common
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.ui.dialogs.project;
 

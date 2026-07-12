@@ -1,34 +1,9 @@
-/*=============================================================================
- *  Class:        BooleanUtils.java
- *  Package:      paint.shared.utils
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a fully unified and consistent interpretation of boolean-like
- *    values across all PAINT components (validators, converters, readers).
- *
- *  DESCRIPTION:
- *    • Defines a single authoritative set of accepted TRUE/FALSE tokens.
- *    • Exposes multiple helpers (validation, normalization, parsing).
- *    • Eliminates inconsistent boolean logic across modules.
- *    • Ensures all modules classify values using the exact same rule set.
- *
- *  KEY FEATURES:
- *    • Centralized boolean classification.
- *    • String → boolean parsing with strict/lenient modes.
- *    • Normalization to canonical "true"/"false" strings.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.utils;
 

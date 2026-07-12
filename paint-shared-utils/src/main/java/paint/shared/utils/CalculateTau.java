@@ -1,46 +1,9 @@
-/*=============================================================================
- *  Class:        CalculateTau.java
- *  Package:      paint.shared.utils
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Computes the exponential decay time constant (Tau) and R² value from
- *    track duration data using non-linear least squares fitting.
- *
- *  DESCRIPTION:
- *    This class provides static methods for fitting mono-exponential decay
- *    models to track lifetime distributions. It evaluates the quality of
- *    the fit through the R² metric and classifies outcomes by fit status.
- *    The class is non-instantiable and intended as a computational utility
- *    used by higher-level analysis classes such as CalculateAttributes.
- *
- *  RESPONSIBILITIES:
- *    • Build frequency distributions of track durations
- *    • Perform exponential decay fitting using Levenberg–Marquardt optimization
- *    • Estimate Tau and R² metrics
- *    • Return structured results with fit status indicators
- *
- *  USAGE EXAMPLE:
- *    CalculateTauResult result = CalculateTau.calcTau(tracks, 50, 0.95);
- *    if (result.getStatus() == CalculateTauResult.Status.TAU_SUCCESS) {
- *        double tau = result.getTau();
- *        double r2  = result.getRSquared();
- *    }
- *
- *  DEPENDENCIES:
- *    - org.apache.commons.math3.fitting.leastsquares.*
- *    - org.apache.commons.math3.linear.*
- *    - org.apache.commons.math3.util.FastMath
- *    - paint.shared.objects.Track
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.utils;
 

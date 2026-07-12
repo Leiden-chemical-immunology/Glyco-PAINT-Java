@@ -1,41 +1,9 @@
-/*=============================================================================
- *  Class:        ExperimentInfo.java
- *  Package:      paint.shared.objects
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Represents all metadata associated with a single experiment recording.
- *    This includes probe information, condition parameters, process flags,
- *    and thresholding values, as well as links to Square and Track entities.
- *
- *  DESCRIPTION:
- *    This class now embeds its own schema definition through the
- *    {@link Column} enum, replacing ExperimentInfoSchema. Table I/O classes
- *    extract headers and Tablesaw types directly from this enum, ensuring
- *    consistency and eliminating redundant schema classes.
- *
- *    ExperimentInfo may be constructed manually, or from a key-value map
- *    (such as parsed CSV rows). All fields are mutable through getters and
- *    setters, and the class provides a formatted toString() summary.
- *
- *  KEY FEATURES:
- *    • Fully embedded schema via Column enum (headers + column types)
- *    • Provides core metadata for each experiment recording
- *    • Holds associated Square and Track objects
- *    • Supports initialization from CSV/JSON-like key/value maps
- *    • Java 8 compatible; used by ExperimentInfoTableIO and validators
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.objects;
 

@@ -1,43 +1,9 @@
-/*==============================================================================
- *  Class:        Viewer.java
- *  Package:      paint.viewer.app
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Serves as the entry point for the PAINT Viewer application, initializing
- *    preferences, logging, and configuration before launching the recording
- *    visualization interface.
- *
- *  DESCRIPTION:
- *    The {@code Viewer} class prepares the complete runtime environment for the
- *    PAINT Viewer. It loads user preferences, initializes application-wide
- *    configuration and logging systems, and displays the project specification
- *    dialog used to select a project directory.
- *
- *    When the user confirms the project settings, recordings are loaded via
- *    {@link paint.viewer.model.RecordingLoader}. If valid recordings are found,
- *    the {@link paint.viewer.ui.frames.ViewerFrame} is launched to provide the
- *    main visualization and interaction interface.
- *
- *  KEY FEATURES:
- *    • Loads last-used project root from user preferences.
- *    • Initializes PaintConfig and PaintLogger for the application session.
- *    • Presents a project selection dialog (viewer mode).
- *    • Loads and validates recordings for all selected experiments.
- *    • Launches the viewer interface when data is valid.
- *    • Displays clear diagnostic dialogs for missing or invalid data.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.app;
 

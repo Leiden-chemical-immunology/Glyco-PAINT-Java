@@ -1,29 +1,9 @@
-/*=============================================================================
- *  Class:        ProjectPathsPanel.java
- *  Package:      paint.ui.dialogs.project
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a user interface panel for selecting and managing project
- *    and experiment directory paths.
- *
- *  DESCRIPTION:
- *    The {@code ProjectPathsPanel} displays the current project root and
- *    provides a button to browse for a new directory using a
- *    {@link DirectoryChooser}. It also provides visual feedback on path
- *    validity and integrates with the project dialog's validation system.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-ui-common
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.ui.dialogs.project;
 

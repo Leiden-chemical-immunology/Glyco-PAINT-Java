@@ -1,33 +1,9 @@
-/*=============================================================================
- *  Class:        TrackMateConfig.java
- *  Package:      paint.shared.config
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Represents configuration parameters used in a tracking system (TrackMate).
- *
- *  DESCRIPTION:
- *    Encapsulates various settings related to frame gap, localization techniques,
- *    distance thresholds, and track management functionalities like merging and
- *    splitting. Immutable once constructed.
- *
- *  KEY FEATURES:
- *    - Immutable configuration object (all properties final)
- *    - Built either from full constructor or via reading values from PaintConfig
- *    - Provides getters for all configuration fields
- *    - Provides utility method to serialize the configuration to file
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.config;
 

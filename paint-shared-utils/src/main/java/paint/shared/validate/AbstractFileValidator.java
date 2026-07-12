@@ -1,46 +1,9 @@
-/*=============================================================================
- *  Class:        AbstractFileValidator.java
- *  Package:      paint.shared.validate
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Serves as an abstract base class for validating CSV files used within the
- *    PAINT application. Provides shared logic for validating headers, column
- *    data types, and optional value integrity checks.
- *
- *  DESCRIPTION:
- *    • Handles parsing of CSV files with Apache Commons CSV.
- *    • Performs header and column-type validation.
- *    • Provides flexible timestamp parsing for multiple date formats.
- *    • Reports all detected errors and warnings through {@link ValidationResult}.
- *    • Concrete subclasses define expected headers and data types.
- *
- *  RESPONSIBILITIES:
- *    • Abstract superclass for experiment CSV validators.
- *    • Ensure format consistency across PAINT CSV datasets.
- *    • Offer reusable parsing and type-checking logic for all validators.
- *
- *  USAGE EXAMPLE:
- *    ValidationResult result = new ExperimentInfoValidator().validate(file);
- *    if (result.hasErrors()) { result.printSummary(); }
- *
- *  DEPENDENCIES:
- *    – org.apache.commons.csv.{CSVFormat, CSVParser, CSVRecord}
- *    – tech.tablesaw.api.ColumnType
- *    – paint.shared.validate.ValidationResult
- *    – paint.shared.utils.Miscellaneous
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.validate;
 

@@ -1,61 +1,9 @@
-/*=============================================================================
- *  Class:        GlycoPaintInstallerWindows.java
- *  Package:      paint.installer
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a Windows installer for the Glyco-PAINT suite. The installer
- *    unpacks the embedded payload (EXE launchers plus the Fiji plugin) and
- *    installs the user-selected components. If a Fiji installation is found,
- *    the plugin JAR is installed automatically.
- *
- *  DESCRIPTION:
- *    The installer extracts an embedded ZIP (payload.zip) containing:
- *      • Viewer.exe
- *      • Generate Squares.exe
- *      • Get Omero.exe
- *      • Create Experiment.exe
- *      • A Fiji plugin payload in payload/plugin/
- *
- *    The user selects which EXE launchers to install and chooses a parent
- *    installation directory, under which a folder "Glyco-PAINT" is created.
- *
- *    Fiji plugin installation uses the following search order:
- *
- *      1) Saved Fiji path from preferences (if any)
- *      2) Auto-detected paths composed from these base directories:
- *           - %ProgramFiles%
- *           - %ProgramFiles(x86)%
- *           - %LOCALAPPDATA%   (usually C:\Users\<user>\AppData\Local)
- *         combined with these directory names:
- *           - Fiji
- *           - Fiji-win64
- *           - Fiji-win32
- *           - Fiji-Windows
- *      3) Ask the user: first show a warning dialog (OK/Cancel); if OK,
- *         open a directory chooser to select the Fiji folder.
- *
- *    If no valid Fiji directory (containing a "plugins" subfolder) is found,
- *    the plugin payload is copied to <installRoot>\plugin\ for manual install.
- *
- *  KEY FEATURES:
- *    • Installs selected EXE launchers from the payload.
- *    • Attempts automatic Fiji detection with full logging of attempted paths.
- *    • Warn-then-choose flow for manual Fiji selection (matches mac behavior).
- *    • Remembers last install parent and last known Fiji path.
- *    • Extracts plugin payload and installs/exports it as appropriate.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-installer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 import javax.swing.*;
 import java.awt.*;
@@ -70,6 +18,39 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import paint.shared.utils.PaintPrefs;
 
+/**
+ * Provides a Windows installer for the Glyco-PAINT suite. The installer unpacks the embedded
+ * payload (EXE launchers plus the Fiji plugin) and installs the user-selected components. If a
+ * Fiji installation is found, the plugin JAR is installed automatically.
+ * <p>
+ * The installer extracts an embedded ZIP (payload.zip) containing:
+ * </p>
+ * <ul>
+ *   <li>Viewer.exe</li>
+ *   <li>Generate Squares.exe</li>
+ *   <li>Get Omero.exe</li>
+ *   <li>Create Experiment.exe</li>
+ *   <li>A Fiji plugin payload in payload/plugin/</li>
+ * </ul>
+ * <p>
+ * The user selects which EXE launchers to install and chooses a parent installation directory,
+ * under which a folder "Glyco-PAINT" is created. Fiji plugin installation uses the following
+ * search order: 1) Saved Fiji path from preferences (if any) 2) Auto-detected paths composed
+ * from these base directories: - %ProgramFiles% - %ProgramFiles(x86)% - %LOCALAPPDATA%
+ * (usually C:\Users\<user>\AppData\Local) combined with these directory names: - Fiji - Fiji-
+ * win64 - Fiji-win32 - Fiji-Windows 3) Ask the user: first show a warning dialog (OK/Cancel);
+ * if OK, open a directory chooser to select the Fiji folder. If no valid Fiji directory
+ * (containing a "plugins" subfolder) is found, the plugin payload is copied to
+ * <installRoot>\plugin\ for manual install.
+ * </p>
+ * <ul>
+ *   <li>Installs selected EXE launchers from the payload.</li>
+ *   <li>Attempts automatic Fiji detection with full logging of attempted paths.</li>
+ *   <li>Warn-then-choose flow for manual Fiji selection (matches mac behavior).</li>
+ *   <li>Remembers last install parent and last known Fiji path.</li>
+ *   <li>Extracts plugin payload and installs/exports it as appropriate.</li>
+ * </ul>
+ */
 public class GlycoPaintInstallerWindows {
 
     /* ======================================================================

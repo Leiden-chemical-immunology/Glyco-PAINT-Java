@@ -1,54 +1,9 @@
-/*=============================================================================
- *  Class:        BaseTableIO.java
- *  Package:      paint.shared.io.internal
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Internal abstract base class providing shared CSV and Tablesaw I/O
- *    utilities for the internal TableIO implementations in
- *    {@code paint.shared.io.internal}.
- *
- *  DESCRIPTION:
- *    This class centralizes common logic required by the internal
- *    TableIO classes:
- *
- *        ExperimentInfoTableIO
- *        RecordingsTableIO
- *        SquaresTableIO
- *        TracksTableIO
- *
- *    It is **not part of the public API**. All external callers must use
- *    {@link paint.shared.io.MainDataInterface}, which acts as the public,
- *    stable façade. BaseTableIO and all subclasses remain internal
- *    implementation details and are deliberately package-private.
- *
- *    Responsibilities include:
- *      • Creating new schema-defined Tablesaw tables.
- *      • Reading CSV files with custom schema enforcement.
- *      • Normalizing booleans safely ("1", "0", "yes", "no", etc.).
- *      • Coercing types according to schema rules (e.g. INTEGER → DOUBLE).
- *      • Validating header and type consistency.
- *      • Locale-stable numerical export (US locale, fixed 3-decimal precision).
- *      • Providing safe append operations with schema checks.
- *
- *  DESIGN NOTES:
- *    - Only MainDataInterface should be referenced by other modules.
- *    - All TableIO classes use package-private visibility to prevent
- *      cross-module coupling.
- *    - BaseTableIO maintains uniform CSV behavior for all data layers.
- *    - Compatible with Java 8 and Tablesaw 0.43+.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-10-28
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.io.internal;
 

@@ -1,38 +1,9 @@
-/*==============================================================================
- *  Class:        PanelExporter.java
- *  Package:      paint.viewer.io
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a high-resolution PNG export for Swing panels used in the
- *    PAINT Viewer (e.g., the left square grid panel).
- *
- *  DESCRIPTION:
- *    This utility class renders any Swing {@link JPanel} to an off-screen
- *    {@link BufferedImage} at an arbitrary scaling factor. High-quality
- *    rendering hints are applied to ensure smooth edges, sharp text, and
- *    correct scaling of overlays such as square outlines or shading layers.
- *
- *    The exported image is written as a PNG to the specified file path.
- *    Directories are created automatically if necessary.
- *
- *  KEY FEATURES:
- *    • High-resolution PNG exports using scalable rendering.
- *    • High-quality antialiasing, interpolation, and rendering hints.
- *    • Simple one-method API: {@code export(panel, output, scale)}.
- *    • Pure utility class — cannot be instantiated.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-10-29
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.io;
 
@@ -43,9 +14,25 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Static utility for exporting Swing panels as high-resolution PNG images.
- *
- * <p>This class cannot be instantiated.</p>
+ * Static utility for exporting Swing panels as high-resolution PNG images. This class cannot
+ * be instantiated.
+ * <p>
+ * Provides a high-resolution PNG export for Swing panels used in the PAINT Viewer (e.g., the
+ * left square grid panel).
+ * </p>
+ * <p>
+ * This utility class renders any Swing {@link JPanel} to an off-screen {@link BufferedImage}
+ * at an arbitrary scaling factor. High-quality rendering hints are applied to ensure smooth
+ * edges, sharp text, and correct scaling of overlays such as square outlines or shading
+ * layers. The exported image is written as a PNG to the specified file path. Directories are
+ * created automatically if necessary.
+ * </p>
+ * <ul>
+ *   <li>High-resolution PNG exports using scalable rendering.</li>
+ *   <li>High-quality antialiasing, interpolation, and rendering hints.</li>
+ *   <li>Simple one-method API: {@code export(panel, output, scale)}.</li>
+ *   <li>Pure utility class — cannot be instantiated.</li>
+ * </ul>
  */
 public final class PanelExporter {
 

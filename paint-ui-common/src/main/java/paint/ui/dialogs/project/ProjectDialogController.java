@@ -1,36 +1,9 @@
-/*=============================================================================
- *  Class:        ProjectDialogController.java
- *  Package:      paint.ui.dialogs.project
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Manages the business logic and user interaction flow for the
- *    {@link paint.ui.dialogs.ProjectDialog}.
- *
- *  DESCRIPTION:
- *    The {@code ProjectDialogController} handles experiment discovery,
- *    validation of project paths, persistence of user selections (preferences),
- *    and coordination of background calculation tasks. It acts as the
- *    bridge between the dialog's UI components and the underlying PAINT
- *    data models.
- *
- *  KEY FEATURES:
- *    • Automated discovery and filtering of experiment directories.
- *    • Path resolution and validation against the PAINT project schema.
- *    • Persistent storage of last-used paths and selected experiments.
- *    • Coordination of mode-specific initialization logic.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-ui-common
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.ui.dialogs.project;
 

@@ -1,35 +1,9 @@
-/*=============================================================================
- *  Class:        ProjectDialog.java
- *  Package:      paint.ui.dialogs
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a comprehensive project-selection and configuration dialog
- *    used across the PAINT application suite.
- *
- *  DESCRIPTION:
- *    The {@code ProjectDialog} acts as a central coordinator for defining
- *    project paths, selecting experiments, and configuring calculation
- *    parameters (e.g., Tau, R², density ratio). It supports multiple
- *    modes (VIEWER, GENERATE_SQUARES) and integrates interactive validation.
- *
- *  KEY FEATURES:
- *    • Flexible UI for path selection and experiment filtering.
- *    • Real-time validation of project structure.
- *    • Mode-specific UI adjustments.
- *    • Integrated configuration for square-generation parameters.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-ui-common
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.ui.dialogs;
 

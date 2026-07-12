@@ -1,32 +1,9 @@
-/*==============================================================================
- *  Class:        RecordingNavigator.java
- *  Package:      paint.viewer.ui
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Handles safe navigation through a list of recordings.
- *
- *  DESCRIPTION:
- *    This utility class provides methods to navigate to the first, last, next,
- *    and previous recording in a list. It notifies a {@link Listener} whenever
- *    a navigation action occurs, allowing the UI to update accordingly.
- *
- *  KEY FEATURES:
- *    • Simple first/last/next/prev navigation logic.
- *    • Decouples navigation from UI implementation via a listener.
- *    • Bounds checking to prevent IndexOutOfBoundsException.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.ui;
 

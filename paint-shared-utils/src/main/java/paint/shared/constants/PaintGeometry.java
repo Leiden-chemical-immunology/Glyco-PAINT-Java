@@ -1,33 +1,19 @@
-/*=============================================================================
- *  Class:        PaintGeometry.java
- *  Package:      paint.shared.constants
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Defines geometric constants used for spatial calculations and image
- *    rendering within the PAINT application.
- *
- *  DESCRIPTION:
- *    The {@code PaintGeometry} class centralizes constants related to
- *    pixel dimensions, grid scaling, and coordinate systems.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.constants;
 
 /**
- * Defines geometric constants used for spatial calculations and image
- * rendering within the PAINT application.
+ * Defines geometric constants used for spatial calculations and image rendering within the
+ * PAINT application.
+ * <p>
+ * The {@code PaintGeometry} class centralizes constants related to pixel dimensions, grid
+ * scaling, and coordinate systems.
+ * </p>
  */
 public final class PaintGeometry {
 

@@ -1,49 +1,9 @@
-/*=============================================================================
- *  Class:        PaintPrefs.java
- *  Package:      paint.shared.utils
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Manages application-level preferences for the Glyco-PAINT application,
- *    stored in a macOS-style Property List (plist) file. Provides thread-safe
- *    access to get and set preference values (strings, booleans, integers),
- *    automatically saving changes and allowing reload from disk.
- *
- *  DESCRIPTION:
- *    • On class load, attempts to parse an existing plist file at
- *      '~/Library/Preferences/Glyco-PAINT.plist', falling back to an empty
- *      dictionary if missing or unreadable.
- *    • Provides synchronized getters (getString, getBoolean, getInt) and setters
- *      (putString, putBoolean, putInt) with default handling.
- *    • Persists all modifications immediately via XML save.
- *    • Supports manual reload from disk to pick up external edits.
- *
- *  RESPONSIBILITIES:
- *    • Centralised preference storage for runtime and configuration settings.
- *    • Ensures atomic and thread-safe preference access.
- *    • Abstracts away plist file handling and persistence details.
- *
- *  USAGE EXAMPLE:
- *    boolean verbose = PaintPrefs.getBoolean("Runtime", "Verbose", false);
- *    PaintPrefs.putString("Project", "RootPath", projectRootPath);
- *    PaintPrefs.reload();
- *
- *  DEPENDENCIES:
- *    – com.dd.plist.NSDictionary, NSObject, PropertyListParser
- *    – java.io.File
- *    – java.lang.System
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.utils;
 

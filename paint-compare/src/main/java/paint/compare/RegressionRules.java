@@ -1,32 +1,21 @@
-/*=============================================================================
- *  Class:        RegressionRules.java
- *  Package:      paint.compare
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Defines the configuration and tolerance rules for regression tests.
- *
- *  DESCRIPTION:
- *    The {@code RegressionRules} class specifies which CSV columns should
- *    be compared, which should be ignored, and the allowable numerical
- *    variance (epsilon) for specific metrics.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-compare
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.compare;
 
 import java.util.*;
 
+/**
+ * Defines the configuration and tolerance rules for regression tests.
+ * <p>
+ * The {@code RegressionRules} class specifies which CSV columns should be compared, which
+ * should be ignored, and the allowable numerical variance (epsilon) for specific metrics.
+ * </p>
+ */
 public final class RegressionRules {
 
     // ===========================

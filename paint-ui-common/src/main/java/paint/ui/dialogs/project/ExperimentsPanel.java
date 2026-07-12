@@ -1,35 +1,9 @@
-/*=============================================================================
- *  Class:        ExperimentsPanel.java
- *  Package:      paint.ui.dialogs.project
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a user interface panel for selecting and filtering experiments
- *    within a PAINT project.
- *
- *  DESCRIPTION:
- *    The {@code ExperimentsPanel} displays a list of discovered experiment
- *    directories as checkboxes, allowing users to choose which data to
- *    process or view. It includes buttons for mass selection/deselection
- *    and integrates with the project dialog's validation logic.
- *
- *  KEY FEATURES:
- *    • Dynamically loads experiment list from project root.
- *    • Persists checkbox states using PaintConfig.
- *    • Provides callbacks when selection changes.
- *    • Allows external components to query selected experiments.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-ui-common
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.ui.dialogs.project;
 

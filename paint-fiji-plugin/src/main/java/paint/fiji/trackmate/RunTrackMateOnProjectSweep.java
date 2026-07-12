@@ -1,48 +1,9 @@
-/*=============================================================================
- *  Class:        RunTrackMateOnProjectSweep.java
- *  Package:      paint.fiji.trackmate
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Executes the Paint TrackMate analysis pipeline across multiple experiments
- *    under varying parameter configurations ("sweep mode"). This allows
- *    systematic exploration of parameter sensitivity by iteratively running
- *    TrackMate under different settings.
- *
- *  DESCRIPTION:
- *    • Loads the Sweep configuration from Paint's JSON configuration file.
- *    • Iterates over all active TrackMate parameters marked for sweeping.
- *    • Creates separate subdirectories for each parameter–value combination.
- *    • Rewrites Paint configuration files dynamically for each sweep run.
- *    • Executes the TrackMate workflow for all experiments under the new setup.
- *    • Optionally flattens the sweep results for summary analysis.
- *
- *  RESPONSIBILITIES:
- *    • Manage configuration cloning and parameter substitution per sweep run.
- *    • Invoke {@link RunTrackMateOnProject} for each parameter combination.
- *    • Maintain logging and recovery of the original Paint configuration.
- *
- *  USAGE EXAMPLE:
- *    boolean ok = RunTrackMateOnProjectSweep.runWithSweep(
- *                     Paths.get("/Paint Project"),
- *                     Paths.get("/Volumes/Images"),
- *                     Arrays.asList("221108", "221122"));
- *
- *  DEPENDENCIES:
- *    – paint.fiji.trackmate.RunTrackMateOnProject
- *    – paint.shared.config.paintconfig.PaintConfig
- *    – paint.shared.config.SweepConfig
- *    – paint.shared.utils.PaintLogger
- *    – paint.fiji.utils.SweepFlattener
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.fiji.trackmate;
 

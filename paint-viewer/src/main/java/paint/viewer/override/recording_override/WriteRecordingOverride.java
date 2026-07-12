@@ -1,56 +1,9 @@
-/*==============================================================================
- *  Class:        WriteRecordingOverride.java
- *  Package:      paint.viewer.override.recording_override
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Persist per-recording threshold override settings created in the PAINT
- *    Viewer, so user-modified filtering parameters can be restored in later
- *    Viewer sessions or applied in batch across an experiment or project.
- *
- *  DESCRIPTION:
- *    This class manages the CSV file:
- *
- *        <project>/Viewer/Recording Override.csv
- *
- *    Each CSV row represents one recording-level override identified by the
- *    composite key (experimentName, recordingName), storing:
- *
- *        experimentName,
- *        recordingName,
- *        timestamp,
- *        minRequiredDensityRatio,
- *        maxAllowableVariability,
- *        minRequiredRSquared,
- *        neighbourMode
- *
- *    The writer supports three scopes:
- *      • Recording  – update only the currently selected recording
- *      • Experiment – update all recordings in the same experiment
- *      • Project    – update every recording in the project
- *
- *    Updates are non-destructive: existing entries for the same composite key
- *    are replaced; all other rows are preserved. Writes are performed via a
- *    temporary file and a replace/move operation to reduce the chance of
- *    leaving a partially-written CSV.
- *
- *  KEY FEATURES:
- *    • Persistent storage of viewer threshold overrides.
- *    • Validates CSV header; rebuilds file if malformed.
- *    • Non-destructive updates via composite-key map.
- *    • Safe write strategy using temporary file replacement.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.override.recording_override;
 

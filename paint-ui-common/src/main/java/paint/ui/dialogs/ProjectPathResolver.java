@@ -1,52 +1,9 @@
-/*=============================================================================
- *  Class:        ValidProjectPath.java
- *  Package:      paint.ui.dialogs
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Validates and returns a usable project root folder path for the PAINT
- *    application. Checks that the configured path exists and contains the
- *    required configuration file. If validation fails, prompts the user to
- *    select a valid folder via a native macOS file dialog.
- *
- *  DESCRIPTION:
- *    • Retrieves the stored “Project Root” path from preferences.
- *    • Verifies that the folder exists and contains the expected configuration file
- *      ({@code PAINT_CONFIGURATION_JSON}).
- *    • If validation fails, shows a warning message and invokes a native folder chooser.
- *    • Updates preferences if a new valid path is selected.
- *    • Returns the validated project path or {@code null} if the user cancels.
- *
- *  RESPONSIBILITIES:
- *    • Ensure that a valid project directory is available at runtime.
- *    • Interact with the user when reconfiguration is required.
- *
- *  USAGE EXAMPLE:
- *    Path projectRoot = ValidProjectPath.getValidProjectPath();
- *    if (projectRoot == null) {
- *        // handle cancellation or abort startup
- *    } else {
- *        // proceed with project using projectRoot
- *    }
- *
- *  DEPENDENCIES:
- *    – javax.swing.JOptionPane
- *    – java.awt.FileDialog
- *    – java.nio.file.{Path, Files}
- *    – paint.shared.constants.PaintFileNames
- *    – paint.shared.utils.PaintPrefs
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-ui-common
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.ui.dialogs;
 

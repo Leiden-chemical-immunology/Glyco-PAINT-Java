@@ -1,53 +1,9 @@
-/*=============================================================================
- *  Class:        GlycoPaintInstallerMac.java
- *  Package:      paint.installer
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a macOS installer for the Glyco-PAINT software suite. The
- *    installer unpacks the embedded application bundle payload, installs
- *    selected .app components, and optionally installs the Fiji plugin if a
- *    Fiji.app installation is found.
- *
- *  DESCRIPTION:
- *    This installer loads an embedded ZIP payload containing multiple .app
- *    bundles and a Fiji plugin JAR. The user selects which components to
- *    install and where they should be placed. The installer attempts to
- *    automatically locate Fiji.app using the most common macOS installation
- *    directories.
- *
- *    macOS Fiji search paths (checked in order):
- *      • ~/Applications/Fiji.app
- *      • /Applications/Fiji.app
- *
- *    If those directories do not contain a valid Fiji.app (i.e., a folder
- *    containing a "plugins" directory), the user is shown a warning dialog and
- *    then prompted to manually select a Fiji.app folder. If the plugin still
- *    cannot be installed, the plugin files are copied into a "plugin"
- *    directory inside the Glyco-PAINT install root for manual installation.
- *
- *  KEY FEATURES:
- *    • Installs Viewer.app, Generate Squares.app, Get Omero.app,
- *      Create Experiment.app as selected by the user.
- *    • Extracts plugin payload and attempts to install it into a valid Fiji.app.
- *    • Shows a clear warning and allows the user to manually select Fiji.app
- *      when auto-detection fails.
- *    • Remembers last installation directory and last known Fiji.app path.
- *    • Removes macOS quarantine attributes for installed applications.
- *    • Provides detailed logging inside the installer window.
- *    • Automatic version detection from payload.zip.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-installer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 import javax.swing.*;
 import java.awt.*;
@@ -62,6 +18,46 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import paint.shared.utils.PaintPrefs;
 
+/**
+ * Provides a macOS installer for the Glyco-PAINT software suite. The installer unpacks the
+ * embedded application bundle payload, installs selected .app components, and optionally
+ * installs the Fiji plugin if a Fiji.app installation is found.
+ * <p>
+ * This installer loads an embedded ZIP payload containing multiple .app bundles and a Fiji
+ * plugin JAR. The user selects which components to install and where they should be placed.
+ * The installer attempts to automatically locate Fiji.app using the most common macOS
+ * installation directories. macOS Fiji search paths (checked in order):
+ * </p>
+ * <ul>
+ *   <li>~/Applications/Fiji.app</li>
+ *   <li>/Applications/Fiji.app</li>
+ * </ul>
+ * <p>
+ * If those directories do not contain a valid Fiji.app (i.e., a folder containing a "plugins"
+ * directory), the user is shown a warning dialog and then prompted to manually select a
+ * Fiji.app folder. If the plugin still cannot be installed, the plugin files are copied into a
+ * "plugin" directory inside the Glyco-PAINT install root for manual installation.
+ * </p>
+ * <ul>
+ *   <li>Installs Viewer.app, Generate Squares.app, Get Omero.app,</li>
+ * </ul>
+ * <p>
+ * Create Experiment.app as selected by the user.
+ * </p>
+ * <ul>
+ *   <li>Extracts plugin payload and attempts to install it into a valid Fiji.app.</li>
+ *   <li>Shows a clear warning and allows the user to manually select Fiji.app</li>
+ * </ul>
+ * <p>
+ * when auto-detection fails.
+ * </p>
+ * <ul>
+ *   <li>Remembers last installation directory and last known Fiji.app path.</li>
+ *   <li>Removes macOS quarantine attributes for installed applications.</li>
+ *   <li>Provides detailed logging inside the installer window.</li>
+ *   <li>Automatic version detection from payload.zip.</li>
+ * </ul>
+ */
 public class GlycoPaintInstallerMac {
 
     /* ======================================================================

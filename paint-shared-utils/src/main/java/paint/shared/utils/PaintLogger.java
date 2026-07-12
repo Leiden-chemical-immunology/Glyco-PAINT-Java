@@ -1,43 +1,9 @@
-/*=============================================================================
- *  Class:        PaintLogger.java
- *  Package:      paint.shared.utils
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides structured, color-coded logging functionality for the PAINT framework.
- *
- *  DESCRIPTION:
- *    The {@code PaintLogger} class centralizes logging for the framework. It supports
- *    multiple log levels (DEBUG, INFO, WARN, ERROR) and persistent logging to disk.
- *
- *    It writes to the log file directly, and forwards each line to an optional
- *    {@link Sink}. The Swing console window is one such sink, registered by the UI
- *    layer; this class itself has no knowledge of any UI, so a headless run never
- *    loads a UI class.
- *
- *    Messages below the current log level threshold are automatically filtered.
- *    Log files are created within a "Logs" directory under a specified project
- *    path. This class also supports aligned documentation block output and
- *    raw printing for unformatted data.
- *
- *  KEY FEATURES:
- *    • Multi-level logging with severity filtering.
- *    • Colour-coded output via a pluggable {@link Sink} (UI-agnostic).
- *    • Automatic log file rotation and initialization under a "Logs" folder.
- *    • Thread-safe static API with Java 8 compatibility.
- *    • Documentation-style formatted block printing for structured logs.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.utils;
 

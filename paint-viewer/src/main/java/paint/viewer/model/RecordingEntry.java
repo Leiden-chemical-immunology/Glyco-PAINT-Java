@@ -1,45 +1,9 @@
-/*==============================================================================
- *  Class:        RecordingEntry.java
- *  Package:      paint.viewer.model
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Represents a single recording entry inside a PAINT experiment, providing
- *    structured access to metadata, TrackMate/Brightfield images, and the
- *    associated {@link paint.shared.objects.Recording} containing square data.
- *
- *  DESCRIPTION:
- *    A {@code RecordingEntry} acts as the viewer-facing wrapper around a
- *    {@link Recording}. It provides:
- *
- *      • Preloaded TrackMate and Brightfield images.
- *      • Access to all standard metadata fields (probe name/type, adjuvant,
- *        cell type, concentration, threshold, density, etc.).
- *      • Delegation to the underlying {@link Recording} object for all
- *        square-level and measurement-level data.
- *
- *    Images are loaded using standard {@code ImageIO} first, with automatic
- *    fallback to ImageJ's {@code Opener} to support scientific formats such
- *    as TIFF, JPEG2000, and some ND2 conversions.
- *
- *  KEY FEATURES:
- *    • Simple immutable wrapper around a {@link Recording}.
- *    • Automatic, robust image loading with verbosity via {@link PaintLogger}.
- *    • Supplies the ViewerFrame and its panels with pre-scaled image icons.
- *    • Does not perform filtering or control-parameter logic itself; this is
- *      delegated to the controlling UI classes.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.model;
 

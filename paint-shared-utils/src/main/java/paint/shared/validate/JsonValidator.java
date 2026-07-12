@@ -1,35 +1,9 @@
-/*=============================================================================
- *  Class:        JsonValidator.java
- *  Package:      paint.shared.validate
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides utility methods to validate the syntax of JSON configuration
- *    files using the Google GSON library.
- *
- *  DESCRIPTION:
- *    The {@code JsonValidator} reads a JSON file and attempts to parse it
- *    to check for structural errors. If parsing fails, it generates a
- *    detailed error report including the line and column number of the
- *    failure, along with a visual snippet of the code where the error
- *    occurred.
- *
- *  KEY FEATURES:
- *    • Strict JSON syntax validation.
- *    • Contextual error reporting with line/column pointers.
- *    • Lightweight integration with GSON.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.validate;
 
@@ -48,8 +22,18 @@ import java.nio.file.Path;
 import java.util.Arrays;
 
 /**
- * Provides utility methods to validate the syntax of JSON configuration
- * files using the Google GSON library.
+ * Provides utility methods to validate the syntax of JSON configuration files using the Google
+ * GSON library.
+ * <p>
+ * The {@code JsonValidator} reads a JSON file and attempts to parse it to check for structural
+ * errors. If parsing fails, it generates a detailed error report including the line and column
+ * number of the failure, along with a visual snippet of the code where the error occurred.
+ * </p>
+ * <ul>
+ *   <li>Strict JSON syntax validation.</li>
+ *   <li>Contextual error reporting with line/column pointers.</li>
+ *   <li>Lightweight integration with GSON.</li>
+ * </ul>
  */
 public final class JsonValidator {
 

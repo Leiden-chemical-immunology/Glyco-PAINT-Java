@@ -1,43 +1,9 @@
-/*==============================================================================
- *  Class:        ImportRecordingExclude.java
- *  Package:      paint.viewer.override.recording_exclude
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Loads "Recording Exclude.csv" from the project's /Viewer folder and applies
- *    the exclude list to either:
- *      • in-memory Viewer RecordingEntry objects, or
- *      • an in-memory Tablesaw Recordings table.
- *
- *  DESCRIPTION:
- *    The exclude file is intentionally minimal and currently contains only:
- *
- *        Recording Name
- *
- *    Applying excludes is a two-step operation:
- *      1) Reset all recordings to Exclude = false.
- *      2) For each Recording Name listed in the exclude file, set Exclude = true
- *         on the matching recording(s).
- *
- *    This importer performs in-memory mutation only. Persistence (writing updated
- *    Recordings CSVs) is handled elsewhere.
- *
- *  KEY FEATURES:
- *    • Safe no-op when the CSV file does not exist.
- *    • Applies excludes to both RecordingEntry lists and Tablesaw tables.
- *    • Resets Exclude flags before applying new excludes for deterministic results.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.override.recording_exclude;
 

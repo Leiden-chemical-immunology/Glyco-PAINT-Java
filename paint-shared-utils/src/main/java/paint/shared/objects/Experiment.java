@@ -1,35 +1,9 @@
-/*=============================================================================
- *  Class:        Experiment.java
- *  Package:      paint.shared.objects
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Represents a scientific experiment that encapsulates metadata
- *    and associated recordings belonging to a single experiment context.
- *
- *  DESCRIPTION:
- *    This class defines the Experiment entity, which maintains a name
- *    and a collection of {@link Recording} objects. It provides basic
- *    constructors, accessors, and a formatted string representation for
- *    logging or console output.
- *
- *  KEY FEATURES:
- *    • Encapsulates experiment-level metadata.
- *    • Manages a dynamic list of {@link Recording} entities.
- *    • Provides a clear, formatted textual summary via {@link #toString()}.
- *    • Compatible with Java 8 collections.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.objects;
 

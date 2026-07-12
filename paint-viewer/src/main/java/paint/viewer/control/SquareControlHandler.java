@@ -1,37 +1,9 @@
-/*==============================================================================
- *  Class:        SquareControlHandler.java
- *  Package:      paint.viewer.control
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides parameter management and visibility control for a
- *    {@link paint.viewer.ui.panels.SquareGridPanel} within the PAINT viewer.
- *
- *  DESCRIPTION:
- *    This handler applies user-defined square control parameters such as
- *    minimum density ratio, maximum variability, minimum R², and neighbour
- *    mode to a target grid panel. The updated configuration determines
- *    which squares remain visible according to the applied filters.
- *
- *    The handler may attach to an existing {@code SquareGridPanel} and
- *    update it dynamically as parameters are changed or applied.
- *
- *  KEY FEATURES:
- *    • Manages and updates visibility thresholds for grid squares.
- *    • Applies density, variability, and R² filtering logic.
- *    • Supports both attached and externally provided grid panels.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-10-29
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.control;
 

@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2025 Hans Bakker
+ *
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
+
 package paint.compare;
 
 import org.apache.commons.csv.CSVFormat;

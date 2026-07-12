@@ -1,43 +1,9 @@
-/*==============================================================================
- *  Class:        ViewerFrame.java
- *  Package:      paint.viewer.ui.frames
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides the primary graphical interface for exploring and analyzing
- *    recordings within the PAINT Viewer application.
- *
- *  DESCRIPTION:
- *    This frame manages synchronized visualization of TrackMate and Brightfield
- *    images alongside grid-based square data derived from quantitative analyses.
- *    It coordinates recording navigation, filtering, and interactive manipulation
- *    of square attributes, enabling users to refine visibility and assignment logic.
- *
- *    The viewer integrates multiple UI components — including attribute panels,
- *    navigation controls, and square grid visualizations — into a unified workspace.
- *    It supports square selection, filtering by statistical thresholds, live Tau
- *    and density calculations, and playback of ND2/TIFF recordings.
- *
- *  KEY FEATURES:
- *    • Displays paired TrackMate and Brightfield recordings with overlayed grids.
- *    • Integrates attribute and control panels for dynamic threshold adjustments.
- *    • Enables square filtering by density ratio, variability, and R².
- *    • Supports cell assignment and undo management through dedicated dialogs.
- *    • Provides full recording navigation across multiple experiments.
- *    • Supports preview recalculation of Tau, R², and density on slider movement.
- *    • Integrates TIFF/ND2 playback via {@link paint.viewer.io.TiffMoviePlayer}.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.viewer.ui.frames;
 

@@ -1,28 +1,9 @@
-/*=============================================================================
- *  Class:        SimpleDocumentListener.java
- *  Package:      paint.ui.dialogs.project
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides a simplified interface for Swing {@link DocumentListener} events.
- *
- *  DESCRIPTION:
- *    The {@code SimpleDocumentListener} functional interface reduces the
- *    boilerplate code required to listen for text changes in {@link JTextField}
- *    components. It collapses insert, remove, and change events into a
- *    single callback.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-ui-common
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.ui.dialogs.project;
 

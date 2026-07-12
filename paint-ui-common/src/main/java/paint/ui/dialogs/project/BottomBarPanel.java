@@ -1,28 +1,9 @@
-/*=============================================================================
- *  Class:        BottomBarPanel.java
- *  Package:      paint.ui.dialogs.project
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides the footer control bar for the {@link paint.ui.dialogs.ProjectDialog}.
- *
- *  DESCRIPTION:
- *    The {@code BottomBarPanel} contains the main action buttons (OK, Cancel)
- *    and provides callbacks for their interactions. It also includes a
- *    toggle for "Save and Recalculate" mode, which is specifically used
- *    in Generate Squares mode.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-ui-common
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.ui.dialogs.project;
 

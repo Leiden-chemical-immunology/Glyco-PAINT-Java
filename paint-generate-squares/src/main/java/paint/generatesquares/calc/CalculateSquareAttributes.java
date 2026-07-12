@@ -1,46 +1,9 @@
-/*=============================================================================
- *  Class:        CalculateSquareAttributes.java
- *  Package:      paint.generatesquares.calc
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Performs quantitative analysis and metric calculations for squares and
- *    recordings in the Paint experiment workflow.
- *
- *  DESCRIPTION:
- *    This class provides static computational methods used by the “Generate Squares”
- *    pipeline. It computes detailed per-square and per-recording attributes such as:
- *      • Tau fitting and R² evaluation
- *      • Variability metrics
- *      • Density and density ratio calculations
- *      • Background density estimation
- *    It also applies visibility filters and assigns label numbers to valid squares.
- *
- *  RESPONSIBILITIES:
- *    • Calculate Tau and R² values from track data
- *    • Compute variability, density, and density ratio metrics
- *    • Estimate background density and apply visibility filters
- *    • Aggregate per-square metrics into recording-level summaries
- *
- *  USAGE EXAMPLE:
- *    CalculateSquareAttributes.calculateSquareAttributes(expPath, recording, config);
- *    CalculateSquareAttributes.calculateRecordingAttributes(recording, config);
- *
- *  DEPENDENCIES:
- *    - paint.shared.config.GenerateSquaresConfig
- *    - paint.shared.objects.{Square, Recording, Track}
- *    - paint.shared.utils.{SquareUtils, PaintLogger, CalculateTau}
- *    - paint.generatesquares.calc.PlotUtils
- *    - tech.tablesaw.api.Table
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.generatesquares.calc;
 

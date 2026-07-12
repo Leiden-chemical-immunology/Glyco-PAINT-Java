@@ -1,22 +1,9 @@
-/*=============================================================================
- *  Class:        Converter.java
- *  Package:      convert
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Base class for data conversion utilities within the Glyco-PAINT framework.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-development-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package convert;
 
@@ -31,6 +18,9 @@ import java.util.List;
 import static paint.shared.constants.PaintFileNames.*;
 import static paint.shared.validate.ValidationHandler.validateExperiments;
 
+/**
+ * Base class for data conversion utilities within the Glyco-PAINT framework.
+ */
 public class Converter {
 
     // Simple test main

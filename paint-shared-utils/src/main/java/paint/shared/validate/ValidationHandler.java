@@ -1,51 +1,9 @@
-/*=============================================================================
- *  Class:        ValidationHandler.java
- *  Package:      paint.shared.validate
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Performs batch validation of core PAINT experiment CSV files across one
- *    or more experiments within a project directory. Each experiment’s
- *    files are validated for schema, type, and consistency integrity.
- *
- *  DESCRIPTION:
- *    • Iterates over a list of experiment names and validates selected CSV files.
- *    • Routes validation to specific validator classes depending on file type
- *      (Experiment Info, Recordings, Squares, or Tracks).
- *    • Aggregates all validation messages into a unified report.
- *    • Outputs concise problem lines in the format:
- *         [ExperimentName] - [FileName] - [Problem summary]
- *    • Provides verbose logging output when {@link PaintRuntime#isVerbose()} is enabled.
- *
- *  RESPONSIBILITIES:
- *    • Coordinate multi-file validation across experiments.
- *    • Integrate individual validators into a unified workflow.
- *    • Provide human-readable reporting and console logging.
- *
- *  USAGE EXAMPLE:
- *    List<String> experiments = Arrays.asList("221012", "221108");
- *    List<String> files = Arrays.asList(EXPERIMENT_INFO_CSV, RECORDINGS_CSV);
- *    ValidationHandler.validate(projectPath, experiments, files);
- *
- *  DEPENDENCIES:
- *    – paint.shared.validate.{ExperimentInfoValidator, RecordingsValidator,
- *      SquaresValidator, TracksValidator, ValidationResult}
- *    – paint.shared.utils.{PaintLogger, PaintRuntime}
- *    – paint.shared.schema.{ExperimentInfoSchema, RecordingSchema,
- *      SquareSchema, TrackSchema}
- *    – java.nio.file, java.util
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.validate;
 

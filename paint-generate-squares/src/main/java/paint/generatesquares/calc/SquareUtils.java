@@ -1,45 +1,9 @@
-/*=============================================================================
- *  Class:        SquareUtils.java
- *  Package:      paint.generatesquares.calc
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Provides utility methods for analyzing square-based track data in the
- *    Paint experiment workflow. Supports background estimation, density
- *    calculations, and extraction of tracks from selected squares.
- *
- *  DESCRIPTION:
- *    Includes static methods for:
- *      • Computing density values
- *      • Estimating background densities using iterative filtering
- *      • Extracting tracks from squares flagged as selected
- *      • Counting selected squares
- *
- *    Also defines an inner class for returning background estimation results.
- *
- *  RESPONSIBILITIES:
- *    • calculateDensity — compute density from counts, area, time, concentration
- *    • calculateBackgroundDensity — iterative background estimation
- *    • getTracksFromSelectedSquares — extract tracks from selected squares
- *    • getNumberOfSelectedSquares — count selected squares in a recording
- *
- *  USAGE EXAMPLE:
- *    List<Square> squares = recording.getSquaresOfRecording();
- *    SquareUtils.BackgroundEstimationResult result =
- *        SquareUtils.calculateBackgroundDensity(squares);
- *
- *  DEPENDENCIES:
- *    – paint.shared.objects.{Recording, Square, Track}
- *    – java.util.{List, ArrayList, Collections, Comparator}
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  UPDATED:
- *    2025-10-27
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.generatesquares.calc;
 
@@ -51,6 +15,29 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Provides utility methods for analyzing square-based track data in the Paint experiment
+ * workflow. Supports background estimation, density calculations, and extraction of tracks
+ * from selected squares.
+ * <p>
+ * Includes static methods for:
+ * </p>
+ * <ul>
+ *   <li>Computing density values</li>
+ *   <li>Estimating background densities using iterative filtering</li>
+ *   <li>Extracting tracks from squares flagged as selected</li>
+ *   <li>Counting selected squares</li>
+ * </ul>
+ * <p>
+ * Also defines an inner class for returning background estimation results.
+ * </p>
+ * <ul>
+ *   <li>calculateDensity — compute density from counts, area, time, concentration</li>
+ *   <li>calculateBackgroundDensity — iterative background estimation</li>
+ *   <li>getTracksFromSelectedSquares — extract tracks from selected squares</li>
+ *   <li>getNumberOfSelectedSquares — count selected squares in a recording</li>
+ * </ul>
+ */
 public class SquareUtils {
 
     /**

@@ -1,53 +1,9 @@
-/*=============================================================================
- *  Class:        GenerateSquaresProcessor.java
- *  Package:      paint.generatesquares.calc
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Orchestrates the full square-generation and per-recording analysis pipeline
- *    for a PAINT experiment. Handles creation of geometric square grids, track
- *    assignment, attribute calculation, and persistence of results.
- *
- *  DESCRIPTION:
- *    Executes the GENERATE_SQUARES workflow:
- *      • Loads experiment and recording data.
- *      • Divides each recording into a regular grid of square regions based on
- *        {@link paint.shared.config.GenerateSquaresConfig}.
- *      • Assigns each track to the correct square using spatial filtering.
- *      • Computes per-square and per-recording metrics using
- *        {@link paint.generatesquares.calc.CalculateSquareAttributes}.
- *      • Compiles complete experiment-level squares and tracks tables and writes
- *        them to disk via {@link paint.shared.io.MainDataInterface}.
- *
- *  RESPONSIBILITIES:
- *    • Generate geometric square grids for each recording.
- *    • Assign tracks to the appropriate square regions.
- *    • Compute square-level and recording-level attributes.
- *    • Aggregate and persist all square, track, and recording tables.
- *
- *  USAGE EXAMPLE:
- *    GenerateSquaresProcessor.generateSquaresForExperiment(
- *        project,
- *        "MyExperiment"
- *    );
- *
- *  DEPENDENCIES:
- *    – paint.shared.config.GenerateSquaresConfig
- *    – paint.shared.config.paintconfig.PaintConfig
- *    – paint.shared.objects.{Project, Experiment, Recording, Square, Track}
- *    – paint.shared.utils.{PaintLogger, SharedSquareUtils}
- *    – paint.generatesquares.calc.CalculateSquareAttributes
- *    – paint.shared.io.{MainDataInterface, SquaresTableIO (static), TracksTableIO (static)}
- *    – tech.tablesaw.api.Table
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.generatesquares.calc;
 

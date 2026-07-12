@@ -1,35 +1,9 @@
-/*=============================================================================
- *  Class:        ExperimentInfoValidator.java
- *  Package:      paint.shared.validate
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Validates the structure, data types, and logical consistency of
- *    "experiment_info.csv" files.
- *
- *  DESCRIPTION:
- *    The {@code ExperimentInfoValidator} ensures that experiment metadata
- *    files conform to the schema defined in {@link ExperimentInfo}. In
- *    addition to standard header and type checks, it performs condition-level
- *    consistency validation to ensure that all recordings within the same
- *    condition share identical experimental parameters.
- *
- *  KEY FEATURES:
- *    • Automated header and type validation using {@link paint.shared.objects.ExperimentInfo.Column ExperimentInfo.Column}.
- *    • Logical consistency checks for shared experimental conditions.
- *    • Integrated with the global validation framework.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.validate;
 

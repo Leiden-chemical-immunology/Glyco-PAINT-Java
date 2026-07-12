@@ -1,58 +1,9 @@
-/*=============================================================================
- *  Class:        Recording.java
- *  Package:      paint.shared.objects
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Represents all metadata, analysis results, filter thresholds, and
- *    associated objects for a single PAINT recording. Each Recording
- *    encapsulates experiment-level metadata (probe, adjuvant, replicate, etc.)
- *    as well as all analysis metrics computed during the Generate Squares
- *    workflow.
- *
- *  DESCRIPTION:
- *    • Defines the unified CSV schema through the embedded Column enum
- *      (replacing RecordingSchema.* entirely).
- *    • Stores both experiment metadata and analysis-derived metrics.
- *    • Holds child objects (Squares, Tracks) and their Tablesaw tables.
- *    • Used throughout Generate Squares, TrackMate post-processing, filtering,
- *      and validation.
- *
- *    This class is serialised/deserialised by:
- *        – RecordingsTableIO
- *        – MainIOInterface  (public I/O façade)
- *
- *  RESPONSIBILITIES:
- *    • Provide a schema definition for recording-level CSV files.
- *    • Store experiment metadata and derived analytical metrics.
- *    • Store filter parameters used for determining visible squares.
- *    • Provide getters/setters used by the Generate Squares pipeline.
- *    • Serve as the container for associated Square and Track objects.
- *
- *  USAGE EXAMPLE:
- *      Recording rec = new Recording("ExpA", "R01", 1, 1,
- *                                    "AF647", "Dye", "T-cell", "None",
- *                                    1.0, true, 25.0);
- *      rec.setDensity(0.34);
- *      rec.getSquaresOfRecording().add(square);
- *
- *  DEPENDENCIES:
- *    – tech.tablesaw.api.Table
- *    – paint.shared.objects.{Square, Track}
- *    – paint.shared.io.internal.RecordingsTableIO
- *    – paint.shared.io.MainIOInterface
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.objects;
 

@@ -1,40 +1,10 @@
-/*==============================================================================
- *  Class:        RecordingAttributesPanel.java
- *  Package:      paint.viewer.ui.panels
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Displays the attributes of a {@link paint.viewer.model.RecordingEntry}
- *    in a structured tabular format within the PAINT viewer interface.
- *
- *  DESCRIPTION:
- *    Provides a graphical panel for visualizing the key metadata of a
- *    recording entry, including probe characteristics, experiment parameters,
- *    and derived threshold statistics such as density ratio, variability, and
- *    minimum R².
- *
- *    The panel uses a non-editable {@link JTable} backed by a
- *    {@link javax.swing.table.DefaultTableModel}, allowing data to be
- *    refreshed dynamically from a given {@link RecordingEntry}. It supports
- *    both permanent updates and transient previews when users adjust
- *    visibility thresholds in the Square Control dialog.
- *
- *  KEY FEATURES:
- *    • Displays probe, cell type, and recording statistics in a table view.
- *    • Supports real-time preview updates without altering data objects.
- *    • Formats numeric fields with configurable decimal precision.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
+
 package paint.viewer.ui.panels;
 
 import paint.viewer.model.RecordingEntry;

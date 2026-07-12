@@ -1,31 +1,9 @@
-/*=============================================================================
- *  Class:        SweepConfig.java
- *  Package:      paint.shared.config
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Configuration loader & accessor for sweep parameters.
- *
- *  DESCRIPTION:
- *    Reads a JSON file and provides methods to extract active sweep values
- *    for configured categories. Works with Gson to parse JSON.
- *
- *  KEY FEATURES:
- *    - Loads JSON from a file path
- *    - Case-sensitive keys in JSON structure but supports structured retrieval
- *    - Retrieves maps of numeric values for enabled sweep attributes
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.config;
 

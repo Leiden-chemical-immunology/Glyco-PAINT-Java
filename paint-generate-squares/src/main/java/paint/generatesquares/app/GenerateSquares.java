@@ -1,47 +1,9 @@
-/*=============================================================================
- *  Class:        GenerateSquares.java
- *  Package:      paint.generatesquares.app
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Acts as the main entry point for the “Generate Squares” module,
- *    providing a GUI-driven workflow to configure and execute square-based
- *    analyses on TrackMate output data.
- *
- *  DESCRIPTION:
- *    This class orchestrates initialization and user interaction. It sets up
- *    project configurations, logging, and runtime parameters, and launches
- *    a Swing-based interface that allows users to:
- *      • Select a project directory
- *      • Configure analysis parameters
- *      • Run square-level calculations and export resulting data
- *
- *    Computational work is delegated to
- *    {@link paint.generatesquares.GenerateSquaresHeadless}.
- *
- *  RESPONSIBILITIES:
- *    • Initialize PaintConfig, logging, and runtime environment
- *    • Provide GUI interaction for project and experiment selection
- *    • Launch headless processing via GenerateSquaresHeadless
- *
- *  USAGE EXAMPLE:
- *    $ java -jar paint-generate-squares.jar
- *
- *  DEPENDENCIES:
- *    - paint.shared.config.paintconfig.PaintConfig
- *    - paint.ui.dialogs.ProjectDialog
- *    - paint.shared.utils.{PaintLogger, PaintConsoleWindow,
- *                          PaintRuntime, JarInfoLogger}
- *    - javax.swing.*
- *
- *  AUTHOR:
- *    Hans Bakker (jjabakker)
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.generatesquares.app;
 

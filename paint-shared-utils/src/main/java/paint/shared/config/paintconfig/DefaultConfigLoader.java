@@ -1,28 +1,9 @@
-/*=============================================================================
- *  Class:        DefaultConfigLoader.java
- *  Package:      paint.shared.config.paintconfig
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Defines the factory-default configuration and applies it in two ways:
- *      • loadDefaults   — seed a brand-new store with the full default set.
- *      • backfillMissing — defensively add any default key that is absent from
- *                          an existing store (preserving existing values).
- *
- *  DESCRIPTION:
- *    Both paths share a single source of truth, {@link #buildDefaults()}, so a
- *    default value can never disagree with itself. Debug flags are intentionally
- *    NOT seeded: they are internal developer toggles that default to off when
- *    absent, so seeding them would only clutter every user's config file.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-shared-utils
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
- *=============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 package paint.shared.config.paintconfig;
 
@@ -33,7 +14,20 @@ import java.util.Map;
 
 import static paint.shared.constants.PaintStringConstants.*;
 
-/** Defines and applies the factory-default configuration. */
+/**
+ * Defines and applies the factory-default configuration.
+ * <p>
+ * Defines the factory-default configuration and applies it in two ways: • loadDefaults — seed
+ * a brand-new store with the full default set. • backfillMissing — defensively add any default
+ * key that is absent from an existing store (preserving existing values).
+ * </p>
+ * <p>
+ * Both paths share a single source of truth, {@link #buildDefaults()}, so a default value can
+ * never disagree with itself. Debug flags are intentionally NOT seeded: they are internal
+ * developer toggles that default to off when absent, so seeding them would only clutter every
+ * user's config file.
+ * </p>
+ */
 class DefaultConfigLoader {
 
     private DefaultConfigLoader() {}

@@ -1,45 +1,9 @@
-/*==============================================================================
- *  Class:        ViewerLayoutBuilder.java
- *  Package:      paint.viewer.ui.layout
+/*
+ * Copyright (c) 2025 Hans Bakker
  *
- *  PURPOSE:
- *    Constructs the complete Swing user interface layout for the PAINT viewer.
- *    Centralises creation and assembly of all major UI components used by
- *    ViewerFrame, providing them in a convenient container object.
- *
- *  DESCRIPTION:
- *    This builder constructs:
- *      • The square grid panel (left image)
- *      • The processed / reference image panel (right image)
- *      • Experiment/recording labels
- *      • Navigation controls
- *      • Recording attributes panel
- *      • Recording controls panel
- *      • Import-overrides checkbox
- *      • Close button and bottom panel
- *
- *    The method {@code build(...)} returns a {@link LayoutComponents} object
- *    containing references to all created Swing components required for UI
- *    updates inside ViewerFrame.
- *
- *  KEY FEATURES:
- *    • Fully encapsulates all layout wiring for the viewer.
- *    • Ensures stable component references for ViewerFrame.
- *    • Provides custom layout containers with fixed aspect ratios for images.
- *    • Offers a clean data container (LayoutComponents) for external use.
- *
- *  AUTHOR:
- *    Hans Bakker
- *
- *  MODULE:
- *    paint-viewer
- *
- *  UPDATED:
- *    2025-12-31
- *
- *  COPYRIGHT:
- *    © 2025 Hans Bakker. All rights reserved.
-==============================================================================*/
+ * Licensed under the MIT License. See the LICENSE file in the project root
+ * for the full licence text.
+ */
 
 /*
  +-----------------------------------------------------------------------------------------------------------------------+
