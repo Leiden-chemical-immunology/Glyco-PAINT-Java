@@ -45,8 +45,27 @@ Three levels of protection now exist:
 - **CI (`.github/workflows/build-and-test.yml`)** runs `mvn test` headless on
   every push/PR. Before this, ~60 tests and the gate existed but nothing ever ran
   them — the safety net was not load-bearing.
+- **Validator tests.** `FileValidatorTest` covers all four CSV validators by building a valid
+  file *from* each `Column` enum schema and then mutating it (missing column, renamed column,
+  wrong-typed value, absent file) — so the tests follow the schema instead of duplicating it.
+  `JsonValidatorTest` covers the guard between a hand-edited config and a failure deep in the
+  pipeline (trailing comma, unterminated object, empty file, missing file). These found a real
+  bug on their first run; see below.
+- **`GridSizeTest`** pins the grid geometry for every selectable size.
 
 ### Bugs fixed
+- **A release could ship a non-runnable installer.** `ReleaseNewVersion` picked the
+  installer jar by "newest file matching a loose pattern", but the Windows target directory
+  holds two matches: the shaded, runnable jar and the thin pre-shade `original-<name>.jar`
+  that `maven-shade` leaves behind. Shade writes both within milliseconds, so the choice was
+  a race — losing it would publish a non-runnable installer under the official release name,
+  and it would look fine until a user tried to run it. Now `FileOps.requireArtifact(dir,
+  exactName)` resolves the deterministic Maven name and fails loudly with a directory
+  listing. `latestMatching` is removed.
+- **`JsonValidator` reported an empty file as valid JSON** (found by the new validator tests
+  on their first run). Gson returns `null` for empty input without throwing, so the code fell
+  through to `Result.ok()` — a truncated or half-written `Paint Configuration.json` would have
+  passed validation. It now fails with a clear message.
 - **Headless logging crash (found immediately by the new CI).** `PaintLogger` →
   `PaintConsoleWindow` unconditionally constructed a Swing `JFrame`, so *any*
   headless run (CI, server, headless Fiji) threw `HeadlessException` on the first
@@ -107,8 +126,26 @@ Three levels of protection now exist:
 - **A6** — the config flag read in a static initializer is gone. The track-assignment
   CSV dump is now a `-Dpaint.debug.dumpTrackAssignmentCsv` switch, read at call
   time; the whole `Debug` config section was removed (no debug flag gets a JSON key).
-- **A5 (partial)** — the pure per-recording compute is extracted into
-  `SquareGenerationService`, with an isolated unit test.
+- **A5 — the pipeline is now plainly load → compute → write.**
+  `generateSquaresForExperiment` loads the experiment, calls
+  `SquareGenerationService.computeExperiment(...)`, and writes the result. The recording
+  loop and the stamping of selection parameters onto each recording moved into the
+  service, which reads nothing and writes nothing — so the scientific core can be run and
+  asserted on with no project directory at all. Covered by an isolated unit test
+  (whole-experiment compute, writing nothing) as well as the end-to-end gate, which
+  reproduced the golden master exactly after the change.
+- **M7 / M9 / A8 (partly) — closed by deleting dev drivers.** The hardcoded `/Users/hans`
+  paths were never in real logic: they lived in demo/`main()` drivers embedded in library
+  classes. Deleting those removed the paths, the last `System.out` in `validate/`, and the
+  library `main()` methods together (`SweepFlattener`, `RunTrackMateOnProjectSweep`,
+  `CsvUtils`, `JsonValidator`, `ValidationHandler`). No `/Users/hans` path remains in
+  `paint-shared-utils` or `paint-fiji-plugin`.
+- **One definition of the square-count → grid-side conversion.**
+  `GenerateSquaresConfig.gridSizeFor(int)` replaces four inline computations that used two
+  different formulas (truncate in two places, round in two others). The count comes from a
+  fixed dropdown so it is always a perfect square and they agreed in practice, but there
+  was no reason to keep both. `GenerateSquaresHeadless` logging now reads the typed config,
+  removing five more duplicated default literals (M1).
 - **M4 — done by deletion.** The Python-vs-Java comparators were dropped
   (~1,900 lines of hand-rolled CSV parsing and duplicated plumbing), along with
   their hardcoded `/Users/hans` paths and the orphaned 5.7 MB `reference-case`
@@ -130,29 +167,15 @@ Three levels of protection now exist:
   Full DI is a large, invasive change for a smell that isn't causing bugs.
 
 ### Architecture
-- **A5 (remainder)** — the pipeline still interleaves load → compute → write in
-  static methods outside the extracted service.
-- **A7–A10** (minor) — domain objects coupled to Tablesaw; `main()` in library
-  classes (5 in shared-utils); stale package/dependency banners; `paint-generate-squares`
-  pulling heavyweight imaging deps it may not need.
-
-### Robustness / correctness
-- **M9** — 6 `System.out.println` remain in the production `validate/` package,
-  bypassing `PaintLogger` (invisible in a packaged app).
-- **M7** — hardcoded `/Users/hans` paths remain in main code, including production
-  `paint-fiji-plugin` (`SweepFlattener`, `RunTrackMateOnProjectSweep`).
-- **Fragile release-jar selection.** `ReleaseNewVersion` picks the installer with
-  `contains("installer") && endsWith(".jar")` — a loose filter that would grab the
-  wrong jar if a second match ever appeared. This is why `installer-macos` keeps
-  `appendAssemblyId=false` (and its one harmless shade warning).
-- **Stale exec `mainClass`** in `paint-development-utils`: `utils.BuildWindowsExecutables`
-  no longer exists.
+- **A7–A10** (minor) — domain objects coupled to Tablesaw; two `main()` left in
+  shared-utils library classes (`Miscellaneous`, `JarInfoLogger`); stale
+  package/dependency banners; `paint-generate-squares` pulling heavyweight imaging deps it
+  may not need.
 
 ### Tests still worth adding
-- The 10 `validate/` classes (pure `ValidationResult` in → out; ideal targets).
 - `ConfigStore` against `@TempDir`.
-- The grid generator's non-perfect-square `n` edge case — `(int)Math.sqrt` silently
-  truncates today; worth pinning.
+- `ConditionConsistencyChecker` and `ImageRootValidator` (the two `validate/` classes not
+  yet covered).
 
 ### Maintainability (larger)
 - **M3** — the macOS and Windows installers are ~90% duplicated (~1,400 lines).

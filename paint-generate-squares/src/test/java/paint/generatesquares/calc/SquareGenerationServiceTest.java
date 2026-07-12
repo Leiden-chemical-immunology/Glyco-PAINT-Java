@@ -73,4 +73,43 @@ class SquareGenerationServiceTest {
                 assertTrue(Double.isFinite(s.getTau()) && Double.isFinite(s.getRSquared()),
                         "a selected square should have finite tau and R-squared"));
     }
+
+    @Test
+    @DisplayName("computes a whole experiment in memory, writing nothing")
+    void computesWholeExperimentWithoutWriting(@TempDir Path configDir) throws Exception {
+        PaintLogger.initialise(configDir, "svc-test");
+        PaintConfig.reinitialise(configDir);
+        PaintConfig.setBoolean(GENERATE_SQUARES, BACKGROUND_PLOTS, false);
+        PaintConfig.setBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS, false);
+        GenerateSquaresConfig config = new GenerateSquaresConfig();
+
+        Path projectRoot = Paths.get(getClass().getResource("/reference-project").toURI());
+        Experiment experiment = ExperimentDataLoader.loadExperiment(projectRoot, "221012", false, true);
+        assertNotNull(experiment, "reference experiment should load");
+
+        // The whole experiment computation, with nowhere to write to. This is what the A5
+        // split buys: the scientific core runs without an output directory at all.
+        boolean completed = SquareGenerationService.computeExperiment(experiment, config, projectRoot);
+        assertTrue(completed, "computation should complete (not interrupted)");
+
+        List<Recording> processed = experiment.getRecordings().stream()
+                .filter(Recording::isProcessFlagSet)
+                .collect(java.util.stream.Collectors.toList());
+        assertTrue(!processed.isEmpty(), "the fixture should have processable recordings");
+
+        for (Recording recording : processed) {
+            assertEquals(config.getNumberOfSquaresInRecording(),
+                    recording.getSquaresOfRecording().size(),
+                    recording.getRecordingName() + " should have a full grid of squares");
+        }
+
+        // Every recording carries the selection parameters that were applied, so the output
+        // states the thresholds it was produced under.
+        for (Recording recording : experiment.getRecordings()) {
+            assertEquals(config.getMinRequiredRSquared(),     recording.getMinRequiredRSquared(),     1e-9);
+            assertEquals(config.getMaxAllowableVariability(), recording.getMaxAllowableVariability(), 1e-9);
+            assertEquals(config.getMinRequiredDensityRatio(), recording.getMinRequiredDensityRatio(), 1e-9);
+            assertEquals(config.getNeighbourMode(),           recording.getNeighbourMode());
+        }
+    }
 }

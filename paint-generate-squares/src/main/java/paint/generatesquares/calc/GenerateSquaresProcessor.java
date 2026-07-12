@@ -90,19 +90,18 @@ public class GenerateSquaresProcessor {
      * @param experimentName the name of the experiment to process
      */
     public static void generateSquaresForExperiment(Project project, String experimentName) throws IOException {
-        GenerateSquaresConfig generateSquaresConfig = project.getGenerateSquaresConfig();
-        Experiment            experiment;
-        List<Recording>       recordings;
 
-        LocalDateTime start = LocalDateTime.now();
+        GenerateSquaresConfig generateSquaresConfig = project.getGenerateSquaresConfig();
+        LocalDateTime         start                 = LocalDateTime.now();
+
+        // ── LOAD ──────────────────────────────────────────────────────────────────────
         PaintLogger.debugf("Loading Experiment '%s'", experimentName);
 
-        // Load the experiment (without squares, with tracks)
-        experiment = loadExperiment(
+        Experiment experiment = loadExperiment(
                 project.getProjectRootPath(),
                 experimentName,
                 false,   // Don't load Squares
-                true                // But do load Tracks
+                true     // But do load Tracks
         );
 
         if (experiment == null) {
@@ -112,31 +111,14 @@ public class GenerateSquaresProcessor {
 
         PaintLogger.infof("Starting processing experiment '%s'", experimentName);
 
-        recordings = experiment.getRecordings();
-        for (Recording recording : recordings) {
+        Path experimentPath = project.getProjectRootPath()
+                                     .resolve(experiment.getExperimentName());
 
-            if (!recording.isProcessFlagSet()) {
-                continue;
-            }
-
-            // CHECK before starting each recording
-            if (Thread.currentThread().isInterrupted()) {
-                PaintLogger.infof("Cancelled before processing recording %s",
-                                  recording.getRecordingName());
-                return;
-            }
-
-            PaintLogger.infof("   Processing: %s", recording.getRecordingName());
-            PaintLogger.debugf(recording.toString());
-
-            // Pure compute: generate squares, assign tracks, calculate attributes.
-            Path experimentPath = project.getProjectRootPath()
-                                         .resolve(experiment.getExperimentName());
-            if (!SquareGenerationService.computeRecording(recording, generateSquaresConfig, experimentPath)) {
-                PaintLogger.infof("Cancelled before attribute calculation for %s",
-                                  recording.getRecordingName());
-                return;
-            }
+        // ── COMPUTE ───────────────────────────────────────────────────────────────────
+        // Everything scientific happens here, in memory. It reads nothing and writes
+        // nothing, so it can be tested without a project directory.
+        if (!SquareGenerationService.computeExperiment(experiment, generateSquaresConfig, experimentPath)) {
+            return;  // cancelled; the service has already said why
         }
 
         Duration duration = Duration.between(start, LocalDateTime.now());
@@ -144,30 +126,14 @@ public class GenerateSquaresProcessor {
                           experimentName, formatDuration(duration));
         PaintLogger.blankline();
 
-        // CHECK before writing output files
         if (Thread.currentThread().isInterrupted()) {
             PaintLogger.infof("Cancelled before writing output for %s", experimentName);
             return;
         }
 
-        // Compile all squares and write
-        Table allSquaresTable = compileAllSquares(experiment);
-        Path  experimentPath  = project.getProjectRootPath()
-                                       .resolve(experiment.getExperimentName());
-        writeSquares(experimentPath, allSquaresTable);
-
-        // Update recordings with filter information
-        for (Recording recording : experiment.getRecordings()) {
-            recording.setMinRequiredRSquared(generateSquaresConfig.getMinRequiredRSquared());
-            recording.setMaxAllowableVariability(generateSquaresConfig.getMaxAllowableVariability());
-            recording.setMinRequiredDensityRatio(generateSquaresConfig.getMinRequiredDensityRatio());
-            recording.setNeighbourMode(generateSquaresConfig.getNeighbourMode());
-        }
-
-        // Write recordings
+        // ── WRITE ─────────────────────────────────────────────────────────────────────
+        writeSquares(experimentPath, compileAllSquares(experiment));
         writeRecordings(experimentPath, experiment.getRecordings());
-
-        // All tracks
         writeTracks(experimentPath, compileAllTracks(experiment).sortOn(RECORDING_NAME, TRACK_ID));
     }
 
