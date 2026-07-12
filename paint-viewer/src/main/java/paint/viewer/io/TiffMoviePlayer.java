@@ -52,6 +52,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import loci.plugins.BF;
 import loci.plugins.in.ImporterOptions;
@@ -74,6 +75,37 @@ public class TiffMoviePlayer {
      * @param tiffPath absolute or relative path to the TIFF file
      */
     public void playMovie(String tiffPath) {
+        playMovie(tiffPath, null);
+    }
+
+    /**
+     * Loads and plays a multi-frame TIFF stack in a dedicated Swing window, notifying the
+     * caller when playback has finished.
+     * <p>
+     * This method returns immediately: the TIFF is loaded on a background thread and the
+     * player window is built afterwards on the EDT. {@code onFinished} is therefore the only
+     * reliable way for a caller to know when the player is gone.
+     * </p>
+     * <p>
+     * {@code onFinished} is invoked exactly once, on the EDT, whichever way playback ends:
+     * when the user closes the player window, or immediately if the TIFF cannot be loaded.
+     * Callers that disable UI while a movie plays can rely on it always being called back,
+     * and so on never being left permanently disabled.
+     * </p>
+     *
+     * @param tiffPath   absolute or relative path to the TIFF file
+     * @param onFinished run on the EDT when the player window closes or loading fails;
+     *                   may be {@code null}
+     */
+    public void playMovie(String tiffPath, Runnable onFinished) {
+
+        // Guarantee "exactly once", however playback ends.
+        final AtomicBoolean finishedFired = new AtomicBoolean(false);
+        final Runnable finish = () -> {
+            if (onFinished != null && finishedFired.compareAndSet(false, true)) {
+                SwingUtilities.invokeLater(onFinished);
+            }
+        };
 
         final String fileName = new File(tiffPath).getName();
 
@@ -146,6 +178,7 @@ public class TiffMoviePlayer {
                         "Error",
                         JOptionPane.ERROR_MESSAGE
                 ));
+                finish.run();   // no window will ever open: release the caller now
                 return;
             }
 
@@ -166,7 +199,7 @@ public class TiffMoviePlayer {
 
             final ImagePlus impFinal       = imp;
 
-            SwingUtilities.invokeLater(() -> buildAndRunMovieWindow(impFinal, fileName, baseDelayMs));
+            SwingUtilities.invokeLater(() -> buildAndRunMovieWindow(impFinal, fileName, baseDelayMs, finish));
 
         }, "TiffLoaderThread").start();
     }
@@ -174,11 +207,20 @@ public class TiffMoviePlayer {
     // =============================================================================================
     // INTERNAL: Build movie UI window + player loop
     // =============================================================================================
-    private void buildAndRunMovieWindow(ImagePlus imp, String fileName, int baseDelayMs) {
+    private void buildAndRunMovieWindow(ImagePlus imp, String fileName, int baseDelayMs, Runnable onFinished) {
 
         final JFrame frame = new JFrame("Movie Player - " + fileName);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLayout(new BorderLayout());
+
+        // Tell the caller when this window is gone. The playback thread below stops on its own,
+        // because it loops on frame.isVisible().
+        frame.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent e) {
+                onFinished.run();
+            }
+        });
 
         // ----- Image display area -----
         final JLabel imageLabel = new JLabel("", SwingConstants.CENTER);

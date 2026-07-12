@@ -4,28 +4,23 @@
  *
  *  PURPOSE:
  *    Controls playback of ND2 or TIFF recordings and manages the state of the
- *    PAINT Viewer UI during playback. Ensures that only one movie window
- *    exists at a time, and automatically disables and re-enables the viewer UI
- *    around the external Fiji playback window.
+ *    PAINT Viewer UI during playback: only one recording plays at a time, and the
+ *    viewer UI is disabled for exactly as long as the player window is open.
  *
  *  DESCRIPTION:
- *    This controller launches playback via {@link paint.viewer.io.TiffMoviePlayer}
- *    inside a background thread. Before starting a new playback session, it closes
- *    any existing Fiji movie window with the same filename to avoid duplicates.
+ *    This controller resolves the recording's image file and hands it to
+ *    {@link paint.viewer.io.TiffMoviePlayer}, which loads the image on its own
+ *    background thread and opens a Swing player window. The controller disables the
+ *    ViewerFrame UI before starting, and re-enables it from the callback the player
+ *    invokes when its window closes — or immediately, if the file cannot be loaded.
  *
- *    When playback begins, the ViewerFrame UI is disabled. The controller waits
- *    for Fiji to create the window that displays the movie, adds close listeners,
- *    and restores the UI when the movie window closes.
- *
- *    Due to rare inconsistent behaviors in Fiji, a small backup timeout is used
- *    to ensure the UI is restored even if Fiji does not emit window events.
+ *    The player is a plain Swing window owned by this application. It is not a Fiji
+ *    window: Fiji (ImageJ) is used only to decode the image data.
  *
  *  KEY FEATURES:
- *    • Guarantees single-window playback.
- *    • Ensures UI is disabled during playback and restored afterward.
- *    • Detects and closes leftover Fiji windows before playback.
- *    • Thread-safe use of SwingUtilities for UI changes.
- *    • Robust fallback logic in case Fiji does not fire close events.
+ *    • Rejects a second playback request while one is already running.
+ *    • Disables the viewer UI during playback and always restores it afterwards.
+ *    • Reports a missing image file or an unset Images Root to the user.
  *
  *  AUTHOR:
  *    Hans Bakker
@@ -55,12 +50,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * Controller responsible for playing ND2/TIFF recordings through Fiji and keeping
- * the PAINT Viewer UI in a consistent state during playback.
+ * Controller responsible for playing ND2/TIFF recordings and keeping the PAINT Viewer
+ * UI in a consistent state during playback.
  *
- * <p>This class prevents concurrent playback, launches the movie in a background
- * thread, disables the entire ViewerFrame UI during playback, and re-enables it
- * as soon as the Fiji playback window closes (or after a backup timeout).</p>
+ * <p>This class prevents concurrent playback, disables the entire ViewerFrame UI while a
+ * recording plays, and re-enables it as soon as the player window closes.</p>
  *
  * <p>Use {@link #playRecording(RecordingEntry)} to start playback.</p>
  */
@@ -89,14 +83,13 @@ public final class RecordingPlaybackController {
      * Starts playback of the given recording. This method:
      *
      * <ol>
-     *   <li>Ensures only one playback session can run at the same time.</li>
-     *   <li>Closes any leftover Fiji window from previous runs.</li>
-     *   <li>Determines the correct ND2/TIFF path.</li>
-     *   <li>Disables the ViewerFrame UI.</li>
-     *   <li>Launches Fiji playback on a background thread.</li>
-     *   <li>Waits for the Fiji window and attaches listeners for close events.</li>
-     *   <li>Restores UI when playback finishes or times out.</li>
+     *   <li>Beeps and returns if a recording is already playing.</li>
+     *   <li>Resolves the recording's image file under the project's Images Root.</li>
+     *   <li>Disables the ViewerFrame UI and opens the player.</li>
+     *   <li>Re-enables the UI when the player window closes, or if loading fails.</li>
      * </ol>
+     *
+     * <p>Returns as soon as the player has been started; playback itself is asynchronous.</p>
      *
      * @param entry the recording to play
      */
@@ -141,132 +134,35 @@ public final class RecordingPlaybackController {
             return;
         }
 
-        // Expected title of the Fiji display window (Fiji uses filename)
-        final String expectedTitle = imagePath.getFileName().toString();
-
-        // Mark playback active and disable UI
+        // Mark playback active and disable the viewer UI. TiffMoviePlayer calls us back on the
+        // EDT when its window closes (or immediately if the file cannot be loaded), so the UI
+        // is always re-enabled exactly once.
+        //
+        // This used to work by polling Window.getWindows() for up to 10 seconds looking for a
+        // window whose title equalled the *file name*. TiffMoviePlayer titles its window
+        // "Movie Player - <file name>", so the match never succeeded: the viewer sat disabled
+        // for the full 10 s of polling, the close listeners were never attached, and the UI was
+        // only restored by the fall-through at the end.
         playing = true;
         frame.disableUI();
 
-        // Launch playback in background thread
-        new Thread(() -> {
-            try {
-                // 1) Close leftovers from prior playback attempts
-                closeExistingMovieWindows(expectedTitle);
-
-                // 2) Launch movie in Fiji
-                new TiffMoviePlayer().playMovie(imagePath.toString());
-
-                // 3) Wait for Fiji to open the window
-                Window movieWindow = waitForWindow(expectedTitle);
-
-                if (movieWindow != null) {
-                    PaintLogger.infof("Tracking movie window: %s", movieWindow.getClass().getSimpleName());
-
-                    movieWindow.addWindowListener(new java.awt.event.WindowAdapter() {
-
-                        @Override
-                        public void windowClosed(java.awt.event.WindowEvent e) {
-                            SwingUtilities.invokeLater(() -> {
-                                playing = false;
-                                frame.enableUI();
-                            });
-                        }
-
-                        @Override
-                        public void windowClosing(java.awt.event.WindowEvent e) {
-                            SwingUtilities.invokeLater(() -> {
-                                playing = false;
-                                frame.enableUI();
-                            });
-                        }
-                    });
-
-                    // Backup in case Fiji never fires the event
-                    Thread.sleep(200);
-                    if (playing) {
-                        SwingUtilities.invokeLater(() -> {
-                            playing = false;
-                            frame.enableUI();
-                        });
-                    }
-
-                    PaintLogger.infof("Movie window closed — UI re-enabled.");
-                } else {
-                    // Fiji never created the window or closed before detection
-                    playing = false;
-                    SwingUtilities.invokeLater(frame::enableUI);
-                }
-
-            } catch (Exception ex) {
-                PaintLogger.errorf("Error during movie playback: %s", ex.getMessage());
-                SwingUtilities.invokeLater(() ->
-                                                   JOptionPane.showMessageDialog(
-                                                           frame,
-                                                           "Movie playback error:\n" + ex.getMessage(),
-                                                           "Playback Error",
-                                                           JOptionPane.ERROR_MESSAGE
-                                                   )
-                );
-            } finally {
-                // Final safety catch to ensure UI is restored
+        try {
+            new TiffMoviePlayer().playMovie(imagePath.toString(), () -> {
                 playing = false;
-                SwingUtilities.invokeLater(frame::enableUI);
-            }
-        }, "MoviePlaybackThread").start();
-    }
-
-    // -------------------------------------------------------------------------
-    // Internal helper methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * Closes any existing Fiji movie window whose title matches the expected file.
-     *
-     * @param expectedTitle the filename-based title Fiji uses
-     */
-    private void closeExistingMovieWindows(String expectedTitle) {
-        for (Window w : Window.getWindows()) {
-            String title = getTitle(w);
-            if (title != null && title.equals(expectedTitle)) {
-                PaintLogger.infof("Closing leftover movie window '%s'", title);
-                w.dispose();
-            }
+                frame.enableUI();
+            });
+        } catch (RuntimeException ex) {
+            // playMovie only *starts* playback, so this catches a failure to launch, not a
+            // playback error. Re-enable the UI: no callback is coming.
+            playing = false;
+            frame.enableUI();
+            PaintLogger.error("Could not start movie playback", ex);
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Movie playback error:\n" + ex.getMessage(),
+                    "Playback Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
-    }
-
-    /**
-     * Waits up to approximately 10 seconds for Fiji to open a playback window
-     * whose title matches the expected filename.
-     *
-     * @param expectedTitle expected title of the Fiji window
-     * @return the detected window, or {@code null} if none was found
-     * @throws InterruptedException if sleep is interrupted
-     */
-    private Window waitForWindow(String expectedTitle) throws InterruptedException {
-        Window found = null;
-        for (int i = 0; i < 40 && found == null; i++) { // 40 × 250 ms = ~10 s
-            Thread.sleep(250);
-            for (Window w : Window.getWindows()) {
-                String title = getTitle(w);
-                if (title != null && title.equals(expectedTitle)) {
-                    found = w;
-                    break;
-                }
-            }
-        }
-        return found;
-    }
-
-    /**
-     * Returns the window title if it is a {@link Frame} or {@link Dialog}.
-     *
-     * @param w the window to inspect
-     * @return window title or {@code null} if unavailable
-     */
-    private String getTitle(Window w) {
-        if (w instanceof Frame)  return ((Frame) w).getTitle();
-        if (w instanceof Dialog) return ((Dialog) w).getTitle();
-        return null;
     }
 }
