@@ -127,8 +127,21 @@
         <maven-scm-publish-plugin.version>3.1.0</maven-scm-publish-plugin.version>
         <maven-shade-plugin.version>3.5.3</maven-shade-plugin.version>
 
-        <!-- Default JVM arguments for applications -->
-        <app.jvm.args>-Xms512m -Xmx2048m -XX:ReservedCodeCacheSize=256m</app.jvm.args>
+        <!--
+            Default JVM arguments for the launcher scripts of the packaged applications.
+
+            ReservedCodeCacheSize and UseCodeCacheFlushing are not tuning: they work around a
+            JDK 8 defect. Loading ImageJ, TrackMate and Bio-Formats JIT-compiles a very large
+            number of methods. When the code cache comes under pressure, JDK 8's flushing
+            fragments it and can then disable the compiler outright, reporting "CodeCache is
+            full" while most of the cache is still free ("not enough contiguous free space").
+            From that moment the application runs interpreted - several times slower, with no
+            error and nothing in the log. A long Generate Squares run would simply take far
+            longer for no visible reason.
+
+            A large cache and no flushing keeps it well away from that threshold.
+        -->
+        <app.jvm.args>-Xms512m -Xmx2048m -XX:ReservedCodeCacheSize=512m -XX:-UseCodeCacheFlushing</app.jvm.args>
     </properties>
 
     <!-- =============================================================== -->

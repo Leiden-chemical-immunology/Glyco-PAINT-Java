@@ -171,7 +171,7 @@ else
   JAVA_CMD="$JAVA_HOME/bin/java"
 fi
 
-exec "$JAVA_CMD" -Xmx2G -jar "${project.artifactId}-${project.version}-jar-with-dependencies.jar"
+exec "$JAVA_CMD" ${app.jvm.args} -jar "${project.artifactId}-${project.version}-jar-with-dependencies.jar"
 ]]></echo>
                                         <fixcrlf eol="unix" file="${app.bundle}/Contents/MacOS/launch"/>
                                         <chmod file="${app.bundle}/Contents/MacOS/launch" perm="755"/>
