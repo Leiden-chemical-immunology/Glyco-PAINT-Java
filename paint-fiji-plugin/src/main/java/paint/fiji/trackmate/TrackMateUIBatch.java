@@ -47,10 +47,10 @@ import org.scijava.plugin.Plugin;
 import paint.generatesquares.app.GenerateSquaresHeadless;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.config.paintconfig.PaintConfig;
-import paint.shared.dialogs.ProjectDialog;
+import paint.ui.dialogs.ProjectDialog;
 import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.JarInfoLogger;
-import paint.shared.utils.PaintConsoleWindow;
+import paint.ui.console.PaintConsoleWindow;
 import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintRuntime;
 import paint.shared.objects.Project;
@@ -62,7 +62,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static paint.shared.constants.PaintFileNames.PAINT_SWEEP_CONFIGURATION_JSON;
-import static paint.shared.utils.ProjectPathResolver.getValidProjectPath;
+import static paint.ui.dialogs.ProjectPathResolver.getValidProjectPath;
 
 /**
  * Main user interface class for running TrackMate interactively within the

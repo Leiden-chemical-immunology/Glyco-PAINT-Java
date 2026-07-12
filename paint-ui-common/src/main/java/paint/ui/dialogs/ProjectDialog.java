@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        ProjectDialog.java
- *  Package:      paint.shared.dialogs
+ *  Package:      paint.ui.dialogs
  *
  *  PURPOSE:
  *    Provides a comprehensive project-selection and configuration dialog
@@ -31,15 +31,15 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package paint.shared.dialogs;
+package paint.ui.dialogs;
 
 import paint.shared.config.GenerateSquaresConfig;
 import paint.shared.config.paintconfig.PaintConfig;
-import paint.shared.dialogs.project.BottomBarPanel;
-import paint.shared.dialogs.project.ExperimentsPanel;
-import paint.shared.dialogs.project.ProjectDialogController;
-import paint.shared.dialogs.project.ProjectPathsPanel;
-import paint.shared.dialogs.project.SquaresParamsPanel;
+import paint.ui.dialogs.project.BottomBarPanel;
+import paint.ui.dialogs.project.ExperimentsPanel;
+import paint.ui.dialogs.project.ProjectDialogController;
+import paint.ui.dialogs.project.ProjectPathsPanel;
+import paint.ui.dialogs.project.SquaresParamsPanel;
 import paint.shared.objects.Project;
 import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintPrefs;

@@ -35,7 +35,9 @@
  *    © 2025 Hans Bakker. All rights reserved.
 =============================================================================*/
 
-package paint.shared.utils;
+package paint.ui.console;
+
+import paint.shared.utils.PaintLogger;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -73,13 +75,30 @@ public final class PaintConsoleWindow {
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
+     * Adapter that lets {@link PaintLogger} feed this console without knowing it exists.
+     * Registered in {@link #createConsole(String)}, detached in {@link #close()}.
+     */
+    private static final PaintLogger.Sink CONSOLE_SINK = new PaintLogger.Sink() {
+        @Override
+        public void log(String line, Color color) {
+            PaintConsoleWindow.log(line, color);
+        }
+
+        @Override
+        public void print(String text) {
+            PaintConsoleWindow.print(text);
+        }
+    };
+
+    /**
      * True when there is no display available — a headless pipeline run, a CI runner,
      * or a server. Constructing any Swing component in that situation throws
      * {@link HeadlessException}.
      * <p>
-     * This console is a GUI convenience only: {@link PaintLogger} independently writes
-     * every line to the log file and the standard streams. So when headless we simply
-     * do nothing, and no output is lost.
+     * With the sink inversion this should be unreachable (a headless run never creates a
+     * console), but it is kept as a cheap belt-and-braces guard: the console is a GUI
+     * convenience only, and {@link PaintLogger} writes every line to the log file
+     * regardless, so doing nothing here loses no output.
      */
     private static boolean noDisplay() {
         return GraphicsEnvironment.isHeadless();
@@ -121,8 +140,11 @@ public final class PaintConsoleWindow {
 
     /**
      * Closes and disposes of the console window, clearing all references and data.
+     * Also detaches this console from {@link PaintLogger}, so nothing tries to render
+     * into a window that no longer exists.
      */
     public static synchronized void close() {
+        PaintLogger.clearSink();
         if (frame != null) {
             SwingUtilities.invokeLater(() -> {
                 frame.dispose();
@@ -209,9 +231,16 @@ public final class PaintConsoleWindow {
     }
 
     /**
-     * Creates and displays the console window with default components and layout.
+     * Creates and displays the console window with default components and layout,
+     * and attaches it to {@link PaintLogger} as the output sink.
+     * <p>
+     * This registration is what keeps the dependency pointing the right way: the logger
+     * knows nothing about Swing, and the console opts in. A headless run never creates a
+     * console, so it never registers a sink and never loads a UI class.
      */
     private static void createConsole(String title) {
+        PaintLogger.setSink(CONSOLE_SINK);
+
         frame = new JFrame(title != null ? title : "Paint Console");
         frame.setSize(1200, 400);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);

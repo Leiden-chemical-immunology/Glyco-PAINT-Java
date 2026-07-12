@@ -48,7 +48,10 @@
  *    © 2025 Hans Bakker. All rights reserved.
 =============================================================================*/
 
-package paint.shared.utils;
+package paint.ui.dialogs;
+
+import paint.shared.utils.PaintLogger;
+import paint.shared.utils.PaintPrefs;
 
 import javax.swing.*;
 import java.awt.*;

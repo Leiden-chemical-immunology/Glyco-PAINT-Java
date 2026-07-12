@@ -60,6 +60,7 @@
     <!-- =============================================================== -->
     <modules>
         <module>paint-shared-utils</module>
+        <module>paint-ui-common</module>
         <module>paint-fiji-plugin</module>
         <module>paint-generate-squares</module>
         <module>paint-create-experiment</module>
@@ -140,6 +141,14 @@
             <dependency>
                 <groupId>com.github.jjabakker</groupId>
                 <artifactId>paint-shared-utils</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Shared Swing UI. Only applications that show a user interface depend on
+                 this; headless consumers must not, which is the whole point of A1. -->
+            <dependency>
+                <groupId>com.github.jjabakker</groupId>
+                <artifactId>paint-ui-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

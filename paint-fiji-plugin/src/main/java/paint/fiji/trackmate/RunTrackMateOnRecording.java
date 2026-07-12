@@ -33,7 +33,7 @@
  *    – fiji.plugin.trackmate.*
  *    – paint.shared.config.TrackMateConfig
  *    – paint.shared.objects.ExperimentInfo
- *    – paint.shared.dialogs.ProjectDialog
+ *    – paint.ui.dialogs.ProjectDialog
  *    – paint.shared.utils.PaintLogger
  *    – paint.fiji.tracks.TrackDataExporter
  *
@@ -67,7 +67,7 @@ import ij.io.FileSaver;
 import loci.common.DebugTools;
 import paint.fiji.tracks.TrackDataExporter;
 import paint.shared.config.TrackMateConfig;
-import paint.shared.dialogs.ProjectDialog;
+import paint.ui.dialogs.ProjectDialog;
 import paint.shared.objects.ExperimentInfo;
 import paint.shared.utils.PaintLogger;
 

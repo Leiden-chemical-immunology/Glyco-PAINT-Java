@@ -42,7 +42,7 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 import paint.shared.config.TrackMateConfig;
 import paint.shared.config.paintconfig.PaintConfig;
-import paint.shared.dialogs.ProjectDialog;
+import paint.ui.dialogs.ProjectDialog;
 import paint.shared.io.MainIOInterface;
 import paint.shared.objects.ExperimentInfo;
 import paint.shared.objects.Project;
@@ -58,7 +58,7 @@ import java.util.List;
 
 import static paint.fiji.trackmate.RunTrackMateOnRecording.runTrackMateOnRecording;
 import static paint.shared.constants.PaintFileNames.EXPERIMENT_INFO_CSV;
-import static paint.shared.utils.ProjectPathResolver.getValidProjectPath;
+import static paint.ui.dialogs.ProjectPathResolver.getValidProjectPath;
 
 /**
  * Main user interface class for running TrackMate interactively within the
@@ -115,7 +115,7 @@ public class TrackMateUISingle implements Command {
         // ---------------------------------------------------------------------
         // Step 3 – Initialize logging, configuration, and runtime settings
         // ---------------------------------------------------------------------
-        PaintConsoleWindow.createConsoleFor("TrackMate");
+        paint.ui.console.PaintConsoleWindow.createConsoleFor("TrackMate");
         PaintConfig.initialise(projectPath);
 
         String debugLevel = PaintPrefs.getString("Runtime", "Log Level", "INFO");
@@ -141,7 +141,7 @@ public class TrackMateUISingle implements Command {
         // Step 4 – Show experiment dialog
         // ---------------------------------------------------------------------
         ProjectDialog projDialog = new ProjectDialog(null, projectPath, ProjectDialog.DialogMode.TRACKMATE_SINGLE);
-        PaintConsoleWindow.closeOnDialogDispose(projDialog.getDialog());
+        paint.ui.console.PaintConsoleWindow.closeOnDialogDispose(projDialog.getDialog());
 
         // ---------------------------------------------------------------------
         // Step 5 – Handle OK action callback

@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        ProjectPathsPanel.java
- *  Package:      paint.shared.dialogs.project
+ *  Package:      paint.ui.dialogs.project
  *
  *  PURPOSE:
  *    Provides a user interface panel for selecting and managing project
@@ -25,7 +25,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package paint.shared.dialogs.project;
+package paint.ui.dialogs.project;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -36,7 +36,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
-import static paint.shared.dialogs.ProjectDialog.DialogMode;
+import static paint.ui.dialogs.ProjectDialog.DialogMode;
 
 /**
  * Panel allowing users to select the Project Root and Images Root directories.

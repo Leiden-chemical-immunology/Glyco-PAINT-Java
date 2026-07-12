@@ -40,6 +40,14 @@
             <artifactId>paint-shared-utils</artifactId>
         </dependency>
 
+        <!-- Shared Swing UI, used by the GenerateSquares desktop app. The headless
+             pipeline (GenerateSquaresHeadless, and the regression gate) never touches
+             it: PaintLogger only writes to a UI sink if one has been registered. -->
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-ui-common</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>net.imagej</groupId>
             <artifactId>ij</artifactId>

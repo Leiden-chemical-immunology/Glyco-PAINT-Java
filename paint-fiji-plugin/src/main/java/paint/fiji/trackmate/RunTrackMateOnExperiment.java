@@ -30,7 +30,7 @@
  *    – paint.fiji.trackmate.RunTrackMateOnRecording
  *    – paint.shared.config.paintconfig.PaintConfig
  *    – paint.shared.config.TrackMateConfig
- *    – paint.shared.dialogs.ProjectDialog
+ *    – paint.ui.dialogs.ProjectDialog
  *    – paint.shared.utils.PaintLogger
  *    – paint.shared.utils.CsvUtils
  *    – paint.shared.objects.ExperimentInfo
@@ -53,7 +53,7 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.config.TrackMateConfig;
-import paint.shared.dialogs.ProjectDialog;
+import paint.ui.dialogs.ProjectDialog;
 import paint.shared.objects.ExperimentInfo;
 import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintRuntime;

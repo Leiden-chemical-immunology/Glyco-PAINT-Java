@@ -1,9 +1,9 @@
 /*=============================================================================
  *  Class:        BottomBarPanel.java
- *  Package:      paint.shared.dialogs.project
+ *  Package:      paint.ui.dialogs.project
  *
  *  PURPOSE:
- *    Provides the footer control bar for the {@link paint.shared.dialogs.ProjectDialog}.
+ *    Provides the footer control bar for the {@link paint.ui.dialogs.ProjectDialog}.
  *
  *  DESCRIPTION:
  *    The {@code BottomBarPanel} contains the main action buttons (OK, Cancel)
@@ -24,7 +24,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package paint.shared.dialogs.project;
+package paint.ui.dialogs.project;
 
 import paint.shared.utils.PaintRuntime;
 
@@ -33,7 +33,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.function.Consumer;
 
-import static paint.shared.dialogs.ProjectDialog.DialogMode;
+import static paint.ui.dialogs.ProjectDialog.DialogMode;
 
 /**
  * Bottom bar panel containing Save Experiments, Verbose toggle, optional Sweep toggle (TRACKMATE),

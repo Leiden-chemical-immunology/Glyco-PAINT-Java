@@ -1,10 +1,10 @@
 /*=============================================================================
  *  Class:        ProjectDialogController.java
- *  Package:      paint.shared.dialogs.project
+ *  Package:      paint.ui.dialogs.project
  *
  *  PURPOSE:
  *    Manages the business logic and user interaction flow for the
- *    {@link paint.shared.dialogs.ProjectDialog}.
+ *    {@link paint.ui.dialogs.ProjectDialog}.
  *
  *  DESCRIPTION:
  *    The {@code ProjectDialogController} handles experiment discovery,
@@ -32,7 +32,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package paint.shared.dialogs.project;
+package paint.ui.dialogs.project;
 
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.utils.PaintLogger;
@@ -45,7 +45,7 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static paint.shared.dialogs.ProjectDialog.DialogMode;
+import static paint.ui.dialogs.ProjectDialog.DialogMode;
 
 /**
  * Controller for ProjectDialog. It reacts to UI events coming from the panels,
@@ -253,7 +253,7 @@ public class ProjectDialogController {
         // CASE 3 — Worker started and is DONE → treat select Cancel as dialog close
         // -----------------------------------------------------------------------------------------------
         PaintLogger.infof("Cancel after completion — closing dialog.");
-        paint.shared.utils.PaintConsoleWindow.closeIfVisible();
+        paint.ui.console.PaintConsoleWindow.closeIfVisible();
         SwingUtilities.invokeLater(dialog::dispose);
         clearCancelled.run();
     }

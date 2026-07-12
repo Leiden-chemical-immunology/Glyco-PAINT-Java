@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        DirectoryChooser.java
- *  Package:      paint.shared.dialogs.project
+ *  Package:      paint.ui.dialogs.project
  *
  *  PURPOSE:
  *    Provides standardized directory selection dialogs, using native AWT dialogs
@@ -29,7 +29,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package paint.shared.dialogs.project;
+package paint.ui.dialogs.project;
 
 import javax.swing.*;
 import java.awt.*;

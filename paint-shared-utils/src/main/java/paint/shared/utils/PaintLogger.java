@@ -6,9 +6,13 @@
  *    Provides structured, color-coded logging functionality for the PAINT framework.
  *
  *  DESCRIPTION:
- *    The {@code PaintLogger} class centralizes logging for both console and file
- *    outputs. It supports multiple log levels (DEBUG, INFO, WARN, ERROR), color
- *    display through {@link PaintConsoleWindow}, and persistent logging to disk.
+ *    The {@code PaintLogger} class centralizes logging for the framework. It supports
+ *    multiple log levels (DEBUG, INFO, WARN, ERROR) and persistent logging to disk.
+ *
+ *    It writes to the log file directly, and forwards each line to an optional
+ *    {@link Sink}. The Swing console window is one such sink, registered by the UI
+ *    layer; this class itself has no knowledge of any UI, so a headless run never
+ *    loads a UI class.
  *
  *    Messages below the current log level threshold are automatically filtered.
  *    Log files are created within a "Logs" directory under a specified project
@@ -17,7 +21,7 @@
  *
  *  KEY FEATURES:
  *    • Multi-level logging with severity filtering.
- *    • Color-coded console output integrated with {@link PaintConsoleWindow}.
+ *    • Colour-coded output via a pluggable {@link Sink} (UI-agnostic).
  *    • Automatic log file rotation and initialization under a "Logs" folder.
  *    • Thread-safe static API with Java 8 compatibility.
  *    • Documentation-style formatted block printing for structured logs.
@@ -104,6 +108,71 @@ public final class PaintLogger {
     private static final    DateTimeFormatter TIME_FMT       = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static          boolean           justPrintedRaw = false;
     private static volatile Level             currentLevel   = Level.INFO;
+
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // OUTPUT SINK  (dependency inversion — this module must stay free of any UI)
+    // ───────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * An optional extra destination for log output — in practice the Swing console window,
+     * which lives in the UI module.
+     * <p>
+     * {@code PaintLogger} deliberately knows nothing about Swing. A GUI application registers
+     * its console through {@link #setSink}; a headless run (the pipeline, CI, a server) simply
+     * never registers one, so no UI class is even loaded on that path. This is a structural
+     * guarantee rather than a runtime {@code isHeadless()} check.
+     */
+    public interface Sink {
+
+        /** A fully formatted line, to be displayed in the given colour. */
+        void log(String line, Color color);
+
+        /** Raw text: no timestamp, no level, no trailing newline. */
+        void print(String text);
+    }
+
+    /** {@code null} whenever there is no UI attached. */
+    private static volatile Sink sink;
+
+    /** Registers the output sink. Called by the UI layer when its console is created. */
+    public static void setSink(Sink newSink) {
+        sink = newSink;
+    }
+
+    /** Detaches the output sink (e.g. when the console window is closed). */
+    public static void clearSink() {
+        sink = null;
+    }
+
+    /**
+     * Forwards a line to the sink, if one is attached. A failing sink must never break
+     * logging or the calling pipeline, so exceptions from it are contained here.
+     */
+    private static void sinkLog(String line, Color color) {
+        Sink s = sink;
+        if (s == null) {
+            return;
+        }
+        try {
+            s.log(line, color);
+        } catch (RuntimeException ignored) {
+            // Deliberately swallowed: the file log has already been written.
+        }
+    }
+
+    /** Forwards raw text to the sink, if one is attached. See {@link #sinkLog}. */
+    private static void sinkPrint(String text) {
+        Sink s = sink;
+        if (s == null) {
+            return;
+        }
+        try {
+            s.print(text);
+        } catch (RuntimeException ignored) {
+            // Deliberately swallowed: the file log has already been written.
+        }
+    }
 
 
     // ───────────────────────────────────────────────────────────────────────────────
@@ -211,13 +280,14 @@ public final class PaintLogger {
         String formatted = String.format("%s [%-5s] %s", timestamp, level, message);
 
         if (justPrintedRaw) {
-            PaintConsoleWindow.print("\n");
+            sinkPrint("\n");
             justPrintedRaw = false;
         }
 
-        PaintConsoleWindow.log(formatted, level.color());
-
+        // File first: the persistent log must never be lost because a UI sink misbehaved.
         writeLineToFile(formatted);
+
+        sinkLog(formatted, level.color());
     }
 
     /**
@@ -314,7 +384,7 @@ public final class PaintLogger {
      * @param text raw text to print
      */
     public static void raw(String text) {
-        PaintConsoleWindow.print(text);
+        sinkPrint(text);
         justPrintedRaw = true;
     }
 
@@ -323,12 +393,13 @@ public final class PaintLogger {
      */
     public static void blankline() {
         if (justPrintedRaw) {
-            PaintConsoleWindow.print("\n");
+            sinkPrint("\n");
             justPrintedRaw = false;
         }
-        PaintConsoleWindow.log("", Color.BLACK);
 
         writeLineToFile("");
+
+        sinkLog("", Color.BLACK);
     }
 
     /**
@@ -348,9 +419,10 @@ public final class PaintLogger {
         // Print continuation lines without the timestamp, perfectly aligned
         for (String line : lines) {
             String formatted = indent + line;
-            PaintConsoleWindow.log(formatted, Level.INFO.color());
 
             writeLineToFile(formatted);
+
+            sinkLog(formatted, Level.INFO.color());
         }
         blankline();
     }

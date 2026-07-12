@@ -704,8 +704,8 @@ The project is organized into multiple modules:
 Supporting modules include:
 
 - **paint-shared-utils** — shared code across applications 
+- **paint-compare** — CSV comparison engine used by the Generate Squares regression gate 
 - **shell-scripts** — maintenance scripts 
-- **reference-case** — CSV files linked to reference images 
 ![github](./Pictures/github.png)
 
 

@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        SimpleDocumentListener.java
- *  Package:      paint.shared.dialogs.project
+ *  Package:      paint.ui.dialogs.project
  *
  *  PURPOSE:
  *    Provides a simplified interface for Swing {@link DocumentListener} events.
@@ -24,7 +24,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package paint.shared.dialogs.project;
+package paint.ui.dialogs.project;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;

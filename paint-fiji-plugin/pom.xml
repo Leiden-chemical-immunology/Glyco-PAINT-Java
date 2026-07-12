@@ -42,6 +42,13 @@
             <artifactId>paint-shared-utils</artifactId>
         </dependency>
 
+        <!-- Shared Swing UI (console window, project dialog). This module shows a user
+             interface, so it depends on the UI layer; headless consumers must not. -->
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-ui-common</artifactId>
+        </dependency>
+
         <!-- Bundled dependencies -->
         <dependency>
             <groupId>tech.tablesaw</groupId>

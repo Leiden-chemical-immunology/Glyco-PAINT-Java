@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!-- =============================================================== -->
+    <!-- Project hierarchy -->
+    <!-- =============================================================== -->
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.github.jjabakker</groupId>
+        <artifactId>paint-parent</artifactId>
+        <version>0.0.138-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>paint-ui-common</artifactId>
+    <packaging>jar</packaging>
+
+    <!-- =============================================================== -->
+    <!-- Metadata -->
+    <!-- =============================================================== -->
+    <name>UI Common</name>
+    <description>
+        Shared Swing user interface: the project dialog and the console window.
+
+        This module exists so that paint-shared-utils — which every module depends on,
+        including headless ones (the Generate Squares pipeline, the regression gate,
+        paint-compare) — contains no UI at all. Only applications that actually show a
+        user interface depend on this module.
+    </description>
+
+    <!-- =============================================================== -->
+    <!-- Dependencies -->
+    <!-- =============================================================== -->
+    <dependencies>
+
+        <!-- The UI is built on top of the shared domain/config/logging layer. -->
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-shared-utils</artifactId>
+        </dependency>
+
+        <!-- JUnit 5 (for testing) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <!-- A plain library: no runnable entry point, so no assembly/fat-jar is built. -->
+</project>

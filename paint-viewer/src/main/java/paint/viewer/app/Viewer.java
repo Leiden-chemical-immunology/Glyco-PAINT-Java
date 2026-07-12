@@ -42,8 +42,8 @@
 package paint.viewer.app;
 
 import paint.shared.config.paintconfig.PaintConfig;
-import paint.shared.dialogs.ProjectDialog;
-import paint.shared.dialogs.ProjectDialog.DialogMode;
+import paint.ui.dialogs.ProjectDialog;
+import paint.ui.dialogs.ProjectDialog.DialogMode;
 import paint.shared.utils.PaintLogger;
 import paint.shared.utils.PaintPrefs;
 import paint.viewer.model.RecordingEntry;

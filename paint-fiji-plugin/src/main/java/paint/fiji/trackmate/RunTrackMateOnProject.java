@@ -30,7 +30,7 @@
  *
  *  DEPENDENCIES:
  *    – paint.fiji.trackmate.RunTrackMateOnExperiment
- *    – paint.shared.dialogs.ProjectDialog
+ *    – paint.ui.dialogs.ProjectDialog
  *    – paint.shared.utils.PaintLogger
  *    – paint.shared.validate.ImageRootValidator
  *    – paint.shared.validate.ValidationHandler
@@ -47,7 +47,7 @@
 
 package paint.fiji.trackmate;
 
-import paint.shared.dialogs.ProjectDialog;
+import paint.ui.dialogs.ProjectDialog;
 import paint.shared.utils.PaintLogger;
 import paint.shared.validate.ValidationResult;
 

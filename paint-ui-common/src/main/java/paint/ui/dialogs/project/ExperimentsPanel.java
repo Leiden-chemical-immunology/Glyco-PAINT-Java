@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        ExperimentsPanel.java
- *  Package:      paint.shared.dialogs.project
+ *  Package:      paint.ui.dialogs.project
  *
  *  PURPOSE:
  *    Provides a user interface panel for selecting and filtering experiments
@@ -31,10 +31,10 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package paint.shared.dialogs.project;
+package paint.ui.dialogs.project;
 
 import paint.shared.config.paintconfig.PaintConfig;
-import paint.shared.dialogs.ProjectDialog;
+import paint.ui.dialogs.ProjectDialog;
 import paint.shared.utils.PaintLogger;
 
 import javax.swing.*;

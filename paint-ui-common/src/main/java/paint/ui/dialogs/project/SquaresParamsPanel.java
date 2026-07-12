@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        SquaresParamsPanel.java
- *  Package:      paint.shared.dialogs.project
+ *  Package:      paint.ui.dialogs.project
  *
  *  PURPOSE:
  *    Provides a user interface panel for configuring square-generation
@@ -31,7 +31,7 @@
  *    © 2025 Hans Bakker. All rights reserved.
  *=============================================================================*/
 
-package paint.shared.dialogs.project;
+package paint.ui.dialogs.project;
 
 import paint.shared.config.paintconfig.PaintConfig;
 
@@ -47,7 +47,7 @@ import static paint.shared.constants.PaintStringConstants.GENERATE_SQUARES;
 import static paint.shared.constants.PaintStringConstants.TRACKMATE;
 import static paint.shared.constants.PaintStringConstants.RUN_GENERATE_SQUARES_AFTER;
 
-import static paint.shared.dialogs.ProjectDialog.DialogMode;
+import static paint.ui.dialogs.ProjectDialog.DialogMode;
 
 /**
  * Panel that displays all the configuration parameters required for the "Generate Squares" step.

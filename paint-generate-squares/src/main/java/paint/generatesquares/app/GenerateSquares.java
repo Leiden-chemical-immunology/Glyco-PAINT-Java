@@ -28,7 +28,7 @@
  *
  *  DEPENDENCIES:
  *    - paint.shared.config.paintconfig.PaintConfig
- *    - paint.shared.dialogs.ProjectDialog
+ *    - paint.ui.dialogs.ProjectDialog
  *    - paint.shared.utils.{PaintLogger, PaintConsoleWindow,
  *                          PaintRuntime, JarInfoLogger}
  *    - javax.swing.*
@@ -46,7 +46,7 @@
 package paint.generatesquares.app;
 
 import paint.shared.config.paintconfig.PaintConfig;
-import paint.shared.dialogs.ProjectDialog;
+import paint.ui.dialogs.ProjectDialog;
 import paint.shared.objects.Project;
 import paint.shared.utils.*;
 
@@ -57,7 +57,7 @@ import java.time.format.DateTimeFormatter;
 
 import static paint.shared.constants.PaintStringConstants.GENERATE_SQUARES;
 import static paint.shared.utils.JarInfoLogger.getJarInfo;
-import static paint.shared.utils.ProjectPathResolver.getValidProjectPath;
+import static paint.ui.dialogs.ProjectPathResolver.getValidProjectPath;
 
 /**
  * The GenerateSquares class serves as the main entry point for launching the
@@ -101,7 +101,7 @@ public class GenerateSquares {
                 }
 
                 // --- Step 2: Create console, initialize config and logger early ---
-                PaintConsoleWindow.createConsoleFor(GENERATE_SQUARES);
+                paint.ui.console.PaintConsoleWindow.createConsoleFor(GENERATE_SQUARES);
                 PaintLogger.initialise(projectPath, "Generate Squares.log");
                 PaintLogger.setLevel(PaintPrefs.getString("Runtime", "Log Level", "INFO"));
                 PaintConfig.initialise(projectPath);
@@ -126,7 +126,7 @@ public class GenerateSquares {
                         projectPath,
                         ProjectDialog.DialogMode.GENERATE_SQUARES
                 );
-                PaintConsoleWindow.closeOnDialogDispose(dialog.getDialog());
+                paint.ui.console.PaintConsoleWindow.closeOnDialogDispose(dialog.getDialog());
 
                 // --- Step 4: Run calculations when the user presses OK ---
                 dialog.setCalculationCallback(this::runGenerateSquares);
