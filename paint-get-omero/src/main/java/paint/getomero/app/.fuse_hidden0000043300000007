@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        GetOmeroUI.java
- *  Package:      paint.getomero.app
+ *  Package:      paint.getomero
  *
  *  PURPOSE:
  *    Provides a Swing-based user interface for managing Omero-related directory

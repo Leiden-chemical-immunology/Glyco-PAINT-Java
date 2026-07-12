@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        PathsConfig.java
- *  Package:      release.support
+ *  Package:      release
  *
  *  PURPOSE:
  *    Defines path constants and directory structures for the release pipeline.

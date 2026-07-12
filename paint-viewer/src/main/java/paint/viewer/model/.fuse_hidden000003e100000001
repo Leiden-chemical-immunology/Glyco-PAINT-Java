@@ -1,6 +1,6 @@
 /*==============================================================================
  *  Class:        SquareControlParams.java
- *  Package:      paint.viewer.model
+ *  Package:      paint.viewer.shared
  *
  *  PURPOSE:
  *    Encapsulates the control parameters for square configuration within the

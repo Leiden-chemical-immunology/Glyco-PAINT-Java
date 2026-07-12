@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        PomUtils.java
- *  Package:      release.support
+ *  Package:      release
  *
  *  PURPOSE:
  *    Utility methods for updating version information in Maven pom.xml files.

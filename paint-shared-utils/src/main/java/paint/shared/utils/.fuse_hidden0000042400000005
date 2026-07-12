@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        CalculateTau.java
- *  Package:      paint.shared.utils
+ *  Package:      generatesquares.calc
  *
  *  PURPOSE:
  *    Computes the exponential decay time constant (Tau) and R² value from

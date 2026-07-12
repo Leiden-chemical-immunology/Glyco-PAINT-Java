@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        CalculateSquareAttributes.java
- *  Package:      paint.generatesquares.calc
+ *  Package:      generatesquares.calc
  *
  *  PURPOSE:
  *    Performs quantitative analysis and metric calculations for squares and
@@ -29,7 +29,7 @@
  *    - paint.shared.config.GenerateSquaresConfig
  *    - paint.shared.objects.{Square, Recording, Track}
  *    - paint.shared.utils.{SquareUtils, PaintLogger, CalculateTau}
- *    - paint.generatesquares.calc.PlotUtils
+ *    - generatesquares.calc.PlotUtils
  *    - tech.tablesaw.api.Table
  *
  *  AUTHOR:

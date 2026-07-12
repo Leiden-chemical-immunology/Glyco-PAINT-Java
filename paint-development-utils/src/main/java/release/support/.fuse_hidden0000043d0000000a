@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        ProcessRunner.java
- *  Package:      release.support
+ *  Package:      release
  *
  *  PURPOSE:
  *    Utility to execute external system processes and capture their output.

@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        VersionInfo.java
- *  Package:      release.support
+ *  Package:      release
  *
  *  PURPOSE:
  *    Encapsulates version information for the Glyco-PAINT software.

@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        FileOps.java
- *  Package:      release.support
+ *  Package:      release
  *
  *  PURPOSE:
  *    Utility methods for file system operations during the release process.

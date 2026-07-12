@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        CreateExperimentUI.java
- *  Package:      createexperiment.app
+ *  Package:      createexperiment
  *
  *  PURPOSE:
  *    Provides a complete Swing-based user interface for creating experiment

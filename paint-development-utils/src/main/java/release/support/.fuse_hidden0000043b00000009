@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        MavenSupport.java
- *  Package:      release.support
+ *  Package:      release
  *
  *  PURPOSE:
  *    Provides support for Maven-related operations during the release process.

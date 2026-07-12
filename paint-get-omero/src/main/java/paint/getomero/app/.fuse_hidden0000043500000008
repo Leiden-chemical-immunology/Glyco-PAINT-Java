@@ -1,6 +1,6 @@
 /*=============================================================================
  *  Class:        ProcessOmeroFiles.java
- *  Package:      paint.getomero.app
+ *  Package:      paint.getomero
  *
  *  PURPOSE:
  *    Handles reorganization of Omero-exported directories by extracting files

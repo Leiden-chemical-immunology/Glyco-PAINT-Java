@@ -1,6 +1,6 @@
 /*==============================================================================
  *  Class:        SquareControlHandler.java
- *  Package:      paint.viewer.control
+ *  Package:      paint.viewer.logic
  *
  *  PURPOSE:
  *    Provides parameter management and visibility control for a
