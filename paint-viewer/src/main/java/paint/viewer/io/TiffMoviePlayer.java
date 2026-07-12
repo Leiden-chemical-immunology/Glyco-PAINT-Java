@@ -132,19 +132,23 @@ public class TiffMoviePlayer {
         // ==========================================================================
         new Thread(() -> {
 
-            System.setProperty("apple.awt.UIElement", "true");
-            IJ.redirectErrorMessages();
-            IJ.showStatus("");
+            ImagePlus   imp           = null;
+            String      failureDetail = null;
+            PrintStream originalOut   = System.out;
 
-            // Silence ImageJ's console
-            PrintStream originalOut = System.out;
-            System.setOut(new PrintStream(new OutputStream() {
-                @Override
-                public void write(int b) { /* ignore console output */ }
-            }));
-
-            ImagePlus imp;
             try {
+                System.setProperty("apple.awt.UIElement", "true");
+                IJ.redirectErrorMessages();
+                IJ.showStatus("");
+
+                // Silence ImageJ's console
+                System.setOut(new PrintStream(new OutputStream() {
+                    @Override
+                    public void write(int b) { /* ignore console output */ }
+                }));
+
+                // ImageJ reads TIFF. It cannot read ND2, and returns null rather than throwing,
+                // in which case Bio-Formats gets a go.
                 imp = IJ.openImage(tiffPath);
 
                 if (imp == null) {
@@ -157,24 +161,37 @@ public class TiffMoviePlayer {
                         ImagePlus[] imps = BF.openImagePlus(opts);
                         if (imps != null && imps.length > 0) {
                             imp = imps[0];
+                        } else {
+                            failureDetail = "Bio-Formats opened the file but returned no images.";
+                            PaintLogger.errorf("Bio-Formats returned no images for %s", tiffPath);
                         }
                     } catch (Exception bfErr) {
-                        PaintLogger.error("Failed to open image with Bio-Formats", bfErr);
+                        failureDetail = bfErr.getClass().getSimpleName() + ": " + bfErr.getMessage();
+                        PaintLogger.error("Failed to open image with Bio-Formats: " + tiffPath, bfErr);
                     }
                 }
+            } catch (Throwable t) {
+                // The loader used to have a finally but no catch. Anything thrown here (an
+                // ImageJ error, a missing native library) killed the thread silently: the
+                // loading dialog was never disposed and the caller was never notified, so the
+                // viewer stayed disabled for good.
+                failureDetail = t.getClass().getSimpleName() + ": " + t.getMessage();
+                PaintLogger.error("Failed to open image: " + tiffPath, t);
             } finally {
-                // Always restore stdout, even if opening throws, so the process's
-                // console output isn't left permanently silenced.
+                // Always restore stdout, so the process's console output isn't left
+                // permanently silenced, and always take the loading dialog down.
                 System.setOut(originalOut);
+                SwingUtilities.invokeLater(loadingDialog::dispose);
             }
 
-            // Close loading dialog
-            SwingUtilities.invokeLater(loadingDialog::dispose);
-
             if (imp == null) {
+                // Show why, not just that. The cause was previously logged and then hidden
+                // behind a dialog that named only the file.
+                final String detail = failureDetail;
                 SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
                         null,
-                        "Failed to open image file:\n" + tiffPath,
+                        "Failed to open image file:\n" + tiffPath
+                                + (detail == null ? "" : "\n\n" + detail),
                         "Error",
                         JOptionPane.ERROR_MESSAGE
                 ));
@@ -182,24 +199,29 @@ public class TiffMoviePlayer {
                 return;
             }
 
-            // Optional contrast enhancement
-            IJ.run(imp, "Enhance Contrast", "saturated=0.35");
+            try {
+                // Optional contrast enhancement
+                IJ.run(imp, "Enhance Contrast", "saturated=0.35");
 
-            // Determine playback speed using calibration metadata
-            int delay = 50; // fallback
-            Calibration cal = imp.getCalibration();
-            if (cal != null && cal.frameInterval > 0) {
-                delay = (int) Math.round(cal.frameInterval * 1000);
+                // Determine playback speed using calibration metadata
+                int delay = 50; // fallback
+                Calibration cal = imp.getCalibration();
+                if (cal != null && cal.frameInterval > 0) {
+                    delay = (int) Math.round(cal.frameInterval * 1000);
+                }
+                final int baseDelayMs = delay;
+
+                // --------------------------------------------------------
+                // UI CONSTRUCTION — must occur on the EDT
+                // --------------------------------------------------------
+                final ImagePlus impFinal = imp;
+
+                SwingUtilities.invokeLater(() -> buildAndRunMovieWindow(impFinal, fileName, baseDelayMs, finish));
+
+            } catch (Throwable t) {
+                PaintLogger.error("Could not start the movie player for " + tiffPath, t);
+                finish.run();   // no window opened: do not leave the viewer disabled
             }
-            final int baseDelayMs = delay;
-
-            // ------------------------------------------------------------
-            // UI CONSTRUCTION — must occur on the EDT
-            // ------------------------------------------------------------
-
-            final ImagePlus impFinal       = imp;
-
-            SwingUtilities.invokeLater(() -> buildAndRunMovieWindow(impFinal, fileName, baseDelayMs, finish));
 
         }, "TiffLoaderThread").start();
     }
