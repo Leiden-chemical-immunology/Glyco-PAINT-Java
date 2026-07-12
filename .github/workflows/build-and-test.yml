@@ -24,28 +24,31 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # The parent POM enforces requireJavaVersion [1.8,1.9), and the whole
       # project is a Java 8 baseline (Fiji), so build on 8 — same as the
       # existing site workflow.
       - name: Set up JDK 8
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: zulu
           java-version: 8
           cache: maven
 
       - name: Run tests
-        # Headless is explicit: paint-shared-utils still carries Swing (finding
-        # A1), so any accidental UI call from library code must fail loudly here
-        # rather than hang.
+        # Headless is explicit, and it is load-bearing. The first CI run caught a real bug
+        # this way: PaintLogger unconditionally opened a Swing console window, so any
+        # headless run threw HeadlessException on its first log line - and lost the log file
+        # with it. paint-shared-utils is now UI-free (A1), and the logger only writes to a UI
+        # sink if a GUI app has registered one. Keeping this flag means any regression of
+        # that kind fails here, loudly, instead of on a user's server.
         run: mvn -B -U -Djava.awt.headless=true test
 
       # Surefire reports make a red build diagnosable without re-running locally.
       - name: Upload test reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: surefire-reports
           path: '**/target/surefire-reports/**'
