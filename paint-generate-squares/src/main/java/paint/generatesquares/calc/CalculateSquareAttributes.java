@@ -65,6 +65,7 @@ import static paint.shared.utils.CalculateTau.calculateTau;
 import static paint.shared.utils.Miscellaneous.round;
 import static paint.shared.utils.SharedSquareUtils.*;
 
+import static paint.shared.constants.PaintGeometry.IMAGE_HEIGHT;
 import static paint.shared.constants.PaintGeometry.IMAGE_WIDTH;
 import static paint.shared.constants.PaintTiming.RECORDING_DURATION;
 import static paint.shared.constants.PaintStringConstants.*;
@@ -315,8 +316,8 @@ public class CalculateSquareAttributes {
 
         int[][] matrix    = new int[granularity][granularity];
         int     dimension = GenerateSquaresConfig.gridSizeFor(numberOfSquaresInRecording);
-        double  width     = IMAGE_WIDTH / dimension;
-        double  height    = IMAGE_WIDTH / dimension;
+        double  width     = IMAGE_WIDTH  / dimension;
+        double  height    = IMAGE_HEIGHT / dimension;   // was IMAGE_WIDTH: harmless only while the image is square
 
         // Access the columns once
         DoubleColumn xCol = tracks.doubleColumn(TRACK_X_LOCATION);
