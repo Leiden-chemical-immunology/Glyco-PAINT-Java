@@ -275,7 +275,10 @@ public class TrackMateUISingle implements Command {
         }
 
         running = true;
-        PaintLogger.infof("   Recording '%s' started TrackMate processing with threshold %d.", infos.get(0).getRecordingName(), threshold);
+        // Log the recording the user actually selected. This used to log infos.get(0), i.e. the
+        // first recording in Experiment Info.csv, whichever one was being processed.
+        PaintLogger.infof("   Recording '%s' started TrackMate processing with threshold %d.",
+                          experimentInfoRecord.getRecordingName(), threshold);
         try {
             runTrackMateOnRecording(
                     experimentPath,
