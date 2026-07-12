@@ -112,14 +112,20 @@ public final class RecordingDisplayUpdater {
         leftGridPanel.setSquares(entry.getRecording().getSquaresOfRecording());
 
         // --- Right image ---
-        ImageIcon scaled = new ImageIcon(
-                entry.getRightImage().getImage().getScaledInstance(
-                        NUMBER_PIXELS_WIDTH,
-                        NUMBER_PIXELS_HEIGHT,
-                        java.awt.Image.SCALE_SMOOTH
-                )
-        );
-        rightImageLabel.setIcon(scaled);
+        // A recording may have no brightfield image (none on disk, or the file failed to load).
+        // Show an empty panel rather than throwing an NPE out of the display update.
+        ImageIcon rightImage = entry.getRightImage();
+        if (rightImage == null || rightImage.getImage() == null) {
+            rightImageLabel.setIcon(null);
+        } else {
+            rightImageLabel.setIcon(new ImageIcon(
+                    rightImage.getImage().getScaledInstance(
+                            NUMBER_PIXELS_WIDTH,
+                            NUMBER_PIXELS_HEIGHT,
+                            java.awt.Image.SCALE_SMOOTH
+                    )
+            ));
+        }
 
         // --- Labels ---
         experimentLabel.setText(
