@@ -49,6 +49,14 @@
             <artifactId>paint-ui-common</artifactId>
         </dependency>
 
+        <!-- ImageJ 1.x. This module imports ij.IJ, ij.ImagePlus and ij.io.FileSaver directly.
+             It used to arrive transitively (partly via paint-generate-squares, which no longer
+             carries the imaging stack), so declare what we actually use. -->
+        <dependency>
+            <groupId>net.imagej</groupId>
+            <artifactId>ij</artifactId>
+        </dependency>
+
         <!-- Bundled dependencies -->
         <dependency>
             <groupId>tech.tablesaw</groupId>

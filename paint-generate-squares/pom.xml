@@ -48,59 +48,31 @@
             <artifactId>paint-ui-common</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>net.imagej</groupId>
-            <artifactId>ij</artifactId>
-        </dependency>
+        <!--
+            NOTE ON WHAT IS *NOT* HERE (finding A10).
 
-        <dependency>
-            <groupId>sc.fiji</groupId>
-            <artifactId>TrackMate</artifactId>
-        </dependency>
+            This module used to declare the whole Fiji imaging stack - ImageJ (ij), TrackMate,
+            fiji-lib, imglib2 and bio-formats (bio-formats_plugins, formats-gpl, formats-api) -
+            plus opencsv and gson. It imports none of them: its entire third-party surface is
+            Tablesaw plus the JDK. The square maths works on CSV tables, and the plots are drawn
+            with plain java.awt / javax.imageio.
 
-        <dependency>
-            <groupId>sc.fiji</groupId>
-            <artifactId>fiji-lib</artifactId>
-        </dependency>
+            Those dependencies belong to the modules that actually do imaging: paint-fiji-plugin
+            (TrackMate, ij, ome-common) and paint-viewer, both of which declare them for
+            themselves. Carrying them here bloated the standalone app by roughly a hundred
+            megabytes and blurred the module's responsibility.
+        -->
 
-        <dependency>
-            <groupId>net.imglib2</groupId>
-            <artifactId>imglib2</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>ome</groupId>
-            <artifactId>bio-formats_plugins</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>ome</groupId>
-            <artifactId>formats-gpl</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>ome</groupId>
-            <artifactId>formats-api</artifactId>
-        </dependency>
-
+        <!-- Tablesaw: the CSV/table model the square computation works on. -->
         <dependency>
             <groupId>tech.tablesaw</groupId>
             <artifactId>tablesaw-core</artifactId>
         </dependency>
 
+        <!-- SLF4J binding, so Tablesaw's logging has somewhere to go. -->
         <dependency>
-            <groupId>com.opencsv</groupId>
-            <artifactId>opencsv</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
         </dependency>
 
         <!-- Unit/integration testing (JUnit 5; version managed by parent POM) -->
