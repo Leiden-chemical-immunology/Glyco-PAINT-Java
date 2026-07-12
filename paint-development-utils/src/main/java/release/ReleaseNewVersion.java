@@ -299,8 +299,13 @@ public class ReleaseNewVersion {
         Path macTarget = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-macos/target");
         Path winTarget = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-windows/target");
 
-        Path macBuilt = FileOps.latestMatching(macTarget, f -> f.contains("installer") && f.endsWith(".jar"));
-        Path winBuilt = FileOps.latestMatching(winTarget, f -> f.matches(".*(exe|jar|shaded\\.jar)$"));
+        // Ask for the exact artifact. Do NOT pattern-match here: maven-shade leaves the
+        // pre-shade jar behind as original-<name>.jar next to the real one, and picking the
+        // newest match would be a race that can ship a non-runnable installer.
+        Path macBuilt = FileOps.requireArtifact(
+                macTarget, "paint-installer-macos-" + versionInfo.releaseVersion + ".jar");
+        Path winBuilt = FileOps.requireArtifact(
+                winTarget, "paint-installer-windows-" + versionInfo.releaseVersion + ".jar");
 
         Path macFinal = installerPath.resolve("Glyco-PAINT-Installer-macOS-" + versionInfo.releaseVersion + ".jar");
         Path winFinal = installerPath.resolve("Glyco-PAINT-Installer-Windows-" + versionInfo.releaseVersion + ".jar");

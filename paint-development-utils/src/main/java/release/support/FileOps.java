@@ -22,8 +22,6 @@ package release.support;
 
 import java.io.*;
 import java.nio.file.*;
-import java.util.Comparator;
-import java.util.function.Predicate;
 
 public final class FileOps {
 
@@ -87,18 +85,42 @@ public final class FileOps {
         }
     }
 
-    public static Path latestMatching(Path dir, Predicate<String> fileNamePredicate) throws IOException {
-        try (java.util.stream.Stream<Path> stream = Files.list(dir)) {
-            return stream
-                    .filter(p -> fileNamePredicate.test(p.getFileName().toString()))
-                    .max(Comparator.comparingLong(p -> {
-                        try {
-                            return Files.getLastModifiedTime(p).toMillis();
-                        } catch (IOException e) {
-                            return Long.MIN_VALUE;
-                        }
-                    }))
-                    .orElseThrow(IOException::new);
+    /**
+     * Resolves exactly one expected build artifact, by name.
+     * <p>
+     * This deliberately replaces an earlier "newest file matching a loose pattern" lookup. A
+     * Maven target directory does not hold one candidate: {@code maven-shade-plugin} leaves the
+     * pre-shade jar behind as {@code original-<name>.jar} alongside the real, shaded one. A
+     * pattern such as {@code .*jar$} matches both, and picking the most recently modified one is
+     * a race — shade writes them within milliseconds of each other. Losing that race means
+     * shipping a thin, non-runnable jar under the official release name.
+     * <p>
+     * Artifact names are deterministic, so ask for the one we mean and fail loudly if it is not
+     * there.
+     *
+     * @param dir      the directory to look in (typically a module's {@code target})
+     * @param fileName the exact file name expected, e.g. {@code paint-installer-macos-1.2.3.jar}
+     * @return the path to that artifact
+     * @throws IOException if it does not exist, listing what the directory does contain
+     */
+    public static Path requireArtifact(Path dir, String fileName) throws IOException {
+        Path artifact = dir.resolve(fileName);
+        if (Files.isRegularFile(artifact)) {
+            return artifact;
         }
+
+        StringBuilder present = new StringBuilder();
+        if (Files.isDirectory(dir)) {
+            try (java.util.stream.Stream<Path> stream = Files.list(dir)) {
+                stream.map(p -> p.getFileName().toString())
+                      .sorted()
+                      .forEach(name -> present.append("\n    ").append(name));
+            }
+        } else {
+            present.append("\n    (directory does not exist)");
+        }
+
+        throw new IOException("Expected build artifact not found: " + artifact
+                + "\n  Directory contains:" + present);
     }
 }
