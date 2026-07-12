@@ -809,8 +809,14 @@ public class ViewerFrame extends JFrame implements
 
     private void openSquaresForCurrentRecording() {
         try {
-            String experimentName = allRecordingEntries.get(currentIndex).getExperimentName();
-            String recordingName  = allRecordingEntries.get(currentIndex).getRecordingName();
+            // currentIndex indexes recordingEntries — the *filtered* list — as it does everywhere
+            // else. This used to read allRecordingEntries, so with any filter applied it opened a
+            // different recording's squares. It went unnoticed because applying a filter did
+            // nothing (the Apply button was wired to the cancel path), so the two lists never
+            // diverged.
+            RecordingEntry current = recordingEntries.get(currentIndex);
+            String experimentName  = current.getExperimentName();
+            String recordingName   = current.getRecordingName();
             FileHelper.filterAndOpenSquaresCsv(project.getProjectRootPath(), experimentName, recordingName);
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this,
