@@ -3,30 +3,25 @@
  *  Package:      paint.viewer.override.recording_exclude
  *
  *  PURPOSE:
- *    Utility methods for persisting "recording excluded" state from the Viewer.
- *    Supports:
- *      (1) patching the per-experiment Recordings.csv Exclude flag, and
- *      (2) maintaining the project-level Viewer/Recording Exclude.csv list.
+ *    Persists "recording excluded" state from the Viewer, by maintaining the
+ *    project-level Viewer/Recording Exclude.csv list.
  *
  *  DESCRIPTION:
- *    The Viewer can mark recordings as excluded. This class provides two small
- *    persistence helpers:
+ *    The Viewer can mark recordings as excluded. Toggling the Exclude/Include
+ *    button calls updateExcludeRecordingsCsv(...), which updates the project-level
+ *    Viewer/Recording Exclude.csv file. That file holds a single column
+ *    ("Recording Name") listing every excluded recording. When excluded=true the
+ *    recording is added (if not already present); when excluded=false it is
+ *    removed (if present).
  *
- *      • patchRecordingExcluded(...)
- *          Reads an experiment's Recordings.csv, updates the "Exclude" boolean
- *          for one recording, and writes the file back to disk.
- *
- *      • updateExcludeRecordingsCsv(...)
- *          Updates the project-level Viewer/Recording Exclude.csv file, which
- *          contains a single column ("Recording Name") listing all excluded
- *          recordings. When excluded=true the recording is added (if not
- *          already present). When excluded=false it is removed (if present).
- *
- *    These methods are intended to be called directly from Viewer UI actions
- *    (e.g., toggling the Exclude/Include button).
+ *    Recording Exclude.csv — not the Exclude column of any Recordings.csv — is the
+ *    authoritative record of what the user excluded. ImportRecordingExclude and
+ *    ExportOverridesFromViewer both rebuild that column from this file, clearing it
+ *    first. Nothing therefore writes the Exclude column directly; a
+ *    patchRecordingExcluded(...) method that did so was never called by anything and
+ *    has been removed.
  *
  *  KEY FEATURES:
- *    • Updates the per-experiment Recordings.csv Exclude column for one recording.
  *    • Maintains the Viewer/Recording Exclude.csv list (create/read/update).
  *    • Avoids duplicates when adding; removes all matching rows when removing.
  *
@@ -45,57 +40,15 @@
 
 package paint.viewer.override.recording_exclude;
 
-import paint.shared.io.MainIOInterface;
 import paint.shared.objects.Recording;
 import paint.shared.utils.PaintLogger;
-import tech.tablesaw.api.BooleanColumn;
 import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
-
 public class WriteRecordingExclude {
-
-    /**
-     * Updates the per-experiment Recordings.csv by setting the {@code Exclude}
-     * flag for a single recording.
-     * <p>
-     * This method reads the experiment's recordings table, finds the row whose
-     * recording name matches {@code recordingName}, updates the boolean exclude
-     * value, and writes the table back to disk.
-     *
-     * @param experimentPath path to the experiment folder that contains Recordings.csv
-     * @param recordingName  the recording name to update
-     * @param excluded       the new exclude state to store
-     */
-    public static void patchRecordingExcluded(
-            Path experimentPath,
-            String recordingName,
-            boolean excluded
-    ) {
-        Table table = MainIOInterface.readRecordingsTable(experimentPath);
-        if (table == null) {
-            return;
-        }
-
-        StringColumn nameCol     = table.stringColumn(Recording.Column.RECORDING_NAME.header);
-        BooleanColumn excludedCol = table.booleanColumn(Recording.Column.EXCLUDE.header);
-
-        for (int row = 0; row < table.rowCount(); row++) {
-            if (nameCol.get(row).equals(recordingName)) {
-                excludedCol.set(row, excluded);
-                break;
-            }
-        }
-
-        MainIOInterface.writeSpecificRecordingsFile(
-                experimentPath.resolve(RECORDINGS_CSV),
-                table
-        );
-    }
 
     /**
      * Updates the project-level {@code Viewer/Recording Exclude.csv} file.
