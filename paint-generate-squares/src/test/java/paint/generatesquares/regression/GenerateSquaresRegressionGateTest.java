@@ -30,6 +30,7 @@ import java.util.function.Function;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static paint.shared.constants.PaintFileNames.PAINT_CONFIGURATION_JSON;
 import static paint.shared.constants.PaintStringConstants.BACKGROUND_PLOTS;
 import static paint.shared.constants.PaintStringConstants.GENERATE_SQUARES;
 import static paint.shared.constants.PaintStringConstants.TAU_FITTING_PLOTS;
@@ -98,9 +99,22 @@ class GenerateSquaresRegressionGateTest {
             Files.copy(goldenDir.resolve(f), expDir.resolve(f));
         }
 
-        // --- Force factory-default configuration (isolated to the temp project) ---
+        // --- Pin the run to the committed configuration that produced the golden master.
+        //     Without this the gate would silently inherit whatever DefaultConfigLoader
+        //     currently seeds, so a change to a default (e.g. Min Required Density Ratio)
+        //     would surface as a bogus "numeric regression" — or, worse, compare output
+        //     computed with different parameters than the golden was. ---
+        Path goldenConfig = goldenDir.getParent().resolve(PAINT_CONFIGURATION_JSON);
+        Assumptions.assumeTrue(Files.isRegularFile(goldenConfig),
+                "reference '" + PAINT_CONFIGURATION_JSON + "' not present — local-only regression gate skipped");
+        Files.copy(goldenConfig, projectDir.resolve(PAINT_CONFIGURATION_JSON));
+
+        // --- Initialise against the staged project (picks up the pinned config) ---
         PaintLogger.initialise(projectDir, "regression-gate");
         PaintConfig.reinitialise(projectDir);
+
+        // Plot generation writes only PNGs — it cannot affect the compared CSVs, but it is
+        // slow. Force it off regardless of what the pinned config happens to say.
         PaintConfig.setBoolean(GENERATE_SQUARES, BACKGROUND_PLOTS, false);
         PaintConfig.setBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS, false);
 

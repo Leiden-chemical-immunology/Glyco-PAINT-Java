@@ -82,8 +82,10 @@
     <!-- =============================================================== -->
     <properties>
 
-        <!-- Java 8 baseline via release (sets the bootstrap classpath automatically). -->
-        <maven.compiler.release>8</maven.compiler.release>
+        <!-- Java 8 baseline. Kept as source/target (not release) so the project still
+             builds under an actual JDK 8, whose javac has no release flag. -->
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
 
         <!-- Encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -316,7 +318,8 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler-plugin.version}</version>
                     <configuration>
-                        <release>${maven.compiler.release}</release>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
                         <compilerArgs>
                             <arg>-Xlint:-options</arg>
                         </compilerArgs>

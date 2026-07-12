@@ -55,7 +55,6 @@
     <!-- Build configuration -->
     <!-- =========================================================== -->
     <build>
-        <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
 
             <!-- Allow running utilities directly via Maven -->

@@ -48,8 +48,6 @@ public final class PaintStringConstants {
     public static final String CONCENTRATION                               = "Concentration";
     public static final String CONDITION_NUMBER                            = "Condition Number";
     public static final String CONFINEMENT_RATIO                           = "Confinement Ratio";
-    public static final String DEBUG                                       = "Debug";
-    public static final String DEBUG_GENERATE_SQUARES_FOR_EXPERIMENT       = "generateSquaresForExperiment";
     public static final String DENSITY                                     = "Density";
     public static final String DENSITY_RATIO                               = "Density Ratio";
     public static final String DENSITY_RATIO_ORI                           = "Density Ratio Ori";

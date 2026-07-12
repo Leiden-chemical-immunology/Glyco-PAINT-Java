@@ -52,7 +52,6 @@
 package paint.generatesquares.calc;
 
 import paint.shared.config.GenerateSquaresConfig;
-import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Project;
 import paint.shared.objects.Recording;
@@ -80,8 +79,6 @@ import static paint.shared.constants.PaintGeometry.IMAGE_HEIGHT;
 import static paint.shared.constants.PaintGeometry.IMAGE_WIDTH;
 
 public class GenerateSquaresProcessor {
-
-    private static final boolean debugGenerateSquaresForExperiment = PaintConfig.getBoolean("Debug", DEBUG_GENERATE_SQUARES_FOR_EXPERIMENT, false);
 
     /**
      * Processes an experiment to generate square regions for each recording, compute attributes,
@@ -243,11 +240,17 @@ public class GenerateSquaresProcessor {
                            tracksOfRecording.rowCount());
 
         // ------------------------------------------------------------------
-        // 🔥 DEBUG CSV SETUP (only if flag enabled)
+        // DEBUG CSV SETUP (developer diagnostic; off unless explicitly enabled)
         // ------------------------------------------------------------------
+        // Enable per run with -Dpaint.debug.dumpTrackAssignmentCsv=true (same convention as
+        // the regression gate's -Dpaint.* switches). Deliberately NOT a configuration key:
+        // it is not a user option, and a config entry could silently linger switched on in
+        // a project. Read at call time, so it is never frozen at class-load.
+        final boolean dumpTrackAssignmentCsv = Boolean.getBoolean("paint.debug.dumpTrackAssignmentCsv");
+
         Path debugCsvPath = null;
 
-        if (debugGenerateSquaresForExperiment) {
+        if (dumpTrackAssignmentCsv) {
             Path debugDirPath = Paths.get(System.getProperty("user.home")).resolve("Downloads").resolve("Debug");
             Files.createDirectories(debugDirPath);
             debugCsvPath = debugDirPath.resolve("all_square_tracks.csv");
@@ -319,7 +322,7 @@ public class GenerateSquaresProcessor {
             // ------------------------------------------------------------------
             // 🔥 DEBUG CSV APPEND (only when flag enabled)
             // ------------------------------------------------------------------
-            if (debugGenerateSquaresForExperiment && debugCsvPath != null) {
+            if (dumpTrackAssignmentCsv && debugCsvPath != null) {
                 StringBuilder sb = new StringBuilder();
                 for (Track track : tracksInSquare) {
                     sb.append(String.format(
