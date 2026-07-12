@@ -98,9 +98,18 @@ import static paint.shared.utils.Miscellaneous.formatDuration;
 public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
 
     /**
-     * Verbosity flag derived from {@link PaintRuntime}.
+     * The current verbosity setting.
+     * <p>
+     * Read at call time, deliberately. This used to be a {@code static final} field initialised
+     * from {@link PaintRuntime#isVerbose()}, which captured the value once at class load — so
+     * ticking the Verbose checkbox (which calls {@link PaintRuntime#setVerbose}) had no effect on
+     * a TrackMate run at all. Same trap as the config flag frozen in a static initialiser.
+     *
+     * @return {@code true} if verbose logging is currently enabled
      */
-    static final boolean verbose = PaintRuntime.isVerbose();
+    private static boolean verbose() {
+        return PaintRuntime.isVerbose();
+    }
 
     /**
      * Executes a given task within a monitored thread using a watchdog.
@@ -201,7 +210,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
         TrackMateConfig trackMateConfig = new TrackMateConfig();
         int maxSecondsPerRecording      = trackMateConfig.getMaxNumberOfSecondsPerImage();
 
-        if (verbose) {
+        if (verbose()) {
             PaintLogger.infof(trackMateConfig.toString());
         }
 
@@ -359,7 +368,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                         runTime                  = durationInSeconds;
                         timeStamp                = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
-                    } else if (verbose) {
+                    } else if (verbose()) {
                         PaintLogger.infof("   Recording '%s' skipped.", recordingName);
                     }
 
