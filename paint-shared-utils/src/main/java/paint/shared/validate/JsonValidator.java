@@ -98,7 +98,14 @@ public final class JsonValidator {
         try (Reader r = new StringReader(content)) {
             JsonReader jr = new JsonReader(r);
             jr.setLenient(false); // enforce strict JSON
-            GSON.fromJson(jr, JsonObject.class);
+            JsonObject parsed = GSON.fromJson(jr, JsonObject.class);
+
+            // Gson returns null — without throwing — for input that contains no JSON at all.
+            // An empty or blank file is not a valid configuration, and reporting it as valid
+            // would mask a truncated or half-written file.
+            if (parsed == null) {
+                return Result.fail("File is empty: expected a JSON object.");
+            }
             return Result.ok();
         } catch (MalformedJsonException | com.google.gson.JsonSyntaxException ex) {
             return Result.fail(buildErrorMessage(ex.getMessage(), content, jsonPath));

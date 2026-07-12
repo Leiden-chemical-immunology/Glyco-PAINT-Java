@@ -42,7 +42,8 @@ class FileValidatorTest {
         if (type == ColumnType.INTEGER)         return "1";
         if (type == ColumnType.DOUBLE)          return "1.5";
         if (type == ColumnType.BOOLEAN)         return "true";
-        if (type == ColumnType.LOCAL_DATE_TIME) return "2022-10-12T10:00";
+        // The validator's format requires seconds; real data looks like 2025-11-17T18:30:27.637.
+        if (type == ColumnType.LOCAL_DATE_TIME) return "2025-11-17T18:30:27.637";
         throw new IllegalArgumentException("No sample value defined for column type " + type);
     }
 

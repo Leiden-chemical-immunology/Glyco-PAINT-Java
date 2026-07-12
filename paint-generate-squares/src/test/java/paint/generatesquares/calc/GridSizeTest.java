@@ -12,6 +12,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static paint.shared.constants.PaintGeometry.IMAGE_HEIGHT;
+import static paint.shared.constants.PaintGeometry.IMAGE_WIDTH;
 import static paint.shared.constants.PaintStringConstants.GENERATE_SQUARES;
 import static paint.shared.constants.PaintStringConstants.NUMBER_OF_SQUARES_IN_RECORDING;
 
@@ -73,11 +75,23 @@ class GridSizeTest {
         assertEquals(0.0, first.getX0(), 1e-9, "the grid must start at the origin");
         assertEquals(0.0, first.getY0(), 1e-9, "the grid must start at the origin");
 
-        double width  = first.getX1() - first.getX0();
-        double height = first.getY1() - first.getY0();
+        // Square stores its corners rounded to 2 decimals, so a square's width can differ from
+        // the nominal one by up to 0.01 at each edge. Assert the nominal size within that
+        // rounding budget rather than demanding they all be bit-identical.
+        double nominalWidth  = IMAGE_WIDTH  / 20.0;
+        double nominalHeight = IMAGE_HEIGHT / 20.0;
+        double roundingSlack = 0.02 + 1e-9;
+
         for (Square s : squares) {
-            assertEquals(width,  s.getX1() - s.getX0(), 1e-9, "all squares must share one width");
-            assertEquals(height, s.getY1() - s.getY0(), 1e-9, "all squares must share one height");
+            assertEquals(nominalWidth, s.getX1() - s.getX0(), roundingSlack,
+                    "square " + s.getSquareNumber() + " should be one grid cell wide");
+            assertEquals(nominalHeight, s.getY1() - s.getY0(), roundingSlack,
+                    "square " + s.getSquareNumber() + " should be one grid cell high");
         }
+
+        // The grid must reach the far corner of the image (within the same rounding budget).
+        Square last = squares.get(squares.size() - 1);
+        assertEquals(IMAGE_WIDTH,  last.getX1(), roundingSlack, "the grid must span the image width");
+        assertEquals(IMAGE_HEIGHT, last.getY1(), roundingSlack, "the grid must span the image height");
     }
 }

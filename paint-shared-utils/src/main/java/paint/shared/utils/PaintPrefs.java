@@ -24,7 +24,7 @@
  *
  *  USAGE EXAMPLE:
  *    boolean verbose = PaintPrefs.getBoolean("Runtime", "Verbose", false);
- *    PaintPrefs.putString("Project", "RootPath", "/Users/hans/project");
+ *    PaintPrefs.putString("Project", "RootPath", projectRootPath);
  *    PaintPrefs.reload();
  *
  *  DEPENDENCIES:

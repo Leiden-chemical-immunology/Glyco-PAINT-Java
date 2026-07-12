@@ -264,16 +264,6 @@ public class RunTrackMateOnProjectSweep {
         return overallStatus;
     }
 
-    /**
-     * Command-line entry point for testing the sweep execution.
-     */
-    public static void main(String[] args) throws IOException {
-        runWithSweep(
-                Paths.get("/Users/hans/Paint Test Project"),
-                Paths.get("/Volumes/Extreme Pro/Omero"),
-                Arrays.asList("221012", "AnyName"));
-    }
-
     public static void updateThreshold(Path csvPath, double newValue) throws IOException {
 
         List<String> lines = Files.readAllLines(csvPath);

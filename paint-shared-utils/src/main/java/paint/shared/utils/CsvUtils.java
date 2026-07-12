@@ -47,14 +47,11 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static paint.shared.constants.PaintFileNames.RECORDINGS_CSV;
 import static paint.shared.utils.BooleanUtils.isBooleanTrue;
 
 /**
@@ -302,25 +299,4 @@ public final class CsvUtils {
         }
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // DEMO / MAIN DRIVER
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Demonstrates the use of CSV utility methods:
-     * adding a "Case" column and concatenating experiment CSV files.
-     *
-     * @param args command-line arguments (unused)
-     * @throws IOException if an I/O error occurs during processing
-     */
-    public static void main(String[] args) throws IOException {
-        Path root = Paths.get("/Users/hans/Paint Test Project/Sweep");
-        List<String> exps = Arrays.asList("221012", "AnyName");
-
-        // Example: Add "Case" column
-        addCase(root, RECORDINGS_CSV, exps, "Case 1");
-
-        // Example: Concatenate experiment CSV files
-        concatenateNamedCsvFiles(root, RECORDINGS_CSV, exps);
-    }
 }

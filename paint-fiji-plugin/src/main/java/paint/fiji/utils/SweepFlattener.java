@@ -21,7 +21,6 @@
  *    • Integrate “Generate Squares” into the flattening pipeline.
  *
  *  USAGE EXAMPLE:
- *    Path sweepPath = Paths.get("/Users/hans/Paint Test Project/Sweep");
  *    SweepFlattener.flattenSweep(sweepPath, Arrays.asList("221012", "AnyName"), true);
  *
  *  DEPENDENCIES:
@@ -50,7 +49,6 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -186,14 +184,4 @@ public final class SweepFlattener {
         PaintLogger.infof("Completed Sweep flattening for %d parameter sets.", paramDirsFound.size());
     }
 
-    /**
-     * Standalone entry point for debugging and testing the sweep flattening process.
-     *
-     * @param args command-line arguments (unused)
-     * @throws IOException if I/O operations fail during execution
-     */
-    public static void main(String[] args) throws IOException {
-        Path sweepPath = Paths.get("/Users/hans/Paint Test Project/Sweep");
-        flattenSweep(sweepPath, Arrays.asList("221012", "AnyName"), false);
-    }
 }
