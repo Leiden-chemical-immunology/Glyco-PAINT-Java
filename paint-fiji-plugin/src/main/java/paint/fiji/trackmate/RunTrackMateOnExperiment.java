@@ -129,7 +129,6 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
         Thread thread = new Thread(task, "TrackMateThread");
         thread.start();
 
-        int numberOfInterrupts = 0;
         int numberOfDotsOnline = 0;
 
         for (int i = 0; i < maxSecondsPerRecording; i++) {
@@ -155,13 +154,12 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
                 return false;
             }
 
-            // Progress dots
-            numberOfInterrupts++;
-            if (numberOfInterrupts >= 1) {
-                PaintLogger.raw(".");
-                numberOfDotsOnline++;
-                numberOfInterrupts = 0;
-            }
+            // Progress dots: one per second of waiting, 80 to a line.
+            // (There used to be a "numberOfInterrupts" counter gating this, but it was
+            // incremented, tested against >= 1 and reset on every pass — so it always fired.)
+            PaintLogger.raw(".");
+            numberOfDotsOnline++;
+
             if (numberOfDotsOnline >= 80) {
                 PaintLogger.raw("\n                                                    ");
                 numberOfDotsOnline = 0;
