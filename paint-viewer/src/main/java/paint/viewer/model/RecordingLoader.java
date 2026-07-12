@@ -148,10 +148,18 @@ public class RecordingLoader {
                         Path p = it.next();
                         String fileName = p.getFileName().toString();
 
-                        boolean isMatch =
-                                (fileName.startsWith(recordingName + "-BF") ||
-                                        fileName.startsWith(recordingName))
-                                        && fileName.endsWith(".jpg");
+                        // Match "<recording name>.jpg", "<recording name>-BF.jpg" and similar.
+                        //
+                        // The name must not be followed by a digit: recording names end in a
+                        // number, so a plain startsWith() lets recording "…-A4-1" match the file
+                        // of "…-A4-10" and display the wrong brightfield image. (The old
+                        // "-BF" clause here was dead: startsWith(name + "-BF") can only be true
+                        // when startsWith(name) already is.)
+                        boolean isMatch = false;
+                        if (fileName.endsWith(".jpg") && fileName.startsWith(recordingName)) {
+                            String rest = fileName.substring(recordingName.length());
+                            isMatch = rest.isEmpty() || !Character.isDigit(rest.charAt(0));
+                        }
 
                         if (isMatch) {
                             brightfieldImagePath = p;
