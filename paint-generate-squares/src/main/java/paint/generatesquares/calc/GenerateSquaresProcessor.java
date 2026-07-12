@@ -181,9 +181,9 @@ public class GenerateSquaresProcessor {
     public static List<Square> generateSquaresForRecording(Recording recording,
             GenerateSquaresConfig generateSquaresConfig) {
 
-        // Total number of squares per recording.
+        // Total number of squares per recording, and the side of the grid that holds them.
         int numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
-        int gridSize                   = (int) Math.sqrt(numberOfSquaresInRecording);
+        int gridSize                   = generateSquaresConfig.getGridSize();
 
         List<Square> squares      = new ArrayList<>();
         double       squareWidth  = IMAGE_WIDTH  / gridSize;
@@ -232,7 +232,7 @@ public class GenerateSquaresProcessor {
         Table recordingTrackTable = newEmptyTrackTable();
 
         int numberOfSquaresInRecording = generateSquaresConfig.getNumberOfSquaresInRecording();
-        int gridSize                   = (int) Math.sqrt(numberOfSquaresInRecording);
+        int gridSize                   = generateSquaresConfig.getGridSize();
 
         int incrementalTrackCount = 0;
 

@@ -43,6 +43,7 @@
 package paint.shared.config;
 
 import paint.shared.config.paintconfig.PaintConfig;
+import paint.shared.utils.PaintLogger;
 
 import static paint.shared.constants.PaintStringConstants.*;
 
@@ -54,6 +55,7 @@ import static paint.shared.constants.PaintStringConstants.*;
 public class GenerateSquaresConfig {
 
     private final int     numberOfSquaresInRecording;
+    private final int     gridSize;
     private final int     minTracksToCalculate;
     private final int     minTracksToCalculateTau;
     private final double  minRequiredRSquared;
@@ -89,6 +91,33 @@ public class GenerateSquaresConfig {
         this.tauFittingPlots             = PaintConfig.getBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS,               false);
         this.backgroundPlots             = PaintConfig.getBoolean(GENERATE_SQUARES, BACKGROUND_PLOTS,                false);
 
+        this.gridSize = gridSizeFor(this.numberOfSquaresInRecording);
+    }
+
+    /**
+     * Converts a square <em>count</em> into a grid <em>side</em> length — the single definition
+     * of that conversion.
+     * <p>
+     * It previously existed inline at four call sites in two different forms: some truncated with
+     * {@code (int) Math.sqrt(n)}, others rounded with {@code (int) Math.round(Math.sqrt(n))}. The
+     * count always comes from a fixed dropdown (5x5 … 40x40) and so is a perfect square, which is
+     * why the two never disagreed in practice — but there is no reason to keep two formulas around
+     * waiting to.
+     * <p>
+     * A non-perfect square can only come from a hand-edited configuration file. That still yields a
+     * well-defined grid, just a smaller one than was asked for, so this warns rather than fails.
+     *
+     * @param numberOfSquaresInRecording the configured number of squares per recording
+     * @return the number of squares along one side of the grid
+     */
+    public static int gridSizeFor(int numberOfSquaresInRecording) {
+        int side = (int) Math.round(Math.sqrt(numberOfSquaresInRecording));
+        if (side * side != numberOfSquaresInRecording) {
+            PaintLogger.warnf(
+                    "'%s' is %d, which is not a perfect square. Using a %dx%d grid (%d squares).",
+                    NUMBER_OF_SQUARES_IN_RECORDING, numberOfSquaresInRecording, side, side, side * side);
+        }
+        return side;
     }
 
     /**
@@ -96,6 +125,22 @@ public class GenerateSquaresConfig {
      */
     public int getNumberOfSquaresInRecording() {
         return numberOfSquaresInRecording;
+    }
+
+    /**
+     * The side length of the square grid — i.e. {@code sqrt(numberOfSquaresInRecording)}.
+     * <p>
+     * This is the single place that converts a square <em>count</em> into a grid
+     * <em>side</em>. It used to be recomputed inline at four call sites, and not
+     * consistently: some truncated with {@code (int) Math.sqrt(n)} while others rounded
+     * with {@code (int) Math.round(Math.sqrt(n))}. The count always comes from a fixed
+     * dropdown (5x5 … 40x40) so it is a perfect square and the two agree — but there is
+     * no reason to leave two formulas lying around waiting to disagree.
+     *
+     * @return the number of squares along one side of the grid
+     */
+    public int getGridSize() {
+        return gridSize;
     }
 
     /**

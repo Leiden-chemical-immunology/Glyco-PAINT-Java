@@ -54,7 +54,6 @@ import paint.shared.utils.PaintLogger;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -193,35 +192,4 @@ public final class ValidationHandler {
     }
 
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // TEST CASES
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    public static void main(String[] args) {
-        Path projectPath = Paths.get("/Users/hans/Paint Test Project");
-        testCase2(projectPath);
-    }
-
-    private static void testCase2(Path projectPath) {
-        PaintLogger.initialise(projectPath, "Test");
-        List<String> experimentNames = Arrays.asList(
-                "221012",
-                "221101",
-               "221108"
-        );
-
-        List<String> fileNames = Arrays.asList(
-                EXPERIMENT_INFO_CSV,
-                RECORDINGS_CSV,
-                SQUARES_CSV,
-                TRACKS_CSV
-        );
-
-        ValidationResult result =  validateExperiments(projectPath, experimentNames, fileNames);
-        if (result.isValid()) {
-            System.out.println("No Issues found");
-        } else {
-            System.out.println(result.getReport());
-        }
-    }
 }

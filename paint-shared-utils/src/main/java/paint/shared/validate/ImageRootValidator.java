@@ -27,11 +27,11 @@
  *  USAGE EXAMPLE:
  *    List<String> experiments = Arrays.asList("221108", "221122");
  *    ValidationResult result = ImageRootValidator.validateImageRoot(
- *        Paths.get("/Users/hans/Paint Test Project"),
- *        Paths.get("/Volumes/Extreme Pro/Omero"),
+ *        projectPath,
+ *        imagesRootPath,
  *        experiments
  *    );
- *    System.out.println(result.getReport());
+ *    PaintLogger.infof(result.getReport());
  *
  *  DEPENDENCIES:
  *    – paint.shared.io.HelperIO.readExperimentInfo

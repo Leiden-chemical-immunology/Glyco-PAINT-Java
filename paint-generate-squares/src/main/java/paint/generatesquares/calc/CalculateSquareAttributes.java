@@ -314,7 +314,7 @@ public class CalculateSquareAttributes {
             int granularity) {
 
         int[][] matrix    = new int[granularity][granularity];
-        int     dimension = (int) Math.sqrt(numberOfSquaresInRecording);
+        int     dimension = GenerateSquaresConfig.gridSizeFor(numberOfSquaresInRecording);
         double  width     = IMAGE_WIDTH / dimension;
         double  height    = IMAGE_WIDTH / dimension;
 

@@ -57,14 +57,18 @@
     <build>
         <plugins>
 
-            <!-- Allow running utilities directly via Maven -->
+            <!-- Allow running utilities directly via Maven. No default mainClass: this
+                 module holds several independent drivers, and the previous default
+                 (utils.BuildWindowsExecutables) referred to a class that no longer exists.
+                 Name the one you want at invocation time, e.g.
+
+                   mvn -pl paint-development-utils exec:java \
+                       -Dexec.mainClass=release.ReleaseNewVersion
+            -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.5.0</version>
-                <configuration>
-                    <mainClass>utils.BuildWindowsExecutables</mainClass>
-                </configuration>
             </plugin>
         </plugins>
     </build>

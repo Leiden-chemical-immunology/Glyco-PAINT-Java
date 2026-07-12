@@ -45,7 +45,6 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 
 /**
@@ -166,14 +165,5 @@ public final class JsonValidator {
 
     private JsonValidator() {
 
-    }
-
-    public static void main(String[] args) {
-        Result validation = validate(Paths.get("/Users/hans/Paint Test Project/Paint Sweep Configuration error.json"));
-        if (validation.valid) {
-            System.out.println("Valid JSON");
-        } else {
-            System.out.println("Invalid JSON: " + validation.error);
-        }
     }
 }

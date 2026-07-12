@@ -36,7 +36,6 @@
 package paint.generatesquares.app;
 
 import paint.shared.config.GenerateSquaresConfig;
-import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.objects.Experiment;
 import paint.shared.objects.Project;
 import paint.shared.utils.PaintLogger;
@@ -195,12 +194,16 @@ public class GenerateSquaresHeadless {
      */
     private static void logContextAndConfiguration(Path projectPath, List<String> experimentNames) {
 
-        int nSquares      = PaintConfig.getInt(   GENERATE_SQUARES, NUMBER_OF_SQUARES_IN_RECORDING, 400);
-        int minTracks     = PaintConfig.getInt(   GENERATE_SQUARES, MIN_TRACKS_TO_CALCULATE_TAU,    20);
-        double minRSq     = PaintConfig.getDouble(GENERATE_SQUARES, MIN_REQUIRED_R_SQUARED,         0.1);
-        double minDensity = PaintConfig.getDouble(GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,     2.0);
-        double maxVar     = PaintConfig.getDouble(GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY,      10.0);
-        int side          = (int) Math.round(Math.sqrt(nSquares));
+        // Read through the typed config rather than re-reading each key with its own inline
+        // default: the defaults belong in one place, and the grid side has one definition.
+        GenerateSquaresConfig config = new GenerateSquaresConfig();
+
+        int    nSquares   = config.getNumberOfSquaresInRecording();
+        int    side       = config.getGridSize();
+        int    minTracks  = config.getMinTracksToCalculateTau();
+        double minRSq     = config.getMinRequiredRSquared();
+        double minDensity = config.getMinRequiredDensityRatio();
+        double maxVar     = config.getMaxAllowableVariability();
 
         String formattedExperiments;
         if (experimentNames.isEmpty()) {
