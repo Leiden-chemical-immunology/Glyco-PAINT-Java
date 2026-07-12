@@ -470,6 +470,56 @@ public class ViewerFrame extends JFrame implements
     }
 
     // =========================================================================================
+    // MODAL DIALOG LIFECYCLE
+    // =========================================================================================
+
+    /**
+     * Opens a modal dialog exclusively, and guarantees the UI is restored when it closes.
+     * <p>
+     * Every modal dialog in this frame needs the same ceremony: refuse to open if one is
+     * already up, disable the action buttons, put the grid into some temporary state, and then
+     * undo all of that when the dialog closes. That was previously copy-pasted at each call
+     * site, and it is exactly the kind of duplication you do not want: if one copy forgets to
+     * re-enable the buttons, or forgets to clear {@link #activeDialog}, the viewer locks up
+     * for good. Doing it once, here, makes that impossible to get wrong.
+     * <p>
+     * The created dialog is returned so a caller can read its result from its own reference.
+     * Do not read {@link #activeDialog} after the dialog closes — the close listener clears it.
+     *
+     * @param factory  creates the dialog (called only once it is certain we can open one)
+     * @param prepare  temporary UI state to apply while the dialog is up
+     * @param restore  undoes {@code prepare}; always run when the dialog closes
+     * @return the dialog that was shown, or {@code null} if one was already open
+     */
+    private <D extends JDialog> D showExclusiveDialog(java.util.function.Supplier<D> factory,
+                                                      Runnable prepare,
+                                                      Runnable restore) {
+        if (activeDialog != null && activeDialog.isShowing()) {
+            Toolkit.getDefaultToolkit().beep();
+            return null;
+        }
+
+        setActionButtonsEnabled(false);
+        leftGridPanel.hideSquareInfoIfVisible();
+        prepare.run();
+
+        D dialog = factory.get();
+        activeDialog = dialog;
+
+        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent e) {
+                restore.run();
+                setActionButtonsEnabled(true);
+                activeDialog = null;
+            }
+        });
+
+        dialog.setVisible(true);   // modal: blocks until closed
+        return dialog;
+    }
+
+    // =========================================================================================
     // FILTER AND CONTROL REQUEST HANDLERS
     // =========================================================================================
 
@@ -480,28 +530,18 @@ public class ViewerFrame extends JFrame implements
      */
     @Override
     public void onFilterRequested() {
-        if (activeDialog != null && activeDialog.isShowing()) {
-            Toolkit.getDefaultToolkit().beep();
-            return;
+
+        RecordingFilterDialog fd = showExclusiveDialog(
+                () -> new RecordingFilterDialog(this, recordingEntries, allRecordingEntries, lastFilterCriteria),
+                () -> setGridEnabled(false),
+                () -> setGridEnabled(true));
+
+        if (fd == null) {
+            return;   // another dialog was already open
         }
 
-        setActionButtonsEnabled(false);
-        leftGridPanel.hideSquareInfoIfVisible();
-        activeDialog = new RecordingFilterDialog(this, recordingEntries, allRecordingEntries, lastFilterCriteria);
-        setGridEnabled(false); // Disable grid interaction
-
-        activeDialog.addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosed(java.awt.event.WindowEvent e) {
-                setGridEnabled(true); // Re-enable grid
-                setActionButtonsEnabled(true);
-                activeDialog = null;
-            }
-        });
-
-        activeDialog.setVisible(true);
-
-        // Now handle user result after closing
-        RecordingFilterDialog fd = (RecordingFilterDialog) activeDialog;
+        // Read the result from our own reference: activeDialog has been cleared by the close
+        // listener by now, and reading it here used to be a latent NPE.
         if (!fd.isCancelled()) {
             List<RecordingEntry> filtered = fd.getFilteredRecordings();
             lastFilterCriteria = fd.getCurrentFilterCriteria();
@@ -541,37 +581,23 @@ public class ViewerFrame extends JFrame implements
      */
     @Override
     public void onSelectSquaresRequested() {
-        if (activeDialog != null && activeDialog.isShowing()) {
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
 
-        setActionButtonsEnabled(false);
-        leftGridPanel.hideSquareInfoIfVisible();
         RecordingEntry current = recordingEntries.get(currentIndex);
 
-        activeDialog = new SquareControlDialog(
-                this,
-                leftGridPanel,
-                this,
-                new SquareControlParams(
-                        current.getRecording().getMinRequiredDensityRatio(),
-                        current.getRecording().getMaxAllowableVariability(),
-                        current.getRecording().getMinRequiredRSquared(),
-                        current.getRecording().getNeighbourMode()
-                )
-        );
-
-        setGridEnabled(false); // Disable grid
-
-        activeDialog.addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosed(java.awt.event.WindowEvent e) {
-                setGridEnabled(true); // Re-enable grid
-                setActionButtonsEnabled(true);
-                activeDialog = null;
-            }
-        });
-        activeDialog.setVisible(true);
+        showExclusiveDialog(
+                () -> new SquareControlDialog(
+                        this,
+                        leftGridPanel,
+                        this,
+                        new SquareControlParams(
+                                current.getRecording().getMinRequiredDensityRatio(),
+                                current.getRecording().getMaxAllowableVariability(),
+                                current.getRecording().getMinRequiredRSquared(),
+                                current.getRecording().getNeighbourMode()
+                        )
+                ),
+                () -> setGridEnabled(false),
+                () -> setGridEnabled(true));
     }
 
     /**
@@ -585,43 +611,35 @@ public class ViewerFrame extends JFrame implements
      */
     @Override
     public void onAssignCellsRequested() {
-        if (activeDialog != null && activeDialog.isShowing()) {
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-
-        setActionButtonsEnabled(false);
-        leftGridPanel.hideSquareInfoIfVisible();
-        leftGridPanel.setSelectionEnabled(true);
-        leftGridPanel.setInfoPopupsEnabled(false);
 
         final JFrame owner = this;
-        activeDialog = new CellAssignmentDialog(owner, new CellAssignmentDialog.Listener() {
-            public void onAssign(int cellId) {
-                handleCellAssignment(cellId);
-            }
 
-            public void onUndo() {
-                assignmentManager.undo(leftGridPanel);
-            }
+        showExclusiveDialog(
+                () -> new CellAssignmentDialog(owner, new CellAssignmentDialog.Listener() {
+                    public void onAssign(int cellId) {
+                        handleCellAssignment(cellId);
+                    }
 
-            public void onCancelSelection() {
-                leftGridPanel.clearSelection();
-                leftGridPanel.applyVisibilityFilter();
-                leftGridPanel.repaint();
-            }
-        });
+                    public void onUndo() {
+                        assignmentManager.undo(leftGridPanel);
+                    }
 
-        activeDialog.addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosed(java.awt.event.WindowEvent e) {
-                leftGridPanel.setSelectionEnabled(false);
-                leftGridPanel.setInfoPopupsEnabled(true);
-                setActionButtonsEnabled(true);
-                activeDialog = null;
-            }
-        });
-
-        activeDialog.setVisible(true);
+                    public void onCancelSelection() {
+                        leftGridPanel.clearSelection();
+                        leftGridPanel.applyVisibilityFilter();
+                        leftGridPanel.repaint();
+                    }
+                }),
+                // While assigning, the grid becomes a selection surface rather than an
+                // info surface.
+                () -> {
+                    leftGridPanel.setSelectionEnabled(true);
+                    leftGridPanel.setInfoPopupsEnabled(false);
+                },
+                () -> {
+                    leftGridPanel.setSelectionEnabled(false);
+                    leftGridPanel.setInfoPopupsEnabled(true);
+                });
     }
 
     private void handleCellAssignment(int cellId) {
