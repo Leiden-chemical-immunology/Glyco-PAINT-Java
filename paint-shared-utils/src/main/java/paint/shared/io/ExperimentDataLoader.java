@@ -107,6 +107,13 @@ public final class ExperimentDataLoader {
                 return null;
             }
 
+            // readTracksTable can return null without throwing. Report that as the documented
+            // "could not load" result rather than dereferencing it and dying with an NPE.
+            if (tracksTable == null) {
+                PaintLogger.errorf("No %s content in %s", TRACKS_CSV, experimentName);
+                return null;
+            }
+
             PaintLogger.debugf("Found %d tracks", tracksTable.rowCount());
 
             for (Recording recording : recordings) {
