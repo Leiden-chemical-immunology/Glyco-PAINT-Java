@@ -26,6 +26,7 @@
 
 package paint.ui.dialogs.project;
 
+import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.PaintRuntime;
 
 import javax.swing.*;
@@ -50,6 +51,10 @@ public class BottomBarPanel {
     private final             JCheckBox sweep; // TRACKMATE only
     private final             JButton   okBtn;
     private final             JButton   cancelBtn;
+
+    /** Where the durable UI preferences live — the same store that remembers Verbose. */
+    private static final      String   PREFS_SECTION         = "Runtime";
+    private static final      String   PREF_SAVE_EXPERIMENTS = "Save Experiments";
 
     // Default no-op callbacks so invocation is always safe
     private static final      Runnable NO_OP = () -> {};
@@ -79,9 +84,23 @@ public class BottomBarPanel {
             sweep           = null;
         }
 
-        // SaveExperiments checkbox not in TRACKMATE_SINGLE mode
+        // SaveExperiments checkbox not in TRACKMATE_SINGLE mode.
+        //
+        // This is a durable preference, like Verbose: "remember which experiments I picked".
+        // It used to be hardcoded to false on every open, so the user had to re-tick it every
+        // single run — and if they forgot, ProjectDialogController silently skipped writing the
+        // selection and it was lost. Seed it from the stored preference and write the
+        // preference back the moment it is toggled.
         if (mode != DialogMode.TRACKMATE_SINGLE) {
-            saveExperiments = new JCheckBox("Save Experiments", false);
+            saveExperiments = new JCheckBox(
+                    "Save Experiments",
+                    PaintPrefs.getBoolean(PREFS_SECTION, PREF_SAVE_EXPERIMENTS, false));
+            saveExperiments.setToolTipText(
+                    "Remember the selected experiments and pre-select them next time, "
+                            + "in this and the other Paint tools.");
+            saveExperiments.addActionListener(e ->
+                    PaintPrefs.putBoolean(PREFS_SECTION, PREF_SAVE_EXPERIMENTS,
+                            saveExperiments.isSelected()));
             left.add(saveExperiments);
         } else {
             saveExperiments = null;
