@@ -452,17 +452,14 @@ public class ViewerFrame extends JFrame implements
 
         RecordingEntry entry = recordingEntries.get(currentIndex);
 
-        // 1) Toggle model state
-        boolean newExcluded = !entry.getRecording().isExcluded();   // adapt to your actual getter/setter
+        // Toggle the in-memory state. (This used to be set twice, identically, in a row.)
+        boolean newExcluded = !entry.getRecording().isExcluded();
         entry.getRecording().setExcluded(newExcluded);
 
-        // 2) Persist to "All Recordings" (your existing writer or a new small helper)
-
-        // Update the RecordingEntry
-        entry.getRecording().setExcluded(newExcluded);
-
-        // Write a record in the Exclude file
-        String recordingName  = entry.getRecording().getRecordingName();
+        // Record it in the Viewer's exclude file. That file — not the Exclude column of
+        // Recordings.csv — is the authoritative record of which recordings the user excluded:
+        // both ImportRecordingExclude and ExportOverridesFromViewer rebuild the column from it.
+        String recordingName = entry.getRecording().getRecordingName();
         updateExcludeRecordingsCsv(project.getProjectRootPath(), recordingName, newExcluded);
 
         // 3) Update UI (button text + labels)
