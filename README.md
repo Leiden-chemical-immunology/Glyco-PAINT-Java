@@ -42,12 +42,21 @@ No special system requirements are identified, other than a minimum memory of 16
 ## License
 
 The software is provided as is under the [MIT license](https://opensource.org/licenses/MIT).
+The full licence text is in [LICENSE](LICENSE).
 
 
 
 ## Functionality
 
 An overview of the functionality of the pipeline, how to use it and a detailed demo case with sample data it is provided in the [Manual](doc/Manual.md).
+
+
+
+## Troubleshooting
+
+If a recording will not play, if a long run becomes inexplicably slow, or if something appears to do nothing at all, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
+
+The first of those catches nearly everyone: recordings live on an external drive, and macOS blocks access to removable volumes until you grant it — to the application that *launches* Glyco-PAINT, and only after a full restart.
 
 
 
