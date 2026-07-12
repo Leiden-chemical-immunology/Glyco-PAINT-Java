@@ -63,13 +63,6 @@ public final class Miscellaneous {
      *
      * @param args command-line arguments (unused)
      */
-    public static void main(String[] args) {
-        int[] testValues = {0, 5, 59, 60, 61, 65, 3599, 3600, 3605, 3665, 7322};
-        for (int seconds : testValues) {
-            System.out.printf("%5d seconds → %s%n", seconds, formatDuration(seconds));
-        }
-    }
-
     // ───────────────────────────────────────────────────────────────────────────────
     // DURATION FORMATTING UTILITIES
     // ───────────────────────────────────────────────────────────────────────────────

@@ -44,7 +44,6 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Enumeration;
-import java.util.Objects;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -236,11 +235,6 @@ public final class JarInfoLogger {
      *
      * @param args command-line arguments (unused)
      */
-    public static void main(String[] args) {
-        JarInfo info = getJarInfo(JarInfoLogger.class);
-        System.out.println(Objects.toString(info, "No manifest information found."));
-    }
-
     // ───────────────────────────────────────────────────────────────────────────────
     // NESTED DATA STRUCTURE
     // ───────────────────────────────────────────────────────────────────────────────
