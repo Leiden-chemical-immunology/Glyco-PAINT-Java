@@ -275,47 +275,64 @@ public class ExportOverridesFromViewer {
         PaintLogger.infof("Processing Recording overrides - different selection criteria for squares in recording:" );
         PaintLogger.blankline();
 
+        // The squares are converted to objects once, filtered for every overridden recording,
+        // and converted back once.
+        //
+        // This used to happen inside the loop: each overridden recording converted the *entire*
+        // squares table to a list, filtered its own recording's squares, converted the whole
+        // thing back, and rebuilt the table. Overriding at Project scope therefore did that
+        // once per recording - quadratic in the number of squares, for no benefit, since
+        // applyVisibilityFilterOnRecording only ever touches the squares of the one recording
+        // it is given.
+        //
+        // The list is built lazily, so a project with no matching overrides converts nothing.
+        List<Square> squareList  = null;
+        boolean      anyOverride = false;
+
         for (int row = 0; row < recordingsTable.rowCount(); row++) {
             String            experimentName = recordingsTable.stringColumn(EXPERIMENT_NAME).get(row);
             String            recordingName  = recordingsTable.stringColumn(RECORDING_NAME).get(row);
             RecordingOverride override       = map.get(key(experimentName, recordingName));
 
-            if (override != null) {
-                // Update columns directly in the table
-                recordingsTable.doubleColumn(MIN_REQUIRED_DENSITY_RATIO).set( row, override.getMinRequiredDensityRatio());
-                recordingsTable.doubleColumn(MIN_REQUIRED_R_SQUARED).set(     row, override.getMinRequiredRSquared());
-                recordingsTable.doubleColumn(MAX_ALLOWABLE_VARIABILITY).set(  row, override.getMaxAllowableVariability());
-                recordingsTable.stringColumn(NEIGHBOUR_MODE).set(             row, override.getNeighbourMode());
-
-                // LOG full detail for this recording
-                PaintLogger.infof("    Applied Recording override on %s", recordingName);
-
-                PaintLogger.infof("          Density Ratio:  %-6.2f",  override.getMinRequiredDensityRatio());
-                PaintLogger.infof("          R²:             %-6.2f",  override.getMinRequiredRSquared());
-                PaintLogger.infof("          Variability:    %-6.2f ", override.getMaxAllowableVariability());
-                PaintLogger.infof("          Neighbour Mode: %-6s",    override.getNeighbourMode());
-                PaintLogger.blankline();
-
-                // Now apply the filter criteria to the Squares of the Recordings
-                long visBefore = squaresTable.where(squaresTable.stringColumn(RECORDING_NAME).isEqualTo(recordingName))
-                                             .booleanColumn(VISIBLE).countTrue();
-
-                List<Square> squareList = squareTableToList(squaresTable);
-                applyVisibilityFilterOnRecording(
-                        squareList,
-                        recordingName,
-                        override.getMinRequiredDensityRatio(),
-                        override.getMaxAllowableVariability(),
-                        override.getMinRequiredRSquared(),
-                        override.getNeighbourMode());
-
-                Table updatedSquaresTable = squareListToTable(squareList);
-                squaresTable.clear();                   // This is a trick to ensure that old references are not invalidated
-                squaresTable.append(updatedSquaresTable);
-
-                long visAfter = squaresTable.where(squaresTable.stringColumn(RECORDING_NAME).isEqualTo(recordingName))
-                                            .booleanColumn(VISIBLE).countTrue();
+            if (override == null) {
+                continue;
             }
+
+            // Update columns directly in the table
+            recordingsTable.doubleColumn(MIN_REQUIRED_DENSITY_RATIO).set( row, override.getMinRequiredDensityRatio());
+            recordingsTable.doubleColumn(MIN_REQUIRED_R_SQUARED).set(     row, override.getMinRequiredRSquared());
+            recordingsTable.doubleColumn(MAX_ALLOWABLE_VARIABILITY).set(  row, override.getMaxAllowableVariability());
+            recordingsTable.stringColumn(NEIGHBOUR_MODE).set(             row, override.getNeighbourMode());
+
+            // LOG full detail for this recording
+            PaintLogger.infof("    Applied Recording override on %s", recordingName);
+
+            PaintLogger.infof("          Density Ratio:  %-6.2f",  override.getMinRequiredDensityRatio());
+            PaintLogger.infof("          R²:             %-6.2f",  override.getMinRequiredRSquared());
+            PaintLogger.infof("          Variability:    %-6.2f ", override.getMaxAllowableVariability());
+            PaintLogger.infof("          Neighbour Mode: %-6s",    override.getNeighbourMode());
+            PaintLogger.blankline();
+
+            if (squareList == null) {
+                squareList = squareTableToList(squaresTable);
+            }
+
+            // Apply the new selection criteria to this recording's squares
+            applyVisibilityFilterOnRecording(
+                    squareList,
+                    recordingName,
+                    override.getMinRequiredDensityRatio(),
+                    override.getMaxAllowableVariability(),
+                    override.getMinRequiredRSquared(),
+                    override.getNeighbourMode());
+
+            anyOverride = true;
+        }
+
+        if (anyOverride) {
+            Table updatedSquaresTable = squareListToTable(squareList);
+            squaresTable.clear();                   // Clear and append, rather than reassign, so that
+            squaresTable.append(updatedSquaresTable);   // references held by the caller stay valid.
         }
     }
 
