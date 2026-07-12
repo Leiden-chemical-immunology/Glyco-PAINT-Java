@@ -1,0 +1,53 @@
+name: Build and Test
+
+# Runs the full unit-test suite AND the end-to-end Generate Squares regression
+# gate on every push and pull request, so a numeric regression cannot land
+# unnoticed. The gate's reference data is committed, so it really runs here
+# (it is not skipped).
+#
+# Scope is deliberately `mvn test`, not `verify`/`install`: the packaging phases
+# build macOS .app bundles, Windows .exe wrappers and installer fat JARs, and
+# deploy the Fiji plugin to /Applications — none of which is meaningful on a CI
+# runner, and none of which affects whether the code is correct.
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Unit tests + regression gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # The parent POM enforces requireJavaVersion [1.8,1.9), and the whole
+      # project is a Java 8 baseline (Fiji), so build on 8 — same as the
+      # existing site workflow.
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 8
+          cache: maven
+
+      - name: Run tests
+        # Headless is explicit: paint-shared-utils still carries Swing (finding
+        # A1), so any accidental UI call from library code must fail loudly here
+        # rather than hang.
+        run: mvn -B -U -Djava.awt.headless=true test
+
+      # Surefire reports make a red build diagnosable without re-running locally.
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: '**/target/surefire-reports/**'
+          if-no-files-found: ignore
+          retention-days: 14

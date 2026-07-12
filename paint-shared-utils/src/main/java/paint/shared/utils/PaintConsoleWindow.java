@@ -73,9 +73,25 @@ public final class PaintConsoleWindow {
     // ───────────────────────────────────────────────────────────────────────────────
 
     /**
-     * Logs a message with a specified color.
+     * True when there is no display available — a headless pipeline run, a CI runner,
+     * or a server. Constructing any Swing component in that situation throws
+     * {@link HeadlessException}.
+     * <p>
+     * This console is a GUI convenience only: {@link PaintLogger} independently writes
+     * every line to the log file and the standard streams. So when headless we simply
+     * do nothing, and no output is lost.
+     */
+    private static boolean noDisplay() {
+        return GraphicsEnvironment.isHeadless();
+    }
+
+    /**
+     * Logs a message with a specified color. No-op when there is no display.
      */
     public static synchronized void log(String message, Color color) {
+        if (noDisplay()) {
+            return;
+        }
         ensureConsoleCreated();
         SwingUtilities.invokeLater(() -> appendText(message + "\n", color));
     }
@@ -88,9 +104,12 @@ public final class PaintConsoleWindow {
     }
 
     /**
-     * Prints a message with the specified color without newline.
+     * Prints a message with the specified color without newline. No-op when there is no display.
      */
     public static synchronized void print(String message, Color color) {
+        if (noDisplay()) {
+            return;
+        }
         ensureConsoleCreated();
         SwingUtilities.invokeLater(() -> appendText(message, color));
     }
@@ -162,8 +181,12 @@ public final class PaintConsoleWindow {
 
     /**
      * Creates or updates the console window for a specific creator name.
+     * No-op when there is no display.
      */
     public static synchronized void createConsoleFor(String creatorName) {
+        if (noDisplay()) {
+            return;
+        }
         if (frame == null) {
             createConsole("Paint Console – " + (creatorName != null ? creatorName : "Unknown"));
         } else {
