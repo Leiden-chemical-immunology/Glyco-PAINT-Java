@@ -144,18 +144,7 @@ public final class PaintConsoleWindow {
      * into a window that no longer exists.
      */
     public static synchronized void close() {
-        PaintLogger.clearSink();
-        if (frame != null) {
-            SwingUtilities.invokeLater(() -> {
-                frame.dispose();
-                frame = null;
-                textPane = null;
-                doc = null;
-                scrollLock = null;
-                problemPositions.clear();
-                currentProblemIndex = -1;
-            });
-        }
+        disposeConsole();
     }
 
     /**
@@ -171,21 +160,39 @@ public final class PaintConsoleWindow {
     }
 
     /**
-     * Closes the console window if currently visible.
+     * Closes the console window if it is currently on screen.
      */
-    public static void closeIfVisible() {
+    public static synchronized void closeIfVisible() {
         if (frame != null && frame.isDisplayable()) {
-            SwingUtilities.invokeLater(() -> {
-                frame.setVisible(false);
-                frame.dispose();
-                frame = null;
-                textPane = null;
-                doc = null;
-                scrollLock = null;
-                problemPositions.clear();
-                currentProblemIndex = -1;
-            });
+            disposeConsole();
         }
+    }
+
+    /**
+     * Detaches this console from {@link PaintLogger} and disposes the window.
+     * <p>
+     * Both {@link #close()} and {@link #closeIfVisible()} route through here. They used to carry
+     * their own copy of this teardown, and the copies drifted: {@code closeIfVisible()} disposed
+     * the frame without clearing the sink, so the logger kept feeding a window that no longer
+     * existed — and the next log line simply popped a fresh one. Clearing the sink must happen
+     * whenever the window goes away, so it happens in exactly one place.
+     */
+    private static void disposeConsole() {
+        PaintLogger.clearSink();
+
+        if (frame == null) {
+            return;
+        }
+        SwingUtilities.invokeLater(() -> {
+            frame.setVisible(false);
+            frame.dispose();
+            frame = null;
+            textPane = null;
+            doc = null;
+            scrollLock = null;
+            problemPositions.clear();
+            currentProblemIndex = -1;
+        });
     }
 
     // ───────────────────────────────────────────────────────────────────────────────
