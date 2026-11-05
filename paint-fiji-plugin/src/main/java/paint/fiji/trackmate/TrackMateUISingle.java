@@ -104,6 +104,7 @@ public class TrackMateUISingle implements Command {
         LocalDateTime  now           = LocalDateTime.now();
         String         formattedTime = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         PaintLogger.infof("Current time: %s", formattedTime);
+        PaintLogger.infof("New single version 5 November");
         PaintLogger.blankline();
 
         // ---------------------------------------------------------------------

@@ -102,6 +102,7 @@ public class TrackMateUIBatch extends RunTrackMateOnProjectSweep implements Comm
         LocalDateTime  now           = LocalDateTime.now();
         String         formattedTime = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         PaintLogger.infof("Current time: %s", formattedTime);
+        PaintLogger.infof("New batch version 5 November");
         PaintLogger.blankline();
 
         // ---------------------------------------------------------------------
