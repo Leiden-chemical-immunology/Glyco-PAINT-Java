@@ -1,7 +1,7 @@
 # Change Note: TrackMate determinism, and running spot detection only once
 
 Date: 2026-11-05
-Status: **test completed; decisions on implementation pending (section 7).**
+Status: **implemented** (commits `d695a52b`, `d983744e`, `bf74de93`; see section 7).
 Test data: experiment `221012`, recording `221012-Exp-1-A1-1` (Paint Test Project),
 406 703 spots, about 14 850 filtered tracks.
 
@@ -50,8 +50,8 @@ the same arguments and the same return behaviour.
 
 ## 3. How the test was done
 
-A temporary class, `ProcessComparison`, runs two extra TrackMate runs per recording, each on
-a fresh `Model` with `settings.copyOn(imp)`:
+A temporary class, `ProcessComparison`, ran two extra TrackMate runs per recording, each on
+a fresh `Model` with `settings.copyOn(imp)`. It was removed once the test was complete.
 
 - **Control**: the old method again (`process()`). This measures how much two runs of the
   *same* method differ.
@@ -114,12 +114,14 @@ or nearly so, the result can depend on which thread finishes first. That changes
 end up in which track. Once one link differs, the tracks around it differ too, which explains
 whole tracks splitting or merging.
 
-The plugin already tries to force determinism:
+The plugin already tried to force determinism with:
 
 ```java
 System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "1");
 System.setProperty("trackmate.deterministic", "true");
 ```
+
+These two lines are now commented out (section 7).
 
 The first property only affects Java's shared thread pool, which TrackMate does not use for
 this. Whether TrackMate reads the second at all has not been verified. The test shows that
@@ -160,24 +162,44 @@ a rounding boundary, which is practically never.
    the old method itself.
 4. **The gate stays.** `execDetection()` and the spot-count check are unchanged.
 
+**What this means in the default, multithreaded mode.** With several threads the results cannot
+be shown equal, because the old method does not even reproduce itself (section 4.1). What the
+test does show is that the new method varies from the old one no more than the old method varies
+from itself: about 6 700 differing tracks in both cases, and track counts within one or two of
+each other. So in normal multithreaded runs the replacement introduces no additional variation.
+The variation itself comes from the threading, not from the method.
+
+**Scope of the test.** The measurements were made on one recording, `221012-Exp-1-A1-1`
+(406 703 spots, about 14 850 tracks). The argument does not depend on the recording: points 1
+and 2 hold for any input, and point 3 confirms them on a large real recording.
+
 **Benefit:** spot detection is done once per recording instead of twice.
 
 **Caveat:** this has been verified for TrackMate 7.14.0. If TrackMate is upgraded, `process()`
 may change, and the list of steps must be checked again.
 
-## 7. Decisions (for Hans)
+## 7. What was decided and implemented
 
-1. **Implement the new method.** Replace `trackmate.process()` by the seven steps (a small
-   method `processAfterDetection` in `RunTrackMateOnRecording`). Delete `ProcessComparison.java`
-   and the three lines that call it.
-2. **Threading:** keep `trackmate.setNumThreads(1)` permanently, or remove it again?
-   - **Keep:** TrackMate results are reproducible, the same data giving the same tracks and Tau.
-     But linking is slower. In the test, one recording took about 34 s for three runs with
-     default threading, and about 2 min 1 s single-threaded.
-   - **Remove:** faster, but every TrackMate run gives slightly different tracks, and therefore
-     slightly different Tau values.
-   - If kept, the two `System.setProperty` lines in 5.1 have no demonstrated effect and could be
-     removed or documented.
-3. **Consequences of keeping it:** results produced earlier, with default threading, cannot be
-   reproduced exactly. The regression references for the TrackMate stage should be regenerated
-   single-threaded.
+1. **New method implemented** (commit `d983744e`). `trackmate.process()` is replaced by
+   `processAfterDetection(trackmate)` in `RunTrackMateOnRecording`, which runs the seven steps
+   after detection. Spot detection now runs once per recording. `ProcessComparison` has been
+   removed.
+2. **Threading is a setting** (commit `d695a52b`): `Deterministic Tracking` in the `"TrackMate"`
+   section of `Paint Configuration.json`.
+   - `false`, or key absent (the default): multithreaded. Fast, but tracks vary slightly from
+     run to run.
+   - `true`: `trackmate.setNumThreads(1)`. Reproducible, but linking is slower. In the test, one
+     recording took about 34 s for three runs with default threading, and about 2 min 1 s
+     single-threaded.
+   - The setting is read in `TrackMateConfig` (`isDeterministicTracking()`) and included in the
+     configuration dump.
+3. **The two `System.setProperty` lines** from 5.1 are commented out, with a note that they had
+   no effect on linking (commit `d695a52b`). The locale lines above them stay.
+4. **The mode is logged** (commit `bf74de93`). The track detection line shows it, for example
+   `(14851 tracks detected, multithreaded)` or `(14851 tracks detected, deterministic)`.
+
+### Still open
+
+- Results produced earlier, with default threading, cannot be reproduced exactly.
+- The regression references for the TrackMate stage should be regenerated with
+  `Deterministic Tracking` set to `true`.
