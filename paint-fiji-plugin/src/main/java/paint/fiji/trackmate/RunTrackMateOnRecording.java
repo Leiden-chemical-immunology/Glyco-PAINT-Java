@@ -189,12 +189,15 @@ public class RunTrackMateOnRecording {
             settings.trackerSettings.put("ALLOW_TRACK_MERGING",             trackMateConfig.isAllowTrackMerging());
             settings.trackerSettings.put("MERGING_MAX_DISTANCE",            trackMateConfig.getMergingMaxDistance());
 
-            // Deterministic execution
+            // Locale for consistent number formatting
             Locale.setDefault(Locale.US);
             System.setProperty("user.language", "en");
             System.setProperty("user.country", "US");
-            System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "1");
-            System.setProperty("trackmate.deterministic", "true");
+            // These two had no effect on TrackMate's linking (tested 2026-11-05, see
+            // doc/Change Note - TrackMate Determinism and Single Detection.md).
+            // Reproducible linking is controlled by the 'Deterministic Tracking' setting.
+            // System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "1");
+            // System.setProperty("trackmate.deterministic", "true");
 
             settings.addSpotFilter(new FeatureFilter("QUALITY", 0, true));
             settings.addAllAnalyzers();
@@ -211,6 +214,11 @@ public class RunTrackMateOnRecording {
             }
 
             TrackMate trackmate = new TrackMate(model, settings);
+            // Multithreaded linking is fast but not reproducible; a single thread is
+            // reproducible but slow. See TrackMateConfig.isDeterministicTracking().
+            if (trackMateConfig.isDeterministicTracking()) {
+                trackmate.setNumThreads(1);
+            }
             if (!trackmate.checkInput()) {
                 if (!isCancelled(Thread.currentThread(), dialog)) {
                     PaintLogger.errorf("TrackMate input check failed: %s", trackmate.getErrorMessage());

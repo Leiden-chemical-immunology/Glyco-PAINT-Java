@@ -61,6 +61,7 @@ public class TrackMateConfig {
     private final boolean allowTrackMerging;
     private final double  mergingMaxDistance;
     private final boolean runGenerateSquaresAfter;
+    private final boolean deterministicTracking;
 
     /**
      * Constructs a configuration object for TrackMate using the parameters provided
@@ -88,6 +89,7 @@ public class TrackMateConfig {
         this.allowTrackMerging            = PaintConfig.getBoolean( TRACKMATE, ALLOW_TRACK_MERGING,            false);
         this.mergingMaxDistance           = PaintConfig.getDouble(  TRACKMATE, MERGING_MAX_DISTANCE,           15.0);
         this.runGenerateSquaresAfter      = PaintConfig.getBoolean( TRACKMATE, RUN_GENERATE_SQUARES_AFTER,     false);
+        this.deterministicTracking        = PaintConfig.getBoolean( TRACKMATE, DETERMINISTIC_TRACKING,         false);
     }
 
 
@@ -219,6 +221,20 @@ public class TrackMateConfig {
         return runGenerateSquaresAfter;
     }
 
+    /**
+     * Whether TrackMate links spots on a single thread.
+     * <p>
+     * With several threads (the default), TrackMate's linking is not reproducible: the same
+     * recording with the same settings can give slightly different tracks from run to run.
+     * On a single thread the result is reproducible, but linking is considerably slower.
+     * See {@code doc/Change Note - TrackMate Determinism and Single Detection.md}.
+     *
+     * @return {@code true} to link on a single thread (default {@code false}, all threads)
+     */
+    public boolean isDeterministicTracking() {
+        return deterministicTracking;
+    }
+
     @Override
     public String toString() {
 
@@ -240,6 +256,7 @@ public class TrackMateConfig {
                 "                  Allow Track Splitting           = "  + allowTrackSplitting + "\n" +
                 "                  Allow Track Merging             = "  + allowTrackMerging + "\n" +
                 "                  Merging Max Distance            = "  + mergingMaxDistance + "\n" +
-                "                  Run Generate Squares After      = "  + runGenerateSquaresAfter + "\n";
+                "                  Run Generate Squares After      = "  + runGenerateSquaresAfter + "\n" +
+                "                  Deterministic Tracking          = "  + deterministicTracking + "\n";
     }
 }

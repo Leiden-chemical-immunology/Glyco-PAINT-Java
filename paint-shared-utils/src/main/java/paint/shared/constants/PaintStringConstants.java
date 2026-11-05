@@ -36,6 +36,7 @@ public final class PaintStringConstants {
     public static final String DENSITY                                     = "Density";
     public static final String DENSITY_RATIO                               = "Density Ratio";
     public static final String DENSITY_RATIO_ORI                           = "Density Ratio Ori";
+    public static final String DETERMINISTIC_TRACKING                      = "Deterministic Tracking";
     public static final String DIFFUSION_COEFFICIENT                       = "Diffusion Coefficient";
     public static final String DIFFUSION_COEFFICIENT_EXT                   = "Diffusion Coefficient Ext";
     public static final String DO_MEDIAN_FILTERING                         = "DO_MEDIAN_FILTERING";
