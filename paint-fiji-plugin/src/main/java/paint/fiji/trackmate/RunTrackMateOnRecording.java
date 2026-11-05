@@ -37,6 +37,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.BooleanSupplier;
 
 /**
  * Provides functionality to run TrackMate analysis for a single microscopy
@@ -274,7 +275,7 @@ public class RunTrackMateOnRecording {
             // ---- Track detection ----
             PaintLogger.raw("\n                       TrackMate - track detection: ");
             try {
-                if (!trackmate.process()) {
+                if (!processAfterDetection(trackmate)) {
 
                     if (Thread.currentThread().isInterrupted() || isCancelled(Thread.currentThread(), dialog)) {
                         Thread.currentThread().interrupt();
@@ -391,6 +392,44 @@ public class RunTrackMateOnRecording {
     // -------------------------------------------------------------------------
     // Utility methods
     // -------------------------------------------------------------------------
+
+    /**
+     * Runs the TrackMate steps that follow spot detection.
+     * <p>
+     * This is {@link TrackMate#process()} without its first step, {@code execDetection()}.
+     * Detection is run separately beforehand, so that the spot count can be checked against
+     * {@code Max Number of Spots in Image} before the expensive tracking starts. Calling
+     * {@code process()} would run detection a second time.
+     * <p>
+     * Same steps, arguments and return behaviour as {@code process()} in TrackMate 7.14.0:
+     * {@code false} as soon as a step fails, {@code true} when cancelled between steps.
+     * Verified to give the same results as {@code process()}; see
+     * {@code doc/Change Note - TrackMate Determinism and Single Detection.md}.
+     * Check this list again when TrackMate is upgraded.
+     *
+     * @param trackmate the TrackMate instance on which {@code execDetection()} has succeeded
+     * @return {@code false} if a step failed, {@code true} otherwise
+     */
+    private static boolean processAfterDetection(TrackMate trackmate) {
+        List<BooleanSupplier> steps = Arrays.asList(
+                trackmate::execInitialSpotFiltering,
+                () -> trackmate.computeSpotFeatures(true),
+                () -> trackmate.execSpotFiltering(true),
+                trackmate::execTracking,
+                () -> trackmate.computeEdgeFeatures(true),
+                () -> trackmate.computeTrackFeatures(true),
+                () -> trackmate.execTrackFiltering(true)
+        );
+        for (BooleanSupplier step : steps) {
+            if (!step.getAsBoolean()) {
+                return false;
+            }
+            if (trackmate.isCanceled()) {
+                return true;
+            }
+        }
+        return true;
+    }
 
     /**
      * Checks for thread interruption or user cancellation.
