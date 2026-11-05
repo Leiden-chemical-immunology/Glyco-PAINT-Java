@@ -106,6 +106,12 @@
                     <compilerArgs>
                         <arg>-Xlint:-options</arg>
                     </compilerArgs>
+                    <!-- Generates META-INF/json/org.scijava.plugin.Plugin, the index Fiji uses to
+                         find the @Plugin commands. Named explicitly because javac (JDK 23+) no
+                         longer runs processors found on the classpath. -->
+                    <annotationProcessors>
+                        <annotationProcessor>org.scijava.annotations.AnnotationProcessor</annotationProcessor>
+                    </annotationProcessors>
                 </configuration>
             </plugin>
 
