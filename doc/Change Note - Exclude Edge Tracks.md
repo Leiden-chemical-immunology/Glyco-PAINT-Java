@@ -1,6 +1,6 @@
 # Change Note: Exclude tracks that touch the first or last frame
 
-Status: **proposal, for discussion; nothing has been built.**
+Status: **implemented: option A, variant A2** (see section 6).
 Date: 2026-11-04
 
 ## 1. Why
@@ -180,7 +180,7 @@ columns. For old files the frame values are left empty.
 
 ---
 
-## 4. Open points (for Hans to decide)
+## 4. Open points at the time of the proposal
 
 1. **Option A or B.**
 2. **If A: variant A1** (TrackMate filters on `TRACK_START` / `TRACK_STOP`) **or A2**
@@ -196,3 +196,27 @@ columns. For old files the frame values are left empty.
 - `RECORDING_DURATION` (used for density) is a fixed 2000 × 0.05 s, not the recording's actual
   `Number of Frames`. That is a separate issue.
 - User Manual / help text: updated only after the code change has been reviewed.
+
+## 6. What was decided and implemented
+
+1. **Option A, variant A2.** The Fiji plugin does not write edge tracks. They are detected by an
+   explicit frame check after tracking: `excludeEdgeTracks(model, settings.tstart,
+   settings.tend)` in `RunTrackMateOnRecording`. It hides, with `model.setTrackVisibility`,
+   every filtered track that has a spot in the first or the last analysed frame (0-based, the
+   range TrackMate itself analysed). It runs directly after tracking and before the track
+   count, so the overlay image, the "tracks detected" count and `Tracks.csv` all skip edge
+   tracks. The `Tracks.csv` format and everything downstream are unchanged.
+2. **Setting:** `Exclude Edge Tracks` in the `"TrackMate"` section of `Paint Configuration.json`.
+   The default is `true`, also when the key is absent, so edge tracks are excluded. `false`
+   keeps them. It is read in `TrackMateConfig` (`isExcludeEdgeTracks()`) and included in the
+   configuration dump.
+3. **Logging per recording**, on the track detection line, for example
+   `(14812 tracks detected, 39 edge tracks dismissed, multithreaded)`, or `edge tracks kept`
+   when the setting is off.
+4. **Unit test:** `ExcludeEdgeTracksTest` in `paint-fiji-plugin` (the module's first test; JUnit
+   added as a test dependency). It builds a small TrackMate model by hand and checks that tracks
+   touching the first or last frame are hidden, that tracks in between stay, and that tracks
+   already hidden by TrackMate's filters are not counted.
+
+Existing experiments get the correction only after TrackMate has been run on them again.
+

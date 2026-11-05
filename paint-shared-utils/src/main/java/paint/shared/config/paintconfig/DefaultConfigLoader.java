@@ -70,6 +70,7 @@ class DefaultConfigLoader {
         trackMate.addProperty(MERGING_MAX_DISTANCE,     15.0);
         trackMate.addProperty(RUN_GENERATE_SQUARES_AFTER, false);
         trackMate.addProperty(DETERMINISTIC_TRACKING,   false);
+        trackMate.addProperty(EXCLUDE_EDGE_TRACKS,      true);
         root.add(TRACKMATE, trackMate);
 
         return root;

@@ -42,6 +42,7 @@ public final class PaintStringConstants {
     public static final String DO_MEDIAN_FILTERING                         = "DO_MEDIAN_FILTERING";
     public static final String DO_SUBPIXEL_LOCALIZATION                    = "DO_SUBPIXEL_LOCALIZATION";
     public static final String EXCLUDE                                     = "Exclude";
+    public static final String EXCLUDE_EDGE_TRACKS                         = "Exclude Edge Tracks";
     public static final String EXPERIMENT_NAME                             = "Experiment Name";
     public static final String GAP_CLOSING_MAX_DISTANCE                    = "GAP_CLOSING_MAX_DISTANCE";
     public static final String GENERATE_SQUARES                            = "Generate Squares";

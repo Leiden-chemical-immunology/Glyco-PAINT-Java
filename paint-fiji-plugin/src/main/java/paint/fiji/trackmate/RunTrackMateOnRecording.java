@@ -11,7 +11,9 @@ import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.Model;
 import fiji.plugin.trackmate.SelectionModel;
 import fiji.plugin.trackmate.Settings;
+import fiji.plugin.trackmate.Spot;
 import fiji.plugin.trackmate.TrackMate;
+import fiji.plugin.trackmate.TrackModel;
 import fiji.plugin.trackmate.action.CaptureOverlayAction;
 import fiji.plugin.trackmate.detection.LogDetectorFactory;
 import fiji.plugin.trackmate.features.FeatureFilter;
@@ -34,6 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -299,9 +302,20 @@ public class RunTrackMateOnRecording {
                 return cancelEarly(imp, impBrightfield);
             }
 
+            // Edge tracks: present in the first or last analysed frame, so their real duration
+            // is unknown. Hidden tracks are skipped by the overlay, the count and the tracks CSV.
+            String edgeTracksString;
+            if (trackMateConfig.isExcludeEdgeTracks()) {
+                int numberOfEdgeTracks = excludeEdgeTracks(model, settings.tstart, settings.tend);
+                edgeTracksString = numberOfEdgeTracks + " edge tracks dismissed";
+            } else {
+                edgeTracksString = "edge tracks kept";
+            }
+
             int numberOfFilteredTracks = model.getTrackModel().nTracks(true);
             String linkingMode          = trackMateConfig.isDeterministicTracking() ? "deterministic" : "multithreaded";
-            String numberOfTracksString = " (" + numberOfFilteredTracks + " tracks detected, " + linkingMode + ") ";
+            String numberOfTracksString = " (" + numberOfFilteredTracks + " tracks detected, "
+                    + edgeTracksString + ", " + linkingMode + ") ";
             PaintLogger.raw(numberOfTracksString);
 
             // -----------------------------------------------------------------
@@ -430,6 +444,47 @@ public class RunTrackMateOnRecording {
             }
         }
         return true;
+    }
+
+    /**
+     * Hides the tracks that are present in the first or the last analysed frame.
+     * <p>
+     * The real duration of such a track is unknown: it may have started before the recording
+     * began, or continued after it ended. Only tracks that are visible, i.e. that passed
+     * TrackMate's track filters, are considered. Hidden tracks are skipped by the overlay,
+     * by {@code nTracks(true)} and by the tracks CSV ({@code visibleOnly = true}).
+     *
+     * @param model      the TrackMate model after tracking
+     * @param firstFrame the first analysed frame, 0-based ({@code settings.tstart})
+     * @param lastFrame  the last analysed frame, 0-based ({@code settings.tend})
+     * @return the number of tracks hidden
+     */
+    static int excludeEdgeTracks(Model model, int firstFrame, int lastFrame) {
+        TrackModel    trackModel = model.getTrackModel();
+        List<Integer> edgeTracks = new ArrayList<>();
+
+        for (Integer trackId : trackModel.trackIDs(true)) {
+            int start = Integer.MAX_VALUE;
+            int end   = Integer.MIN_VALUE;
+            for (Spot spot : trackModel.trackSpots(trackId)) {
+                int frame = (int) Math.round(spot.getFeature(Spot.FRAME));
+                start = Math.min(start, frame);
+                end   = Math.max(end, frame);
+            }
+            if (start <= firstFrame || end >= lastFrame) {
+                edgeTracks.add(trackId);
+            }
+        }
+
+        model.beginUpdate();
+        try {
+            for (Integer trackId : edgeTracks) {
+                model.setTrackVisibility(trackId, false);
+            }
+        } finally {
+            model.endUpdate();
+        }
+        return edgeTracks.size();
     }
 
     /**

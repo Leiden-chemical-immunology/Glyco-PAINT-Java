@@ -42,6 +42,13 @@
             <artifactId>paint-shared-utils</artifactId>
         </dependency>
 
+        <!-- Unit testing (JUnit 5; version managed by parent POM) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Shared Swing UI (console window, project dialog). This module shows a user
              interface, so it depends on the UI layer; headless consumers must not. -->
         <dependency>

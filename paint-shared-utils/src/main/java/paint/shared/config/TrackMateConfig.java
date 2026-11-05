@@ -62,6 +62,7 @@ public class TrackMateConfig {
     private final double  mergingMaxDistance;
     private final boolean runGenerateSquaresAfter;
     private final boolean deterministicTracking;
+    private final boolean excludeEdgeTracks;
 
     /**
      * Constructs a configuration object for TrackMate using the parameters provided
@@ -90,6 +91,7 @@ public class TrackMateConfig {
         this.mergingMaxDistance           = PaintConfig.getDouble(  TRACKMATE, MERGING_MAX_DISTANCE,           15.0);
         this.runGenerateSquaresAfter      = PaintConfig.getBoolean( TRACKMATE, RUN_GENERATE_SQUARES_AFTER,     false);
         this.deterministicTracking        = PaintConfig.getBoolean( TRACKMATE, DETERMINISTIC_TRACKING,         false);
+        this.excludeEdgeTracks            = PaintConfig.getBoolean( TRACKMATE, EXCLUDE_EDGE_TRACKS,            true);
     }
 
 
@@ -235,6 +237,21 @@ public class TrackMateConfig {
         return deterministicTracking;
     }
 
+    /**
+     * Whether tracks present in the first or the last analysed frame are excluded.
+     * <p>
+     * For such a track the real duration is unknown: it may have started before the
+     * recording began, or continued after it ended. Its measured duration is only a lower
+     * bound, which would bias durations, and therefore Tau, towards shorter values.
+     * Excluded tracks are not written to the tracks file and are not counted or drawn.
+     * See {@code doc/Change Note - Exclude Edge Tracks.md}.
+     *
+     * @return {@code true} to exclude edge tracks (default {@code true}, also when the key is absent)
+     */
+    public boolean isExcludeEdgeTracks() {
+        return excludeEdgeTracks;
+    }
+
     @Override
     public String toString() {
 
@@ -257,6 +274,7 @@ public class TrackMateConfig {
                 "                  Allow Track Merging             = "  + allowTrackMerging + "\n" +
                 "                  Merging Max Distance            = "  + mergingMaxDistance + "\n" +
                 "                  Run Generate Squares After      = "  + runGenerateSquaresAfter + "\n" +
-                "                  Deterministic Tracking          = "  + deterministicTracking + "\n";
+                "                  Deterministic Tracking          = "  + deterministicTracking + "\n" +
+                "                  Exclude Edge Tracks             = "  + excludeEdgeTracks + "\n";
     }
 }
