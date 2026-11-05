@@ -300,7 +300,8 @@ public class RunTrackMateOnRecording {
             }
 
             int numberOfFilteredTracks = model.getTrackModel().nTracks(true);
-            String numberOfTracksString = " (" + numberOfFilteredTracks + " tracks detected) ";
+            String linkingMode          = trackMateConfig.isDeterministicTracking() ? "deterministic" : "multithreaded";
+            String numberOfTracksString = " (" + numberOfFilteredTracks + " tracks detected, " + linkingMode + ") ";
             PaintLogger.raw(numberOfTracksString);
 
             // -----------------------------------------------------------------
