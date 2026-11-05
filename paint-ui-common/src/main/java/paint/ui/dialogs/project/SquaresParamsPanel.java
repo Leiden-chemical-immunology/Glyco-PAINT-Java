@@ -46,6 +46,9 @@ public class SquaresParamsPanel {
     private final Color             normalLabelColor;
     private final Color             disabledLabelColor = Color.GRAY;
 
+    // Whether the Generate Squares fields as a whole are enabled (TRACKMATE mode checkbox, dialog state).
+    private boolean                 squaresEnabled = true;
+
     // Callback triggered whenever any user-editable parameter changes.
     private Runnable onChange = () -> {
     };
@@ -93,7 +96,7 @@ public class SquaresParamsPanel {
         pg.gridy = row;
         gridSizeLabel = label(panel, NUMBER_OF_SQUARES_IN_RECORDING, labelSize, pg);
         pg.gridx = 1;
-        gridSizeCombo = new JComboBox<>(new String[]{"5x5", "10x10", "15x15", "20x20", "25x25", "30x30", "35x35", "40x40"});
+        gridSizeCombo = new JComboBox<>(new String[]{"1x1", "5x5", "10x10", "15x15", "20x20", "25x25", "30x30", "35x35", "40x40"});
         int n = (int) Math.sqrt(nrSquares);
         gridSizeCombo.setSelectedItem(n + "x" + n);
         panel.add(gridSizeCombo, pg);
@@ -128,15 +131,14 @@ public class SquaresParamsPanel {
         normalLabelColor = gridSizeLabel.getForeground();
 
         // Change listeners for all controls (REPLACED WITH METHOD REFERENCES)
+        gridSizeCombo.addActionListener(e -> setSquaresEnabled(squaresEnabled));
         gridSizeCombo.addActionListener(this::handleChange);
         minRSqField.getDocument().addDocumentListener((SimpleDocumentListener) this::handleChange);
         minDensityField.getDocument().addDocumentListener((SimpleDocumentListener) this::handleChange);
         maxVariabilityField.getDocument().addDocumentListener((SimpleDocumentListener) this::handleChange);
 
-        // Initial enable state for controls in TRACKMATE mode
-        if (mode == DialogMode.TRACKMATE_BATCH) {
-            setSquaresEnabled(runAfterTrackMate.isSelected());
-        }
+        // Initial enable state: TRACKMATE mode checkbox, and the 1x1 grid
+        setSquaresEnabled(mode != DialogMode.TRACKMATE_BATCH || runAfterTrackMate.isSelected());
     }
 
     /**
@@ -168,11 +170,6 @@ public class SquaresParamsPanel {
         boolean squaresEnabled = enabled && (runAfterTrackMate == null || runAfterTrackMate.isSelected());
 
         setSquaresEnabled(squaresEnabled);
-
-        gridSizeLabel.setForeground(squaresEnabled ? normalLabelColor : disabledLabelColor);
-        minRSqLabel.setForeground(squaresEnabled ? normalLabelColor : disabledLabelColor);
-        minDensityLabel.setForeground(squaresEnabled ? normalLabelColor : disabledLabelColor);
-        maxVariabilityLabel.setForeground(squaresEnabled ? normalLabelColor : disabledLabelColor);
     }
 
     /**
@@ -226,17 +223,22 @@ public class SquaresParamsPanel {
 
     /**
      * Enables or disables all the Generate Squares fields (grid size, R², density, variability).
+     * With a 1x1 grid, density ratio and variability stay disabled: Generate Squares then uses
+     * fixed values for them (see {@code GenerateSquaresConfig.isWholeScreen()}).
      */
     public void setSquaresEnabled(boolean enabled) {
+        this.squaresEnabled = enabled;
+        boolean selectionCriteriaEnabled = enabled && !"1x1".equals(gridSizeCombo.getSelectedItem());
+
         gridSizeCombo.setEnabled(enabled);
         minRSqField.setEnabled(enabled);
-        minDensityField.setEnabled(enabled);
-        maxVariabilityField.setEnabled(enabled);
+        minDensityField.setEnabled(selectionCriteriaEnabled);
+        maxVariabilityField.setEnabled(selectionCriteriaEnabled);
 
         gridSizeLabel.setForeground(enabled ? normalLabelColor : disabledLabelColor);
         minRSqLabel.setForeground(enabled ? normalLabelColor : disabledLabelColor);
-        minDensityLabel.setForeground(enabled ? normalLabelColor : disabledLabelColor);
-        maxVariabilityLabel.setForeground(enabled ? normalLabelColor : disabledLabelColor);
+        minDensityLabel.setForeground(selectionCriteriaEnabled ? normalLabelColor : disabledLabelColor);
+        maxVariabilityLabel.setForeground(selectionCriteriaEnabled ? normalLabelColor : disabledLabelColor);
     }
 
     /**

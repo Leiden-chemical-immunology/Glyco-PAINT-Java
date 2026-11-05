@@ -50,13 +50,59 @@ public class GenerateSquaresConfig {
         this.minTracksToCalculate        = PaintConfig.getInt(    GENERATE_SQUARES, MIN_TRACKS_TO_CALCULATE,         5);
         this.minTracksToCalculateTau     = PaintConfig.getInt(    GENERATE_SQUARES, MIN_TRACKS_TO_CALCULATE_TAU,     20);
         this.minRequiredRSquared         = PaintConfig.getDouble( GENERATE_SQUARES, MIN_REQUIRED_R_SQUARED,          0.1);
-        this.minRequiredDensityRatio     = PaintConfig.getDouble( GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,      2.0);
-        this.maxAllowableVariability     = PaintConfig.getDouble( GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY,       10.0);
-        this.neighbourMode               = PaintConfig.getString( GENERATE_SQUARES, NEIGHBOUR_MODE,                  "Free");
         this.tauFittingPlots             = PaintConfig.getBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS,               false);
         this.backgroundPlots             = PaintConfig.getBoolean(GENERATE_SQUARES, BACKGROUND_PLOTS,                false);
 
         this.gridSize = gridSizeFor(this.numberOfSquaresInRecording);
+
+        if (isWholeScreen()) {
+            // One square covering the whole image. The selection criteria that compare a square
+            // with the rest of the image cannot apply, so they are fixed rather than read.
+            this.minRequiredDensityRatio = WHOLE_SCREEN_MIN_REQUIRED_DENSITY_RATIO;
+            this.maxAllowableVariability = WHOLE_SCREEN_MAX_ALLOWABLE_VARIABILITY;
+            this.neighbourMode           = WHOLE_SCREEN_NEIGHBOUR_MODE;
+        } else {
+            this.minRequiredDensityRatio = PaintConfig.getDouble( GENERATE_SQUARES, MIN_REQUIRED_DENSITY_RATIO,      2.0);
+            this.maxAllowableVariability = PaintConfig.getDouble( GENERATE_SQUARES, MAX_ALLOWABLE_VARIABILITY,       10.0);
+            this.neighbourMode           = PaintConfig.getString( GENERATE_SQUARES, NEIGHBOUR_MODE,                  "Free");
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Whole screen (1x1 grid)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Density ratio threshold for a 1x1 grid. With one square, the background is that square
+     * itself, so its density ratio is always 1 and would never pass the normal threshold.
+     */
+    public static final double WHOLE_SCREEN_MIN_REQUIRED_DENSITY_RATIO = 0.0;
+
+    /**
+     * Variability limit for a 1x1 grid: effectively none. Variability is then measured over the
+     * whole image, empty areas included, and is not comparable with that of a normal square.
+     * <p>
+     * A large finite value rather than infinity: the value is stamped into Recordings.csv, and
+     * the CSV writer formats infinity as "∞", which the reader cannot parse back.
+     */
+    public static final double WHOLE_SCREEN_MAX_ALLOWABLE_VARIABILITY = 1.0E9;
+
+    /**
+     * Neighbour mode for a 1x1 grid. Strict and Relaxed require a selected neighbouring square,
+     * which a single square does not have.
+     */
+    public static final String WHOLE_SCREEN_NEIGHBOUR_MODE = "Free";
+
+    /**
+     * Whether the grid is 1x1: one square covering the whole image, giving a Tau over all tracks.
+     * In that case {@code Min Required Density Ratio}, {@code Max Allowable Variability} and
+     * {@code Neighbour Mode} are not read from the configuration but fixed to the
+     * {@code WHOLE_SCREEN_*} values.
+     *
+     * @return {@code true} for a 1x1 grid
+     */
+    public boolean isWholeScreen() {
+        return gridSize == 1;
     }
 
     /**

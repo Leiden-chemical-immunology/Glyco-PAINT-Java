@@ -84,6 +84,15 @@ public class GenerateSquaresHeadless {
         GenerateSquaresConfig generateSquaresConfig = new GenerateSquaresConfig();  // Reads the config via PaintConfig
         project.setGenerateSquaresConfig(generateSquaresConfig);
 
+        if (generateSquaresConfig.isWholeScreen()) {
+            PaintLogger.warnf("Grid is 1x1 (whole screen): Min Required Density Ratio set to %s, "
+                                      + "Neighbour Mode to %s and Max Allowable Variability to %.0f (no limit); "
+                                      + "the values in the configuration file are ignored.",
+                              GenerateSquaresConfig.WHOLE_SCREEN_MIN_REQUIRED_DENSITY_RATIO,
+                              GenerateSquaresConfig.WHOLE_SCREEN_NEIGHBOUR_MODE,
+                              GenerateSquaresConfig.WHOLE_SCREEN_MAX_ALLOWABLE_VARIABILITY);
+        }
+
         // -- See if we should generate background plots ---
         boolean showPlots = generateSquaresConfig.isBackgroundPlots();
 
