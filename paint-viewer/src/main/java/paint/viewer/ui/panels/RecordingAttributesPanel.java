@@ -80,6 +80,7 @@ public class RecordingAttributesPanel {
         model.addRow(new Object[]{"Concentration",     recordingEntry.getConcentration()});
         model.addRow(new Object[]{"Number of Spots",   recordingEntry.getNumberOfSpots()});
         model.addRow(new Object[]{"Number of Tracks",  recordingEntry.getNumberOfTracks()});
+        addWholeScreenTauRows(recordingEntry, numSquares);
         model.addRow(new Object[]{"Number of Squares", numSquares});
         model.addRow(new Object[]{"Threshold",         recordingEntry.getThreshold()});
         model.addRow(new Object[]{"Min Density Ratio", recordingEntry.getRecording().getMinRequiredDensityRatio()});
@@ -116,12 +117,30 @@ public class RecordingAttributesPanel {
         model.addRow(new Object[]{"Concentration",       recordingEntry.getConcentration()});
         model.addRow(new Object[]{"Number of Spots",     recordingEntry.getNumberOfSpots()});
         model.addRow(new Object[]{"Number of Tracks",    recordingEntry.getNumberOfTracks()});
+        addWholeScreenTauRows(recordingEntry, numSquares);
         model.addRow(new Object[]{"Number of Squares",   numSquares});
         model.addRow(new Object[]{"Threshold",           recordingEntry.getThreshold()});
         model.addRow(new Object[]{"Min Density Ratio",   format(minDensityRatio, 1)});
         model.addRow(new Object[]{"Max Variability",     format(maxVariability,  1)});
         model.addRow(new Object[]{"Min Required R²",     format(minRSquared,     2)});
         model.addRow(new Object[]{"Neighbour Mode",      neighbourMode});
+    }
+
+    /**
+     * With a 1x1 grid, adds the recording's Tau and R² as rows. The single square is then the
+     * whole recording, so this is the whole-screen Tau. The values are those stored in
+     * Recordings.csv by Generate Squares; nothing is recalculated and no tracks are needed.
+     *
+     * @param recordingEntry the current recording entry
+     * @param numSquares     number of squares per recording
+     */
+    private void addWholeScreenTauRows(RecordingEntry recordingEntry, int numSquares) {
+        if (numSquares != 1) {
+            return;
+        }
+        double tau = recordingEntry.getRecording().getTau();
+        model.addRow(new Object[]{"Tau",  Double.isNaN(tau) ? "NaN" : format(tau, 0) + " ms"});
+        model.addRow(new Object[]{"R²",   format(recordingEntry.getRecording().getRSquared(), 2)});
     }
 
     /**

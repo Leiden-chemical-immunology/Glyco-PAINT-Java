@@ -227,6 +227,12 @@ public class SquareGridPanel extends JPanel {
         }
         int    trackCount = square.getNumberOfTracks();
 
+        // With a 1x1 grid the single square is the whole recording, so its Tau is the
+        // whole-screen Tau. It is read from Squares.csv; no tracks are needed.
+        String tauRow = (rows == 1 && cols == 1)
+                ? String.format("<tr><td>Tau:</td><td align='right'>%.0f ms</td></tr>", square.getTau())
+                : "";
+
         String html = String.format(
                 "<html><body style='font-family:sans-serif;font-size:11px;'>"
                         + "<b>Square %d</b>"
@@ -234,6 +240,7 @@ public class SquareGridPanel extends JPanel {
                         + "<tr><td style='padding-right:8px;'>Density:</td><td align='right'>%.4f</td></tr>"
                         + "<tr><td style='padding-right:8px;'>Density Ratio:</td><td align='right'>%.1f</td></tr>"
                         + "<tr><td>Variability:</td><td align='right'>%.1f</td></tr>"
+                        + "%s"
                         + "<tr><td>R²:</td><td align='right'>%.2f</td></tr>"
                         + "<tr><td>Tracks:</td><td align='right'>%d</td></tr>"
                         + "</table>"
@@ -245,6 +252,7 @@ public class SquareGridPanel extends JPanel {
                 square.getDensity(),
                 square.getDensityRatio(),
                 square.getVariability(),
+                tauRow,
                 square.getRSquared(),
                 trackCount
         );
