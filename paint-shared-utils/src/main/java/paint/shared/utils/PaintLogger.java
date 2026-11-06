@@ -217,6 +217,7 @@ public final class PaintLogger {
             } while (logFile.toFile().exists());
 
             synchronized (WRITER_LOCK) {
+                closeWriter();      // a previous log file would otherwise stay open
                 writer = new BufferedWriter(new FileWriter(logFile.toFile(), true));
                 initialised = true;
             }
@@ -224,6 +225,32 @@ public final class PaintLogger {
         } catch (IOException e) {
             System.err.println("PaintLogger could not initialise: " + e.getMessage());
         }
+    }
+
+    /**
+     * Flushes and closes the current log file. Later messages still go to the console
+     * output, but not to a file, until {@link #initialise(Path, String)} is called again.
+     * <p>
+     * An open file cannot be deleted on Windows, so a log file must be closed before its
+     * folder can be removed (for example a test's temporary directory).
+     */
+    public static void close() {
+        synchronized (WRITER_LOCK) {
+            closeWriter();
+        }
+    }
+
+    /** Closes the writer, if any. Caller must hold {@link #WRITER_LOCK}. */
+    private static void closeWriter() {
+        if (writer != null) {
+            try {
+                writer.close();
+            } catch (IOException e) {
+                System.err.println("PaintLogger could not close the log file: " + e.getMessage());
+            }
+            writer = null;
+        }
+        initialised = false;
     }
 
 
