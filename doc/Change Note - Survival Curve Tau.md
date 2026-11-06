@@ -4,6 +4,14 @@ Status: **proposal, for discussion; nothing has been built.**
 Date: 2026-11-04
 Related: `Change Note - Exclude Edge Tracks.md`
 
+> **Update 2026-11-06.** An analysis of real track durations is in
+> `Analysis - Track Duration Distribution and Tau 2026-11.md`. Main points: the durations are
+> not a single exponential (about 73% short, about 27% long tracks); the current histogram fit
+> effectively gives the Tau of the fast population; a single exponential on the survival curve
+> would give an average of the two populations and is not recommended. The real question is one
+> versus two exponentials. Section 4.3 below overstates the R² problem: on real data the survival
+> fit gave R² 0.85–0.89, so R² is inflated but still responds to a wrong model.
+
 ## 1. Background
 
 Unbinding is a memoryless process: a bound molecule has a constant probability per unit time
