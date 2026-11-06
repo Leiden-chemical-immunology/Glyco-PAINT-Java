@@ -1,5 +1,6 @@
 package paint.shared.utils;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -21,6 +22,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @DisplayName("PaintLogger.error(String, Throwable)")
 class PaintLoggerThrowableTest {
+
+    /** Closes the log file, so the temporary directory can be deleted (required on Windows). */
+    @AfterEach
+    void closeLogger() {
+        PaintLogger.close();
+    }
 
     private static String readLog(Path projectDir, String base) throws IOException {
         Path logsDir = projectDir.resolve("Logs");

@@ -1,5 +1,6 @@
 package paint.generatesquares.calc;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -32,6 +33,12 @@ import static paint.shared.constants.PaintStringConstants.TAU_FITTING_PLOTS;
  */
 @DisplayName("SquareGenerationService.computeRecording — isolated compute")
 class SquareGenerationServiceTest {
+
+    /** Closes the log file, so the temporary directory can be deleted (required on Windows). */
+    @AfterEach
+    void closeLogger() {
+        PaintLogger.close();
+    }
 
     @Test
     @DisplayName("computes a full grid of squares with tracks assigned and selection applied")

@@ -1,6 +1,7 @@
 package paint.generatesquares.regression;
 
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -58,6 +59,12 @@ import static paint.shared.constants.PaintStringConstants.TAU_FITTING_PLOTS;
  */
 @DisplayName("Generate Squares — end-to-end regression gate (reference-project/221012)")
 class GenerateSquaresRegressionGateTest {
+
+    /** Closes the log file, so the temporary directory can be deleted (required on Windows). */
+    @AfterEach
+    void closeLogger() {
+        PaintLogger.close();
+    }
 
     private static final String EXPERIMENT = "221012";
 
