@@ -16,11 +16,15 @@
         ~/Applications/Glyco-PAINT.
 
         Result (packaging/target/dist):
-            Glyco-PAINT-<version>-macos.dmg      Glyco-PAINT.app, to drag into Applications
+            Glyco-PAINT-<version>-macos.pkg      installer (src/macos/build-pkg.sh): Glyco-PAINT
+                                                 and/or the separate apps, each with its own Java,
+                                                 into /Applications/Glyco-PAINT, and the Fiji
+                                                 plugin into Fiji's plugins folder
             Glyco-PAINT-<version>-windows-setup.exe  installer for Windows (NSIS): Glyco-PAINT
                                                  and/or the separate apps, for the current
                                                  user, Start menu entries, optional desktop
-                                                 shortcuts, uninstaller
+                                                 shortcuts, the Fiji plugin into Fiji's
+                                                 plugins folder, uninstaller
 
         Both contain the Launcher, the four apps (Get Omero, Create Experiment, Generate
         Squares, Viewer) and a Java runtime. The Java version is fixed (bundle.jdk.* below),
@@ -30,7 +34,7 @@
         but only from a JDK of exactly its own version, hence the fixed version.
 
         The Windows .exe is made with launch4j, which runs on the Mac; it starts the Launcher
-        on the runtime folder next to it. The macOS app and .dmg are made with jpackage, which
+        on the runtime folder next to it. The macOS app and .pkg are made with jpackage, which
         only runs on macOS, so this module needs a Mac (Apple Silicon) to build. The Windows
         installer is made with makensis (NSIS, src/nsis/glyco-paint.nsi), which runs on the Mac;
         install it once with: brew install makensis
@@ -45,7 +49,7 @@
     </parent>
     <artifactId>paint-packaging</artifactId>
     <packaging>pom</packaging>
-    <name>Packaging (macOS dmg and Windows installer, with built-in Java)</name>
+    <name>Packaging (macOS and Windows installers, with built-in Java)</name>
     <description>Glyco-PAINT distributions for macOS and Windows with a built-in Java runtime</description>
 
     <properties>
@@ -77,6 +81,12 @@
         <work.jdk.windows.home>${work.jdk.windows}/${bundle.jdk.release}</work.jdk.windows.home>
         <work.input>${project.build.directory}/app-input</work.input>
         <work.exe>${project.build.directory}/exe</work.exe>
+        <work.plugin>${project.build.directory}/windows/plugin</work.plugin>
+
+        <!-- The Fiji plugin is written by paint-fiji-plugin next to its own (small) artifact, not
+             published as an artifact, so it is taken from that module's target folder. -->
+        <plugin.jar.name>paint-fiji-plugin-${project.version}-jar-with-dependencies.jar</plugin.jar.name>
+        <plugin.jar.source>${project.basedir}/../paint-fiji-plugin/target/${plugin.jar.name}</plugin.jar.source>
         <work.runtime.mac>${project.build.directory}/runtime-mac</work.runtime.mac>
         <work.runtime.windows>${project.build.directory}/runtime-windows</work.runtime.windows>
         <work.macos>${project.build.directory}/macos</work.macos>
@@ -121,15 +131,24 @@
             <classifier>jar-with-dependencies</classifier>
             <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
         </dependency>
+        <!-- Only so Maven builds the Fiji plugin first; the plugin JAR itself is taken from its
+             target folder (plugin.jar.source) -->
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-fiji-plugin</artifactId>
+            <version>${project.version}</version>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
     </dependencies>
 
     <!--
         The steps, by phase (within a phase Maven runs the plugins in the order they are listed):
             initialize          clear the output of a previous build
             generate-resources  download both JDKs (checked against their SHA-256)
-            prepare-package     unpack both JDKs; jlink both runtimes; the Windows .exe files
+            prepare-package     unpack both JDKs; jlink both runtimes; the Windows .exe files;
+                                put the Fiji plugin in place
             package             collect the app JARs (Maven only hands them over from this phase
-                                on); jpackage Glyco-PAINT.app and the .dmg; assemble the Windows
+                                on); jpackage the five macOS apps; the .pkg; assemble the Windows
                                 folder and make the installer from it; put Glyco-PAINT.app in
                                 ~/Applications/Glyco-PAINT
 
@@ -174,6 +193,10 @@
                                 <fileset><directory>${work.jdk.windows}</directory></fileset>
                                 <fileset><directory>${work.input}</directory></fileset>
                                 <fileset><directory>${work.exe}</directory></fileset>
+                                <fileset><directory>${project.build.directory}/app-input-viewer</directory></fileset>
+                                <fileset><directory>${project.build.directory}/app-input-generate-squares</directory></fileset>
+                                <fileset><directory>${project.build.directory}/app-input-create-experiment</directory></fileset>
+                                <fileset><directory>${project.build.directory}/app-input-get-omero</directory></fileset>
                                 <fileset><directory>${work.runtime.mac}</directory></fileset>
                                 <fileset><directory>${work.runtime.windows}</directory></fileset>
                                 <fileset><directory>${work.macos}</directory></fileset>
@@ -236,7 +259,64 @@
                         <configuration>
                             <outputDirectory>${work.input}</outputDirectory>
                             <excludeTransitive>true</excludeTransitive>
+                            <excludeArtifactIds>paint-fiji-plugin</excludeArtifactIds>
                             <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- the separate macOS app viewer: only its own JAR -->
+                        <id>collect-viewer</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/app-input-viewer</outputDirectory>
+                            <excludeTransitive>true</excludeTransitive>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <includeArtifactIds>paint-viewer</includeArtifactIds>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- the separate macOS app generate-squares: only its own JAR -->
+                        <id>collect-generate-squares</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/app-input-generate-squares</outputDirectory>
+                            <excludeTransitive>true</excludeTransitive>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <includeArtifactIds>paint-generate-squares</includeArtifactIds>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- the separate macOS app create-experiment: only its own JAR -->
+                        <id>collect-create-experiment</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/app-input-create-experiment</outputDirectory>
+                            <excludeTransitive>true</excludeTransitive>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <includeArtifactIds>paint-create-experiment</includeArtifactIds>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- the separate macOS app get-omero: only its own JAR -->
+                        <id>collect-get-omero</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/app-input-get-omero</outputDirectory>
+                            <excludeTransitive>true</excludeTransitive>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <includeArtifactIds>paint-get-omero</includeArtifactIds>
                         </configuration>
                     </execution>
                 </executions>
@@ -361,13 +441,16 @@
                                 <argument>paint.launcher.PaintLauncher</argument>
                                 <argument>--runtime-image</argument>
                                 <argument>${work.runtime.mac}</argument>
+                                <argument>--mac-package-identifier</argument>
+                                <argument>com.github.jjabakker.glycopaint.glyco-paint</argument>
                                 <argument>--dest</argument>
                                 <argument>${work.macos}</argument>
                             </arguments>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>jpackage-dmg</id>
+                        <!-- Viewer.app, a separate app with its own Java -->
+                        <id>jpackage-viewer</id>
                         <phase>package</phase>
                         <goals>
                             <goal>exec</goal>
@@ -376,15 +459,142 @@
                             <executable>${work.jdk.mac.home}/bin/jpackage</executable>
                             <arguments>
                                 <argument>--type</argument>
-                                <argument>dmg</argument>
+                                <argument>app-image</argument>
                                 <argument>--name</argument>
-                                <argument>${dist.name}</argument>
+                                <argument>Viewer</argument>
                                 <argument>--app-version</argument>
                                 <argument>${parsedVersion.incrementalVersion}</argument>
-                                <argument>--app-image</argument>
-                                <argument>${work.macos}/${dist.name}.app</argument>
+                                <argument>--input</argument>
+                                <argument>${project.build.directory}/app-input-viewer</argument>
+                                <argument>--main-jar</argument>
+                                <argument>paint-viewer-${project.version}-jar-with-dependencies.jar</argument>
+                                <argument>--main-class</argument>
+                                <argument>paint.viewer.app.Viewer</argument>
+                                <argument>--icon</argument>
+                                <argument>${project.basedir}/../paint-viewer/src/main/resources/icons/paint-viewer.icns</argument>
+                                <argument>--mac-package-identifier</argument>
+                                <argument>com.github.jjabakker.glycopaint.viewer</argument>
+                                <argument>--runtime-image</argument>
+                                <argument>${work.runtime.mac}</argument>
                                 <argument>--dest</argument>
                                 <argument>${work.macos}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- Generate Squares.app, a separate app with its own Java -->
+                        <id>jpackage-generate-squares</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${work.jdk.mac.home}/bin/jpackage</executable>
+                            <arguments>
+                                <argument>--type</argument>
+                                <argument>app-image</argument>
+                                <argument>--name</argument>
+                                <argument>Generate Squares</argument>
+                                <argument>--app-version</argument>
+                                <argument>${parsedVersion.incrementalVersion}</argument>
+                                <argument>--input</argument>
+                                <argument>${project.build.directory}/app-input-generate-squares</argument>
+                                <argument>--main-jar</argument>
+                                <argument>paint-generate-squares-${project.version}-standalone.jar</argument>
+                                <argument>--main-class</argument>
+                                <argument>paint.generatesquares.app.GenerateSquares</argument>
+                                <argument>--icon</argument>
+                                <argument>${project.basedir}/../paint-generate-squares/src/main/resources/icons/paint-generate-squares.icns</argument>
+                                <argument>--mac-package-identifier</argument>
+                                <argument>com.github.jjabakker.glycopaint.generate-squares</argument>
+                                <argument>--runtime-image</argument>
+                                <argument>${work.runtime.mac}</argument>
+                                <argument>--dest</argument>
+                                <argument>${work.macos}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- Create Experiment.app, a separate app with its own Java -->
+                        <id>jpackage-create-experiment</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${work.jdk.mac.home}/bin/jpackage</executable>
+                            <arguments>
+                                <argument>--type</argument>
+                                <argument>app-image</argument>
+                                <argument>--name</argument>
+                                <argument>Create Experiment</argument>
+                                <argument>--app-version</argument>
+                                <argument>${parsedVersion.incrementalVersion}</argument>
+                                <argument>--input</argument>
+                                <argument>${project.build.directory}/app-input-create-experiment</argument>
+                                <argument>--main-jar</argument>
+                                <argument>paint-create-experiment-${project.version}-jar-with-dependencies.jar</argument>
+                                <argument>--main-class</argument>
+                                <argument>createexperiment.app.CreateExperimentUI</argument>
+                                <argument>--icon</argument>
+                                <argument>${project.basedir}/../paint-create-experiment/src/main/resources/icons/paint-create-experiment.icns</argument>
+                                <argument>--mac-package-identifier</argument>
+                                <argument>com.github.jjabakker.glycopaint.create-experiment</argument>
+                                <argument>--runtime-image</argument>
+                                <argument>${work.runtime.mac}</argument>
+                                <argument>--dest</argument>
+                                <argument>${work.macos}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- Get Omero.app, a separate app with its own Java -->
+                        <id>jpackage-get-omero</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${work.jdk.mac.home}/bin/jpackage</executable>
+                            <arguments>
+                                <argument>--type</argument>
+                                <argument>app-image</argument>
+                                <argument>--name</argument>
+                                <argument>Get Omero</argument>
+                                <argument>--app-version</argument>
+                                <argument>${parsedVersion.incrementalVersion}</argument>
+                                <argument>--input</argument>
+                                <argument>${project.build.directory}/app-input-get-omero</argument>
+                                <argument>--main-jar</argument>
+                                <argument>paint-get-omero-${project.version}-jar-with-dependencies.jar</argument>
+                                <argument>--main-class</argument>
+                                <argument>paint.getomero.app.GetOmeroUI</argument>
+                                <argument>--icon</argument>
+                                <argument>${project.basedir}/../paint-get-omero/src/main/resources/icons/paint-get-omero.icns</argument>
+                                <argument>--mac-package-identifier</argument>
+                                <argument>com.github.jjabakker.glycopaint.get-omero</argument>
+                                <argument>--runtime-image</argument>
+                                <argument>${work.runtime.mac}</argument>
+                                <argument>--dest</argument>
+                                <argument>${work.macos}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- The .pkg with a choice of components (src/macos/build-pkg.sh) -->
+                        <id>macos-pkg</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>${project.basedir}/src/macos/build-pkg.sh</argument>
+                                <argument>${work.macos}</argument>
+                                <argument>${work.plugin}/${plugin.jar.name}</argument>
+                                <argument>${project.version}</argument>
+                                <argument>${work.dist}/${dist.name}-${project.version}-macos.pkg</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -558,6 +768,19 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
+                    <!-- The Fiji plugin, for both installers -->
+                    <execution>
+                        <id>fiji-plugin</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <copy file="${plugin.jar.source}" todir="${work.plugin}"/>
+                            </target>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>distributions</id>
                         <phase>package</phase>
@@ -576,9 +799,6 @@
                                     <fileset dir="${work.runtime.windows}"/>
                                 </copy>
                                 <mkdir dir="${work.dist}"/>
-                                <move file="${work.macos}/${dist.name}-${parsedVersion.incrementalVersion}.dmg"
-                                      tofile="${work.dist}/${dist.name}-${project.version}-macos.dmg"/>
-                                <echo message="✅ ${work.dist}/${dist.name}-${project.version}-macos.dmg"/>
 
                                 <!-- The Windows installer (NSIS), made from the same folder. makensis
                                      is looked for in Homebrew's folders first, because IntelliJ's
@@ -598,6 +818,7 @@
                                 <exec executable="${makensis}" failonerror="true">
                                     <arg value="-V2"/>
                                     <arg value="-DSOURCE_DIR=${work.windows}"/>
+                                    <arg value="-DPLUGIN_JAR=${work.plugin}/${plugin.jar.name}"/>
                                     <arg value="-DOUTFILE=${work.dist}/${dist.name}-${project.version}-windows-setup.exe"/>
                                     <arg value="-DVERSION=${project.version}"/>
                                     <arg value="-DVIVERSION=${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.0"/>

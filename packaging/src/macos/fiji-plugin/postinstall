@@ -1,0 +1,58 @@
+#!/bin/bash
+#
+# The "Fiji plugin" choice of the Glyco-PAINT installer for macOS. The component installs the
+# plugin JAR in /Library/Application Support/Glyco-PAINT; this script then copies it into the
+# plugins folder of the user's Fiji.
+#
+# Fiji is looked for in /Applications and ~/Applications, as Fiji.app or Fiji (the folder name of
+# a Fiji Latest download), and must have a plugins folder. An older Glyco-PAINT plugin there is
+# replaced. If no Fiji is found the user gets a warning; the apps are installed regardless.
+# Everything this script does is written to the installer log (Window > Installer Log).
+#
+# The installer runs this as root.
+
+log() { echo "Glyco-PAINT: $*"; }
+
+plugin_dir="/Library/Application Support/Glyco-PAINT"
+plugin=$(ls "$plugin_dir"/paint-fiji-plugin*.jar 2>/dev/null | head -n 1)
+if [ -z "$plugin" ]; then
+    log "no Fiji plugin JAR in the installer; nothing to copy"
+    exit 0
+fi
+
+# The logged-in user, whose ~/Applications is searched and who gets the warning
+user=$(stat -f %Su /dev/console)
+uid=$(id -u "$user")
+home=$(dscl . -read "/Users/$user" NFSHomeDirectory 2>/dev/null | awk '{print $2}')
+
+fiji=""
+for candidate in "/Applications/Fiji.app" "/Applications/Fiji" "$home/Applications/Fiji.app" "$home/Applications/Fiji"; do
+    if [ -d "$candidate/plugins" ]; then
+        fiji="$candidate"
+        break
+    fi
+done
+
+if [ -z "$fiji" ]; then
+    log "no Fiji found in /Applications or $home/Applications; the plugin was not installed"
+    message="No Fiji installation was found in /Applications or in your own Applications folder. Fiji may not be installed.
+
+The Glyco-PAINT apps have been installed, but the Fiji plugin has not. Install Fiji (https://fiji.sc) and run this installer again, choosing only 'Fiji plugin', or copy the plugin from $plugin_dir into the plugins folder of your Fiji."
+    launchctl asuser "$uid" sudo -u "$user" osascript \
+        -e "display dialog \"$message\" with title \"Glyco-PAINT\" buttons {\"OK\"} default button \"OK\" with icon caution" \
+        >/dev/null 2>&1
+    exit 0
+fi
+
+rm -f "$fiji"/plugins/paint-fiji-plugin*.jar
+if cp "$plugin" "$fiji/plugins/"; then
+    # Same owner as the plugins folder, so Fiji (run as the user) can manage it
+    owner=$(stat -f %Su:%Sg "$fiji/plugins")
+    chown "$owner" "$fiji/plugins/$(basename "$plugin")"
+    log "installed $(basename "$plugin") into $fiji/plugins"
+else
+    log "could not copy the plugin into $fiji/plugins"
+fi
+
+# Never fail the installation because of the plugin: the apps are installed regardless
+exit 0

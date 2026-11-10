@@ -65,7 +65,7 @@ every number with stored known-good output.
 | `paint-get-omero` | Download recordings from OMERO |
 | `paint-launcher` | Launcher for the applications |
 | `paint-app` | Glyco-PAINT as one app (Launcher + the four apps) with built-in Java (the building JDK, 21 or newer), via jlink/jpackage. Part of the normal build; output in `paint-app/target/bundle`, nothing installed. macOS only so far |
-| `packaging` | New packaging mechanism, alongside the existing one: macOS `.dmg` and Windows installer (NSIS: Glyco-PAINT and/or the separate apps), both with a fixed built-in Java (Temurin 21.0.13), both built on a Mac. Only built with `-Ppackaging`; output in `packaging/target/dist`, plus `Glyco-PAINT.app` in `~/Applications/Glyco-PAINT`. Needs `brew install makensis` |
+| `packaging` | New packaging mechanism, alongside the existing one: macOS `.pkg` and Windows installer (NSIS: Glyco-PAINT and/or the separate apps), both installing the Fiji plugin, both with a fixed built-in Java (Temurin 21.0.13), both built on a Mac. Only built with `-Ppackaging`; output in `packaging/target/dist`, plus `Glyco-PAINT.app` in `~/Applications/Glyco-PAINT`. Needs `brew install makensis` |
 | `paint-compare` | CSV comparison engine used by the regression gate |
 | `paint-development-utils` | Dev tools, incl. `release.ReleaseNewVersion` (see `doc/Release Process.md`) |
 | `paint-installer` (+ `-macos`, `-windows`) | Installers |
