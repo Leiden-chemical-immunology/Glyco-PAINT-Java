@@ -96,7 +96,7 @@
         <commons-csv.version>1.10.0</commons-csv.version>
         <opencsv.version>5.9</opencsv.version>
         <ij.version>1.54h</ij.version>
-        <trackmate.version>7.14.0</trackmate.version>
+        <trackmate.version>8.1.6</trackmate.version>
         <fiji-lib.version>2.1.3</fiji-lib.version>
         <imglib2.version>7.1.5</imglib2.version>
         <bio-formats.version>6.13.0</bio-formats.version>
