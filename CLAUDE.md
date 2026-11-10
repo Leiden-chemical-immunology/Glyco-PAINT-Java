@@ -29,7 +29,8 @@ mvn -pl paint-viewer -am test               # one module plus its dependencies
 ```
 
 - `install`/`verify` also build macOS .app bundles, Windows .exe wrappers, installer fat JARs, and
-  **copy the Fiji plugin into `/Applications/Fiji.app/plugins`**. Use `test` unless packaging is
+  **copy the Fiji plugin into the local Fiji's `plugins` folder** (found automatically on macOS and
+  Windows, or `-Dfiji.dir=<folder>`; see `paint-fiji-plugin/pom.xml`). Use `test` unless packaging is
   actually needed.
 - Tests must pass headless. `paint-shared-utils` must stay UI-free; the logger only writes to a UI
   sink if a GUI app registered one.

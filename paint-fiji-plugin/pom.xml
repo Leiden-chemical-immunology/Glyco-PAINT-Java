@@ -12,7 +12,6 @@
     <name>Fiji Plugin</name>
     <description>Integration of Paint application with Fiji/TrackMate plugin</description>
     <properties>
-        <fiji.dir>/Applications/Fiji.app</fiji.dir>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
     </properties>
     <dependencies>
@@ -193,7 +192,18 @@
                 </executions>
             </plugin>
 
-            <!-- Cleanup and copy JAR into Fiji (skip automatically on CI) -->
+            <!--
+                Cleanup and copy JAR into Fiji (skip automatically on CI).
+
+                The Fiji folder is the first of these that contains a "plugins" folder, the same
+                places the installers search:
+                  Windows: %ProgramFiles%, %ProgramFiles(x86)%, %LOCALAPPDATA%, each with
+                           Fiji, Fiji-win64, Fiji-win32, Fiji-Windows
+                  macOS:   ~/Applications and /Applications, each with Fiji.app and Fiji
+                           (Fiji Latest unpacks to "Fiji")
+                Override with -Dfiji.dir=<folder>; the build then fails if that folder has no
+                "plugins" folder. If no Fiji is found, the copy is skipped with a warning.
+            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -209,19 +219,67 @@
 
                             <!-- ✅ Skip deployment automatically on CI -->
                             <skip>${env.CI}</skip>
-                            <target>
-                                <echo message="🚀 Deploying ${project.artifactId} to Fiji (skipped in CI)"/>
-                                <delete quiet="true">
+                            <target xmlns:if="ant:if" xmlns:unless="ant:unless">
+                                <!-- "sysenv", not "env": Maven would interpolate ${env.*} itself -->
+                                <property environment="sysenv"/>
+
+                                <condition property="fiji.dir.explicit">
+                                    <isset property="fiji.dir"/>
+                                </condition>
+                                <fail message="-Dfiji.dir=${fiji.dir} is not a Fiji folder (it has no plugins folder)">
+                                    <condition>
+                                        <and>
+                                            <isset property="fiji.dir.explicit"/>
+                                            <not><available file="${fiji.dir}/plugins" type="dir"/></not>
+                                        </and>
+                                    </condition>
+                                </fail>
+
+                                <!-- Sets fiji.dir to the first candidate that has a plugins folder
+                                     (an Ant property, once set, is never overwritten) -->
+                                <macrodef name="try-fiji">
+                                    <attribute name="dir"/>
+                                    <sequential>
+                                        <condition property="fiji.dir" value="@{dir}">
+                                            <available file="@{dir}/plugins" type="dir"/>
+                                        </condition>
+                                    </sequential>
+                                </macrodef>
+                                <macrodef name="try-fiji-names">
+                                    <attribute name="base"/>
+                                    <sequential>
+                                        <try-fiji dir="@{base}/Fiji"/>
+                                        <try-fiji dir="@{base}/Fiji-win64"/>
+                                        <try-fiji dir="@{base}/Fiji-win32"/>
+                                        <try-fiji dir="@{base}/Fiji-Windows"/>
+                                    </sequential>
+                                </macrodef>
+
+                                <!-- Windows -->
+                                <try-fiji-names base="${sysenv.ProgramFiles}"/>
+                                <try-fiji-names base="${sysenv.ProgramFiles(x86)}"/>
+                                <try-fiji-names base="${sysenv.LOCALAPPDATA}"/>
+                                <!-- macOS -->
+                                <try-fiji dir="${user.home}/Applications/Fiji.app"/>
+                                <try-fiji dir="${user.home}/Applications/Fiji"/>
+                                <try-fiji dir="/Applications/Fiji.app"/>
+                                <try-fiji dir="/Applications/Fiji"/>
+
+                                <echo unless:set="fiji.dir" level="warning"
+                                      message="⚠️ No Fiji folder found; the plugin was NOT copied into Fiji. Use -Dfiji.dir=&lt;folder&gt; to name it."/>
+
+                                <echo if:set="fiji.dir" message="🚀 Deploying ${project.artifactId} to ${fiji.dir}"/>
+                                <delete if:set="fiji.dir" quiet="true">
                                     <fileset dir="${fiji.dir}/plugins">
                                         <include name="paint*.jar"/>
                                     </fileset>
                                 </delete>
-                                <copy overwrite="true" todir="${fiji.dir}/plugins">
+                                <copy if:set="fiji.dir" overwrite="true" todir="${fiji.dir}/plugins">
                                     <fileset dir="${project.build.directory}">
                                         <include name="${project.artifactId}-${project.version}-jar-with-dependencies.jar"/>
                                     </fileset>
                                 </copy>
-                                <echo message="✅ Deployed ${project.artifactId} fat JAR to ${fiji.dir}/plugins/"/>
+                                <echo if:set="fiji.dir" message="✅ Deployed ${project.artifactId} fat JAR to ${fiji.dir}/plugins/"/>
                             </target>
                         </configuration>
                     </execution>
