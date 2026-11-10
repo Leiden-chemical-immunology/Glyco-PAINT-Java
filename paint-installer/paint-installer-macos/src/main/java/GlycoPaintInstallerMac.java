@@ -42,7 +42,8 @@ import paint.shared.utils.PaintPrefs;
  *   <li>Installs Viewer.app, Generate Squares.app, Get Omero.app,</li>
  * </ul>
  * <p>
- * Create Experiment.app as selected by the user.
+ * Create Experiment.app and Glyco-PAINT.app (the Launcher and the four apps with a built-in
+ * Java runtime) as selected by the user.
  * </p>
  * <ul>
  *   <li>Extracts plugin payload and attempts to install it into a valid Fiji.app.</li>
@@ -85,6 +86,7 @@ public class GlycoPaintInstallerMac {
     private static final String APP_GENERATE_SQUARES   = "Generate Squares.app";
     private static final String APP_GET_OMERO          = "Get Omero.app";
     private static final String APP_CREATE_EXPERIMENT  = "Create Experiment.app";
+    private static final String APP_GLYCO_PAINT        = "Glyco-PAINT.app";
 
     /* ======================================================================
        UI COMPONENTS
@@ -100,6 +102,7 @@ public class GlycoPaintInstallerMac {
     private final JCheckBox cbGenerateSquares  = new JCheckBox("Generate Squares", true);
     private final JCheckBox cbGetOmero         = new JCheckBox("Get Omero", true);
     private final JCheckBox cbCreateExperiment = new JCheckBox("Create Experiment", true);
+    private final JCheckBox cbGlycoPaint       = new JCheckBox("Glyco-PAINT (all apps, built-in Java)", true);
     private final JCheckBox cbPlugin           = new JCheckBox("Fiji plugin", true);
 
     /* ======================================================================
@@ -230,6 +233,7 @@ public class GlycoPaintInstallerMac {
         componentsPanel.add(cbGenerateSquares);
         componentsPanel.add(cbGetOmero);
         componentsPanel.add(cbCreateExperiment);
+        componentsPanel.add(cbGlycoPaint);
         componentsPanel.add(cbPlugin);
 
         configPanel.add(componentsPanel, BorderLayout.CENTER);
@@ -273,6 +277,7 @@ public class GlycoPaintInstallerMac {
             if (cbGenerateSquares.isSelected())  apps.add(APP_GENERATE_SQUARES);
             if (cbGetOmero.isSelected())         apps.add(APP_GET_OMERO);
             if (cbCreateExperiment.isSelected()) apps.add(APP_CREATE_EXPERIMENT);
+            if (cbGlycoPaint.isSelected())       apps.add(APP_GLYCO_PAINT);
             selectedApps = Collections.unmodifiableSet(apps);
 
             installPlugin = cbPlugin.isSelected();
@@ -604,13 +609,34 @@ public class GlycoPaintInstallerMac {
                     Path out = targetDir.resolve(name);
                     writeZipEntry(zis, buf, entry, out);
 
-                    // Ensure binaries inside Contents/MacOS are executable
-                    if (name.contains("/Contents/MacOS/") && !entry.isDirectory()) {
+                    // ZipInputStream does not keep file permissions: restore the executable bit
+                    if (!entry.isDirectory() && mustBeExecutable(name)) {
                         out.toFile().setExecutable(true, false);
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Whether a file in an app bundle must be executable. The ZIP payload loses file permissions,
+     * so they are set again for:
+     * <ul>
+     *   <li>the app's own launcher, in {@code Contents/MacOS/};</li>
+     *   <li>the programs of a built-in Java runtime ({@code Glyco-PAINT.app}): everything in its
+     *       {@code bin/} folder (the Launcher starts the apps with {@code bin/java}), and
+     *       {@code lib/jspawnhelper}, which Java needs to start other processes.</li>
+     * </ul>
+     *
+     * @param name the ZIP entry name, e.g. {@code Glyco-PAINT.app/Contents/MacOS/Glyco-PAINT}
+     * @return {@code true} if the file must get the executable bit
+     */
+    static boolean mustBeExecutable(String name) {
+        if (name.contains("/Contents/MacOS/")) {
+            return true;
+        }
+        return name.contains("/Contents/runtime/")
+                && (name.contains("/bin/") || name.endsWith("/lib/jspawnhelper"));
     }
 
     /**
