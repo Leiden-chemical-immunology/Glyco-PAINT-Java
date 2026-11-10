@@ -56,6 +56,11 @@ plugin, it builds and collects:
 1. **macOS `.app` bundles** (via the `macos-appbundle` Maven profile).
 2. **Windows `.exe`** launchers (via the `windows-exe` Maven profile).
 3. The **Fiji plugin** fat JAR (`paint-fiji-plugin-*-jar-with-dependencies.jar`).
+3a. **`Glyco-PAINT.app`** (module `paint-app`): the Launcher and the four apps as one
+   application with a built-in Java runtime (jlink + jpackage, from the JDK 21 or newer that
+   the toolchains plugin selects). Built once from the project root with `-pl paint-app -am`
+   and copied into `macOS/`, next to the separate apps. macOS only: jpackage builds for the
+   system it runs on.
 4. A fresh **`payload.zip`** for each installer (the platform's apps + the
    plugin), written into each installer module's `src/main/resources/`.
 5. The two **installer fat JARs**, built from those payloads and renamed.
@@ -70,7 +75,7 @@ Everything lands in a **sibling** folder of the repo (not inside it):
 Glyco-PAINT-Builds/
 └── Glyco-PAINT-<version>/
     ├── Windows/       # per-app .exe launchers
-    ├── macOS/         # per-app .app bundles
+    ├── macOS/         # per-app .app bundles, plus Glyco-PAINT.app
     ├── Plugins/       # Fiji plugin fat JAR
     └── Installers/
         ├── Glyco-PAINT-Installer-macOS-<version>.jar
@@ -92,7 +97,9 @@ installers to GitHub or install anything on user machines. After it finishes:
 1. **Smoke-test the installers.** Run the macOS installer
    (`java -jar Glyco-PAINT-Installer-macOS-<version>.jar`) and confirm it
    installs the selected apps and drops the Fiji plugin into a valid Fiji
-   `plugins` folder. Do the same for Windows on a Windows machine.
+   `plugins` folder. Start the installed `Glyco-PAINT.app` and check that the
+   Launcher starts all four apps (this also shows whether the built-in Java kept
+   its executable permissions). Do the same for Windows on a Windows machine.
 2. **Publish the release assets (mode 3).** Mode 3 pushes the tag `v<version>`,
    but uploading the installer JARs as **GitHub release assets is a separate,
    manual step** (e.g. via `gh release create`/`gh release upload`, or the
@@ -138,5 +145,8 @@ the sure path.
   stale in-code comment suggesting otherwise.
 - In rebuild-only mode the artifacts are named with the current `-SNAPSHOT`
   version.
-- This tool is a developer aid; it is not covered by the test suite or the
-  regression gate.
+- In modes 2 and 3, once both installers are built, a `Glyco-PAINT-<version>-SNAPSHOT`
+  folder left by an earlier rebuild of the same version is deleted: the release
+  build supersedes it.
+- This tool is a developer aid. Parts of it have unit tests (`GitUtilsTest`,
+  `MavenSupportTest`, `FileOpsTest`); the full build is not tested automatically.

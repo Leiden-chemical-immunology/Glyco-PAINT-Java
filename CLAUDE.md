@@ -28,7 +28,8 @@ mvn clean install                           # full build incl. packaging (see wa
 mvn -pl paint-viewer -am test               # one module plus its dependencies
 ```
 
-- `install`/`verify` also build macOS .app bundles, Windows .exe wrappers, installer fat JARs, and
+- `package`/`install` also build `Glyco-PAINT.app` (`paint-app`, jlink + jpackage, so they take
+  longer); `install`/`verify` also build macOS .app bundles, Windows .exe wrappers, installer fat JARs, and
   **copy the Fiji plugin into the local Fiji's `plugins` folder** (found automatically on macOS and
   Windows, or `-Dfiji.dir=<folder>`; see `paint-fiji-plugin/pom.xml`). Use `test` unless packaging is
   actually needed.

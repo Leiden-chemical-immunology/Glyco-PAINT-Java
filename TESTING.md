@@ -1,7 +1,7 @@
 # What the tests check
 
 This is a plain-language guide to the automated tests: what each one actually protects, and —
-just as important — what it does not. Around 120 tests run on every build, and on every push via
+just as important — what it does not. Around 160 tests run on every build, and on every push via
 GitHub Actions.
 
 To run them all:
@@ -137,6 +137,16 @@ Reading `TRUE`, `true`, ` Yes ` and `1` from a CSV as the same thing. Formatting
 sure that when an error is logged with an exception, the stack trace actually reaches the log file
 — because a swallowed cause is the difference between a five-minute diagnosis and an afternoon.
 
+## The release tool
+
+`GitUtilsTest` (3), `MavenSupportTest` (1), `FileOpsTest` (4)
+
+Only the parts of `ReleaseNewVersion` that can go wrong quietly: that a release commits only the
+tracked `pom.xml` files and tags the commit that has the release version; that the build also
+installs every module the released ones depend on; that a release build deletes the superseded
+`-SNAPSHOT` test build of the same version and nothing else; and that a macOS `.app` folder is
+accepted as a build artifact.
+
 ---
 
 ## What is **not** covered
@@ -147,7 +157,8 @@ Being clear about the gaps is as useful as listing the coverage.
   movie player, whether the window re-enables after playback — must still be checked by hand.
 - **TrackMate runs.** The plugin is exercised only by running it. Nothing automated confirms that a
   TrackMate batch produces the expected tracks.
-- **Omero download, the installers, and the release tooling.** Not covered at all.
+- **Omero download, the installers, and the full release build.** Not covered; only the release
+  tool's helpers above are.
 - **Neighbour modes.** The override tests use the "Free" mode, where a square's visibility depends
   only on its own numbers. The "Relaxed" and "Strict" modes, where visibility depends on
   neighbouring squares, are exercised by the golden-master test but have no focused tests of their

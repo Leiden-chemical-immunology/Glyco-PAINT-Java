@@ -104,7 +104,7 @@ Fiji and Java 21 need to be installed:
   - Windows: preferably install in `ProgramFiles`, `ProgramFiles(x86)`, or `AppData\Local`.  
   - macOS: install in `~/Applications` or `/Applications`.  
 
-- **Java 21** (or newer), for the Glyco-PAINT apps and the installer. Unlike Fiji, these do not bring their own Java. Check if it is installed:  
+- **Java 21** (or newer), for the installer and the separate Glyco-PAINT apps. Unlike Fiji, these do not bring their own Java. On macOS, the all-in-one **Glyco-PAINT** app (see below) does bring its own Java; Java 21 is then still needed to run the installer. Check if it is installed:  
   
   On macOS:  
   ```bash
@@ -134,6 +134,9 @@ The pipeline consists of a FiJi plugin (for TrackMate calculations) and several 
 | **Plugin**            | Performs the TrackMate calculations               | Yes        |
 | **Get Omero**         | Organize downloaded Omero files                   | Optional   |
 | **Create Experiment** | Build Experiment Info file (convenience utility)  | Optional   |
+| **Glyco-PAINT** (macOS) | The Launcher and the four apps above in one app, with built-in Java | Optional   |
+
+On macOS the installer offers both the four separate apps and the all-in-one **Glyco-PAINT** app. They contain the same apps; Glyco-PAINT starts them from its Launcher and needs no Java of its own.
 
 
 
@@ -152,7 +155,7 @@ The easiest way to install Glyco-PAINT is via the official installer. It lets yo
    Choose the installer for macOS or Windows (~400 MB). Save it to any folder (e.g. `Downloads`).
 
 3. **Run Installer**  
-   Double-click the file. A `Glyco-PAINT` directory will be created, containing the selected apps.
+   Double-click the file. A `Glyco-PAINT` directory will be created, containing the selected apps. On macOS, tick **Glyco-PAINT (all apps, built-in Java)** to also install the all-in-one app.
 
 4. **FiJi Plugin Setup**  
    The installer attempts to locate FiJi automatically:  
