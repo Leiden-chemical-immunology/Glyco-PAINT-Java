@@ -42,6 +42,52 @@ public final class FileOps {
         }
     }
 
+    /**
+     * Deletes the test build of a version once that version has been built as a release.
+     * <p>
+     * A "Rebuild only" run names its folder after the current version, including
+     * {@code -SNAPSHOT} (e.g. {@code Glyco-PAINT-0.0.138-SNAPSHOT}). Once the release folder
+     * {@code Glyco-PAINT-0.0.138} exists, that test build is superseded and only confusing.
+     * Does nothing if {@code buildRoot} is itself a SNAPSHOT build, or if there is no test build.
+     *
+     * @param buildRoot the folder just built, e.g. {@code .../Glyco-PAINT-Builds/Glyco-PAINT-0.0.138}
+     * @return {@code true} if a superseded SNAPSHOT folder was deleted
+     * @throws IOException if the folder exists but cannot be deleted
+     */
+    public static boolean removeSupersededSnapshotBuild(Path buildRoot) throws IOException {
+        String name = buildRoot.getFileName().toString();
+        if (name.endsWith("-SNAPSHOT")) {
+            return false;
+        }
+        Path snapshotBuild = buildRoot.resolveSibling(name + "-SNAPSHOT");
+        if (!Files.isDirectory(snapshotBuild)) {
+            return false;
+        }
+        deleteDirectory(snapshotBuild);
+        System.out.println("🧹 Removed superseded test build " + snapshotBuild.getFileName());
+        return true;
+    }
+
+    private static void deleteDirectory(Path dir) throws IOException {
+        Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, java.nio.file.attribute.BasicFileAttributes attrs)
+                    throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path d, IOException exc) throws IOException {
+                if (exc != null) {
+                    throw exc;
+                }
+                Files.delete(d);
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
     public static void zipPayload(Path appDir, Path pluginDir, Path outputZip) throws Exception {
         // zip -qry outputZip .
         ProcessBuilder pb = new ProcessBuilder("zip", "-qry", outputZip.toString(), ".");

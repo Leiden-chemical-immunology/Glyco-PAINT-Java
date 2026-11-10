@@ -301,6 +301,9 @@ public class ReleaseNewVersion {
         Files.copy(macBuilt, macFinal, StandardCopyOption.REPLACE_EXISTING);
         Files.copy(winBuilt, winFinal, StandardCopyOption.REPLACE_EXISTING);
 
+        // A released version supersedes its test build (Glyco-PAINT-<version>-SNAPSHOT).
+        FileOps.removeSupersededSnapshotBuild(buildRoot);
+
         // -------------------------------------------------------------
         // Post-release: commit + tag the release, bump to next SNAPSHOT, push the tag
         // -------------------------------------------------------------
