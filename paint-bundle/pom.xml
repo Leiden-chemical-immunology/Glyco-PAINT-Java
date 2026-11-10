@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!--
+        Glyco-PAINT as one self-contained application: the Launcher plus the four apps
+        (Get Omero, Create Experiment, Generate Squares, Viewer), with a built-in Java 21 runtime,
+        so the user does not need to install Java.
+
+        This module is only part of the build with the "bundle" profile:
+
+            mvn clean install -Pbundle
+
+        It does not change anything about the normal build: it only takes the app JARs the other
+        modules already produce, and writes its result to target/bundle. Nothing is installed.
+
+        Result:
+            macOS:   target/bundle/Glyco-PAINT.app
+            Windows: target/bundle/Glyco-PAINT/Glyco-PAINT.exe
+        jpackage only builds for the operating system it runs on, so the Windows version is made
+        by running the same command on Windows.
+
+        Which Java goes in: always a JDK 21, whatever JDK Maven itself runs on. The toolchains
+        plugin looks for an installed JDK 21 by itself (JAVA_HOME, JAVA21_HOME and the usual
+        install folders on macOS and Windows). If it finds none, the build stops. A JDK 21 in an
+        unusual place can be named in ~/.m2/toolchains.xml (a "jdk" toolchain with version 21).
+        jlink and jpackage are then taken from that JDK.
+    -->
+
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.github.jjabakker</groupId>
+        <artifactId>paint-parent</artifactId>
+        <version>0.0.139-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>paint-bundle</artifactId>
+    <packaging>pom</packaging>
+    <name>Bundle (Glyco-PAINT with built-in Java)</name>
+    <description>Self-contained Glyco-PAINT application with a built-in Java runtime</description>
+
+    <properties>
+        <bundle.name>Glyco-PAINT</bundle.name>
+        <bundle.jdk.version>[21,22)</bundle.jdk.version>
+        <bundle.input>${project.build.directory}/bundle-input</bundle.input>
+        <bundle.runtime>${project.build.directory}/bundle-runtime</bundle.runtime>
+        <bundle.dest>${project.build.directory}/bundle</bundle.dest>
+        <bundle.main.jar>paint-launcher-${project.version}-jar-with-dependencies.jar</bundle.main.jar>
+
+        <!--
+            Java modules in the built-in runtime: what jdeps reports for the five JARs together
+            (jdeps print-module-deps, run on the Viewer JAR without the stray module-info.class
+            a library put in its root), plus jdk.crypto.ec for HTTPS. A module that is missing
+            only shows up when the code that needs it runs, so add to this list rather than
+            trim it.
+        -->
+        <bundle.modules>java.base,java.compiler,java.desktop,java.instrument,java.management,java.naming,java.prefs,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml.crypto,jdk.attach,jdk.jdi,jdk.unsupported,jdk.crypto.ec</bundle.modules>
+    </properties>
+
+    <!-- The app JARs to bundle. Listing them here also makes Maven build them first. -->
+    <dependencies>
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-launcher</artifactId>
+            <version>${project.version}</version>
+            <classifier>jar-with-dependencies</classifier>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-get-omero</artifactId>
+            <version>${project.version}</version>
+            <classifier>jar-with-dependencies</classifier>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-create-experiment</artifactId>
+            <version>${project.version}</version>
+            <classifier>jar-with-dependencies</classifier>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-generate-squares</artifactId>
+            <version>${project.version}</version>
+            <classifier>standalone</classifier>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-viewer</artifactId>
+            <version>${project.version}</version>
+            <classifier>jar-with-dependencies</classifier>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+
+            <!-- Select an installed JDK 21 for jlink and jpackage (stops the build if none is found) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-toolchains-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>select-jdk-21</id>
+                        <goals>
+                            <goal>select-jdk-toolchain</goal>
+                        </goals>
+                        <configuration>
+                            <version>${bundle.jdk.version}</version>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- jpackage on macOS rejects a version that starts with 0, so the application version
+                 is the last number of the project version: 0.0.138 becomes 138 -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>parse-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- jlink and jpackage refuse to write into an existing folder -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>clear-bundle-output</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <delete dir="${bundle.runtime}"/>
+                                <delete dir="${bundle.dest}"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 1. Collect the app JARs in one folder -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.8.1</version>
+                <executions>
+                    <execution>
+                        <id>collect-app-jars</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${bundle.input}</outputDirectory>
+                            <excludeTransitive>true</excludeTransitive>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 2. Build the Java runtime (jlink) and the application (jpackage), both taken from
+                    the selected JDK 21 (exec-maven-plugin looks the tools up in the toolchain) -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <!-- No strip-native-commands: the Launcher starts the apps with bin/java -->
+                        <id>jlink</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>jlink</executable>
+                            <arguments>
+                                <argument>--add-modules</argument>
+                                <argument>${bundle.modules}</argument>
+                                <argument>--strip-debug</argument>
+                                <argument>--no-header-files</argument>
+                                <argument>--no-man-pages</argument>
+                                <argument>--output</argument>
+                                <argument>${bundle.runtime}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jpackage</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>jpackage</executable>
+                            <arguments>
+                                <argument>--type</argument>
+                                <argument>app-image</argument>
+                                <argument>--name</argument>
+                                <argument>${bundle.name}</argument>
+                                <argument>--app-version</argument>
+                                <argument>${parsedVersion.incrementalVersion}</argument>
+                                <argument>--input</argument>
+                                <argument>${bundle.input}</argument>
+                                <argument>--main-jar</argument>
+                                <argument>${bundle.main.jar}</argument>
+                                <argument>--main-class</argument>
+                                <argument>paint.launcher.PaintLauncher</argument>
+                                <argument>--runtime-image</argument>
+                                <argument>${bundle.runtime}</argument>
+                                <argument>--dest</argument>
+                                <argument>${bundle.dest}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Nothing to publish to ~/.m2: the result is the application in target/bundle -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

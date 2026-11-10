@@ -79,6 +79,20 @@
     </modules>
 
     <!-- =============================================================== -->
+    <!-- Profiles -->
+    <!-- =============================================================== -->
+    <profiles>
+        <!-- Glyco-PAINT as one application with built-in Java (see paint-bundle/pom.xml).
+             Only built with -Pbundle; the normal build does not include it. -->
+        <profile>
+            <id>bundle</id>
+            <modules>
+                <module>paint-bundle</module>
+            </modules>
+        </profile>
+    </profiles>
+
+    <!-- =============================================================== -->
     <!-- Shared properties and encoding settings -->
     <!-- =============================================================== -->
     <properties>
