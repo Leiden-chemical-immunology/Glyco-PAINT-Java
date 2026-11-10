@@ -1,0 +1,649 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!--
+        Glyco-PAINT distributions for macOS and Windows, both with a built-in Java, both built
+        on a Mac.
+
+        A new packaging mechanism, built completely alongside the existing one (the separate
+        apps, paint-app, the release tool and the installers stay as they are). It is only
+        part of the build with the "packaging" profile:
+
+            mvn clean package -Ppackaging
+
+        It only takes the app JARs the other modules already produce, and writes to
+        packaging/target. Like the separate apps, Glyco-PAINT.app is also put in
+        ~/Applications/Glyco-PAINT.
+
+        Result (packaging/target/dist):
+            Glyco-PAINT-<version>-macos.dmg      Glyco-PAINT.app, to drag into Applications
+            Glyco-PAINT-<version>-windows-setup.exe  installer for Windows (NSIS): Glyco-PAINT
+                                                 and/or the separate apps, for the current
+                                                 user, Start menu entries, optional desktop
+                                                 shortcuts, uninstaller
+
+        Both contain the Launcher, the four apps (Get Omero, Create Experiment, Generate
+        Squares, Viewer) and a Java runtime. The Java version is fixed (bundle.jdk.* below),
+        independent of the JDK the build runs on: the build downloads that exact JDK for macOS
+        and for Windows (once; it is kept in ~/.m2/repository/.cache) and makes both runtimes
+        with jlink from the macOS one. jlink can make a runtime for another operating system,
+        but only from a JDK of exactly its own version, hence the fixed version.
+
+        The Windows .exe is made with launch4j, which runs on the Mac; it starts the Launcher
+        on the runtime folder next to it. The macOS app and .dmg are made with jpackage, which
+        only runs on macOS, so this module needs a Mac (Apple Silicon) to build. The Windows
+        installer is made with makensis (NSIS, src/nsis/glyco-paint.nsi), which runs on the Mac;
+        install it once with: brew install makensis
+    -->
+
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.github.jjabakker</groupId>
+        <artifactId>paint-parent</artifactId>
+        <version>0.0.139-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>paint-packaging</artifactId>
+    <packaging>pom</packaging>
+    <name>Packaging (macOS dmg and Windows installer, with built-in Java)</name>
+    <description>Glyco-PAINT distributions for macOS and Windows with a built-in Java runtime</description>
+
+    <properties>
+        <dist.name>Glyco-PAINT</dist.name>
+        <dist.main.jar>paint-launcher-${project.version}-jar-with-dependencies.jar</dist.main.jar>
+
+        <!-- The bundled Java: Eclipse Temurin, one fixed release for both operating systems.
+             To move to a newer release, change the release and the two download URLs and
+             checksums (from https://adoptium.net or api.adoptium.net). -->
+        <bundle.jdk.release>jdk-21.0.13+9</bundle.jdk.release>
+        <bundle.jdk.mac.url>https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.13%2B9/OpenJDK21U-jdk_aarch64_mac_hotspot_21.0.13_9.tar.gz</bundle.jdk.mac.url>
+        <bundle.jdk.mac.sha256>bf036b35b071bfb2f54f2c0af8ee8d88afa95ee6eb3dce02c0f94cfc2524d04a</bundle.jdk.mac.sha256>
+        <bundle.jdk.windows.url>https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.13%2B9/OpenJDK21U-jdk_x64_windows_hotspot_21.0.13_9.zip</bundle.jdk.windows.url>
+        <bundle.jdk.windows.sha256>a4dbaa05fca4bd89d84584e58c459bd732efebb1722af80ab13c6516832004f9</bundle.jdk.windows.sha256>
+
+        <!--
+            Java modules in the built-in runtime: what jdeps reports for the five JARs together,
+            plus jdk.crypto.ec for HTTPS. A missing module only shows up when the code that needs
+            it runs, so add to this list rather than trim it. (The same list as in paint-app;
+            kept separate on purpose, so this mechanism does not depend on that one.)
+        -->
+        <bundle.modules>java.base,java.compiler,java.desktop,java.instrument,java.management,java.naming,java.prefs,java.rmi,java.scripting,java.security.jgss,java.sql,java.xml.crypto,jdk.attach,jdk.jdi,jdk.unsupported,jdk.crypto.ec</bundle.modules>
+
+        <!-- Work folders, all under target -->
+        <work.download>${project.build.directory}/download</work.download>
+        <work.jdk.mac>${project.build.directory}/jdk-mac</work.jdk.mac>
+        <work.jdk.windows>${project.build.directory}/jdk-windows</work.jdk.windows>
+        <work.jdk.mac.home>${work.jdk.mac}/${bundle.jdk.release}/Contents/Home</work.jdk.mac.home>
+        <work.jdk.windows.home>${work.jdk.windows}/${bundle.jdk.release}</work.jdk.windows.home>
+        <work.input>${project.build.directory}/app-input</work.input>
+        <work.exe>${project.build.directory}/exe</work.exe>
+        <work.runtime.mac>${project.build.directory}/runtime-mac</work.runtime.mac>
+        <work.runtime.windows>${project.build.directory}/runtime-windows</work.runtime.windows>
+        <work.macos>${project.build.directory}/macos</work.macos>
+        <work.windows>${project.build.directory}/windows/${dist.name}</work.windows>
+        <work.dist>${project.build.directory}/dist</work.dist>
+    </properties>
+
+    <!-- The app JARs to bundle. Listing them here also makes Maven build them first. -->
+    <dependencies>
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-launcher</artifactId>
+            <version>${project.version}</version>
+            <classifier>jar-with-dependencies</classifier>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-get-omero</artifactId>
+            <version>${project.version}</version>
+            <classifier>jar-with-dependencies</classifier>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-create-experiment</artifactId>
+            <version>${project.version}</version>
+            <classifier>jar-with-dependencies</classifier>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-generate-squares</artifactId>
+            <version>${project.version}</version>
+            <classifier>standalone</classifier>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.jjabakker</groupId>
+            <artifactId>paint-viewer</artifactId>
+            <version>${project.version}</version>
+            <classifier>jar-with-dependencies</classifier>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+    </dependencies>
+
+    <!--
+        The steps, by phase (within a phase Maven runs the plugins in the order they are listed):
+            initialize          clear the output of a previous build
+            generate-resources  download both JDKs (checked against their SHA-256)
+            prepare-package     unpack both JDKs; jlink both runtimes; the Windows .exe files
+            package             collect the app JARs (Maven only hands them over from this phase
+                                on); jpackage Glyco-PAINT.app and the .dmg; assemble the Windows
+                                folder and make the installer from it; put Glyco-PAINT.app in
+                                ~/Applications/Glyco-PAINT
+
+        Nothing before compile may resolve this module's dependencies (antrun and exec do): the
+        parent's aggregate Javadoc forks the build up to compile at the very start, and the app
+        JARs would then be remembered as "not packaged yet".
+    -->
+    <build>
+        <plugins>
+
+            <!-- jpackage on macOS rejects a version that starts with 0, so the application version
+                 is the last number of the project version: 0.0.139 becomes 139 -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>parse-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Clear the output of a previous build (jlink and jpackage refuse existing folders) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>clear-output</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <configuration>
+                            <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                            <filesets>
+                                <fileset><directory>${work.jdk.mac}</directory></fileset>
+                                <fileset><directory>${work.jdk.windows}</directory></fileset>
+                                <fileset><directory>${work.input}</directory></fileset>
+                                <fileset><directory>${work.exe}</directory></fileset>
+                                <fileset><directory>${work.runtime.mac}</directory></fileset>
+                                <fileset><directory>${work.runtime.windows}</directory></fileset>
+                                <fileset><directory>${work.macos}</directory></fileset>
+                                <fileset><directory>${project.build.directory}/windows</directory></fileset>
+                                <fileset><directory>${work.dist}</directory></fileset>
+                            </filesets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Download both JDKs (cached in ~/.m2/repository/.cache, so only the first build
+                 downloads). The plugin's own unpacking leaves most files out, so tar unpacks. -->
+            <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>1.9.0</version>
+                <executions>
+                    <execution>
+                        <id>jdk-mac</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <uri>${bundle.jdk.mac.url}</uri>
+                            <sha256>${bundle.jdk.mac.sha256}</sha256>
+                            <outputFileName>jdk-mac.tar.gz</outputFileName>
+                            <outputDirectory>${work.download}</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jdk-windows</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <uri>${bundle.jdk.windows.url}</uri>
+                            <sha256>${bundle.jdk.windows.sha256}</sha256>
+                            <outputFileName>jdk-windows.zip</outputFileName>
+                            <outputDirectory>${work.download}</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Collect the app JARs in one folder -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.8.1</version>
+                <executions>
+                    <execution>
+                        <id>collect-app-jars</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${work.input}</outputDirectory>
+                            <excludeTransitive>true</excludeTransitive>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Unpack both JDKs (macOS tar handles .tar.gz and .zip and keeps file permissions),
+                 then jlink and jpackage, all from the downloaded macOS JDK -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>jdk-folders</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>mkdir</executable>
+                            <arguments>
+                                <argument>-p</argument>
+                                <argument>${work.jdk.mac}</argument>
+                                <argument>${work.jdk.windows}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>unpack-jdk-mac</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>tar</executable>
+                            <arguments>
+                                <argument>-xzf</argument>
+                                <argument>${work.download}/jdk-mac.tar.gz</argument>
+                                <argument>-C</argument>
+                                <argument>${work.jdk.mac}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>unpack-jdk-windows</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>tar</executable>
+                            <arguments>
+                                <argument>-xf</argument>
+                                <argument>${work.download}/jdk-windows.zip</argument>
+                                <argument>-C</argument>
+                                <argument>${work.jdk.windows}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <!-- No strip-native-commands: the Launcher starts the apps with bin/java(w) -->
+                    <execution>
+                        <id>jlink-mac</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${work.jdk.mac.home}/bin/jlink</executable>
+                            <arguments>
+                                <argument>--add-modules</argument>
+                                <argument>${bundle.modules}</argument>
+                                <argument>--strip-debug</argument>
+                                <argument>--no-header-files</argument>
+                                <argument>--no-man-pages</argument>
+                                <argument>--output</argument>
+                                <argument>${work.runtime.mac}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- A Windows runtime, made on the Mac from the Windows JDK's jmods -->
+                        <id>jlink-windows</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${work.jdk.mac.home}/bin/jlink</executable>
+                            <arguments>
+                                <argument>--module-path</argument>
+                                <argument>${work.jdk.windows.home}/jmods</argument>
+                                <argument>--add-modules</argument>
+                                <argument>${bundle.modules}</argument>
+                                <argument>--strip-debug</argument>
+                                <argument>--no-header-files</argument>
+                                <argument>--no-man-pages</argument>
+                                <argument>--output</argument>
+                                <argument>${work.runtime.windows}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jpackage-app</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${work.jdk.mac.home}/bin/jpackage</executable>
+                            <arguments>
+                                <argument>--type</argument>
+                                <argument>app-image</argument>
+                                <argument>--name</argument>
+                                <argument>${dist.name}</argument>
+                                <argument>--app-version</argument>
+                                <argument>${parsedVersion.incrementalVersion}</argument>
+                                <argument>--input</argument>
+                                <argument>${work.input}</argument>
+                                <argument>--main-jar</argument>
+                                <argument>${dist.main.jar}</argument>
+                                <argument>--main-class</argument>
+                                <argument>paint.launcher.PaintLauncher</argument>
+                                <argument>--runtime-image</argument>
+                                <argument>${work.runtime.mac}</argument>
+                                <argument>--dest</argument>
+                                <argument>${work.macos}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jpackage-dmg</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${work.jdk.mac.home}/bin/jpackage</executable>
+                            <arguments>
+                                <argument>--type</argument>
+                                <argument>dmg</argument>
+                                <argument>--name</argument>
+                                <argument>${dist.name}</argument>
+                                <argument>--app-version</argument>
+                                <argument>${parsedVersion.incrementalVersion}</argument>
+                                <argument>--app-image</argument>
+                                <argument>${work.macos}/${dist.name}.app</argument>
+                                <argument>--dest</argument>
+                                <argument>${work.macos}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- The Windows .exe files: Glyco-PAINT.exe (the Launcher) and one per app. Each starts
+                 its JAR in app\ on the Java in runtime\ next to it, so they all share one Java.
+                 The icons are those of the separate apps in the existing modules. -->
+            <plugin>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <version>2.5.0</version>
+                <configuration>
+                    <dontWrapJar>true</dontWrapJar>
+                    <chdir>.</chdir>
+                    <headerType>gui</headerType>
+                    <jre>
+                        <path>runtime</path>
+                        <requiresJdk>false</requiresJdk>
+                        <requires64Bit>true</requires64Bit>
+                    </jre>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>windows-exe</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                        <configuration>
+                            <outfile>${work.exe}/${dist.name}.exe</outfile>
+                            <jar>app\${dist.main.jar}</jar>
+                            <errTitle>${dist.name}</errTitle>
+                            <classPath>
+                                <mainClass>paint.launcher.PaintLauncher</mainClass>
+                                <addDependencies>false</addDependencies>
+                            </classPath>
+                            <versionInfo>
+                                <fileVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.0</fileVersion>
+                                <txtFileVersion>${project.version}</txtFileVersion>
+                                <productVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.0</productVersion>
+                                <txtProductVersion>${project.version}</txtProductVersion>
+                                <fileDescription>${project.description}</fileDescription>
+                                <productName>${dist.name}</productName>
+                                <companyName>Glyco-PAINT</companyName>
+                                <internalName>${dist.name}</internalName>
+                                <originalFilename>${dist.name}.exe</originalFilename>
+                            </versionInfo>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>windows-exe-viewer</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                        <configuration>
+                            <outfile>${work.exe}/Viewer.exe</outfile>
+                            <jar>app\paint-viewer-${project.version}-jar-with-dependencies.jar</jar>
+                            <errTitle>Viewer</errTitle>
+                            <icon>${project.basedir}/../paint-viewer/src/main/resources/icons/paint-viewer.ico</icon>
+                            <classPath>
+                                <mainClass>paint.viewer.app.Viewer</mainClass>
+                                <addDependencies>false</addDependencies>
+                            </classPath>
+                            <versionInfo>
+                                <fileVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.0</fileVersion>
+                                <txtFileVersion>${project.version}</txtFileVersion>
+                                <productVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.0</productVersion>
+                                <txtProductVersion>${project.version}</txtProductVersion>
+                                <fileDescription>Glyco-PAINT Viewer</fileDescription>
+                                <productName>Viewer</productName>
+                                <companyName>Glyco-PAINT</companyName>
+                                <internalName>Viewer</internalName>
+                                <originalFilename>Viewer.exe</originalFilename>
+                            </versionInfo>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>windows-exe-generate-squares</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                        <configuration>
+                            <outfile>${work.exe}/Generate Squares.exe</outfile>
+                            <jar>app\paint-generate-squares-${project.version}-standalone.jar</jar>
+                            <errTitle>Generate Squares</errTitle>
+                            <icon>${project.basedir}/../paint-generate-squares/src/main/resources/icons/paint-generate-squares.ico</icon>
+                            <classPath>
+                                <mainClass>paint.generatesquares.app.GenerateSquares</mainClass>
+                                <addDependencies>false</addDependencies>
+                            </classPath>
+                            <versionInfo>
+                                <fileVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.0</fileVersion>
+                                <txtFileVersion>${project.version}</txtFileVersion>
+                                <productVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.0</productVersion>
+                                <txtProductVersion>${project.version}</txtProductVersion>
+                                <fileDescription>Glyco-PAINT Generate Squares</fileDescription>
+                                <productName>Generate Squares</productName>
+                                <companyName>Glyco-PAINT</companyName>
+                                <internalName>Generate Squares</internalName>
+                                <originalFilename>Generate Squares.exe</originalFilename>
+                            </versionInfo>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>windows-exe-create-experiment</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                        <configuration>
+                            <outfile>${work.exe}/Create Experiment.exe</outfile>
+                            <jar>app\paint-create-experiment-${project.version}-jar-with-dependencies.jar</jar>
+                            <errTitle>Create Experiment</errTitle>
+                            <icon>${project.basedir}/../paint-create-experiment/src/main/resources/icons/paint-create-experiment.ico</icon>
+                            <classPath>
+                                <mainClass>createexperiment.app.CreateExperimentUI</mainClass>
+                                <addDependencies>false</addDependencies>
+                            </classPath>
+                            <versionInfo>
+                                <fileVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.0</fileVersion>
+                                <txtFileVersion>${project.version}</txtFileVersion>
+                                <productVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.0</productVersion>
+                                <txtProductVersion>${project.version}</txtProductVersion>
+                                <fileDescription>Glyco-PAINT Create Experiment</fileDescription>
+                                <productName>Create Experiment</productName>
+                                <companyName>Glyco-PAINT</companyName>
+                                <internalName>Create Experiment</internalName>
+                                <originalFilename>Create Experiment.exe</originalFilename>
+                            </versionInfo>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>windows-exe-get-omero</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                        <configuration>
+                            <outfile>${work.exe}/Get Omero.exe</outfile>
+                            <jar>app\paint-get-omero-${project.version}-jar-with-dependencies.jar</jar>
+                            <errTitle>Get Omero</errTitle>
+                            <icon>${project.basedir}/../paint-get-omero/src/main/resources/icons/paint-get-omero.ico</icon>
+                            <classPath>
+                                <mainClass>paint.getomero.app.GetOmeroUI</mainClass>
+                                <addDependencies>false</addDependencies>
+                            </classPath>
+                            <versionInfo>
+                                <fileVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.0</fileVersion>
+                                <txtFileVersion>${project.version}</txtFileVersion>
+                                <productVersion>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.0</productVersion>
+                                <txtProductVersion>${project.version}</txtProductVersion>
+                                <fileDescription>Glyco-PAINT Get Omero</fileDescription>
+                                <productName>Get Omero</productName>
+                                <companyName>Glyco-PAINT</companyName>
+                                <internalName>Get Omero</internalName>
+                                <originalFilename>Get Omero.exe</originalFilename>
+                            </versionInfo>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- The Windows folder (Glyco-PAINT.exe, app\ with the JARs, runtime\ with Java) and
+                 the installer made from it; both distributions under their final names in
+                 target/dist -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>distributions</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <copy todir="${work.windows}">
+                                    <fileset dir="${work.exe}" includes="*.exe"/>
+                                </copy>
+                                <copy todir="${work.windows}/app">
+                                    <fileset dir="${work.input}" includes="*.jar"/>
+                                </copy>
+                                <copy todir="${work.windows}/runtime">
+                                    <fileset dir="${work.runtime.windows}"/>
+                                </copy>
+                                <mkdir dir="${work.dist}"/>
+                                <move file="${work.macos}/${dist.name}-${parsedVersion.incrementalVersion}.dmg"
+                                      tofile="${work.dist}/${dist.name}-${project.version}-macos.dmg"/>
+                                <echo message="✅ ${work.dist}/${dist.name}-${project.version}-macos.dmg"/>
+
+                                <!-- The Windows installer (NSIS), made from the same folder. makensis
+                                     is looked for in Homebrew's folders first, because IntelliJ's
+                                     Maven may not have them on its PATH. -->
+                                <property environment="sysenv"/>
+                                <condition property="makensis" value="/opt/homebrew/bin/makensis">
+                                    <available file="/opt/homebrew/bin/makensis"/>
+                                </condition>
+                                <condition property="makensis" value="/usr/local/bin/makensis">
+                                    <available file="/usr/local/bin/makensis"/>
+                                </condition>
+                                <condition property="makensis" value="makensis">
+                                    <available file="makensis" filepath="${sysenv.PATH}"/>
+                                </condition>
+                                <fail unless="makensis"
+                                      message="makensis (NSIS) is needed to build the Windows installer. Install it once with: brew install makensis"/>
+                                <exec executable="${makensis}" failonerror="true">
+                                    <arg value="-V2"/>
+                                    <arg value="-DSOURCE_DIR=${work.windows}"/>
+                                    <arg value="-DOUTFILE=${work.dist}/${dist.name}-${project.version}-windows-setup.exe"/>
+                                    <arg value="-DVERSION=${project.version}"/>
+                                    <arg value="-DVIVERSION=${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.0"/>
+                                    <arg value="${project.basedir}/src/nsis/glyco-paint.nsi"/>
+                                </exec>
+                                <echo message="✅ ${work.dist}/${dist.name}-${project.version}-windows-setup.exe"/>
+
+                                <!-- Like the separate apps: put Glyco-PAINT.app in ~/Applications/Glyco-PAINT.
+                                     ditto, not Ant copy: the app carries its own Java, whose programs
+                                     and libraries must keep their permissions and signatures. -->
+                                <mkdir dir="${user.home}/Applications/Glyco-PAINT"/>
+                                <delete dir="${user.home}/Applications/Glyco-PAINT/${dist.name}.app" quiet="true"/>
+                                <exec executable="ditto" failonerror="true">
+                                    <arg value="${work.macos}/${dist.name}.app"/>
+                                    <arg value="${user.home}/Applications/Glyco-PAINT/${dist.name}.app"/>
+                                </exec>
+                                <echo message="✅ Installed to ~/Applications/Glyco-PAINT/${dist.name}.app"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- The parent's aggregate Javadoc (bound to package) forks a build of all modules,
+                 which runs the steps above again and leaves the app JARs as "not packaged yet".
+                 Skipping is not enough (the fork happens first), so unbind it here. This module
+                 has no code to document. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>aggregate-build-javadoc</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Nothing to publish to ~/.m2: the results are in target/dist -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

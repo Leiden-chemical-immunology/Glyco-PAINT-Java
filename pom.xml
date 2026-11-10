@@ -83,6 +83,21 @@
     </modules>
 
     <!-- =============================================================== -->
+    <!-- Profiles -->
+    <!-- =============================================================== -->
+    <profiles>
+        <!-- New packaging mechanism, alongside the existing one: macOS .dmg and Windows .zip
+             with built-in Java (see packaging/pom.xml). Only built with -Ppackaging; the
+             normal build does not include it. -->
+        <profile>
+            <id>packaging</id>
+            <modules>
+                <module>packaging</module>
+            </modules>
+        </profile>
+    </profiles>
+
+    <!-- =============================================================== -->
     <!-- Shared properties and encoding settings -->
     <!-- =============================================================== -->
     <properties>
