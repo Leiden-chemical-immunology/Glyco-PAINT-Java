@@ -10,7 +10,10 @@ package release.support;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -30,6 +33,47 @@ public final class GitUtils {
         if (exit != 0) {
             throw new RuntimeException("❌ Command failed: " + String.join(" ", cmd));
         }
+    }
+
+    /**
+     * Returns the uncommitted changes ({@code git status --porcelain}), one entry per file;
+     * empty when the working tree is clean.
+     */
+    public static List<String> uncommittedChanges(Path repoDir) throws IOException, InterruptedException {
+        ProcessBuilder pb = new ProcessBuilder("git", "status", "--porcelain");
+        pb.directory(repoDir.toFile());
+        Process proc = pb.start();
+        List<String> changes = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (!line.trim().isEmpty()) {
+                    changes.add(line);
+                }
+            }
+        }
+        if (proc.waitFor() != 0) {
+            throw new RuntimeException("❌ git status failed in " + repoDir);
+        }
+        return changes;
+    }
+
+    /**
+     * Commits the changes to pom.xml files that are already under version control, and nothing
+     * else: a new pom.xml (a module that is not committed yet) and other changed files stay out.
+     */
+    public static void commitTrackedPoms(String message, Path repoDir) throws IOException, InterruptedException {
+        runCommand(Arrays.asList("git", "add", "-u", "--", ":(glob)**/pom.xml"), repoDir);
+        runCommand(Arrays.asList("git", "commit", "-m", message), repoDir);
+    }
+
+    /**
+     * Commits the POMs with the release version and tags that commit {@code v<releaseVersion>},
+     * so checking out the tag gives exactly what was released.
+     */
+    public static void commitReleaseAndTag(String releaseVersion, Path repoDir) throws IOException, InterruptedException {
+        commitTrackedPoms("Release " + releaseVersion, repoDir);
+        createLocalTag("v" + releaseVersion, repoDir);
     }
 
     public static boolean tagExists(String tagName, Path repoDir) throws IOException, InterruptedException {

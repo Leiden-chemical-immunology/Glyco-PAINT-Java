@@ -158,6 +158,10 @@ public class ReleaseNewVersion {
             currentVersion = currentVersion + "-SNAPSHOT";
         }
 
+        if (doRelease) {
+            checkReadyForRelease(PomUtils.computeVersions(currentVersion).releaseVersion);
+        }
+
         VersionInfo versionInfo;   // created only if bump or release requested
 
         // -------------------------------------------------------------
@@ -168,8 +172,7 @@ public class ReleaseNewVersion {
             System.out.println("ℹ️  Rebuild-only mode. No version changes.");
             System.out.println("ℹ️  Using version: " + currentVersion);
 
-            MavenSupport.installParentPom();
-            MavenSupport.rebuildSharedUtils();
+            MavenSupport.installModulesAndDependencies(PathsConfig.MODULES);
 
             // continue into build-artifacts block using currentVersion
             versionInfo = new VersionInfo(currentVersion, currentVersion + "-IGNORED");
@@ -188,8 +191,7 @@ public class ReleaseNewVersion {
             System.out.println("🚀 Next dev : " + versionInfo.nextDevVersion);
 
             MavenSupport.alignAllPomVersions(versionInfo.releaseVersion);
-            MavenSupport.installParentPom();
-            MavenSupport.rebuildSharedUtils();
+            MavenSupport.installModulesAndDependencies(PathsConfig.MODULES);
 
         }
         // -------------------------------------------------------------
@@ -208,8 +210,7 @@ public class ReleaseNewVersion {
             MavenSupport.alignAllPomVersions(versionInfo.releaseVersion);
             PomUtils.removeSnapshotFromAllPoms(PathsConfig.BASE_PATH);
 
-            MavenSupport.installParentPom();
-            MavenSupport.rebuildSharedUtils();
+            MavenSupport.installModulesAndDependencies(PathsConfig.MODULES);
         }
 
         // -------------------------------------------------------------
@@ -301,9 +302,15 @@ public class ReleaseNewVersion {
         Files.copy(winBuilt, winFinal, StandardCopyOption.REPLACE_EXISTING);
 
         // -------------------------------------------------------------
-        // Post-release: tag + push + bump back to next SNAPSHOT
+        // Post-release: commit + tag the release, bump to next SNAPSHOT, push the tag
         // -------------------------------------------------------------
         if (doRelease) {
+            String tagName = "v" + versionInfo.releaseVersion;
+
+            // The tag goes on the commit with the release version, so checking it out gives
+            // exactly what was released.
+            GitUtils.commitReleaseAndTag(versionInfo.releaseVersion, PathsConfig.BASE_PATH);
+
             System.out.println("\n🚀 Preparing next development iteration...");
 
             String nextSnapshot = versionInfo.nextDevVersion;
@@ -315,17 +322,8 @@ public class ReleaseNewVersion {
                     "-DprocessAllModules=false"
             ), PathsConfig.BASE_PATH, "versions:set (parent only)");
 
-            GitUtils.runCommand(Arrays.asList("bash", "-c",
-                                              "shopt -s globstar; git add pom.xml **/pom.xml"), PathsConfig.BASE_PATH);
-
-            GitUtils.runCommand(Arrays.asList("git", "commit", "-m",
-                                              "Bump project to " + nextSnapshot + " for next development cycle"), PathsConfig.BASE_PATH);
-
-            String tagName = "v" + versionInfo.releaseVersion;
-
-            if (!GitUtils.tagExists(tagName, PathsConfig.BASE_PATH)) {
-                GitUtils.createLocalTag(tagName, PathsConfig.BASE_PATH);
-            }
+            GitUtils.commitTrackedPoms("Bump project to " + nextSnapshot + " for next development cycle",
+                                       PathsConfig.BASE_PATH);
 
             GitUtils.pushTag(tagName, PathsConfig.BASE_PATH);
 
@@ -333,5 +331,22 @@ public class ReleaseNewVersion {
         }
 
         System.out.println("\n🎉 All builds complete for " + versionInfo.releaseVersion);
+    }
+
+    /**
+     * Stops a full release before it changes anything if the working tree has uncommitted
+     * changes (they would end up mixed with, or left out of, the release commit) or if the
+     * release tag already exists.
+     */
+    private static void checkReadyForRelease(String releaseVersion) throws Exception {
+        List<String> changes = GitUtils.uncommittedChanges(PathsConfig.BASE_PATH);
+        if (!changes.isEmpty()) {
+            throw new IllegalStateException("The working tree has uncommitted changes. Commit or stash them before a release:\n   "
+                                                    + String.join("\n   ", changes));
+        }
+        String tagName = "v" + releaseVersion;
+        if (GitUtils.tagExists(tagName, PathsConfig.BASE_PATH)) {
+            throw new IllegalStateException("Tag " + tagName + " already exists.");
+        }
     }
 }

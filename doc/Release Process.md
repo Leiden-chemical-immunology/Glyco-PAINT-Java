@@ -18,7 +18,13 @@ It must be run with the project as the working directory (it derives paths from
 sibling folder `<parent>/Glyco-PAINT-Builds`.
 
 **Prerequisites:** `mvn`, `git`, and (for publishing) the `gh` CLI installed and
-authenticated. The app modules must build cleanly.
+authenticated. The app modules must build cleanly. For a full release (mode 3) the
+working tree must be clean and the tag `v<version>` must not exist yet; otherwise
+the tool stops before changing anything.
+
+Before building the apps one by one, the tool installs them together with every
+project module they depend on (`mvn install -pl <apps> -am`), so a new library
+module needs no change to the tool.
 
 ---
 
@@ -30,7 +36,7 @@ Run with **no arguments** for an interactive menu, or pass a flag:
 |------|---------------|---------|----------------|
 | **1. Rebuild only** | no args → choose `1` (default) | unchanged | no |
 | **2. Bump version only** | no args → choose `2`, or `--bump-version` | bumps (drops `-SNAPSHOT`), aligns all POMs | no |
-| **3. Full release** | no args → choose `3`, or `--release` | bumps to release version | **yes** — tags `v<version>`, pushes, then bumps POMs to next `-SNAPSHOT` and commits |
+| **3. Full release** | no args → choose `3`, or `--release` | bumps to release version | **yes** — commits the POMs as `Release <version>` and tags that commit `v<version>`, then bumps the POMs to the next `-SNAPSHOT` and commits, then pushes the tag. Only tracked `pom.xml` files are committed. The branch itself is not pushed. |
 
 All three modes build the same artifacts (below). Only mode 3 changes Git state.
 

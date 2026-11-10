@@ -21,29 +21,37 @@ public final class MavenSupport {
     private MavenSupport() {
     }
 
-    public static void rebuildSharedUtils() throws IOException, InterruptedException {
-        Path utilsDir = PathsConfig.BASE_PATH.resolve("paint-shared-utils");
-        System.out.println("\n🧱 Building paint-shared-utils...");
-        if (!Files.exists(utilsDir.resolve("pom.xml"))) {
-            throw new IOException("Missing pom.xml in " + utilsDir);
-        }
-
-        String localRepo = System.getProperty("user.home") + "/.m2/repository";
-        List<String> cmd = Arrays.asList(
-                "mvn", "-q", "-U", "clean", "install",
-                "-DskipTests",
-                "-Dmaven.repo.local=" + localRepo
-        );
+    /**
+     * Installs the given modules into the local repository together with every project module
+     * they depend on (the parent POM, paint-shared-utils, paint-ui-common, ...).
+     * <p>
+     * The modules are later built one by one from their own folder, which only works if what
+     * they depend on is already installed. Maven works out that list itself ({@code -am}), so a
+     * new library module does not have to be added here by hand.
+     */
+    public static void installModulesAndDependencies(List<String> modules) throws IOException, InterruptedException {
+        List<String> cmd = installModulesAndDependenciesCommand(modules);
+        System.out.println("\n🧱 Installing the modules and everything they depend on...");
         System.out.println("🔧 Running: " + String.join(" ", cmd));
 
         ProcessBuilder pb = new ProcessBuilder(cmd);
-        pb.directory(utilsDir.toFile());
-        Process process = ProcessRunner.startAndFilterOutput(pb, "paint-shared-utils");
+        pb.directory(PathsConfig.BASE_PATH.toFile());
+        Process process = ProcessRunner.startAndFilterOutput(pb, "dependencies");
         int exit = process.waitFor();
         if (exit != 0) {
-            throw new RuntimeException("❌ Failed to install paint-shared-utils. Exit code: " + exit);
+            throw new RuntimeException("❌ Failed to install the modules and their dependencies. Exit code: " + exit);
         }
-        System.out.println("✅ paint-shared-utils installed successfully (refreshed local repo).");
+        System.out.println("✅ Modules and their dependencies installed (refreshed local repo).");
+    }
+
+    static List<String> installModulesAndDependenciesCommand(List<String> modules) {
+        return Arrays.asList(
+                "mvn", "-q", "-U", "install",
+                "-DskipTests",
+                "-pl", String.join(",", modules),
+                "-am",
+                "-Dmaven.repo.local=" + System.getProperty("user.home") + "/.m2/repository"
+        );
     }
 
     public static void buildAndCollect(Path moduleDir, String profile, String glob, Path destDir)
@@ -104,30 +112,6 @@ public final class MavenSupport {
             }
         }
         Thread.sleep(2000);
-    }
-
-    public static void installParentPom() throws IOException, InterruptedException {
-        Path parentPom = PathsConfig.BASE_PATH.resolve("pom.xml");
-        System.out.println("\n🧩 Installing parent POM locally...");
-        if (!Files.exists(parentPom)) {
-            throw new IOException("Parent POM not found at " + parentPom);
-        }
-
-        List<String> cmd = Arrays.asList(
-                "mvn", "-q", "-U", "install", "-N", "-DskipTests",
-                "-Dmaven.repo.local=" + System.getProperty("user.home") + "/.m2/repository"
-        );
-        System.out.println("🔧 Running: " + String.join(" ", cmd));
-
-        ProcessBuilder pb = new ProcessBuilder(cmd);
-        pb.directory(PathsConfig.BASE_PATH.toFile());
-        Process process = ProcessRunner.startAndFilterOutput(pb, "paint-parent");
-        int exit = process.waitFor();
-        if (exit != 0) {
-            throw new RuntimeException("❌ Failed to install paint-parent. Exit code: " + exit);
-        }
-
-        System.out.println("✅ Parent POM installed locally.");
     }
 
     public static void installParentPomAsRelease(String releaseVersion) throws IOException, InterruptedException {
