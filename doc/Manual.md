@@ -9,14 +9,14 @@
 
 <hr style="width:120px; border:0; border-top:2px solid #555; margin:18px auto 24px;" />
 
-<p style="text-align:center; margin:0; font-size:1.1em;">Version 0.0.132 · Updated: 5 December 2025</p>
+<p style="text-align:center; margin:0; font-size:1.1em;">Version 0.0.138 · Updated: 10 November 2026</p>
 
 <p style="text-align:center; margin:0;"><strong>Authors:</strong> J. Bakker</p>
 <p style="text-align:center; margin:4px 0 18px; color:#555;">Leiden Chemical Immunology | LIC, Leiden University</p>
 
 <p style="text-align:center" style="margin:0;">
   <strong>Code:</strong>
-  <a href="https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java">Glyco‑PAINT Java</a> ·
+  <a href="https://github.com/Leiden-chemical-immunology/Glyco-PAINT-Java">Glyco‑PAINT Java</a>
 </p>
 <p style="text-align:center" style="margin:6px 0 18px;">
   <strong>Docs:</strong>
