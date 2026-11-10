@@ -44,8 +44,7 @@ Evidence: the manifests of the locally built JARs (`paint-fiji-plugin`, `paint-v
 (`.github/workflows/build-and-test.yml`).
 
 So the local builds already use a modern JDK, and only the bytecode level keeps Java 8
-compatibility. Note: `CLAUDE.md` currently says the parent POM *enforces* `[1.8,1.9)` — that is
-wrong and should be corrected.
+compatibility. (Fixed in the Java 21 move: the enforcer is now active, see section 7.)
 
 ### 2.2 The Fiji plugin JAR carries its own copy of ImageJ and other libraries
 
@@ -327,7 +326,30 @@ gets its own change note.
 
 ---
 
-## 7. Open questions
+## 7. What was done (2026-11-10)
+
+Hans decided to drop Java 8 entirely; other users will be told to install JDK 21.
+
+- **Build moved to Java 21** (`release 21`, enforcer `[21,)` now active), compiled against
+  **TrackMate 8.1.6**, with `ij`, `imglib2` and Bio-Formats aligned to it. The macOS and Windows
+  launchers require Java 21 or newer; the JDK 8 code-cache flags were removed from
+  `app.jvm.args`; CI and the release tool use JDK 21. No code changes were needed for TrackMate 8.
+  `mvn clean test` (all tests incl. the golden master) and `mvn clean install` pass.
+- **Released as 0.0.138**; the project is now on 0.0.139-SNAPSHOT.
+- **Which Java the user needs (3.5):** the user installs JDK 21 (option 1) for the installer and
+  the separate apps. In addition, on macOS, **`Glyco-PAINT.app`** (module `paint-app`, built with
+  jlink + jpackage in the normal build) bundles the Launcher and the four apps with a built-in
+  Java (option 2). For now the macOS installer offers it **next to** the four separate apps.
+- **Installers (3.4):** still look only for `Fiji.app` on macOS; with Fiji Latest (`Fiji`) the user
+  picks the folder.
+
+Still open: the result comparison of section 6 (TrackMate 8 versus 7.14), checking
+`processAfterDetection` against TrackMate 8.1.6, and the plugin's bundled copies of ImageJ and
+the logging libraries (2.2).
+
+---
+
+## 8. Open questions
 
 - What exactly changed in the TrackMate 8 API and in LoG / SparseLAP behaviour?
 - Does `processAfterDetection` still match `process()` in TrackMate 8?
