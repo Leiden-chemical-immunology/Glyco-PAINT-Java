@@ -263,6 +263,18 @@ public class ReleaseNewVersion {
             MavenSupport.buildAndCollect(pluginDir, "", "*-jar-with-dependencies.jar", pluginPath);
         }
 
+        // Glyco-PAINT.app (paint-app): the Launcher and the four apps with a built-in Java
+        // runtime, next to the separate apps in the macOS payload. Built from the project root
+        // with -am, so Maven also builds the Launcher and the apps it bundles. macOS only:
+        // jpackage builds for the system it runs on.
+        MavenSupport.runMaven(Arrays.asList(
+                "mvn", "-q", "-B", "package", "-DskipTests",
+                "-pl", "paint-app", "-am"
+        ), PathsConfig.BASE_PATH, "paint-app");
+        Path glycoPaintApp = FileOps.requireArtifact(
+                PathsConfig.BASE_PATH.resolve("paint-app/target/bundle"), "Glyco-PAINT.app");
+        FileOps.copyDirectory(glycoPaintApp, macOSPath.resolve("Glyco-PAINT.app"));
+
         // -------------------------------------------------------------
         // If bump or release: build installers
         // -------------------------------------------------------------

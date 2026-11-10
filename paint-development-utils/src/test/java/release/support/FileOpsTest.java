@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FileOpsTest {
@@ -39,6 +40,18 @@ class FileOpsTest {
         assertTrue(Files.isDirectory(release));
         assertTrue(Files.isDirectory(older));
         assertTrue(Files.isDirectory(next));
+    }
+
+    @Test
+    @DisplayName("a macOS app bundle is found as an artifact, a plain file named .app is not")
+    void requireArtifactAcceptsAppBundleFolder() throws IOException {
+        Path target = Files.createDirectories(builds.resolve("target"));
+        Path app    = Files.createDirectories(target.resolve("Glyco-PAINT.app/Contents"));
+
+        assertTrue(Files.isSameFile(app.getParent(), FileOps.requireArtifact(target, "Glyco-PAINT.app")));
+
+        Files.write(target.resolve("Fake.app"), new byte[]{1});
+        assertThrows(IOException.class, () -> FileOps.requireArtifact(target, "Fake.app"));
     }
 
     @Test

@@ -132,13 +132,15 @@ public final class FileOps {
      * there.
      *
      * @param dir      the directory to look in (typically a module's {@code target})
-     * @param fileName the exact file name expected, e.g. {@code paint-installer-macos-1.2.3.jar}
+     * @param fileName the exact name expected, e.g. {@code paint-installer-macos-1.2.3.jar}, or a
+     *                 macOS app bundle (a folder) such as {@code Glyco-PAINT.app}
      * @return the path to that artifact
      * @throws IOException if it does not exist, listing what the directory does contain
      */
     public static Path requireArtifact(Path dir, String fileName) throws IOException {
         Path artifact = dir.resolve(fileName);
-        if (Files.isRegularFile(artifact)) {
+        boolean appBundle = fileName.endsWith(".app");
+        if (appBundle ? Files.isDirectory(artifact) : Files.isRegularFile(artifact)) {
             return artifact;
         }
 
