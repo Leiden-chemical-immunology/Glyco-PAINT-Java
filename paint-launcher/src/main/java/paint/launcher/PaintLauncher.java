@@ -14,7 +14,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -240,34 +246,47 @@ public class PaintLauncher {
 
     /**
      * Launches an external application by locating a JAR file with a specified prefix
-     * and executing it as a new process. The method searches for the JAR files in a
-     * predefined directory and displays error messages if no matching JAR is found or
-     * if the process fails to start.
+     * and executing it as a new process, with the same Java the launcher runs on.
+     * <p>
+     * The JAR is looked for first in the folder that holds the launcher's own JAR (which is
+     * where the bundled Glyco-PAINT app keeps all its JARs), then in {@code jars} under the
+     * current working directory. Displays an error if no matching JAR is found or if the
+     * process fails to start.
      *
      * @param jarPrefix The prefix of the JAR file name to be located and executed.
      * @param parent    The parent component for displaying error messages in dialog boxes.
      */
     private static void launchApp(String jarPrefix, Component parent) {
-        File jarDir = new File(System.getProperty("user.dir"), JAR_DIR);
-        if (!jarDir.exists() || !jarDir.isDirectory()) {
+        List<File> jarDirs = new ArrayList<>();
+        File ownDir = ownJarDirectory();
+        if (ownDir != null) {
+            jarDirs.add(ownDir);
+        }
+        jarDirs.add(new File(System.getProperty("user.dir"), JAR_DIR));
+
+        File jarFile = null;
+        for (File jarDir : jarDirs) {
+            File[] matches = jarDir.listFiles(f -> f.getName().startsWith(jarPrefix) && f.getName().endsWith(".jar"));
+            if (matches != null && matches.length > 0) {
+                jarFile = matches[0];
+                break;
+            }
+        }
+
+        if (jarFile == null) {
+            StringBuilder searched = new StringBuilder();
+            for (File jarDir : jarDirs) {
+                searched.append('\n').append(jarDir.getAbsolutePath());
+            }
             JOptionPane.showMessageDialog(parent,
-                                          "JAR directory not found:\n" + jarDir.getAbsolutePath(),
+                                          "No matching JAR found for prefix:\n" + jarPrefix
+                                                  + "\n\nSearched in:" + searched,
                                           "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        File[] matches = jarDir.listFiles(f -> f.getName().startsWith(jarPrefix) && f.getName().endsWith(".jar"));
-
-        if (matches == null || matches.length == 0) {
-            JOptionPane.showMessageDialog(parent,
-                                          "No matching JAR found for prefix:\n" + jarPrefix,
-                                          "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        File jarFile = matches[0];
         try {
-            new ProcessBuilder("java", "-jar", jarFile.getAbsolutePath())
+            new ProcessBuilder(javaExecutable(), "-jar", jarFile.getAbsolutePath())
                     .inheritIO()
                     .start();
         } catch (IOException e) {
@@ -275,6 +294,38 @@ public class PaintLauncher {
                                           "Failed to launch:\n" + jarFile.getName() + "\n\n" + e.getMessage(),
                                           "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    /**
+     * Returns the folder that holds the JAR (or classes folder) this class was loaded from,
+     * or {@code null} if it cannot be determined.
+     */
+    private static File ownJarDirectory() {
+        try {
+            Path location = Paths.get(PaintLauncher.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            Path parent   = location.getParent();
+            return parent == null ? null : parent.toFile();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the java executable of the Java the launcher itself runs on, so the applications
+     * start on the same Java (in the bundled app: its built-in Java). On Windows {@code javaw.exe}
+     * is preferred, so no console window opens. Falls back to {@code java} on the PATH.
+     */
+    private static String javaExecutable() {
+        boolean windows = System.getProperty("os.name", "").toLowerCase(Locale.ROOT).startsWith("windows");
+        Path    bin     = Paths.get(System.getProperty("java.home"), "bin");
+        String[] names  = windows ? new String[]{"javaw.exe", "java.exe"} : new String[]{"java"};
+        for (String name : names) {
+            Path candidate = bin.resolve(name);
+            if (Files.isExecutable(candidate)) {
+                return candidate.toString();
+            }
+        }
+        return "java";
     }
 
     public static void main(String[] args) {
