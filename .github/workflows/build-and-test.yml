@@ -26,14 +26,13 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v5
 
-      # The parent POM enforces requireJavaVersion [1.8,1.9), and the whole
-      # project is a Java 8 baseline (Fiji), so build on 8 — same as the
-      # existing site workflow.
-      - name: Set up JDK 8
+      # The parent POM enforces requireJavaVersion [21,), and the project is a
+      # Java 21 baseline (Fiji Latest), so build on 21 - same as the site workflow.
+      - name: Set up JDK 21
         uses: actions/setup-java@v5
         with:
           distribution: zulu
-          java-version: 8
+          java-version: 21
           cache: maven
 
       - name: Run tests

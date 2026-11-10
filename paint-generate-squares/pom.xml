@@ -224,7 +224,7 @@
     <key>CFBundleVersion</key><string>${project.version}</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>NSHighResolutionCapable</key><true/>
-    <key>JVMVersion</key><string>1.8*</string>
+    <key>JVMVersion</key><string>21+</string>
 </dict>
 </plist>
 ]]></echo>
@@ -235,9 +235,9 @@
 # macOS launcher for ${app.name}
 cd "$(dirname "$0")/../Java"
 
-# Use JAVA_HOME if set; otherwise auto-detect Java 8 via /usr/libexec/java_home
+# Use JAVA_HOME if set; otherwise auto-detect Java 21 or newer via /usr/libexec/java_home
 if [ -z "$JAVA_HOME" ]; then
-  JAVA_CMD="$(/usr/libexec/java_home -v1.8)/bin/java"
+  JAVA_CMD="$(/usr/libexec/java_home -v 21+)/bin/java"
 else
   JAVA_CMD="$JAVA_HOME/bin/java"
 fi
@@ -295,7 +295,7 @@ exec "$JAVA_CMD" ${app.jvm.args} -jar "${project.artifactId}-${project.version}-
                                     <dontWrapJar>false</dontWrapJar>
                                     <icon>${app.icon.windows}</icon>
                                     <jre>
-                                        <minVersion>1.8.0</minVersion>
+                                        <minVersion>21</minVersion>
                                     </jre>
                                     <classPath>
                                         <mainClass>paint.generatesquares.app.GenerateSquares</mainClass>

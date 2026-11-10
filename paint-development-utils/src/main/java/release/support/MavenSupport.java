@@ -159,7 +159,7 @@ public final class MavenSupport {
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(PathsConfig.BASE_PATH.toFile());
         pb.inheritIO();
-        ProcessRunner.enforceJava8(pb);
+        ProcessRunner.enforceJava21(pb);
         Process process = pb.start();
         int exit = process.waitFor();
 

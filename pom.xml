@@ -83,10 +83,8 @@
     <!-- =============================================================== -->
     <properties>
 
-        <!-- Java 8 baseline. Kept as source/target (not release) so the project still
-             builds under an actual JDK 8, whose javac has no release flag. -->
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <!-- Java 21 baseline, the Java that Fiji Latest ships. -->
+        <maven.compiler.release>21</maven.compiler.release>
 
         <!-- Encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -127,21 +125,8 @@
         <maven-scm-publish-plugin.version>3.1.0</maven-scm-publish-plugin.version>
         <maven-shade-plugin.version>3.5.3</maven-shade-plugin.version>
 
-        <!--
-            Default JVM arguments for the launcher scripts of the packaged applications.
-
-            ReservedCodeCacheSize and UseCodeCacheFlushing are not tuning: they work around a
-            JDK 8 defect. Loading ImageJ, TrackMate and Bio-Formats JIT-compiles a very large
-            number of methods. When the code cache comes under pressure, JDK 8's flushing
-            fragments it and can then disable the compiler outright, reporting "CodeCache is
-            full" while most of the cache is still free ("not enough contiguous free space").
-            From that moment the application runs interpreted - several times slower, with no
-            error and nothing in the log. A long Generate Squares run would simply take far
-            longer for no visible reason.
-
-            A large cache and no flushing keeps it well away from that threshold.
-        -->
-        <app.jvm.args>-Xms512m -Xmx2048m -XX:ReservedCodeCacheSize=512m -XX:-UseCodeCacheFlushing</app.jvm.args>
+        <!-- Default JVM arguments for the launcher scripts of the packaged applications. -->
+        <app.jvm.args>-Xms512m -Xmx2048m</app.jvm.args>
     </properties>
 
     <!-- =============================================================== -->
@@ -340,8 +325,7 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler-plugin.version}</version>
                     <configuration>
-                        <source>${maven.compiler.source}</source>
-                        <target>${maven.compiler.target}</target>
+                        <release>${maven.compiler.release}</release>
                         <compilerArgs>
                             <arg>-Xlint:-options</arg>
                         </compilerArgs>
@@ -376,7 +360,7 @@
                     <version>${maven-surefire-plugin.version}</version>
                 </plugin>
 
-                <!-- Enforce Java 8 requirement -->
+                <!-- Enforce Java 21 requirement -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
@@ -390,7 +374,7 @@
                             <configuration>
                                 <rules>
                                     <requireJavaVersion>
-                                        <version>[1.8,1.9)</version>
+                                        <version>[21,)</version>
                                     </requireJavaVersion>
                                 </rules>
                             </configuration>
@@ -437,6 +421,12 @@
 
 
         <plugins>
+
+            <!-- Activate the Java version check declared in pluginManagement -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+            </plugin>
 
             <!-- Force doclint off and generate aggregate Javadoc during build -->
             <plugin>
