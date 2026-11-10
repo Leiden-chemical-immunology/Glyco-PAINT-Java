@@ -61,7 +61,7 @@ Two entry points, plus supporting helpers in the `release.support` sub-package.
 | `MavenSupport.java` | Runs Maven operations (install parent POM, build modules) during the release. |
 | `GitUtils.java` | Git operations used by the release (tag, push, commit, status). |
 | `PomUtils.java` | Reads and updates `<version>` in `pom.xml` files (version bumping). |
-| `ProcessRunner.java` | Executes external system processes and captures their output (used to run Maven, Git, etc.); enforces a Java 8 environment where possible. |
+| `ProcessRunner.java` | Executes external system processes and captures their output (used to run Maven, Git, etc.); points Maven at an installed JDK 21 or newer (via `/usr/libexec/java_home`) where possible. |
 | `FileOps.java` | File-system helpers for the release pipeline (payload zipping, file collection). |
 | `PathsConfig.java` | Path constants / directory layout for the release pipeline. |
 | `VersionInfo.java` | Small value object encapsulating a parsed version. |

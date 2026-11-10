@@ -97,14 +97,14 @@ This document explains how to use the pipeline. It is maintained as Markdown on 
 
 The Glyco-PAINT pipeline was developed and tested on macOS, but also runs on Windows and Linux (with reduced support). Because it is computationally heavy, a powerful computer is recommended. For example, the Glyco-PAINT paper was analyzed on a MacBook Pro M3 Max with 36 GB memory.
 
-Fiji and Java 8 JRE needs to be installed:
+Fiji and Java 21 need to be installed:
 
-- **FiJi**: Download from the [FiJi site](https://imagej.net/software/fiji/downloads).  
+- **FiJi**: Download **Fiji Latest** (Java 21) from the [FiJi site](https://imagej.net/software/fiji/downloads). The Glyco-PAINT plugin needs TrackMate 8, which is not available in the older Java 8 version (*Fiji Stable*). Fiji Latest brings its own Java; nothing extra is needed for the plugin.
   
   - Windows: preferably install in `ProgramFiles`, `ProgramFiles(x86)`, or `AppData\Local`.  
   - macOS: install in `~/Applications` or `/Applications`.  
 
-- **Java 8 JRE**: Check if installed. :  
+- **Java 21** (or newer), for the Glyco-PAINT apps and the installer. Unlike Fiji, these do not bring their own Java. Check if it is installed:  
   
   On macOS:  
   ```bash
@@ -113,9 +113,9 @@ Fiji and Java 8 JRE needs to be installed:
   
   On Windows:  
   ```powershell
-  where java
+  java -version
   ```
-  If you see `jdk-8` or `1.8.0`, you’re set. Otherwise, download from [Adoptium Java 8 JRE](https://adoptium.net/en-GB/temurin/releases?version=8&os=any&arch=any) (select **JRE**, not JDK).
+  If you see version `21` or higher, you’re set. Otherwise, download from [Adoptium Java 21](https://adoptium.net/en-GB/temurin/releases?version=21&os=any&arch=any) (the **JRE** is enough).
 
 </div>
 
@@ -157,7 +157,7 @@ The easiest way to install Glyco-PAINT is via the official installer. It lets yo
 4. **FiJi Plugin Setup**  
    The installer attempts to locate FiJi automatically:  
    - **Windows**: checks `%ProgramFiles%`, `%ProgramFiles(x86)%`, `%LOCALAPPDATA%` for `Fiji`, `Fiji-win64`, `Fiji-win32`, or `Fiji-Windows`.  
-   - **macOS**: checks `~/Applications/Fiji.app` and `/Applications/Fiji.app`.  
+   - **macOS**: checks `~/Applications/Fiji.app` and `/Applications/Fiji.app`. A fresh download of Fiji Latest unpacks to a folder called `Fiji`, not `Fiji.app`, so the installer will not find it by itself; select the folder when asked.  
 
    If FiJi is found, the plugin is copied into `Fiji/plugins` (replacing old versions).  
    If not found, you’ll be prompted to specify the path. As a fallback, the plugin is placed in `Glyco-PAINT/plugins`, and you must copy it manually.
@@ -759,7 +759,7 @@ Visual Code Studio is a development environment in its own right, but also a ver
 
 ## Fiji crashes on wakeup on Mac 
 
-On macOS there is a known issue with Fiji crashing on wake up of a computer when a long Fiji job is running. This is caused by macOS' aggressive power management affecting the GPU, OpenGL, and UI threads, the use by Fiji of Java 8.
+On macOS there is a known issue with Fiji crashing on wake up of a computer when a long Fiji job is running. This is caused by macOS' aggressive power management affecting the GPU, OpenGL, and UI threads. It was observed with the Java 8 version of Fiji; whether it still happens with Fiji Latest (Java 21) is not yet known.
 
 The workaround is to prevent macOS to engage in the power management. A simple native macOS, SleepKeeper will prevent this. The app can be downloaded from the Paint distribution, but is not signed and macOS will complain about it.
 

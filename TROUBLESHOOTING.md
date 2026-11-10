@@ -45,6 +45,10 @@ the disk.
 
 ## A long run becomes inexplicably slow, and the console mentions the CodeCache
 
+**Only relevant for Java 8.** Glyco-PAINT now runs on Java 21, which manages its code cache
+differently, and the launcher scripts no longer set the options below. This section applies only
+if you still run an older (Java 8) version of Glyco-PAINT, or the plugin in a Java 8 Fiji.
+
 You may see this on the console, typically after the application has been running for a while:
 
 ```
@@ -61,14 +65,15 @@ The consequence is quiet and easy to miss: from that moment the application runs
 several times slower — with no error, and nothing in the log. A Generate Squares or TrackMate run
 simply takes far longer than it should, for no apparent reason.
 
-**Fix.** The packaged applications set `-XX:ReservedCodeCacheSize=512m -XX:-UseCodeCacheFlushing`
-in their launcher scripts, which keeps well clear of the problem. If you run from an IDE, add the
-same options to the run configuration's VM options. If you see the warning in **Fiji's** console
+**Fix.** The Java 8 versions of the packaged applications set
+`-XX:ReservedCodeCacheSize=512m -XX:-UseCodeCacheFlushing` in their launcher scripts, which keeps
+well clear of the problem. If you run on Java 8 from an IDE, add the same options to the run
+configuration's VM options. If you see the warning in **Fiji's** console
 while running the TrackMate plugin, the setting belongs in Fiji's own `ImageJ.cfg` — that JVM is
 Fiji's, not ours.
 
-Using a current Java 8 build (for example Azul Zulu 8, which is what CI uses) also helps, as
-several code-cache bugs were fixed in later 8u releases.
+Using a current Java 8 build (for example Azul Zulu 8) also helps, as several code-cache bugs were
+fixed in later 8u releases.
 
 ## The Viewer refuses to open a project: "not a square grid"
 

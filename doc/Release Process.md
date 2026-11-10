@@ -111,7 +111,8 @@ but it needs a **JVM present** to run (unlike a native `.exe`/`.dmg`/`.pkg`).
 
 Double-clicking works only under these conditions, which are worth telling users:
 
-- **Java must be installed.** With no JRE, a double-click does nothing useful.
+- **Java 21 or newer must be installed.** With no JRE, or an older one, a double-click does
+  nothing useful.
 - **macOS Gatekeeper.** A JAR downloaded from GitHub is unsigned and quarantined,
   so a double-click is usually blocked ("unidentified developer"). The user must
   **right-click → Open** (or run `xattr -d com.apple.quarantine <installer>.jar`).

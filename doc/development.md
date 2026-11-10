@@ -23,8 +23,8 @@ Open terminal window
 caffeinate -di
 Close terminal window to restore normal setting
 
-**Install Java JRE 8
-https://adoptium.net/en-GB/temurin/releases?version=8&os=any&arch=any
+**Install Java 21**
+https://adoptium.net/en-GB/temurin/releases?version=21&os=any&arch=any
 
 find "/Users/Hans/Paint Test Project/" -type f -name "Recordings.csv" -exec rm -v {} \;
 
