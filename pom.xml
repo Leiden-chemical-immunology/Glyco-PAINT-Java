@@ -67,6 +67,10 @@
         <module>paint-viewer</module>
         <module>paint-get-omero</module>
         <module>paint-launcher</module>
+
+        <!-- Glyco-PAINT as one application with built-in Java (see paint-app/pom.xml) -->
+        <module>paint-app</module>
+
         <module>paint-compare</module>
         <module>paint-development-utils</module>
 
@@ -77,20 +81,6 @@
         <module>paint-installer/paint-installer-macos</module>
         <module>paint-installer/paint-installer-windows</module>
     </modules>
-
-    <!-- =============================================================== -->
-    <!-- Profiles -->
-    <!-- =============================================================== -->
-    <profiles>
-        <!-- Glyco-PAINT as one application with built-in Java (see paint-app/pom.xml).
-             Only built with -Pbundle; the normal build does not include it. -->
-        <profile>
-            <id>bundle</id>
-            <modules>
-                <module>paint-app</module>
-            </modules>
-        </profile>
-    </profiles>
 
     <!-- =============================================================== -->
     <!-- Shared properties and encoding settings -->

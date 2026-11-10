@@ -3,15 +3,12 @@
 
     <!--
         Glyco-PAINT as one self-contained application: the Launcher plus the four apps
-        (Get Omero, Create Experiment, Generate Squares, Viewer), with a built-in Java 21 runtime,
+        (Get Omero, Create Experiment, Generate Squares, Viewer), with a built-in Java runtime,
         so the user does not need to install Java.
 
-        This module is only part of the build with the "bundle" profile:
-
-            mvn clean install -Pbundle
-
-        It does not change anything about the normal build: it only takes the app JARs the other
-        modules already produce, and writes its result to target/bundle. Nothing is installed.
+        This module is part of the normal build (mvn package / install). It only takes the app
+        JARs the other modules already produce, and writes its result to target/bundle. Nothing
+        is installed.
 
         Result:
             macOS:   target/bundle/Glyco-PAINT.app
@@ -19,11 +16,12 @@
         jpackage only builds for the operating system it runs on, so the Windows version is made
         by running the same command on Windows.
 
-        Which Java goes in: always a JDK 21, whatever JDK Maven itself runs on. The toolchains
-        plugin looks for an installed JDK 21 by itself (JAVA_HOME, JAVA21_HOME and the usual
-        install folders on macOS and Windows). If it finds none, the build stops. A JDK 21 in an
-        unusual place can be named in ~/.m2/toolchains.xml (a "jdk" toolchain with version 21).
-        jlink and jpackage are then taken from that JDK.
+        Which Java goes in: a JDK 21 or newer. The toolchains plugin always selects one explicitly
+        (useJdk Never) from the installed JDKs (JAVA_HOME, JAVAxx_HOME and the usual install
+        folders on macOS and Windows), preferring an LTS version, then the JDK Maven runs on. If
+        it finds none, the build stops. A JDK in an unusual place can be named in
+        ~/.m2/toolchains.xml (a "jdk" toolchain). jlink and jpackage are taken from the selected
+        JDK, so the built-in runtime has that JDK's version.
     -->
 
     <modelVersion>4.0.0</modelVersion>
@@ -40,7 +38,7 @@
 
     <properties>
         <bundle.name>Glyco-PAINT</bundle.name>
-        <bundle.jdk.version>[21,22)</bundle.jdk.version>
+        <bundle.jdk.version>[21,)</bundle.jdk.version>
         <bundle.input>${project.build.directory}/bundle-input</bundle.input>
         <bundle.runtime>${project.build.directory}/bundle-runtime</bundle.runtime>
         <bundle.dest>${project.build.directory}/bundle</bundle.dest>
@@ -98,19 +96,22 @@
     <build>
         <plugins>
 
-            <!-- Select an installed JDK 21 for jlink and jpackage (stops the build if none is found) -->
+            <!-- Select a JDK 21 or newer for jlink and jpackage (stops the build if none is found) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-toolchains-plugin</artifactId>
                 <version>3.2.0</version>
                 <executions>
                     <execution>
-                        <id>select-jdk-21</id>
+                        <id>select-jdk</id>
                         <goals>
                             <goal>select-jdk-toolchain</goal>
                         </goals>
                         <configuration>
                             <version>${bundle.jdk.version}</version>
+                            <!-- Always select a toolchain, also when the JDK Maven runs on matches:
+                                 otherwise none is selected and jlink/jpackage come from the PATH -->
+                            <useJdk>Never</useJdk>
                         </configuration>
                     </execution>
                 </executions>
@@ -175,7 +176,7 @@
             </plugin>
 
             <!-- 2. Build the Java runtime (jlink) and the application (jpackage), both taken from
-                    the selected JDK 21 (exec-maven-plugin looks the tools up in the toolchain) -->
+                    the selected JDK (exec-maven-plugin looks the tools up in the toolchain) -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>

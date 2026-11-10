@@ -63,7 +63,7 @@ every number with stored known-good output.
 | `paint-viewer` | Viewer for recordings, squares, include/exclude, cell assignment |
 | `paint-get-omero` | Download recordings from OMERO |
 | `paint-launcher` | Launcher for the applications |
-| `paint-app` | Glyco-PAINT as one app (Launcher + the four apps) with built-in Java 21, via jlink/jpackage. Only built with `-Pbundle`; output in `paint-app/target/bundle`, nothing installed. macOS only so far |
+| `paint-app` | Glyco-PAINT as one app (Launcher + the four apps) with built-in Java (the building JDK, 21 or newer), via jlink/jpackage. Part of the normal build; output in `paint-app/target/bundle`, nothing installed. macOS only so far |
 | `paint-compare` | CSV comparison engine used by the regression gate |
 | `paint-development-utils` | Dev tools, incl. `release.ReleaseNewVersion` (see `doc/Release Process.md`) |
 | `paint-installer` (+ `-macos`, `-windows`) | Installers |
