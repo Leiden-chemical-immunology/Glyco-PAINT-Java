@@ -61,7 +61,7 @@ public class PaintLauncher {
     /**
      * Initializes and displays the main graphical user interface (GUI) for the Glyco-PAINT Launcher.
      * <p>
-     * This method sets up the main window of the application with a fixed size and layout, featuring
+     * This method sets up the main window of the application, sized to its contents, featuring
      * a title, a workflow panel with buttons and visual elements, and a footer. Buttons in the workflow
      * panel are dynamically created based on the {@code APP_MAP} field, each associated with specific
      * functionalities or applications. The GUI elements use customized styles, colors, and layouts
@@ -73,9 +73,7 @@ public class PaintLauncher {
     private static void createAndShowGUI() {
         JFrame frame = new JFrame("Glyco-PAINT Launcher");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(420, 600);
         frame.setResizable(false);
-        frame.setLocationRelativeTo(null);
 
         Color bg           = new Color(35, 39, 42);
         Color fg           = new Color(240, 240, 240);
@@ -138,6 +136,13 @@ public class PaintLauncher {
         root.add(footer, BorderLayout.SOUTH);
 
         frame.setContentPane(root);
+
+        // Size the window to its contents rather than a fixed size: the title bar, borders and
+        // fonts differ per system and display scaling (on Windows a fixed 600 px cut off the
+        // last boxes). Keep the original width of at least 420 px.
+        frame.pack();
+        frame.setSize(Math.max(420, frame.getWidth()), frame.getHeight());
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
