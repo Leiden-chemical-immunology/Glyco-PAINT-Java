@@ -82,12 +82,12 @@
     <!-- Profiles -->
     <!-- =============================================================== -->
     <profiles>
-        <!-- Glyco-PAINT as one application with built-in Java (see paint-bundle/pom.xml).
+        <!-- Glyco-PAINT as one application with built-in Java (see paint-app/pom.xml).
              Only built with -Pbundle; the normal build does not include it. -->
         <profile>
             <id>bundle</id>
             <modules>
-                <module>paint-bundle</module>
+                <module>paint-app</module>
             </modules>
         </profile>
     </profiles>

@@ -33,9 +33,9 @@
         <version>0.0.139-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>paint-bundle</artifactId>
+    <artifactId>paint-app</artifactId>
     <packaging>pom</packaging>
-    <name>Bundle (Glyco-PAINT with built-in Java)</name>
+    <name>App (Glyco-PAINT with built-in Java)</name>
     <description>Self-contained Glyco-PAINT application with a built-in Java runtime</description>
 
     <properties>
