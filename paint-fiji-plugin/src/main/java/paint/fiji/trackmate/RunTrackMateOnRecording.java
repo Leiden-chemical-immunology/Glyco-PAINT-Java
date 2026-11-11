@@ -96,6 +96,8 @@ public class RunTrackMateOnRecording {
                 return cancelEarly(imp, impBrightfield);
             }
 
+            // Loading times are logged, to see where the time goes (e.g. an external drive)
+            long readStart = System.nanoTime();
             try {
                 imp = IJ.openImage(nd2File.getAbsolutePath());
             } catch (Exception e) {
@@ -116,11 +118,13 @@ public class RunTrackMateOnRecording {
                 return cancelEarly(imp, impBrightfield);
             }
 
+            long displayStart = System.nanoTime();
             imp.show();
             IJ.wait(100);
 
             IJ.run(imp, "Enhance Contrast", "saturated=0.35");
             IJ.run("Grays");
+            long brightfieldStart = System.nanoTime();
 
             // -----------------------------------------------------------------
             // Step 2 – Save Brightfield snapshot
@@ -163,6 +167,11 @@ public class RunTrackMateOnRecording {
                     PaintLogger.errorf("Error handling brightfield file: %s", e.getMessage());
                 }
             }
+            long loadEnd = System.nanoTime();
+            PaintLogger.raw(String.format(Locale.US, " (read %.1f s, display %.1f s, brightfield %.1f s) ",
+                                          (displayStart - readStart) / 1e9,
+                                          (brightfieldStart - displayStart) / 1e9,
+                                          (loadEnd - brightfieldStart) / 1e9));
 
             // -----------------------------------------------------------------
             // Steps 3 and 4 – Configure and execute TrackMate (see track())
