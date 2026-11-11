@@ -15,7 +15,6 @@ import java.awt.*;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static paint.shared.constants.PaintFileNames.PAINT_CONFIGURATION_JSON;
 
@@ -59,7 +58,7 @@ public final class ProjectPathResolver {
     public static Path getValidProjectPath() {
 
         boolean needToAsk = false;
-        Path projectPath = Paths.get(PaintPrefs.getString("Path", "Project Root",
+        Path projectPath = Path.of(PaintPrefs.getString("Path", "Project Root",
                                                           System.getProperty("user.home")));
 
         // Validate existence of the configured path
@@ -69,13 +68,13 @@ public final class ProjectPathResolver {
                                                   "\n\nPlease select a valid project folder.",
                                           "Invalid Project Path",
                                           JOptionPane.WARNING_MESSAGE);
-            projectPath = Paths.get(System.getProperty("user.home"));
+            projectPath = Path.of(System.getProperty("user.home"));
             needToAsk   = true;
         }
 
         // Validate configuration file presence
         if (!validateProjectFolder(projectPath)) {
-            projectPath = Paths.get(System.getProperty("user.home"));
+            projectPath = Path.of(System.getProperty("user.home"));
             needToAsk   = true;
         }
 
@@ -150,7 +149,7 @@ public final class ProjectPathResolver {
 
             // macOS returns folder name in "file"
             if (dir != null && file != null) {
-                return Paths.get(dir, file);
+                return Path.of(dir, file);
             }
 
             // user cancelled

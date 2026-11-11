@@ -17,7 +17,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Controller responsible for playing ND2/TIFF recordings and keeping the PAINT Viewer
@@ -77,7 +76,7 @@ public final class RecordingPlaybackController {
         if (imagesRoot == null) {
             String stored = PaintPrefs.getString("Path", "Images Root", "");
             if (stored != null && !stored.isEmpty()) {
-                imagesRoot = Paths.get(stored);
+                imagesRoot = Path.of(stored);
             } else {
                 JOptionPane.showMessageDialog(
                         frame,

@@ -8,7 +8,6 @@
 package convert;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -98,7 +97,7 @@ public final class ExperimentInfoConverter {
     }
 
     public static void main(String[] args) throws Exception {
-        Path dir = Paths.get("/Users/hans/Downloads/221012 Python Reference - v39");
+        Path dir = Path.of("/Users/hans/Downloads/221012 Python Reference - v39");
         new ExperimentInfoConverter(dir).run();
     }
 }

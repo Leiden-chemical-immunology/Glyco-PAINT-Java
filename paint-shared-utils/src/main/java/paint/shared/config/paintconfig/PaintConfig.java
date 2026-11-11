@@ -13,7 +13,6 @@ import com.google.gson.JsonObject;
 import paint.shared.utils.PaintLogger;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static paint.shared.constants.PaintFileNames.PAINT_CONFIGURATION_JSON;
 
@@ -99,7 +98,7 @@ public class PaintConfig {
     /** Access singleton (lazy-inits to user-home if needed). */
     public static PaintConfig instance() {
         if (INSTANCE == null) {
-            Path defaultPath = Paths.get(System.getProperty("user.home"), PAINT_CONFIGURATION_JSON);
+            Path defaultPath = Path.of(System.getProperty("user.home"), PAINT_CONFIGURATION_JSON);
             initialise(defaultPath);
         }
         return INSTANCE;

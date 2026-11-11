@@ -19,7 +19,6 @@ import tech.tablesaw.api.Table;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -173,7 +172,7 @@ public class GenerateSquaresProcessor {
         Path debugCsvPath = null;
 
         if (dumpTrackAssignmentCsv) {
-            Path debugDirPath = Paths.get(System.getProperty("user.home")).resolve("Downloads").resolve("Debug");
+            Path debugDirPath = Path.of(System.getProperty("user.home")).resolve("Downloads").resolve("Debug");
             Files.createDirectories(debugDirPath);
             debugCsvPath = debugDirPath.resolve("all_square_tracks.csv");
 

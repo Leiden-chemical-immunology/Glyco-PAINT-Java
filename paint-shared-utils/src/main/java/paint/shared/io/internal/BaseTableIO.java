@@ -334,15 +334,13 @@ abstract class BaseTableIO {
 
         Table export = Table.create(table.name());
         for (Column<?> col : table.columns()) {
-            if (col instanceof DoubleColumn) {
-                DoubleColumn dc = (DoubleColumn) col;
+            if (col instanceof DoubleColumn dc) {
                 StringColumn sc = StringColumn.create(col.name());
                 for (int i = 0; i < dc.size(); i++) {
                     sc.append(dc.isMissing(i) ? "" : nf.format(dc.getDouble(i)));
                 }
                 export.addColumns(sc);
-            } else if (col instanceof FloatColumn) {
-                FloatColumn fc = (FloatColumn) col;
+            } else if (col instanceof FloatColumn fc) {
                 StringColumn sc = StringColumn.create(col.name());
                 for (int i = 0; i < fc.size(); i++) {
                     sc.append(fc.isMissing(i) ? "" : nf.format(fc.getFloat(i)));

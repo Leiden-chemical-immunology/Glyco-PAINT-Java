@@ -18,7 +18,6 @@ import tech.tablesaw.api.Table;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,7 +57,7 @@ public class ExportOverridesFromViewer {
             System.exit(1);
         }
 
-        Path projectPath = Paths.get(args[0]);
+        Path projectPath = Path.of(args[0]);
 
         // Optional suffix for newly written CSVs
         if (args.length == 2) {

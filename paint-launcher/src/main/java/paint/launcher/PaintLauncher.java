@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -307,7 +306,7 @@ public class PaintLauncher {
      */
     private static File ownJarDirectory() {
         try {
-            Path location = Paths.get(PaintLauncher.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            Path location = Path.of(PaintLauncher.class.getProtectionDomain().getCodeSource().getLocation().toURI());
             Path parent   = location.getParent();
             return parent == null ? null : parent.toFile();
         } catch (Exception e) {
@@ -322,7 +321,7 @@ public class PaintLauncher {
      */
     private static String javaExecutable() {
         boolean windows = System.getProperty("os.name", "").toLowerCase(Locale.ROOT).startsWith("windows");
-        Path    bin     = Paths.get(System.getProperty("java.home"), "bin");
+        Path    bin     = Path.of(System.getProperty("java.home"), "bin");
         String[] names  = windows ? new String[]{"javaw.exe", "java.exe"} : new String[]{"java"};
         for (String name : names) {
             Path candidate = bin.resolve(name);

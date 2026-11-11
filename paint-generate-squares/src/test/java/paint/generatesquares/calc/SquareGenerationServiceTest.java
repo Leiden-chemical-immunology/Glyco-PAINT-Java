@@ -13,7 +13,6 @@ import paint.shared.objects.Square;
 import paint.shared.utils.PaintLogger;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -51,7 +50,7 @@ class SquareGenerationServiceTest {
         GenerateSquaresConfig config = new GenerateSquaresConfig();
 
         // Load the reference experiment (tracks only) read-only from test resources.
-        Path projectRoot = Paths.get(getClass().getResource("/reference-project").toURI());
+        Path projectRoot = Path.of(getClass().getResource("/reference-project").toURI());
         Experiment experiment = ExperimentDataLoader.loadExperiment(projectRoot, "221012", false, true);
         assertNotNull(experiment, "reference experiment should load");
 
@@ -90,7 +89,7 @@ class SquareGenerationServiceTest {
         PaintConfig.setBoolean(GENERATE_SQUARES, TAU_FITTING_PLOTS, false);
         GenerateSquaresConfig config = new GenerateSquaresConfig();
 
-        Path projectRoot = Paths.get(getClass().getResource("/reference-project").toURI());
+        Path projectRoot = Path.of(getClass().getResource("/reference-project").toURI());
         Experiment experiment = ExperimentDataLoader.loadExperiment(projectRoot, "221012", false, true);
         assertNotNull(experiment, "reference experiment should load");
 

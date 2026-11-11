@@ -10,7 +10,6 @@ package convert;
 import paint.shared.validate.ValidationResult;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +25,7 @@ public class Converter {
     // Simple test main
     public static void main(String[] args) throws Exception {
 
-        Path projectPath = Paths.get("/Users/hans/Downloads");
+        Path projectPath = Path.of("/Users/hans/Downloads");
         Path inputDir    = projectPath.resolve("221012 - v39");
 
         new RecordingsConverter(inputDir).run();

@@ -16,7 +16,7 @@ import java.util.*;
 public final class PathsConfig {
     private PathsConfig() {}
 
-    public static final Path PROJECT_ROOT = Paths.get(System.getProperty("user.dir")).getParent();
+    public static final Path PROJECT_ROOT = Path.of(System.getProperty("user.dir")).getParent();
     public static final Path BASE_PATH    = PROJECT_ROOT.resolve("Glyco-PAINT-Java");
     public static final Path BUILDS_PATH  = PROJECT_ROOT.resolve("Glyco-PAINT-Builds");
 

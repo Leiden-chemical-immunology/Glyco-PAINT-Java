@@ -189,10 +189,10 @@ class   SweepConfigWriter {
 
     private static void put(JsonObject o, Object k, Object v) {
         String key = String.valueOf(k);
-        if (v instanceof Number) {
-            o.addProperty(key, (Number) v);
-        } else if (v instanceof Boolean) {
-            o.addProperty(key, (Boolean) v);
+        if (v instanceof Number n) {
+            o.addProperty(key, n);
+        } else if (v instanceof Boolean b) {
+            o.addProperty(key, b);
         } else {
             o.addProperty(key, String.valueOf(v));
         }

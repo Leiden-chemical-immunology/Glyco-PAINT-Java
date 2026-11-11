@@ -16,7 +16,6 @@ import paint.shared.utils.PaintLogger;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -93,7 +92,7 @@ class GenerateSquaresRegressionGateTest {
         java.net.URL ref = getClass().getResource("/reference-project/" + EXPERIMENT);
         Assumptions.assumeTrue(ref != null,
                 "reference-project data not present on the classpath — local-only regression gate skipped");
-        Path goldenDir = Paths.get(ref.toURI());
+        Path goldenDir = Path.of(ref.toURI());
         for (String f : new String[]{"Experiment Info.csv", "Recordings.csv", "Tracks.csv"}) {
             Assumptions.assumeTrue(Files.isRegularFile(goldenDir.resolve(f)),
                     "reference input '" + f + "' not present — local-only regression gate skipped");
@@ -168,7 +167,7 @@ class GenerateSquaresRegressionGateTest {
 
     /** Overwrites the committed golden file with freshly produced output, backing up the old one first. */
     private static void blessGolden(String name, Path produced) throws IOException {
-        Path srcGolden = Paths.get("src", "test", "resources", "reference-project", EXPERIMENT, name);
+        Path srcGolden = Path.of("src", "test", "resources", "reference-project", EXPERIMENT, name);
         Files.createDirectories(srcGolden.getParent());
 
         // Save a timestamped copy of the existing golden before overwriting it.

@@ -18,7 +18,6 @@ import paint.viewer.ui.frames.ViewerFrame;
 
 import javax.swing.*;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -41,7 +40,7 @@ public class Viewer {
 
             // --- Step 1: Load last-used project from preferences ---
             String lastProject = PaintPrefs.getString("Path", "Project Root", System.getProperty("user.home"));
-            Path   projectPath = Paths.get(lastProject);
+            Path   projectPath = Path.of(lastProject);
 
             // --- Step 2: Initialise logging and configuration ---
             PaintConfig.initialise(projectPath);

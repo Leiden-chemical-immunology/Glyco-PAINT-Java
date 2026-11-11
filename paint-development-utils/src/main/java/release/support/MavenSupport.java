@@ -149,7 +149,7 @@ public final class MavenSupport {
 
         Files.deleteIfExists(tmpPom);
 
-        Path localPom = Paths.get(System.getProperty("user.home"),
+        Path localPom = Path.of(System.getProperty("user.home"),
                                   ".m2", "repository", "com", "github", "jjabakker", "paint-parent", releaseVersion,
                                   "paint-parent-" + releaseVersion + ".pom");
 

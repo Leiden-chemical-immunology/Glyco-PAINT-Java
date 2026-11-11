@@ -13,7 +13,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -25,7 +24,7 @@ import java.util.Map;
 public class BuildSelector {
 
     private static final Path PROJECT_ROOT =
-            Paths.get(System.getProperty("user.dir")).toAbsolutePath();
+            Path.of(System.getProperty("user.dir")).toAbsolutePath();
     private final List<Task> tasks = Arrays.asList(
             // macOS apps
             new Task("Viewer.app", "paint-viewer",

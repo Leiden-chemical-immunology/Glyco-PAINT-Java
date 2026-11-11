@@ -24,7 +24,6 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -214,7 +213,7 @@ public class ProjectDialog {
         final Path imagesPath =
                 projectPathsPanel.imagesRootText().isEmpty()
                         ? null
-                        : Paths.get(projectPathsPanel.imagesRootText());
+                        : Path.of(projectPathsPanel.imagesRootText());
 
         PaintLogger.debugf("ProjectDialog.buildProject - project root: %s", projectPathsPanel.projectRootText());
         PaintLogger.debugf("ProjectDialog.buildProject - images root : %s", projectPathsPanel.imagesRootText());

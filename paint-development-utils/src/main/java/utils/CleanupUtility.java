@@ -50,7 +50,7 @@ import static paint.shared.constants.PaintFileNames.SQUARES_CSV;
  *
  * <h3>Programmatic usage</h3>
  * <pre>{@code
- * CleanupUtility.runCleanup(Paths.get("/path/to/project"), "TRACKMATE", true, false, true);
+ * CleanupUtility.runCleanup(Path.of("/path/to/project"), "TRACKMATE", true, false, true);
  * }</pre>
  * This call would perform a dry run of deleting all matching files (both legacy and new names)
  * in TRACKMATE mode.
@@ -82,7 +82,7 @@ public class CleanupUtility {
             printUsageAndExit();
         }
 
-        final Path rootDir = Paths.get(args[0]);
+        final Path rootDir = Path.of(args[0]);
         if (!Files.isDirectory(rootDir)) {
             System.err.println("The specified path is not a directory: " + rootDir);
             System.exit(1);

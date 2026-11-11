@@ -174,8 +174,8 @@ public class CellAssignmentDialog extends JDialog {
         for (JRadioButton radioButton : squareByRadio.keySet()) {
             if (radioButton.isSelected()) {
                 Object v = radioButton.getClientProperty("cellId");
-                if (v instanceof Integer) {
-                    return (Integer) v;
+                if (v instanceof Integer cellId) {
+                    return cellId;
                 }
             }
         }

@@ -13,7 +13,6 @@ import paint.shared.utils.PaintLogger;
 import paint.shared.validate.JsonValidator;
 import paint.shared.validate.JsonValidator.Result;
 
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import java.io.Reader;
@@ -101,7 +100,7 @@ class ConfigStore {
         String base    = original.getFileName().toString();
         base           = base.substring(0, base.length() - 5);
         String bakName = base + ".invalid.json";
-        return (original.getParent() == null) ? Paths.get(bakName) : original.getParent().resolve(bakName);
+        return (original.getParent() == null) ? Path.of(bakName) : original.getParent().resolve(bakName);
     }
 
     void save() {

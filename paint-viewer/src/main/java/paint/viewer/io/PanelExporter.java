@@ -44,7 +44,7 @@ public final class PanelExporter {
      * All visual overlays painted on the panel are included.
      *
      * <p><strong>Example:</strong><br>
-     * {@code export(leftGridPanel, Paths.get("output.png"), 2.0);} produces a
+     * {@code export(leftGridPanel, Path.of("output.png"), 2.0);} produces a
      * double-resolution export suitable for publication-quality figures.</p>
      *
      * @param panel  the panel to render
