@@ -6,7 +6,7 @@ name: Build and Test
 # (it is not skipped).
 #
 # Scope is deliberately `mvn test`, not `verify`/`install`: the packaging phases
-# build macOS .app bundles, Windows .exe wrappers and installer fat JARs, and
+# build macOS .app bundles, Windows .exe wrappers and Glyco-PAINT.app, and
 # deploy the Fiji plugin to /Applications — none of which is meaningful on a CI
 # runner, and none of which affects whether the code is correct.
 

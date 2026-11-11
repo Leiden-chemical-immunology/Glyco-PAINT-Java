@@ -9,16 +9,18 @@ what you need to do afterwards.
 ## What it is
 
 `ReleaseNewVersion` orchestrates the **full multi-module build** of the
-Glyco-PAINT suite for **both macOS and Windows**, assembles the two installers,
-and — for a full release — bumps the version, tags, and pushes to GitHub. It
+Glyco-PAINT suite for **both macOS and Windows**, builds the two installers (a
+macOS `.pkg` and a Windows `setup.exe`, both with a built-in Java), and — for a
+full release — bumps the version, tags, and pushes to GitHub. It
 drives Maven and Git via external processes.
 
 It must be run with the project as the working directory (it derives paths from
 `user.dir`): `BASE_PATH = <parent>/Glyco-PAINT-Java`, and output goes to a
 sibling folder `<parent>/Glyco-PAINT-Builds`.
 
-**Prerequisites:** `mvn`, `git`, and (for publishing) the `gh` CLI installed and
-authenticated. The app modules must build cleanly. For a full release (mode 3) the
+**Prerequisites:** `mvn`, `git`, `makensis` (for the Windows installer:
+`brew install makensis`; the tool stops at the start if it is missing), and (for
+publishing) the `gh` CLI installed and authenticated. The app modules must build cleanly. For a full release (mode 3) the
 working tree must be clean and the tag `v<version>` must not exist yet; otherwise
 the tool stops before changing anything.
 
@@ -40,10 +42,13 @@ Run with **no arguments** for an interactive menu, or pass a flag:
 
 All three modes build the same artifacts (below). Only mode 3 changes Git state.
 
+The option `--old-installers` (on its own it still shows the menu, or combined
+with `--bump-version`/`--release`) also builds the old installers; see
+[Old installers (backup)](#old-installers-backup).
+
 > To just **produce installers without releasing** (e.g. for testing), use
-> **mode 1 (Rebuild only)** — it regenerates a fresh `payload.zip` from the
-> current build and builds both installers, with no version change and no
-> Git activity.
+> **mode 1 (Rebuild only)** — it builds both installers from the current code,
+> with no version change and no Git activity.
 
 ---
 
@@ -61,9 +66,18 @@ plugin, it builds and collects:
    the toolchains plugin selects). Built once from the project root with `-pl paint-app -am`
    and copied into `macOS/`, next to the separate apps. macOS only: jpackage builds for the
    system it runs on.
-4. A fresh **`payload.zip`** for each installer (the platform's apps + the
-   plugin), written into each installer module's `src/main/resources/`.
-5. The two **installer fat JARs**, built from those payloads and renamed.
+4. The two **installers**, built from the module `packaging` with
+   `mvn package -Ppackaging -pl packaging -am -DskipTests`:
+   - `Glyco-PAINT-<version>-macos.pkg`: Glyco-PAINT and/or the separate apps, and the Fiji plugin.
+   - `Glyco-PAINT-<version>-windows-setup.exe`: the same for Windows (NSIS).
+
+   Both have a fixed built-in Java (Temurin 21), so users do not install Java. See
+   `packaging/pom.xml` and the Manual. The packaging build also puts a copy of
+   `Glyco-PAINT.app` in `~/Applications/Glyco-PAINT`.
+
+The version commands (`versions:set`, `versions:update-child-modules`) run with
+`-Ppackaging,old-installers`, so the POMs of `packaging` and the old installers,
+which are not in the normal build, get the new version too.
 
 ---
 
@@ -78,14 +92,11 @@ Glyco-PAINT-Builds/
     ├── macOS/         # per-app .app bundles, plus Glyco-PAINT.app
     ├── Plugins/       # Fiji plugin fat JAR
     └── Installers/
-        ├── Glyco-PAINT-Installer-macOS-<version>.jar
-        └── Glyco-PAINT-Installer-Windows-<version>.jar
+        ├── Glyco-PAINT-<version>-macos.pkg            (~640 MB)
+        └── Glyco-PAINT-<version>-windows-setup.exe    (~290 MB)
 ```
 
-The two files in `Installers/` are the deliverables you hand to users. (Note:
-the build also rewrites `payload.zip` inside each
-`paint-installer/paint-installer-*/src/main/resources/` — those are generated,
-git-ignored artifacts.)
+The two files in `Installers/` are the deliverables you hand to users.
 
 ---
 
@@ -94,24 +105,40 @@ git-ignored artifacts.)
 The tool builds (and, in mode 3, tags/pushes) — it does **not** publish the
 installers to GitHub or install anything on user machines. After it finishes:
 
-1. **Smoke-test the installers.** Run the macOS installer
-   (`java -jar Glyco-PAINT-Installer-macOS-<version>.jar`) and confirm it
-   installs the selected apps and drops the Fiji plugin into a valid Fiji
-   `plugins` folder. Start the installed `Glyco-PAINT.app` and check that the
-   Launcher starts all four apps (this also shows whether the built-in Java kept
-   its executable permissions). Do the same for Windows on a Windows machine.
+1. **Smoke-test the installers.** Double-click the `.pkg`, choose the
+   components, and confirm that the apps land in `/Applications/Glyco-PAINT`
+   and the Fiji plugin in Fiji's `plugins` folder (Installer: Window → Installer
+   Log shows what the plugin step did). Start `Glyco-PAINT.app` and check that
+   the Launcher starts all four apps. Do the same with the `setup.exe` on
+   Windows (Parallels): the Fiji folder page, the Start menu, and removal via
+   Settings → Apps.
 2. **Publish the release assets (mode 3).** Mode 3 pushes the tag `v<version>`,
-   but uploading the installer JARs as **GitHub release assets is a separate,
+   but uploading the installers as **GitHub release assets is a separate,
    manual step** (e.g. via `gh release create`/`gh release upload`, or the
    `github.GitHubManager` helper, or the GitHub web UI).
-3. **Distribute** the installer JARs from `Installers/` to end users, who then
-   run them to install the apps and the Fiji plugin.
+3. **Distribute** the installers from `Installers/` to end users. How users
+   install is described in the Manual (Installing the Pipeline).
 
 ---
 
-## How users launch the installer
+## Old installers (backup)
 
-The installer files are **executable JARs**, not native self-extracting
+Before the `.pkg` and `setup.exe`, the installers were executable JARs (modules
+`paint-installer`, `paint-installer-macos`, `paint-installer-windows`). They are
+kept as a backup but are **not built by default**:
+
+- The modules are only in the Maven build with the profile `old-installers`, so
+  `mvn install` does not build them.
+- The release tool only builds them with `--old-installers`. It then also writes
+  a fresh `payload.zip` (the platform's apps + the plugin) into each installer
+  module's `src/main/resources/` (generated, git-ignored), builds the two fat
+  JARs and puts them in `Installers/` as
+  `Glyco-PAINT-Installer-macOS-<version>.jar` and
+  `Glyco-PAINT-Installer-Windows-<version>.jar`, next to the new installers.
+
+### How users launch an old installer
+
+The old installer files are **executable JARs**, not native self-extracting
 installers. Each has a `Main-Class` in its manifest, so it runs with:
 
 ```
@@ -141,8 +168,7 @@ the sure path.
 
 ## Notes
 
-- The installer build runs in **all** modes (including rebuild-only), despite a
-  stale in-code comment suggesting otherwise.
+- The installer build runs in **all** modes (including rebuild-only).
 - In rebuild-only mode the artifacts are named with the current `-SNAPSHOT`
   version.
 - In modes 2 and 3, once both installers are built, a `Glyco-PAINT-<version>-SNAPSHOT`

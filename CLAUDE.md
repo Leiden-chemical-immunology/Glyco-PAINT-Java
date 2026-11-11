@@ -29,7 +29,7 @@ mvn -pl paint-viewer -am test               # one module plus its dependencies
 ```
 
 - `package`/`install` also build `Glyco-PAINT.app` (`paint-app`, jlink + jpackage, so they take
-  longer); `install`/`verify` also build macOS .app bundles, Windows .exe wrappers, installer fat JARs, and
+  longer); `install`/`verify` also build macOS .app bundles, Windows .exe wrappers, and
   **copy the Fiji plugin into the local Fiji's `plugins` folder** (found automatically on macOS and
   Windows, or `-Dfiji.dir=<folder>`; see `paint-fiji-plugin/pom.xml`). Use `test` unless packaging is
   actually needed.
@@ -65,10 +65,10 @@ every number with stored known-good output.
 | `paint-get-omero` | Download recordings from OMERO |
 | `paint-launcher` | Launcher for the applications |
 | `paint-app` | Glyco-PAINT as one app (Launcher + the four apps) with built-in Java (the building JDK, 21 or newer), via jlink/jpackage. Part of the normal build; output in `paint-app/target/bundle`, nothing installed. macOS only so far |
-| `packaging` | New packaging mechanism, alongside the existing one: macOS `.pkg` and Windows installer (NSIS: Glyco-PAINT and/or the separate apps), both installing the Fiji plugin, both with a fixed built-in Java (Temurin 21.0.13), both built on a Mac. Only built with `-Ppackaging`; output in `packaging/target/dist`, plus `Glyco-PAINT.app` in `~/Applications/Glyco-PAINT`. Needs `brew install makensis` |
+| `packaging` | The installers: macOS `.pkg` and Windows installer (NSIS: Glyco-PAINT and/or the separate apps), both installing the Fiji plugin, both with a fixed built-in Java (Temurin 21.0.13), both built on a Mac. Built by the release tool, or by hand with `-Ppackaging`; output in `packaging/target/dist`, plus `Glyco-PAINT.app` in `~/Applications/Glyco-PAINT`. Needs `brew install makensis` |
 | `paint-compare` | CSV comparison engine used by the regression gate |
 | `paint-development-utils` | Dev tools, incl. `release.ReleaseNewVersion` (see `doc/Release Process.md`) |
-| `paint-installer` (+ `-macos`, `-windows`) | Installers |
+| `paint-installer` (+ `-macos`, `-windows`) | Old installers (executable JARs), kept as a backup. Only in the build with `-Pold-installers`; the release tool builds them only with `--old-installers` |
 
 ## Documentation
 
