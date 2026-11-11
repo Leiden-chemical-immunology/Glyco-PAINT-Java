@@ -37,8 +37,9 @@ mvn -pl paint-viewer -am test               # one module plus its dependencies
   sink if a GUI app registered one.
 - Bio-Formats 8 pulls `edu.ucar:cdm-core` from Unidata's repository; IntelliJ may ask to trust
   its certificate. Rejecting is fine once the command-line build has cached the jar in `~/.m2`.
-- The golden master starts from a stored `Tracks.csv`, so it does not test TrackMate itself.
-  Whether TrackMate 8 tracks the same as 7.14 is still open (section 6 of the analysis note).
+- The golden master starts from a stored `Tracks.csv`, so it does not test TrackMate itself;
+  `paint-fiji-plugin/.../trackmate/TrackMateRegressionGateTest` does (see below). Whether
+  TrackMate 8 tracks the same as 7.14 is still open (section 6 of the analysis note).
 
 ## The golden master — read before touching any calculation
 
@@ -51,6 +52,10 @@ every number with stored known-good output.
   output, and only after Hans has agreed. Never re-bless to make a test go green.
 - The gate is not omniscient: the comparison engine lives in `paint-compare`, and its notion of
   "equal" (rounding, NaN handling, ignored columns) can hide real differences. See `REVIEW.md`.
+- The TrackMate stage has its own gate, `TrackMateRegressionGateTest` (paint-fiji-plugin): the
+  plugin's TrackMate step (`RunTrackMateOnRecording.track`) on a small committed crop of
+  `221012-Exp-1-A1-1` (`src/test/resources/trackmate-reference`), with *Deterministic Tracking*
+  on, compared exactly with a reference `Tracks.csv`. Same rules for re-blessing.
 
 ## Modules
 

@@ -1,7 +1,7 @@
 # What the tests check
 
 This is a plain-language guide to the automated tests: what each one actually protects, and —
-just as important — what it does not. Around 160 tests run on every build, and on every push via
+just as important — what it does not. Around 175 tests run on every build, and on every push via
 GitHub Actions.
 
 To run them all:
@@ -29,6 +29,24 @@ question that really matters: *did my change alter the scientific output?*
 
 If a change is *supposed* to alter the output, the golden result has to be deliberately re-blessed
 (`-Dpaint.updateGolden`) — which means such a change can never happen by accident or go unnoticed.
+
+The Generate Squares golden master starts from a stored `Tracks.csv`, so it does not test TrackMate
+itself. That is the job of the second gate:
+
+`TrackMateRegressionGateTest`
+
+This runs the plugin's own TrackMate step (the same settings, detection, spot limit, linking and
+edge-track exclusion as a real run) on a small stored recording: a 64 × 64 pixel, 500-frame crop of
+`221012-Exp-1-A1-1`, calibrated as Fiji reads it. The tracks are written as the plugin writes them
+and compared, track by track and number by number, with a saved reference (280 tracks). A change to
+the TrackMate settings, to the export, or a TrackMate upgrade that tracks differently, makes it
+fail.
+
+TrackMate normally links spots into tracks on several threads, and then the tracks differ slightly
+from run to run. This test therefore always runs with *Deterministic Tracking* on (one thread), which
+makes the result exactly reproducible; normal runs are not affected. It takes a second or two.
+Re-blessing works the same way (`-Dpaint.updateGolden`). Loading the ND2 file itself is not covered:
+the test recording is a TIFF.
 
 ## What "the same" means: the comparison engine
 
@@ -155,8 +173,9 @@ Being clear about the gaps is as useful as listing the coverage.
 
 - **The user interface.** No test clicks a button. Everything Swing-related — dialogs, panels, the
   movie player, whether the window re-enables after playback — must still be checked by hand.
-- **TrackMate runs.** The plugin is exercised only by running it. Nothing automated confirms that a
-  TrackMate batch produces the expected tracks.
+- **The rest of a TrackMate run.** The TrackMate step itself is covered (see the second gate), but
+  loading the ND2 file, the brightfield and overlay images, and the batch over a whole experiment
+  are exercised only by running the plugin.
 - **Omero download, the installers, and the full release build.** Not covered; only the release
   tool's helpers above are.
 - **Neighbour modes.** The override tests use the "Free" mode, where a square's visibility depends
