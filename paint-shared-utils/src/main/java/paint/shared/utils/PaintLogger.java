@@ -407,7 +407,7 @@ public final class PaintLogger {
 
         // Compute indentation (exactly up to one space after [INFO ])
         String prefix = String.format("%s [%-5s]", LocalDateTime.now().format(TIME_FMT), Level.INFO);
-        String indent = repeat(" ", prefix.length() + 1);
+        String indent = " ".repeat(prefix.length() + 1);
 
         // Print continuation lines without the timestamp, perfectly aligned
         for (String line : lines) {
@@ -418,21 +418,5 @@ public final class PaintLogger {
             sinkLog(formatted, Level.INFO.color());
         }
         blankline();
-    }
-
-    // ───────────────────────────────────────────────────────────────────────────────
-    // INTERNAL UTILITIES
-    // ───────────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Java 8-compatible implementation of String.repeat(int).
-     */
-    @SuppressWarnings("SameParameterValue")
-    private static String repeat(String string, int count) {
-        StringBuilder sb = new StringBuilder(string.length() * count);
-        for (int i = 0; i < count; i++) {
-            sb.append(string);
-        }
-        return sb.toString();
     }
 }

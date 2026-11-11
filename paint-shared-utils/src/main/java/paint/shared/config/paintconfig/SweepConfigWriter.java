@@ -171,7 +171,7 @@ class   SweepConfigWriter {
         }
     }
 
-    // ---- tiny helpers to make the static blocks readable (Java 8 friendly) ----
+    // ---- tiny helpers to make the static blocks readable ----
 
     private static JsonObject obj(Object k1, Object v1, Object... kv) {
         JsonObject o = new JsonObject();

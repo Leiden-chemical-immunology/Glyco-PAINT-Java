@@ -80,7 +80,7 @@ public class ReformatPoms {
 
     /** Recursive XML printer with inline text for simple values and 4-space nesting. */
     private static void formatNode(Node node, StringBuilder out, int level) {
-        String indent = repeat(' ', level * 4);
+        String indent = " ".repeat(level * 4);
 
         switch (node.getNodeType()) {
             case Node.ELEMENT_NODE:
@@ -168,12 +168,4 @@ public class ReformatPoms {
         return text;
     }
 
-    /** Java 8-compatible repeat for spaces. */
-    @SuppressWarnings("SameParameterValue")
-    private static String repeat(char c, int count) {
-        if (count <= 0) return "";
-        char[] chars = new char[count];
-        java.util.Arrays.fill(chars, c);
-        return new String(chars);
-    }
 }

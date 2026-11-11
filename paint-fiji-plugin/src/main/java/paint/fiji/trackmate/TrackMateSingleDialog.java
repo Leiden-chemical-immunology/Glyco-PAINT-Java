@@ -37,7 +37,6 @@ import paint.shared.utils.PaintLogger;
  *   <li>Interactive recording selection and threshold tuning.</li>
  *   <li>Background thread execution for responsive UI.</li>
  *   <li>Status feedback with animated dots for active processes.</li>
- *   <li>Java 8 compatible.</li>
  * </ul>
  */
 public class TrackMateSingleDialog extends JDialog {

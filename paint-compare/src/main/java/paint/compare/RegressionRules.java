@@ -9,6 +9,8 @@ package paint.compare;
 
 import java.util.*;
 
+import static java.util.Map.entry;
+
 /**
  * Defines the configuration and tolerance rules for regression tests.
  * <p>
@@ -21,38 +23,32 @@ public final class RegressionRules {
     // ===========================
     //  Column groups
     // ===========================
-    static final Set<String> IGNORE_COLUMNS_RELAXED = Collections.unmodifiableSet(
-            new HashSet<>(Arrays.asList(
-                    "Run Time",
-                    "Time Stamp",
-                    "Row Number",
-                    "Column Number",
-                    "Label Number",
-                    "Median Median Speed",
-                    "Median Mean Speed",
-                    "Max Median Speed",
-                    "Max Mean Speed",
-                    "Density Ratio"
-            ))
+    static final Set<String> IGNORE_COLUMNS_RELAXED = Set.of(
+            "Run Time",
+            "Time Stamp",
+            "Row Number",
+            "Column Number",
+            "Label Number",
+            "Median Median Speed",
+            "Median Mean Speed",
+            "Max Median Speed",
+            "Max Mean Speed",
+            "Density Ratio"
     );
 
-    static final Set<String> IGNORE_COLUMNS_STRICT = Collections.unmodifiableSet(
-            new HashSet<>(Arrays.asList(
-                    "Run Time",
-                    "Time Stamp",
-                    "Median Mean Speed",
-                    "Max Mean Speed",
-                    "Median Median Speed",
-                    "Max Median Speed"
-            ))
+    static final Set<String> IGNORE_COLUMNS_STRICT = Set.of(
+            "Run Time",
+            "Time Stamp",
+            "Median Mean Speed",
+            "Max Mean Speed",
+            "Median Median Speed",
+            "Max Median Speed"
     );
 
-    static final Set<String> IGNORE_CASE_FIELDS = Collections.unmodifiableSet(
-            new HashSet<>(Arrays.asList(
-                    "Visible",
-                    "Square Manually Excluded",
-                    "Image Excluded"
-            ))
+    static final Set<String> IGNORE_CASE_FIELDS = Set.of(
+            "Visible",
+            "Square Manually Excluded",
+            "Image Excluded"
     );
 
     // ===========================
@@ -65,92 +61,84 @@ public final class RegressionRules {
     static final Map<String, Integer> ROUNDING_STRICT;
 
     static {
-        RELATIVE_TOLERANCE_RELAXED = Collections.unmodifiableMap(
-                newDoubleMap(new Object[][]{
-                        {"Tau",                   0.01},
-                        {"Density",               0.02},
-                        {"Density Ratio",         0.02},
-                        {"R Squared",             0.01},
-                        {"Variability",           0.02},
-                        {"Median Displacement",   0.02},
-                        {"Max Displacement",      0.02},
-                        {"Total Displacement",    0.02},
-                        {"Median Max Speed",      0.02},
-                        {"Max Max Speed",         0.02},
-                        {"Median Median Speed",   0.02},
-                        {"Max Mean Speed",        0.02},
-                        {"Max Track Duration",    0.02},
-                        {"Total Track Duration",  0.02},
-                        {"Median Track Duration", 0.02},
-                        {"Density Ratio Ori",     0.02}
-                })
+        RELATIVE_TOLERANCE_RELAXED = Map.ofEntries(
+                entry("Tau",                   0.01),
+                entry("Density",               0.02),
+                entry("Density Ratio",         0.02),
+                entry("R Squared",             0.01),
+                entry("Variability",           0.02),
+                entry("Median Displacement",   0.02),
+                entry("Max Displacement",      0.02),
+                entry("Total Displacement",    0.02),
+                entry("Median Max Speed",      0.02),
+                entry("Max Max Speed",         0.02),
+                entry("Median Median Speed",   0.02),
+                entry("Max Mean Speed",        0.02),
+                entry("Max Track Duration",    0.02),
+                entry("Total Track Duration",  0.02),
+                entry("Median Track Duration", 0.02),
+                entry("Density Ratio Ori",     0.02)
         );
 
-        RELATIVE_TOLERANCE_STRICT = Collections.unmodifiableMap(
-                newDoubleMap(new Object[][]{
-                        {"Tau",                   0.0001},
-                        {"Density",               0.0001},
-                        {"Density Ratio",         0.0001},
-                        {"R Squared",             0.0001},
-                        {"Variability",           0.0001},
-                        {"Median Displacement",   0.0001},
-                        {"Max Displacement",      0.0001},
-                        {"Total Displacement",    0.0001},
-                        {"Median Max Speed",      0.0001},
-                        {"Max Max Speed",         0.0001},
-                        {"Median Median Speed",   0.0001},
-                        {"Max Mean Speed",        0.0001},
-                        {"Max Track Duration",    0.0001},
-                        {"Total Track Duration",  0.0001},
-                        {"Median Track Duration", 0.0001},
-                        {"Density Ratio Ori",     0.0001}
-                })
+        RELATIVE_TOLERANCE_STRICT = Map.ofEntries(
+                entry("Tau",                   0.0001),
+                entry("Density",               0.0001),
+                entry("Density Ratio",         0.0001),
+                entry("R Squared",             0.0001),
+                entry("Variability",           0.0001),
+                entry("Median Displacement",   0.0001),
+                entry("Max Displacement",      0.0001),
+                entry("Total Displacement",    0.0001),
+                entry("Median Max Speed",      0.0001),
+                entry("Max Max Speed",         0.0001),
+                entry("Median Median Speed",   0.0001),
+                entry("Max Mean Speed",        0.0001),
+                entry("Max Track Duration",    0.0001),
+                entry("Total Track Duration",  0.0001),
+                entry("Median Track Duration", 0.0001),
+                entry("Density Ratio Ori",     0.0001)
         );
 
-        ROUNDING_RELAXED = Collections.unmodifiableMap(
-                newIntMap(new Object[][]{
-                        {"R Squared",                         2},
-                        {"Tau",                               0},
-                        {"Density",                           1},
-                        {"Density Ratio",                     1},
-                        {"Variability",                       2},
-                        {"Median Displacement",               1},
-                        {"Max Displacement",                  1},
-                        {"Total Displacement",                1},
-                        {"Median Max Speed",                  1},
-                        {"Max Max Speed",                     1},
-                        {"Median Median Speed",               1},
-                        {"Max Mean Speed",                    1},
-                        {"Max Track Duration",                1},
-                        {"Total Track Duration",              1},
-                        {"Median Track Duration",             1},
-                        {"Density Ratio Ori",                 1},
-                        {"Median Diffusion Coefficient",      2},
-                        {"Median Diffusion Coefficient Ext",  2}
-                })
+        ROUNDING_RELAXED = Map.ofEntries(
+                entry("R Squared",                         2),
+                entry("Tau",                               0),
+                entry("Density",                           1),
+                entry("Density Ratio",                     1),
+                entry("Variability",                       2),
+                entry("Median Displacement",               1),
+                entry("Max Displacement",                  1),
+                entry("Total Displacement",                1),
+                entry("Median Max Speed",                  1),
+                entry("Max Max Speed",                     1),
+                entry("Median Median Speed",               1),
+                entry("Max Mean Speed",                    1),
+                entry("Max Track Duration",                1),
+                entry("Total Track Duration",              1),
+                entry("Median Track Duration",             1),
+                entry("Density Ratio Ori",                 1),
+                entry("Median Diffusion Coefficient",      2),
+                entry("Median Diffusion Coefficient Ext",  2)
         );
 
-        ROUNDING_STRICT = Collections.unmodifiableMap(
-                newIntMap(new Object[][]{
-                        {"R Squared",                         3},
-                        {"Tau",                               3},
-                        {"Density",                           3},
-                        {"Density Ratio",                     3},
-                        {"Variability",                       3},
-                        {"Median Displacement",               1},
-                        {"Max Displacement",                  3},
-                        {"Total Displacement",                3},
-                        {"Median Max Speed",                  3},
-                        {"Max Max Speed",                     3},
-                        {"Median Median Speed",               3},
-                        {"Max Mean Speed",                    3},
-                        {"Max Track Duration",                3},
-                        {"Total Track Duration",              3},
-                        {"Median Track Duration",             3},
-                        {"Density Ratio Ori",                 3},
-                        {"Median Diffusion Coefficient",      3},
-                        {"Median Diffusion Coefficient Ext",  3}
-                })
+        ROUNDING_STRICT = Map.ofEntries(
+                entry("R Squared",                         3),
+                entry("Tau",                               3),
+                entry("Density",                           3),
+                entry("Density Ratio",                     3),
+                entry("Variability",                       3),
+                entry("Median Displacement",               1),
+                entry("Max Displacement",                  3),
+                entry("Total Displacement",                3),
+                entry("Median Max Speed",                  3),
+                entry("Max Max Speed",                     3),
+                entry("Median Median Speed",               3),
+                entry("Max Mean Speed",                    3),
+                entry("Max Track Duration",                3),
+                entry("Total Track Duration",              3),
+                entry("Median Track Duration",             3),
+                entry("Density Ratio Ori",                 3),
+                entry("Median Diffusion Coefficient",      3),
+                entry("Median Diffusion Coefficient Ext",  3)
         );
     }
 
@@ -158,31 +146,15 @@ public final class RegressionRules {
         // no instances
     }
 
-    private static Map<String, Double> newDoubleMap(Object[][] data) {
-        Map<String, Double> m = new HashMap<>();
-        for (Object[] e : data) {
-            m.put((String) e[0], (Double) e[1]);
-        }
-        return m;
-    }
-
-    private static Map<String, Integer> newIntMap(Object[][] data) {
-        Map<String, Integer> m = new HashMap<>();
-        for (Object[] e : data) {
-            m.put((String) e[0], (Integer) e[1]);
-        }
-        return m;
-    }
-
     // ===========================
     //  Helpers
     // ===========================
     public static boolean isIgnoredColumn(String field, boolean relaxed) {
-        return (relaxed ? IGNORE_COLUMNS_RELAXED : IGNORE_COLUMNS_STRICT).contains(field);
+        return field != null && (relaxed ? IGNORE_COLUMNS_RELAXED : IGNORE_COLUMNS_STRICT).contains(field);
     }
 
     public static boolean isIgnoreCaseField(String field) {
-        return IGNORE_CASE_FIELDS.contains(field);
+        return field != null && IGNORE_CASE_FIELDS.contains(field);
     }
 
     public static String clean(String s) {
@@ -250,8 +222,13 @@ public final class RegressionRules {
             }
         }
 
+        // The maps (Map.ofEntries) reject a null key, so a null field is handled here
         Map<String, Integer> roundMap = relaxed ? ROUNDING_RELAXED : ROUNDING_STRICT;
         Map<String, Double> tolMap = relaxed ? RELATIVE_TOLERANCE_RELAXED : RELATIVE_TOLERANCE_STRICT;
+
+        if (field == null) {
+            return false;
+        }
 
         Integer prec = roundMap.get(field);
         if (prec != null) {
