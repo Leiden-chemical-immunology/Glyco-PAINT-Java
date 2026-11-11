@@ -22,11 +22,12 @@ public final class MavenSupport {
     }
 
     /**
-     * The profiles whose modules are not in the normal build: the installers (packaging) and the
-     * old installers kept as a backup (old-installers). The version commands activate them, so
-     * the versions of those modules move along with the rest.
+     * The profiles whose modules are not in the normal build: the installers (packaging), the
+     * old installers kept as a backup (old-installers) and Glyco-PAINT.app (paint-app, active on
+     * macOS by itself). The version commands activate them, so the versions of those modules move
+     * along with the rest.
      */
-    static final String VERSION_PROFILES = "-Ppackaging,old-installers";
+    static final String VERSION_PROFILES = "-Ppackaging,old-installers,paint-app";
 
     /**
      * Installs the given modules into the local repository together with every project module

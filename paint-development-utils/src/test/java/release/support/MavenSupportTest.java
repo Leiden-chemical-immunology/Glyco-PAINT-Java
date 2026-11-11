@@ -40,14 +40,14 @@ class MavenSupportTest {
     }
 
     @Test
-    @DisplayName("setting the version includes the modules that are only in a profile (packaging, old installers)")
+    @DisplayName("setting the version includes the modules that are only in a profile (packaging, old installers, paint-app)")
     void versionCommandsIncludeProfileModules() {
         // Without the profiles, versions:set does not see packaging/pom.xml or the old installer
         // POMs, which then keep the old version and no longer build.
         for (boolean allModules : new boolean[]{true, false}) {
             List<String> cmd = MavenSupport.versionsSetCommand("1.2.3", allModules);
             assertTrue(cmd.contains("versions:set"), "no versions:set in " + cmd);
-            assertTrue(cmd.contains("-Ppackaging,old-installers"), "profiles missing in " + cmd);
+            assertTrue(cmd.contains("-Ppackaging,old-installers,paint-app"), "profiles missing in " + cmd);
             assertTrue(cmd.contains("-DnewVersion=1.2.3"), "no version in " + cmd);
             assertTrue(cmd.contains("-DprocessAllModules=" + allModules), "processAllModules wrong in " + cmd);
         }

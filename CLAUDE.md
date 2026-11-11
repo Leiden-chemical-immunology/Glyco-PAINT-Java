@@ -28,8 +28,8 @@ mvn clean install                           # full build incl. packaging (see wa
 mvn -pl paint-viewer -am test               # one module plus its dependencies
 ```
 
-- `package`/`install` also build `Glyco-PAINT.app` (`paint-app`, jlink + jpackage, so they take
-  longer); `install`/`verify` also build macOS .app bundles, Windows .exe wrappers, and
+- On macOS, `package`/`install` also build `Glyco-PAINT.app` (`paint-app`, jlink + jpackage, so
+  they take longer; the module is in the profile `paint-app`, active on macOS only); `install`/`verify` also build macOS .app bundles, Windows .exe wrappers, and
   **copy the Fiji plugin into the local Fiji's `plugins` folder** (found automatically on macOS and
   Windows, or `-Dfiji.dir=<folder>`; see `paint-fiji-plugin/pom.xml`). Use `test` unless packaging is
   actually needed.
@@ -71,7 +71,7 @@ every number with stored known-good output.
 | `paint-viewer` | Viewer for recordings, squares, include/exclude, cell assignment |
 | `paint-get-omero` | Download recordings from OMERO |
 | `paint-launcher` | Launcher for the applications |
-| `paint-app` | Glyco-PAINT as one app (Launcher + the four apps) with built-in Java (the building JDK, 21 or newer), via jlink/jpackage. Part of the normal build; output in `paint-app/target/bundle`, nothing installed. macOS only so far |
+| `paint-app` | Glyco-PAINT as one app (Launcher + the four apps) with built-in Java (the building JDK, 21 or newer), via jlink/jpackage. Built on macOS only (profile `paint-app`, switched on by the OS; on Windows Glyco-PAINT comes from the `packaging` installer); output in `paint-app/target/bundle`, nothing installed |
 | `packaging` | The installers: macOS `.pkg` and Windows installer (NSIS: Glyco-PAINT and/or the separate apps), both installing the Fiji plugin, both with a fixed built-in Java (Temurin 21.0.13), both built on a Mac. Built by the release tool, or by hand with `-Ppackaging`; output in `packaging/target/dist`, plus `Glyco-PAINT.app` in `~/Applications/Glyco-PAINT`. Needs `brew install makensis` |
 | `paint-compare` | CSV comparison engine used by the regression gate |
 | `paint-development-utils` | Dev tools, incl. `release.ReleaseNewVersion` (see `doc/Release Process.md`) |

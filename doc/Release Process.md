@@ -65,7 +65,8 @@ plugin, it builds and collects:
 3a. **`Glyco-PAINT.app`** (module `paint-app`): the Launcher and the four apps as one
    application with a built-in Java runtime (jlink + jpackage, from the JDK 21 or newer that
    the toolchains plugin selects). Built once from the project root with `-pl paint-app -am`
-   and copied into `macOS/`, next to the separate apps. macOS only: jpackage builds for the
+   and copied into `macOS/`, next to the separate apps. The module is only in the build on
+   macOS (profile `paint-app`, switched on automatically), so other systems skip it. macOS only: jpackage builds for the
    system it runs on.
 4. The two **installers**, built from the module `packaging` with
    `mvn package -Ppackaging -pl packaging -am -DskipTests`:

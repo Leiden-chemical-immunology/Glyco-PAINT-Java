@@ -68,9 +68,6 @@
         <module>paint-get-omero</module>
         <module>paint-launcher</module>
 
-        <!-- Glyco-PAINT as one application with built-in Java (see paint-app/pom.xml) -->
-        <module>paint-app</module>
-
         <module>paint-compare</module>
         <module>paint-development-utils</module>
     </modules>
@@ -86,6 +83,23 @@
             <id>packaging</id>
             <modules>
                 <module>packaging</module>
+            </modules>
+        </profile>
+
+        <!-- Glyco-PAINT.app: the Launcher and the four apps as one macOS application with
+             built-in Java (see paint-app/pom.xml). Switched on automatically on macOS, where the
+             release is built; skipped elsewhere. On Windows, Glyco-PAINT comes from the
+             installer (packaging), and paint-app's JDK search (maven-toolchains-plugin) does not
+             look in the usual Windows install folders, so it would stop the build there. -->
+        <profile>
+            <id>paint-app</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <modules>
+                <module>paint-app</module>
             </modules>
         </profile>
 
