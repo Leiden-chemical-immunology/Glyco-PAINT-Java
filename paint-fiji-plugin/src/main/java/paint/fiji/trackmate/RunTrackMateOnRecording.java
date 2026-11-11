@@ -165,158 +165,14 @@ public class RunTrackMateOnRecording {
             }
 
             // -----------------------------------------------------------------
-            // Step 3 – Configure TrackMate
+            // Steps 3 and 4 – Configure and execute TrackMate (see track())
             // -----------------------------------------------------------------
-            Model model = new Model();
-            model.setLogger(Logger.VOID_LOGGER);
-
-            Settings settings = new Settings(imp);
-            // Detector configuration
-            settings.detectorFactory  = new LogDetectorFactory();
-            settings.detectorSettings = settings.detectorFactory.getDefaultSettings();
-            settings.detectorSettings.put("TARGET_CHANNEL",           trackMateConfig.getTargetChannel());
-            settings.detectorSettings.put("RADIUS",                   trackMateConfig.getRadius());
-            settings.detectorSettings.put("DO_SUBPIXEL_LOCALIZATION", trackMateConfig.isDoSubpixelLocalization());
-            settings.detectorSettings.put("THRESHOLD",                threshold);
-            settings.detectorSettings.put("DO_MEDIAN_FILTERING",      trackMateConfig.isMedianFiltering());
-
-            // Tracker configuration
-            settings.trackerFactory  = new SparseLAPTrackerFactory();
-            settings.trackerSettings = settings.trackerFactory.getDefaultSettings();
-            settings.trackerSettings.put("LINKING_MAX_DISTANCE",            trackMateConfig.getLinkingMaxDistance());
-            settings.trackerSettings.put("ALTERNATIVE_LINKING_COST_FACTOR", trackMateConfig.getAlternativeLinkingCostFactor());
-            settings.trackerSettings.put("ALLOW_GAP_CLOSING",               trackMateConfig.isAllowGapClosing());
-            settings.trackerSettings.put("GAP_CLOSING_MAX_DISTANCE",        trackMateConfig.getGapClosingMaxDistance());
-            settings.trackerSettings.put("MAX_FRAME_GAP",                   trackMateConfig.getMaxFrameGap());
-            settings.trackerSettings.put("ALLOW_TRACK_SPLITTING",           trackMateConfig.isAllowTrackSplitting());
-            settings.trackerSettings.put("SPLITTING_MAX_DISTANCE",          trackMateConfig.getSplittingMaxDistance());
-            settings.trackerSettings.put("ALLOW_TRACK_MERGING",             trackMateConfig.isAllowTrackMerging());
-            settings.trackerSettings.put("MERGING_MAX_DISTANCE",            trackMateConfig.getMergingMaxDistance());
-
-            // Locale for consistent number formatting
-            Locale.setDefault(Locale.US);
-            System.setProperty("user.language", "en");
-            System.setProperty("user.country", "US");
-            // These two had no effect on TrackMate's linking (tested 2026-11-05, see
-            // doc/Change Note - TrackMate Determinism and Single Detection.md).
-            // Reproducible linking is controlled by the 'Deterministic Tracking' setting.
-            // System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "1");
-            // System.setProperty("trackmate.deterministic", "true");
-
-            settings.addSpotFilter(new FeatureFilter("QUALITY", 0, true));
-            settings.addAllAnalyzers();
-            settings.addTrackFilter(new FeatureFilter("NUMBER_SPOTS",
-                                                      trackMateConfig.getMinNumberOfSpotsInTrack(),
-                                                      true));
-
-            // -----------------------------------------------------------------
-            // Step 4 – Execute TrackMate
-            // -----------------------------------------------------------------
-
-            if (isCancelled(Thread.currentThread(), dialog)) {
+            TrackMate trackmate = track(imp, trackMateConfig, threshold, dialog);
+            if (trackmate == null) {
                 return cancelEarly(imp, impBrightfield);
             }
-
-            TrackMate trackmate = new TrackMate(model, settings);
-            // Multithreaded linking is fast but not reproducible; a single thread is
-            // reproducible but slow. See TrackMateConfig.isDeterministicTracking().
-            if (trackMateConfig.isDeterministicTracking()) {
-                trackmate.setNumThreads(1);
-            }
-            if (!trackmate.checkInput()) {
-                if (!isCancelled(Thread.currentThread(), dialog)) {
-                    PaintLogger.errorf("TrackMate input check failed: %s", trackmate.getErrorMessage());
-                }
-                return cancelEarly(imp, impBrightfield);
-            }
-
-            // ---- Spot detection ----
-            PaintLogger.raw("\n                       TrackMate - spot detection:  ");
-            try {
-                if (!trackmate.execDetection()) {
-                    // If we reach here with an interrupted thread or external cancel,
-                    // treat it as cancellation, not as a hard error.
-                    if (Thread.currentThread().isInterrupted() || isCancelled(Thread.currentThread(), dialog)) {
-                        Thread.currentThread().interrupt();
-                        PaintLogger.warnf("TrackMate spot detection interrupted (cancellation).");
-                        return cancelEarly(imp, impBrightfield);
-                    }
-
-                    PaintLogger.errorf("TrackMate - execDetection failed: %s",
-                                       trackmate.getErrorMessage());
-                    return cancelEarly(imp, impBrightfield);
-                }
-            } catch (Exception e) {
-                // Special handling: InterruptedException often bubbles out of TrackMate
-                // when the watchdog/worker interrupts the thread.
-                if (e instanceof InterruptedException
-                        || Thread.currentThread().isInterrupted()
-                        || isCancelled(Thread.currentThread(), dialog)) {
-                    Thread.currentThread().interrupt();
-                    PaintLogger.warnf("TrackMate spot detection interrupted (likely cancellation).");
-                    return cancelEarly(imp, impBrightfield);
-                }
-
-                PaintLogger.errorf("Unexpected error during detection: %s", e.getMessage());
-                return cancelEarly(imp, impBrightfield);
-            }
-
-            int numberOfSpots = model.getSpots().getNSpots(false);
-            if (numberOfSpots > trackMateConfig.getMaxNumberOfSpotsInImage()) {
-                PaintLogger.warnf("   TrackMate - Too many spots detected (%d). Limit is %d.",
-                                  numberOfSpots, trackMateConfig.getMaxNumberOfSpotsInImage());
-                return cancelEarly(imp, impBrightfield);
-            } else {
-                String numberOfSpotsString = " (" + numberOfSpots + " spots detected) ";
-                PaintLogger.raw(numberOfSpotsString);
-            }
-
-            if (isCancelled(Thread.currentThread(), dialog)) {
-                return cancelEarly(imp, impBrightfield);
-            }
-
-            // ---- Track detection ----
-            PaintLogger.raw("\n                       TrackMate - track detection: ");
-            try {
-                if (!processAfterDetection(trackmate)) {
-
-                    if (Thread.currentThread().isInterrupted() || isCancelled(Thread.currentThread(), dialog)) {
-                        Thread.currentThread().interrupt();
-                        PaintLogger.warnf("TrackMate track detection interrupted (cancellation).");
-                        return cancelEarly(imp, impBrightfield);
-                    }
-
-                    PaintLogger.errorf("TrackMate process failed: %s", trackmate.getErrorMessage());
-                    return cancelEarly(imp, impBrightfield);
-                }
-            } catch (Exception e) {
-                if (e instanceof InterruptedException
-                        || Thread.currentThread().isInterrupted()
-                        || isCancelled(Thread.currentThread(), dialog)) {
-                    Thread.currentThread().interrupt();
-                    PaintLogger.warnf("TrackMate track detection interrupted (likely cancellation).");
-                    return cancelEarly(imp, impBrightfield);
-                }
-
-                PaintLogger.errorf("Unexpected error during TrackMate process: %s", e.getMessage());
-                return cancelEarly(imp, impBrightfield);
-            }
-
-            // Edge tracks: present in the first or last analysed frame, so their real duration
-            // is unknown. Hidden tracks are skipped by the overlay, the count and the tracks CSV.
-            String edgeTracksString;
-            if (trackMateConfig.isExcludeEdgeTracks()) {
-                int numberOfEdgeTracks = excludeEdgeTracks(model, settings.tstart, settings.tend);
-                edgeTracksString = numberOfEdgeTracks + " edge tracks dismissed";
-            } else {
-                edgeTracksString = "edge tracks kept";
-            }
-
-            int numberOfFilteredTracks = model.getTrackModel().nTracks(true);
-            String linkingMode          = trackMateConfig.isDeterministicTracking() ? "deterministic" : "multithreaded";
-            String numberOfTracksString = " (" + numberOfFilteredTracks + " tracks detected, "
-                    + edgeTracksString + ", " + linkingMode + ") ";
-            PaintLogger.raw(numberOfTracksString);
+            Model model                  = trackmate.getModel();
+            int   numberOfFilteredTracks = model.getTrackModel().nTracks(true);
 
             // -----------------------------------------------------------------
             // Step 5 – Visualization
@@ -407,6 +263,184 @@ public class RunTrackMateOnRecording {
     // -------------------------------------------------------------------------
     // Utility methods
     // -------------------------------------------------------------------------
+
+    /**
+     * Configures TrackMate for the recording and runs it: spot detection, the check against
+     * {@code Max Number of Spots in Image}, linking and track filtering, and (if configured) the
+     * exclusion of edge tracks. Progress is logged as before.
+     * <p>
+     * This part needs no display, so it can run headless; the regression test for the TrackMate
+     * stage uses it. Everything that needs the screen (showing the image, the overlay, the
+     * captured images) stays in {@link #runTrackMateOnRecording}.
+     *
+     * @param imp             the recording
+     * @param trackMateConfig the TrackMate parameters
+     * @param threshold       the spot detection threshold
+     * @param dialog          the dialog that can cancel the run, or {@code null}
+     * @return the TrackMate instance after tracking, or {@code null} if the run was cancelled or
+     *         failed (the reason has been logged)
+     */
+    static TrackMate track(ImagePlus       imp,
+                           TrackMateConfig trackMateConfig,
+                           double          threshold,
+                           ProjectDialog   dialog) {
+
+        // -----------------------------------------------------------------
+        // Step 3 – Configure TrackMate
+        // -----------------------------------------------------------------
+        Model model = new Model();
+        model.setLogger(Logger.VOID_LOGGER);
+
+        Settings settings = new Settings(imp);
+        // Detector configuration
+        settings.detectorFactory  = new LogDetectorFactory();
+        settings.detectorSettings = settings.detectorFactory.getDefaultSettings();
+        settings.detectorSettings.put("TARGET_CHANNEL",           trackMateConfig.getTargetChannel());
+        settings.detectorSettings.put("RADIUS",                   trackMateConfig.getRadius());
+        settings.detectorSettings.put("DO_SUBPIXEL_LOCALIZATION", trackMateConfig.isDoSubpixelLocalization());
+        settings.detectorSettings.put("THRESHOLD",                threshold);
+        settings.detectorSettings.put("DO_MEDIAN_FILTERING",      trackMateConfig.isMedianFiltering());
+
+        // Tracker configuration
+        settings.trackerFactory  = new SparseLAPTrackerFactory();
+        settings.trackerSettings = settings.trackerFactory.getDefaultSettings();
+        settings.trackerSettings.put("LINKING_MAX_DISTANCE",            trackMateConfig.getLinkingMaxDistance());
+        settings.trackerSettings.put("ALTERNATIVE_LINKING_COST_FACTOR", trackMateConfig.getAlternativeLinkingCostFactor());
+        settings.trackerSettings.put("ALLOW_GAP_CLOSING",               trackMateConfig.isAllowGapClosing());
+        settings.trackerSettings.put("GAP_CLOSING_MAX_DISTANCE",        trackMateConfig.getGapClosingMaxDistance());
+        settings.trackerSettings.put("MAX_FRAME_GAP",                   trackMateConfig.getMaxFrameGap());
+        settings.trackerSettings.put("ALLOW_TRACK_SPLITTING",           trackMateConfig.isAllowTrackSplitting());
+        settings.trackerSettings.put("SPLITTING_MAX_DISTANCE",          trackMateConfig.getSplittingMaxDistance());
+        settings.trackerSettings.put("ALLOW_TRACK_MERGING",             trackMateConfig.isAllowTrackMerging());
+        settings.trackerSettings.put("MERGING_MAX_DISTANCE",            trackMateConfig.getMergingMaxDistance());
+
+        // Locale for consistent number formatting
+        Locale.setDefault(Locale.US);
+        System.setProperty("user.language", "en");
+        System.setProperty("user.country", "US");
+        // These two had no effect on TrackMate's linking (tested 2026-11-05, see
+        // doc/Change Note - TrackMate Determinism and Single Detection.md).
+        // Reproducible linking is controlled by the 'Deterministic Tracking' setting.
+        // System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "1");
+        // System.setProperty("trackmate.deterministic", "true");
+
+        settings.addSpotFilter(new FeatureFilter("QUALITY", 0, true));
+        settings.addAllAnalyzers();
+        settings.addTrackFilter(new FeatureFilter("NUMBER_SPOTS",
+                                                  trackMateConfig.getMinNumberOfSpotsInTrack(),
+                                                  true));
+
+        // -----------------------------------------------------------------
+        // Step 4 – Execute TrackMate
+        // -----------------------------------------------------------------
+
+        if (isCancelled(Thread.currentThread(), dialog)) {
+            return null;
+        }
+
+        TrackMate trackmate = new TrackMate(model, settings);
+        // Multithreaded linking is fast but not reproducible; a single thread is
+        // reproducible but slow. See TrackMateConfig.isDeterministicTracking().
+        if (trackMateConfig.isDeterministicTracking()) {
+            trackmate.setNumThreads(1);
+        }
+        if (!trackmate.checkInput()) {
+            if (!isCancelled(Thread.currentThread(), dialog)) {
+                PaintLogger.errorf("TrackMate input check failed: %s", trackmate.getErrorMessage());
+            }
+            return null;
+        }
+
+        // ---- Spot detection ----
+        PaintLogger.raw("\n                       TrackMate - spot detection:  ");
+        try {
+            if (!trackmate.execDetection()) {
+                // If we reach here with an interrupted thread or external cancel,
+                // treat it as cancellation, not as a hard error.
+                if (Thread.currentThread().isInterrupted() || isCancelled(Thread.currentThread(), dialog)) {
+                    Thread.currentThread().interrupt();
+                    PaintLogger.warnf("TrackMate spot detection interrupted (cancellation).");
+                    return null;
+                }
+
+                PaintLogger.errorf("TrackMate - execDetection failed: %s",
+                                   trackmate.getErrorMessage());
+                return null;
+            }
+        } catch (Exception e) {
+            // Special handling: InterruptedException often bubbles out of TrackMate
+            // when the watchdog/worker interrupts the thread.
+            if (e instanceof InterruptedException
+                    || Thread.currentThread().isInterrupted()
+                    || isCancelled(Thread.currentThread(), dialog)) {
+                Thread.currentThread().interrupt();
+                PaintLogger.warnf("TrackMate spot detection interrupted (likely cancellation).");
+                return null;
+            }
+
+            PaintLogger.errorf("Unexpected error during detection: %s", e.getMessage());
+            return null;
+        }
+
+        int numberOfSpots = model.getSpots().getNSpots(false);
+        if (numberOfSpots > trackMateConfig.getMaxNumberOfSpotsInImage()) {
+            PaintLogger.warnf("   TrackMate - Too many spots detected (%d). Limit is %d.",
+                              numberOfSpots, trackMateConfig.getMaxNumberOfSpotsInImage());
+            return null;
+        } else {
+            String numberOfSpotsString = " (" + numberOfSpots + " spots detected) ";
+            PaintLogger.raw(numberOfSpotsString);
+        }
+
+        if (isCancelled(Thread.currentThread(), dialog)) {
+            return null;
+        }
+
+        // ---- Track detection ----
+        PaintLogger.raw("\n                       TrackMate - track detection: ");
+        try {
+            if (!processAfterDetection(trackmate)) {
+
+                if (Thread.currentThread().isInterrupted() || isCancelled(Thread.currentThread(), dialog)) {
+                    Thread.currentThread().interrupt();
+                    PaintLogger.warnf("TrackMate track detection interrupted (cancellation).");
+                    return null;
+                }
+
+                PaintLogger.errorf("TrackMate process failed: %s", trackmate.getErrorMessage());
+                return null;
+            }
+        } catch (Exception e) {
+            if (e instanceof InterruptedException
+                    || Thread.currentThread().isInterrupted()
+                    || isCancelled(Thread.currentThread(), dialog)) {
+                Thread.currentThread().interrupt();
+                PaintLogger.warnf("TrackMate track detection interrupted (likely cancellation).");
+                return null;
+            }
+
+            PaintLogger.errorf("Unexpected error during TrackMate process: %s", e.getMessage());
+            return null;
+        }
+
+        // Edge tracks: present in the first or last analysed frame, so their real duration
+        // is unknown. Hidden tracks are skipped by the overlay, the count and the tracks CSV.
+        String edgeTracksString;
+        if (trackMateConfig.isExcludeEdgeTracks()) {
+            int numberOfEdgeTracks = excludeEdgeTracks(model, settings.tstart, settings.tend);
+            edgeTracksString = numberOfEdgeTracks + " edge tracks dismissed";
+        } else {
+            edgeTracksString = "edge tracks kept";
+        }
+
+        int numberOfFilteredTracks = model.getTrackModel().nTracks(true);
+        String linkingMode          = trackMateConfig.isDeterministicTracking() ? "deterministic" : "multithreaded";
+        String numberOfTracksString = " (" + numberOfFilteredTracks + " tracks detected, "
+                + edgeTracksString + ", " + linkingMode + ") ";
+        PaintLogger.raw(numberOfTracksString);
+
+        return trackmate;
+    }
 
     /**
      * Runs the TrackMate steps that follow spot detection.
