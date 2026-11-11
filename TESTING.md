@@ -28,7 +28,9 @@ This is the safety net that lets everything else be changed with confidence. It 
 question that really matters: *did my change alter the scientific output?*
 
 If a change is *supposed* to alter the output, the golden result has to be deliberately re-blessed
-(`-Dpaint.updateGolden`) — which means such a change can never happen by accident or go unnoticed.
+(`-Dpaint.updateGolden=squares`) — which means such a change can never happen by accident or go unnoticed.
+Each gate has its own name for this (`squares`, `trackmate`), so accepting a change in one gate
+cannot quietly accept a change in the other. Missing reference data makes a gate fail, never skip.
 
 The Generate Squares golden master starts from a stored `Tracks.csv`, so it does not test TrackMate
 itself. That is the job of the second gate:
@@ -47,7 +49,7 @@ must match exactly.
 TrackMate normally links spots into tracks on several threads, and then the tracks differ slightly
 from run to run. This test therefore always runs with *Deterministic Tracking* on (one thread), which
 makes the result exactly reproducible; normal runs are not affected. It takes a second or two.
-Re-blessing works the same way (`-Dpaint.updateGolden`). Loading the ND2 file itself is not covered:
+Re-blessing works the same way (`-Dpaint.updateGolden=trackmate`). Loading the ND2 file itself is not covered:
 the test recording is a TIFF.
 
 ## What "the same" means: the comparison engine

@@ -1,6 +1,5 @@
 package paint.generatesquares.regression;
 
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,6 +7,7 @@ import org.junit.jupiter.api.io.TempDir;
 import paint.generatesquares.app.GenerateSquaresHeadless;
 import paint.compare.ComparisonResult;
 import paint.compare.CsvSource;
+import paint.compare.GoldenUpdate;
 import paint.compare.PaintStrictComparator;
 import paint.compare.TableComparer;
 import paint.shared.config.paintconfig.PaintConfig;
@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static paint.shared.constants.PaintFileNames.PAINT_CONFIGURATION_JSON;
@@ -53,7 +54,7 @@ import static paint.shared.constants.PaintStringConstants.TAU_FITTING_PLOTS;
  * differences are actually acceptable.</p>
  *
  * <p>When a change <em>is</em> intentional, re-run with
- * {@code -Dpaint.updateGolden=true} to overwrite the golden masters with the new
+ * {@code -Dpaint.updateGolden=squares} to overwrite the golden masters with the new
  * output, then review the git diff and commit it.</p>
  */
 @DisplayName("Generate Squares — end-to-end regression gate (reference-project/221012)")
@@ -67,12 +68,6 @@ class GenerateSquaresRegressionGateTest {
 
     private static final String EXPERIMENT = "221012";
 
-    /**
-     * Set {@code -Dpaint.updateGolden=true} to overwrite the committed golden files
-     * with the freshly produced output — i.e. to accept an intentional change —
-     * instead of asserting.
-     */
-    private static final boolean UPDATE_GOLDEN = Boolean.getBoolean("paint.updateGolden");
 
     /**
      * Comparison mode. Default is exact (any difference fails). Pass
@@ -88,14 +83,16 @@ class GenerateSquaresRegressionGateTest {
     @Test
     @DisplayName("produced Squares.csv and Recordings.csv reproduce the golden master exactly")
     void runAndReport(@TempDir Path projectDir) throws Exception {
-        // --- Locate the reference data (kept out of git; the gate is local-only) ---
+        // -Dpaint.updateGolden=squares: accept an intentional change (see GoldenUpdate)
+        final boolean updateGolden = GoldenUpdate.requestedFor(GoldenUpdate.SQUARES);
+
+        // --- Locate the reference data (committed). Missing data is an error, not a skip:
+        //     a silently skipped gate protects nothing. ---
         java.net.URL ref = getClass().getResource("/reference-project/" + EXPERIMENT);
-        Assumptions.assumeTrue(ref != null,
-                "reference-project data not present on the classpath — local-only regression gate skipped");
+        assertNotNull(ref, "reference-project/" + EXPERIMENT + " not on the test classpath");
         Path goldenDir = Path.of(ref.toURI());
         for (String f : new String[]{"Experiment Info.csv", "Recordings.csv", "Tracks.csv"}) {
-            Assumptions.assumeTrue(Files.isRegularFile(goldenDir.resolve(f)),
-                    "reference input '" + f + "' not present — local-only regression gate skipped");
+            assertTrue(Files.isRegularFile(goldenDir.resolve(f)), "reference input '" + f + "' missing");
         }
 
         // --- Stage inputs into a fresh temp project: projectDir/<experiment>/{inputs} ---
@@ -111,8 +108,7 @@ class GenerateSquaresRegressionGateTest {
         //     would surface as a bogus "numeric regression" — or, worse, compare output
         //     computed with different parameters than the golden was. ---
         Path goldenConfig = goldenDir.getParent().resolve(PAINT_CONFIGURATION_JSON);
-        Assumptions.assumeTrue(Files.isRegularFile(goldenConfig),
-                "reference '" + PAINT_CONFIGURATION_JSON + "' not present — local-only regression gate skipped");
+        assertTrue(Files.isRegularFile(goldenConfig), "reference '" + PAINT_CONFIGURATION_JSON + "' missing");
         Files.copy(goldenConfig, projectDir.resolve(PAINT_CONFIGURATION_JSON));
 
         // --- Initialise against the staged project (picks up the pinned config) ---
@@ -139,7 +135,7 @@ class GenerateSquaresRegressionGateTest {
                 producedRecordings, "Recording Name", false, "Recordings");
 
         // --- Accept-an-intentional-change mode: overwrite the golden masters, don't assert ---
-        if (UPDATE_GOLDEN) {
+        if (updateGolden) {
             blessGolden("Squares.csv",    producedSquares);
             blessGolden("Recordings.csv", producedRecordings);
             System.out.println("   Review the git diff and commit it to accept this intentional change.");
@@ -167,7 +163,8 @@ class GenerateSquaresRegressionGateTest {
 
     /** Overwrites the committed golden file with freshly produced output, backing up the old one first. */
     private static void blessGolden(String name, Path produced) throws IOException {
-        Path srcGolden = Path.of("src", "test", "resources", "reference-project", EXPERIMENT, name);
+        Path srcGolden = GoldenUpdate.sourceTestResources(GenerateSquaresRegressionGateTest.class)
+                                     .resolve("reference-project").resolve(EXPERIMENT).resolve(name);
         Files.createDirectories(srcGolden.getParent());
 
         // Save a timestamped copy of the existing golden before overwriting it.

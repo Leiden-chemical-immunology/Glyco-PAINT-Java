@@ -37,7 +37,7 @@ Three levels of protection now exist:
 - **End-to-end regression gate**: runs the real pipeline on a committed
   golden-master project (`reference-project/221012`) and compares **Squares.csv
   and Recordings.csv** field by field, keyed by Unique Key. Exact by default;
-  `-Dpaint.rules=relaxed` for tolerance rules; `-Dpaint.updateGolden=true` to
+  `-Dpaint.rules=relaxed` for tolerance rules; `-Dpaint.updateGolden=squares` (or `=trackmate`) to
   accept an intentional change (with a timestamped backup of the previous golden).
 - The gate **pins the run to the committed `Paint Configuration.json`**, so the
   golden master is reproducible instead of silently inheriting whatever

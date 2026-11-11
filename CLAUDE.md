@@ -48,7 +48,8 @@ Squares pipeline on `paint-generate-squares/src/test/resources/reference-project
 every number with stored known-good output.
 
 - If it fails, assume the change is wrong until proven otherwise.
-- Re-blessing (`-Dpaint.updateGolden=true`) is only for changes that are *meant* to alter the
+- Re-blessing (`-Dpaint.updateGolden=squares`, or `=trackmate` for the TrackMate gate; `true` is
+  refused) is only for changes that are *meant* to alter the
   output, and only after Hans has agreed. Never re-bless to make a test go green.
 - The gate is not omniscient: the comparison engine lives in `paint-compare`, and its notion of
   "equal" (rounding, NaN handling, ignored columns) can hide real differences. See `REVIEW.md`.

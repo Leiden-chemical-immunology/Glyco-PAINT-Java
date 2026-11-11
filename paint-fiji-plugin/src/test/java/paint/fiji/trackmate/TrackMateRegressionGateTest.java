@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import paint.compare.ComparisonResult;
 import paint.compare.CsvSource;
+import paint.compare.GoldenUpdate;
 import paint.compare.TableComparer;
 import paint.fiji.tracks.TrackDataExporter;
 import paint.shared.config.TrackMateConfig;
@@ -64,7 +65,7 @@ import static paint.shared.constants.PaintFileNames.PAINT_CONFIGURATION_JSON;
  * the committed {@code Paint Configuration.json} next to it. The ND2 loading itself is not
  * covered.</p>
  *
- * <p>When a change <em>is</em> intentional, re-run with {@code -Dpaint.updateGolden=true} to
+ * <p>When a change <em>is</em> intentional, re-run with {@code -Dpaint.updateGolden=trackmate} to
  * overwrite the reference with the new output, then review the git diff and commit it.</p>
  */
 @DisplayName("TrackMate stage — regression gate (crop of 221012-Exp-1-A1-1)")
@@ -78,8 +79,7 @@ class TrackMateRegressionGateTest {
     /** One unit in the last decimal of the track values (written with 2 or 3 decimals). */
     private static final double TOLERANCE  = 0.01 + 1e-9;
 
-    private static final Path    REFERENCE_DIR = Path.of("src", "test", "resources", "trackmate-reference");
-    private static final boolean UPDATE_GOLDEN = Boolean.getBoolean("paint.updateGolden");
+    private static final String REFERENCE = "trackmate-reference";
 
     /** Closes the log file, so the temporary directory can be deleted (required on Windows). */
     @AfterEach
@@ -90,15 +90,23 @@ class TrackMateRegressionGateTest {
     @Test
     @DisplayName("tracks of the test recording reproduce the reference exactly (deterministic linking)")
     void tracksReproduceReference(@TempDir Path projectDir) throws Exception {
+        // -Dpaint.updateGolden=trackmate: accept an intentional change (see GoldenUpdate)
+        final boolean updateGolden = GoldenUpdate.requestedFor(GoldenUpdate.TRACKMATE);
+
+        // --- The committed test data, read from the test classpath ---
+        java.net.URL ref = getClass().getResource("/" + REFERENCE);
+        assertNotNull(ref, REFERENCE + " not on the test classpath");
+        Path referenceDir = Path.of(ref.toURI());
+
         // --- The pinned TrackMate parameters, with deterministic linking ---
-        Files.copy(REFERENCE_DIR.resolve(PAINT_CONFIGURATION_JSON), projectDir.resolve(PAINT_CONFIGURATION_JSON));
+        Files.copy(referenceDir.resolve(PAINT_CONFIGURATION_JSON), projectDir.resolve(PAINT_CONFIGURATION_JSON));
         PaintLogger.initialise(projectDir, "trackmate-regression-gate");
         PaintConfig.reinitialise(projectDir);
         TrackMateConfig config = new TrackMateConfig();
         assertTrue(config.isDeterministicTracking(), "the gate must run with Deterministic Tracking on");
 
         // --- Run the plugin's TrackMate step on the test recording ---
-        Path image = REFERENCE_DIR.resolve(IMAGE);
+        Path image = referenceDir.resolve(IMAGE);
         assertTrue(Files.isRegularFile(image), "test recording missing: " + image.toAbsolutePath());
         ImagePlus imp = new ImagePlus(image.toString());
         assertEquals(500, imp.getNFrames(), "test recording not read as 500 frames");
@@ -111,9 +119,11 @@ class TrackMateRegressionGateTest {
         assertTrue(Files.isRegularFile(produced), "no tracks file written");
 
         // --- Accept-an-intentional-change mode: overwrite the reference, don't assert ---
-        Path golden = REFERENCE_DIR.resolve("Tracks.csv");
-        if (UPDATE_GOLDEN || !Files.isRegularFile(golden)) {
-            blessReference(golden, produced);
+        Path golden = referenceDir.resolve("Tracks.csv");
+        if (updateGolden || !Files.isRegularFile(golden)) {
+            Path sourceGolden = GoldenUpdate.sourceTestResources(TrackMateRegressionGateTest.class)
+                                            .resolve(REFERENCE).resolve("Tracks.csv");
+            blessReference(sourceGolden, produced, updateGolden);
             return;
         }
 
@@ -136,10 +146,10 @@ class TrackMateRegressionGateTest {
 
     /**
      * Writes the produced tracks as the new reference (with a backup of the old one). Without
-     * {@code -Dpaint.updateGolden=true} this only happens when there is no reference yet, and the
+     * {@code -Dpaint.updateGolden=trackmate} this only happens when there is no reference yet, and the
      * test then fails, so a missing reference is never silently accepted.
      */
-    private static void blessReference(Path golden, Path produced) throws IOException {
+    private static void blessReference(Path golden, Path produced, boolean updateGolden) throws IOException {
         boolean existed = Files.isRegularFile(golden);
         if (existed) {
             String stamp  = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
@@ -150,7 +160,7 @@ class TrackMateRegressionGateTest {
         Files.copy(produced, golden, StandardCopyOption.REPLACE_EXISTING);
         System.out.println("✅ Reference updated: " + golden.toAbsolutePath());
         System.out.println("   Review the git diff and commit it to accept this intentional change.");
-        if (!UPDATE_GOLDEN) {
+        if (!updateGolden) {
             throw new AssertionError("No reference Tracks.csv existed; one has been written from this run. "
                                              + "Review it and run the test again.");
         }
