@@ -42,10 +42,15 @@ import static paint.shared.constants.PaintFileNames.PAINT_CONFIGURATION_JSON;
  *
  * <p>Runs the plugin's own TrackMate step ({@link RunTrackMateOnRecording#track}) headless on a
  * small committed recording and writes the tracks with {@link TrackDataExporter}, as the plugin
- * does. The resulting tracks are compared <b>exactly</b>, keyed on {@code Unique Key}, with the
+ * does. The resulting tracks are compared, keyed on {@code Unique Key}, with the
  * committed reference {@code trackmate-reference/Tracks.csv}, using the same comparison engine
  * as the Generate Squares gate. A change to the TrackMate settings or steps, to the export, or a
  * TrackMate upgrade that changes the tracks makes this test fail.</p>
+ *
+ * <p>Numbers may differ by at most {@link #TOLERANCE}: one unit in the last decimal written to
+ * {@code Tracks.csv}. That absorbs a last digit flipped by a minute floating-point difference
+ * (another platform or Java version) without hiding real changes; counts (spots, gaps, tracks) and
+ * missing or extra tracks still have to match exactly.</p>
  *
  * <p>TrackMate links multithreaded by default, and then the tracks vary from run to run. This
  * test therefore always runs with {@code Deterministic Tracking} on (one thread); see
@@ -69,6 +74,9 @@ class TrackMateRegressionGateTest {
     private static final String RECORDING  = "221012-Exp-1-A1-1";
     private static final String IMAGE      = RECORDING + "-crop.tif";
     private static final double THRESHOLD  = 5.0;
+
+    /** One unit in the last decimal of the track values (written with 2 or 3 decimals). */
+    private static final double TOLERANCE  = 0.01 + 1e-9;
 
     private static final Path    REFERENCE_DIR = Path.of("src", "test", "resources", "trackmate-reference");
     private static final boolean UPDATE_GOLDEN = Boolean.getBoolean("paint.updateGolden");
@@ -113,8 +121,8 @@ class TrackMateRegressionGateTest {
         List<Map<String, String>> g = CsvSource.read(golden);
         List<Map<String, String>> p = CsvSource.read(produced);
         ComparisonResult result = TableComparer.compare(g, p, row -> row.getOrDefault("Unique Key", ""),
-                                                        Set.of(), 0.0);
-        System.out.println("==== TrackMate tracks (exact): " + g.size() + " reference, " + p.size() + " produced ====");
+                                                        Set.of(), TOLERANCE);
+        System.out.println("==== TrackMate tracks (tolerance 0.01): " + g.size() + " reference, " + p.size() + " produced ====");
         System.out.println(result.reportGrouped(false));
 
         assertEquals(0L, result.count(ComparisonResult.Difference.Kind.MISSING),

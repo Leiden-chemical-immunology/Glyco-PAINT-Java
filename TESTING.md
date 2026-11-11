@@ -40,7 +40,9 @@ edge-track exclusion as a real run) on a small stored recording: a 64 × 64 pixe
 `221012-Exp-1-A1-1`, calibrated as Fiji reads it. The tracks are written as the plugin writes them
 and compared, track by track and number by number, with a saved reference (280 tracks). A change to
 the TrackMate settings, to the export, or a TrackMate upgrade that tracks differently, makes it
-fail.
+fail. Numbers may differ by one unit in the last written decimal (0.01), so that a minute
+floating-point difference on another computer cannot fail it; counts and missing or extra tracks
+must match exactly.
 
 TrackMate normally links spots into tracks on several threads, and then the tracks differ slightly
 from run to run. This test therefore always runs with *Deterministic Tracking* on (one thread), which

@@ -55,7 +55,8 @@ every number with stored known-good output.
 - The TrackMate stage has its own gate, `TrackMateRegressionGateTest` (paint-fiji-plugin): the
   plugin's TrackMate step (`RunTrackMateOnRecording.track`) on a small committed crop of
   `221012-Exp-1-A1-1` (`src/test/resources/trackmate-reference`), with *Deterministic Tracking*
-  on, compared exactly with a reference `Tracks.csv`. Same rules for re-blessing.
+  on, compared with a reference `Tracks.csv` (numbers within 0.01, one unit in the last written
+  decimal; counts exact). Same rules for re-blessing.
 
 ## Modules
 
