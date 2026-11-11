@@ -97,25 +97,16 @@ This document explains how to use the pipeline. It is maintained as Markdown on 
 
 The Glyco-PAINT pipeline was developed and tested on macOS, but also runs on Windows and Linux (with reduced support). Because it is computationally heavy, a powerful computer is recommended. For example, the Glyco-PAINT paper was analyzed on a MacBook Pro M3 Max with 36 GB memory.
 
-Fiji and Java 21 need to be installed:
+Only **Fiji** needs to be installed separately. The Glyco-PAINT installers bring their own Java (21), so no Java has to be installed for Glyco-PAINT itself.
 
 - **FiJi**: Download **Fiji Latest** (Java 21) from the [FiJi site](https://imagej.net/software/fiji/downloads). The Glyco-PAINT plugin needs TrackMate 8, which is not available in the older Java 8 version (*Fiji Stable*). Fiji Latest brings its own Java; nothing extra is needed for the plugin.
-  
-  - Windows: preferably install in `ProgramFiles`, `ProgramFiles(x86)`, or `AppData\Local`.  
-  - macOS: install in `~/Applications` or `/Applications`.  
 
-- **Java 21** (or newer), for the installer and the separate Glyco-PAINT apps. Unlike Fiji, these do not bring their own Java. On macOS, the all-in-one **Glyco-PAINT** app (see below) does bring its own Java; Java 21 is then still needed to run the installer. Check if it is installed:  
-  
-  On macOS:  
-  ```bash
-  /usr/libexec/java_home -V
-  ```
-  
-  On Windows:  
-  ```powershell
-  java -version
-  ```
-  If you see version `21` or higher, you’re set. Otherwise, download from [Adoptium Java 21](https://adoptium.net/en-GB/temurin/releases?version=21&os=any&arch=any) (the **JRE** is enough).
+  - macOS: put Fiji in `/Applications` or in your own `Applications` folder (`~/Applications`).
+  - Windows: unpack Fiji in your own folders, e.g. `Downloads`, the Desktop, `Documents` or `C:\Fiji`, rather than in `Program Files` (which needs administrator rights to add the plugin).
+
+  The Glyco-PAINT installer then finds Fiji by itself (see below).
+
+- **macOS**: the installer is for Macs with Apple Silicon (M1 or later).
 
 </div>
 
@@ -134,9 +125,9 @@ The pipeline consists of a FiJi plugin (for TrackMate calculations) and several 
 | **Plugin**            | Performs the TrackMate calculations               | Yes        |
 | **Get Omero**         | Organize downloaded Omero files                   | Optional   |
 | **Create Experiment** | Build Experiment Info file (convenience utility)  | Optional   |
-| **Glyco-PAINT** (macOS) | The Launcher and the four apps above in one app, with built-in Java | Optional   |
+| **Glyco-PAINT**       | The Launcher: the four apps above in one, started from one window | Optional   |
 
-On macOS the installer offers both the four separate apps and the all-in-one **Glyco-PAINT** app. They contain the same apps; Glyco-PAINT starts them from its Launcher and needs no Java of its own.
+The installers offer **Glyco-PAINT** (the Launcher with all four apps) and each app on its own. They contain the same apps; install whichever you prefer, or both. Every app brings its own Java.
 
 
 
@@ -146,26 +137,58 @@ On macOS the installer offers both the four separate apps and the all-in-one **G
 
 ## Installing the Pipeline
 
-The easiest way to install Glyco-PAINT is via the official installer. It lets you select which components to install.
+The installers can be obtained from the Glyco-PAINT distribution site on OneDrive (Leiden LIC); request access if needed. There is one installer per operating system:
 
-1. **Access the Installer**  
-   Request access to the Glyco-PAINT distribution site on OneDrive (Leiden LIC).
+| System  | Installer                                   | Size     |
+|---------|---------------------------------------------|----------|
+| macOS   | `Glyco-PAINT-<version>-macos.pkg`           | ~670 MB  |
+| Windows | `Glyco-PAINT-<version>-windows-setup.exe`   | ~300 MB  |
 
-2. **Download**  
-   Choose the installer for macOS or Windows (~400 MB). Save it to any folder (e.g. `Downloads`).
+Both let you choose what to install:
 
-3. **Run Installer**  
+| Choice | Selected by default |
+|--------|---------------------|
+| Glyco-PAINT (the Launcher with all apps) | Yes |
+| Viewer, Generate Squares, Create Experiment, Get Omero (each on its own) | No |
+| Fiji plugin | Yes |
+| Desktop shortcuts (Windows only) | No |
+
+To update, simply run the installer of the new version: it replaces the installed apps and the plugin.
+
+### macOS
+
+1. **Open the installer.** Double-click `Glyco-PAINT-<version>-macos.pkg`. The installer is not signed, so the first time macOS refuses to open it: right-click the file and choose **Open**, or go to **System Settings → Privacy & Security** and click **Open Anyway**.
+2. **Choose what to install.** On **Installation Type**, tick the components you want (see the table above), then click **Install**. macOS asks for an administrator password.
+3. **Where it goes.** The apps are installed in `/Applications/Glyco-PAINT`.
+4. **Fiji plugin.** The installer looks for Fiji in `/Applications` and in your own `Applications` folder (as `Fiji.app` or `Fiji`) and copies the plugin into its `plugins` folder, replacing an older Glyco-PAINT plugin. A copy of the plugin is kept in `/Library/Application Support/Glyco-PAINT`.
+   If no Fiji is found, a message says so: Fiji may not be installed. The apps are installed regardless; install Fiji and run the installer again with only **Fiji plugin** ticked, or copy the plugin from `/Library/Application Support/Glyco-PAINT` into the `plugins` folder of your Fiji by hand.
+   What the installer did is listed in the installer log (in Installer: **Window → Installer Log**, search for "Glyco-PAINT").
+
+**Removing:** drag the apps (or the `/Applications/Glyco-PAINT` folder) to the Trash, and remove `paint-fiji-plugin…jar` from the `plugins` folder of Fiji.
+
+### Windows
+
+1. **Open the installer.** Double-click `Glyco-PAINT-<version>-windows-setup.exe`. The installer is not signed, so Windows SmartScreen may warn the first time: click **More info → Run anyway**. No administrator rights are needed.
+2. **Choose what to install** (see the table above) and the folder to install in; by default `%LOCALAPPDATA%\Programs\Glyco-PAINT`, i.e. for your own account only.
+3. **Fiji folder.** If **Fiji plugin** is ticked, the installer shows the Fiji folder it found. It recognises Fiji by its contents (a folder with both a `plugins` and a `jars` folder) and looks in `Downloads`, the Desktop, `Documents`, your user folder, `AppData\Local`, `Program Files` and on the C: drive. If it finds none, it warns that Fiji may not be installed; choose the Fiji folder with **Browse**, or go back and untick **Fiji plugin**. The plugin is copied into Fiji's `plugins` folder, replacing an older Glyco-PAINT plugin. The installer must be able to write there; a Fiji under `Program Files` usually needs administrator rights, and the installer says so.
+4. **Starting.** The apps are in the Start menu under **Glyco-PAINT** (and on the Desktop, if you chose desktop shortcuts). The last page of the installer offers to start Glyco-PAINT straight away.
+
+**Removing:** **Settings → Apps → Glyco-PAINT → Uninstall**. This removes the apps, the shortcuts and the Fiji plugin that the installer added.
+
+### Older installer (needs Java 21)
+
+Earlier versions were distributed as a Java installer (`Glyco-PAINT-Installer-macOS-<version>.jar`, `Glyco-PAINT-Installer-Windows-<version>.jar`). It is still produced, but it, and the separate apps it installs, need **Java 21** (or newer) to be installed. Check this on macOS with `/usr/libexec/java_home -V`, on Windows with `java -version`; if version `21` or higher is not listed, download Java 21 from [Adoptium](https://adoptium.net/en-GB/temurin/releases?version=21&os=any&arch=any) (the **JRE** is enough).
+
+1. **Run Installer**
    Double-click the file. A `Glyco-PAINT` directory will be created, containing the selected apps. On macOS, tick **Glyco-PAINT (all apps, built-in Java)** to also install the all-in-one app.
 
-4. **FiJi Plugin Setup**  
-   The installer attempts to locate FiJi automatically:  
-   - **Windows**: checks `%ProgramFiles%`, `%ProgramFiles(x86)%`, `%LOCALAPPDATA%` for `Fiji`, `Fiji-win64`, `Fiji-win32`, or `Fiji-Windows`.  
-   - **macOS**: checks `~/Applications/Fiji.app` and `/Applications/Fiji.app`. A fresh download of Fiji Latest unpacks to a folder called `Fiji`, not `Fiji.app`, so the installer will not find it by itself; select the folder when asked.  
+2. **FiJi Plugin Setup**
+   The installer attempts to locate FiJi automatically:
+   - **Windows**: checks `%ProgramFiles%`, `%ProgramFiles(x86)%`, `%LOCALAPPDATA%` for `Fiji`, `Fiji-win64`, `Fiji-win32`, or `Fiji-Windows`.
+   - **macOS**: checks `~/Applications/Fiji.app` and `/Applications/Fiji.app`. A fresh download of Fiji Latest unpacks to a folder called `Fiji`, not `Fiji.app`, so the installer will not find it by itself; select the folder when asked.
 
-   If FiJi is found, the plugin is copied into `Fiji/plugins` (replacing old versions).  
+   If FiJi is found, the plugin is copied into `Fiji/plugins` (replacing old versions).
    If not found, you’ll be prompted to specify the path. As a fallback, the plugin is placed in `Glyco-PAINT/plugins`, and you must copy it manually.
-
-
 
 <img src="Pictures/Installer.png" alt="Installer" style="zoom:33%;" />
 
