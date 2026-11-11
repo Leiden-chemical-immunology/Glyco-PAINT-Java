@@ -36,7 +36,7 @@ class GitUtilsTest {
 
     @BeforeEach
     void createRepository() throws Exception {
-        assumeTrue(git("--version").startsWith("git version"), "git is not available");
+        assumeTrue(gitAvailable(), "git is not available on the PATH");
         git("init", "-q");
         git("config", "user.email", "test@example.invalid");
         git("config", "user.name", "Release Tool Test");
@@ -103,6 +103,15 @@ class GitUtilsTest {
         Path file = repo.resolve(relative);
         Files.createDirectories(file.getParent());
         Files.write(file, content.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /** Whether git can be started at all (on Windows it is not always on the PATH). */
+    private boolean gitAvailable() {
+        try {
+            return git("--version").startsWith("git version");
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private String git(String... args) throws Exception {

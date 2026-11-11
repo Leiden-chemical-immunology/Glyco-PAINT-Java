@@ -14,7 +14,6 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
 import java.util.List;
 
@@ -75,11 +74,13 @@ class MavenSupportTest {
     @Test
     @DisplayName("makensis is found on the PATH")
     void findsMakensisOnPath(@TempDir Path dir) throws Exception {
-        Path makensis = Files.createFile(dir.resolve("makensis"),
-                                         PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwxr-xr-x")));
+        // Plain file made executable the portable way (Windows has no POSIX permissions)
+        Path makensis = Files.createFile(dir.resolve("makensis"));
+        assertTrue(makensis.toFile().setExecutable(true), "could not make the test file executable");
         Path found = MavenSupport.findMakensis("/nonexistent" + java.io.File.pathSeparator + dir);
         // A Homebrew copy, if installed, comes first; otherwise the one on the PATH
-        assertTrue(makensis.equals(found) || (found != null && found.toString().endsWith("/bin/makensis")),
+        assertTrue(makensis.equals(found)
+                           || (found != null && found.getParent().getFileName().toString().equals("bin")),
                    "found: " + found);
     }
 }
