@@ -2,6 +2,7 @@
 
 Date: 2026-11-05
 Status: **implemented** (commits `d695a52b`, `d983744e`, `bf74de93`; see section 7).
+Updated 2026-11-11 for TrackMate 8.1.6, with the regression gate and the checkbox (section 8).
 Test data: experiment `221012`, recording `221012-Exp-1-A1-1` (Paint Test Project),
 406 703 spots, about 14 850 filtered tracks.
 
@@ -201,5 +202,69 @@ may change, and the list of steps must be checked again.
 ### Still open
 
 - Results produced earlier, with default threading, cannot be reproduced exactly.
-- The regression references for the TrackMate stage should be regenerated with
-  `Deterministic Tracking` set to `true`.
+- ~~The regression references for the TrackMate stage should be regenerated with
+  `Deterministic Tracking` set to `true`.~~ Done: see section 8.
+
+## 8. Update 2026-11-11: TrackMate 8.1.6, the regression gate and the checkbox
+
+Since this note was written the project moved to Java 21 and TrackMate 8.1.6. The measurements
+below were made with TrackMate 8.1.6, headless, on the full recording `221012-Exp-1-A1-1`
+(loaded with the Bio-Formats importer as Fiji does, threshold 5, the TrackMate parameters of the
+reference project, edge tracks excluded), on a 14-core Mac. 406 703 spots, 14 583 or 14 584
+tracks. A temporary program called the plugin's own TrackMate step and wrote `Tracks.csv` with
+`TrackDataExporter`; it is not part of the code base.
+
+### 8.1 Deterministic runs are exactly reproducible
+
+With `Deterministic Tracking` on, four runs in three separate sessions gave a byte-for-byte
+identical `Tracks.csv` (14 583 tracks). The 1e-13 differences of section 5.2 do not reach the
+file.
+
+### 8.2 Detection must be single-threaded too
+
+`setNumThreads(1)` applies to the whole TrackMate object, so detection is single-threaded as well,
+which makes it slower. A variant with multithreaded detection and single-threaded linking (one
+thread set only after `execDetection()`) was tried:
+
+| Variant | TrackMate time | Same as fully single-threaded? |
+|---|---|---|
+| everything on one thread (the implementation) | 30–37 s | yes (reference) |
+| detection multithreaded, linking on one thread | 10–11 s | **no**: 1 to 7 tracks differ, and the runs differ from each other |
+| everything multithreaded (default) | 7–10 s | no |
+
+The spots are the same in every run, but multithreaded detection creates them in a varying order,
+and linking depends on that order. So for exact reproducibility the whole step must run on one
+thread, as implemented. Cost: about 5 times the TrackMate time of the default mode.
+
+### 8.3 How much the default mode varies (TrackMate 8.1.6)
+
+Three default (multithreaded) runs, compared with each other and with the deterministic result,
+on all columns of `Tracks.csv` except the identifiers:
+
+| Comparison | Tracks only in the first | Tracks only in the second |
+|---|---|---|
+| default 1 vs 2, 1 vs 3, 2 vs 3 | 4, 5, 6 | 5, 5, 5 |
+| deterministic vs default 1, 2, 3 | 2, 6, 7 | 2, 7, 7 |
+
+The differing tracks are places where the same spots are linked differently: a track split in
+two or joined, for example a track of 46 spots that becomes tracks of 18 and 30 spots at the same
+position. In one comparison 223 of the 297 167 spots in tracks (0.08 %) were in a different track;
+all other tracks were identical. The default mode is therefore close to, but not exactly,
+reproducible.
+
+This looks much calmer than the TrackMate 7.14 figures in section 4.1 (differences of up to 57
+spots in a track), but the two cannot be compared directly: section 4 matched tracks on their
+first spot and compared unrounded features, section 8 compares the rounded `Tracks.csv`. That
+belongs in the TrackMate 7.14 versus 8 comparison (`doc/Analysis - Java 21 and TrackMate 8
+2026-11.md`, section 6).
+
+### 8.4 What was added
+
+- **Regression gate for the TrackMate stage** (commits `34fa57d3`, `ba719251`):
+  `TrackMateRegressionGateTest` runs the plugin's TrackMate step (`RunTrackMateOnRecording.track`)
+  with `Deterministic Tracking` on, on a 64 × 64 pixel, 500-frame crop of `221012-Exp-1-A1-1`,
+  and compares the tracks exactly with a committed reference (280 tracks, made with TrackMate
+  8.1.6). See `TESTING.md`.
+- **Checkbox** (commit `ef9bc1c1`): *Deterministic* in the TrackMate dialogs, stored as
+  `Deterministic Tracking` in the project's `Paint Configuration.json`. Default off: normal runs
+  stay multithreaded for speed.
