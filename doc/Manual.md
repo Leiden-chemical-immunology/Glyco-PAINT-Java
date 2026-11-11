@@ -323,15 +323,16 @@ The Glyco-PAINT plugin is launched from FiJi by selecting **Plugins → Glyco-PA
   - Use *Select All* / *Clear All* for quick selection.  
   - Saved selections are stored in the Paint Configuration file.
 - **Options**:
-  - *Save Experiments*: saves the current experiment selection.
   - *Verbose*: provides detailed feedback in the Paint Console.
   - *Sweep*: enables parameter sweep mode (see below).
   - *Deterministic*: reproducible tracking. Normally TrackMate links spots into tracks on several
     threads, which is fast but gives slightly different tracks each time the same recording is
-    processed. With *Deterministic* on, linking runs on one thread: the same recording always gives
-    exactly the same tracks, but linking takes several times longer. Use it when results must be
+    processed. With *Deterministic* on, TrackMate (spot detection and linking) runs on one thread:
+    the same recording always gives exactly the same tracks, but TrackMate takes about five times
+    longer. Use it when results must be
     reproducible exactly. The setting is stored per project (*Deterministic Tracking* in the
     TrackMate section of the Paint Configuration file) and is off by default.
+  - *Save Experiments*: saves the current experiment selection.
 
 At the bottom of the dialog:
 - **OK**: starts processing. Changes to *Running…* while active.  

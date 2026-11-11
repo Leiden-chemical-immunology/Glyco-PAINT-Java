@@ -70,6 +70,10 @@ paint-icons-generation/
 *.jpeg
 *.tif
 *.tiff
+# ...except the pictures of the Manual
+!doc/Pictures/*.png
+!doc/Pictures/*.jpg
+!doc/Pictures/*.jpeg
 # ...except the test recording of the TrackMate regression gate
 !paint-fiji-plugin/src/test/resources/trackmate-reference/*.tif
 
