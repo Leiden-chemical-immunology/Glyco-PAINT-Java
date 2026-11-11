@@ -28,8 +28,7 @@ public final class GitUtils {
         System.out.println("🔧 Running: " + String.join(" ", cmd));
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(dir.toFile());
-        pb.inheritIO();
-        int exit = pb.start().waitFor();
+        int exit = runEchoingOutput(pb);
         if (exit != 0) {
             throw new RuntimeException("❌ Command failed: " + String.join(" ", cmd));
         }
@@ -97,9 +96,7 @@ public final class GitUtils {
         System.out.println("🏷️  Creating local tag " + tagName);
         ProcessBuilder tagPb = new ProcessBuilder("git", "tag", "-a", tagName, "-m", "Release " + tagName);
         tagPb.directory(repoDir.toFile());
-        tagPb.inheritIO();
-        Process tagProc = tagPb.start();
-        if (tagProc.waitFor() != 0) {
+        if (runEchoingOutput(tagPb) != 0) {
             throw new RuntimeException("❌ Failed to create local tag " + tagName);
         }
         System.out.println("✅ Created local tag " + tagName);
@@ -115,5 +112,26 @@ public final class GitUtils {
             throw new RuntimeException("❌ Failed to push tag " + tagName);
         }
         System.out.println("✅ Successfully pushed tag " + tagName);
+    }
+
+    /**
+     * Runs the process and prints its output (stdout and stderr together) through
+     * {@code System.out}, line by line. Unlike {@code inheritIO()}, the output then passes through
+     * Java, so a test run by Maven Surefire does not see git writing directly to the stream it
+     * uses to talk to the test process ("Corrupted channel" warning). Input stays inherited.
+     *
+     * @return the exit code
+     */
+    private static int runEchoingOutput(ProcessBuilder pb) throws IOException, InterruptedException {
+        pb.redirectErrorStream(true);
+        pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
+        Process proc = pb.start();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+        }
+        return proc.waitFor();
     }
 }
