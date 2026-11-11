@@ -22,6 +22,13 @@ public final class MavenSupport {
     }
 
     /**
+     * The profiles whose modules are not in the normal build: the installers (packaging) and the
+     * old installers kept as a backup (old-installers). The version commands activate them, so
+     * the versions of those modules move along with the rest.
+     */
+    static final String VERSION_PROFILES = "-Ppackaging,old-installers";
+
+    /**
      * Installs the given modules into the local repository together with every project module
      * they depend on (the parent POM, paint-shared-utils, paint-ui-common, ...).
      * <p>
@@ -165,9 +172,14 @@ public final class MavenSupport {
         }
     }
 
+    /**
+     * Builds one of the old installer modules. They are only in the build with the
+     * old-installers profile.
+     */
     public static void runMavenModule(String module, String version) throws Exception {
         List<String> cmd = Arrays.asList(
                 "mvn", "-q", "-U", "clean", "package",
+                "-Pold-installers",
                 "-pl", module, "-am",
                 "-DskipTests",
                 "-Dproject.version=" + version
@@ -185,12 +197,7 @@ public final class MavenSupport {
 
         Path projectRoot = PathsConfig.BASE_PATH.toAbsolutePath();
 
-        runMaven(Arrays.asList(
-                "mvn", "-q", "-B", "versions:set",
-                "-DnewVersion=" + newVersion,
-                "-DgenerateBackupPoms=false",
-                "-DprocessAllModules=true"
-        ), projectRoot, "versions:set");
+        runMaven(versionsSetCommand(newVersion, true), projectRoot, "versions:set");
 
         runMaven(Arrays.asList(
                 "mvn", "-q", "-B", "-N", "install", "-DskipTests"
@@ -207,12 +214,89 @@ public final class MavenSupport {
 
         runMaven(Arrays.asList(
                 "mvn", "-q", "-B", "versions:update-child-modules",
+                VERSION_PROFILES,
                 "-DforceVersion=true",
                 "-DgenerateBackupPoms=false",
                 "-DprocessAllModules=true"
         ), projectRoot, "versions:update-child-modules");
 
         System.out.println("✅ All modules (including nested) now aligned to version " + newVersion);
+    }
+
+    /**
+     * The Maven command that sets the project version. With {@code allModules} false only the
+     * parent POM gets the new version (and the modules' references to it).
+     */
+    public static List<String> versionsSetCommand(String newVersion, boolean allModules) {
+        return Arrays.asList(
+                "mvn", "-q", "-B", "versions:set",
+                VERSION_PROFILES,
+                "-DnewVersion=" + newVersion,
+                "-DgenerateBackupPoms=false",
+                "-DprocessAllModules=" + allModules
+        );
+    }
+
+    /**
+     * Builds the installers (module packaging: the macOS .pkg and the Windows setup.exe) and
+     * copies them into {@code destDir}. Both are asked for by their exact name, so a missing or
+     * stale installer stops the release.
+     */
+    public static void buildInstallers(String version, Path destDir) throws IOException, InterruptedException {
+        runMaven(installersCommand(), PathsConfig.BASE_PATH, "installers");
+
+        Path dist = PathsConfig.BASE_PATH.resolve("packaging/target/dist");
+        for (String name : installerNames(version)) {
+            Path built = FileOps.requireArtifact(dist, name);
+            Files.copy(built, destDir.resolve(name), StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("✅ " + name + " → " + destDir);
+        }
+    }
+
+    static List<String> installersCommand() {
+        return Arrays.asList(
+                "mvn", "-q", "-B", "package",
+                "-Ppackaging",
+                "-pl", "packaging", "-am",
+                "-DskipTests"
+        );
+    }
+
+    static List<String> installerNames(String version) {
+        return Arrays.asList(
+                "Glyco-PAINT-" + version + "-macos.pkg",
+                "Glyco-PAINT-" + version + "-windows-setup.exe"
+        );
+    }
+
+    /**
+     * Stops before anything is changed if makensis (needed for the Windows installer) is not
+     * installed. Looks where packaging/pom.xml looks: the Homebrew folders and the PATH.
+     */
+    public static void requireMakensis() {
+        if (findMakensis(System.getenv("PATH")) == null) {
+            throw new IllegalStateException("makensis (needed for the Windows installer) was not found. "
+                                                     + "Install it with: brew install makensis");
+        }
+    }
+
+    static Path findMakensis(String pathVariable) {
+        List<Path> candidates = new ArrayList<>(List.of(
+                Path.of("/opt/homebrew/bin/makensis"),
+                Path.of("/usr/local/bin/makensis")));
+        if (pathVariable != null) {
+            for (String dir : pathVariable.split(java.io.File.pathSeparator)) {
+                if (!dir.isBlank()) {
+                    candidates.add(Path.of(dir, "makensis"));
+                }
+            }
+        }
+        for (Path candidate : candidates) {
+            if (Files.isExecutable(candidate)) {
+                return candidate;
+            }
+        }
+        return null;
     }
 
     public static void runMaven(List<String> cmd, Path dir, String label) throws IOException, InterruptedException {

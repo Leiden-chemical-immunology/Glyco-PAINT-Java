@@ -20,6 +20,10 @@ import java.util.List;
  * Glyco-PAINT software suite. This includes version bumping, compilation,
  * packaging for macOS and Windows, and optionally tagging and pushing
  * to GitHub.
+ * <p>
+ * The installers are the macOS .pkg and the Windows setup.exe (module packaging). The old
+ * installers (executable JARs, module paint-installer) are kept as a backup and only built with
+ * the option {@code --old-installers}.
  */
 public class ReleaseNewVersion {
 
@@ -31,13 +35,23 @@ public class ReleaseNewVersion {
      *             <ul>
      *               <li>{@code --bump-version}: updates the POM versions</li>
      *               <li>{@code --release}: triggers full tagging and pushing</li>
+     *               <li>{@code --old-installers}: also builds the old installers (backup)</li>
      *             </ul>
      */
     public static void main(String[] args) {
         boolean bumpVersion = false;  // default: rebuild only
         boolean doRelease   = false;  // release implies bump + tag + push
+        boolean oldInstallers = false;  // also build the old installers (backup)
 
-        if (args.length == 0) {
+        for (String arg : args) {
+            if ("--old-installers".equalsIgnoreCase(arg)) {
+                oldInstallers = true;
+            }
+        }
+        // Only --old-installers given: still show the menu
+        boolean onlyOldInstallersFlag = args.length == 1 && oldInstallers;
+
+        if (args.length == 0 || onlyOldInstallersFlag) {
             System.out.println("ℹ️  No command-line options specified.");
 
             // Determine current version
@@ -108,15 +122,19 @@ public class ReleaseNewVersion {
             } else if ("--release".equalsIgnoreCase(arg)) {
                 doRelease = true;
 
+            } else if ("--old-installers".equalsIgnoreCase(arg)) {
+                // handled above
+
             } else {
                 System.err.println("❌ Unknown option: " + arg);
                 System.err.println();
                 System.err.println("Usage:");
-                System.err.println("  java -jar release-tool.jar [--bump-version] [--release]");
+                System.err.println("  java -jar release-tool.jar [--bump-version] [--release] [--old-installers]");
                 System.err.println();
                 System.err.println("Options:");
                 System.err.println("  --bump-version   Bump to next development SNAPSHOT (no tag).");
                 System.err.println("  --release        Full release: drop -SNAPSHOT, build, tag & push, then bump back to next SNAPSHOT.");
+                System.err.println("  --old-installers Also build the old installers (executable JARs), kept as a backup.");
                 System.err.println();
                 System.err.println("Examples:");
                 System.err.println("  (rebuild only)          :  java -jar release-tool.jar");
@@ -134,10 +152,11 @@ public class ReleaseNewVersion {
         System.out.println("✅ Effective configuration:");
         System.out.println("   bump-version : " + (bumpVersion ? "yes" : "no"));
         System.out.println("   release      : " + (doRelease ? "yes" : "no"));
+        System.out.println("   old installers: " + (oldInstallers ? "yes" : "no"));
         System.out.println();
 
         try {
-            new ReleaseNewVersion().run(bumpVersion, doRelease);
+            new ReleaseNewVersion().run(bumpVersion, doRelease, oldInstallers);
         } catch (Exception e) {
             System.err.println("❌ Build process failed: " + e.getMessage());
             e.printStackTrace();
@@ -145,8 +164,11 @@ public class ReleaseNewVersion {
         }
     }
 
-    private void run(boolean bumpVersion, boolean doRelease) throws Exception {
+    private void run(boolean bumpVersion, boolean doRelease, boolean oldInstallers) throws Exception {
         System.out.println("=== Building Glyco-PAINT apps for macOS and Windows ===");
+
+        // The Windows installer needs makensis: check before anything is changed
+        MavenSupport.requireMakensis();
 
         final Path parentPom = PathsConfig.BASE_PATH.resolve("pom.xml");
         String currentVersion = PomUtils.getVersionFromPom(parentPom);
@@ -276,42 +298,12 @@ public class ReleaseNewVersion {
         FileOps.copyDirectory(glycoPaintApp, macOSPath.resolve("Glyco-PAINT.app"));
 
         // -------------------------------------------------------------
-        // If bump or release: build installers
+        // Installers: the macOS .pkg and the Windows setup.exe; the old ones only on request
         // -------------------------------------------------------------
-
-        Path macInstallerRes = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-macos/src/main/resources");
-        Path winInstallerRes = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-windows/src/main/resources");
-        Files.createDirectories(macInstallerRes);
-        Files.createDirectories(winInstallerRes);
-
-        Path macPayload = macInstallerRes.resolve("payload.zip");
-        Path winPayload = winInstallerRes.resolve("payload.zip");
-
-        Files.deleteIfExists(macPayload);
-        Files.deleteIfExists(winPayload);
-
-        FileOps.zipPayload(macOSPath, pluginPath, macPayload);
-        FileOps.zipPayload(windowsPath, pluginPath, winPayload);
-
-        MavenSupport.runMavenModule("paint-installer/paint-installer-macos", versionInfo.releaseVersion);
-        MavenSupport.runMavenModule("paint-installer/paint-installer-windows", versionInfo.releaseVersion);
-
-        Path macTarget = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-macos/target");
-        Path winTarget = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-windows/target");
-
-        // Ask for the exact artifact. Do NOT pattern-match here: maven-shade leaves the
-        // pre-shade jar behind as original-<name>.jar next to the real one, and picking the
-        // newest match would be a race that can ship a non-runnable installer.
-        Path macBuilt = FileOps.requireArtifact(
-                macTarget, "paint-installer-macos-" + versionInfo.releaseVersion + ".jar");
-        Path winBuilt = FileOps.requireArtifact(
-                winTarget, "paint-installer-windows-" + versionInfo.releaseVersion + ".jar");
-
-        Path macFinal = installerPath.resolve("Glyco-PAINT-Installer-macOS-" + versionInfo.releaseVersion + ".jar");
-        Path winFinal = installerPath.resolve("Glyco-PAINT-Installer-Windows-" + versionInfo.releaseVersion + ".jar");
-
-        Files.copy(macBuilt, macFinal, StandardCopyOption.REPLACE_EXISTING);
-        Files.copy(winBuilt, winFinal, StandardCopyOption.REPLACE_EXISTING);
+        if (oldInstallers) {
+            buildOldInstallers(versionInfo.releaseVersion, macOSPath, windowsPath, pluginPath, installerPath);
+        }
+        MavenSupport.buildInstallers(versionInfo.releaseVersion, installerPath);
 
         // A released version supersedes its test build (Glyco-PAINT-<version>-SNAPSHOT).
         FileOps.removeSupersededSnapshotBuild(buildRoot);
@@ -330,12 +322,8 @@ public class ReleaseNewVersion {
 
             String nextSnapshot = versionInfo.nextDevVersion;
 
-            MavenSupport.runMaven(Arrays.asList(
-                    "mvn", "-q", "-B", "versions:set",
-                    "-DnewVersion=" + nextSnapshot,
-                    "-DgenerateBackupPoms=false",
-                    "-DprocessAllModules=false"
-            ), PathsConfig.BASE_PATH, "versions:set (parent only)");
+            MavenSupport.runMaven(MavenSupport.versionsSetCommand(nextSnapshot, false),
+                                  PathsConfig.BASE_PATH, "versions:set (parent only)");
 
             GitUtils.commitTrackedPoms("Bump project to " + nextSnapshot + " for next development cycle",
                                        PathsConfig.BASE_PATH);
@@ -346,6 +334,48 @@ public class ReleaseNewVersion {
         }
 
         System.out.println("\n🎉 All builds complete for " + versionInfo.releaseVersion);
+    }
+
+    /**
+     * The old installers: executable JARs that need Java 21 on the user's machine, each with a
+     * payload.zip of the separate apps and the plugin. Kept as a backup; only built with
+     * {@code --old-installers}.
+     */
+    private static void buildOldInstallers(String version, Path macOSPath, Path windowsPath,
+                                           Path pluginPath, Path installerPath) throws Exception {
+        Path macInstallerRes = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-macos/src/main/resources");
+        Path winInstallerRes = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-windows/src/main/resources");
+        Files.createDirectories(macInstallerRes);
+        Files.createDirectories(winInstallerRes);
+
+        Path macPayload = macInstallerRes.resolve("payload.zip");
+        Path winPayload = winInstallerRes.resolve("payload.zip");
+
+        Files.deleteIfExists(macPayload);
+        Files.deleteIfExists(winPayload);
+
+        FileOps.zipPayload(macOSPath, pluginPath, macPayload);
+        FileOps.zipPayload(windowsPath, pluginPath, winPayload);
+
+        MavenSupport.runMavenModule("paint-installer/paint-installer-macos", version);
+        MavenSupport.runMavenModule("paint-installer/paint-installer-windows", version);
+
+        Path macTarget = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-macos/target");
+        Path winTarget = PathsConfig.BASE_PATH.resolve("paint-installer/paint-installer-windows/target");
+
+        // Ask for the exact artifact. Do NOT pattern-match here: maven-shade leaves the
+        // pre-shade jar behind as original-<name>.jar next to the real one, and picking the
+        // newest match would be a race that can ship a non-runnable installer.
+        Path macBuilt = FileOps.requireArtifact(
+                macTarget, "paint-installer-macos-" + version + ".jar");
+        Path winBuilt = FileOps.requireArtifact(
+                winTarget, "paint-installer-windows-" + version + ".jar");
+
+        Path macFinal = installerPath.resolve("Glyco-PAINT-Installer-macOS-" + version + ".jar");
+        Path winFinal = installerPath.resolve("Glyco-PAINT-Installer-Windows-" + version + ".jar");
+
+        Files.copy(macBuilt, macFinal, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(winBuilt, winFinal, StandardCopyOption.REPLACE_EXISTING);
     }
 
     /**

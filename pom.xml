@@ -73,26 +73,31 @@
 
         <module>paint-compare</module>
         <module>paint-development-utils</module>
-
-        <!-- Installer aggregator -->
-        <module>paint-installer</module>
-
-        <!-- Explicitly include installer submodules -->
-        <module>paint-installer/paint-installer-macos</module>
-        <module>paint-installer/paint-installer-windows</module>
     </modules>
 
     <!-- =============================================================== -->
     <!-- Profiles -->
     <!-- =============================================================== -->
     <profiles>
-        <!-- New packaging mechanism, alongside the existing one: macOS .dmg and Windows .zip
-             with built-in Java (see packaging/pom.xml). Only built with -Ppackaging; the
-             normal build does not include it. -->
+        <!-- The installers: macOS .pkg and Windows setup.exe with built-in Java (see
+             packaging/pom.xml). Only built with -Ppackaging (the release tool does this); the
+             normal build does not include them. -->
         <profile>
             <id>packaging</id>
             <modules>
                 <module>packaging</module>
+            </modules>
+        </profile>
+
+        <!-- The old installers (executable JARs that need Java 21 on the user's machine), kept as
+             a backup. Only built with -Pold-installers; the release tool does this only with
+             its option old-installers. They need the payload.zip files the release tool makes. -->
+        <profile>
+            <id>old-installers</id>
+            <modules>
+                <module>paint-installer</module>
+                <module>paint-installer/paint-installer-macos</module>
+                <module>paint-installer/paint-installer-windows</module>
             </modules>
         </profile>
     </profiles>
