@@ -7,6 +7,7 @@
 
 package paint.ui.dialogs.project;
 
+import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.utils.PaintPrefs;
 import paint.shared.utils.PaintRuntime;
 
@@ -15,11 +16,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.function.Consumer;
 
+import static paint.shared.constants.PaintStringConstants.DETERMINISTIC_TRACKING;
+import static paint.shared.constants.PaintStringConstants.TRACKMATE;
 import static paint.ui.dialogs.ProjectDialog.DialogMode;
 
 /**
  * Bottom bar panel containing Save Experiments, Verbose toggle, optional Sweep toggle (TRACKMATE),
- * and OK/Cancel buttons. The controller registers callbacks using onOk(), onCancel(),
+ * optional Deterministic toggle (both TrackMate modes), and OK/Cancel buttons. The controller registers callbacks using onOk(), onCancel(),
  * onVerboseToggle(), and onSweepToggle(). This panel handles wiring the Swing events into those
  * callbacks and updating UI state (running, completed, enabled, etc.).
  */
@@ -30,6 +33,7 @@ public class BottomBarPanel {
     private final             JCheckBox saveExperiments;
     private final             JCheckBox verbose;
     private final             JCheckBox sweep; // TRACKMATE only
+    private final             JCheckBox deterministic; // both TrackMate modes
     private final             JButton   okBtn;
     private final             JButton   cancelBtn;
 
@@ -63,6 +67,21 @@ public class BottomBarPanel {
             left.add(sweep);
         } else {
             sweep           = null;
+        }
+
+        // Deterministic Tracking, in both TrackMate modes. A project setting, not a preference:
+        // it is read from and written to the TrackMate section of Paint Configuration.json
+        // (see persistTo), where TrackMateConfig reads it when the run starts.
+        if (mode == DialogMode.TRACKMATE_BATCH || mode == DialogMode.TRACKMATE_SINGLE) {
+            deterministic = new JCheckBox(
+                    "Deterministic",
+                    PaintConfig.getBoolean(TRACKMATE, DETERMINISTIC_TRACKING, false));
+            deterministic.setToolTipText(
+                    "Reproducible tracking: TrackMate links on one thread, so the same recording "
+                            + "always gives the same tracks. Linking is several times slower.");
+            left.add(deterministic);
+        } else {
+            deterministic = null;
         }
 
         // SaveExperiments checkbox not in TRACKMATE_SINGLE mode.
@@ -157,6 +176,9 @@ public class BottomBarPanel {
         if (sweep != null) {
             sweep.setEnabled(enabled);
         }
+        if (deterministic != null) {
+            deterministic.setEnabled(enabled);
+        }
         okBtn.setEnabled(enabled);
         cancelBtn.setEnabled(enabled);
     }
@@ -190,6 +212,16 @@ public class BottomBarPanel {
         okBtn.setText("OK");
         okBtn.setEnabled(enabled);
         cancelBtn.setEnabled(true);
+    }
+
+    /**
+     * Writes the Deterministic setting to the project's Paint Configuration.json (TrackMate
+     * modes only; does nothing otherwise).
+     */
+    public void persistTo() {
+        if (deterministic != null) {
+            PaintConfig.setBoolean(TRACKMATE, DETERMINISTIC_TRACKING, deterministic.isSelected());
+        }
     }
 
     /**

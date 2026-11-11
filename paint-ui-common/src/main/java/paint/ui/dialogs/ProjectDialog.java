@@ -226,6 +226,7 @@ public class ProjectDialog {
         if (squaresParamsPanel != null) {
             squaresParamsPanel.persistTo(mode);
         }
+        bottomBarPanel.persistTo();
 
         return new Project(
                 projectPath,
