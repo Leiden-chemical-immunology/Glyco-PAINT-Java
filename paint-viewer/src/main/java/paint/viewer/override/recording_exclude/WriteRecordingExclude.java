@@ -7,6 +7,7 @@
 
 package paint.viewer.override.recording_exclude;
 
+import paint.shared.utils.TextFiles;
 import paint.shared.objects.Recording;
 import paint.shared.utils.PaintLogger;
 import tech.tablesaw.api.StringColumn;
@@ -45,7 +46,7 @@ public class WriteRecordingExclude {
             Table table;
 
             if (Files.exists(file)) {
-                table = Table.read().csv(file.toString());
+                table = Table.read().usingOptions(TextFiles.csvReadOptions(file));
                 if (!table.columnNames().contains(colName)) {
                     // If the file exists but is malformed (missing expected column), rebuild a minimal table.
                     table = Table.create("Exclude Recordings", StringColumn.create(colName));

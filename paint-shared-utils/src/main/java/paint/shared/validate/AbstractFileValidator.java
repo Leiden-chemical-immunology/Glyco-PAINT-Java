@@ -7,13 +7,13 @@
 
 package paint.shared.validate;
 
+import paint.shared.utils.TextFiles;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import tech.tablesaw.api.ColumnType;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -75,7 +75,7 @@ public abstract class AbstractFileValidator {
                 .setIgnoreSurroundingSpaces(true)
                 .build();
 
-        try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
+        try (Reader reader = TextFiles.newReader(file.toPath());
              CSVParser parser = format.parse(reader)) {
 
             List<String>    header  = parser.getHeaderNames();

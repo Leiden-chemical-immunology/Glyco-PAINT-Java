@@ -15,7 +15,6 @@ import org.apache.commons.csv.CSVRecord;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -64,9 +63,7 @@ public final class CsvUtils {
                                                 .setSkipHeaderRecord(true)
                                                 .build();
 
-            try (CSVParser parser = CSVParser.parse(filePath.toFile(),
-                                                    StandardCharsets.UTF_8,
-                                                    format)) {
+            try (CSVParser parser = format.parse(TextFiles.newReader(filePath))) {
 
                 String processFlagKey = null;
                 for (String header : parser.getHeaderMap().keySet()) {
@@ -126,7 +123,7 @@ public final class CsvUtils {
                     continue;
                 }
 
-                try (Reader reader = Files.newBufferedReader(inputFile);
+                try (Reader reader = TextFiles.newReader(inputFile);
                      CSVParser parser = CSVFormat.DEFAULT.builder()
                                                          .setHeader()
                                                          .setSkipHeaderRecord(true)
@@ -225,7 +222,7 @@ public final class CsvUtils {
                                                     .setSkipHeaderRecord(true)
                                                     .build();
 
-            try (Reader reader = Files.newBufferedReader(csvPath);
+            try (Reader reader = TextFiles.newReader(csvPath);
                  CSVParser parser = new CSVParser(reader, readFormat);
                  BufferedWriter writer = Files.newBufferedWriter(tempPath)) {
 

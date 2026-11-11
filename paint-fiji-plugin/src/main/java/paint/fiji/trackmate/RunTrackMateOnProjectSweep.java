@@ -7,6 +7,7 @@
 
 package paint.fiji.trackmate;
 
+import paint.shared.utils.TextFiles;
 import org.apache.commons.io.FileUtils;
 import paint.shared.config.paintconfig.PaintConfig;
 import paint.shared.config.SweepConfig;
@@ -227,7 +228,7 @@ public class RunTrackMateOnProjectSweep {
 
     public static void updateThreshold(Path csvPath, double newValue) throws IOException {
 
-        List<String> lines = Files.readAllLines(csvPath);
+        List<String> lines = TextFiles.readAllLines(csvPath);
         if (lines.isEmpty()) {
             return;
         }

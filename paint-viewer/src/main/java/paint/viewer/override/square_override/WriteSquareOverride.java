@@ -7,6 +7,7 @@
 
 package paint.viewer.override.square_override;
 
+import paint.shared.utils.TextFiles;
 import paint.shared.utils.PaintLogger;
 import paint.viewer.model.RecordingEntry;
 
@@ -134,7 +135,7 @@ public class WriteSquareOverride {
         }
 
         try {
-            List<String> lines = Files.readAllLines(csvFilePath);
+            List<String> lines = TextFiles.readAllLines(csvFilePath);
             if (lines.isEmpty()) {
                 return map;
             }
@@ -212,7 +213,7 @@ public class WriteSquareOverride {
             if (!Files.exists(csvFilePath)) {
                 return false;
             }
-            return Files.readAllLines(csvFilePath)
+            return TextFiles.readAllLines(csvFilePath)
                         .stream()
                         .anyMatch(line -> line.startsWith(prefix));
         } catch (IOException e) {
@@ -248,7 +249,7 @@ public class WriteSquareOverride {
 
         try {
             List<String> lines = Files.exists(csvFilePath)
-                    ? Files.readAllLines(csvFilePath)
+                    ? TextFiles.readAllLines(csvFilePath)
                     : new ArrayList<>();
 
             String header = String.join(",", HEADER);

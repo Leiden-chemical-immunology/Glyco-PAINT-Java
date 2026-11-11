@@ -7,6 +7,7 @@
 
 package paint.viewer.override.recording_exclude;
 
+import paint.shared.utils.TextFiles;
 import paint.shared.utils.PaintLogger;
 import paint.viewer.model.RecordingEntry;
 import tech.tablesaw.api.BooleanColumn;
@@ -153,7 +154,7 @@ public class ImportRecordingExclude {
         List<RecordingExclude> recordingExcludeList = new ArrayList<>();
 
         try {
-            Table table = Table.read().csv(csvFile.toString());
+            Table table = Table.read().usingOptions(TextFiles.csvReadOptions(csvFile));
 
             for (int i = 0; i < table.rowCount(); i++) {
                 RecordingExclude recordingExclude = new RecordingExclude();

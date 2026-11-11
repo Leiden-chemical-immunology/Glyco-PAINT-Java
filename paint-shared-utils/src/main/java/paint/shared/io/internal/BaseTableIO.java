@@ -7,6 +7,7 @@
 
 package paint.shared.io.internal;
 
+import paint.shared.utils.TextFiles;
 import paint.shared.io.MainIOInterface;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.DoubleColumn;
@@ -138,7 +139,7 @@ abstract class BaseTableIO {
         ColumnType[] stringTypes = new ColumnType[expectedCols.length];
         Arrays.fill(stringTypes, ColumnType.STRING);
 
-        CsvReadOptions rawOpts = CsvReadOptions.builder(csvPath.toFile())
+        CsvReadOptions rawOpts = TextFiles.csvReadOptions(csvPath)
                                                .header(true)
                                                .columnTypes(stringTypes)    // force everything to STRING
                                                .build();

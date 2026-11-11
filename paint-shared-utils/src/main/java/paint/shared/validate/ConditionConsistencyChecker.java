@@ -6,6 +6,7 @@
  */
 
 package paint.shared.validate;
+import paint.shared.utils.TextFiles;
 import static paint.shared.constants.PaintStringConstants.*;
 
 import org.apache.commons.csv.CSVFormat;
@@ -15,8 +16,6 @@ import org.apache.commons.csv.CSVRecord;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -56,7 +55,7 @@ public final class ConditionConsistencyChecker {
         Set<String>      seenErrors = new HashSet<>(); // <-- prevent duplicates
 
         // Cannot use a standard reading method, because this one covers two different formats
-        try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8);
+        try (Reader reader = TextFiles.newReader(file.toPath());
              CSVParser  parser = CSVFormat.DEFAULT.builder()
                      .setHeader()
                      .setSkipHeaderRecord(true)

@@ -7,6 +7,7 @@
 
 package paint.fiji.trackmate;
 
+import paint.shared.utils.TextFiles;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
@@ -198,7 +199,7 @@ public class RunTrackMateOnExperiment extends RunTrackMateOnRecording {
         // ---------------------------------------------------------------------
         // Process Experiment Info and Recordings
         // ---------------------------------------------------------------------
-        try (Reader experimentInfoReader = Files.newBufferedReader(experimentFilePath);
+        try (Reader experimentInfoReader = TextFiles.newReader(experimentFilePath);
              CSVParser experimentInfoParser = new CSVParser(experimentInfoReader,
                                                             CSVFormat.DEFAULT.builder()
                                                                              .setHeader()

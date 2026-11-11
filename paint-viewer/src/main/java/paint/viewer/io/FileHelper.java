@@ -7,6 +7,7 @@
 
 package paint.viewer.io;
 
+import paint.shared.utils.TextFiles;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -65,7 +66,7 @@ public final class FileHelper {
         // Create temporary filtered file
         Path tempFile = Files.createTempFile("Squares " + recordingName, ".csv");
 
-        try (BufferedReader r = Files.newBufferedReader(origCsv);
+        try (BufferedReader r = TextFiles.newReader(origCsv);
              BufferedWriter w = Files.newBufferedWriter(tempFile)) {
 
             String header = r.readLine();

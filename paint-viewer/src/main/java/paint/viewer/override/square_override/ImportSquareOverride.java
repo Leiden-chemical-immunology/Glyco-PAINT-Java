@@ -7,6 +7,7 @@
 
 package paint.viewer.override.square_override;
 
+import paint.shared.utils.TextFiles;
 import static paint.shared.constants.PaintStringConstants.SQUARE_NUMBER;
 import static paint.shared.constants.PaintStringConstants.CELL_ID;
 import static paint.shared.constants.PaintStringConstants.TIME_STAMP;
@@ -157,7 +158,7 @@ public final class ImportSquareOverride {
         List<SquareOverride> list = new ArrayList<>();
 
         try {
-            Table table = Table.read().csv(csvFile.toString());
+            Table table = Table.read().usingOptions(TextFiles.csvReadOptions(csvFile));
 
             for (int i = 0; i < table.rowCount(); i++) {
 

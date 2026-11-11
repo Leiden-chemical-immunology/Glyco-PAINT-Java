@@ -7,6 +7,7 @@
 
 package paint.viewer.override.recording_override;
 
+import paint.shared.utils.TextFiles;
 import paint.shared.utils.PaintLogger;
 import paint.viewer.model.SquareControlParams;
 import paint.viewer.model.RecordingEntry;
@@ -186,7 +187,7 @@ public class WriteRecordingOverride {
         }
 
         try {
-            List<String> lines = Files.readAllLines(csvFilePath);
+            List<String> lines = TextFiles.readAllLines(csvFilePath);
             if (lines.isEmpty()) return map;
 
             String expectedHeader = String.join(",", HEADER);

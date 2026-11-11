@@ -7,6 +7,7 @@
 
 package paint.viewer.override.recording_override;
 
+import paint.shared.utils.TextFiles;
 import static paint.shared.constants.PaintStringConstants.*;
 
 import paint.shared.utils.PaintLogger;
@@ -155,7 +156,7 @@ public final class ImportRecordingOverride {
         List<RecordingOverride> list = new ArrayList<>();
 
         try {
-            Table table = Table.read().csv(csvFile.toString());
+            Table table = Table.read().usingOptions(TextFiles.csvReadOptions(csvFile));
 
             for (int i = 0; i < table.rowCount(); i++) {
                 RecordingOverride recordingOverride = new RecordingOverride();
