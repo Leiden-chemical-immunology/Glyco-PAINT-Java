@@ -51,7 +51,7 @@ Two entry points, plus supporting helpers in the `release.support` sub-package.
 
 | File | Role |
 |------|------|
-| `ReleaseNewVersion.java` | Orchestrates the **full** release: version bump, multi-module build, macOS/Windows packaging, assembling both installers, and optional Git tag & push. Options: `--bump-version` (next `-SNAPSHOT`, no tag) and `--release` (drop `-SNAPSHOT`, build, tag & push, then bump to next snapshot). See `doc/Release Process.md`. |
+| `ReleaseNewVersion.java` | Orchestrates the **full** release: version bump, multi-module build, macOS/Windows packaging, assembling both installers, and optional Git tag & push. Options: `--release` (drop `-SNAPSHOT`, build, tag & push, then bump to next snapshot) and `--old-installers` (also build the old installers, a backup). Without `--release` a menu asks: 1 rebuild only, 2 full release. See `doc/Release Process.md`. |
 | `BuildSelector.java` | Standalone **Swing GUI** ("Deliverables Builder") for building **individual** deliverables à la carte: tick which macOS `.app`s, Windows `.exe`s, and/or the Fiji plugin to build, click Generate, and it builds `paint-shared-utils` first, then runs each selected module's Maven build, streaming output to a log pane. Unlike `ReleaseNewVersion`, it does **not** assemble installers or touch versions/Git — it's the "rebuild just this app to test a change" tool. |
 
 **Support helpers (`release/support/`):**
@@ -66,8 +66,8 @@ Two entry points, plus supporting helpers in the `release.support` sub-package.
 | `PathsConfig.java` | Path constants / directory layout for the release pipeline. |
 | `VersionInfo.java` | Small value object encapsulating a parsed version. |
 
-**Usage:** run `ReleaseNewVersion` (optionally with `--bump-version` or
-`--release`) for a full build/release, or run `BuildSelector` to rebuild specific
+**Usage:** run `ReleaseNewVersion` (optionally with `--release` and/or
+`--old-installers`) for a full build/release, or run `BuildSelector` to rebuild specific
 deliverables interactively.
 
 ---

@@ -29,134 +29,52 @@ public class ReleaseNewVersion {
 
     /**
      * Entry point for the release tool. Provides an interactive menu or
-     * accepts command-line arguments to trigger builds or releases.
+     * accepts command-line arguments.
      *
      * @param args command-line options:
      *             <ul>
-     *               <li>{@code --bump-version}: updates the POM versions</li>
-     *               <li>{@code --release}: triggers full tagging and pushing</li>
+     *               <li>{@code --release}: full release (version, build, commit, tag, push the tag)</li>
      *               <li>{@code --old-installers}: also builds the old installers (backup)</li>
      *             </ul>
+     *             Without {@code --release} the menu asks what to do.
      */
     public static void main(String[] args) {
-        boolean bumpVersion = false;  // default: rebuild only
-        boolean doRelease   = false;  // release implies bump + tag + push
+        boolean doRelease     = false;  // full release: version + tag + push
         boolean oldInstallers = false;  // also build the old installers (backup)
 
         for (String arg : args) {
-            if ("--old-installers".equalsIgnoreCase(arg)) {
-                oldInstallers = true;
-            }
-        }
-        // Only --old-installers given: still show the menu
-        boolean onlyOldInstallersFlag = args.length == 1 && oldInstallers;
-
-        if (args.length == 0 || onlyOldInstallersFlag) {
-            System.out.println("ℹ️  No command-line options specified.");
-
-            // Determine current version
-            final Path parentPom = PathsConfig.BASE_PATH.resolve("pom.xml");
-            String currentVersion = PomUtils.getVersionFromPom(parentPom);
-            if (currentVersion == null) {
-                System.err.println("❌ Cannot determine current version from parent POM.");
-                System.exit(1);
-            }
-
-            // Compute what bumping would do
-            VersionInfo info = PomUtils.computeVersions(currentVersion);
-
-            System.out.println();
-            System.out.println("Current version: " + currentVersion);
-            System.out.println();
-            System.out.println("Choose an action:");
-            System.out.println("  1) Rebuild only");
-            System.out.println("     • Version stays         : " + currentVersion);
-            System.out.println("     • No release/tag created");
-            System.out.println();
-            System.out.println("  2) Bump version only");
-            System.out.println("     • Release version would : " + info.releaseVersion);
-            System.out.println("     • Next dev version      : " + info.nextDevVersion);
-            System.out.println("     • No release/tag created");
-            System.out.println();
-            System.out.println("  3) Full release (bump + tag + push)");
-            System.out.println("     • Release version       : " + info.releaseVersion);
-            System.out.println("     • Next dev version      : " + info.nextDevVersion);
-            System.out.println();
-            System.out.print("Enter 1, 2 or 3: ");
-
-            try {
-                byte[] buf = new byte[32];
-                int read = System.in.read(buf);
-                String choice = new String(buf, 0, read).trim();
-
-                switch (choice) {
-                    case "1":
-                        break;
-
-                    case "2":
-                        bumpVersion = true;
-                        break;
-
-                    case "3":
-                        bumpVersion = true;
-                        doRelease   = true;
-                        break;
-
-                    default:
-                        System.out.println("Invalid option. Defaulting to: rebuild only.");
-                        break;
-                }
-
-            } catch (Exception e) {
-                System.out.println("Input error. Defaulting to: rebuild only.");
-            }
-
-            System.out.println();
-        }
-
-        for (String arg : args) {
-
-            if ("--bump-version".equalsIgnoreCase(arg)) {
-                bumpVersion = true;
-
-            } else if ("--release".equalsIgnoreCase(arg)) {
+            if ("--release".equalsIgnoreCase(arg)) {
                 doRelease = true;
 
             } else if ("--old-installers".equalsIgnoreCase(arg)) {
-                // handled above
+                oldInstallers = true;
 
             } else {
                 System.err.println("❌ Unknown option: " + arg);
                 System.err.println();
                 System.err.println("Usage:");
-                System.err.println("  java -jar release-tool.jar [--bump-version] [--release] [--old-installers]");
+                System.err.println("  java -jar release-tool.jar [--release] [--old-installers]");
                 System.err.println();
                 System.err.println("Options:");
-                System.err.println("  --bump-version   Bump to next development SNAPSHOT (no tag).");
-                System.err.println("  --release        Full release: drop -SNAPSHOT, build, tag & push, then bump back to next SNAPSHOT.");
+                System.err.println("  --release        Full release: drop -SNAPSHOT, build, tag & push, then bump to the next SNAPSHOT.");
                 System.err.println("  --old-installers Also build the old installers (executable JARs), kept as a backup.");
                 System.err.println();
-                System.err.println("Examples:");
-                System.err.println("  (rebuild only)          :  java -jar release-tool.jar");
-                System.err.println("  (bump to next snapshot) :  java -jar release-tool.jar --bump-version");
-                System.err.println("  (full release)          :  java -jar release-tool.jar --release");
+                System.err.println("Without --release the menu asks: rebuild only or full release.");
                 System.exit(1);
             }
         }
 
-        // Validate combination: --release implies --bump-version
-        if (doRelease && !bumpVersion) {
-            bumpVersion = true; // make it implicit so users can just pass --release
+        if (!doRelease) {
+            doRelease = askForRelease();
         }
 
         System.out.println("✅ Effective configuration:");
-        System.out.println("   bump-version : " + (bumpVersion ? "yes" : "no"));
-        System.out.println("   release      : " + (doRelease ? "yes" : "no"));
+        System.out.println("   release       : " + (doRelease ? "yes" : "no (rebuild only)"));
         System.out.println("   old installers: " + (oldInstallers ? "yes" : "no"));
         System.out.println();
 
         try {
-            new ReleaseNewVersion().run(bumpVersion, doRelease, oldInstallers);
+            new ReleaseNewVersion().run(doRelease, oldInstallers);
         } catch (Exception e) {
             System.err.println("❌ Build process failed: " + e.getMessage());
             e.printStackTrace();
@@ -164,7 +82,48 @@ public class ReleaseNewVersion {
         }
     }
 
-    private void run(boolean bumpVersion, boolean doRelease, boolean oldInstallers) throws Exception {
+    /** The menu: 1 rebuild only (the default), 2 full release. */
+    private static boolean askForRelease() {
+        final Path parentPom = PathsConfig.BASE_PATH.resolve("pom.xml");
+        String currentVersion = PomUtils.getVersionFromPom(parentPom);
+        if (currentVersion == null) {
+            System.err.println("❌ Cannot determine current version from parent POM.");
+            System.exit(1);
+        }
+        VersionInfo info = PomUtils.computeVersions(currentVersion);
+
+        System.out.println();
+        System.out.println("Current version: " + currentVersion);
+        System.out.println();
+        System.out.println("Choose an action:");
+        System.out.println("  1) Rebuild only");
+        System.out.println("     • Version stays         : " + currentVersion);
+        System.out.println("     • No release/tag created");
+        System.out.println();
+        System.out.println("  2) Full release (version + tag + push)");
+        System.out.println("     • Release version       : " + info.releaseVersion);
+        System.out.println("     • Next dev version      : " + info.nextDevVersion);
+        System.out.println();
+        System.out.print("Enter 1 or 2: ");
+
+        boolean release = false;
+        try {
+            byte[] buf = new byte[32];
+            int read = System.in.read(buf);
+            String choice = read > 0 ? new String(buf, 0, read).trim() : "";
+            switch (choice) {
+                case "1" -> release = false;
+                case "2" -> release = true;
+                default -> System.out.println("Invalid option. Defaulting to: rebuild only.");
+            }
+        } catch (Exception e) {
+            System.out.println("Input error. Defaulting to: rebuild only.");
+        }
+        System.out.println();
+        return release;
+    }
+
+    private void run(boolean doRelease, boolean oldInstallers) throws Exception {
         System.out.println("=== Building Glyco-PAINT apps for macOS and Windows ===");
 
         // The Windows installer needs makensis: check before anything is changed
@@ -184,12 +143,12 @@ public class ReleaseNewVersion {
             checkReadyForRelease(PomUtils.computeVersions(currentVersion).releaseVersion);
         }
 
-        VersionInfo versionInfo;   // created only if bump or release requested
+        VersionInfo versionInfo;
 
         // -------------------------------------------------------------
         // MODE 1 : Rebuild only
         // -------------------------------------------------------------
-        if (!bumpVersion && !doRelease) {
+        if (!doRelease) {
 
             System.out.println("ℹ️  Rebuild-only mode. No version changes.");
             System.out.println("ℹ️  Using version: " + currentVersion);
@@ -201,23 +160,7 @@ public class ReleaseNewVersion {
 
         }
         // -------------------------------------------------------------
-        // MODE 2 : Bump version only
-        // -------------------------------------------------------------
-        else if (bumpVersion && !doRelease) {
-
-            versionInfo = PomUtils.computeVersions(currentVersion);
-
-            System.out.println("🔧 Bumping version only (no release).");
-            System.out.println("🔢  Current : " + currentVersion);
-            System.out.println("🏷️  Release : " + versionInfo.releaseVersion);
-            System.out.println("🚀 Next dev : " + versionInfo.nextDevVersion);
-
-            MavenSupport.alignAllPomVersions(versionInfo.releaseVersion);
-            MavenSupport.installModulesAndDependencies(PathsConfig.MODULES);
-
-        }
-        // -------------------------------------------------------------
-        // MODE 3 : Full release (bump + release)
+        // MODE 2 : Full release
         // -------------------------------------------------------------
         else {
 

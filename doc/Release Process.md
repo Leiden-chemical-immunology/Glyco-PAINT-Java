@@ -20,7 +20,7 @@ sibling folder `<parent>/Glyco-PAINT-Builds`.
 
 **Prerequisites:** `mvn`, `git`, `makensis` (for the Windows installer:
 `brew install makensis`; the tool stops at the start if it is missing), and (for
-publishing) the `gh` CLI installed and authenticated. The app modules must build cleanly. For a full release (mode 3) the
+publishing) the `gh` CLI installed and authenticated. The app modules must build cleanly. For a full release (mode 2) the
 working tree must be clean and the tag `v<version>` must not exist yet; otherwise
 the tool stops before changing anything.
 
@@ -30,20 +30,21 @@ module needs no change to the tool.
 
 ---
 
-## The three modes
+## The two modes
 
 Run with **no arguments** for an interactive menu, or pass a flag:
 
 | Mode | How to invoke | Version | Git tag / push |
 |------|---------------|---------|----------------|
 | **1. Rebuild only** | no args → choose `1` (default) | unchanged | no |
-| **2. Bump version only** | no args → choose `2`, or `--bump-version` | bumps (drops `-SNAPSHOT`), aligns all POMs | no |
-| **3. Full release** | no args → choose `3`, or `--release` | bumps to release version | **yes** — commits the POMs as `Release <version>` and tags that commit `v<version>`, then bumps the POMs to the next `-SNAPSHOT` and commits, then pushes the tag. Only tracked `pom.xml` files are committed. The branch itself is not pushed. |
+| **2. Full release** | no args → choose `2`, or `--release` | bumps to release version | **yes** — commits the POMs as `Release <version>` and tags that commit `v<version>`, then bumps the POMs to the next `-SNAPSHOT` and commits, then pushes the tag. Only tracked `pom.xml` files are committed. The branch itself is not pushed. |
 
-All three modes build the same artifacts (below). Only mode 3 changes Git state.
+Both modes build the same artifacts (below). Only mode 2 changes Git state.
+(There used to be a mode "bump version only"; it left the POMs on the release
+version without a commit or tag, and was removed.)
 
 The option `--old-installers` (on its own it still shows the menu, or combined
-with `--bump-version`/`--release`) also builds the old installers; see
+with `--release`) also builds the old installers; see
 [Old installers (backup)](#old-installers-backup).
 
 > To just **produce installers without releasing** (e.g. for testing), use
@@ -102,7 +103,7 @@ The two files in `Installers/` are the deliverables you hand to users.
 
 ## What you need to do afterwards
 
-The tool builds (and, in mode 3, tags/pushes) — it does **not** publish the
+The tool builds (and, in mode 2, tags/pushes) — it does **not** publish the
 installers to GitHub or install anything on user machines. After it finishes:
 
 1. **Smoke-test the installers.** Double-click the `.pkg`, choose the
@@ -112,7 +113,7 @@ installers to GitHub or install anything on user machines. After it finishes:
    the Launcher starts all four apps. Do the same with the `setup.exe` on
    Windows (Parallels): the Fiji folder page, the Start menu, and removal via
    Settings → Apps.
-2. **Publish the release assets (mode 3).** Mode 3 pushes the tag `v<version>`,
+2. **Publish the release assets (mode 2).** Mode 2 pushes the tag `v<version>`,
    but uploading the installers as **GitHub release assets is a separate,
    manual step** (e.g. via `gh release create`/`gh release upload`, or the
    `github.GitHubManager` helper, or the GitHub web UI).
@@ -171,7 +172,7 @@ the sure path.
 - The installer build runs in **all** modes (including rebuild-only).
 - In rebuild-only mode the artifacts are named with the current `-SNAPSHOT`
   version.
-- In modes 2 and 3, once both installers are built, a `Glyco-PAINT-<version>-SNAPSHOT`
+- In mode 2, once both installers are built, a `Glyco-PAINT-<version>-SNAPSHOT`
   folder left by an earlier rebuild of the same version is deleted: the release
   build supersedes it.
 - This tool is a developer aid. Parts of it have unit tests (`GitUtilsTest`,
