@@ -90,7 +90,9 @@ class TrackMateRegressionGateTest {
         assertTrue(config.isDeterministicTracking(), "the gate must run with Deterministic Tracking on");
 
         // --- Run the plugin's TrackMate step on the test recording ---
-        ImagePlus imp = new ImagePlus(REFERENCE_DIR.resolve(IMAGE).toString());
+        Path image = REFERENCE_DIR.resolve(IMAGE);
+        assertTrue(Files.isRegularFile(image), "test recording missing: " + image.toAbsolutePath());
+        ImagePlus imp = new ImagePlus(image.toString());
         assertEquals(500, imp.getNFrames(), "test recording not read as 500 frames");
 
         TrackMate trackmate = RunTrackMateOnRecording.track(imp, config, THRESHOLD, null);

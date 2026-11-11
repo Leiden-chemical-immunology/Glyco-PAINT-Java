@@ -70,6 +70,8 @@ paint-icons-generation/
 *.jpeg
 *.tif
 *.tiff
+# ...except the test recording of the TrackMate regression gate
+!paint-fiji-plugin/src/test/resources/trackmate-reference/*.tif
 
 # The reference directory
 221012 reference/
