@@ -199,7 +199,7 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <echo message="Creating macOS app bundle at ${app.bundle}"/>
+                                        <echo level="info" message="Creating macOS app bundle at ${app.bundle}"/>
                                         <delete dir="${app.bundle}" failonerror="false"/>
                                         <mkdir dir="${app.bundle}/Contents/MacOS"/>
                                         <mkdir dir="${app.bundle}/Contents/Java"/>
