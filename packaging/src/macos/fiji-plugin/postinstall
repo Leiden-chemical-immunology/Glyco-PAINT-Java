@@ -5,8 +5,10 @@
 # plugins folder of the user's Fiji.
 #
 # Fiji is looked for in /Applications and ~/Applications, as Fiji.app or Fiji (the folder name of
-# a Fiji Latest download), and must have a plugins folder. An older Glyco-PAINT plugin there is
-# replaced. If no Fiji is found the user gets a warning; the apps are installed regardless.
+# a Fiji Latest download), and must have a plugins folder. If none is found there, the user is
+# asked for the Fiji folder. An older Glyco-PAINT plugin in Fiji is replaced. The apps are
+# installed regardless. The outcome is written to $result_file for the installer's summary
+# (summary/postinstall), which tells the user where the plugin went, or that it was not installed.
 # Everything this script does is written to the installer log (Window > Installer Log).
 #
 # The installer runs this as root.
@@ -14,9 +16,11 @@
 log() { echo "Glyco-PAINT: $*"; }
 
 plugin_dir="/Library/Application Support/Glyco-PAINT"
+result_file="$plugin_dir/fiji-plugin-result.txt"
 plugin=$(ls "$plugin_dir"/paint-fiji-plugin*.jar 2>/dev/null | head -n 1)
 if [ -z "$plugin" ]; then
     log "no Fiji plugin JAR in the installer; nothing to copy"
+    echo "NONE" > "$result_file"
     exit 0
 fi
 
@@ -33,14 +37,39 @@ for candidate in "/Applications/Fiji.app" "/Applications/Fiji" "$home/Applicatio
     fi
 done
 
-if [ -z "$fiji" ]; then
-    log "no Fiji found in /Applications or $home/Applications; the plugin was not installed"
-    message="No Fiji installation was found in /Applications or in your own Applications folder. Fiji may not be installed.
+# Runs an AppleScript as the logged-in user (the installer runs this script as root)
+as_user() {
+    launchctl asuser "$uid" sudo -u "$user" osascript -e "$1" 2>/dev/null
+}
 
-The Glyco-PAINT apps have been installed, but the Fiji plugin has not. Install Fiji (https://fiji.sc) and run this installer again, choosing only 'Fiji plugin', or copy the plugin from $plugin_dir into the plugins folder of your Fiji."
-    launchctl asuser "$uid" sudo -u "$user" osascript \
-        -e "display dialog \"$message\" with title \"Glyco-PAINT\" buttons {\"OK\"} default button \"OK\" with icon caution" \
-        >/dev/null 2>&1
+# The Fiji folder in or at the chosen folder: itself, or a Fiji.app or Fiji inside it
+fiji_at() {
+    local dir="${1%/}" candidate
+    for candidate in "$dir" "$dir/Fiji.app" "$dir/Fiji"; do
+        if [ -d "$candidate/plugins" ]; then
+            echo "$candidate"
+            return
+        fi
+    done
+}
+
+# Not in the usual places: ask, until a Fiji folder is chosen or the user cancels
+if [ -z "$fiji" ]; then
+    log "no Fiji found in /Applications or $home/Applications; asking the user"
+    prompt="No Fiji was found in /Applications or in your own Applications folder. Choose your Fiji folder (the one with the plugins folder), or Cancel to skip the Fiji plugin."
+    while [ -z "$fiji" ]; do
+        chosen=$(as_user "POSIX path of (choose folder with prompt \"$prompt\" default location (path to home folder))") || break
+        fiji=$(fiji_at "$chosen")
+        if [ -z "$fiji" ]; then
+            log "$chosen is not a Fiji folder (no plugins folder)"
+            prompt="$chosen is not a Fiji folder: it has no plugins folder. Choose your Fiji folder, or Cancel to skip the Fiji plugin."
+        fi
+    done
+fi
+
+if [ -z "$fiji" ]; then
+    log "no Fiji chosen; the plugin was not installed"
+    echo "NONE" > "$result_file"
     exit 0
 fi
 
@@ -50,8 +79,10 @@ if cp "$plugin" "$fiji/plugins/"; then
     owner=$(stat -f %Su:%Sg "$fiji/plugins")
     chown "$owner" "$fiji/plugins/$(basename "$plugin")"
     log "installed $(basename "$plugin") into $fiji/plugins"
+    echo "$fiji/plugins/$(basename "$plugin")" > "$result_file"
 else
     log "could not copy the plugin into $fiji/plugins"
+    echo "FAILED $fiji/plugins" > "$result_file"
 fi
 
 # Never fail the installation because of the plugin: the apps are installed regardless

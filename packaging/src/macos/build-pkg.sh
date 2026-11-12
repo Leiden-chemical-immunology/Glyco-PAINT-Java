@@ -13,7 +13,9 @@
 #
 # Choices (Customize, shown straight away): Glyco-PAINT (on), the four separate apps (off) and the
 # Fiji plugin (on). The apps go into /Applications/Glyco-PAINT; the plugin is copied into Fiji by
-# fiji-plugin/postinstall.
+# fiji-plugin/postinstall. A hidden last component (summary/postinstall) then shows what was
+# installed where, and the last page repeats the locations. Always installed for all users on the start-up disk (rootVolumeOnly), so
+# the Installer does not show a "for all users / for me only" page that offers no real choice.
 
 set -euo pipefail
 
@@ -74,13 +76,34 @@ pkgbuild --quiet --root "$work/plugin-root" --scripts "$work/plugin-scripts" \
          --identifier "$id_prefix.fiji-plugin" --version "$version" \
          --install-location "$plugin_dir" "$work/fiji-plugin.pkg"
 
+# The summary: no files, only a script that runs last and shows what was installed where
+mkdir -p "$work/summary-scripts"
+sed -e "s|@VERSION@|$version|" -e "s|@INSTALL_DIR@|$install_dir|" -e "s|@ID_PREFIX@|$id_prefix|" \
+    "$here/summary/postinstall" > "$work/summary-scripts/postinstall"
+chmod 755 "$work/summary-scripts/postinstall"
+pkgbuild --quiet --nopayload --scripts "$work/summary-scripts" \
+         --identifier "$id_prefix.summary" --version "$version" "$work/summary.pkg"
+
+# The last page of the Installer: where things go (fixed text; the summary window has the details)
+mkdir -p "$work/resources"
+cat > "$work/resources/conclusion.html" <<EOF
+<html><body style="font-family: -apple-system, Helvetica; font-size: 13px;">
+<p><b>Glyco-PAINT $version has been installed.</b></p>
+<ul>
+<li>The apps are in <code>$install_dir</code>.</li>
+<li>The Fiji plugin is in the <code>plugins</code> folder of your Fiji (the summary window showed which one);
+a copy is kept in <code>$plugin_dir</code>.</li>
+</ul>
+<p>What the installer did is listed in the installer log: <b>Window &rarr; Installer Log</b>, search for &ldquo;Glyco-PAINT&rdquo;.</p>
+</body></html>
+EOF
+
 # The installer with its choices
 cat > "$work/distribution.xml" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <installer-gui-script minSpecVersion="2">
     <title>Glyco-PAINT $version</title>
-    <options customize="always" require-scripts="false" hostArchitectures="arm64"/>
-    <domains enable_localSystem="true"/>
+    <options customize="always" require-scripts="false" hostArchitectures="arm64" rootVolumeOnly="true"/>
 
     <choices-outline>
         <line choice="glyco-paint"/>
@@ -89,6 +112,7 @@ cat > "$work/distribution.xml" <<EOF
         <line choice="create-experiment"/>
         <line choice="get-omero"/>
         <line choice="fiji-plugin"/>
+        <line choice="summary"/>
     </choices-outline>
 
     <choice id="glyco-paint" title="Glyco-PAINT" start_selected="true"
@@ -112,8 +136,11 @@ cat > "$work/distribution.xml" <<EOF
         <pkg-ref id="$id_prefix.get-omero"/>
     </choice>
     <choice id="fiji-plugin" title="Fiji plugin" start_selected="true"
-            description="The Glyco-PAINT plugin for Fiji (TrackMate), copied into the plugins folder of Fiji in /Applications or your own Applications folder. An older Glyco-PAINT plugin there is replaced. A copy is kept in $plugin_dir.">
+            description="The Glyco-PAINT plugin for Fiji (TrackMate), copied into the plugins folder of Fiji in /Applications or your own Applications folder; if no Fiji is found there, you are asked for its folder. An older Glyco-PAINT plugin there is replaced. A copy is kept in $plugin_dir.">
         <pkg-ref id="$id_prefix.fiji-plugin"/>
+    </choice>
+    <choice id="summary" title="Summary" visible="false" start_selected="true">
+        <pkg-ref id="$id_prefix.summary"/>
     </choice>
 
     <pkg-ref id="$id_prefix.glyco-paint"       version="$version">glyco-paint.pkg</pkg-ref>
@@ -122,9 +149,26 @@ cat > "$work/distribution.xml" <<EOF
     <pkg-ref id="$id_prefix.create-experiment" version="$version">create-experiment.pkg</pkg-ref>
     <pkg-ref id="$id_prefix.get-omero"         version="$version">get-omero.pkg</pkg-ref>
     <pkg-ref id="$id_prefix.fiji-plugin"       version="$version">fiji-plugin.pkg</pkg-ref>
+    <pkg-ref id="$id_prefix.summary"           version="$version">summary.pkg</pkg-ref>
+
+    <!-- Nothing may be running that the installer replaces: the Installer asks the user to quit
+         these first (on the summary, which is always installed, so it applies whatever is chosen) -->
+    <pkg-ref id="$id_prefix.summary">
+        <must-close>
+            <app id="$id_prefix.glyco-paint"/>
+            <app id="$id_prefix.viewer"/>
+            <app id="$id_prefix.generate-squares"/>
+            <app id="$id_prefix.create-experiment"/>
+            <app id="$id_prefix.get-omero"/>
+            <app id="sc.fiji.fiji"/>
+        </must-close>
+    </pkg-ref>
+
+    <conclusion file="conclusion.html" mime-type="text/html"/>
 </installer-gui-script>
 EOF
 
-productbuild --quiet --distribution "$work/distribution.xml" --package-path "$work" "$out"
+productbuild --quiet --distribution "$work/distribution.xml" --package-path "$work" \
+             --resources "$work/resources" "$out"
 rm -rf "$work"
 echo "✅ $out"

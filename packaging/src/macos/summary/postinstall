@@ -1,0 +1,75 @@
+#!/bin/bash
+#
+# The last (hidden) part of the Glyco-PAINT installer for macOS: shows the user what has been
+# installed where. build-pkg.sh fills in @VERSION@, @INSTALL_DIR@ and @ID_PREFIX@.
+#
+# Apps: those whose component was installed in this run (receipt written in the last hour; the
+# Installer writes a receipt per component as it goes). Fiji plugin: what fiji-plugin/postinstall
+# wrote to $result_file (absent if the Fiji plugin was not selected).
+#
+# The installer runs this as root. The summary is also written to the installer log.
+
+version="@VERSION@"
+install_dir="@INSTALL_DIR@"
+id_prefix="@ID_PREFIX@"
+plugin_dir="/Library/Application Support/Glyco-PAINT"
+result_file="$plugin_dir/fiji-plugin-result.txt"
+
+user=$(stat -f %Su /dev/console)
+uid=$(id -u "$user")
+
+now=$(date +%s)
+apps=""
+for entry in "glyco-paint:Glyco-PAINT" "viewer:Viewer" "generate-squares:Generate Squares" \
+             "create-experiment:Create Experiment" "get-omero:Get Omero"; do
+    id="${entry%%:*}"
+    name="${entry#*:}"
+    t=$(pkgutil --pkg-info "$id_prefix.$id" 2>/dev/null | awk '/^install-time:/ {print $2}')
+    if [ -n "$t" ] && [ $((now - t)) -lt 3600 ] && [ -d "$install_dir/$name.app" ]; then
+        apps="$apps
+    $name.app"
+    fi
+done
+if [ -n "$apps" ]; then
+    apps_text="Apps, in $install_dir:$apps"
+else
+    apps_text="Apps: none selected"
+fi
+
+if [ ! -f "$result_file" ]; then
+    plugin_text="Fiji plugin: not selected"
+else
+    result=$(cat "$result_file")
+    rm -f "$result_file"
+    if [ "${result%% *}" = "FAILED" ]; then
+        plugin_text="Fiji plugin: NOT installed, it could not be copied into
+    ${result#FAILED }
+    Copy it by hand from $plugin_dir."
+    elif [ "$result" = "NONE" ]; then
+        plugin_text="Fiji plugin: NOT installed, no Fiji folder was chosen.
+    To add it later: run this installer again with only 'Fiji plugin' ticked,
+    or copy it from $plugin_dir into the plugins folder of your Fiji."
+    else
+        plugin_text="Fiji plugin:
+    $result
+    (a copy is kept in $plugin_dir)
+    If Fiji is open, restart it to use the new plugin."
+    fi
+fi
+
+summary="Glyco-PAINT $version has been installed.
+
+$apps_text
+
+$plugin_text"
+
+echo "Glyco-PAINT: summary:"
+echo "$summary"
+
+# Backslashes and double quotes would end the AppleScript string
+text=$(printf '%s' "$summary" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g')
+launchctl asuser "$uid" sudo -u "$user" osascript \
+    -e "display dialog \"$text\" with title \"Glyco-PAINT\" buttons {\"OK\"} default button \"OK\"" \
+    >/dev/null 2>&1
+
+exit 0
