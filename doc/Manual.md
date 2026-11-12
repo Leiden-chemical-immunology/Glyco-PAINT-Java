@@ -153,7 +153,7 @@ Both let you choose what to install:
 | Fiji plugin | Yes |
 | Desktop shortcuts (Windows only) | No |
 
-To update, simply run the installer of the new version: it replaces the installed apps and the plugin.
+To update, simply run the installer of the new version: it replaces the installed apps and the plugin. Close Fiji and the Glyco-PAINT apps first: if any of them is running, the installer asks you to close it and does not continue until you have.
 
 ### macOS
 
@@ -161,8 +161,9 @@ To update, simply run the installer of the new version: it replaces the installe
 2. **Choose what to install.** On **Installation Type**, tick the components you want (see the table above), then click **Install**. macOS asks for an administrator password.
 3. **Where it goes.** The apps are installed in `/Applications/Glyco-PAINT`.
 4. **Fiji plugin.** The installer looks for Fiji in `/Applications` and in your own `Applications` folder (as `Fiji.app` or `Fiji`) and copies the plugin into its `plugins` folder, replacing an older Glyco-PAINT plugin. A copy of the plugin is kept in `/Library/Application Support/Glyco-PAINT`.
-   If no Fiji is found, a message says so: Fiji may not be installed. The apps are installed regardless; install Fiji and run the installer again with only **Fiji plugin** ticked, or copy the plugin from `/Library/Application Support/Glyco-PAINT` into the `plugins` folder of your Fiji by hand.
-   What the installer did is listed in the installer log (in Installer: **Window → Installer Log**, search for "Glyco-PAINT").
+   If no Fiji is found there, the installer asks you to choose your Fiji folder (the one with the `plugins` folder). If you cancel, a message says the plugin was not installed. The apps are installed regardless; you can run the installer again later with only **Fiji plugin** ticked, or copy the plugin from `/Library/Application Support/Glyco-PAINT` into the `plugins` folder of your Fiji by hand.
+5. **Summary.** At the end, a window lists what was installed where: the apps, and the Fiji folder the plugin went into (or that it was not installed). The last page of the installer repeats the locations.
+   What the installer did is also listed in the installer log (in Installer: **Window → Installer Log**, search for "Glyco-PAINT").
 
 **Removing:** drag the apps (or the `/Applications/Glyco-PAINT` folder) to the Trash, and remove `paint-fiji-plugin…jar` from the `plugins` folder of Fiji.
 
@@ -171,7 +172,7 @@ To update, simply run the installer of the new version: it replaces the installe
 1. **Open the installer.** Double-click `Glyco-PAINT-<version>-windows-setup.exe`. The installer is not signed, so Windows SmartScreen may warn the first time: click **More info → Run anyway**. No administrator rights are needed.
 2. **Choose what to install** (see the table above) and the folder to install in; by default `%LOCALAPPDATA%\Programs\Glyco-PAINT`, i.e. for your own account only.
 3. **Fiji folder.** If **Fiji plugin** is ticked, the installer shows the Fiji folder it found. It recognises Fiji by its contents (a folder with both a `plugins` and a `jars` folder) and looks in `Downloads`, the Desktop, `Documents`, your user folder, `AppData\Local`, `Program Files` and on the C: drive. If it finds none, it warns that Fiji may not be installed; choose the Fiji folder with **Browse**, or go back and untick **Fiji plugin**. The plugin is copied into Fiji's `plugins` folder, replacing an older Glyco-PAINT plugin. The installer must be able to write there; a Fiji under `Program Files` usually needs administrator rights, and the installer says so.
-4. **Starting.** The apps are in the Start menu under **Glyco-PAINT** (and on the Desktop, if you chose desktop shortcuts). The last page of the installer offers to start Glyco-PAINT straight away.
+4. **Summary and starting.** The last page of the installer lists what was installed where: the apps with their folder, and the Fiji folder the plugin went into. It offers to start Glyco-PAINT straight away. The apps are in the Start menu under **Glyco-PAINT** (and on the Desktop, if you chose desktop shortcuts).
 
 **Removing:** **Settings → Apps → Glyco-PAINT → Uninstall**. This removes the apps, the shortcuts and the Fiji plugin that the installer added.
 
