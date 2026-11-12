@@ -612,6 +612,10 @@
                     <dontWrapJar>true</dontWrapJar>
                     <chdir>.</chdir>
                     <headerType>gui</headerType>
+                    <!-- The .exe keeps running while the app is open (instead of exiting once Java
+                         has started), so the installer can see that an app is running and refuse
+                         to install, and Task Manager shows the app's name instead of javaw.exe -->
+                    <stayAlive>true</stayAlive>
                     <jre>
                         <path>runtime</path>
                         <requiresJdk>false</requiresJdk>

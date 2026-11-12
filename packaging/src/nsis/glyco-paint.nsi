@@ -23,6 +23,8 @@ SetCompressor /SOLID lzma
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
 !include "Sections.nsh"
+!include "StrFunc.nsh"
+${Using:StrFunc} StrStr
 
 !define APP_NAME   "Glyco-PAINT"
 !define MENU_DIR   "$SMPROGRAMS\${APP_NAME}"
@@ -35,6 +37,9 @@ InstallDir "$LOCALAPPDATA\Programs\${APP_NAME}"
 InstallDirRegKey HKCU "Software\${APP_NAME}" "InstallDir"
 
 Var FijiDir   ; the Fiji folder the plugin goes into
+Var Apps      ; the apps installed in this run, for the summary on the finish page
+Var Summary   ; what was installed where, shown on the finish page
+Var PluginFile ; the plugin as installed in Fiji; empty if it could not be installed
 
 VIProductVersion "${VIVERSION}"
 VIAddVersionKey "ProductName"     "${APP_NAME}"
@@ -52,6 +57,9 @@ VIAddVersionKey "LegalCopyright"  "MIT License"
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_TEXT "Start ${APP_NAME}"
 !define MUI_FINISHPAGE_RUN_FUNCTION StartInstalledApp
+!define MUI_FINISHPAGE_TITLE "${APP_NAME} ${VERSION} has been installed"
+!define MUI_FINISHPAGE_TEXT "$Summary"
+!define MUI_FINISHPAGE_TEXT_LARGE
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_COMPONENTS
@@ -66,6 +74,7 @@ VIAddVersionKey "LegalCopyright"  "MIT License"
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE FijiPageLeave
 !insertmacro MUI_PAGE_DIRECTORY
 
+!define MUI_PAGE_CUSTOMFUNCTION_PRE CheckNothingRunning
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
@@ -122,34 +131,55 @@ Section "Glyco-PAINT (Launcher with all apps)" SecLauncher
     !insertmacro APP_JAR "paint-generate-squares"
     !insertmacro APP_JAR "paint-viewer"
     !insertmacro APP_EXE "Glyco-PAINT"
+    StrCpy $Apps "$Apps$\r$\n      Glyco-PAINT (Launcher with all apps)"
     WriteRegStr HKCU "${UNINST_KEY}" "DisplayIcon" "$INSTDIR\Glyco-PAINT.exe"
 SectionEnd
 
 Section /o "Viewer" SecViewer
     !insertmacro APP_JAR "paint-viewer"
     !insertmacro APP_EXE "Viewer"
+    StrCpy $Apps "$Apps$\r$\n      Viewer"
 SectionEnd
 
 Section /o "Generate Squares" SecGenerateSquares
     !insertmacro APP_JAR "paint-generate-squares"
     !insertmacro APP_EXE "Generate Squares"
+    StrCpy $Apps "$Apps$\r$\n      Generate Squares"
 SectionEnd
 
 Section /o "Create Experiment" SecCreateExperiment
     !insertmacro APP_JAR "paint-create-experiment"
     !insertmacro APP_EXE "Create Experiment"
+    StrCpy $Apps "$Apps$\r$\n      Create Experiment"
 SectionEnd
 
 Section /o "Get Omero" SecGetOmero
     !insertmacro APP_JAR "paint-get-omero"
     !insertmacro APP_EXE "Get Omero"
+    StrCpy $Apps "$Apps$\r$\n      Get Omero"
 SectionEnd
 
-; The Fiji plugin: replaces an older Glyco-PAINT plugin in Fiji's plugins folder
+; The Fiji plugin: replaces an older Glyco-PAINT plugin in Fiji's plugins folder. Windows cannot
+; delete a JAR that a running Fiji has open; the new plugin would then end up next to the old one
+; and Fiji might load the old one. So the old one must be gone first: the user is asked to close
+; Fiji and retry, or to skip the plugin.
 Section "Fiji plugin" SecFiji
+    StrCpy $PluginFile ""
+  fiji_remove_old:
     Delete "$FijiDir\plugins\paint-fiji-plugin*.jar"
+    FindFirst $0 $1 "$FijiDir\plugins\paint-fiji-plugin*.jar"
+    FindClose $0
+    ${If} $1 != ""
+        MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "The older Glyco-PAINT plugin in Fiji cannot be removed:$\r$\n$FijiDir\plugins\$1$\r$\n$\r$\nFiji is probably open. Close Fiji and click Retry, or click Cancel to skip the Fiji plugin." /SD IDCANCEL IDRETRY fiji_remove_old
+        DetailPrint "Fiji plugin not installed: $FijiDir\plugins\$1 could not be removed (Fiji open?)"
+        Return
+    ${EndIf}
     SetOutPath "$FijiDir\plugins"
     File "${PLUGIN_JAR}"
+    ; the old plugin is gone, so the only match is the one just installed
+    FindFirst $0 $1 "$FijiDir\plugins\paint-fiji-plugin*.jar"
+    FindClose $0
+    StrCpy $PluginFile "$FijiDir\plugins\$1"
     WriteRegStr HKCU "Software\${APP_NAME}" "FijiDir" "$FijiDir"
 SectionEnd
 
@@ -166,6 +196,26 @@ Section /o "Desktop shortcuts" SecDesktop
         CreateShortcut "$DESKTOP\Create Experiment.lnk" "$INSTDIR\Create Experiment.exe"
     IfFileExists "$INSTDIR\Get Omero.exe"         0 +2
         CreateShortcut "$DESKTOP\Get Omero.lnk"         "$INSTDIR\Get Omero.exe"
+SectionEnd
+
+; Last: what was installed where, for the finish page (and the details list)
+Section "-Summary" SecSummary
+    ${If} $Apps == ""
+        StrCpy $Summary "Apps: none selected."
+    ${Else}
+        StrCpy $Summary "Apps, in $INSTDIR:$Apps"
+    ${EndIf}
+    ${If} ${SectionIsSelected} ${SecFiji}
+        ${If} $PluginFile != ""
+            StrCpy $Summary "$Summary$\r$\n$\r$\nFiji plugin:$\r$\n      $PluginFile"
+        ${Else}
+            StrCpy $Summary "$Summary$\r$\n$\r$\nFiji plugin: NOT installed, the older plugin in $FijiDir\plugins could not be removed. Close Fiji and run this installer again."
+        ${EndIf}
+    ${Else}
+        StrCpy $Summary "$Summary$\r$\n$\r$\nFiji plugin: not selected."
+    ${EndIf}
+    DetailPrint "Summary:"
+    DetailPrint "$Summary"
 SectionEnd
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
@@ -239,8 +289,44 @@ FunctionEnd
     Call SearchFijiIn
 !macroend
 
+; ------------------------------------------------------------------------------------------
+; Nothing may be running that the installer replaces
+; ------------------------------------------------------------------------------------------
+
+; Running Glyco-PAINT apps or Fiji (Fiji Latest's launcher, or the older ImageJ launcher) would keep
+; their files locked, so an old plugin or app could stay behind next to the new one. Checked at the
+; start and again just before installing; the user closes them and retries, or the installer quits.
+; tasklist prints the image name only for a match (its "no tasks" message is localised, the name is not).
+!macro IF_RUNNING EXE
+    nsExec::ExecToStack 'tasklist /NH /FI "IMAGENAME eq ${EXE}"'
+    Pop $0
+    Pop $1
+    ${StrStr} $2 $1 "${EXE}"
+    ${If} $2 != ""
+        StrCpy $R5 "$R5$\r$\n      ${EXE}"
+    ${EndIf}
+!macroend
+
+Function CheckNothingRunning
+  check_again:
+    StrCpy $R5 ""
+    !insertmacro IF_RUNNING "Glyco-PAINT.exe"
+    !insertmacro IF_RUNNING "Viewer.exe"
+    !insertmacro IF_RUNNING "Generate Squares.exe"
+    !insertmacro IF_RUNNING "Create Experiment.exe"
+    !insertmacro IF_RUNNING "Get Omero.exe"
+    !insertmacro IF_RUNNING "fiji-windows-x64.exe"
+    !insertmacro IF_RUNNING "fiji-windows-arm64.exe"
+    !insertmacro IF_RUNNING "ImageJ-win64.exe"
+    ${If} $R5 != ""
+        MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION "These programs are running and must be closed before Glyco-PAINT can be installed:$\r$\n$R5$\r$\n$\r$\nClose them and click Retry, or click Cancel to stop the installation." /SD IDCANCEL IDRETRY check_again
+        Quit
+    ${EndIf}
+FunctionEnd
+
 ; The Fiji folder of a previous installation, otherwise the first Fiji found in the likely places
 Function .onInit
+    Call CheckNothingRunning
     ReadRegStr $FijiDir HKCU "Software\${APP_NAME}" "FijiDir"
     ${IfNot} ${FileExists} "$FijiDir\plugins\*.*"
         StrCpy $FijiDir ""
